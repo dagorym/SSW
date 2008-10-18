@@ -18,6 +18,8 @@
 #include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/frame.h>
+#include <wx/spinctrl.h>
+#include <wx/button.h>
 
 #include <vector>
 
@@ -68,6 +70,17 @@ protected:
 	bool m_loaded;
 	/// list of ships for current fleet
 	VehicleList m_vList;
+	/// generic flex grid sizer
+	wxFlexGridSizer* m_fgSizer1;
+	/// generic input spin control for entering numerical values
+	wxSpinCtrl* m_spinCtrl1;
+	/// generic button control
+	wxButton* m_button1;
+	/// flag for marking first time through a loop
+	bool m_first;
+
+	// Event handler for setting the ship's speed
+	void onSetSpeed( wxCommandEvent& event );
 
 	/**
 	 * @brief Draws choice of planet icons on display
@@ -173,6 +186,19 @@ protected:
 	 */
 	void zoomMap(wxMouseEvent & event);
 
+	/**
+	 * @brief Draws prompt for ships initial speed
+	 *
+	 * This draws a control to allow the user to enter the initial speed
+	 * for the ship and a "Set Speed" button to signify it is done.
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Oct 17, 2008
+	 * @date Last Modified:  Oct 17, 2008
+	 */
+	void drawGetSpeed(wxDC &dc);
 
 };
 

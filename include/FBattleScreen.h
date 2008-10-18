@@ -19,6 +19,7 @@
 #include <wx/sizer.h>
 #include <wx/frame.h>
 
+#include "Frontier.h"
 #include "FBattleBoard.h"
 #include "FBattleDisplay.h"
 
@@ -115,6 +116,10 @@ public:
 	void setSide(bool f) { m_side = f; }
 	/// toggle side
 	void toggleSide() { m_side = !m_side;}
+	/// get the current battle phase
+	Phases getPhase() { return m_phase;}
+	/// set the battle phase
+	void setPhase(Phases p);
 
 
 protected:
@@ -150,6 +155,8 @@ protected:
 	FVehicle * m_curShip;
 	/// done flag
 	bool m_done;
+	///  Turn phase state variable
+	Phases m_phase;
 
 
 };

@@ -44,6 +44,7 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_attackShips = NULL;
 	m_defendShips = NULL;
 	m_state = BS_Unknown;
+	m_phase = NONE;
 
 }
 
@@ -124,6 +125,19 @@ VehicleList FBattleScreen::getShipList() const{
 void FBattleScreen::setScale(double factor) {
 //	std::cerr<< "calling map setScale()" << std::endl;
 	m_map->setScale(factor);
+}
+
+void FBattleScreen::setPhase(Phases p){
+	m_phase = p;
+	if (p==MOVE) { // we just ended a turn
+		if (!m_side) {  // defender just ended
+			///@todo update turn counters
+			///@todo check for repair turn
+		}
+		toggleSide();
+	}
+	m_map->Refresh();
+	m_display->Refresh();
 }
 
 }

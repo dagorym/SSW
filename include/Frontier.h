@@ -25,6 +25,8 @@ enum {
 	BS_Battle
 };
 
+enum Phases {NONE,SET_SPEED,MOVE,DEFENSE_FIRE,ATTACK_FIRE};
+
 /// integer random number generator.  Parameter range is the maximum value
 inline int irand(unsigned int range){
         return (int)(range*(rand()/(RAND_MAX+1.0)))+1;

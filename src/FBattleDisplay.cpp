@@ -23,6 +23,9 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 
 	m_parent = (FBattleScreen *)parent;
 	m_loaded = false;
+	m_first = true;
+	//set a blank sizer
+	m_fgSizer1 = new wxFlexGridSizer( 1, 3, 0, 0 );
 
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	wxColour black(wxT("#000000"));// black
@@ -30,6 +33,20 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	SetMinSize( wxSize( -1,120 ) );
 
 	m_zoomImage.LoadFile("../data/zoom.png");
+
+	/// set up the set speed controls
+	m_fgSizer1 = new wxFlexGridSizer( 1, 3, 0, 0 );
+	m_fgSizer1->SetFlexibleDirection( wxBOTH );
+	m_fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+	m_fgSizer1->Add( 50, 0, 1, wxEXPAND, 5 );
+	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 40,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
+	m_spinCtrl1->SetMaxSize( wxSize( 40,-1 ) );
+	m_fgSizer1->Add( m_spinCtrl1, 0, wxALIGN_CENTER|wxALL, 5 );
+	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_fgSizer1->Add( m_button1, 0, wxALL, 5 );
+	m_fgSizer1->Layout();
+	m_fgSizer1->Hide(m_button1,true);
+	m_fgSizer1->Hide(m_spinCtrl1,true);
 
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
@@ -61,7 +78,11 @@ void FBattleDisplay::draw(wxDC &dc){
 		if (m_parent->getControlState()){
 			drawPlaceShip(dc);
 		} else {
-			drawShipChoices(dc);
+			if (m_parent->getPhase()==NONE){
+				drawShipChoices(dc);
+			} else {
+				drawGetSpeed(dc);
+			}
 		}
 		break;
 	default:
@@ -90,7 +111,7 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 		break;
 	case BS_SetupDefendFleet:
 	case BS_SetupAttackFleet:
-		if (m_parent->getControlState()==false){
+		if (m_parent->getControlState()==false && m_parent->getPhase()==NONE){
 			makeShipChoice(event);
 		}
 		break;
@@ -210,6 +231,48 @@ void FBattleDisplay::makeShipChoice(wxMouseEvent & event){
 			}
 		}
 	}
+}
+
+void FBattleDisplay::drawGetSpeed(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+
+	if (m_first){
+		this->SetSizer( m_fgSizer1 );
+		m_fgSizer1->Show(m_spinCtrl1,true);
+		m_fgSizer1->Show(m_button1,true);
+		this->Layout();
+		// Connect Events
+		m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSetSpeed ), NULL, this );
+		m_first = false;
+//		Update();
+	}
+
+	dc.SetTextForeground(white);
+	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	dc.DrawText("Please choose an initial speed for the ship.\nPress the 'Set Speed' button when done"
+			,leftOffset,2*BORDER+ICON_SIZE);
+
+}
+
+void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
+	// disconnect the button
+	m_button1->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSetSpeed ), NULL, this );
+	m_parent->getShip()->setSpeed(m_spinCtrl1->GetValue());
+	// clear the old objects
+	m_fgSizer1->Hide(m_button1,true);
+	m_fgSizer1->Hide(m_spinCtrl1,true);
+
+	m_first = true;
+	m_parent->setPhase(NONE);
+	if(m_parent->getDone()){
+		if(m_parent->getState()==BS_SetupDefendFleet){
+			m_parent->setState(BS_SetupAttackFleet);
+		} else {
+			m_parent->setState(BS_Battle);
+		}
+		m_parent->toggleSide();
+	}
+	event.Skip();
 }
 
 }

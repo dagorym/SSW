@@ -175,23 +175,15 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 		case BS_SetupDefendFleet:
 		case BS_SetupAttackFleet:
 			if (m_parent->getControlState()){
-				if(!(m_planetPosition.cx==a && m_planetPosition.cy==b) && !m_setRotation){
+				if(!(m_planetPosition.cx==a && m_planetPosition.cy==b) && !m_setRotation){  // place the ship
 					m_hexData[a][b].ships.push_back(m_parent->getShip());
 					m_shipPos = m_hexData[a][b];
 					m_setRotation=true;
-				} else {
+				} else {   // set the rotation
 					int heading = computeHeading(event);
 					m_parent->getShip()->setHeading(heading);
 					m_parent->toggleControlState();
-					m_parent->setState(m_parent->getState());
-					if(m_parent->getDone()){
-						if(m_parent->getState()==BS_SetupDefendFleet){
-							m_parent->setState(BS_SetupAttackFleet);
-						} else {
-							m_parent->setState(BS_Battle);
-						}
-						m_parent->toggleSide();
-					}
+					m_parent->setPhase(SET_SPEED);
 					m_setRotation=false;
 				}
 				Refresh();
