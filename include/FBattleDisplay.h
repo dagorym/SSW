@@ -70,8 +70,6 @@ protected:
 	bool m_loaded;
 	/// list of ships for current fleet
 	VehicleList m_vList;
-	/// generic flex grid sizer
-	wxFlexGridSizer* m_fgSizer1;
 	/// generic input spin control for entering numerical values
 	wxSpinCtrl* m_spinCtrl1;
 	/// generic button control

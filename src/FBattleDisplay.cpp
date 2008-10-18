@@ -14,7 +14,7 @@
 #define ICON_SIZE 50
 #define BORDER 5
 #define ZOOM_SIZE 30
-const int leftOffset=BORDER+ZOOM_SIZE;
+const int leftOffset=2*BORDER+ZOOM_SIZE;
 
 namespace Frontier {
 
@@ -24,8 +24,6 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_parent = (FBattleScreen *)parent;
 	m_loaded = false;
 	m_first = true;
-	//set a blank sizer
-	m_fgSizer1 = new wxFlexGridSizer( 1, 3, 0, 0 );
 
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	wxColour black(wxT("#000000"));// black
@@ -35,18 +33,10 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_zoomImage.LoadFile("../data/zoom.png");
 
 	/// set up the set speed controls
-	m_fgSizer1 = new wxFlexGridSizer( 1, 3, 0, 0 );
-	m_fgSizer1->SetFlexibleDirection( wxBOTH );
-	m_fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	m_fgSizer1->Add( 50, 0, 1, wxEXPAND, 5 );
-	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 40,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
-	m_spinCtrl1->SetMaxSize( wxSize( 40,-1 ) );
-	m_fgSizer1->Add( m_spinCtrl1, 0, wxALIGN_CENTER|wxALL, 5 );
-	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_fgSizer1->Add( m_button1, 0, wxALL, 5 );
-	m_fgSizer1->Layout();
-	m_fgSizer1->Hide(m_button1,true);
-	m_fgSizer1->Hide(m_spinCtrl1,true);
+	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxPoint(leftOffset,3*BORDER+2), wxSize( 40,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
+	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxPoint(leftOffset+50,3*BORDER), wxDefaultSize, 0 );
+	m_spinCtrl1->Hide();
+	m_button1->Hide();
 
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
@@ -237,14 +227,11 @@ void FBattleDisplay::drawGetSpeed(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 
 	if (m_first){
-		this->SetSizer( m_fgSizer1 );
-		m_fgSizer1->Show(m_spinCtrl1,true);
-		m_fgSizer1->Show(m_button1,true);
-		this->Layout();
+		m_spinCtrl1->Show();
+		m_button1->Show();
 		// Connect Events
 		m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSetSpeed ), NULL, this );
 		m_first = false;
-//		Update();
 	}
 
 	dc.SetTextForeground(white);
@@ -258,9 +245,9 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 	// disconnect the button
 	m_button1->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSetSpeed ), NULL, this );
 	m_parent->getShip()->setSpeed(m_spinCtrl1->GetValue());
-	// clear the old objects
-	m_fgSizer1->Hide(m_button1,true);
-	m_fgSizer1->Hide(m_spinCtrl1,true);
+	// Hid the set speed controls
+	m_spinCtrl1->Hide();
+	m_button1->Hide();
 
 	m_first = true;
 	m_parent->setPhase(NONE);
