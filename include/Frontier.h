@@ -25,16 +25,25 @@ enum {
 	BS_Battle
 };
 
-enum Phases {NONE,SET_SPEED,MOVE,DEFENSE_FIRE,ATTACK_FIRE};
+enum Phases {
+	NONE = 0,
+	SET_SPEED,
+	MOVE,
+	DEFENSE_FIRE,
+	ATTACK_FIRE
+};
 
 /// integer random number generator.  Parameter range is the maximum value
 inline int irand(unsigned int range){
         return (int)(range*(rand()/(RAND_MAX+1.0)))+1;
 }
+
 /// round function since it doesn't exist in VC++
-//inline double round(const double & v){
-//	return floor( v + 0.5 );
-//}
+#ifndef LINUX
+inline double round(const double & v){
+	return floor( v + 0.5 );
+}
+#endif
 
 /// This method take the ship type name and returns a pointer to an
 /// object of that type
