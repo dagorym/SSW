@@ -33,7 +33,7 @@ namespace Frontier {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jul 19, 2008
+ * @date Last Modified:  Oct 26, 2008
  */
 class FBattleScreen : public wxFrame
 {
@@ -80,6 +80,22 @@ public:
 	 */
 	VehicleList getShipList() const;
 
+	/**
+	 * @brief Returns heading from one hex to another
+	 *
+	 * This method takes as input a source and destination hex (grid positions) and computes
+	 * the closest heading (hex facing) from the source to the destination.  The computed
+	 * heading is returned to the user
+	 *
+	 * @param s source hex
+	 * @param d destination hex
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Oct 26, 2008
+	 * @date Last Modified:  Oct 26, 2008
+	 */
+	int computeHeading(hexData s, hexData d);
+
 	/// get the battle board state
 	const int & getState() const { return m_state; }
 	/// set the battle board state
@@ -94,6 +110,8 @@ public:
 	const int & getPlanetChoice() const { return m_planetChoice; }
 	/// set planet position
 	void setPlanetPosition(hexData h){ m_planetPos= h;}
+	/// get the station's current position
+	const hexData & getPlanetPos() const { return m_planetPos; }
 	/// set Station position
 	void setStationPosition(hexData h){ m_stationPos= h;}
 	/// get the station's current position

@@ -61,7 +61,11 @@ void FBattleDisplay::draw(wxDC &dc){
 		}
 		break;
 	case BS_SetupStation:
-		drawPlaceStation(dc);
+		if (m_parent->getPhase()==NONE){
+			drawPlaceStation(dc);
+		} else {
+			drawSelectRotation(dc);
+		}
 		break;
 	case BS_SetupDefendFleet:
 	case BS_SetupAttackFleet:
@@ -97,6 +101,13 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 	case BS_SetupPlanet:
 		if (m_parent->getControlState()==false){
 			makePlanetChoice(event);
+		}
+		break;
+	case BS_SetupStation:
+		if (m_parent->getPhase()==SET_SPEED){
+			if (!setStationRotation(event)){
+				break;
+			}
 		}
 		break;
 	case BS_SetupDefendFleet:
@@ -254,12 +265,57 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 	if(m_parent->getDone()){
 		if(m_parent->getState()==BS_SetupDefendFleet){
 			m_parent->setState(BS_SetupAttackFleet);
+			m_parent->toggleSide();
 		} else {
 			m_parent->setState(BS_Battle);
+			m_parent->setPhase(MOVE);
 		}
-		m_parent->toggleSide();
 	}
 	event.Skip();
+}
+
+void FBattleDisplay::drawSelectRotation(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour black(wxT("#000000"));
+	wxColour lblue(wxT("#9999FF"));
+	int tSize =10;
+	dc.SetFont(wxFont(tSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	dc.SetBrush(wxBrush(lblue));
+	dc.SetPen(wxPen(black));
+	dc.SetTextForeground(black);
+	int w=140;
+	int h=30;
+	int r=15;
+	dc.DrawRoundedRectangle(leftOffset,BORDER,w,h,r);
+	dc.DrawText("Clockwise",leftOffset+2*BORDER+27,BORDER+h/2-tSize+1);
+	dc.DrawRoundedRectangle(leftOffset+BORDER+w,BORDER,w,h,r);
+	dc.DrawText("Counter-clockwise",leftOffset+3*BORDER+w,BORDER+h/2-tSize+1);
+
+	dc.SetTextForeground(white);
+	dc.DrawText("Please select the station's direction of rotation",leftOffset,2*BORDER+h);
+}
+
+bool FBattleDisplay::setStationRotation(wxMouseEvent &event){
+	wxCoord x,y;
+	event.GetPosition(&x,&y);
+	int w=140;  // these come from the drawSelectRotation() method
+	int h=30;
+	if (x>leftOffset && x<leftOffset+BORDER+2*w && y>BORDER && y<BORDER+h){
+		int heading = m_parent->computeHeading(m_parent->getStationPos(),m_parent->getPlanetPos());
+		if(x<leftOffset+w){					// clockwise
+			heading = (heading+1)%6;
+		} else if (x>leftOffset+w+BORDER){	// ccw
+			heading -= 1;
+			if (heading < 0) { heading +=6; }
+		} else {  // hit the gap
+			return false;
+		}
+		m_parent->getStation()->setHeading(heading);
+		m_parent->getStation()->setSpeed(1);
+		m_parent->setPhase(NONE);
+		m_parent->setState(BS_SetupDefendFleet);
+	}
+	return true;
 }
 
 }

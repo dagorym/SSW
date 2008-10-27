@@ -36,7 +36,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Aug 31, 2008
+ * @date Last Modified:  Oct 26, 2008
  */
 class FBattleDisplay : public wxPanel
 {
@@ -198,6 +198,36 @@ protected:
 	 */
 	void drawGetSpeed(wxDC &dc);
 
+	/**
+	 * @brief Draws prompt for station' initial rotation direction
+	 *
+	 * This method draws a selection to choose CW or CCW rotation
+	 * for the station
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Oct 20, 2008
+	 * @date Last Modified:  Oct 20, 2008
+	 */
+	void drawSelectRotation(wxDC &dc);
+
+	/**
+	 * @brief check to see if one of the rotation buttons were selected
+	 *
+	 * This method verifies that one of the rotation direction buttons
+	 * were selected and properly sets the station's heading and speed
+	 * based on the selection.
+	 *
+	 * The method returns true if a button was clicked and false if missed.
+	 *
+	 * @param event The mouse event that contains the click coordinates
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Oct 26, 2008
+	 * @date Last Modified:  Oct 26, 2008
+	 */
+	bool setStationRotation(wxMouseEvent &event);
 };
 
 }

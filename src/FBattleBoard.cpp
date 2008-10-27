@@ -167,8 +167,9 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 				h.cx=a;
 				h.cy=b;
 				m_parent->setStationPosition(h);
-				m_parent->setState(BS_SetupDefendFleet);
+//				m_parent->setState(BS_SetupDefendFleet);
 				m_hexData[a][b].ships.push_back(m_parent->getStation());
+				m_parent->setPhase(SET_SPEED);
 				Refresh();
 			}
 			break;

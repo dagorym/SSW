@@ -156,7 +156,7 @@ void FMainFrame::onShowPlayers(wxCommandEvent& WXUNUSED(event)) {
 }
 
 void FMainFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
-    wxMessageBox( "Written by Tom Stephens\n Copyright - 2005-2008\nVersion 0.0.5",
+    wxMessageBox( "Written by Tom Stephens\n Copyright - 2005-2008\nVersion 0.0.7",
                   "Star Frontier Second Sathar War Simulation",
                   wxOK | wxICON_INFORMATION );
 }

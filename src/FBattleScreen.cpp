@@ -140,4 +140,21 @@ void FBattleScreen::setPhase(Phases p){
 	m_display->Refresh();
 }
 
+int FBattleScreen::computeHeading(hexData s, hexData d){
+	double dis = 1.0;
+	double a = dis/sqrt(3.);
+	double sx = dis + (2 * dis * s.cx) + dis * (s.cy%2);
+	double sy = 2 * a + (3 * a * s.cy);
+	double dx = dis + (2 * dis * d.cx) + dis * (d.cy%2);
+	double dy = 2 * a + (3 * a * d.cy);
+
+	double angle = atan2((sy-dy),(dx-sx))*180/acos(-1.0);  // angle in degrees
+	if (angle<0) { angle += 360.; }
+	int ang = (int)floor(angle+30);
+	if (ang>=360) { ang -= 360; }
+//	std::cerr << "angle = " << angle << "  ang = " << ang << "  heading = " << ang/60 << std::endl;
+	return (ang/60);
+}
+
+
 }
