@@ -228,6 +228,15 @@ protected:
 	 * @date Last Modified:  Oct 26, 2008
 	 */
 	bool setStationRotation(wxMouseEvent &event);
+
+	///Draws prompt to select ship to move
+	void drawMoveShip(wxDC &dc);
+
+	/// Draws the stats for the currently selected ship
+	void drawCurrentShipStats(wxDC & dc);
+
+	/// returns a string giving the heading direction
+	std::string getHeadingStr();
 };
 
 }

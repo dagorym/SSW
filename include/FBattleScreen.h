@@ -135,9 +135,9 @@ public:
 	/// toggle side
 	void toggleSide() { m_side = !m_side;}
 	/// get the current battle phase
-	Phases getPhase() { return m_phase;}
+	int getPhase() { return m_phase;}
 	/// set the battle phase
-	void setPhase(Phases p);
+	void setPhase(int p);
 
 
 protected:
@@ -174,7 +174,7 @@ protected:
 	/// done flag
 	bool m_done;
 	///  Turn phase state variable
-	Phases m_phase;
+	int m_phase;
 
 
 };

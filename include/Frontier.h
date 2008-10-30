@@ -25,12 +25,12 @@ enum {
 	BS_Battle
 };
 
-enum Phases {
-	NONE = 0,
-	SET_SPEED,
-	MOVE,
-	DEFENSE_FIRE,
-	ATTACK_FIRE
+enum {
+	PH_NONE = 0,
+	PH_SET_SPEED,
+	PH_MOVE,
+	PH_DEFENSE_FIRE,
+	PH_ATTACK_FIRE
 };
 
 /// integer random number generator.  Parameter range is the maximum value

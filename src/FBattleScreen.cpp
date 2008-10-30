@@ -44,7 +44,7 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_attackShips = NULL;
 	m_defendShips = NULL;
 	m_state = BS_Unknown;
-	m_phase = NONE;
+	m_phase = PH_NONE;
 
 }
 
@@ -127,9 +127,9 @@ void FBattleScreen::setScale(double factor) {
 	m_map->setScale(factor);
 }
 
-void FBattleScreen::setPhase(Phases p){
+void FBattleScreen::setPhase(int p){
 	m_phase = p;
-	if (p==MOVE) { // we just ended a turn
+	if (p==PH_MOVE) { // we just ended a turn
 		if (!m_side) {  // defender just ended
 			///@todo update turn counters
 			///@todo check for repair turn

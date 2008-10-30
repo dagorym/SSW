@@ -169,7 +169,7 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 				m_parent->setStationPosition(h);
 //				m_parent->setState(BS_SetupDefendFleet);
 				m_hexData[a][b].ships.push_back(m_parent->getStation());
-				m_parent->setPhase(SET_SPEED);
+				m_parent->setPhase(PH_SET_SPEED);
 				Refresh();
 			}
 			break;
@@ -184,7 +184,7 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 					int heading = computeHeading(event);
 					m_parent->getShip()->setHeading(heading);
 					m_parent->toggleControlState();
-					m_parent->setPhase(SET_SPEED);
+					m_parent->setPhase(PH_SET_SPEED);
 					m_setRotation=false;
 				}
 				Refresh();
