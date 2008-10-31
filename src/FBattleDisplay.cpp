@@ -34,8 +34,8 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_zoomImage.LoadFile("../data/zoom.png");
 
 	/// set up the set speed controls
-	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxPoint(leftOffset,3*BORDER+2), wxSize( 40,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
-	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxPoint(leftOffset+50,3*BORDER), wxDefaultSize, 0 );
+	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxPoint(leftOffset,3*BORDER+2), wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
+	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxPoint(leftOffset+60,3*BORDER), wxDefaultSize, 0 );
 	m_spinCtrl1->Hide();
 	m_button1->Hide();
 
@@ -173,10 +173,12 @@ void FBattleDisplay::drawPlaceShip(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetTextForeground(white);
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-	std::string txt = "Select the map hex where you would like to place the ship.\n";
-	txt += "Click once to place the ship and then move the mouse to select the\n";
-	txt += "desired heading and click again to finalize placement.";
+	std::string txt = "Select the map hex where you would like to place the ship.";
 	dc.DrawText(txt,leftOffset,BORDER);
+	txt = "Click once to place the ship and then move the mouse to select the";
+	dc.DrawText(txt,leftOffset,BORDER+16);
+	txt = "desired heading and click again to finalize placement.";
+	dc.DrawText(txt,leftOffset,BORDER+32);
 
 }
 
@@ -184,9 +186,10 @@ void FBattleDisplay::drawPlaceStation(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetTextForeground(white);
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-	dc.DrawText(std::string("Select the map hex where you would like to place the station.") +
-			"\nIt must be adjacent to the planet.",leftOffset,BORDER);
-
+	std::string txt = "Select the map hex where you would like to place the station.";
+	dc.DrawText(txt,leftOffset,BORDER);
+	txt = "It must be adjacent to the planet.";
+	dc.DrawText(txt,leftOffset,BORDER+16);
 }
 
 void FBattleDisplay::drawShipChoices (wxDC &dc){
@@ -257,8 +260,10 @@ void FBattleDisplay::drawGetSpeed(wxDC &dc){
 
 	dc.SetTextForeground(white);
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-	dc.DrawText("Please choose an initial speed for the ship.\nPress the 'Set Speed' button when done"
-			,leftOffset,2*BORDER+ICON_SIZE);
+	std::string txt = "Please choose an initial speed for the ship.";
+	dc.DrawText(txt,leftOffset,2*BORDER+ICON_SIZE);
+	txt = "Press the 'Set Speed' button when done";
+	dc.DrawText(txt,leftOffset,2*BORDER+ICON_SIZE+16);
 
 }
 
@@ -279,9 +284,10 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 		} else {
 			m_parent->setState(BS_Battle);
 			m_parent->setPhase(PH_MOVE);
+			m_parent->toggleSide();
 		}
 	}
-	m_parent->setShip(NULL);
+//	m_parent->setShip(NULL);
 	event.Skip();
 }
 
@@ -337,11 +343,13 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 	if (m_parent->getSide()){
 		os << "attacker's ";
 	} else {
-		os << "Defender's ";
+		os << "defender's ";
 	}
-	os << "turn\nPlease select a ship to move.";
+	os << "turn.";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,BORDER);
+	os.str("Please select a ship to move.");
+	dc.DrawText(os.str(),leftOffset,BORDER+16);
 
 }
 

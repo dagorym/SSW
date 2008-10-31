@@ -43,7 +43,7 @@ void FBattleBoard::setConstants(double scale){
 	m_size = (int)(50*m_scale);
 	m_trim = (int)(50*m_scale);
 	m_d = m_size/2.;
-	m_a = m_d/sqrt(3);
+	m_a = m_d/sqrt(3.);
 	m_width = (int)((2*m_nCol+1)*m_d) + m_trim;
 	m_height = (int)((3*m_nRow+1)*m_a) + m_trim + (int)m_a;
 
@@ -187,7 +187,7 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 					m_parent->setPhase(PH_SET_SPEED);
 					m_setRotation=false;
 				}
-				Refresh();
+				Refresh();  // I think this can move up inside the if part of the if...else
 			}
 			break;
 		default:
@@ -297,7 +297,7 @@ int FBattleBoard::computeHeading(wxMouseEvent &event){
 	// Note: the x- coordinate is actually the negative of what you would expect.  This gets us into
 	// the coordinate system you need based on our definition of heading (i.e 0=west and counter clockwise
 	// from there).
-	double angle = atan2(ry-m_shipPos.cy,m_shipPos.cx-rx)*180/acos(-1.0);  // angle in degrees
+	double angle = atan2((double)(ry-m_shipPos.cy),m_shipPos.cx-rx)*180/acos(-1.0);  // angle in degrees
 	if (angle<0) { angle += 360.; }
 	int ang = (int)floor(angle+30);
 	if (ang>=360) { ang -= 360; }
@@ -313,10 +313,11 @@ void FBattleBoard::onMotion(wxMouseEvent & event){
 		if (m_parent->getControlState()){
 			if(m_setRotation){
 				int heading = computeHeading(event);
-				m_parent->getShip()->setHeading(heading);
-				Refresh();
+				if(heading != m_parent->getShip()->getHeading()){
+					m_parent->getShip()->setHeading(heading);
+					Refresh();
+				}
 			}
-
 		}
 		break;
 	default:
