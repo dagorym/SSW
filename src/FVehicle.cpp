@@ -30,6 +30,7 @@ FVehicle::FVehicle(){
 	m_classCount++;
 	m_speed = 0;
 	m_heading = 0;
+	m_owner = 0;
 }
 
 FVehicle::~FVehicle(){
@@ -51,6 +52,7 @@ const int FVehicle::save(std::ostream &os) const {
 	write(os,m_currentHP);
 	write(os,m_speed);
 	write(os,m_heading);
+	write(os,m_owner);
 	return 0;
 }
 
@@ -71,6 +73,7 @@ int FVehicle::load(std::istream &is) {
 	read(is,m_currentHP);
 	read(is,m_speed);
 	read(is,m_heading);
+	read(is,m_owner);
 	return 0;
 }
 

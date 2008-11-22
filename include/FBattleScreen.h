@@ -96,6 +96,20 @@ public:
 	 */
 	int computeHeading(hexData s, hexData d);
 
+	/**
+	 * @brief Computes angle between two hexes
+	 *
+	 * This returns the angle in degrees between the two passed hexes
+	 *
+	 * @param s the source hex
+	 * @param d the destination hex
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Nov 1, 2008
+	 * @date Last Modified:  Nov 1, 2008
+	 */
+	double computeHexAngle(hexData s, hexData d);
+
 	/// get the battle board state
 	const int & getState() const { return m_state; }
 	/// set the battle board state
@@ -138,6 +152,14 @@ public:
 	int getPhase() { return m_phase;}
 	/// set the battle phase
 	void setPhase(int p);
+	/// redraw the screen
+	void reDraw() { m_map->Refresh(); m_display->Refresh(); }
+	/// returns the ID of the attacking player
+	const unsigned int & getAttackerID() const { return m_playerID[1]; }
+	/// returns the ID of the defending player
+	const unsigned int & getDefenderID() const { return m_playerID[0]; }
+	/// returns the ID of the player who's turn it currently is
+	const unsigned int & getCurPlayerID() const { return m_side?getAttackerID():getDefenderID(); }
 
 
 protected:
@@ -175,7 +197,8 @@ protected:
 	bool m_done;
 	///  Turn phase state variable
 	int m_phase;
-
+	/// player IDs
+	unsigned int m_playerID[2];
 
 };
 

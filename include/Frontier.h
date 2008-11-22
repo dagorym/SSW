@@ -38,6 +38,22 @@ inline int irand(unsigned int range){
         return (int)(range*(rand()/(RAND_MAX+1.0)))+1;
 }
 
+/// implements the sign function
+template < typename T >
+inline bool sign( T const &value ){
+return value < 0;
+}
+
+/// returns the integer floor of x/2
+inline int Floor2 (int x){
+	return (x>=0) ? (x>>1) : (x-1)/2;
+}
+
+/// returns the integer ceiling of x/2
+inline int Ceil2 (int x){
+	return (x >= 0) ? (x+1)>>1 : x/2;
+}
+
 /// round function since it doesn't exist in VC++
 #ifndef LINUX
 inline double round(const double & v){

@@ -45,6 +45,8 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_defendShips = NULL;
 	m_state = BS_Unknown;
 	m_phase = PH_NONE;
+	m_playerID[0]=0;
+	m_playerID[1]=1;
 
 }
 
@@ -75,6 +77,7 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 	for (unsigned int i=0; i< m_defendList->size(); i++){
 		const VehicleList sList = (*m_defendList)[i]->getShipList();
 		for (unsigned int j=0; j< sList.size(); j++){
+			sList[j]->setOwner(0);
 			m_defendShips->push_back(sList[j]);
 		}
 	}
@@ -83,6 +86,7 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 	for (unsigned int i=0; i< m_attackList->size(); i++){
 		const VehicleList sList = (*m_attackList)[i]->getShipList();
 		for (unsigned int j=0; j< sList.size(); j++){
+			sList[j]->setOwner(1);
 			m_attackShips->push_back(sList[j]);
 		}
 	}
@@ -141,14 +145,8 @@ void FBattleScreen::setPhase(int p){
 }
 
 int FBattleScreen::computeHeading(hexData s, hexData d){
-	double dis = 1.0;
-	double a = dis/sqrt(3.);
-	double sx = dis + (2 * dis * s.cx) + dis * (s.cy%2);
-	double sy = 2 * a + (3 * a * s.cy);
-	double dx = dis + (2 * dis * d.cx) + dis * (d.cy%2);
-	double dy = 2 * a + (3 * a * d.cy);
 
-	double angle = atan2((sy-dy),(dx-sx))*180/acos(-1.0);  // angle in degrees
+	double angle = computeHexAngle(s,d);
 	if (angle<0) { angle += 360.; }
 	int ang = (int)floor(angle+30);
 	if (ang>=360) { ang -= 360; }
@@ -156,5 +154,14 @@ int FBattleScreen::computeHeading(hexData s, hexData d){
 	return (ang/60);
 }
 
+double FBattleScreen::computeHexAngle(hexData s, hexData d){
+	double dis = 1.0;
+	double a = dis/sqrt(3.);
+	double sx = dis + (2 * dis * s.cx) + dis * (s.cy%2);
+	double sy = 2 * a + (3 * a * s.cy);
+	double dx = dis + (2 * dis * d.cx) + dis * (d.cy%2);
+	double dy = 2 * a + (3 * a * d.cy);
+	return atan2((dy-sy),(sx-dx))*180/acos(-1.0);  // angle in degrees;
+}
 
 }

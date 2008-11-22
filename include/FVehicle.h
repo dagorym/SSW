@@ -69,6 +69,10 @@ public:
 	void setHeading(int heading) { m_heading = heading; }
 	/// get the vehicle's heading
 	const int & getHeading() const { return m_heading; }
+	/// set the ships owner
+	void setOwner(unsigned int owner) { m_owner = owner; }
+	/// get the ship's owner
+	const unsigned int & getOwner() const { return m_owner; }
 
 
 	/**
@@ -130,6 +134,8 @@ protected:
 	int m_speed;
 	/// the ship's hex facing on the map 0=west increasing counterclockwise from there
 	int m_heading;
+	/// ID of the player owning the ship
+	unsigned int m_owner;
 };
 
 typedef std::vector<FVehicle *> VehicleList;

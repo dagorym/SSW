@@ -43,7 +43,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Aug 31, 2008
+ * @date Last Modified:  Nov 1, 2008
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -103,6 +103,12 @@ protected:
 	bool m_setRotation;
 	/// m_hexData entry for hex containing currently selected ship
 	hexData m_shipPos;
+	/// list of hexes to highlight for movement
+	std::vector<hexData> m_movementHexes;
+	/// list of hexes to highlight for ADF range
+	std::vector<hexData> m_ADFHexes;
+	/// flag for whether or not to draw the current ship's available path
+	bool m_drawRoute;
 
 
 	/**
@@ -245,8 +251,64 @@ protected:
 	 * @date Created:  Oct 13, 2008
 	 * @date Last Modified:  Oct 13, 2008
 	 */
-
 	void onMotion(wxMouseEvent & event);
+
+	/**
+	 * @brief selects a vessel based on the clicked hex
+	 *
+	 * This method looks at the hex clicked and sets the current ship to the ship in
+	 * the selected hex.  If more than one ship is in the hex a selection of choices
+	 * is drawn
+	 *
+	 * @param event The mouse click event that triggered the call
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Nov 1, 2008
+	 * @date Last Modified:  Nov 1, 2008
+	 */
+	void selectVessel(wxMouseEvent &event);
+
+	/**
+	 * @brief Draws the current ships route
+	 *
+	 * This routine cycles over the m_movementHexes and m_ADFHexes vectors and highlights the appropriate
+	 * hexes on the map
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Nov 21, 2008
+	 * @date Last Modified:  Nov 21, 2008
+	 */
+	void drawRoute(wxDC &dc);
+
+	/**
+	 * @brief Sets the initial route for the selected ship
+	 *
+	 * This method fills in the m_movementHexes and m_ADFHexes vectors
+	 * for the selected ship with a straight line going forward from
+	 * it's current position.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Nov 21, 2008
+	 * @date Last Modified:  Nov 21, 2008
+	 */
+	void setInitialRoute();
+
+	/**
+	 * @brief Finds the next hex in the specified direction
+	 *
+	 * Given the current hex array coordinates (passed in a hexData structure)
+	 * and a heading, this method computes the next hex along the path.
+	 *
+	 * @param h hexData structure containing array coordinates of hex ship is in
+	 * @param heading Hexside the ship is facing
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Nov 21, 2008
+	 * @date Last Modified:  Nov 21, 2008
+	 */
+	hexData findNextHex(hexData h, int heading);
 
 };
 

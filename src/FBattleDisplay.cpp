@@ -287,7 +287,7 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 			m_parent->toggleSide();
 		}
 	}
-//	m_parent->setShip(NULL);
+	m_parent->setShip(NULL);
 	event.Skip();
 }
 

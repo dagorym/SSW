@@ -9,6 +9,8 @@
 #include "FBattleScreen.h"
 #include "Frontier.h"
 #include <wx/wx.h>
+#include <cmath>
+#include <algorithm>
 
 namespace Frontier {
 
@@ -23,6 +25,7 @@ FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos,
 	m_setRotation = false;
 	setConstants(1.0);
 	computeCenters();
+	m_drawRoute = 0;
 
 	SetScrollRate( (int)(2*m_d), (int)(3*m_a) );
 	SetVirtualSize(m_width,m_height);
@@ -63,6 +66,9 @@ void FBattleBoard::draw(wxDC &dc){
 		drawCenteredOnHex(m_planetImages[m_planetChoice],m_planetPosition);
 	}
 	drawShips();
+	if (m_drawRoute){
+		drawRoute(dc);
+	}
 }
 
 void FBattleBoard::onPaint(wxPaintEvent & event){
@@ -180,6 +186,7 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 					m_hexData[a][b].ships.push_back(m_parent->getShip());
 					m_shipPos = m_hexData[a][b];
 					m_setRotation=true;
+					Refresh();
 				} else {   // set the rotation
 					int heading = computeHeading(event);
 					m_parent->getShip()->setHeading(heading);
@@ -187,7 +194,15 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 					m_parent->setPhase(PH_SET_SPEED);
 					m_setRotation=false;
 				}
-				Refresh();  // I think this can move up inside the if part of the if...else
+			}
+			break;
+		case BS_Battle:
+			switch(m_parent->getPhase()){
+			case PH_MOVE:
+				selectVessel(event);
+				break;
+			default:
+				break;
 			}
 			break;
 		default:
@@ -249,7 +264,7 @@ void FBattleBoard::drawCenteredOnHex(wxImage img, hexData pos, int rot){
 	wxClientDC dc(this);
 	img = img.Scale(m_size,m_size);  // Scale no matter what
 	if (rot) {  // rotate if needed
-		img.InitAlpha();
+		if (!(img.HasAlpha())){img.InitAlpha();}
 		img = img.Rotate(rot*acos(-1.)/3.,wxPoint(m_size/2,m_size/2));
 	}
 	wxBitmap b (img);
@@ -263,6 +278,19 @@ void FBattleBoard::drawCenteredOnHex(wxImage img, hexData pos, int rot){
 int FBattleBoard::computeHexDistance(int sx, int sy, int ex, int ey){
 	//@todo implement hex distance finding algorithm
 	int dis=1;
+    // calculate hexspace coordinates of A and B
+    int x1 = sx - Floor2(sy);
+    int y1 = sx + Ceil2(sy);
+    int x2 = ex - Floor2(ey);
+    int y2 = ex + Ceil2(ey);
+    // calculate distance using hexcoords as per previous algorithm
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    if (sign(dx) == sign(dy)) {
+        dis = std::max(abs(dx),abs(dy));
+    } else {
+        dis = abs(dx) + abs(dy);
+    }
 	return dis;
 }
 
@@ -323,6 +351,101 @@ void FBattleBoard::onMotion(wxMouseEvent & event){
 	default:
 		break;
 	}
+}
+
+void FBattleBoard::selectVessel(wxMouseEvent &event){
+	wxCoord x,y;
+	event.GetPosition(&x,&y);
+	int a, b;
+	getHex(x,y,a,b);
+//	std::cerr << "The x and y positions of the click are " << x << ", " << y << std::endl;
+//	std::cerr << "The selected hex is " << a << ", " << b << std::endl;
+	unsigned int shipCount = m_hexData[a][b].ships.size();
+	if (shipCount){  // There is at least one ship in the hex
+		if (shipCount == 1){
+			m_parent->setShip(m_hexData[a][b].ships[0]);
+			m_parent->reDraw();
+		} else {  // we've got  more than one ship and need to pick the one in question
+			///@todo:  Implement selection of ship when more than one are in a hex
+		}
+		m_shipPos.cx = a;
+		m_shipPos.cy = b;
+		if (m_parent->getShip()->getOwner() == m_parent->getCurPlayerID()){
+			m_drawRoute = true;
+			setInitialRoute();
+		} else {
+			m_drawRoute = false;
+		}
+	}
+
+}
+
+void FBattleBoard::drawRoute(wxDC &dc){
+	// generate list of points defining the hexagon
+	wxPoint pList[6];
+	pList[0].y = (int)(-2*m_a);
+	pList[0].x = 0;
+	pList[1].y = (int)(-m_a);
+	pList[1].x = (int)(m_d);
+	pList[2].y = (int)(m_a);
+	pList[2].x = (int)(m_d);
+	pList[3].y = (int)(2*m_a);
+	pList[3].x = 0;
+	pList[4].y = (int)(m_a);
+	pList[4].x = (int)(-m_d);
+	pList[5].y = (int)(-m_a);
+	pList[5].x = (int)(-m_d);
+
+	wxColor yellow(wxT("#FFFF00"));
+	wxColor orange(wxT("#FFA900"));
+	dc.SetPen(wxPen(yellow));
+	dc.SetBrush(wxBrush(yellow,wxCROSSDIAG_HATCH));
+
+	std::vector<hexData>::iterator itr = m_movementHexes.begin();
+	for (itr = m_movementHexes.begin(); itr< m_movementHexes.end(); itr++){
+		wxCoord x,y;
+		CalcScrolledPosition(m_hexData[itr->cx][itr->cy].cx,m_hexData[itr->cx][itr->cy].cy,&x,&y);
+		dc.DrawPolygon(6,pList,x,y);
+	}
+	dc.SetPen(wxPen(orange));
+	dc.SetBrush(wxBrush(orange,wxCROSSDIAG_HATCH));
+	for (itr = m_ADFHexes.begin(); itr< m_ADFHexes.end(); itr++){
+		wxCoord x,y;
+		CalcScrolledPosition(m_hexData[itr->cx][itr->cy].cx,m_hexData[itr->cx][itr->cy].cy,&x,&y);
+		dc.DrawPolygon(6,pList,x,y);
+	}
+}
+
+void FBattleBoard::setInitialRoute(){
+	hexData current=m_shipPos;
+	int speed = m_parent->getShip()->getSpeed();
+	int ADF = m_parent->getShip()->getADF();
+	for (int i=0; i < speed-ADF-1; i++){
+		current=findNextHex(current,m_parent->getShip()->getHeading());
+		m_movementHexes.push_back(current);
+	}
+	for (int i=0; i<2*ADF+1; i++){
+		current=findNextHex(current,m_parent->getShip()->getHeading());
+		m_ADFHexes.push_back(current);
+
+	}
+}
+
+hexData FBattleBoard::findNextHex(hexData h, int heading){
+	for (int i=h.cx-1;i<=h.cx+1;i++){
+		for (int j=h.cy-1;j<=h.cy+1;j++){
+			hexData tmp;
+			tmp.cx=i;
+			tmp.cy=j;
+			if (m_parent->computeHeading(h,tmp)==heading && computeHexDistance(h.cx,h.cy,i,j)==1){
+				return tmp;
+			}
+		}
+	}
+	hexData bad;
+	bad.cx=0;
+	bad.cy=0;
+	return bad;
 }
 
 }
