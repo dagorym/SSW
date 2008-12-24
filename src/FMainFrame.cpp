@@ -301,8 +301,8 @@ void FMainFrame::onShowBattleScreen(wxCommandEvent& event){
 	dList.push_back(f);
 	f = new FFleet();
 	f->setName("Sathar");
-	s = createShip("HvCruiser");
-	s->setIcon("../icons/SatharHvCruiser.png");
+	s = createShip("LtCruiser");
+	s->setIcon("../icons/SatharLtCruiser.png");
 	f->addShip(s);
 	aList.push_back(f);
 	bb->setupFleets(&aList,&dList,true,st);

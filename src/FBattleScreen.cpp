@@ -139,6 +139,7 @@ void FBattleScreen::setPhase(int p){
 			///@todo check for repair turn
 		}
 		toggleSide();
+		m_map->resetMoveData();
 	}
 	m_map->Refresh();
 	m_display->Refresh();

@@ -22,6 +22,8 @@
 #include "FFleet.h"
 #include "Frontier.h"
 
+#include <map>
+
 namespace Frontier {
 class FBattleScreen;
 
@@ -34,6 +36,24 @@ typedef struct {
 	/// List of ships in hex
 	VehicleList ships;
 } hexData;
+
+/// data structure to hold information about the movements of a ship during a turn.
+typedef struct {
+	/// flag for whether or not the ship has moved yet this turn
+	bool hasMoved;
+	/// list of waypoint hexes along the ship's path
+	std::vector<hexData> waypoints;
+	/// list of turns made at the waypoints
+	std::vector<int> turns;
+	/// ship's final speed
+	int speed;
+	/// ship's final heading
+	int finalHeading;
+	/// ship's current heading
+	int curHeading;
+	/// number of hexes it has currently moved
+	int nMoved;
+} turnData;
 
 /**
  * @brief Class for the Main tactical combat board
@@ -67,6 +87,18 @@ public:
 	void setPlanetImages(ImageList iList) { m_planetImages = iList; }
 	/// sets the new scale for the map;
 	void setScale(double factor);
+
+	/**
+	 * @brief Resets the turn information data
+	 *
+	 * This method clears and resets the m_turnInfo structure to hold information
+	 * for the currently moving player.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Dec 03, 2008
+	 * @date Last Modified:  Dec 03, 2008
+	 */
+	void resetMoveData();
 
 protected:
 	/// parent window
@@ -106,9 +138,17 @@ protected:
 	/// list of hexes to highlight for movement
 	std::vector<hexData> m_movementHexes;
 	/// list of hexes to highlight for ADF range
-	std::vector<hexData> m_ADFHexes;
+	std::vector<hexData> m_movedHexes;
+	/// list of hexes to highlight for left turn
+	std::vector<hexData> m_leftHexes;
+	/// list of hexes to highlight for right turn
+	std::vector<hexData> m_rightHexes;
 	/// flag for whether or not to draw the current ship's available path
 	bool m_drawRoute;
+	/// number of hexes moved
+	int m_moved;
+	/// list of turn data elements for each ship stored with the FVehicle ID value as the key
+	std::map<unsigned int, turnData> m_turnInfo;
 
 
 	/**
@@ -310,6 +350,54 @@ protected:
 	 */
 	hexData findNextHex(hexData h, int heading);
 
+	/**
+	 * @brief Checks to see if the selected hex in along the valid paths
+	 *
+	 * This method checks to see if the selected hex is on the current ships
+	 * valid path and if it has any available MR.  If so, it draws the
+	 * available paths for the ship.
+	 *
+	 * @param event The mouse event with the coordinates
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Nov 30, 2008
+	 * @date Last Modified:  Nov 30, 2008
+	 */
+	void checkForTurn(wxMouseEvent &event);
+
+	/**
+	 * @brief Highlights the hexes in the specified list
+	 *
+	 * This method iterates over the list of passed in hexes and highlights them
+	 * approrpriately based on whether or not the ship has to move that far or
+	 * it falls within the ADF range of the ship.
+	 *
+	 * @param list The list of hexes to higlight
+	 * @param count The number of hexes on the path already drawn
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Dec 7, 2008
+	 * @date Last Modified:  Dec 7, 2008
+	 */
+	void drawRouteHexes(wxDC &dc, std::vector<hexData> list, int count=1);
+
+	/**
+	 * @brief Runs through a list of hexes to see if the current one is there
+	 *
+	 * This method runs through a list of hexes and checks its coordinates against
+	 * a reference hex position.  If it is found, the method returns true.  If it is
+	 * not found it returns false.  It also returns the position in the list of the
+	 * matching hex
+	 *
+	 * @param list The list of hexes to check
+	 * @param ref The reference hex to check against
+	 * @param count The position in the list where the match occured
+	 *
+	 * @author Tom Stephens
+	 * @date Creatd:  Dec 24, 2008
+	 * @date Last Modified:  Dec 24, 2008
+	 */
+	bool findHexInList(std::vector<hexData> list, hexData ref, int &count);
 };
 
 }

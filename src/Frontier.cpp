@@ -4,7 +4,7 @@
  * @author Tom Stephens
  * @date Created:  Jan 12, 2005
  * @date Last Modified:  Feb 19, 2008
- * 
+ *
  */
 
 #include "FApp.h"
@@ -29,7 +29,7 @@ BEGIN_EVENT_TABLE(FMainFrame, wxFrame)
     EVT_MENU (ID_AddSatharShips,  FMainFrame::onAddSatharShips)
     EVT_MENU (ID_ShowRetreatCond, FMainFrame::onShowRetreatConditions)
     EVT_MENU (ID_ShowBattleScreen, FMainFrame::onShowBattleScreen)
-    
+
     // Mouse Events
     EVT_LEFT_DCLICK(FMainFrame::onLeftDClick)
     EVT_LEFT_UP    (FMainFrame::onLeftUp)
