@@ -147,7 +147,7 @@ public:
 	/// set side
 	void setSide(bool f) { m_side = f; }
 	/// toggle side
-	void toggleSide() { m_side = !m_side;}
+	void toggleSide() { m_side = !m_side; /*std::cerr << "It is now side " << m_side << "'s turn." << std::endl;*/ }
 	/// get the current battle phase
 	int getPhase() { return m_phase;}
 	/// set the battle phase
@@ -160,6 +160,10 @@ public:
 	const unsigned int & getDefenderID() const { return m_playerID[0]; }
 	/// returns the ID of the player who's turn it currently is
 	const unsigned int & getCurPlayerID() const { return m_side?getAttackerID():getDefenderID(); }
+	/// sets the movement status
+	void setMoveComplete(bool s);
+	/// get the movement status
+	const bool & isMoveComplete() const { return m_moveComplete; }
 
 
 protected:
@@ -199,6 +203,8 @@ protected:
 	int m_phase;
 	/// player IDs
 	unsigned int m_playerID[2];
+	/// flag for status of movement.  If true all ships have been moved their minimum and the player can end their turn
+	bool m_moveComplete;
 
 };
 

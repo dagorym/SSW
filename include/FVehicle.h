@@ -32,19 +32,19 @@ public:
 	/// Default destructor
 	virtual ~FVehicle();
 	/// returns the vehicle's undamaged MR
-	const int & getMaxMR() const { return m_maxMR; }
+	const unsigned int & getMaxMR() const { return m_maxMR; }
 	/// return the vehicle's undamaged ADF
 	const int & getMaxADF() const { return m_maxADF; }
 	/// return the vehicle's undamaged HP
 	const int & getMaxHP() const { return m_maxHP; }
 	/// returns the vehicle's current MR
-	const int & getMR() const { return m_currentMR; }
+	const unsigned int & getMR() const { return m_currentMR; }
 	/// return the vehicle's current ADF
 	const int & getADF() const { return m_currentADF; }
 	/// return the vehicle's current HP
 	const int & getHP() const { return m_currentHP; }
 	/// set the vehicle's current MR
-	void setMR(int mr);
+	void setMR(unsigned int mr);
 	/// set the vehicle's current ADF
 	void setADF(int adf);
 	/// set the vehicle's current HP
@@ -109,13 +109,13 @@ protected:
 	/// vehicle ID number
 	unsigned int m_ID;
 	/// vehicle's MR
-	int m_maxMR;
+	unsigned int m_maxMR;
 	/// vehicle's ADF
 	int m_maxADF;
 	/// vehicle's Hull points
 	int m_maxHP;
 	/// vehicle's MR
-	int m_currentMR;
+	unsigned int m_currentMR;
 	/// vehicle's ADF
 	int m_currentADF;
 	/// vehicle's Hull points

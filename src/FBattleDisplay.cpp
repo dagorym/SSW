@@ -36,8 +36,10 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	/// set up the set speed controls
 	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxPoint(leftOffset,3*BORDER+2), wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
 	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxPoint(leftOffset+60,3*BORDER), wxDefaultSize, 0 );
+	m_buttonMoveDone = new wxButton( this, wxID_ANY, wxT("Movement Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
 	m_spinCtrl1->Hide();
 	m_button1->Hide();
+	m_buttonMoveDone->Hide();
 
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
@@ -283,8 +285,8 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 			m_parent->toggleSide();
 		} else {
 			m_parent->setState(BS_Battle);
-			m_parent->setPhase(PH_MOVE);
 			m_parent->toggleSide();
+			m_parent->setPhase(PH_MOVE);
 		}
 	}
 	m_parent->setShip(NULL);
@@ -350,6 +352,12 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 	dc.DrawText(os.str(),leftOffset,BORDER);
 	os.str("Please select a ship to move.");
 	dc.DrawText(os.str(),leftOffset,BORDER+16);
+		m_buttonMoveDone->Enable(m_parent->isMoveComplete());
+		if (m_first){
+		m_buttonMoveDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
+		m_buttonMoveDone->Show();
+		m_first=false;
+	}
 
 }
 
@@ -407,6 +415,15 @@ std::string FBattleDisplay::getHeadingStr(){
 	default:
 		return "";
 	}
+}
+
+void FBattleDisplay::onMoveDone( wxCommandEvent& event ){
+	// disconnect the button
+	m_buttonMoveDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
+//	std::cerr << "Movement Completed" << std::endl;
+	m_parent->setPhase(PH_FINALIZE_MOVE);
+	m_buttonMoveDone->Hide();
+	m_first=true;
 }
 
 }

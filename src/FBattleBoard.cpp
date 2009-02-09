@@ -199,11 +199,11 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 		case BS_Battle:
 			switch(m_parent->getPhase()){
 			case PH_MOVE:
-				if (!m_drawRoute){
-					selectVessel(event);
-				} else {
+				selectVessel(event);
+				if (m_drawRoute){
 					checkForTurn(event);
 				}
+				checkMoveStatus();
 				break;
 			default:
 				break;
@@ -280,7 +280,6 @@ void FBattleBoard::drawCenteredOnHex(wxImage img, hexData pos, int rot){
 }
 
 int FBattleBoard::computeHexDistance(int sx, int sy, int ex, int ey){
-	//@todo implement hex distance finding algorithm
 	int dis=1;
     // calculate hexspace coordinates of A and B
     int x1 = sx - Floor2(sy);
@@ -385,8 +384,20 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 }
 
 void FBattleBoard::drawRoute(wxDC &dc){
-	// first let's highlight the part of the path already selected
-	drawRouteHexes(dc, m_movedHexes);
+	// iterate over ships in current list and draw their paths
+	VehicleList ships = m_parent->getShipList();
+	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
+		bool current=false;
+//		std::cerr << m_parent->getShip()->getName() << " - " << m_parent->getShip()->getID()
+//				<< "   " << (*itr)->getName() << " - " << (*itr)->getID() << std::endl;
+		if (m_parent->getShip()->getID()==(*itr)->getID()){
+			current = true;
+		}
+		// first let's highlight the part of the path already selected
+		if(	m_turnInfo[(*itr)->getID()].waypoints.size()>1){
+			drawMovedHexes(dc, m_turnInfo[(*itr)->getID()].waypoints,current);
+		}
+	}
 	// Draw the hexes straight ahead
 	drawRouteHexes(dc, m_movementHexes,m_moved+1);
 	// Draw the hexes to the left
@@ -394,105 +405,6 @@ void FBattleBoard::drawRoute(wxDC &dc){
 	// Draw the hexes to the right
 	drawRouteHexes(dc, m_rightHexes,m_moved+1);
 
-//	// generate list of points defining the hexagon
-//	wxPoint pList[6];
-//	pList[0].y = (int)(-2*m_a);
-//	pList[0].x = 0;
-//	pList[1].y = (int)(-m_a);
-//	pList[1].x = (int)(m_d);
-//	pList[2].y = (int)(m_a);
-//	pList[2].x = (int)(m_d);
-//	pList[3].y = (int)(2*m_a);
-//	pList[3].x = 0;
-//	pList[4].y = (int)(m_a);
-//	pList[4].x = (int)(-m_d);
-//	pList[5].y = (int)(-m_a);
-//	pList[5].x = (int)(-m_d);
-//
-//	wxColor yellow(wxT("#FFFF00"));
-//	wxColor orange(wxT("#FFA900"));
-//	dc.SetPen(wxPen(yellow));
-//	dc.SetBrush(wxBrush(yellow,wxCROSSDIAG_HATCH));
-//
-//	int count=1;
-//	// first let's trace the selected path through the waypoints
-//	std::vector<hexData>::iterator itr;
-//	std::cerr << "There are " << m_turnInfo[m_parent->getShip()->getID()].waypoints.size() << " waypoints" << std::endl;
-//	for (itr = m_turnInfo[m_parent->getShip()->getID()].waypoints.begin();itr<m_turnInfo[m_parent->getShip()->getID()].waypoints.end();itr++){
-//		std::cerr << "Working toward next waypoint" << std::endl;
-//		int heading = m_parent->getShip()->getHeading();
-//		hexData current=m_shipPos;
-//		std::cerr << current.cx << " " << current.cy << " " << (*itr).cx << " " << (*itr).cy << std::endl;
-//		while(!(current.cx!=(*itr).cx && current.cy!=(*itr).cy)){
-//			current=findNextHex(current,heading);
-//			if (count == (m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF())){
-//				dc.SetPen(wxPen(orange));
-//				dc.SetBrush(wxBrush(orange,wxCROSSDIAG_HATCH));
-//			}
-//			wxCoord x,y;
-//			CalcScrolledPosition(m_hexData[current.cx][current.cy].cx,m_hexData[current.cx][current.cy].cy,&x,&y);
-//			dc.DrawPolygon(6,pList,x,y);
-//			std::cerr << current.cx << " " << current.cy << " " << (*itr).cx << " " << (*itr).cy << std::endl;
-//			count++;
-//		}
-//	}
-//
-//	if (m_moved < m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF()){
-//		dc.SetPen(wxPen(yellow));
-//		dc.SetBrush(wxBrush(yellow,wxCROSSDIAG_HATCH));
-//	}
-//	for (itr = m_movementHexes.begin(); itr< m_movementHexes.end(); itr++){
-//		if (count == (m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF())){
-//			dc.SetPen(wxPen(orange));
-//			dc.SetBrush(wxBrush(orange,wxCROSSDIAG_HATCH));
-//		}
-//		wxCoord x,y;
-//		CalcScrolledPosition(m_hexData[itr->cx][itr->cy].cx,m_hexData[itr->cx][itr->cy].cy,&x,&y);
-//		dc.DrawPolygon(6,pList,x,y);
-//		count++;
-//	}
-////	dc.SetPen(wxPen(orange));
-////	dc.SetBrush(wxBrush(orange,wxCROSSDIAG_HATCH));
-////	for (itr = m_ADFHexes.begin(); itr< m_ADFHexes.end(); itr++){
-////		wxCoord x,y;
-////		CalcScrolledPosition(m_hexData[itr->cx][itr->cy].cx,m_hexData[itr->cx][itr->cy].cy,&x,&y);
-////		dc.DrawPolygon(6,pList,x,y);
-////		///@todo Figure out how to properly draw a shaded hexagon on the map
-////	}
-//
-//	if (m_moved < m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF()){
-//		dc.SetPen(wxPen(yellow));
-//		dc.SetBrush(wxBrush(yellow,wxCROSSDIAG_HATCH));
-//	}
-//	count=m_moved+1;
-//	itr = m_leftHexes.begin();
-//	for (itr = m_leftHexes.begin(); itr< m_leftHexes.end(); itr++){
-//		if (count == (m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF())){
-//			dc.SetPen(wxPen(orange));
-//			dc.SetBrush(wxBrush(orange,wxCROSSDIAG_HATCH));
-//		}
-//		wxCoord x,y;
-//		CalcScrolledPosition(m_hexData[itr->cx][itr->cy].cx,m_hexData[itr->cx][itr->cy].cy,&x,&y);
-//		dc.DrawPolygon(6,pList,x,y);
-//		count++;
-//	}
-//
-//	if (m_moved < m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF()){
-//		dc.SetPen(wxPen(yellow));
-//		dc.SetBrush(wxBrush(yellow,wxCROSSDIAG_HATCH));
-//	}
-//	count=m_moved+1;
-//	itr = m_rightHexes.begin();
-//	for (itr = m_rightHexes.begin(); itr< m_rightHexes.end(); itr++){
-//		if (count == (m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF())){
-//			dc.SetPen(wxPen(orange));
-//			dc.SetBrush(wxBrush(orange,wxCROSSDIAG_HATCH));
-//		}
-//		wxCoord x,y;
-//		CalcScrolledPosition(m_hexData[itr->cx][itr->cy].cx,m_hexData[itr->cx][itr->cy].cy,&x,&y);
-//		dc.DrawPolygon(6,pList,x,y);
-//		count++;
-//	}
 }
 
 void FBattleBoard::setInitialRoute(){
@@ -501,18 +413,25 @@ void FBattleBoard::setInitialRoute(){
 	int speed = ship->getSpeed();
 	int ADF = ship->getADF();
 	m_movementHexes.clear();
-	for (int i=0; i < speed+ADF; i++){
-		current=findNextHex(current,ship->getHeading());
-		if(current.cx!=-1) {m_movementHexes.push_back(current);}
-	}
 	m_leftHexes.clear();
 	m_rightHexes.clear();
 	m_movedHexes.clear();
-	m_turnInfo[ship->getID()].curHeading = ship->getHeading();
-	m_turnInfo[ship->getID()].waypoints.clear();
-	m_turnInfo[ship->getID()].waypoints.push_back(current);
-	m_turnInfo[ship->getID()].turns.clear();
-	m_turnInfo[ship->getID()].nMoved=1;
+	if (m_turnInfo[ship->getID()].hasMoved){
+		m_moved=m_turnInfo[ship->getID()].nMoved;
+		computeRemainingMoves(*(m_turnInfo[ship->getID()].waypoints.end()-1));
+	} else {
+		m_moved=0;
+		m_turnInfo[ship->getID()].waypoints.clear();
+		m_turnInfo[ship->getID()].waypoints.push_back(current);
+		for (int i=0; i < speed+ADF; i++){
+			current=findNextHex(current,ship->getHeading());
+			if(current.cx!=-1) {m_movementHexes.push_back(current);}
+		}
+		m_turnInfo[ship->getID()].curHeading = ship->getHeading();
+		m_turnInfo[ship->getID()].turns.clear();
+		m_turnInfo[ship->getID()].nMoved=0;
+//		m_turnInfo[ship->getID()].hasMoved=true;
+	}
 }
 
 hexData FBattleBoard::findNextHex(hexData h, int heading){
@@ -557,19 +476,19 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 	h.cy=b;
 	bool found=false;
 	int turn = 0; // direction turned 1=left, -1=right 0=no turn
-	int moved=m_turnInfo[m_parent->getShip()->getID()].nMoved;
+	int moved = 1;//m_turnInfo[m_parent->getShip()->getID()].nMoved;
 	// check straight ahead
-	moved=m_turnInfo[m_parent->getShip()->getID()].nMoved;
+//	moved=m_turnInfo[m_parent->getShip()->getID()].nMoved;
 	found = findHexInList(m_movementHexes,h,moved);
 	if (found){
 		turn=0;
 	} else {
-		moved=m_turnInfo[m_parent->getShip()->getID()].nMoved;
+		moved=1;
 		found= findHexInList(m_leftHexes,h,moved);
 		if (found){
 			turn=1;
 		} else {
-			moved=m_turnInfo[m_parent->getShip()->getID()].nMoved;
+			moved=1;
 			found= findHexInList(m_rightHexes,h,moved);
 			if (found){
 				turn=-1;
@@ -581,6 +500,7 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 //		std::cerr << "After moving " << m_moved << " hexes." << std::endl;
 		//store the waypoint;
 //		m_moved=moved;
+		m_turnInfo[m_parent->getShip()->getID()].hasMoved = true;
 		m_turnInfo[m_parent->getShip()->getID()].waypoints.push_back(h);
 		if(turn) {
 			m_turnInfo[m_parent->getShip()->getID()].turns.push_back(turn);
@@ -600,8 +520,12 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 			break;
 		}
 		m_turnInfo[m_parent->getShip()->getID()].curHeading+=turn;
-		if (m_turnInfo[m_parent->getShip()->getID()].curHeading > 6) {m_turnInfo[m_parent->getShip()->getID()].curHeading -= 6;}
-		if (m_turnInfo[m_parent->getShip()->getID()].curHeading < 0) {m_turnInfo[m_parent->getShip()->getID()].curHeading += 6;}
+		if (m_turnInfo[m_parent->getShip()->getID()].curHeading >= 6) {
+			m_turnInfo[m_parent->getShip()->getID()].curHeading -= 6;
+		}
+		if (m_turnInfo[m_parent->getShip()->getID()].curHeading < 0) {
+			m_turnInfo[m_parent->getShip()->getID()].curHeading += 6;
+		}
 		//copy all the new hexes into the moved hexes list
 		itr = (*curList).begin();
 		for (int i=0; i< moved; i++){
@@ -611,38 +535,44 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 		itr--;
 //		itr=m_movementHexes.begin()+m_moved-1;
 		m_moved+=moved;
-		int left = m_turnInfo[m_parent->getShip()->getID()].curHeading+1;
-		if (left >= 6 ) { left -= 6; }
-		int right = m_turnInfo[m_parent->getShip()->getID()].curHeading-1;
-		if (right < 0 ) { right += 6; }
-		hexData leftHex = (*itr);
-		hexData rightHex = (*itr);
-		hexData forwardHex = (*itr);
-		m_rightHexes.clear();
-		m_leftHexes.clear();
-		m_movementHexes.clear();
-		for (int i=m_moved; i< m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF(); i++){
-			forwardHex = findNextHex(forwardHex,m_turnInfo[m_parent->getShip()->getID()].curHeading);
-			if(forwardHex.cx!=-1) {m_movementHexes.push_back(forwardHex);}
-			if(m_turnInfo[m_parent->getShip()->getID()].turns.size()<m_parent->getShip()->getMR()){
-				// we only update these if the MR is not expended
-				leftHex=findNextHex(leftHex,left);
-				if(leftHex.cx!=-1) {m_leftHexes.push_back(leftHex);}
-				rightHex=findNextHex(rightHex,right);
-				if(rightHex.cx!=-1) {m_rightHexes.push_back(rightHex);}
-			}
-		}
+		m_turnInfo[m_parent->getShip()->getID()].nMoved+=moved;
+		computeRemainingMoves(*itr);
+//		int left = m_turnInfo[m_parent->getShip()->getID()].curHeading+1;
+//		if (left >= 6 ) { left -= 6; }
+//		int right = m_turnInfo[m_parent->getShip()->getID()].curHeading-1;
+//		if (right < 0 ) { right += 6; }
+//		hexData leftHex = (*itr);
+//		hexData rightHex = (*itr);
+//		hexData forwardHex = (*itr);
+//		m_rightHexes.clear();
+//		m_leftHexes.clear();
+//		m_movementHexes.clear();
+////		std::cerr << m_moved << ", " << m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF() << std::endl;
+//		for (int i=m_moved; i< m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF(); i++){
+//			forwardHex = findNextHex(forwardHex,m_turnInfo[m_parent->getShip()->getID()].curHeading);
+//			if(forwardHex.cx!=-1) {m_movementHexes.push_back(forwardHex);}
+//			if(m_turnInfo[m_parent->getShip()->getID()].turns.size()<m_parent->getShip()->getMR()){
+//				// we only update these if the MR is not expended
+//				leftHex=findNextHex(leftHex,left);
+//				if(leftHex.cx!=-1) {m_leftHexes.push_back(leftHex);}
+//				rightHex=findNextHex(rightHex,right);
+//				if(rightHex.cx!=-1) {m_rightHexes.push_back(rightHex);}
+//			}
+//		}
+////		std::cerr << "m_movementHexes.size() = " << m_movementHexes.size() << std::endl;
 		Refresh();
 	}
 }
 
 void FBattleBoard::resetMoveData(){
 	m_turnInfo.clear();
+	m_parent->setMoveComplete(false);
 	VehicleList ships = m_parent->getShipList();
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
 		turnData d;
 		d.hasMoved=false;
 		d.curHeading=(*itr)->getHeading();
+//		std::cerr << (*itr)->getID() << " "  <<(*itr)->getName() << " " << d.hasMoved << std::endl;
 		m_turnInfo[(*itr)->getID()]=d;
 	}
 }
@@ -666,13 +596,13 @@ void FBattleBoard::drawRouteHexes(wxDC &dc, std::vector<hexData> list, int count
 	wxColor yellow(wxT("#FFFF00"));
 	wxColor orange(wxT("#FFA900"));
 
-	if (m_moved < m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF()){
+	if (count < m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF()){
 		dc.SetPen(wxPen(yellow));
 		dc.SetBrush(wxBrush(yellow,wxCROSSDIAG_HATCH));
 	}
 	std::vector<hexData>::iterator itr;
 	for (itr = list.begin(); itr< list.end(); itr++){
-		if (count == (m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF())){
+		if (count >= (m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF())){
 			dc.SetPen(wxPen(orange));
 			dc.SetBrush(wxBrush(orange,wxCROSSDIAG_HATCH));
 		}
@@ -681,6 +611,89 @@ void FBattleBoard::drawRouteHexes(wxDC &dc, std::vector<hexData> list, int count
 		dc.DrawPolygon(6,pList,x,y);
 		count++;
 	}
+}
+
+void FBattleBoard::drawMovedHexes(wxDC &dc, std::vector<hexData> list, bool current){
+	wxColor red(wxT("#FF0000"));
+	wxColor gray(wxT("#AAAAAA"));
+	if (current){
+		dc.SetPen(wxPen(red,3));
+	} else {
+		dc.SetPen(wxPen(gray,2));
+	}
+	// get the ships initial position
+	wxCoord lx, ly;
+	CalcScrolledPosition(m_hexData[list[0].cx][list[0].cy].cx,m_hexData[list[0].cx][list[0].cy].cy,&lx,&ly);
+	// now just draw lines for the traveled hexes
+	std::vector<hexData>::iterator itr;
+	for (itr = list.begin(); itr< list.end(); itr++){
+		wxCoord x,y;
+		CalcScrolledPosition(m_hexData[itr->cx][itr->cy].cx,m_hexData[itr->cx][itr->cy].cy,&x,&y);
+		dc.DrawLine(lx,ly,x,y);
+		lx=x;
+		ly=y;
+	}
+}
+
+void FBattleBoard::computeRemainingMoves(hexData start){
+	int left = m_turnInfo[m_parent->getShip()->getID()].curHeading+1;
+	if (left >= 6 ) { left -= 6; }
+	int right = m_turnInfo[m_parent->getShip()->getID()].curHeading-1;
+	if (right < 0 ) { right += 6; }
+	hexData leftHex = start;
+	hexData rightHex = start;
+	hexData forwardHex = start;
+	m_rightHexes.clear();
+	m_leftHexes.clear();
+	m_movementHexes.clear();
+//		std::cerr << m_moved << ", " << m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF() << std::endl;
+	for (int i=m_moved; i< m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF(); i++){
+		forwardHex = findNextHex(forwardHex,m_turnInfo[m_parent->getShip()->getID()].curHeading);
+		if(forwardHex.cx!=-1) {m_movementHexes.push_back(forwardHex);}
+		if(m_turnInfo[m_parent->getShip()->getID()].turns.size()<m_parent->getShip()->getMR()){
+			// we only update these if the MR is not expended
+			leftHex=findNextHex(leftHex,left);
+			if(leftHex.cx!=-1) {m_leftHexes.push_back(leftHex);}
+			rightHex=findNextHex(rightHex,right);
+			if(rightHex.cx!=-1) {m_rightHexes.push_back(rightHex);}
+		}
+	}
+//		std::cerr << "m_movementHexes.size() = " << m_movementHexes.size() << std::endl;
+}
+
+void FBattleBoard::checkMoveStatus(){
+	VehicleList ships = m_parent->getShipList();
+	bool finished = true;
+	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
+		int min = (*itr)->getSpeed()-(*itr)->getADF();
+		if (m_turnInfo[(*itr)->getID()].nMoved<min){
+			finished = false;
+		}
+	}
+	std::string val = (finished)?"true ":"false";
+//	std::cerr << "The current movement status is " << val << std::endl;
+	m_parent->setMoveComplete(finished);
+}
+
+void FBattleBoard::finalizeMove(){
+	VehicleList ships = m_parent->getShipList();
+	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
+		unsigned int id = (*itr)->getID();
+		hexData &start = m_turnInfo[id].waypoints[0];
+		hexData &finish = *(m_turnInfo[id].waypoints.end()-1);
+		(*itr)->setSpeed(m_turnInfo[id].nMoved);
+		(*itr)->setHeading(m_turnInfo[id].curHeading);
+		// move the ship to it's new location
+		m_hexData[finish.cx][finish.cy].ships.push_back(*itr);
+		// and remove it from it's old location
+		for (VehicleList::iterator i2 = m_hexData[start.cx][start.cy].ships.begin(); i2 < m_hexData[start.cx][start.cy].ships.end(); i2++){
+			if ((*i2)->getID() == id){
+				m_hexData[start.cx][start.cy].ships.erase(i2);
+				break;
+			}
+		}
+	}
+	m_drawRoute = false;
 }
 
 }

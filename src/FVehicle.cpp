@@ -77,7 +77,7 @@ int FVehicle::load(std::istream &is) {
 	return 0;
 }
 
-void FVehicle::setMR(int mr){
+void FVehicle::setMR(unsigned int mr){
 	if (mr < 0){
 		m_currentMR = 0;
 	} else if (mr > m_maxMR){

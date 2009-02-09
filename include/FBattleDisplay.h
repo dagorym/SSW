@@ -76,9 +76,14 @@ protected:
 	wxButton* m_button1;
 	/// flag for marking first time through a loop
 	bool m_first;
+	/// button for signaling completion of movement phase
+	wxButton* m_buttonMoveDone;
 
-	// Event handler for setting the ship's speed
+	/// Event handler for setting the ship's speed
 	void onSetSpeed( wxCommandEvent& event );
+
+	/// event handler for movement complete button
+	void onMoveDone( wxCommandEvent& event );
 
 	/**
 	 * @brief Draws choice of planet icons on display

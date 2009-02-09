@@ -105,6 +105,8 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 		m_map->setPlanetImages(iList);
 	} else if (station != NULL){
 		m_state=BS_SetupStation;
+	} else {
+		m_state=BS_SetupDefendFleet;
 	}
 	return 0;
 }
@@ -140,9 +142,16 @@ void FBattleScreen::setPhase(int p){
 		}
 		toggleSide();
 		m_map->resetMoveData();
+		m_map->Refresh();
+		m_display->Refresh();
+	} else 	if (p==PH_FINALIZE_MOVE){
+		m_map->finalizeMove();
+		/// @todo drop into combat phase
+		setPhase(PH_MOVE);
+	} else {
+		m_map->Refresh();
+		m_display->Refresh();
 	}
-	m_map->Refresh();
-	m_display->Refresh();
 }
 
 int FBattleScreen::computeHeading(hexData s, hexData d){
@@ -164,5 +173,18 @@ double FBattleScreen::computeHexAngle(hexData s, hexData d){
 	double dy = 2 * a + (3 * a * d.cy);
 	return atan2((dy-sy),(sx-dx))*180/acos(-1.0);  // angle in degrees;
 }
+
+void FBattleScreen::setMoveComplete(bool s) {
+	bool refresh = false;
+	if (m_moveComplete!=s){
+		refresh = true;
+	}
+	m_moveComplete = s;
+	if (refresh){
+		m_map->Refresh();
+		m_display->Refresh();
+	}
+}
+
 
 }

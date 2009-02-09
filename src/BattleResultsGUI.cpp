@@ -17,7 +17,7 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	m_station = station;
 	m_stationStatus = flag;
 	m_playerList = pList;
-	
+
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
 	std::string msg = std::string("Welcome to the Battle Results dialog.  Here you can enter the results of")
@@ -34,34 +34,34 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	msg+= std::string("\n\nNOTE:  All actions in this dialog take immediate effect.  Marking a ship")
 		+ " destoryed removes it from the game and pressing the 'Update Ship Statisitics'"
 		+ " button puts those changes into effect immediately.";
-	
+
 	m_staticText1 = new wxStaticText( this, wxID_ANY, msg, wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText1->Wrap( 420 );
 	bSizer1->Add( m_staticText1, 0, wxALL, 5 );
-	
+
 	wxFlexGridSizer* fgSizer1;
 	fgSizer1 = new wxFlexGridSizer( 1, 2, 0, 0 );
 	fgSizer1->SetFlexibleDirection( wxBOTH );
 	fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
+
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Fleet Ships") ), wxVERTICAL );
-	
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED ); 
+
+	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED );
 	m_listBox1->Enable( false );
 	m_listBox1->SetMinSize( wxSize( 200,-1 ) );
-	
+
 	sbSizer1->Add( m_listBox1, 1, wxALL|wxEXPAND, 5 );
-	
+
 	fgSizer1->Add( sbSizer1, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer2;
 	fgSizer2 = new wxFlexGridSizer( 4, 1, 0, 0 );
 	fgSizer2->AddGrowableRow( 3 );
 	fgSizer2->SetFlexibleDirection( wxBOTH );
 	fgSizer2->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 //	fgSizer2->SetMinSize(wxSize(240,-1));
-	
+
 	wxString m_choice1Choices[] = { wxT("--- Select Fleet to Edit ---") };
 	int m_choice1NChoices = sizeof( m_choice1Choices ) / sizeof( wxString );
 	m_choice1 = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice1NChoices, m_choice1Choices, 0 );
@@ -73,66 +73,66 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 		m_choice1->Append(station->getName());
 	}
 	fgSizer2->Add( m_choice1, 0, wxALL|wxEXPAND, 5 );
-	
+
 	m_button2 = new wxButton( this, wxID_ANY, wxT("All Ships Destroyed"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button2->Enable( false );
-	
+
 	fgSizer2->Add( m_button2, 0, wxEXPAND|wxLEFT|wxRIGHT, 5 );
-	
+
 	m_button3 = new wxButton( this, wxID_ANY, wxT("Destroy Selected Ships"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button3->Enable( false );
-	
+
 	fgSizer2->Add( m_button3, 0, wxALL|wxEXPAND, 5 );
-	
+
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Edit Ship Statistics") ), wxVERTICAL );
 //	sbSizer2->SetMinSize(wxSize(240,-1));
-	
+
 	wxFlexGridSizer* fgSizer5;
 	fgSizer5 = new wxFlexGridSizer( 6, 1, 0, 0 );
 	fgSizer5->SetFlexibleDirection( wxBOTH );
 	fgSizer5->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
+
 	wxFlexGridSizer* fgSizer3;
 	fgSizer3 = new wxFlexGridSizer( 1, 2, 0, 0 );
 	fgSizer3->AddGrowableCol( 1 );
 	fgSizer3->SetFlexibleDirection( wxBOTH );
 	fgSizer3->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
+
 	m_staticText2 = new wxStaticText( this, wxID_ANY, wxT("Ship Type:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText2->Wrap( -1 );
 	m_staticText2->Enable( false );
-	
+
 	fgSizer3->Add( m_staticText2, 0, wxALL, 5 );
-	
+
 	m_staticText3 = new wxStaticText( this, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText3->Wrap( -1 );
 	m_staticText3->Enable( false );
-	
+
 	fgSizer3->Add( m_staticText3, 1, wxALL, 5 );
-	
+
 	fgSizer5->Add( fgSizer3, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer4;
 	fgSizer4 = new wxFlexGridSizer( 1, 2, 0, 0 );
 	fgSizer4->AddGrowableCol( 1 );
 	fgSizer4->SetFlexibleDirection( wxBOTH );
 	fgSizer4->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
+
 	m_staticText4 = new wxStaticText( this, wxID_ANY, wxT("Name:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText4->Wrap( -1 );
 	m_staticText4->Enable( false );
-	
+
 	fgSizer4->Add( m_staticText4, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
-	
+
 	m_textCtrl2 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	m_textCtrl2->Enable( false );
 	m_textCtrl2->SetMinSize( wxSize( 140,-1 ) );
-	
+
 	fgSizer4->Add( m_textCtrl2, 1, wxEXPAND, 5 );
-	
+
 	fgSizer5->Add( fgSizer4, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer6;
 	fgSizer6 = new wxFlexGridSizer( 1, 7, 0, 0 );
 	fgSizer6->AddGrowableCol( 0 );
@@ -144,136 +144,136 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer6->AddGrowableCol( 6 );
 	fgSizer6->SetFlexibleDirection( wxBOTH );
 	fgSizer6->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
+
 	m_staticText5 = new wxStaticText( this, wxID_ANY, wxT("ADF:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText5->Wrap( -1 );
 	m_staticText5->Enable( false );
-	
+
 	fgSizer6->Add( m_staticText5, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 5 );
-	
+
 	m_textCtrl3 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 20,-1 ), 0 );
 	m_textCtrl3->Enable( false );
 	m_textCtrl3->SetMaxSize( wxSize( 20,-1 ) );
-	
+
 	fgSizer6->Add( m_textCtrl3, 0, wxBOTTOM|wxTOP, 5 );
-	
+
 	m_staticText6 = new wxStaticText( this, wxID_ANY, wxT("/ N"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText6->Wrap( -1 );
 	m_staticText6->Enable( false );
-	
+
 	fgSizer6->Add( m_staticText6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
-	
+
+
 	fgSizer6->Add( 15, 0, 1, wxEXPAND, 5 );
-	
+
 	m_staticText7 = new wxStaticText( this, wxID_ANY, wxT("MR:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText7->Wrap( -1 );
 	m_staticText7->Enable( false );
-	
+
 	fgSizer6->Add( m_staticText7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
+
 	m_textCtrl7 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 20,-1 ), 0 );
 	m_textCtrl7->Enable( false );
 	m_textCtrl7->SetMaxSize( wxSize( 20,-1 ) );
-	
+
 	fgSizer6->Add( m_textCtrl7, 0, wxBOTTOM|wxTOP, 5 );
-	
+
 	m_staticText8 = new wxStaticText( this, wxID_ANY, wxT("/ N"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText8->Wrap( -1 );
 	m_staticText8->Enable( false );
-	
+
 	fgSizer6->Add( m_staticText8, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
+
 	fgSizer5->Add( fgSizer6, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer7;
 	fgSizer7 = new wxFlexGridSizer( 1, 3, 0, 0 );
 	fgSizer7->AddGrowableCol( 2 );
 	fgSizer7->SetFlexibleDirection( wxBOTH );
 	fgSizer7->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
+
 	m_staticText9 = new wxStaticText( this, wxID_ANY, wxT("Hull Points:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText9->Wrap( -1 );
 	m_staticText9->Enable( false );
-	
+
 	fgSizer7->Add( m_staticText9, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
+
 	m_textCtrl8 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 45,-1 ), 0 );
 	m_textCtrl8->Enable( false );
 	m_textCtrl8->SetMaxSize( wxSize( 45,-1 ) );
-	
+
 	fgSizer7->Add( m_textCtrl8, 0, 0, 5 );
-	
+
 	m_staticText10 = new wxStaticText( this, wxID_ANY, wxT("/ NNN"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText10->Wrap( -1 );
 	m_staticText10->Enable( false );
-	
+
 	fgSizer7->Add( m_staticText10, 0, wxALL|wxEXPAND, 5 );
-	
+
 	fgSizer5->Add( fgSizer7, 1, wxALIGN_LEFT|wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer8;
 	fgSizer8 = new wxFlexGridSizer( 2, 2, 0, 0 );
 	fgSizer8->SetFlexibleDirection( wxBOTH );
 	fgSizer8->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
-	fgSizer8->SetMinSize( wxSize( -1,30 ) ); 
+
+	fgSizer8->SetMinSize( wxSize( -1,30 ) );
 	fgSizer5->Add( fgSizer8, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer9;
 	fgSizer9 = new wxFlexGridSizer( 2, 2, 0, 0 );
 	fgSizer9->SetFlexibleDirection( wxBOTH );
 	fgSizer9->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
-	fgSizer9->SetMinSize( wxSize( -1,30 ) ); 
+
+	fgSizer9->SetMinSize( wxSize( -1,30 ) );
 	fgSizer5->Add( fgSizer9, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer10;
 	fgSizer10 = new wxFlexGridSizer( 2, 2, 0, 0 );
 	fgSizer10->SetFlexibleDirection( wxBOTH );
 	fgSizer10->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
-	fgSizer10->SetMinSize( wxSize( -1,30 ) ); 
+
+	fgSizer10->SetMinSize( wxSize( -1,30 ) );
 	fgSizer5->Add( fgSizer10, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer11;
 	fgSizer11 = new wxFlexGridSizer( 2, 2, 0, 0 );
 	fgSizer11->SetFlexibleDirection( wxBOTH );
 	fgSizer11->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
-	fgSizer11->SetMinSize( wxSize( -1,30 ) ); 
+
+	fgSizer11->SetMinSize( wxSize( -1,30 ) );
 	fgSizer5->Add( fgSizer11, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer12;
 	fgSizer12 = new wxFlexGridSizer( 2, 2, 0, 0 );
 	fgSizer12->SetFlexibleDirection( wxBOTH );
 	fgSizer12->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
-	fgSizer12->SetMinSize( wxSize( -1,30 ) ); 
+
+	fgSizer12->SetMinSize( wxSize( -1,30 ) );
 	fgSizer5->Add( fgSizer12, 1, wxEXPAND, 5 );
-	
+
 	m_button4 = new wxButton( this, wxID_ANY, wxT("Update Ship Statistics"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button4->Enable( false );
-	
+
 	fgSizer5->Add( m_button4, 0, wxALL|wxEXPAND, 5 );
-	
+
 	sbSizer2->Add( fgSizer5, 1, wxEXPAND, 5 );
-	
+
 	fgSizer2->Add( sbSizer2, 1, wxEXPAND, 5 );
-	
+
 	fgSizer1->Add( fgSizer2, 1, wxEXPAND, 5 );
-	
+
 	bSizer1->Add( fgSizer1, 1, wxEXPAND, 5 );
-	
+
 	m_button1 = new wxButton( this, wxID_ANY, wxT("Done"), wxDefaultPosition, wxDefaultSize, 0 );
 //	m_button1->Enable( false );
-	
+
 	bSizer1->Add( m_button1, 0, wxALIGN_RIGHT|wxALL, 5 );
-	
+
 	this->SetSizer( bSizer1 );
 	this->Layout();
 	bSizer1->Fit( this );
-	
+
 	// Connect Events
 	m_listBox1->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( BattleResultsGUI::onSelectShip ), NULL, this );
 	m_choice1->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( BattleResultsGUI::onSelectFleet ), NULL, this );
@@ -307,7 +307,7 @@ void BattleResultsGUI::onSelectFleet( wxCommandEvent& event ){
 	int id = m_choice1->GetSelection();
 	if (id==0){
 		m_curFleet=NULL;
-		if(m_listBox1->IsEnabled() && !(m_listBox1->IsEmpty())){ 
+		if(m_listBox1->IsEnabled() && !(m_listBox1->IsEmpty())){
 			m_listBox1->Clear();
 		}
 		m_button2->Enable(false);
@@ -327,11 +327,11 @@ void BattleResultsGUI::onSelectFleet( wxCommandEvent& event ){
 		m_staticText9->Enable(false);
 		m_textCtrl8->Enable(false);
 		m_staticText10->Enable(false);
-		
+
 
 	} else {
 		m_listBox1->Enable(true);
-		if(m_listBox1->IsEnabled() && !(m_listBox1->IsEmpty())){ 
+		if(m_listBox1->IsEnabled() && !(m_listBox1->IsEmpty())){
 			m_listBox1->Clear();
 		}
 		if(id==(int)(1+m_fleets.size())){ // this will only occur if there is a station
@@ -390,7 +390,7 @@ void BattleResultsGUI::onAllDestroyed( wxCommandEvent& event ){
 	m_choice1->Delete(fleetID);		// remove the fleet or station from the list of fleets
 	m_choice1->SetSelection(0);	// Reset the choice box
 	onSelectFleet(event);		// trigger the dialog reset to no fleet selected
-	
+
 	event.Skip();
 }
 
@@ -472,7 +472,7 @@ void BattleResultsGUI::onDestroyShips( wxCommandEvent& event ){
 				m_listBox1->Deselect(sel[i]);
 				m_listBox1->Delete(sel[i]);
 			}
-			onSelectShip(event);	// this will now have no selections so it 
+			onSelectShip(event);	// this will now have no selections so it
 									// will clear out the ship data fields
 		}
 	}
@@ -499,7 +499,7 @@ void BattleResultsGUI::onUpdateShip( wxCommandEvent& event ){
 	(m_textCtrl3->GetValue()).ToLong(&val);
 	m_curShip->setADF((int)val);
 	(m_textCtrl7->GetValue()).ToLong(&val);
-	m_curShip->setMR((int)val);
+	m_curShip->setMR((unsigned int)val);
 	(m_textCtrl8->GetValue()).ToLong(&val);
 	m_curShip->setHP((int)val);
 	m_button4->Enable(false);

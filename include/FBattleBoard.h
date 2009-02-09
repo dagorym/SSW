@@ -100,6 +100,18 @@ public:
 	 */
 	void resetMoveData();
 
+	/**
+	 * @brief Finalize movement phase
+	 *
+	 * This method iterates over the ships and updates their current status
+	 * to reflect their movement.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 8, 2009
+	 * @date Last Modified:  Feb 8, 2009
+	 */
+	void finalizeMove();
+
 protected:
 	/// parent window
 	FBattleScreen * m_parent;
@@ -398,6 +410,46 @@ protected:
 	 * @date Last Modified:  Dec 24, 2008
 	 */
 	bool findHexInList(std::vector<hexData> list, hexData ref, int &count);
+
+	/**
+	 * @brief draws a line connecting the hexes in the specified list
+	 *
+	 * This method iterates over the list of passed in hexes and highlights them
+	 * approrpriately based on whether or not the ship has to move that far or
+	 * it falls within the ADF range of the ship.
+	 *
+	 * @param list The list of hexes to higlight
+	 * @param current  Flag for whether or not you are drawing the movement for the currently selected ship or not
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 8, 2009
+	 * @date Last Modified:  Feb 8, 2009
+	 */
+	void drawMovedHexes(wxDC &dc, std::vector<hexData> list, bool current=false);
+
+	/**
+	 * @brief Compute the remaining moves for the current ship
+	 *
+	 * @param start the hex to start computing from
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 8, 2009
+	 * @date Last Modified:  Feb 8, 2009
+	 */
+	void computeRemainingMoves(hexData start);
+
+	/**
+	 * @brief Checks to see if all the ships are done moving
+	 *
+	 * This method iterates through all the current players ships and checks to see
+	 * if they have moved at least the minimum distance required by their current
+	 * speed and ADF.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 8, 2009
+	 * @date Last Modified:  Feb 8, 2009
+	 */
+	void checkMoveStatus();
 };
 
 }

@@ -156,8 +156,12 @@ void FMainFrame::onShowPlayers(wxCommandEvent& WXUNUSED(event)) {
 }
 
 void FMainFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
-    wxMessageBox( "Written by Tom Stephens\n Copyright - 2005-2008\nVersion 0.0.7",
-                  "Star Frontier Second Sathar War Simulation",
+	wxString body = "Star Frontiers Second Sathar War Simulation";
+	body += "\n\nWritten by Tom Stephens";
+	body += "\n\nCopyright 2005-2009 - New Frontier Games";
+	body += "\n\nVersion 0.0.8";
+	body += "\n\nStar Frontiers copyright 1982 - Wizards of the Coast";
+    wxMessageBox( body, "Star Frontiers Second Sathar War Simulation",
                   wxOK | wxICON_INFORMATION );
 }
 
@@ -288,23 +292,26 @@ void FMainFrame::onShowBattleScreen(wxCommandEvent& event){
 	FBattleScreen *bb = new FBattleScreen();
 	bb->Show(true);
 	FleetList aList,dList;
-	FVehicle *st = createShip("ArmedStation");
+//	FVehicle *st = createShip("ArmedStation");
 	FFleet *f = new FFleet();
 	f->setName("UPF");
-	f->addShip(createShip("AssaultScout"));
+//	f->addShip(createShip("AssaultScout"));
 	FVehicle *s = createShip("Frigate");
 	s->setIcon("../icons/UPFFrigate.png");
 	f->addShip(s);
-	s = createShip("Destroyer");
-	s->setIcon("../icons/UPFDestroyer.png");
-	f->addShip(s);
+//	s = createShip("Destroyer");
+//	s->setIcon("../icons/UPFDestroyer.png");
+//	f->addShip(s);
 	dList.push_back(f);
 	f = new FFleet();
 	f->setName("Sathar");
 	s = createShip("LtCruiser");
 	s->setIcon("../icons/SatharLtCruiser.png");
 	f->addShip(s);
+	s = createShip("Destroyer");
+	s->setIcon("../icons/SatharDestroyer.png");
+	f->addShip(s);
 	aList.push_back(f);
-	bb->setupFleets(&aList,&dList,true,st);
+	bb->setupFleets(&aList,&dList,false,NULL);
 
 }
