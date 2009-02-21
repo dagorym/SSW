@@ -316,7 +316,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 1, 2008
-	 * @date Last Modified:  Nov 1, 2008
+	 * @date Last Modified:  Feb 13, 2009
 	 */
 	void selectVessel(wxMouseEvent &event);
 
@@ -330,7 +330,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  Nov 21, 2008
+	 * @date Last Modified:  Feb 13, 2009
 	 */
 	void drawRoute(wxDC &dc);
 
@@ -343,7 +343,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  Nov 21, 2008
+	 * @date Last Modified:  Feb 13, 2009
 	 */
 	void setInitialRoute();
 
@@ -373,7 +373,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 30, 2008
-	 * @date Last Modified:  Nov 30, 2008
+	 * @date Last Modified:  Feb 13, 2009
 	 */
 	void checkForTurn(wxMouseEvent &event);
 
@@ -389,7 +389,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Dec 7, 2008
-	 * @date Last Modified:  Dec 7, 2008
+	 * @date Last Modified:  Feb 13, 2009
 	 */
 	void drawRouteHexes(wxDC &dc, std::vector<hexData> list, int count=1);
 
@@ -423,7 +423,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Feb 8, 2009
+	 * @date Last Modified:  Feb 13, 2009
 	 */
 	void drawMovedHexes(wxDC &dc, std::vector<hexData> list, bool current=false);
 
@@ -450,6 +450,33 @@ protected:
 	 * @date Last Modified:  Feb 8, 2009
 	 */
 	void checkMoveStatus();
+
+	/**
+	 * @brief Turns ship and keeps heading value in proper range
+	 *
+	 * @param heading The ships inital heading
+	 * @param turn The turn direction (-1 left, 1 right)
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 13, 2009
+	 * @date Last Modified:  Feb 13, 2009
+	 */
+	int turnShip(int & heading, int turn);
+
+	/**
+	 * @brief Draws a box on the screen with a list of ships to choose from
+	 *
+	 * This method draws a box on the screen that lists all the ships in the
+	 * supplied Vehicle list.  Once one of the ship names are selected, it
+	 * returns a pointer to the specified ship.
+	 *
+	 * @param list The list of ships to display.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 13, 2009
+	 * @date Last Modified:  Feb 13, 2009
+	 */
+FVehicle * pickShip(const VehicleList & list);
 };
 
 }
