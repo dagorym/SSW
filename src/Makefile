@@ -47,7 +47,7 @@ OBJS = FObject.o FPObject.o FVehicle.o FFleet.o \
        FBattleBoard.o FBattleScreen.o FBattleDisplay.o FWeapon.o \
        FLaserBattery.o FLaserCannon.o FProtonBattery.o FElectronBattery.o \
        FDisruptorCannon.o FRocketBattery.o FAssaultRocket.o FTorpedo.o \
-       FSeekerMissile.o FMine.o
+       FSeekerMissileLauncher.o FMineLauncher.o
 
 #OBJS = FApp.o FMainFrame.o Frontier.o FObject.o FPObject.o
 
@@ -173,8 +173,9 @@ FMainFrame.o: ../include/FBattleDisplay.h
 FMap.o: ../include/FMap.h ../include/FPObject.h ../include/FObject.h
 FMap.o: ../include/FSystem.h ../include/FPlanet.h ../include/FAstroBody.h
 FMap.o: ../include/FVehicle.h ../include/FFleet.h ../include/FJumpRoute.h
-FMine.o: ../include/FMine.h ../include/FWeapon.h ../include/FPObject.h
-FMine.o: ../include/FObject.h ../include/FVehicle.h
+FMineLauncher.o: ../include/FMineLauncher.h ../include/FWeapon.h
+FMineLauncher.o: ../include/FPObject.h ../include/FObject.h
+FMineLauncher.o: ../include/FVehicle.h
 FMinelayer.o: ../include/FMinelayer.h ../include/FVehicle.h
 FMinelayer.o: ../include/FPObject.h ../include/FObject.h
 FObject.o: ../include/FObject.h
@@ -213,9 +214,9 @@ Frontier.o: ../include/FLtCruiser.h ../include/FHvCruiser.h
 Frontier.o: ../include/FAssaultCarrier.h ../include/FBattleship.h
 Frontier.o: ../include/FFortress.h ../include/FFortifiedStation.h
 Frontier.o: ../include/FArmedStation.h
-FSeekerMissile.o: ../include/FSeekerMissile.h ../include/FWeapon.h
-FSeekerMissile.o: ../include/FPObject.h ../include/FObject.h
-FSeekerMissile.o: ../include/FVehicle.h
+FSeekerMissileLauncher.o: ../include/FSeekerMissileLauncher.h
+FSeekerMissileLauncher.o: ../include/FWeapon.h ../include/FPObject.h
+FSeekerMissileLauncher.o: ../include/FObject.h ../include/FVehicle.h
 FSystem.o: ../include/FSystem.h ../include/FPObject.h ../include/FObject.h
 FSystem.o: ../include/FPlanet.h ../include/FAstroBody.h ../include/FVehicle.h
 FSystem.o: ../include/FFleet.h

@@ -1,15 +1,15 @@
 /**
- * @file FMine.h
- * @brief Implementation file for FMine class
+ * @file FMineLauncher.h
+ * @brief Implementation file for FMineLauncher class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens
  */
 
-#include "FMine.h"
+#include "FMineLauncher.h"
 
 namespace Frontier {
 
-FMine::FMine() {
+FMineLauncher::FMineLauncher() {
 	m_name="M";
 	m_fullName = "Mine";
 	m_type=M;
@@ -20,7 +20,7 @@ FMine::FMine() {
 	m_damageTableMod=-20;
 }
 
-FMine::~FMine() {
+FMineLauncher::~FMineLauncher() {
 	// TODO Auto-generated destructor stub
 }
 

@@ -1,15 +1,15 @@
 /**
- * @file FSeekerMissile.h
- * @brief Implementation file for FSeekerMissile class
+ * @file FSeekerMissileLauncher.h
+ * @brief Implementation file for FSeekerMissileLauncher class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens
  */
 
-#include "FSeekerMissile.h"
+#include "FSeekerMissileLauncher.h"
 
 namespace Frontier {
 
-FSeekerMissile::FSeekerMissile() {
+FSeekerMissileLauncher::FSeekerMissileLauncher() {
 	m_name="SM";
 	m_fullName = "Seeker Missile";
 	m_type=SM;
@@ -19,7 +19,7 @@ FSeekerMissile::FSeekerMissile() {
 	m_damageTableMod=-20;
 }
 
-FSeekerMissile::~FSeekerMissile() {
+FSeekerMissileLauncher::~FSeekerMissileLauncher() {
 	// TODO Auto-generated destructor stub
 }
 
