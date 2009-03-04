@@ -3,7 +3,7 @@
  * @brief Implementation file for Armed Station class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FArmedStation.h"
 #include <sstream>
@@ -24,6 +24,8 @@ FArmedStation::FArmedStation() {
 	m_iconName = "../icons/UPFArmedStation.png";
 	m_icon = new wxImage(m_iconName);
 	m_type = "ArmedStation";
+	m_maxDCR=75;
+	m_currentDCR=m_maxDCR;
 }
 
 FArmedStation::~FArmedStation(){

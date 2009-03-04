@@ -22,7 +22,7 @@ namespace Frontier
  *
  * @author Tom Stephens
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Mar 06, 2008
+ * @date Last Modified:  Feb 27, 2009
  */
 class FVehicle : public Frontier::FPObject
 {
@@ -73,6 +73,12 @@ public:
 	void setOwner(unsigned int owner) { m_owner = owner; }
 	/// get the ship's owner
 	const unsigned int & getOwner() const { return m_owner; }
+	/// get the ship's max DCR
+	const unsigned int & getMaxDCR() const { return m_maxDCR; }
+	/// get the ship's current DCR
+	const unsigned int & getDCR() const { return m_currentDCR; }
+	/// set the ship's current DCR
+	void setDCR(unsigned int dcr);
 
 
 	/**
@@ -136,6 +142,10 @@ protected:
 	int m_heading;
 	/// ID of the player owning the ship
 	unsigned int m_owner;
+	/// The DCR of an undamaged ship
+	unsigned int m_maxDCR;
+	/// The current DCR of the vessel;
+	unsigned int m_currentDCR;
 };
 
 typedef std::vector<FVehicle *> VehicleList;

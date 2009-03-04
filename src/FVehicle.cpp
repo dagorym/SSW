@@ -31,6 +31,8 @@ FVehicle::FVehicle(){
 	m_speed = 0;
 	m_heading = 0;
 	m_owner = 0;
+	m_maxDCR = 0;
+	m_currentDCR = 0;
 }
 
 FVehicle::~FVehicle(){
@@ -53,6 +55,7 @@ const int FVehicle::save(std::ostream &os) const {
 	write(os,m_speed);
 	write(os,m_heading);
 	write(os,m_owner);
+	write(os,m_currentDCR);
 	return 0;
 }
 
@@ -74,6 +77,7 @@ int FVehicle::load(std::istream &is) {
 	read(is,m_speed);
 	read(is,m_heading);
 	read(is,m_owner);
+	read(is,m_currentDCR);
 	return 0;
 }
 
@@ -104,6 +108,15 @@ void FVehicle::setHP(int hp){
 		m_currentHP = m_maxHP;
 	} else {
 		m_currentHP = hp;
+	}
+}
+void FVehicle::setDCR(unsigned int dcr){
+	if (dcr < 0){
+		m_currentDCR = 0;
+	} else if (dcr > m_maxDCR){
+		m_currentDCR = m_maxDCR;
+	} else {
+		m_currentDCR = dcr;
 	}
 }
 

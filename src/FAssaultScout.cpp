@@ -3,7 +3,7 @@
  * @brief Implementation file for Assault Scout class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FAssaultScout.h"
 #include <sstream>
@@ -24,6 +24,8 @@ FAssaultScout::FAssaultScout() {
 	m_iconName = "../icons/AS.png";
 	m_icon = new wxImage(m_iconName);
 	m_type = "AssaultScout";
+	m_maxDCR=50;
+	m_currentDCR=m_maxDCR;
 }
 
 FAssaultScout::~FAssaultScout(){

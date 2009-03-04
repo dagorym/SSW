@@ -3,7 +3,7 @@
  * @brief Implementation file for Heavy Cruiser class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FHvCruiser.h"
 #include <sstream>
@@ -22,6 +22,8 @@ FHvCruiser::FHvCruiser() {
 	os << "Heavy Cruiser " << m_ID;
 	m_name = os.str();
 	m_type = "HvCruiser";
+	m_maxDCR=120;
+	m_currentDCR=m_maxDCR;
 }
 
 FHvCruiser::~FHvCruiser(){

@@ -3,7 +3,7 @@
  * @brief Implementation file for Frigate class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FFrigate.h"
 #include <sstream>
@@ -22,6 +22,8 @@ FFrigate::FFrigate() {
 	os << "Frigate " << m_ID;
 	m_name = os.str();
 	m_type = "Frigate";
+	m_maxDCR=70;
+	m_currentDCR=m_maxDCR;
 }
 
 FFrigate::~FFrigate(){

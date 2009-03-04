@@ -3,7 +3,7 @@
  * @brief Implementation file for Destroyer class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FDestroyer.h"
 #include <sstream>
@@ -22,6 +22,8 @@ FDestroyer::FDestroyer() {
 	os << "Destroyer " << m_ID;
 	m_name = os.str();
 	m_type = "Destroyer";
+	m_maxDCR=75;
+	m_currentDCR=m_maxDCR;
 }
 
 FDestroyer::~FDestroyer(){

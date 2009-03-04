@@ -1,6 +1,6 @@
 default: all
 
-all clean :
+all clean objs:
 	@ cd src; ${MAKE} $@
 	
 docs:

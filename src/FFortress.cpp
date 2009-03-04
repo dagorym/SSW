@@ -3,7 +3,7 @@
  * @brief Implementation file for Fortress class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FFortress.h"
 #include <sstream>
@@ -24,6 +24,8 @@ FFortress::FFortress() {
 	m_iconName = "../icons/UPFFortress.png";
 	m_icon = new wxImage(m_iconName);
 	m_type = "Fortress";
+	m_maxDCR=200;
+	m_currentDCR=m_maxDCR;
 }
 
 FFortress::~FFortress(){

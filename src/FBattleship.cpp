@@ -3,7 +3,7 @@
  * @brief Implementation file for Battleship class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FBattleship.h"
 #include <sstream>
@@ -24,6 +24,8 @@ FBattleship::FBattleship() {
 	m_iconName = "../icons/UPFBattleship.png";
 	m_icon = new wxImage(m_iconName);
 	m_type = "Battleship";
+	m_maxDCR=200;
+	m_currentDCR=m_maxDCR;
 }
 
 FBattleship::~FBattleship(){

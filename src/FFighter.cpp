@@ -3,7 +3,7 @@
  * @brief Implementation file for Fighter class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FFighter.h"
 #include <sstream>
@@ -22,6 +22,8 @@ FFighter::FFighter() {
 	os << "Fighter " << m_ID;
 	m_name = os.str();
 	m_type = "Fighter";
+	m_maxDCR=30;
+	m_currentDCR=m_maxDCR;
 }
 
 FFighter::~FFighter(){

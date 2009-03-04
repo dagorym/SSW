@@ -3,7 +3,7 @@
  * @brief Implementation file for Minelayer class
  * @author Tom Stephens
  * @date Created:  Feb 21, 2008
- * 
+ *
  */
 #include "FMinelayer.h"
 #include <sstream>
@@ -24,6 +24,8 @@ FMinelayer::FMinelayer() {
 	m_iconName = "../icons/UPFMinelayer.png";
 	m_icon = new wxImage(m_iconName);
 	m_type = "Minelayer";
+	m_maxDCR=75;
+	m_currentDCR=m_maxDCR;
 }
 
 FMinelayer::~FMinelayer(){

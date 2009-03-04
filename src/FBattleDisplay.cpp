@@ -395,6 +395,9 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 		os.str("");
 		os << s->getHP();
 		dc.DrawText(os.str(),lMargin+195,BORDER+(int)(1.6*(tSize*2.3)));
+		os.str("");
+		os << s->getDCR();
+		dc.DrawText(os.str(),lMargin+275,BORDER+(int)(1.6*(tSize*2.3)));
 	}
 }
 
