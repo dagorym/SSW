@@ -32,3 +32,16 @@ FWeapon::~FWeapon() {
 void FWeapon::fire(FVehicle * v){
 
 }
+
+const int FWeapon::save(std::ostream & os) const{
+	write(os, m_type);
+	write(os, m_maxAmmo);
+	write(os, m_currentAmmo);
+	return 0;
+}
+
+int FWeapon::load(std::istream &is){
+	read(is, m_maxAmmo);
+	read(is, m_currentAmmo);
+	return 0;
+}

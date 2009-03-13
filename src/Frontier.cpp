@@ -12,6 +12,7 @@
 #include "FBattleScreen.h"
 #include "Frontier.h"
 #include "ships.h"
+#include "weapons.h"
 #include <wx/wx.h>
 
 BEGIN_EVENT_TABLE(FMainFrame, wxFrame)
@@ -70,4 +71,32 @@ FVehicle * createShip(std::string type){
 		// there was an error
 	}
 	return v;
+}
+
+FWeapon * createWeapon(int type){
+	FWeapon *w;
+	if(type == LB){
+		w = new FLaserBattery;
+	} else if (type == LC) {
+		w = new FLaserCannon;
+	} else if (type == EB) {
+		w = new FElectronBattery;
+	} else if (type == PB) {
+		w = new FProtonBattery;
+	} else if (type == RB) {
+		w = new FRocketBattery;
+	} else if (type == DC) {
+		w = new FDisruptorCannon;
+	} else if (type == T) {
+		w = new FTorpedo;
+	} else if (type == AR) {
+		w = new FAssaultRocket;
+	} else if (type == SM) {
+		w = new FSeekerMissileLauncher;
+	} else if (type == M) {
+		w = new FMineLauncher;
+	} else {
+		// there was an error
+	}
+	return w;
 }

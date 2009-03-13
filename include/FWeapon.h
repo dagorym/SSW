@@ -68,6 +68,35 @@ public:
 	void setCurrentAmmo(int c) { m_currentAmmo = c; }
 
 	/**
+	 * @brief Method to save the weapon data
+	 *
+	 * This method implements the FPObject base class virtual write method to
+	 * save all the weapon's data
+	 *
+	 * @param os The output stream to write to
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 12, 2009
+	 * @aate Last Modified:  Mar 12, 2009
+	 */
+	const virtual int save(std::ostream &os) const;
+
+	/**
+	 * @brief Method to read data contents
+	 *
+	 * This method is the inverse of the save method.  It reads the data for
+	 * the class from the designated input stream.  This method returns 0 if
+	 * everything is okay and a positive integer error code if there is a
+	 * failure
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 12, 2009
+	 * @date Last Modified:  Mar 12, 2009
+	 */
+	virtual int load(std::istream &is);
+
+
+	/**
 	 * @brief Fires the weapon
 	 *
 	 * This method fires the weapon at the specified target.  It starts by
