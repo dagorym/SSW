@@ -30,10 +30,10 @@ using namespace Frontier;
 ///////////////////////////////////////////////////////////////////////////////
 /// Class ViewFleetGUI
 ///////////////////////////////////////////////////////////////////////////////
-class ViewFleetGUI : public wxDialog 
+class ViewFleetGUI : public wxDialog
 {
 	private:
-	
+
 	protected:
 		wxStaticText* m_staticText1;
 		wxStaticText* m_staticText2;
@@ -42,24 +42,26 @@ class ViewFleetGUI : public wxDialog
 		wxStaticText* m_staticText5;
 		wxStaticText* m_staticText6;
 		wxStaticText* m_staticText7;
-		wxStaticText *ADF,*MR,*HP;
+		wxStaticText* m_staticText8;
+		wxStaticText* m_staticText9;
+		wxStaticText *ADF,*MR,*HP,*DCR,*Weapons;
 		wxListBox* m_listBox1;
 		wxButton* m_button1;
 		wxButton* m_button2;
-		
+
 		FFleet * m_fleet;
 		FVehicle * m_ship;
-		
+
 		// Virtual event handlers, overide them in your derived class
 		virtual void onSelectShip( wxMouseEvent& event );
 		virtual void onModifyShip( wxCommandEvent& event ){ event.Skip(); }
 		virtual void OnOK( wxCommandEvent& event ){ EndModal(0); event.Skip(); }
-		
-	
+
+
 	public:
 		ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSystem *dest, wxWindowID id = wxID_ANY, const wxString& title = wxT("View Fleet"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
 		~ViewFleetGUI();
-	
+
 };
 
 #endif //__ViewFleetGUI__

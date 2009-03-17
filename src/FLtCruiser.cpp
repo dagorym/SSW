@@ -6,6 +6,7 @@
  *
  */
 #include "FLtCruiser.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -24,6 +25,23 @@ FLtCruiser::FLtCruiser() {
 	m_type = "LtCruiser";
 	m_maxDCR=100;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(DC);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(T);
+	w->setMaxAmmo(4);
+	w->setCurrentAmmo(4);
+	m_weapons.push_back(w);
+	w = createWeapon(RB);
+	w->setMaxAmmo(6);
+	w->setCurrentAmmo(6);
+	m_weapons.push_back(w);
+	w = createWeapon(EB);
+	m_weapons.push_back(w);
+	w = createWeapon(PB);
+	m_weapons.push_back(w);
+
 }
 
 FLtCruiser::~FLtCruiser(){

@@ -6,6 +6,7 @@
  *
  */
 #include "FFortifiedStation.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -26,6 +27,15 @@ FFortifiedStation::FFortifiedStation() {
 	m_type = "FortifiedStation";
 	m_maxDCR=100;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(RB);
+	w->setMaxAmmo(8);
+	w->setCurrentAmmo(8);
+	m_weapons.push_back(w);
+
 }
 
 FFortifiedStation::~FFortifiedStation(){

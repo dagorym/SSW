@@ -3,7 +3,7 @@
  * @brief Implementation file for FGame class
  * @author Tom Stephens
  * @date Created:  Jan 12, 2005
- * 
+ *
  */
 
 #include "FGame.h"
@@ -78,7 +78,7 @@ int FGame::init(wxDC &dc,wxWindow *w){
     }
     return 1;
   }
-  
+
   if(initMap(m_gui)) {
     errorMsg = "Error initalizing map.  Exiting";
     if (m_gui) {
@@ -117,7 +117,7 @@ int FGame::getPlayers(bool gui){
 //  int nPlayers;         // the number of players in the game
   std::string name;     // variable to read in names
   FPlayer *playerPtr;
-  
+
   if (gui){
 //	  name = wxGetTextFromUser( _T("Enter a name for the UPF Player")
 //			  ,_T("Player's Name:"),_T("UPF"));
@@ -148,7 +148,7 @@ int FGame::getPlayers(bool gui){
 	  playerPtr->setFleetIcon("../icons/Sathar.png");
 	  m_players.push_back(playerPtr);
   }
-  
+
   return 0;
 }
 
@@ -210,7 +210,7 @@ void FGame::draw(wxDC &dc){
 	}
 }
 
-int FGame::initFleets(){	
+int FGame::initFleets(){
 	createTFPrenglar();
 	createTFCassidine();
 	createSFNova();
@@ -272,7 +272,7 @@ int FGame::addSatharShips(){
 
 int FGame::addUPFUnattached(){
 	FVehicle *sPtr;
-	
+
 	for (int i = 0; i < 4 ; i++){
 		sPtr = new FFighter;
 		sPtr->setIcon("../icons/UPFFighter.png");
@@ -295,7 +295,7 @@ int FGame::addUPFUnattached(){
 	sPtr = new FAssaultCarrier;
 	sPtr->setIcon("../icons/UPFAssaultCarrier.png");
 	m_players[0]->addShip(sPtr);
-	
+
 	UPFUnattachedGUI * d = new UPFUnattachedGUI(m_parent,m_players[0],m_universe);
 	int result = d->ShowModal();
 //	std::cout << "UPF has " << m_players[0]->getShipList().size() << " unattached ships left" << std::endl;
@@ -306,13 +306,13 @@ int FGame::addUPFUnattached(){
 void FGame::createTFCassidine(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Task Force Cassidine");
 	fPtr->setLocation(m_universe->getSystem("Cassidine"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon(m_players[0]->getFleetIconName());
-	
+
 	for (int i = 0; i < 6 ; i++){
 		sPtr = new FFighter;
 		sPtr->setIcon("../icons/UPFFighter.png");
@@ -345,19 +345,19 @@ void FGame::createTFCassidine(){
 
 	m_players[0]->addFleet(fPtr);
 	m_universe->getSystem("Cassidine")->addFleet(fPtr);
-	
+
 }
 
 void FGame::createTFPrenglar(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Task Force Prenglar");
 	fPtr->setLocation(m_universe->getSystem("Prenglar"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon(m_players[0]->getFleetIconName());
-	
+
 	for (int i = 0; i < 5 ; i++){
 		sPtr = new FAssaultScout;
 		fPtr->addShip(sPtr);
@@ -386,18 +386,18 @@ void FGame::createTFPrenglar(){
 
 	m_players[0]->addFleet(fPtr);
 	m_universe->getSystem("Prenglar")->addFleet(fPtr);
-	
+
 }
 
 void FGame::createSFNova(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Strike Force Nova");
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon(m_players[0]->getFleetIconName());
-	
+
 	for (int i = 0; i < 6 ; i++){
 		sPtr = new FFighter;
 		sPtr->setIcon("../icons/UPFFighter.png");
@@ -426,7 +426,7 @@ void FGame::createSFNova(){
 	sPtr = new FBattleship;
 	fPtr->addShip(sPtr);
 
-	m_players[0]->addFleet(fPtr);	
+	m_players[0]->addFleet(fPtr);
 
 }
 
@@ -434,14 +434,14 @@ void FGame::onLeftDClick(wxMouseEvent& event) {
 	wxClientDC dc(m_parent);
 	if (m_universe!=NULL){
 		FSystem * sys = m_universe->selectSystem(event.m_x,event.m_y,dc);
-		FPlayer * player = (m_players[0]->getID()==m_currentPlayer)?m_players[0]:m_players[1]; 
+		FPlayer * player = (m_players[0]->getID()==m_currentPlayer)?m_players[0]:m_players[1];
 		if (sys!=NULL){
 			std::string title = sys->getName() + " System Information";
 			SystemDialogGUI *d = new SystemDialogGUI(m_parent,sys,m_universe,player,title);
 			d->ShowModal();
 			m_parent->Refresh();
 			return;
-		} 
+		}
 	}
 	if(m_players.size()>0){
 		FFleet *f = NULL;
@@ -462,8 +462,8 @@ bool FGame::placeNova(){
 	} else {
 		FFleet *fPtr;
 //		unsigned int id;
-		
-		
+
+
 		std::string system;
 		int roll = irand(10);
 		switch (roll){
@@ -528,11 +528,11 @@ void FGame::moveFleets(FPlayer * p){
 	FleetList fleets = p->getFleetList();
 	for (unsigned int i = 0; i< fleets.size(); i++){
 		if (fleets[i]->getInTransit()){  // fleet is on the move
-//			std::cerr << fleets[i]->getName() << " is on the move.  Tranisit time is " 
+//			std::cerr << fleets[i]->getName() << " is on the move.  Tranisit time is "
 //						<< fleets[i]->getTransitTime() << std::endl;
 			int time = fleets[i]->decTransitTime();
 			if (time == -1){  // we failed the jump
-				std::string msg = "The fleet " + fleets[i]->getName() 
+				std::string msg = "The fleet " + fleets[i]->getName()
 						+ " has failed it's risk jump and has been lost";
 				wxMessageDialog d(m_parent, msg,	"Failed Risk Jump",wxOK);
 				d.ShowModal();
@@ -553,7 +553,7 @@ void FGame::moveFleets(FPlayer * p){
 				}
 			}
 		}
-	}	
+	}
 }
 
 const int FGame::save(std::ostream &os) const {
@@ -596,11 +596,13 @@ int FGame::load(std::istream &is){
 	m_universe->load(is);
 	unsigned int pCount;
 	read(is,pCount);
+//	std::cerr << "There are " << pCount << " players" << std::endl;
 	for (unsigned int i = 0; i < pCount; i++){
 		FPlayer *p = new FPlayer;
 		p->load(is);
 		// we need to place the fleets into their respective systems
 		FleetList fList = p->getFleetList();
+//		std::cerr << "fList has " << fList.size() << " entries for player " << p->getID() << std::endl;
 		for (FleetList::iterator f = fList.begin(); f < fList.end(); f++){
 			FSystem *s = m_universe->getSystem((*f)->getLocation());
 //			std::cerr << (*f)->getName() << std::endl;
@@ -629,14 +631,14 @@ void FGame::createMilita(){
 void FGame::createWhiteLightMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Clarion Militia");
 	fPtr->setLocation(m_universe->getSystem("White Light"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/WL-frigate.png");
 	fPtr->setMilitia(true,"White Light");
-	
+
 	for (int i = 0; i < 3 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/WL-AS.png");
@@ -653,14 +655,14 @@ void FGame::createWhiteLightMilita(){
 void FGame::createGrunaGaruMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Hargut Militia");
 	fPtr->setLocation(m_universe->getSystem("Gruna Garu"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Hargut-AS.png");
 	fPtr->setMilitia(true,"Gruna Garu");
-	
+
 	for (int i = 0; i < 2 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Hargut-AS.png");
@@ -674,14 +676,14 @@ void FGame::createGrunaGaruMilita(){
 void FGame::createAraksMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Hentz Militia");
 	fPtr->setLocation(m_universe->getSystem("Araks"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Hentz-frigate.png");
 	fPtr->setMilitia(true,"Araks");
-	
+
 	for (int i = 0; i < 3 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Hentz-AS.png");
@@ -698,7 +700,7 @@ void FGame::createAraksMilita(){
 void FGame::createDramuneMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	// Inner Reach
 	fPtr = new FFleet;
 	fPtr->setName("Inner Reach Militia");
@@ -706,7 +708,7 @@ void FGame::createDramuneMilita(){
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Dramune-destroyer.png");
 	fPtr->setMilitia(true,"Dramune");
-	
+
 	for (int i = 0; i < 3 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Dramune-AS.png");
@@ -729,7 +731,7 @@ void FGame::createDramuneMilita(){
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Dramune-frigate.png");
 	fPtr->setMilitia(true,"Dramune");
-	
+
 	for (int i = 0; i < 2 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Dramune-AS.png");
@@ -749,14 +751,14 @@ void FGame::createDramuneMilita(){
 void FGame::createKakenKarMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Ken'zah Kit Militia");
 	fPtr->setLocation(m_universe->getSystem("K'aken-Kar"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Kaken-Kar-AS.png");
 	fPtr->setMilitia(true,"K'aken-Kar");
-	
+
 	for (int i = 0; i < 2 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Kaken-Kar-AS.png");
@@ -770,14 +772,14 @@ void FGame::createKakenKarMilita(){
 void FGame::createTheseusMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Minotaur Militia");
 	fPtr->setLocation(m_universe->getSystem("Theseus"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Theseus-destroyer.png");
 	fPtr->setMilitia(true,"Theseus");
-	
+
 	for (int i = 0; i < 4 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Theseus-AS.png");
@@ -797,14 +799,14 @@ void FGame::createTheseusMilita(){
 void FGame::createTruanesStarMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Pale Militia");
 	fPtr->setLocation(m_universe->getSystem("Truane's Star"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Truane-frigate.png");
 	fPtr->setMilitia(true,"Truane's Star");
-	
+
 	for (int i = 0; i < 3 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Truane-AS.png");
@@ -821,14 +823,14 @@ void FGame::createTruanesStarMilita(){
 void FGame::createFromeltarMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Terledrom Militia");
 	fPtr->setLocation(m_universe->getSystem("Fromeltar"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Fromeltar-frigate.png");
 	fPtr->setMilitia(true,"Fromeltar");
-	
+
 	for (int i = 0; i < 3 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Fromeltar-AS.png");
@@ -845,14 +847,14 @@ void FGame::createFromeltarMilita(){
 void FGame::createKizkKarMilita(){
 	FFleet *fPtr;
 	FVehicle *sPtr;
-	
+
 	fPtr = new FFleet;
 	fPtr->setName("Zik-kit Militia");
 	fPtr->setLocation(m_universe->getSystem("Kizk-Kar"),false);
 	fPtr->setOwner(m_players[0]->getID());
 	fPtr->setIcon("../icons/Kizk-Kar-AS.png");
 	fPtr->setMilitia(true,"Kizk-Kar");
-	
+
 	for (int i = 0; i < 2 ; i++){
 		sPtr = new FAssaultScout;
 		sPtr->setIcon("../icons/Kizk-Kar-AS.png");
@@ -891,7 +893,7 @@ void FGame::drawTurnCounter(){
 			std::ostringstream os;
 			os << i+5*j;
 			dc.DrawText(_T(os.str()),(wxCoord)(i*s+0.3*s),(wxCoord)(j*s+0.1*s));
-			
+
 		}
 	}
 	// now place the counters
@@ -904,7 +906,7 @@ void FGame::drawTurnCounter(){
 	row = day/5;
 	col = day%5;
 	dc.DrawBitmap(wxBitmap(m_day->Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.2*s),(wxCoord)(row*s+0.2*s));
-	
+
 	// draw the end turn button
 	dc.SetFont(wxFont((int)(s/3.),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	if (m_currentPlayer == m_players[0]->getID()){
@@ -924,7 +926,7 @@ int FGame::onLeftUp(wxMouseEvent &event){
 	dc.GetSize(&w, &h);
 	s = ((w > h)?h:w)/20;
 	event.GetPosition(&x,&y);
-	
+
 	// Did they click the end turn button
 	if ( x<4*s && y>2*s && y<3*s ){ // yes
 		if (m_currentPlayer == m_players[0]->getID()){
@@ -945,71 +947,71 @@ void FGame::addStations(){
 	s = new FFortress;
 	s->setName("Fortress Kdikit");
 	m_universe->getSystem("Madderly's Star")->getPlanet("Kdikit")->addStation(s);
-	
+
 	s = new FFortress;
 	s->setName("Fortress Redoubt");
 	m_universe->getSystem("White Light")->getPlanet("Clarion")->addStation(s);
-	
+
 	s = new FFortress;
 	s->setName("Fortress Gollwin");
 	m_universe->getSystem("Prenglar")->getPlanet("Morgaine's World")->addStation(s);
-	
+
 	s = new FFortress;
 	s->setName("Fortress Pale");
 	m_universe->getSystem("Truane's Star")->getPlanet("Pale")->addStation(s);
-	
+
 	// Fortified Stations
 	s = new FFortifiedStation;
 	m_universe->getSystem("Theseus")->getPlanet("Minotaur")->addStation(s);
-	
+
 	s = new FFortifiedStation;
 	m_universe->getSystem("K'aken-Kar")->getPlanet("Ken'zah Kit")->addStation(s);
-	
+
 	s = new FFortifiedStation;
 	m_universe->getSystem("Araks")->getPlanet("Hentz")->addStation(s);
-	
+
 	s = new FFortifiedStation;
 	m_universe->getSystem("Prenglar")->getPlanet("Gran Quivera")->addStation(s);
-	
+
 	// Armed Stations
 	s = new FArmedStation;
 	m_universe->getSystem("K'tsa-Kar")->getPlanet("Kawdl-Kit")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Kizk-Kar")->getPlanet("Zik-Kit")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Fromeltar")->getPlanet("Groth")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Fromeltar")->getPlanet("Terledrom")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Truane's Star")->getPlanet("New Pale")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Dramune")->getPlanet("Inner Reach")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Dramune")->getPlanet("Outer Reach")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Cassidine")->getPlanet("Rupert's Hole")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Cassidine")->getPlanet("Triad")->addStation(s);
-	
+
 	s = new FArmedStation;
 	m_universe->getSystem("Gruna Garu")->getPlanet("Hargut")->addStation(s);
-	
+
 	s = new FArmedStation;
-	m_universe->getSystem("Timeon")->getPlanet("Lossend")->addStation(s);	
+	m_universe->getSystem("Timeon")->getPlanet("Lossend")->addStation(s);
 }
 
 bool FGame::isUPFTurn(){
 	if(m_currentPlayer == m_players[0]->getID()){
 		return true;
-	} else { 
+	} else {
 		return false;
 	}
 }
@@ -1130,7 +1132,7 @@ int FGame::checkForVictory(){
 	// okay, now we know if the sathar retreat conditions have been met, lets see what the game
 	// status is.
 	if (UPFVictory){  // the UPF have conditions for victory
-		if(SatharVictory){ // but so do the Sathar 
+		if(SatharVictory){ // but so do the Sathar
 			wxMessageDialog d(m_parent,"Both the UPF and Sathar satisfied their victory\nconditions this round.\n\nThe game is a draw",
 					"It's a Draw!", wxOK);
 			d.ShowModal();
@@ -1198,11 +1200,14 @@ void FGame::resolveCombat(std::string sysName){
 	FSystem *sys = m_universe->getSystem(sysName);
 	FleetList allFleets, upfList, satharList;
 	allFleets = sys->getFleetList();
+//	std::cerr << "allFleets list has " << allFleets.size() << " entries" << std::endl;
 	for(FleetList::iterator itr = allFleets.begin(); itr < allFleets.end(); itr++){
+//		std::cerr << "Processing " << (*itr)->getName() << "  " << (*itr)->getOwner() << std::endl;
 		if ((*itr)->getOwner() == m_players[0]->getID()){
 			upfList.push_back(*itr);
 		} else {
 			satharList.push_back(*itr);
+//			std::cerr << "Adding " << (*itr)->getName() << " to list" << std::endl;
 		}
 	}
 	// okay now pop up a dialog showing the fleets and giving the Sathar the option to attack.

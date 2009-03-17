@@ -18,54 +18,55 @@
 SelectCombatGUI::SelectCombatGUI( wxWindow* parent, FSystem * sys, FleetList defender, FleetList attacker, PlayerList *pList, bool satharAttacking, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+
 	m_system = sys;
 	m_defenderList = defender;
 	m_attackerList = attacker;
 	m_playerList = pList;
 	m_satharAttacking = satharAttacking;
-	
+
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
-	
+
 	std::string msg = "There are both UPF and Sathar ships in " + sys->getName() + ".  ";
 	if(m_satharAttacking){
 		msg += "Do the Sathar wish to attack the UPF forces?  ";
 	} else {
 		msg += "Do the UPF wish to attack the Sathar forces?  ";
 	}
-	msg += std::string("If so select the fleet or") 
+	msg += std::string("If so select the fleet or")
 		+ " fleets you wish to attack with and press the \"Attack!\" button.  If not"
 		+ " press the \"Decline Combat\" button.  To view the contents and status of"
 		+ " any fleet select it and press the\"View Selected Fleet/Station\" button.\n\n"
 		+ "Note:  The \"View Selected Fleet/Station\" button only works when a single "
 		+ "fleet or station is selected in the active listbox.";
-			
+
 	m_staticText1 = new wxStaticText( this, wxID_ANY, msg, wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText1->Wrap( 500 );
 	bSizer1->Add( m_staticText1, 0, wxALL, 5 );
-	
+
 	wxFlexGridSizer* fgSizer1;
 	fgSizer1 = new wxFlexGridSizer( 1, 2, 0, 0 );
 	fgSizer1->AddGrowableCol( 0 );
 	fgSizer1->AddGrowableCol( 1 );
 	fgSizer1->SetFlexibleDirection( wxBOTH );
 	fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
+
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Attacking Fleets") ), wxVERTICAL );
-	
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB ); 
+//	std::cerr << "The attacker list has " << attacker.size() << " entries." << std::endl;
+
+	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
 	for (FleetList::iterator itr = attacker.begin(); itr < attacker.end(); itr++){
 		m_listBox1->Append((*itr)->getName());
 	}
 	sbSizer1->Add( m_listBox1, 1, wxALL|wxEXPAND, 5 );
-	
+
 	fgSizer1->Add( sbSizer1, 1, wxEXPAND, 5 );
-	
+
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Defending Fleets and Stations") ), wxVERTICAL );
-	
+
 	m_listBox2 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
 	int count = 0;
 	for (FleetList::iterator itr = defender.begin(); itr < defender.end(); itr++){
@@ -84,11 +85,11 @@ SelectCombatGUI::SelectCombatGUI( wxWindow* parent, FSystem * sys, FleetList def
 	}
 	m_listBox2->SetMinSize( wxSize( -1, 26*count ) );
 	sbSizer2->Add( m_listBox2, 1, wxALL|wxEXPAND, 5 );
-	
+
 	fgSizer1->Add( sbSizer2, 1, wxEXPAND, 5 );
-	
+
 	bSizer1->Add( fgSizer1, 1, wxEXPAND, 5 );
-	
+
 	wxFlexGridSizer* fgSizer2;
 	fgSizer2 = new wxFlexGridSizer( 1, 3, 0, 0 );
 	fgSizer2->AddGrowableCol( 0 );
@@ -96,26 +97,26 @@ SelectCombatGUI::SelectCombatGUI( wxWindow* parent, FSystem * sys, FleetList def
 	fgSizer2->AddGrowableCol( 2 );
 	fgSizer2->SetFlexibleDirection( wxBOTH );
 	fgSizer2->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
+
 	m_button1 = new wxButton( this, wxID_ANY, wxT("Decline Combat"), wxDefaultPosition, wxDefaultSize, 0 );
 	fgSizer2->Add( m_button1, 1, wxALL, 5 );
-	
+
 	m_button2 = new wxButton( this, wxID_ANY, wxT("View Selected Fleet/Station"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button2->Enable( false );
-	
+
 	fgSizer2->Add( m_button2, 1, wxALIGN_CENTER|wxALL, 5 );
-	
+
 	m_button3 = new wxButton( this, wxID_ANY, wxT("Attack!"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button3->Enable( false );
-	
+
 	fgSizer2->Add( m_button3, 1, wxALIGN_RIGHT|wxALL, 5 );
-	
+
 	bSizer1->Add( fgSizer2, 0, wxEXPAND, 5 );
-	
+
 	this->SetSizer( bSizer1 );
 	this->Layout();
 	bSizer1->Fit( this );
-	
+
 	// Connect Events
 	m_listBox1->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( SelectCombatGUI::OnSelectLeftFleet ), NULL, this );
 	m_listBox2->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( SelectCombatGUI::onSelectRightFleet ), NULL, this );
@@ -247,12 +248,12 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 	} else {
 		///@todo implement boardgame
 	}
-	
+
 	// if both Players have fleets left, UPF has the opportunity to attack.
 	if (m_satharAttacking){
 		switchRoles();
 	}
-	
+
 	EndModal(1);
 	event.Skip();
 }

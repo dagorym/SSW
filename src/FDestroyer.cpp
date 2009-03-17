@@ -6,6 +6,7 @@
  *
  */
 #include "FDestroyer.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -24,6 +25,20 @@ FDestroyer::FDestroyer() {
 	m_type = "Destroyer";
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(LC);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(T);
+	w->setMaxAmmo(2);
+	w->setCurrentAmmo(2);
+	m_weapons.push_back(w);
+	w = createWeapon(RB);
+	w->setMaxAmmo(4);
+	w->setCurrentAmmo(4);
+	m_weapons.push_back(w);
+	w = createWeapon(EB);
+	m_weapons.push_back(w);
 }
 
 FDestroyer::~FDestroyer(){

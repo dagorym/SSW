@@ -6,6 +6,7 @@
  *
  */
 #include "FAssaultScout.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -26,6 +27,12 @@ FAssaultScout::FAssaultScout() {
 	m_type = "AssaultScout";
 	m_maxDCR=50;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(AR);
+	w->setMaxAmmo(3);
+	w->setCurrentAmmo(3);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
 }
 
 FAssaultScout::~FAssaultScout(){

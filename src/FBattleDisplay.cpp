@@ -37,10 +37,11 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxPoint(leftOffset,3*BORDER+2), wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
 	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxPoint(leftOffset+60,3*BORDER), wxDefaultSize, 0 );
 	m_buttonMoveDone = new wxButton( this, wxID_ANY, wxT("Movement Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
+	m_buttonDefensiveFireDone = new wxButton( this, wxID_ANY, wxT("Defensive Fire Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
 	m_spinCtrl1->Hide();
 	m_button1->Hide();
 	m_buttonMoveDone->Hide();
-
+	m_buttonDefensiveFireDone->Hide();
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
 
@@ -86,6 +87,9 @@ void FBattleDisplay::draw(wxDC &dc){
 		switch (m_parent->getPhase()){
 		case PH_MOVE:
 			drawMoveShip(dc);
+			break;
+		case PH_DEFENSE_FIRE:
+
 			break;
 		}
 		drawCurrentShipStats(dc);
@@ -398,6 +402,7 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 		os.str("");
 		os << s->getDCR();
 		dc.DrawText(os.str(),lMargin+275,BORDER+(int)(1.6*(tSize*2.3)));
+		dc.DrawText(m_parent->getShip()->getWeaponString(),lMargin+80, BORDER+(int)(1.6*(tSize*3.3)));
 	}
 }
 
@@ -428,5 +433,34 @@ void FBattleDisplay::onMoveDone( wxCommandEvent& event ){
 	m_buttonMoveDone->Hide();
 	m_first=true;
 }
+
+void FBattleDisplay::drawDefensiveFire(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	std::ostringstream os;
+	os << "The none moving player may now delcare defensive fire";
+	dc.SetTextForeground(white);
+	dc.DrawText(os.str(),leftOffset,BORDER);
+	os.str("Please select a ship to fire weapons.");
+	dc.DrawText(os.str(),leftOffset,BORDER+16);
+		m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
+		if (m_first){
+		m_buttonDefensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
+			m_buttonDefensiveFireDone->Show();
+		m_first=false;
+	}
+
+}
+
+void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
+	// disconnect the button
+	m_buttonDefensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
+//	std::cerr << "Movement Completed" << std::endl;
+	m_parent->setPhase(PH_ATTACK_FIRE);
+	m_buttonDefensiveFireDone->Hide();
+	m_first=true;
+}
+
+
 
 }

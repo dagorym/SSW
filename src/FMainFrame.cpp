@@ -115,34 +115,39 @@ void FMainFrame::onSave(wxCommandEvent& WXUNUSED(event)) {
 	delete d;
 }
 
-void FMainFrame::onOpen(wxCommandEvent& WXUNUSED(event)) {
-	wxFileDialog *d = new wxFileDialog(this,"Select a game file to open","","","*.ssw",wxFD_FILE_MUST_EXIST|wxFD_OPEN|wxFD_CHANGE_DIR);
-	d->ShowModal();
-	m_game = &(FGame::create(this));
-	// get the file name to open
-	wxString fname = d->GetFilename();
-	// open the file for reading
-	std::ifstream is(fname.c_str(),std::ios::binary);
-	// load up the game
-	m_game->load(is);
-	// draw the screen
-	m_game->draw();
-	GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
-	GetMenuBar()->GetMenu(0)->FindItemByPosition(3)->Enable(true);
-	if(m_game->isUPFTurn()){
-        GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
-        GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
-        GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
-        GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
-		GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
-	} else {
-        GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
-        GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
-        GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
-        GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
-		GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
+void FMainFrame::onOpen(wxCommandEvent& event) {
+	if(m_game!=NULL){  // are we in the middle of a game?  If so offer to save and close it
+		onClose(event);
 	}
-	delete d;
+	if (m_game == NULL){ // if the user canceled the save game option we will not be null and skip this
+		wxFileDialog *d = new wxFileDialog(this,"Select a game file to open","","","*.ssw",wxFD_FILE_MUST_EXIST|wxFD_OPEN|wxFD_CHANGE_DIR);
+		d->ShowModal();
+		m_game = &(FGame::create(this));
+		// get the file name to open
+		wxString fname = d->GetFilename();
+		// open the file for reading
+		std::ifstream is(fname.c_str(),std::ios::binary);
+		// load up the game
+		m_game->load(is);
+		// draw the screen
+		m_game->draw();
+		GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
+		GetMenuBar()->GetMenu(0)->FindItemByPosition(3)->Enable(true);
+		if(m_game->isUPFTurn()){
+			GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
+			GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
+			GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
+			GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
+			GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
+		} else {
+			GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
+			GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
+			GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
+			GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
+			GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
+		}
+		delete d;
+	}
 }
 
 void FMainFrame::onShowPlayers(wxCommandEvent& WXUNUSED(event)) {

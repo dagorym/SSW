@@ -6,6 +6,7 @@
  *
  */
 #include "FBattleship.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -26,6 +27,33 @@ FBattleship::FBattleship() {
 	m_type = "Battleship";
 	m_maxDCR=200;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(DC);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(T);
+	w->setMaxAmmo(8);
+	w->setCurrentAmmo(8);
+	m_weapons.push_back(w);
+	w = createWeapon(RB);
+	w->setMaxAmmo(10);
+	w->setCurrentAmmo(10);
+	m_weapons.push_back(w);
+	w = createWeapon(EB);
+	m_weapons.push_back(w);
+	w = createWeapon(EB);
+	m_weapons.push_back(w);
+	w = createWeapon(PB);
+	m_weapons.push_back(w);
+	w = createWeapon(SM);
+	w->setMaxAmmo(4);
+	w->setCurrentAmmo(4);
+	m_weapons.push_back(w);
+
 }
 
 FBattleship::~FBattleship(){

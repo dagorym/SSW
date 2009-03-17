@@ -6,6 +6,7 @@
  *
  */
 #include "FAssaultCarrier.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -24,6 +25,15 @@ FAssaultCarrier::FAssaultCarrier() {
 	m_type = "AssaultCarrier";
 	m_maxDCR=150;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(PB);
+	m_weapons.push_back(w);
+	w = createWeapon(RB);
+	w->setMaxAmmo(8);
+	w->setCurrentAmmo(8);
+	m_weapons.push_back(w);
+
 }
 
 FAssaultCarrier::~FAssaultCarrier(){

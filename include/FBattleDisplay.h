@@ -78,12 +78,17 @@ protected:
 	bool m_first;
 	/// button for signaling completion of movement phase
 	wxButton* m_buttonMoveDone;
+	/// button for signaling completion of movement phase
+	wxButton* m_buttonDefensiveFireDone;
 
 	/// Event handler for setting the ship's speed
 	void onSetSpeed( wxCommandEvent& event );
 
 	/// event handler for movement complete button
 	void onMoveDone( wxCommandEvent& event );
+
+	/// event handler for defensive fire complete button
+	void onDefensiveFireDone( wxCommandEvent& event );
 
 	/**
 	 * @brief Draws choice of planet icons on display
@@ -242,6 +247,10 @@ protected:
 
 	/// returns a string giving the heading direction
 	std::string getHeadingStr();
+
+	/// Draws prompt to select ship to fire defensive shots
+	void drawDefensiveFire(wxDC &dc);
+
 };
 
 }

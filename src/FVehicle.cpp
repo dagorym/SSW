@@ -6,6 +6,7 @@
  *
  */
 #include "FVehicle.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -38,6 +39,9 @@ FVehicle::FVehicle(){
 FVehicle::~FVehicle(){
 //	std::cerr << "Deleting " << m_name << std::endl;
 	delete m_icon;
+	for (unsigned int i=0; i< m_weapons.size(); i++){  // delete weapons
+		delete m_weapons[i];
+	}
 	m_classCount--;
 	if (m_classCount==0){  // if all players have been deleted
 		m_nextID=0;  // reset the id counter
@@ -56,6 +60,10 @@ const int FVehicle::save(std::ostream &os) const {
 	write(os,m_heading);
 	write(os,m_owner);
 	write(os,m_currentDCR);
+	write(os,m_weapons.size());
+	for (WeaponList::const_iterator itr = m_weapons.begin(); itr != m_weapons.end(); itr++){
+		(*itr)->save(os);
+	}
 	return 0;
 }
 
@@ -78,6 +86,19 @@ int FVehicle::load(std::istream &is) {
 	read(is,m_heading);
 	read(is,m_owner);
 	read(is,m_currentDCR);
+	unsigned int count = 0;
+	read(is,count);
+	for (unsigned int i=0; i< m_weapons.size(); i++){	// they were populated with default values
+		delete m_weapons[i];				// at creation so we need to clear them this is a bit
+	}										// wasteful in resources and could be done better.
+	m_weapons.clear();
+	for (unsigned int i=0; i<count; i++){
+		unsigned int type;
+		read(is,type);
+		FWeapon *w = createWeapon(type);
+		w->load(is);
+		m_weapons.push_back(w);
+	}
 	return 0;
 }
 
@@ -119,5 +140,21 @@ void FVehicle::setDCR(unsigned int dcr){
 		m_currentDCR = dcr;
 	}
 }
+
+std::string FVehicle::getWeaponString(){
+	std::ostringstream os;
+	for (unsigned int i = 0; i < m_weapons.size(); i++){
+		FWeapon *w = m_weapons[i];
+		os << w->getName();
+		if (w->getMaxAmmo()){
+			os << "(x" << w->getAmmo() << ")  ";
+		} else {
+			os << "  ";
+		}
+	}
+	return os.str();
+
+}
+
 
 };

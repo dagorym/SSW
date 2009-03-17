@@ -6,6 +6,7 @@
  *
  */
 #include "FArmedStation.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -26,6 +27,12 @@ FArmedStation::FArmedStation() {
 	m_type = "ArmedStation";
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(RB);
+	w->setMaxAmmo(6);
+	w->setCurrentAmmo(6);
+	m_weapons.push_back(w);
 }
 
 FArmedStation::~FArmedStation(){

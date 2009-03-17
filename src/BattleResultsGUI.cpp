@@ -209,15 +209,84 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	m_staticText10->Enable( false );
 
 	fgSizer7->Add( m_staticText10, 0, wxALL|wxEXPAND, 5 );
-
 	fgSizer5->Add( fgSizer7, 1, wxALIGN_LEFT|wxEXPAND, 5 );
 
+	wxFlexGridSizer* fgSizer71;
+	fgSizer71 = new wxFlexGridSizer( 1, 3, 0, 0 );
+	fgSizer71->AddGrowableCol( 2 );
+	fgSizer71->SetFlexibleDirection( wxBOTH );
+	fgSizer71->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+
+	m_staticText11 = new wxStaticText( this, wxID_ANY, wxT("DCR:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText11->Wrap( -1 );
+	m_staticText11->Enable( false );
+
+	fgSizer71->Add( m_staticText11, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+	m_textCtrl9 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 45,-1 ), 0 );
+	m_textCtrl9->Enable( false );
+	m_textCtrl9->SetMaxSize( wxSize( 45,-1 ) );
+
+	fgSizer71->Add( m_textCtrl9, 0, 0, 5 );
+
+	m_staticText12 = new wxStaticText( this, wxID_ANY, wxT("/ NNN"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText12->Wrap( -1 );
+	m_staticText12->Enable( false );
+
+	fgSizer71->Add( m_staticText12, 0, wxALL|wxEXPAND, 5 );
+
+	fgSizer5->Add( fgSizer71, 1, wxALIGN_LEFT|wxEXPAND|wxTOP|wxBOTTOM, 5 );
+
 	wxFlexGridSizer* fgSizer8;
-	fgSizer8 = new wxFlexGridSizer( 2, 2, 0, 0 );
+	fgSizer8 = new wxFlexGridSizer( 4, 3, 0, 0 );
+	fgSizer8->AddGrowableCol( 0 );
+	fgSizer8->AddGrowableCol( 1 );
+	fgSizer8->AddGrowableCol( 2 );
+	fgSizer8->AddGrowableCol( 3 );
 	fgSizer8->SetFlexibleDirection( wxBOTH );
 	fgSizer8->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
 	fgSizer8->SetMinSize( wxSize( -1,30 ) );
+	m_staticText13 = new wxStaticText( this, wxID_ANY, wxT("Weapon/Defense"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText13->Wrap( -1 );
+	m_staticText13->Enable( false );
+	fgSizer8->Add( m_staticText13, 0, wxALL, 5 );
+
+	m_staticText14 = new wxStaticText( this, wxID_ANY, wxT("Dam?"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText14->Wrap( -1 );
+	m_staticText14->Enable( false );
+	fgSizer8->Add( m_staticText14, 0, wxALL, 5 );
+
+	m_staticText15 = new wxStaticText( this, wxID_ANY, wxT("Ammo/Max"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText15->Wrap( -1 );
+	m_staticText15->Enable( false );
+	fgSizer8->Add( m_staticText15, 0, wxALL, 5 );
+
+	m_staticText16 = new wxStaticText( this, wxID_ANY, wxT("Laser Battery"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText16->Wrap( -1 );
+	m_staticText16->Enable( false );
+	fgSizer8->Add( m_staticText16, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 5 );
+
+	m_checkBox1 = new wxCheckBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_checkBox1->Enable(false);
+
+	fgSizer8->Add( m_checkBox1, 0, wxALIGN_CENTER, 5 );
+
+	wxFlexGridSizer* fgSizer13;
+	fgSizer13 = new wxFlexGridSizer( 2, 2, 0, 0 );
+	fgSizer13->SetFlexibleDirection( wxBOTH );
+	fgSizer13->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+
+	m_textCtrl10 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 30,-1 ), 0 );
+	m_textCtrl10->Enable(false);
+	fgSizer13->Add( m_textCtrl10, 0, wxALIGN_CENTER|wxALL, 5 );
+
+	m_staticText17 = new wxStaticText( this, wxID_ANY, wxT("N/A"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText17->Wrap( -1 );
+	m_staticText17->Enable( false );
+	fgSizer13->Add( m_staticText17, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT, 5 );
+
+	fgSizer8->Add( fgSizer13, 1, wxEXPAND, 5 );
 	fgSizer5->Add( fgSizer8, 1, wxEXPAND, 5 );
 
 	wxFlexGridSizer* fgSizer9;
@@ -327,6 +396,16 @@ void BattleResultsGUI::onSelectFleet( wxCommandEvent& event ){
 		m_staticText9->Enable(false);
 		m_textCtrl8->Enable(false);
 		m_staticText10->Enable(false);
+		m_staticText11->Enable(false);
+		m_textCtrl9->Enable(false);
+		m_staticText12->Enable(false);
+		m_staticText13->Enable(false);
+		m_staticText14->Enable(false);
+		m_staticText15->Enable(false);
+		m_staticText16->Enable(false);
+		m_checkBox1->Enable(false);
+		m_textCtrl10->Enable(false);
+		m_staticText17->Enable(false);
 
 
 	} else {
@@ -360,6 +439,16 @@ void BattleResultsGUI::onSelectFleet( wxCommandEvent& event ){
 		m_staticText9->Enable(false);
 		m_textCtrl8->Enable(false);
 		m_staticText10->Enable(false);
+		m_staticText11->Enable(false);
+		m_textCtrl9->Enable(false);
+		m_staticText12->Enable(false);
+		m_staticText13->Enable(false);
+		m_staticText14->Enable(false);
+		m_staticText15->Enable(false);
+		m_staticText16->Enable(false);
+		m_checkBox1->Enable(false);
+		m_textCtrl10->Enable(false);
+		m_staticText17->Enable(false);
 	}
 	event.Skip();
 }
@@ -415,6 +504,8 @@ void BattleResultsGUI::onSelectShip( wxCommandEvent& event ){
 		m_staticText8->SetLabel(wxString::Format("/ %d",m_curShip->getMaxMR()));
 		m_textCtrl8->SetValue(wxString::Format("%d",m_curShip->getHP()));
 		m_staticText10->SetLabel(wxString::Format("/ %d",m_curShip->getMaxHP()));
+		m_textCtrl9->SetValue(wxString::Format("%d",m_curShip->getDCR()));
+		m_staticText12->SetLabel(wxString::Format("/ %d",m_curShip->getMaxDCR()));
 	} else {
 		m_curShip=NULL;
 		if (count == 0) {
@@ -427,10 +518,12 @@ void BattleResultsGUI::onSelectShip( wxCommandEvent& event ){
 		m_staticText6->SetLabel("/");
 		m_staticText8->SetLabel("/");
 		m_staticText10->SetLabel("/");
+		m_staticText12->SetLabel("/");
 		m_textCtrl2->Clear();
 		m_textCtrl3->Clear();
 		m_textCtrl7->Clear();
 		m_textCtrl8->Clear();
+		m_textCtrl9->Clear();
 	}
 	m_staticText2->Enable(on);
 	m_staticText3->Enable(on);
@@ -445,6 +538,16 @@ void BattleResultsGUI::onSelectShip( wxCommandEvent& event ){
 	m_staticText9->Enable(on);
 	m_textCtrl8->Enable(on);
 	m_staticText10->Enable(on);
+	m_staticText11->Enable(on);
+	m_textCtrl9->Enable(on);
+	m_staticText12->Enable(on);
+	m_staticText13->Enable(on);
+	m_staticText14->Enable(on);
+	m_staticText15->Enable(on);
+	m_staticText16->Enable(on);
+	m_checkBox1->Enable(on);
+	m_textCtrl10->Enable(on);
+	m_staticText17->Enable(on);
 	event.Skip();
 }
 
@@ -502,6 +605,8 @@ void BattleResultsGUI::onUpdateShip( wxCommandEvent& event ){
 	m_curShip->setMR((unsigned int)val);
 	(m_textCtrl8->GetValue()).ToLong(&val);
 	m_curShip->setHP((int)val);
+	(m_textCtrl9->GetValue()).ToLong(&val);
+	m_curShip->setDCR((int)val);
 	m_button4->Enable(false);
 	event.Skip();
 }

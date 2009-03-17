@@ -148,6 +148,10 @@ void FBattleScreen::setPhase(int p){
 		m_map->finalizeMove();
 		/// @todo drop into combat phase
 		setPhase(PH_MOVE);
+//		setPhase(PH_DEFENSE_FIRE);
+//		m_curShip = NULL;
+//		m_map->Refresh();
+//		m_display->Refresh();
 	} else {
 		m_map->Refresh();
 		m_display->Refresh();

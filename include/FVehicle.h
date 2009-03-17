@@ -9,6 +9,7 @@
 #define _FVEHICLE_H_
 
 #include "FPObject.h"
+#include "FWeapon.h"
 #include "wx/wx.h"
 #include <vector>
 
@@ -79,6 +80,10 @@ public:
 	const unsigned int & getDCR() const { return m_currentDCR; }
 	/// set the ship's current DCR
 	void setDCR(unsigned int dcr);
+	/// get count of ship's weapons
+	unsigned int getWeaponCount() { return m_weapons.size(); }
+	/// get pointer to specified weapon;
+	FWeapon * getWeapon(unsigned int i) { if (i<m_weapons.size()) { return m_weapons[i]; } else { return NULL; } }
 
 
 	/**
@@ -108,6 +113,19 @@ public:
 	 * @date Last Modified:  Mar 06, 2008
 	 */
 	virtual int load(std::istream &is);
+
+	/**
+	 * @brief generates a string listing all weapons
+	 *
+	 * This method cycles through the list of weapons and creates a string showing
+	 * all the weapons and their current ammo where appropriate.  It is returned
+	 * as a std::string
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 13, 2009
+	 * @date Last Modified: Mar 13, 2009
+	 */
+	std::string getWeaponString();
 
 protected:
 	/// counter for total number of vehicles and next ship ID
@@ -146,6 +164,8 @@ protected:
 	unsigned int m_maxDCR;
 	/// The current DCR of the vessel;
 	unsigned int m_currentDCR;
+	/// list of ship's weapons
+	WeaponList m_weapons;
 };
 
 typedef std::vector<FVehicle *> VehicleList;

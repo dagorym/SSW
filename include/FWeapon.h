@@ -9,7 +9,7 @@
 #define FWEAPON_H_
 
 #include "FPObject.h"
-#include "FVehicle.h"
+//#include "FVehicle.h"
 #include <string>
 #include <vector>
 
@@ -17,6 +17,8 @@ namespace Frontier
 {
 /// types of weapons
 enum {NONE,LB,LC,DC,EB,PB,RB,AR,T,SM,M};
+
+class FVehicle;
 
 /**
  * @brief Base class for all weapon objects

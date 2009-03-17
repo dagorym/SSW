@@ -6,6 +6,7 @@
  *
  */
 #include "FFrigate.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -24,6 +25,19 @@ FFrigate::FFrigate() {
 	m_type = "Frigate";
 	m_maxDCR=70;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(LC);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(T);
+	w->setMaxAmmo(2);
+	w->setCurrentAmmo(2);
+	m_weapons.push_back(w);
+	w = createWeapon(RB);
+	w->setMaxAmmo(4);
+	w->setCurrentAmmo(4);
+	m_weapons.push_back(w);
+
 }
 
 FFrigate::~FFrigate(){

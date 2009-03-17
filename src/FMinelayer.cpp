@@ -6,6 +6,7 @@
  *
  */
 #include "FMinelayer.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -26,6 +27,19 @@ FMinelayer::FMinelayer() {
 	m_type = "Minelayer";
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(SM);
+	w->setMaxAmmo(4);
+	w->setCurrentAmmo(4);
+	m_weapons.push_back(w);
+	w = createWeapon(M);
+	w->setMaxAmmo(20);
+	w->setCurrentAmmo(20);
+	m_weapons.push_back(w);
+
 }
 
 FMinelayer::~FMinelayer(){

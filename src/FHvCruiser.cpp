@@ -6,6 +6,7 @@
  *
  */
 #include "FHvCruiser.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -24,6 +25,29 @@ FHvCruiser::FHvCruiser() {
 	m_type = "HvCruiser";
 	m_maxDCR=120;
 	m_currentDCR=m_maxDCR;
+	FWeapon *w = createWeapon(DC);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(LB);
+	m_weapons.push_back(w);
+	w = createWeapon(T);
+	w->setMaxAmmo(4);
+	w->setCurrentAmmo(4);
+	m_weapons.push_back(w);
+	w = createWeapon(RB);
+	w->setMaxAmmo(8);
+	w->setCurrentAmmo(8);
+	m_weapons.push_back(w);
+	w = createWeapon(EB);
+	m_weapons.push_back(w);
+	w = createWeapon(PB);
+	m_weapons.push_back(w);
+	w = createWeapon(SM);
+	w->setMaxAmmo(2);
+	w->setCurrentAmmo(2);
+	m_weapons.push_back(w);
+
 }
 
 FHvCruiser::~FHvCruiser(){
