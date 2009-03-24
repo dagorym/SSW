@@ -3,10 +3,9 @@
  * @brief Implementation file for FApp class
  * @author Tom Stephens
  * @date Created:  Feb 28, 2005
- * 
+ *
  */
 #include "FApp.h"
-//#include "FGame.h"
 #include "FMainFrame.h"
 #include <wx/splash.h>
 using namespace Frontier;

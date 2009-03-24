@@ -10,10 +10,9 @@
 #define _FRONTIER_H_
 
 #include "wxWidgets.h"
-#include "FVehicle.h"
-#include "FWeapon.h"
 #include <string>
 #include <cstdlib>
+#include <vector>
 
 typedef std::vector<wxImage> ImageList;
 
@@ -63,14 +62,6 @@ inline double round(const double & v){
 	return floor( v + 0.5 );
 }
 #endif
-
-/// This method take the ship type name and returns a pointer to an
-/// object of that type
-Frontier::FVehicle * createShip(std::string type);
-
-/// This method takes the weapon type and returns a pointer ot an
-/// object of that type
-Frontier::FWeapon * createWeapon (int type);
 
 
 #endif //_FRONTIER_H_

@@ -7,7 +7,7 @@
  */
 #include "FMainFrame.h"
 #include "Frontier.h"
-#include "FBattleScreen.h"
+#include "tactical/FBattleScreen.h"
 #include <iostream>
 
 

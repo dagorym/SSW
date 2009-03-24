@@ -1,17 +1,7 @@
-#CXXFLAGS = -I../include -I/usr/local/lib/wx/include/gtk2-ansi-release-2.8 \
-#            -I/usr/local/include/wx-2.8 \
-#            -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -pthread -g 
+CXXFLAGS = -I../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
 
-#LIBS = -L/usr/local/lib -pthread -lwx_gtk2_richtext-2.8 -lwx_gtk2_aui-2.8 -lwx_gtk2_xrc-2.8 \
-#       -lwx_gtk2_qa-2.8 -lwx_gtk2_html-2.8 -lwx_gtk2_adv-2.8 -lwx_gtk2_core-2.8 \
-#       -lwx_base_xml-2.8 -lwx_base_net-2.8 -lwx_base-2.8
-
-CXXFLAGS = -I../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX
-
-LIBS = `wx-config --libs`
-
-#CXXFLAGS = -I../include -I/home/tstephen/src/wxGTK-2.8.7/buildgtkm/lib/wx/include/gtk2-ansi-release-static-2.8 -I/home/tstephen/src/wxGTK-2.8.7/include -I/home/tstephen/src/wxGTK-2.8.7/contrib/include -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXGTK__ -pthread -g
-#LIBS = -L/home/tstephen/src/wxGTK-2.8.7/buildgtkm/lib -pthread   /home/tstephen/src/wxGTK-2.8.7/buildgtkm/lib/libwx_gtk2-2.8.a -pthread -L/lib -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lm -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -ldl -lgthread-2.0 -lglib-2.0 -lXinerama -lXxf86vm -lSM -lwxregex-2.8 -lwxexpat-2.8 -lwxtiff-2.8 -lwxjpeg-2.8 -lwxpng-2.8 -lwxzlib-2.8 -ldl -lm
+LIBS = `wx-config --libs` -Lstrategic -lstrategic -Lgui -lgui -Lships -lships \
+       -Ltactical -ltactical -Lweapons -lweapons -Lcore -lcore
 
 #################### the implicit rules #############################
 
@@ -35,250 +25,80 @@ LIBS = `wx-config --libs`
 
 ############################# Paths #################################
 
-OBJS = FObject.o FPObject.o FVehicle.o FFleet.o \
-       FPlayer.o FAstroBody.o FPlanet.o FSystem.o FJumpRoute.o FMap.o \
-       FGame.o FApp.o FMainFrame.o Frontier.o SystemDialogGUI.o SelectJumpGUI.o \
-       FAssaultScout.o FAssaultCarrier.o FBattleship.o FDestroyer.o FFighter.o \
-       FFrigate.o FHvCruiser.o FLtCruiser.o FMinelayer.o ViewFleetGUI.o \
-       UPFUnattachedGUI.o SatharFleetsGUI.o FFortress.o FArmedStation.o \
-       FFortifiedStation.o TransferShipsGUI.o  SatharRetreatGUI.o \
-       SelectCombatGUI.o TwoPlanetsGUI.o CombatLocationGUI.o \
-       CombatFleetsGUI.o SelectResolutionGUI.o BattleResultsGUI.o \
-       FBattleBoard.o FBattleScreen.o FBattleDisplay.o FWeapon.o \
-       FLaserBattery.o FLaserCannon.o FProtonBattery.o FElectronBattery.o \
-       FDisruptorCannon.o FRocketBattery.o FAssaultRocket.o FTorpedo.o \
-       FSeekerMissileLauncher.o FMineLauncher.o
+OBJS = FApp.o Frontier.o FMainFrame.o
 
-#OBJS = FApp.o FMainFrame.o Frontier.o FObject.o FPObject.o
+OBJ_LIBS = libcore.a libgui.a libships.a libstrategic.a libtactical.a libweapons.a
 
 TARGET = SSW
 
-all: $(OBJS)
+all: $(OBJ_LIBS) $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+
+libcore.a:
+	@ cd core; $(MAKE) $@
+	
+libgui.a:
+	@ cd gui; $(MAKE) $@
+	
+libships.a:
+	@ cd ships; $(MAKE) $@
+	
+libstrategic.a:
+	@ cd strategic; $(MAKE) $@
+	
+libtactical.a:
+	@ cd tactical; $(MAKE) $@
+	
+libweapons.a:
+	@ cd weapons; $(MAKE) $@
 	
 objs: $(OBJS)
 
 .PHONY:
+all_clean:
+	@ cd core; ${MAKE} clean
+	@ cd gui; ${MAKE} clean
+	@ cd ships; ${MAKE} clean
+	@ cd strategic; ${MAKE} clean
+	@ cd tactical; ${MAKE} clean
+	@ cd weapons; ${MAKE} clean
+	rm $(OBJS)
+	rm $(TARGET)
+	
 clean:
 	rm $(OBJS)
 	rm $(TARGET)
 
-
 # DO NOT DELETE
 
-BattleResultsGUI.o: ../include/BattleResultsGUI.h ../include/FFleet.h
-BattleResultsGUI.o: ../include/FPObject.h ../include/FObject.h
-BattleResultsGUI.o: ../include/FVehicle.h ../include/FPlayer.h
-BattleResultsGUI.o: ../include/FMap.h ../include/FSystem.h
-BattleResultsGUI.o: ../include/FPlanet.h ../include/FAstroBody.h
-BattleResultsGUI.o: ../include/FJumpRoute.h ../include/FGame.h
-CombatFleetsGUI.o: ../include/CombatFleetsGUI.h ../include/FSystem.h
-CombatFleetsGUI.o: ../include/FPObject.h ../include/FObject.h
-CombatFleetsGUI.o: ../include/FPlanet.h ../include/FAstroBody.h
-CombatFleetsGUI.o: ../include/FVehicle.h ../include/FFleet.h
-CombatFleetsGUI.o: ../include/ViewFleetGUI.h
-CombatLocationGUI.o: ../include/CombatLocationGUI.h ../include/FPlanet.h
-CombatLocationGUI.o: ../include/FAstroBody.h ../include/FPObject.h
-CombatLocationGUI.o: ../include/FObject.h ../include/FVehicle.h
-FApp.o: ../include/FApp.h ../include/FObject.h ../include/FMainFrame.h
-FApp.o: ../include/FGame.h ../include/FPObject.h ../include/FPlayer.h
-FApp.o: ../include/FFleet.h ../include/FVehicle.h ../include/FMap.h
-FApp.o: ../include/FSystem.h ../include/FPlanet.h ../include/FAstroBody.h
-FApp.o: ../include/FJumpRoute.h
-FArmedStation.o: ../include/FArmedStation.h ../include/FVehicle.h
-FArmedStation.o: ../include/FPObject.h ../include/FObject.h
-FAssaultCarrier.o: ../include/FAssaultCarrier.h ../include/FVehicle.h
-FAssaultCarrier.o: ../include/FPObject.h ../include/FObject.h
-FAssaultRocket.o: ../include/FAssaultRocket.h ../include/FWeapon.h
-FAssaultRocket.o: ../include/FPObject.h ../include/FObject.h
-FAssaultRocket.o: ../include/FVehicle.h
-FAssaultScout.o: ../include/FAssaultScout.h ../include/FVehicle.h
-FAssaultScout.o: ../include/FPObject.h ../include/FObject.h
-FAstroBody.o: ../include/FAstroBody.h ../include/FPObject.h
-FAstroBody.o: ../include/FObject.h
-FBattleBoard.o: ../include/FBattleScreen.h ../include/Frontier.h
-FBattleBoard.o: ../include/wxWidgets.h ../include/FVehicle.h
-FBattleBoard.o: ../include/FPObject.h ../include/FObject.h
-FBattleBoard.o: ../include/FWeapon.h ../include/FBattleBoard.h
-FBattleBoard.o: ../include/FFleet.h ../include/FBattleDisplay.h
-FBattleDisplay.o: ../include/Frontier.h ../include/wxWidgets.h
-FBattleDisplay.o: ../include/FVehicle.h ../include/FPObject.h
-FBattleDisplay.o: ../include/FObject.h ../include/FWeapon.h
-FBattleDisplay.o: ../include/FBattleScreen.h ../include/FBattleBoard.h
-FBattleDisplay.o: ../include/FFleet.h ../include/FBattleDisplay.h
-FBattleScreen.o: ../include/FBattleScreen.h ../include/Frontier.h
-FBattleScreen.o: ../include/wxWidgets.h ../include/FVehicle.h
-FBattleScreen.o: ../include/FPObject.h ../include/FObject.h
-FBattleScreen.o: ../include/FWeapon.h ../include/FBattleBoard.h
-FBattleScreen.o: ../include/FFleet.h ../include/FBattleDisplay.h
-FBattleship.o: ../include/FBattleship.h ../include/FVehicle.h
-FBattleship.o: ../include/FPObject.h ../include/FObject.h
-FDestroyer.o: ../include/FDestroyer.h ../include/FVehicle.h
-FDestroyer.o: ../include/FPObject.h ../include/FObject.h
-FDisruptorCannon.o: ../include/FDisruptorCannon.h ../include/FWeapon.h
-FDisruptorCannon.o: ../include/FPObject.h ../include/FObject.h
-FDisruptorCannon.o: ../include/FVehicle.h
-FElectronBattery.o: ../include/FElectronBattery.h ../include/FWeapon.h
-FElectronBattery.o: ../include/FPObject.h ../include/FObject.h
-FElectronBattery.o: ../include/FVehicle.h
-FFighter.o: ../include/FFighter.h ../include/FVehicle.h ../include/FPObject.h
-FFighter.o: ../include/FObject.h
-FFleet.o: ../include/FFleet.h ../include/FPObject.h ../include/FObject.h
-FFleet.o: ../include/FVehicle.h ../include/Frontier.h ../include/wxWidgets.h
-FFleet.o: ../include/FWeapon.h ../include/FJumpRoute.h ../include/FSystem.h
-FFleet.o: ../include/FPlanet.h ../include/FAstroBody.h
-FFortifiedStation.o: ../include/FFortifiedStation.h ../include/FVehicle.h
-FFortifiedStation.o: ../include/FPObject.h ../include/FObject.h
-FFortress.o: ../include/FFortress.h ../include/FVehicle.h
-FFortress.o: ../include/FPObject.h ../include/FObject.h
-FFrigate.o: ../include/FFrigate.h ../include/FVehicle.h ../include/FPObject.h
-FFrigate.o: ../include/FObject.h
-FGame.o: ../include/FGame.h ../include/FPObject.h ../include/FObject.h
-FGame.o: ../include/FPlayer.h ../include/FFleet.h ../include/FVehicle.h
-FGame.o: ../include/FMap.h ../include/FSystem.h ../include/FPlanet.h
-FGame.o: ../include/FAstroBody.h ../include/FJumpRoute.h
-FGame.o: ../include/SystemDialogGUI.h ../include/Frontier.h
-FGame.o: ../include/wxWidgets.h ../include/FWeapon.h
-FGame.o: ../include/UPFUnattachedGUI.h ../include/SatharFleetsGUI.h
-FGame.o: ../include/ships.h ../include/FFighter.h ../include/FAssaultScout.h
-FGame.o: ../include/FFrigate.h ../include/FDestroyer.h
-FGame.o: ../include/FMinelayer.h ../include/FLtCruiser.h
-FGame.o: ../include/FHvCruiser.h ../include/FAssaultCarrier.h
-FGame.o: ../include/FBattleship.h ../include/FFortress.h
-FGame.o: ../include/FFortifiedStation.h ../include/FArmedStation.h
-FGame.o: ../include/ViewFleetGUI.h ../include/SatharRetreatGUI.h
-FGame.o: ../include/SelectCombatGUI.h
-FHvCruiser.o: ../include/FHvCruiser.h ../include/FVehicle.h
-FHvCruiser.o: ../include/FPObject.h ../include/FObject.h
-FJumpRoute.o: ../include/FJumpRoute.h ../include/FPObject.h
-FJumpRoute.o: ../include/FObject.h ../include/FSystem.h ../include/FPlanet.h
-FJumpRoute.o: ../include/FAstroBody.h ../include/FVehicle.h
-FJumpRoute.o: ../include/FFleet.h
-FLaserBattery.o: ../include/FLaserBattery.h ../include/FWeapon.h
-FLaserBattery.o: ../include/FPObject.h ../include/FObject.h
-FLaserBattery.o: ../include/FVehicle.h
-FLaserCannon.o: ../include/FLaserCannon.h ../include/FWeapon.h
-FLaserCannon.o: ../include/FPObject.h ../include/FObject.h
-FLaserCannon.o: ../include/FVehicle.h
-FLtCruiser.o: ../include/FLtCruiser.h ../include/FVehicle.h
-FLtCruiser.o: ../include/FPObject.h ../include/FObject.h
-FMainFrame.o: ../include/FMainFrame.h ../include/FGame.h
-FMainFrame.o: ../include/FPObject.h ../include/FObject.h ../include/FPlayer.h
-FMainFrame.o: ../include/FFleet.h ../include/FVehicle.h ../include/FMap.h
-FMainFrame.o: ../include/FSystem.h ../include/FPlanet.h
-FMainFrame.o: ../include/FAstroBody.h ../include/FJumpRoute.h
-FMainFrame.o: ../include/Frontier.h ../include/wxWidgets.h
-FMainFrame.o: ../include/FWeapon.h ../include/FBattleScreen.h
-FMainFrame.o: ../include/FBattleBoard.h ../include/FBattleDisplay.h
-FMap.o: ../include/FMap.h ../include/FPObject.h ../include/FObject.h
-FMap.o: ../include/FSystem.h ../include/FPlanet.h ../include/FAstroBody.h
-FMap.o: ../include/FVehicle.h ../include/FFleet.h ../include/FJumpRoute.h
-FMineLauncher.o: ../include/FMineLauncher.h ../include/FWeapon.h
-FMineLauncher.o: ../include/FPObject.h ../include/FObject.h
-FMineLauncher.o: ../include/FVehicle.h
-FMinelayer.o: ../include/FMinelayer.h ../include/FVehicle.h
-FMinelayer.o: ../include/FPObject.h ../include/FObject.h
-FObject.o: ../include/FObject.h
-FPlanet.o: ../include/FPlanet.h ../include/FAstroBody.h ../include/FPObject.h
-FPlanet.o: ../include/FObject.h ../include/FVehicle.h ../include/Frontier.h
-FPlanet.o: ../include/wxWidgets.h ../include/FWeapon.h
-FPlayer.o: ../include/FPlayer.h ../include/FPObject.h ../include/FObject.h
-FPlayer.o: ../include/FFleet.h ../include/FVehicle.h ../include/FMap.h
-FPlayer.o: ../include/FSystem.h ../include/FPlanet.h ../include/FAstroBody.h
-FPlayer.o: ../include/FJumpRoute.h ../include/Frontier.h
-FPlayer.o: ../include/wxWidgets.h ../include/FWeapon.h ../include/ships.h
-FPlayer.o: ../include/FFighter.h ../include/FAssaultScout.h
-FPlayer.o: ../include/FFrigate.h ../include/FDestroyer.h
-FPlayer.o: ../include/FMinelayer.h ../include/FLtCruiser.h
-FPlayer.o: ../include/FHvCruiser.h ../include/FAssaultCarrier.h
-FPlayer.o: ../include/FBattleship.h ../include/FFortress.h
-FPlayer.o: ../include/FFortifiedStation.h ../include/FArmedStation.h
-FPObject.o: ../include/FPObject.h ../include/FObject.h
-FProtonBattery.o: ../include/FProtonBattery.h ../include/FWeapon.h
-FProtonBattery.o: ../include/FPObject.h ../include/FObject.h
-FProtonBattery.o: ../include/FVehicle.h
-FRocketBattery.o: ../include/FRocketBattery.h ../include/FWeapon.h
-FRocketBattery.o: ../include/FPObject.h ../include/FObject.h
-FRocketBattery.o: ../include/FVehicle.h
-Frontier.o: ../include/FApp.h ../include/FObject.h ../include/FMainFrame.h
-Frontier.o: ../include/FGame.h ../include/FPObject.h ../include/FPlayer.h
-Frontier.o: ../include/FFleet.h ../include/FVehicle.h ../include/FMap.h
-Frontier.o: ../include/FSystem.h ../include/FPlanet.h ../include/FAstroBody.h
-Frontier.o: ../include/FJumpRoute.h ../include/FBattleScreen.h
-Frontier.o: ../include/Frontier.h ../include/wxWidgets.h ../include/FWeapon.h
-Frontier.o: ../include/FBattleBoard.h ../include/FBattleDisplay.h
-Frontier.o: ../include/ships.h ../include/FFighter.h
-Frontier.o: ../include/FAssaultScout.h ../include/FFrigate.h
-Frontier.o: ../include/FDestroyer.h ../include/FMinelayer.h
-Frontier.o: ../include/FLtCruiser.h ../include/FHvCruiser.h
-Frontier.o: ../include/FAssaultCarrier.h ../include/FBattleship.h
-Frontier.o: ../include/FFortress.h ../include/FFortifiedStation.h
-Frontier.o: ../include/FArmedStation.h ../include/weapons.h
-Frontier.o: ../include/FLaserBattery.h ../include/FLaserCannon.h
-Frontier.o: ../include/FElectronBattery.h ../include/FProtonBattery.h
-Frontier.o: ../include/FRocketBattery.h ../include/FDisruptorCannon.h
-Frontier.o: ../include/FTorpedo.h ../include/FAssaultRocket.h
-Frontier.o: ../include/FSeekerMissileLauncher.h ../include/FMineLauncher.h
-FSeekerMissileLauncher.o: ../include/FSeekerMissileLauncher.h
-FSeekerMissileLauncher.o: ../include/FWeapon.h ../include/FPObject.h
-FSeekerMissileLauncher.o: ../include/FObject.h ../include/FVehicle.h
-FSystem.o: ../include/FSystem.h ../include/FPObject.h ../include/FObject.h
-FSystem.o: ../include/FPlanet.h ../include/FAstroBody.h ../include/FVehicle.h
-FSystem.o: ../include/FFleet.h
-FTorpedo.o: ../include/FTorpedo.h ../include/FWeapon.h ../include/FPObject.h
-FTorpedo.o: ../include/FObject.h ../include/FVehicle.h
-FVehicle.o: ../include/FVehicle.h ../include/FPObject.h ../include/FObject.h
-FWeapon.o: ../include/FWeapon.h ../include/FPObject.h ../include/FObject.h
-FWeapon.o: ../include/FVehicle.h
-SatharFleetsGUI.o: ../include/SatharFleetsGUI.h ../include/FPlayer.h
-SatharFleetsGUI.o: ../include/FPObject.h ../include/FObject.h
-SatharFleetsGUI.o: ../include/FFleet.h ../include/FVehicle.h
-SatharFleetsGUI.o: ../include/FMap.h ../include/FSystem.h
-SatharFleetsGUI.o: ../include/FPlanet.h ../include/FAstroBody.h
-SatharFleetsGUI.o: ../include/FJumpRoute.h
-SatharRetreatGUI.o: ../include/SatharRetreatGUI.h
-SelectCombatGUI.o: ../include/SelectCombatGUI.h ../include/FSystem.h
-SelectCombatGUI.o: ../include/FPObject.h ../include/FObject.h
-SelectCombatGUI.o: ../include/FPlanet.h ../include/FAstroBody.h
-SelectCombatGUI.o: ../include/FVehicle.h ../include/FFleet.h
-SelectCombatGUI.o: ../include/FPlayer.h ../include/FMap.h
-SelectCombatGUI.o: ../include/FJumpRoute.h ../include/ViewFleetGUI.h
-SelectCombatGUI.o: ../include/TwoPlanetsGUI.h ../include/CombatLocationGUI.h
-SelectCombatGUI.o: ../include/CombatFleetsGUI.h
-SelectCombatGUI.o: ../include/SelectResolutionGUI.h
-SelectCombatGUI.o: ../include/BattleResultsGUI.h
-SelectJumpGUI.o: ../include/SelectJumpGUI.h ../include/FMap.h
-SelectJumpGUI.o: ../include/FPObject.h ../include/FObject.h
-SelectJumpGUI.o: ../include/FSystem.h ../include/FPlanet.h
-SelectJumpGUI.o: ../include/FAstroBody.h ../include/FVehicle.h
-SelectJumpGUI.o: ../include/FFleet.h ../include/FJumpRoute.h
-SelectResolutionGUI.o: ../include/SelectResolutionGUI.h ../include/FFleet.h
-SelectResolutionGUI.o: ../include/FPObject.h ../include/FObject.h
-SelectResolutionGUI.o: ../include/FVehicle.h
-SystemDialogGUI.o: ../include/SystemDialogGUI.h ../include/FMap.h
-SystemDialogGUI.o: ../include/FPObject.h ../include/FObject.h
-SystemDialogGUI.o: ../include/FSystem.h ../include/FPlanet.h
-SystemDialogGUI.o: ../include/FAstroBody.h ../include/FVehicle.h
-SystemDialogGUI.o: ../include/FFleet.h ../include/FJumpRoute.h
-SystemDialogGUI.o: ../include/FPlayer.h ../include/SelectJumpGUI.h
-SystemDialogGUI.o: ../include/ViewFleetGUI.h ../include/TransferShipsGUI.h
-TransferShipsGUI.o: ../include/TransferShipsGUI.h ../include/FPlayer.h
-TransferShipsGUI.o: ../include/FPObject.h ../include/FObject.h
-TransferShipsGUI.o: ../include/FFleet.h ../include/FVehicle.h
-TransferShipsGUI.o: ../include/FMap.h ../include/FSystem.h
-TransferShipsGUI.o: ../include/FPlanet.h ../include/FAstroBody.h
-TransferShipsGUI.o: ../include/FJumpRoute.h
-TwoPlanetsGUI.o: ../include/TwoPlanetsGUI.h ../include/FSystem.h
-TwoPlanetsGUI.o: ../include/FPObject.h ../include/FObject.h
-TwoPlanetsGUI.o: ../include/FPlanet.h ../include/FAstroBody.h
-TwoPlanetsGUI.o: ../include/FVehicle.h ../include/FFleet.h
-UPFUnattachedGUI.o: ../include/UPFUnattachedGUI.h ../include/FPlayer.h
-UPFUnattachedGUI.o: ../include/FPObject.h ../include/FObject.h
-UPFUnattachedGUI.o: ../include/FFleet.h ../include/FVehicle.h
-UPFUnattachedGUI.o: ../include/FMap.h ../include/FSystem.h
-UPFUnattachedGUI.o: ../include/FPlanet.h ../include/FAstroBody.h
-UPFUnattachedGUI.o: ../include/FJumpRoute.h
-ViewFleetGUI.o: ../include/ViewFleetGUI.h ../include/FFleet.h
-ViewFleetGUI.o: ../include/FPObject.h ../include/FObject.h
-ViewFleetGUI.o: ../include/FVehicle.h ../include/FSystem.h
-ViewFleetGUI.o: ../include/FPlanet.h ../include/FAstroBody.h
+FApp.o: ../include/FApp.h ../include/core/FObject.h ../include/FMainFrame.h
+FApp.o: ../include/strategic/FGame.h ../include/core/FPObject.h
+FApp.o: ../include/core/FObject.h ../include/strategic/FPlayer.h
+FApp.o: ../include/strategic/FFleet.h ../include/ships/FVehicle.h
+FApp.o: ../include/weapons/FWeapon.h ../include/strategic/FMap.h
+FApp.o: ../include/strategic/FSystem.h ../include/strategic/FPlanet.h
+FApp.o: ../include/strategic/FAstroBody.h ../include/strategic/FJumpRoute.h
+FMainFrame.o: ../include/FMainFrame.h ../include/strategic/FGame.h
+FMainFrame.o: ../include/core/FPObject.h ../include/core/FObject.h
+FMainFrame.o: ../include/strategic/FPlayer.h ../include/strategic/FFleet.h
+FMainFrame.o: ../include/ships/FVehicle.h ../include/weapons/FWeapon.h
+FMainFrame.o: ../include/strategic/FMap.h ../include/strategic/FSystem.h
+FMainFrame.o: ../include/strategic/FPlanet.h
+FMainFrame.o: ../include/strategic/FAstroBody.h
+FMainFrame.o: ../include/strategic/FJumpRoute.h ../include/Frontier.h
+FMainFrame.o: ../include/wxWidgets.h ../include/tactical/FBattleScreen.h
+FMainFrame.o: ../include/tactical/FBattleBoard.h
+FMainFrame.o: ../include/strategic/FFleet.h
+FMainFrame.o: ../include/tactical/FBattleDisplay.h
+Frontier.o: ../include/FApp.h ../include/core/FObject.h
+Frontier.o: ../include/FMainFrame.h ../include/strategic/FGame.h
+Frontier.o: ../include/core/FPObject.h ../include/core/FObject.h
+Frontier.o: ../include/strategic/FPlayer.h ../include/strategic/FFleet.h
+Frontier.o: ../include/ships/FVehicle.h ../include/weapons/FWeapon.h
+Frontier.o: ../include/strategic/FMap.h ../include/strategic/FSystem.h
+Frontier.o: ../include/strategic/FPlanet.h ../include/strategic/FAstroBody.h
+Frontier.o: ../include/strategic/FJumpRoute.h
+Frontier.o: ../include/tactical/FBattleScreen.h ../include/Frontier.h
+Frontier.o: ../include/wxWidgets.h ../include/tactical/FBattleBoard.h
+Frontier.o: ../include/strategic/FFleet.h
+Frontier.o: ../include/tactical/FBattleDisplay.h
