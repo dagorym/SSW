@@ -1,5 +1,5 @@
 /**
- * @file FProtonBattery.h
+ * @file FProtonBattery.cpp
  * @brief Implementation file for FProtonBattery class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

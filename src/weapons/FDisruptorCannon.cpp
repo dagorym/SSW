@@ -1,5 +1,5 @@
 /**
- * @file FDisruptorCannon.h
+ * @file FDisruptorCannon.cpp
  * @brief Implementation file for FDisruptorCannon class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

@@ -43,7 +43,7 @@ public:
 	 * @param name The system name
 	 * @param x The x coordinate value
 	 * @param y The y coordinate value
-	 * @param x The z coordinate value
+	 * @param z The z coordinate value
 	 * @param owner The ID of the owning player
 	 *
 	 * @author Tom Stephens
@@ -197,7 +197,7 @@ public:
    *
    * @param x The x coordinate value
    * @param y The y coordinate value
-   * @param x The z coordinate value
+   * @param z The z coordinate value
    *
    * @author Tom Stephens
    * @date Created:  Jan 17, 2005
@@ -245,7 +245,7 @@ public:
    *
    * @author Tom Stephens
    * @date Created:  Mar 05, 2008
-   * @aate Last Modified:  Mar 05, 2008
+   * @date Last Modified:  Mar 05, 2008
    */
   const virtual int save(std::ostream &os) const;
 

@@ -1,5 +1,5 @@
 /**
- * @file FElectronBattery.h
+ * @file FElectronBattery.cpp
  * @brief Implementation file for FElectronBattery class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

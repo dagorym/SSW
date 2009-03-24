@@ -66,11 +66,10 @@ public:
    * otherwise it returns a zero.
    *
    * @param loc The ID value of the star system or jump route the fleet is at
-   * @param transit Flag indicating whether or not the location is a system
-   *                or jump route
+   * @param transit Flag indicating whether or not the location is a system or jump route
    * @param time The length of the transit if present
    * @param dest The ID of the destination system
-   * @parem speed The jump speed for the transit
+   * @param speed The jump speed for the transit
    * @param route The ID of the Jump route the fleet is on.
    *
    * @author Tom Stephens
@@ -243,7 +242,7 @@ public:
    *
    * @author Tom Stephens
    * @date Created:  Mar 06, 2008
-   * @aate Last Modified:  Mar 14, 2008
+   * @date Last Modified:  Mar 14, 2008
    */
   const virtual int save(std::ostream &os) const;
 

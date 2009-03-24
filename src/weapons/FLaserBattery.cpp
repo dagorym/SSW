@@ -1,5 +1,5 @@
 /**
- * @file FLaserBattery.h
+ * @file FLaserBattery.cpp
  * @brief Implementation file for FLaserBattery class
  * @date Created: Feb 27, 2009
  * @author Tom Stephens

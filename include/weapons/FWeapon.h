@@ -78,7 +78,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Mar 12, 2009
-	 * @aate Last Modified:  Mar 12, 2009
+	 * @date Last Modified:  Mar 12, 2009
 	 */
 	const virtual int save(std::ostream &os) const;
 

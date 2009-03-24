@@ -1,5 +1,5 @@
 /**
- * @file FMineLauncher.h
+ * @file FMineLauncher.cpp
  * @brief Implementation file for FMineLauncher class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

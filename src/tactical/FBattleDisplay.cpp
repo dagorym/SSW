@@ -1,5 +1,5 @@
 /**
- * @file FBattleDispaly.cpp
+ * @file FBattleDisplay.cpp
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008

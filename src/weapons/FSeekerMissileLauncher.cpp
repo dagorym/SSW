@@ -1,5 +1,5 @@
 /**
- * @file FSeekerMissileLauncher.h
+ * @file FSeekerMissileLauncher.cpp
  * @brief Implementation file for FSeekerMissileLauncher class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

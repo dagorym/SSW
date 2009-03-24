@@ -116,7 +116,6 @@ public:
    * This method processes a double click of the left mouse button
    *
    * @param event The wxWidget window event that triggered the function call
-   * @param dc The device context of the window.
    *
    * @author Tom Stephens
    * @date Created:  Feb 11, 2008
@@ -168,7 +167,7 @@ public:
    *
    * @author Tom Stephens
    * @date Created:  Mar 03, 2008
-   * @aate Last Modified:  Mar 05, 2008
+   * @date Last Modified:  Mar 05, 2008
    */
   const virtual int save(std::ostream &os) const;
 
@@ -193,10 +192,10 @@ public:
 	 * checks the various active regions of the screen to see if they were clicked.
 	 * The return value signals what was selected:
 	 * <ul>
-	 * <ll> 0 = nothing selected
-	 * <ll> 1 = Ended UPF turn
-	 * <ll> 2 = Ended Sathar turn
-	 * </ul
+	 * <li> 0 = nothing selected
+	 * <li> 1 = Ended UPF turn
+	 * <li> 2 = Ended Sathar turn
+	 * </ul>
 	 *
 	 * Mar 11, 2008 - Added End Turn button code
 	 *

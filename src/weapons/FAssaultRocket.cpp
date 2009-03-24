@@ -1,5 +1,5 @@
 /**
- * @file FAssaultRocket.h
+ * @file FAssaultRocket.cpp
  * @brief Implementation file for FAssaultRocket class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

@@ -1,5 +1,5 @@
 /**
- * @file FLaserCannon.h
+ * @file FLaserCannon.cpp
  * @brief Implementation file for FLaserCannon class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

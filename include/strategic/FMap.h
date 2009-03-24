@@ -142,7 +142,7 @@ public:
 	 * @date Created:  Jan 17, 2005
 	 * @date Last Modified:  Mar 10, 2008
 	 */
-	void draw(wxDC &dc, unsigned int id);
+	void draw(wxDC &dc/*, unsigned int id*/);
 
 	/**
 	 * @brief  Select a system close to a given point
@@ -180,11 +180,12 @@ public:
 	 * @brief returns a list of systems you can jump to
 	 *
 	 * This method takes as input the name of the system in question and the ID of
-	 * the player whose turn it is.  It returns a list of all the systems connectd
+	 * the player whose turn it is.  It returns a list of all the systems connected
 	 * to the specified systems by jump routes known by the specified player.
 	 *
 	 * @param system The name of the system being checked
 	 * @param player The ID of the player
+	 * @param fleet The fleet you are checking jump routes for (militia have limited range)
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 15, 2008
@@ -215,8 +216,7 @@ public:
 	 * the the jump route between those two systems.  It returns a NULL pointer if
 	 * there are no matches.
 	 *
-	 * @param start The name of the starting system
-	 * @param end The name of the ending system
+	 * @param id The ID value of the jump route
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 19, 2008
@@ -237,7 +237,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Mar 05, 2008
-	 * @aate Last Modified:  Mar 05, 2008
+	 * @date Last Modified:  Mar 05, 2008
 	 */
 	const virtual int save(std::ostream &os) const;
 

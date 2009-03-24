@@ -1,5 +1,5 @@
 /**
- * @file FRocketBattery.h
+ * @file FRocketBattery.cpp
  * @brief Implementation file for FRocketBattery class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

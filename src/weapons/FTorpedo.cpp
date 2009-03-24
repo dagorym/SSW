@@ -1,5 +1,5 @@
 /**
- * @file FTorpedo.h
+ * @file FTorpedo.cpp
  * @brief Implementation file for FTorpedo class
  * @date Created: Mar 3, 2009
  * @author Tom Stephens

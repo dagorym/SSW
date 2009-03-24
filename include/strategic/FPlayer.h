@@ -98,6 +98,8 @@ public:
    *
    * @param x  The x coordinate of the fleet
    * @param y The y coordinate of the fleet
+   * @param map The FMap object containing the systems and jump routes
+   * @param dc The device context for getting scales
    *
    * @author Tom Stephens
    * @date Created:  Mar 21, 2008
@@ -211,7 +213,12 @@ public:
 //   */
 //  FVehicle * getShip( unsigned int id );
 
-  /// get the list of ships
+  /**
+   * @brief Get the list of ships
+   *
+   * @author Tom Stephens
+   * @date Last Modified:
+   */
   VehicleList & getShipList() { return m_unattached; }
 
   /**
@@ -239,7 +246,7 @@ public:
    *
    * @author Tom Stephens
    * @date Created:  Mar 05, 2008
-   * @aate Last Modified:  Mar 05, 2008
+   * @date Last Modified:  Mar 05, 2008
    */
   const virtual int save(std::ostream &os) const;
 

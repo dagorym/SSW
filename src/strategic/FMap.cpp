@@ -73,7 +73,7 @@ FSystem * FMap::getSystem(unsigned int id) const {
 	return NULL;
 }
 
-void FMap::draw(wxDC &dc, unsigned int id) {
+void FMap::draw(wxDC &dc/*, unsigned int id*/) {
 //	wxCoord w, h;
 //	dc.GetSize(&w, &h);
 	double scale = getScale(dc);

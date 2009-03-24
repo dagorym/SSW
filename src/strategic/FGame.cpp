@@ -182,7 +182,7 @@ void FGame::draw(){
 	wxClientDC dc(m_parent);
 	dc.Clear();
 	if(m_universe!=NULL){
-		m_universe->draw(dc, m_players[0]->getID());
+		m_universe->draw(dc/*, m_players[0]->getID()*/);
 		// draw the fleets for each player
 		if(m_players[0]){
 			m_players[0]->drawFleets(dc,m_universe);
@@ -198,7 +198,7 @@ void FGame::draw(wxDC &dc){
 	// draw the base map
 	dc.Clear();
 	if(m_universe!=NULL){
-		m_universe->draw(dc, m_players[0]->getID());
+		m_universe->draw(dc/*, m_players[0]->getID()*/);
 		// draw the fleets for each player
 		if(m_players[0]){
 			m_players[0]->drawFleets(dc,m_universe);

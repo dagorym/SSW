@@ -1,5 +1,5 @@
 /**
- * @file weapon.h
+ * @file weapons.h
  * @brief Holds includes for all the weapon types
  * @author Tom Stephens
  * @date Created:  Mar 12, 2009

@@ -384,6 +384,7 @@ protected:
 	 * approrpriately based on whether or not the ship has to move that far or
 	 * it falls within the ADF range of the ship.
 	 *
+	 * @param dc The device context to draw on
 	 * @param list The list of hexes to higlight
 	 * @param count The number of hexes on the path already drawn
 	 *
@@ -418,6 +419,7 @@ protected:
 	 * approrpriately based on whether or not the ship has to move that far or
 	 * it falls within the ADF range of the ship.
 	 *
+	 * @param dc The device context to draw on
 	 * @param list The list of hexes to higlight
 	 * @param current  Flag for whether or not you are drawing the movement for the currently selected ship or not
 	 *
