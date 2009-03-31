@@ -21,6 +21,7 @@
 
 #include "Frontier.h"
 #include "strategic/FFleet.h"
+#include "core/FPoint.h"
 
 #include <map>
 
@@ -29,10 +30,8 @@ class FBattleScreen;
 
 /// data structure to hold information about each hex on the map
 typedef struct {
-	/// x coordinate of hex center
-	int cx;
-	/// y coordinate of hex center
-	int cy;
+	/// point object to hold coordinate of hex center
+	FPoint pos;
 	/// List of ships in hex
 	VehicleList ships;
 } hexData;
@@ -42,7 +41,7 @@ typedef struct {
 	/// flag for whether or not the ship has moved yet this turn
 	bool hasMoved;
 	/// list of waypoint hexes along the ship's path
-	std::vector<hexData> waypoints;
+	PointList waypoints;
 	/// list of turns made at the waypoints
 	std::vector<int> turns;
 	/// ship's final speed
@@ -73,7 +72,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  Jul 30, 2008
+	 * @date Last Modified:  Mar 30, 2009
 	 */
 	FBattleBoard(wxWindow * parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxHSCROLL|wxRAISED_BORDER|wxVSCROLL, const wxString &name = "BattleBoard" );
 	/// Default destructor
@@ -108,7 +107,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Feb 8, 2009
+	 * @date Last Modified:  Mar 30, 2009
 	 */
 	void finalizeMove();
 
@@ -138,7 +137,7 @@ protected:
 	/// Flag for whether planet is present or not
 	bool m_drawPlanet;
 	/// position of planet
-	hexData m_planetPosition;
+	FPoint m_planetPosition;
 	/// list of possible planet images to display
 	ImageList m_planetImages;
 	/// planet index to draw
@@ -146,15 +145,15 @@ protected:
 	/// flag for whether or not we are setting the rotation of a placed ship
 	bool m_setRotation;
 	/// m_hexData entry for hex containing currently selected ship
-	hexData m_shipPos;
+	FPoint m_shipPos;
 	/// list of hexes to highlight for movement
-	std::vector<hexData> m_movementHexes;
+	std::vector<FPoint> m_movementHexes;
 	/// list of hexes to highlight for ADF range
-	std::vector<hexData> m_movedHexes;
+	std::vector<FPoint> m_movedHexes;
 	/// list of hexes to highlight for left turn
-	std::vector<hexData> m_leftHexes;
+	std::vector<FPoint> m_leftHexes;
 	/// list of hexes to highlight for right turn
-	std::vector<hexData> m_rightHexes;
+	std::vector<FPoint> m_rightHexes;
 	/// flag for whether or not to draw the current ship's available path
 	bool m_drawRoute;
 	/// number of hexes moved
@@ -202,7 +201,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  July 30, 2008
-	 * @date last Modified:  July 30, 2008
+	 * @date last Modified:  Mar 30, 2009
 	 */
 	void computeCenters();
 
@@ -227,7 +226,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  July 30, 2008
-	 * @date last Modified:  July 30, 2008
+	 * @date last Modified:  Mar 30, 2009
 	 */
 	bool getHex(int x, int y, int &a, int &b);
 
@@ -238,14 +237,14 @@ protected:
 	 * in the specified hex
 	 *
 	 * @param img The icon to be drawn
-	 * @param pos The hex array coordinates to draw at
+	 * @param p FPoint object containing the hex array coordinates to draw at
 	 * @param rot The rotation of the image in hexsides relative to east
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  July 30, 2008
-	 * @date Last Modified:  Oct 13, 2008
+	 * @date Last Modified:  Mar 30, 2009
 	 */
-	void drawCenteredOnHex(wxImage img, hexData pos, int rot = 0);
+	void drawCenteredOnHex(wxImage img, FPoint p, int rot = 0);
 
 	/**
 	 * @brief Computes the distance between two hexes on the map
@@ -257,6 +256,8 @@ protected:
 	 * @param sy The vertical hex coordinate of the starting hex
 	 * @param ex The horizontal hex coordinate of the ending hex
 	 * @param ey The vertical hex coordinate of the ending hex
+	 *
+	 * @todo:  This method should probably be rewritten to take FPoint input
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Sep 14, 2008
@@ -272,7 +273,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Oct 13, 2008
-	 * @date Last Modified:  Oct 13, 2008
+	 * @date Last Modified:  Mar 30, 2009
 	 */
 	void drawShips();
 
@@ -287,7 +288,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Oct 13, 2008
-	 * @date Last Modified:  Oct 13, 2008
+	 * @date Last Modified:  Mar 30, 2009
 	 */
 	int computeHeading(wxMouseEvent &event);
 
@@ -316,7 +317,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 1, 2008
-	 * @date Last Modified:  Feb 13, 2009
+	 * @date Last Modified:  Mar 30, 2009
 	 */
 	void selectVessel(wxMouseEvent &event);
 
@@ -343,7 +344,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  Feb 13, 2009
+	 * @date Last Modified:  Mar 30, 2009
 	 */
 	void setInitialRoute();
 
@@ -358,9 +359,9 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  Nov 21, 2008
+	 * @date Last Modified:  Mar 30, 2009
 	 */
-	hexData findNextHex(hexData h, int heading);
+	FPoint findNextHex(FPoint h, int heading);
 
 	/**
 	 * @brief Checks to see if the selected hex in along the valid paths
@@ -373,7 +374,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 30, 2008
-	 * @date Last Modified:  Feb 13, 2009
+	 * @date Last Modified:  Mar 30, 2009
 	 */
 	void checkForTurn(wxMouseEvent &event);
 
@@ -390,9 +391,9 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Dec 7, 2008
-	 * @date Last Modified:  Feb 13, 2009
+	 * @date Last Modified:  Mar 30, 2009
 	 */
-	void drawRouteHexes(wxDC &dc, std::vector<hexData> list, int count=1);
+	void drawRouteHexes(wxDC &dc, PointList list, int count=1);
 
 	/**
 	 * @brief Runs through a list of hexes to see if the current one is there
@@ -408,9 +409,9 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Creatd:  Dec 24, 2008
-	 * @date Last Modified:  Dec 24, 2008
+	 * @date Last Modified:  Mar 30, 2009
 	 */
-	bool findHexInList(std::vector<hexData> list, hexData ref, int &count);
+	bool findHexInList(PointList list, FPoint ref, int &count);
 
 	/**
 	 * @brief draws a line connecting the hexes in the specified list
@@ -425,9 +426,9 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Feb 13, 2009
+	 * @date Last Modified:  Mar 30, 2009
 	 */
-	void drawMovedHexes(wxDC &dc, std::vector<hexData> list, bool current=false);
+	void drawMovedHexes(wxDC &dc, PointList list, bool current=false);
 
 	/**
 	 * @brief Compute the remaining moves for the current ship
@@ -436,9 +437,9 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Feb 8, 2009
+	 * @date Last Modified:  Mar 30, 2009
 	 */
-	void computeRemainingMoves(hexData start);
+	void computeRemainingMoves(FPoint start);
 
 	/**
 	 * @brief Checks to see if all the ships are done moving

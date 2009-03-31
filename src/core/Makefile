@@ -37,7 +37,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FObject.o FPObject.o 
+OBJS = FObject.o FPObject.o FPoint.o
 #       FVehicle.o FFleet.o \
 #       FPlayer.o FAstroBody.o FPlanet.o FSystem.o FJumpRoute.o FMap.o \
 #       FGame.o FApp.o FMainFrame.o Frontier.o SystemDialogGUI.o SelectJumpGUI.o \

@@ -66,10 +66,10 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 	m_hasPlanet = planet;
 	m_station = station;
 	m_side = false;
-	m_stationPos.cx=0;
-	m_stationPos.cy=0;
-	m_planetPos.cx=0;
-	m_planetPos.cy=0;
+//	m_stationPos.cx=0;
+//	m_stationPos.cy=0;
+//	m_planetPos.cx=0;
+//	m_planetPos.cy=0;
 
 	//create a list of ships from the list of fleets for the attacker and defenders
 	if (m_defendShips) { delete m_defendShips; }
@@ -142,23 +142,21 @@ void FBattleScreen::setPhase(int p){
 		}
 		toggleSide();
 		m_map->resetMoveData();
-		m_map->Refresh();
-		m_display->Refresh();
 	} else 	if (p==PH_FINALIZE_MOVE){
 		m_map->finalizeMove();
 		/// @todo drop into combat phase
 		setPhase(PH_MOVE);
 //		setPhase(PH_DEFENSE_FIRE);
 //		m_curShip = NULL;
-//		m_map->Refresh();
-//		m_display->Refresh();
+	} else if (p==PH_DEFENSE_FIRE){
+		toggleSide();
 	} else {
-		m_map->Refresh();
-		m_display->Refresh();
 	}
+	m_map->Refresh();
+	m_display->Refresh();
 }
 
-int FBattleScreen::computeHeading(hexData s, hexData d){
+int FBattleScreen::computeHeading(FPoint s, FPoint d){
 
 	double angle = computeHexAngle(s,d);
 	if (angle<0) { angle += 360.; }
@@ -168,13 +166,13 @@ int FBattleScreen::computeHeading(hexData s, hexData d){
 	return (ang/60);
 }
 
-double FBattleScreen::computeHexAngle(hexData s, hexData d){
+double FBattleScreen::computeHexAngle(FPoint s, FPoint d){
 	double dis = 1.0;
 	double a = dis/sqrt(3.);
-	double sx = dis + (2 * dis * s.cx) + dis * (s.cy%2);
-	double sy = 2 * a + (3 * a * s.cy);
-	double dx = dis + (2 * dis * d.cx) + dis * (d.cy%2);
-	double dy = 2 * a + (3 * a * d.cy);
+	double sx = dis + (2 * dis * s.getX()) + dis * (s.getY()%2);
+	double sy = 2 * a + (3 * a * s.getY());
+	double dx = dis + (2 * dis * d.getX()) + dis * (d.getY()%2);
+	double dy = 2 * a + (3 * a * d.getY());
 	return atan2((dy-sy),(sx-dx))*180/acos(-1.0);  // angle in degrees;
 }
 

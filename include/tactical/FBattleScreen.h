@@ -94,7 +94,7 @@ public:
 	 * @date Created:  Oct 26, 2008
 	 * @date Last Modified:  Oct 26, 2008
 	 */
-	int computeHeading(hexData s, hexData d);
+	int computeHeading(FPoint s, FPoint d);
 
 	/**
 	 * @brief Computes angle between two hexes
@@ -108,7 +108,7 @@ public:
 	 * @date Created:  Nov 1, 2008
 	 * @date Last Modified:  Nov 1, 2008
 	 */
-	double computeHexAngle(hexData s, hexData d);
+	double computeHexAngle(FPoint s, FPoint d);
 
 	/// get the battle board state
 	const int & getState() const { return m_state; }
@@ -123,13 +123,13 @@ public:
 	/// get the value of the choice variable
 	const int & getPlanetChoice() const { return m_planetChoice; }
 	/// set planet position
-	void setPlanetPosition(hexData h){ m_planetPos= h;}
+	void setPlanetPosition(FPoint h){ m_planetPos= h;}
 	/// get the station's current position
-	const hexData & getPlanetPos() const { return m_planetPos; }
+	const FPoint & getPlanetPos() const { return m_planetPos; }
 	/// set Station position
-	void setStationPosition(hexData h){ m_stationPos= h;}
+	void setStationPosition(FPoint h){ m_stationPos= h;}
 	/// get the station's current position
-	const hexData & getStationPos() const { return m_stationPos; }
+	const FPoint & getStationPos() const { return m_stationPos; }
 	/// get pointer to the station object
 	FVehicle * getStation() const { return m_station; }
 	/// change the scale of the map
@@ -147,7 +147,7 @@ public:
 	/// set side
 	void setSide(bool f) { m_side = f; }
 	/// toggle side
-	void toggleSide() { m_side = !m_side; /*std::cerr << "It is now side " << m_side << "'s turn." << std::endl;*/ }
+	void toggleSide() { m_side = !m_side; std::cerr << "It is now side " << m_side << "'s turn." << std::endl; }
 	/// get the current battle phase
 	int getPhase() { return m_phase;}
 	/// set the battle phase
@@ -190,11 +190,11 @@ protected:
 	/// planet choice variable
 	int m_planetChoice;
 	/// chosen planet position
-	hexData m_planetPos;
+	FPoint m_planetPos;
 	/// whose turn is it, true=attacker, false=defender
 	bool m_side;
 	/// station position
-	hexData m_stationPos;
+	FPoint m_stationPos;
 	/// currently selected ship
 	FVehicle * m_curShip;
 	/// done flag
