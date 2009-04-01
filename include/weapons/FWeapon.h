@@ -17,7 +17,7 @@ namespace Frontier
 /// types of weapons
 enum {NONE,LB,LC,DC,EB,PB,RB,AR,T,SM,M};
 
-//class FVehicle;
+class FVehicle;
 
 /**
  * @brief Base class for all weapon objects
@@ -67,6 +67,8 @@ public:
 	void setMaxAmmo(int m) { m_maxAmmo = m; }
 	/// set the current ammunition value
 	void setCurrentAmmo(int c) { m_currentAmmo = c; }
+	/// Gets the currently selected target, returns null if not target set
+	FVehicle * getTarget() { return m_target; }
 
 	/**
 	 * @brief Method to save the weapon data
@@ -96,7 +98,6 @@ public:
 	 */
 	virtual int load(std::istream &is);
 
-
 	/**
 	 * @brief Fires the weapon
 	 *
@@ -109,7 +110,22 @@ public:
 	 * @date Created:  Feb 27, 2009
 	 * @date Last Modified:  Feb 27, 2009
 	 */
-//	void fire(FVehicle * v);
+	void fire();
+
+	/**
+	 * @brief Set the target vessel for this weapon
+	 *
+	 * This method sets the target vessel that the weapon will fire
+	 * at during the weapon firing phase
+	 *
+	 *
+	 * @param v The FVehicle object to shoot at
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 27, 2009
+	 * @date Last Modified:  Feb 27, 2009
+	 */
+	void setTarget(FVehicle * v);
 
 protected:
 	/// weapon's abbreviated name
@@ -138,6 +154,8 @@ protected:
 	unsigned int m_ICMMod;
 	/// damage table modifier
 	int m_damageTableMod;
+	/// Pointer to the weapon's target vessel
+	FVehicle *m_target;
 };
 
 typedef std::vector<FWeapon *> WeaponList;

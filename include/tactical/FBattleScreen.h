@@ -33,7 +33,7 @@ namespace Frontier {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Oct 26, 2008
+ * @date Last Modified:  Mar 31, 2009
  */
 class FBattleScreen : public wxFrame
 {
@@ -69,16 +69,29 @@ public:
 	int setupFleets(FleetList *aList, FleetList *dList, bool planet = false, FVehicle * station = NULL);
 
 	/**
-	 * @brief return a copy of the list of the current side's ships
+	 * @brief Return a copy of the list of the current side's ships
 	 *
-	 * This method looks at the m_side variable and returns a list of that
-	 * sides ships
+	 * This method looks at the m_activePlayer variable and returns a list of that
+	 * sides ships.  This version of the method is now depricated in favor of the
+	 * new version that takes the player's ID value
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Sep 8, 2008
 	 * @date Last Modified:  Sep 8, 2008
 	 */
 	VehicleList getShipList() const;
+
+	/**
+	 * @brief Return a copy of the ship list for the player with the specified ID
+	 *
+	 * This version of the method takes the player's ID and returns the list of ships
+	 * for that particular player.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 31, 2009
+	 * @date Last Modified:  Mar 31, 2009
+	 */
+	VehicleList getShipList(unsigned int id) const;
 
 	/**
 	 * @brief Returns heading from one hex to another
@@ -143,11 +156,11 @@ public:
 	/// set done state
 	void setDone(bool f) { m_done = f; }
 	/// get side
-	bool getSide() { return m_side;}
+	bool getActivePlayer() { return m_activePlayer;}
 	/// set side
-	void setSide(bool f) { m_side = f; }
+	void setActivePlayer(bool f) { m_activePlayer = f; }
 	/// toggle side
-	void toggleSide() { m_side = !m_side; std::cerr << "It is now side " << m_side << "'s turn." << std::endl; }
+	void toggleActivePlayer() { m_activePlayer = !m_activePlayer; /*std::cerr << "It is now side " << m_activePlayer << "'s turn." << std::endl;*/ }
 	/// get the current battle phase
 	int getPhase() { return m_phase;}
 	/// set the battle phase
@@ -159,11 +172,15 @@ public:
 	/// returns the ID of the defending player
 	const unsigned int & getDefenderID() const { return m_playerID[0]; }
 	/// returns the ID of the player who's turn it currently is
-	const unsigned int & getCurPlayerID() const { return m_side?getAttackerID():getDefenderID(); }
+	const unsigned int & getActivePlayerID() const { return m_activePlayer?getAttackerID():getDefenderID(); }
 	/// sets the movement status
 	void setMoveComplete(bool s);
 	/// get the movement status
 	const bool & isMoveComplete() const { return m_moveComplete; }
+	/// returns the ID of the player who's moving this turn
+	const unsigned int & getMovingPlayerID() const { return m_movingPlayer?getAttackerID():getDefenderID(); }
+	/// toggles the moving player flag
+	void toggleMovingPlayer() { m_movingPlayer = !m_movingPlayer; /*std::cerr << "It is now side " << m_movingPlayer << "'s move." << std::endl;*/ }
 
 
 protected:
@@ -192,7 +209,7 @@ protected:
 	/// chosen planet position
 	FPoint m_planetPos;
 	/// whose turn is it, true=attacker, false=defender
-	bool m_side;
+	bool m_activePlayer;
 	/// station position
 	FPoint m_stationPos;
 	/// currently selected ship
@@ -205,6 +222,10 @@ protected:
 	unsigned int m_playerID[2];
 	/// flag for status of movement.  If true all ships have been moved their minimum and the player can end their turn
 	bool m_moveComplete;
+	/// flag to indicate player whose movement turn it is true=attacker false=defender
+	bool m_movingPlayer;
+
+
 
 };
 

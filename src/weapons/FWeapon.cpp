@@ -7,6 +7,7 @@
 
 #include "weapons/FWeapon.h"
 #include "weapons/weapons.h"
+#include "ships/FVehicle.h"
 
 namespace Frontier {
 
@@ -24,15 +25,21 @@ FWeapon::FWeapon() {
 	m_ICMMod=0;
 	m_currentAmmo=m_maxAmmo;
 	m_damageTableMod = 0;
+	m_target=NULL;
 }
 
 FWeapon::~FWeapon() {
 
 }
 
-//void FWeapon::fire(FVehicle * v){
-//
-//}
+void FWeapon::fire(){
+
+}
+
+void FWeapon::setTarget(FVehicle *v){
+	m_target = v;
+
+}
 
 const int FWeapon::save(std::ostream & os) const{
 	write(os, m_type);

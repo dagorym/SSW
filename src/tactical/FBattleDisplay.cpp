@@ -201,7 +201,7 @@ void FBattleDisplay::drawPlaceStation(wxDC &dc){
 void FBattleDisplay::drawShipChoices (wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	if (!m_loaded) {
-		m_vList = m_parent->getShipList();
+		m_vList = m_parent->getShipList(m_parent->getActivePlayerID());
 		m_loaded = true;
 		m_parent->setDone(false);
 	}
@@ -234,7 +234,7 @@ void FBattleDisplay::makeShipChoice(wxMouseEvent & event){
 	event.GetPosition(&x,&y);
 	int xp = (x-leftOffset)/ICON_SIZE;
 	int yp = (y-BORDER)/ICON_SIZE;
-	VehicleList vList = m_parent->getShipList();
+	VehicleList vList = m_parent->getShipList(m_parent->getActivePlayerID());
 	if ( y>=BORDER && yp == 0){  // there is only one row in this case
 		if ( x>=leftOffset && xp < (int)(vList.size()) && m_vList[xp]!=NULL) { // make sure we actually hit an icon
 			count++;
@@ -286,10 +286,10 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 	if(m_parent->getDone()){
 		if(m_parent->getState()==BS_SetupDefendFleet){
 			m_parent->setState(BS_SetupAttackFleet);
-			m_parent->toggleSide();
+			m_parent->toggleActivePlayer();
 		} else {
 			m_parent->setState(BS_Battle);
-			m_parent->toggleSide();
+			m_parent->toggleActivePlayer();
 			m_parent->setPhase(PH_MOVE);
 		}
 	}
@@ -346,7 +346,7 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	std::ostringstream os;
 	os << "It is the ";
-	if (m_parent->getSide()){
+	if (m_parent->getActivePlayer()){
 		os << "attacker's ";
 	} else {
 		os << "defender's ";

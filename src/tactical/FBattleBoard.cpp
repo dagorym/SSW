@@ -378,7 +378,7 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 		}
 		m_parent->reDraw();
 		m_shipPos.setPoint(a,b);
-		if (m_parent->getShip()->getOwner() == m_parent->getCurPlayerID()){
+		if (m_parent->getShip()->getOwner() == m_parent->getActivePlayerID()){
 			m_drawRoute = true;
 			if (m_parent->getPhase() == PH_MOVE){
 				setInitialRoute();
@@ -393,7 +393,7 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 
 void FBattleBoard::drawRoute(wxDC &dc){
 	// iterate over ships in current list and draw their paths
-	VehicleList ships = m_parent->getShipList();
+	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
 		bool current=false;
 //		std::cerr << m_parent->getShip()->getName() << " - " << m_parent->getShip()->getID()
@@ -598,7 +598,7 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 void FBattleBoard::resetMoveData(){
 	m_turnInfo.clear();
 	m_parent->setMoveComplete(false);
-	VehicleList ships = m_parent->getShipList();
+	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
 		turnData d;
 		d.hasMoved=false;
@@ -696,7 +696,7 @@ void FBattleBoard::computeRemainingMoves(FPoint start){
 }
 
 void FBattleBoard::checkMoveStatus(){
-	VehicleList ships = m_parent->getShipList();
+	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
 	bool finished = true;
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
 		int min = (*itr)->getSpeed()-(*itr)->getADF();
@@ -713,7 +713,7 @@ void FBattleBoard::checkMoveStatus(){
 }
 
 void FBattleBoard::finalizeMove(){
-	VehicleList ships = m_parent->getShipList();
+	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
 		///@todo Check for mines
 		unsigned int id = (*itr)->getID();

@@ -47,6 +47,7 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_phase = PH_NONE;
 	m_playerID[0]=0;
 	m_playerID[1]=1;
+	m_movingPlayer=true;
 
 }
 
@@ -65,7 +66,7 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 	m_defendList = dList;
 	m_hasPlanet = planet;
 	m_station = station;
-	m_side = false;
+	m_activePlayer = false;
 //	m_stationPos.cx=0;
 //	m_stationPos.cy=0;
 //	m_planetPos.cx=0;
@@ -121,7 +122,15 @@ void FBattleScreen::setState(int s) {
 }
 
 VehicleList FBattleScreen::getShipList() const{
-	if (m_side){
+	if (m_activePlayer){
+		return *m_attackShips;
+	} else {
+		return *m_defendShips;
+	}
+}
+
+VehicleList FBattleScreen::getShipList(unsigned int id) const{
+	if (id == getAttackerID()){
 		return *m_attackShips;
 	} else {
 		return *m_defendShips;
@@ -136,20 +145,21 @@ void FBattleScreen::setScale(double factor) {
 void FBattleScreen::setPhase(int p){
 	m_phase = p;
 	if (p==PH_MOVE) { // we just ended a turn
-		if (!m_side) {  // defender just ended
+		if (!m_activePlayer) {  // defender just ended
 			///@todo update turn counters
 			///@todo check for repair turn
 		}
-		toggleSide();
+		toggleActivePlayer();
 		m_map->resetMoveData();
 	} else 	if (p==PH_FINALIZE_MOVE){
 		m_map->finalizeMove();
 		/// @todo drop into combat phase
+		toggleMovingPlayer();
 		setPhase(PH_MOVE);
 //		setPhase(PH_DEFENSE_FIRE);
 //		m_curShip = NULL;
 	} else if (p==PH_DEFENSE_FIRE){
-		toggleSide();
+		toggleActivePlayer();
 	} else {
 	}
 	m_map->Refresh();
