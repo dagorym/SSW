@@ -154,10 +154,10 @@ void FBattleScreen::setPhase(int p){
 	} else 	if (p==PH_FINALIZE_MOVE){
 		m_map->finalizeMove();
 		/// @todo drop into combat phase
-		toggleMovingPlayer();
-		setPhase(PH_MOVE);
-//		setPhase(PH_DEFENSE_FIRE);
-//		m_curShip = NULL;
+//		toggleMovingPlayer();
+//		setPhase(PH_MOVE);
+		setPhase(PH_DEFENSE_FIRE);
+		m_curShip = NULL;
 	} else if (p==PH_DEFENSE_FIRE){
 		toggleActivePlayer();
 	} else {

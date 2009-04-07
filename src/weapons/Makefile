@@ -48,6 +48,9 @@ all $(TARGET): $(OBJS)
 	ar rcsu $(TARGET) $(OBJS)
 
 objs: $(OBJS)
+	rm *.gcda
+	rm *.gcov
+	rm *.gcno
 
 .PHONY:
 clean:

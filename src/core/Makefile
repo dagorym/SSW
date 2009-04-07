@@ -62,6 +62,9 @@ all $(TARGET): $(OBJS)
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	
 objs: $(OBJS)
+	rm *.gcda
+	rm *.gcov
+	rm *.gcno
 
 .PHONY:
 clean:

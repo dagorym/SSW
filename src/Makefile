@@ -32,6 +32,9 @@ OBJ_LIBS = libcore.a libgui.a libships.a libstrategic.a libtactical.a libweapons
 TARGET = SSW
 
 all: $(OBJ_LIBS) $(OBJS)
+	rm *.gcda
+	rm *.gcov
+	rm *.gcno
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
 
 libcore.a:

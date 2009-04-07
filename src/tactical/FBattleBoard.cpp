@@ -368,8 +368,10 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 //	std::cerr << "The selected hex is " << a << ", " << b << std::endl;
 	unsigned int shipCount = m_hexData[a][b].ships.size();
 	if (shipCount){  // There is at least one ship in the hex
+//		std::cerr << "There are " << shipCount << " ships in this hex" << std::endl;
 		if (shipCount == 1){
 			m_parent->setShip(m_hexData[a][b].ships[0]);
+//			std::cerr << "Setting " << m_hexData[a][b].ships[0]->getName() << " as current ship." << std::endl;
 		} else {  // we've got  more than one ship and need to pick the one in question
 			///@todo:  Implement selection of ship when more than one are in a hex
 			/// what we want to do is draw a box listing the ships in the hex and based on the selection
@@ -378,15 +380,16 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 		}
 		m_parent->reDraw();
 		m_shipPos.setPoint(a,b);
-		if (m_parent->getShip()->getOwner() == m_parent->getActivePlayerID()){
-			m_drawRoute = true;
+		if (m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()){
 			if (m_parent->getPhase() == PH_MOVE){
+				m_drawRoute = true;
 				setInitialRoute();
+			} else {
+				m_drawRoute = false;
 			}
 		} else {
 			m_drawRoute = false;
 		}
-//		m_drawRoute = true;
 	}
 
 }
