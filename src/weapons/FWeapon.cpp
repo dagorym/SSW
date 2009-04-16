@@ -8,6 +8,7 @@
 #include "weapons/FWeapon.h"
 #include "weapons/weapons.h"
 #include "ships/FVehicle.h"
+#include "sstream"
 
 namespace Frontier {
 
@@ -26,10 +27,20 @@ FWeapon::FWeapon() {
 	m_currentAmmo=m_maxAmmo;
 	m_damageTableMod = 0;
 	m_target=NULL;
+	m_isDamaged = false;
 }
 
 FWeapon::~FWeapon() {
 
+}
+
+const std::string FWeapon::getName() const {
+	std::ostringstream os;
+	os << m_name;
+	if (m_maxAmmo){
+		os << "(x" << m_currentAmmo << ")";
+	}
+	return os.str();
 }
 
 void FWeapon::fire(){
@@ -45,12 +56,14 @@ const int FWeapon::save(std::ostream & os) const{
 	write(os, m_type);
 	write(os, m_maxAmmo);
 	write(os, m_currentAmmo);
+	write(os, m_isDamaged);
 	return 0;
 }
 
 int FWeapon::load(std::istream &is){
 	read(is, m_maxAmmo);
 	read(is, m_currentAmmo);
+	read(is, m_isDamaged);
 	return 0;
 }
 

@@ -54,6 +54,7 @@ void FBattleDisplay::draw(wxDC &dc){
 //	wxBitmap b("../icons/ufo.png");
 //	dc.DrawBitmap(b, 5, 5);
 	wxColour black(wxT("#000000"));// black
+	m_weaponRegions.clear();
 	dc.SetBackground(wxBrush(black));
 	dc.DrawBitmap(wxBitmap(m_zoomImage),0,0);
 	switch (m_parent->getState()){
@@ -83,17 +84,20 @@ void FBattleDisplay::draw(wxDC &dc){
 			}
 		}
 		break;
-	case BS_Battle:
+	case BS_Battle: {
 		switch (m_parent->getPhase()){
 		case PH_MOVE:
 			drawMoveShip(dc);
 			break;
 		case PH_DEFENSE_FIRE:
-
+			drawDefensiveFire(dc);
+			break;
+		default:
 			break;
 		}
 		drawCurrentShipStats(dc);
 		break;
+	}
 	default:
 		break;
 	}
@@ -130,6 +134,11 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 	case BS_SetupAttackFleet:
 		if (m_parent->getControlState()==false && m_parent->getPhase()==PH_NONE){
 			makeShipChoice(event);
+		}
+		break;
+	case BS_Battle:
+		if (m_weaponRegions.size()>0 & m_parent->getShip()->getOwner()==m_parent->getActivePlayer()){
+			checkWeaponSelection(event);
 		}
 		break;
 	default:
@@ -367,42 +376,55 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 
 void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 	int lMargin = 300;	// left margin for ship display
-	int tSize = 10;		// text height
+	int textSize = 10;		// text height
 	FVehicle *s = m_parent->getShip();
 	wxColour white(wxT("#FFFFFF"));
-	wxFont normal(tSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
-	wxFont large((int)(tSize*1.3),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
-	wxFont bold(tSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
+	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	wxFont large((int)(textSize*1.3),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
+	wxFont bold(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
 	if (m_parent->getShip()!=NULL){
+//		std::cerr << "Entering drawCurrentShipStats() for " << s->getName() << std::endl;
+		dc.SetTextForeground(white);
 		dc.SetFont(bold);
-		dc.DrawText("Speed:",lMargin,BORDER+(int)(1.6*(tSize*1.3)));
-		dc.DrawText("Heading: ",lMargin+90,BORDER+(int)(1.6*(tSize*1.3)));
-		dc.DrawText("ADF:",lMargin,BORDER+(int)(1.6*(tSize*2.3)));
-		dc.DrawText("MR: ",lMargin+80,BORDER+(int)(1.6*(tSize*2.3)));
-		dc.DrawText("HP: ",lMargin+160,BORDER+(int)(1.6*(tSize*2.3)));
-		dc.DrawText("DCR: ",lMargin+240,BORDER+(int)(1.6*(tSize*2.3)));
-		dc.DrawText("Weapons:",lMargin,BORDER+(int)(1.6*(tSize*3.3)));
-		dc.DrawText("Defenses:",lMargin,BORDER+(int)(1.6*(tSize*4.3)));
+		dc.DrawText("Speed:",lMargin,BORDER+(int)(1.6*(textSize*1.3)));
+		dc.DrawText("Heading: ",lMargin+90,BORDER+(int)(1.6*(textSize*1.3)));
+		dc.DrawText("ADF:",lMargin,BORDER+(int)(1.6*(textSize*2.3)));
+		dc.DrawText("MR: ",lMargin+80,BORDER+(int)(1.6*(textSize*2.3)));
+		dc.DrawText("HP: ",lMargin+160,BORDER+(int)(1.6*(textSize*2.3)));
+		dc.DrawText("DCR: ",lMargin+240,BORDER+(int)(1.6*(textSize*2.3)));
+		dc.DrawText("Weapons:",lMargin,BORDER+(int)(1.6*(textSize*3.3)));
+		dc.DrawText("Defenses:",lMargin,BORDER+(int)(1.6*(textSize*4.3)));
 		dc.SetFont(large);
 		dc.DrawText(s->getName(),lMargin,BORDER);
 		dc.SetFont(normal);
 		std::ostringstream os;
 		os << s->getSpeed();
-		dc.DrawText(os.str(),lMargin+60,BORDER+(int)(1.6*(tSize*1.3)));
-		dc.DrawText(getHeadingStr(),lMargin+170,BORDER+(int)(1.6*(tSize*1.3)));
+		dc.DrawText(os.str(),lMargin+60,BORDER+(int)(1.6*(textSize*1.3)));
+		dc.DrawText(getHeadingStr(),lMargin+170,BORDER+(int)(1.6*(textSize*1.3)));
 		os.str("");
 		os << s->getADF();
-		dc.DrawText(os.str(),lMargin+40,BORDER+(int)(1.6*(tSize*2.3)));
+		dc.DrawText(os.str(),lMargin+40,BORDER+(int)(1.6*(textSize*2.3)));
 		os.str("");
 		os << s->getMR();
-		dc.DrawText(os.str(),lMargin+115,BORDER+(int)(1.6*(tSize*2.3)));
+		dc.DrawText(os.str(),lMargin+115,BORDER+(int)(1.6*(textSize*2.3)));
 		os.str("");
 		os << s->getHP();
-		dc.DrawText(os.str(),lMargin+195,BORDER+(int)(1.6*(tSize*2.3)));
+		dc.DrawText(os.str(),lMargin+195,BORDER+(int)(1.6*(textSize*2.3)));
 		os.str("");
 		os << s->getDCR();
-		dc.DrawText(os.str(),lMargin+275,BORDER+(int)(1.6*(tSize*2.3)));
-		dc.DrawText(m_parent->getShip()->getWeaponString(),lMargin+80, BORDER+(int)(1.6*(tSize*3.3)));
+		dc.DrawText(os.str(),lMargin+275,BORDER+(int)(1.6*(textSize*2.3)));
+		int x = lMargin+80;
+		int y = BORDER+(int)(1.6*(textSize*3.3));
+		drawWeaponList(dc,x,y,textSize);
+//		unsigned int wCount = s->getWeaponCount();
+//		for (unsigned int i =0; i< wCount; i++){
+//			std::string wName = s->getWeapon(i)->getName() + "  ";
+//			dc.DrawText(wName,x,y);
+//			wxSize tSize= dc.GetTextExtent(wName);
+//			x+= (int)tSize.GetWidth();
+//		}
+//		x = lMargin+80;
+//		y += (int)(1.6*tSize);
 	}
 }
 
@@ -438,11 +460,11 @@ void FBattleDisplay::drawDefensiveFire(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	std::ostringstream os;
-	os << "The none moving player may now delcare defensive fire";
+	os << "The non-moving player may now\ndeclare defensive fire";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,BORDER);
 	os.str("Please select a ship to fire weapons.");
-	dc.DrawText(os.str(),leftOffset,BORDER+16);
+	dc.DrawText(os.str(),leftOffset,BORDER+32);
 		m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
 		if (m_first){
 		m_buttonDefensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
@@ -461,6 +483,54 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	m_first=true;
 }
 
+void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int textSize){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour red(wxT("#FF0000"));
+	wxColour green(wxT("#00FF00"));
+	wxColour yellow(wxT("#FFFF00"));
+	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	dc.SetTextForeground(white);
+	FVehicle *s = m_parent->getShip();
+	bool active = false;
+	if (m_parent->getActivePlayerID()==s->getOwner()){
+		active = true;
+	}
+	int x = lMargin;
+	unsigned int wCount = s->getWeaponCount();
+	for (unsigned int i =0; i< wCount; i++){
+		// select the text color for this weapon
+		FWeapon *w = s->getWeapon(i);
+		if (w->isDamaged()){
+			dc.SetTextForeground(red);
+		} else if (active){
+			if(w->getTarget()!=NULL){
+				dc.SetTextForeground(green);
+			} else {
+				dc.SetTextForeground(yellow);
+			}
+		} else {
+			dc.SetTextForeground(white);
+		}
+		std::string wName = w->getName() + "  ";
+		dc.DrawText(wName,x,tMargin);
+		wxSize tSize= dc.GetTextExtent(wName);
+		m_weaponRegions.push_back(wxRect(x,tMargin,tSize.GetWidth(),tSize.GetHeight()));
+		x+= (int)tSize.GetWidth();
+	}
+}
+
+void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event){
+	int x = event.GetX();
+	int y = event.GetY();
+
+	for (unsigned int i = 0; i< m_weaponRegions.size(); i++){
+		if (m_weaponRegions[i].Contains(x,y)){
+			m_parent->setWeapon(m_parent->getShip()->getWeapon(i));
+//			std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
+			m_parent->reDraw();
+		}
+	}
+}
 
 
 }

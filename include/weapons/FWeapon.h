@@ -59,9 +59,14 @@ public:
 	/// get the weapon's ICM modifier
 	const unsigned int & getICMMod() const { return m_ICMMod; }
 	/// gets a text string with the abbreviated name of the weapon
-	const std::string & getName() const { return m_name; }
+	/// @todo expand this comment last updated 4/10/09
+	const std::string getName() const;
     /// gets a text string with the full name of the weapon
 	const std::string & getLongName() const { return m_fullName; }
+	/// gets the damage status of the weapon
+	const bool & isDamaged() const { return m_isDamaged; }
+	/// sets the damage status
+	void setDamageStatus(bool s) { m_isDamaged = s; }
 
 	/// set the maximum ammunition value
 	void setMaxAmmo(int m) { m_maxAmmo = m; }
@@ -156,6 +161,8 @@ protected:
 	int m_damageTableMod;
 	/// Pointer to the weapon's target vessel
 	FVehicle *m_target;
+	/// flag for whether or not the weapon is damaged
+	bool m_isDamaged;
 };
 
 typedef std::vector<FWeapon *> WeaponList;

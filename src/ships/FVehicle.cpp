@@ -146,12 +146,7 @@ std::string FVehicle::getWeaponString(){
 	std::ostringstream os;
 	for (unsigned int i = 0; i < m_weapons.size(); i++){
 		FWeapon *w = m_weapons[i];
-		os << w->getName();
-		if (w->getMaxAmmo()){
-			os << "(x" << w->getAmmo() << ")  ";
-		} else {
-			os << "  ";
-		}
+		os << w->getName() << "  ";
 	}
 	return os.str();
 

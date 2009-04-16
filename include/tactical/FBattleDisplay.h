@@ -36,7 +36,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Oct 26, 2008
+ * @date Last Modified:  Apr 15, 2009
  */
 class FBattleDisplay : public wxPanel
 {
@@ -80,6 +80,8 @@ protected:
 	wxButton* m_buttonMoveDone;
 	/// button for signaling completion of movement phase
 	wxButton* m_buttonDefensiveFireDone;
+	/// list of active regions for weapons of currently selected ship
+	std::vector<wxRect> m_weaponRegions;
 
 	/// Event handler for setting the ship's speed
 	void onSetSpeed( wxCommandEvent& event );
@@ -251,6 +253,43 @@ protected:
 	/// Draws prompt to select ship to fire defensive shots
 	void drawDefensiveFire(wxDC &dc);
 
+	/**
+	 * @brief Draws the ships weapons in the tactical display
+	 *
+	 * This method draws the ships weapons in tactical display.  The weapons are higlighted
+	 * depending on the current player, the ship's owner and the status of the weapon.
+	 *
+	 * In all cases, damaged weapons are colored red.  If the ship does not belong to the
+	 * active player, other weapons are white.  If it does belong to the active player,
+	 * untargeted weapons are yellow and targeted weapons are green.
+	 *
+	 * This method also sets up the active blocks on the display used for selecting the weapons.
+	 *
+	 * @param dc The device context to draw on
+	 * @param lMargin The x position on the canvas to start drawing the text
+	 * @param tMargin The y position on the canvas to start drawing the text
+	 * @param tSize The font size to use.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 15, 2009
+	 * @date Last Modified:  Apr 15, 2009
+	 */
+	void drawWeaponList(wxDC &dc, int lMargin, int tMargin, int tSize);
+
+	/**
+	 * @brief runs through current list of weapons to find if the user selected one
+	 *
+	 * This method runs through the current active weapon regions to see if the user
+	 * selected one of the weapons.  If so it sets the current weapon pointer to the
+	 * selected weapon.
+	 *
+	 * @param event The mouse event with the click position.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 15, 2009
+	 * @date Last Modified:  Apr 15, 2009
+	 */
+	void checkWeaponSelection(wxMouseEvent &event);
 };
 
 }
