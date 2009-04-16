@@ -391,7 +391,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Dec 7, 2008
-	 * @date Last Modified:  Mar 30, 2009
+	 * @date Last Modified:  Apr 15, 2009
 	 */
 	void drawRouteHexes(wxDC &dc, PointList list, int count=1);
 
@@ -479,7 +479,67 @@ protected:
 	 * @date Created:  Feb 13, 2009
 	 * @date Last Modified:  Feb 13, 2009
 	 */
-FVehicle * pickShip(const VehicleList & list);
+	FVehicle * pickShip(const VehicleList & list);
+
+	/**
+	 * @brief Draws weapon range hexes on map
+	 *
+	 * This method determines whether the weapon is forward firing or not
+	 * and calls the appropriate method to draw the range hexes
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 15, 2009
+	 * @date Last Modified:  Apr 15, 2009
+	 */
+	void drawWeaponRange(wxDC &dc);
+
+	/**
+	 * @brief Draws weapon range hexes on map for FF weapons
+	 *
+	 * This method determines which hexes are in the forward
+	 * firing range of the weapon and highlights them on the map
+	 * It emphasizes the hexes that get the +10 direct fire bonus.
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 15, 2009
+	 * @date Last Modified:  Apr 15, 2009
+	 */
+	void drawFFRange(wxDC &dc);
+
+	/**
+	 * @brief Draws weapon range hexes on map for battery weapons
+	 *
+	 * This method highlights all the hexes on the map where the
+	 * the battery weapon can fire.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 15, 2009
+	 * @date Last Modified:  Apr 15, 2009
+	 */
+	void drawBatteryRange(wxDC &dc);
+
+	/**
+	 * @brief Draws a shaded hex on the map
+	 *
+	 * This method shades in the hex at the specified point with the specified color.
+	 * It currently uses a hashed pattern for the fill.
+	 *
+	 * @param dc The device context to write to
+	 * @param c The color to use for the fill
+	 * @param p The position of the hex to fill in.
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 15, 2009
+	 * @date Last Modified:  Apr 15, 2009
+	 */
+	void drawShadedHex(wxDC& dc, wxColour c, FPoint p);
+
 };
 
 }

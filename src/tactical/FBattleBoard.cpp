@@ -70,6 +70,9 @@ void FBattleBoard::draw(wxDC &dc){
 	if (m_parent->getState()==BS_Battle){
 		drawRoute(dc);
 	}
+	if (m_parent->getWeapon()!=NULL){
+		drawWeaponRange(dc);
+	}
 }
 
 void FBattleBoard::onPaint(wxPaintEvent & event){
@@ -378,6 +381,7 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 			/// pick that ship to work with.
 			m_parent->setShip(pickShip(m_hexData[a][b].ships));
 		}
+		m_parent->setWeapon(NULL);  // clear current weapons since we have selected a new ship
 		m_parent->reDraw();
 		m_shipPos.setPoint(a,b);
 		if (m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()){
@@ -613,37 +617,19 @@ void FBattleBoard::resetMoveData(){
 }
 
 void FBattleBoard::drawRouteHexes(wxDC &dc, PointList list, int count){
-	// generate list of points defining the hexagon
-	wxPoint pList[6];
-	pList[0].y = (int)(-2*m_a);
-	pList[0].x = 0;
-	pList[1].y = (int)(-m_a);
-	pList[1].x = (int)(m_d);
-	pList[2].y = (int)(m_a);
-	pList[2].x = (int)(m_d);
-	pList[3].y = (int)(2*m_a);
-	pList[3].x = 0;
-	pList[4].y = (int)(m_a);
-	pList[4].x = (int)(-m_d);
-	pList[5].y = (int)(-m_a);
-	pList[5].x = (int)(-m_d);
-
 	wxColor yellow(wxT("#FFFF00"));
 	wxColor orange(wxT("#FFA900"));
+	wxColor c;
 
 	if (count < m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF()){
-		dc.SetPen(wxPen(yellow));
-		dc.SetBrush(wxBrush(yellow,wxCROSSDIAG_HATCH));
+		c=yellow;
 	}
 	PointList::iterator itr;
 	for (itr = list.begin(); itr< list.end(); itr++){
 		if (count >= (m_parent->getShip()->getSpeed()-m_parent->getShip()->getADF())){
-			dc.SetPen(wxPen(orange));
-			dc.SetBrush(wxBrush(orange,wxCROSSDIAG_HATCH));
+			c=orange;
 		}
-		wxCoord x,y;
-		CalcScrolledPosition(m_hexData[itr->getX()][itr->getY()].pos.getX(),m_hexData[itr->getX()][itr->getY()].pos.getY(),&x,&y);
-		dc.DrawPolygon(6,pList,x,y);
+		drawShadedHex(dc,c,m_hexData[itr->getX()][itr->getY()].pos);
 		count++;
 	}
 }
@@ -761,8 +747,86 @@ FVehicle * FBattleBoard::pickShip(const VehicleList & list){
 		}
 		itr++;
 	}
-
 	return selected;
+}
+
+void FBattleBoard::drawWeaponRange(wxDC &dc){
+	if (m_parent->getPhase()!=PH_ATTACK_FIRE && m_parent->getPhase()!=PH_DEFENSE_FIRE ){
+		return;
+	}
+	if (m_parent->getWeapon()->isFF()){
+		drawFFRange(dc);
+	} else {
+		drawBatteryRange(dc);
+	}
+}
+
+void FBattleBoard::drawFFRange(wxDC &dc){
+	std::cerr << "drawFFRange() not yet implemented" << std::endl;
+	wxColour red(wxT("#FF0000"));
+	wxColour blue(wxT("#0000FF"));
+	FVehicle *s = m_parent->getShip();
+	unsigned int range = m_parent->getWeapon()->getRange();
+	int heading = s->getHeading();
+	// draw the straight ahead hexes
+	FPoint curHex = m_shipPos;
+	for (unsigned int i = 0; i<=range; i++){
+		drawShadedHex(dc,red,m_hexData[curHex.getX()][curHex.getY()].pos);
+		curHex = findNextHex(curHex,heading);
+	}
+	// draw the right column
+	curHex = m_shipPos;
+	heading = s->getHeading();
+	curHex = findNextHex(curHex,heading);
+	heading=turnShip(heading,-1);
+	curHex = findNextHex(curHex,heading);
+	heading=turnShip(heading,1);
+	while (computeHexDistance(m_shipPos.getX(),m_shipPos.getY(),curHex.getX(),curHex.getY()) <= (int)range){
+//		std::cerr <<  "Current hex position is " << curHex.getX() << ", " << curHex.getY() << std::endl;
+		drawShadedHex(dc,blue,m_hexData[curHex.getX()][curHex.getY()].pos);
+		curHex = findNextHex(curHex,heading);
+	}
+
+	// draw the left column
+	curHex = m_shipPos;
+	heading = s->getHeading();
+	curHex = findNextHex(curHex,heading);
+	heading=turnShip(heading, 1);
+	curHex = findNextHex(curHex,heading);
+	heading=turnShip(heading, -1);
+	while (computeHexDistance(m_shipPos.getX(),m_shipPos.getY(),curHex.getX(),curHex.getY()) <= (int)range){
+//		std::cerr <<  "Current hex position is " << curHex.getX() << ", " << curHex.getY() << std::endl;
+		drawShadedHex(dc,blue,m_hexData[curHex.getX()][curHex.getY()].pos);
+		curHex = findNextHex(curHex,heading);
+	}
+}
+
+void FBattleBoard::drawBatteryRange(wxDC &dc){
+	std::cerr << "drawBatteryRange() not yet implemented" << std::endl;
+
+}
+
+void FBattleBoard::drawShadedHex(wxDC& dc, wxColour c, FPoint p){
+	// generate list of points defining the hexagon
+	wxPoint pList[6];
+	pList[0].y = (int)(-2*m_a);
+	pList[0].x = 0;
+	pList[1].y = (int)(-m_a);
+	pList[1].x = (int)(m_d);
+	pList[2].y = (int)(m_a);
+	pList[2].x = (int)(m_d);
+	pList[3].y = (int)(2*m_a);
+	pList[3].x = 0;
+	pList[4].y = (int)(m_a);
+	pList[4].x = (int)(-m_d);
+	pList[5].y = (int)(-m_a);
+	pList[5].x = (int)(-m_d);
+
+	dc.SetPen(wxPen(c));
+	dc.SetBrush(wxBrush(c,wxCROSSDIAG_HATCH));
+	wxCoord x,y;
+	CalcScrolledPosition(p.getX(),p.getY(),&x,&y);
+	dc.DrawPolygon(6,pList,x,y);
 }
 
 }

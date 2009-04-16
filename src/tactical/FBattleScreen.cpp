@@ -48,6 +48,8 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_playerID[0]=0;
 	m_playerID[1]=1;
 	m_movingPlayer=true;
+	m_curWeapon = NULL;
+	m_curShip = NULL;
 
 }
 
