@@ -25,5 +25,14 @@ bool FPoint::operator== (const FPoint & p) {
 	return ((m_x==p.getX()) && (m_y==p.getY()));
 }
 
+bool FPoint::operator< (const FPoint &p) const {
+	if (m_y < p.getY()){
+		return true;
+	} else if ( m_y == p.getY() && m_x < p.getX() ){
+		return true;
+	} else {
+		return false;
+	}
+}
 
 }

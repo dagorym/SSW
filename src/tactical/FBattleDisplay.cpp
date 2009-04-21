@@ -137,7 +137,9 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 		}
 		break;
 	case BS_Battle:
-		if (m_weaponRegions.size()>0 & m_parent->getShip()->getOwner()==m_parent->getActivePlayer()){
+		if (m_parent->getShip()!=NULL
+				&& m_weaponRegions.size()>0
+				&& m_parent->getShip()->getOwner()==m_parent->getActivePlayer()){
 			checkWeaponSelection(event);
 		}
 		break;
@@ -478,8 +480,19 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonDefensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
 //	std::cerr << "Movement Completed" << std::endl;
+	///@todo Fire all the weapons
 	m_parent->setPhase(PH_ATTACK_FIRE);
 	m_buttonDefensiveFireDone->Hide();
+	m_first=true;
+}
+
+void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
+	// disconnect the button
+	m_buttonOffensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
+//	std::cerr << "Movement Completed" << std::endl;
+	///@todo Fire all the weapons
+	m_parent->setPhase(PH_MOVE);
+	m_buttonOffensiveFireDone->Hide();
 	m_first=true;
 }
 
@@ -508,6 +521,9 @@ void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int text
 			} else {
 				dc.SetTextForeground(yellow);
 			}
+			if (w->isMPO() && m_parent->getPhase()==PH_DEFENSE_FIRE){
+				dc.SetTextForeground(white);
+			}
 		} else {
 			dc.SetTextForeground(white);
 		}
@@ -522,14 +538,23 @@ void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int text
 void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event){
 	int x = event.GetX();
 	int y = event.GetY();
-
+	bool found=false;
 	for (unsigned int i = 0; i< m_weaponRegions.size(); i++){
 		if (m_weaponRegions[i].Contains(x,y)){
-			m_parent->setWeapon(m_parent->getShip()->getWeapon(i));
-//			std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
-			m_parent->reDraw();
+			FWeapon *w = m_parent->getShip()->getWeapon(i);
+			if (w->isMPO()==false || m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
+				m_parent->setWeapon(w);
+//				std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
+				m_parent->reDraw();
+				found=true;
+			}
 		}
 	}
+	if (!found){
+		m_parent->setWeapon(NULL);
+		m_parent->reDraw();
+	}
+
 }
 
 

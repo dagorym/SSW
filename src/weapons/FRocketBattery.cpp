@@ -15,7 +15,6 @@ FRocketBattery::FRocketBattery() {
 	m_type=RB;
 	m_range=3;
 	m_nDice=2;
-	m_MPO=true;
 	m_ICMMod=-3;
 	m_damageTableMod=-10;
 }

@@ -80,6 +80,8 @@ protected:
 	wxButton* m_buttonMoveDone;
 	/// button for signaling completion of movement phase
 	wxButton* m_buttonDefensiveFireDone;
+	/// button for signaling completion of movement phase
+	wxButton* m_buttonOffensiveFireDone;
 	/// list of active regions for weapons of currently selected ship
 	std::vector<wxRect> m_weaponRegions;
 
@@ -290,6 +292,10 @@ protected:
 	 * @date Last Modified:  Apr 15, 2009
 	 */
 	void checkWeaponSelection(wxMouseEvent &event);
+
+	/// event handler for defensive fire complete button
+	void onOffensiveFireDone( wxCommandEvent& event );
+
 };
 
 }

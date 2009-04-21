@@ -24,6 +24,7 @@
 #include "core/FPoint.h"
 
 #include <map>
+#include <set>
 
 namespace Frontier {
 class FBattleScreen;
@@ -111,6 +112,18 @@ public:
 	 */
 	void finalizeMove();
 
+	/**
+	 * @brief Computes the Weapons range hexes
+	 *
+	 * This method determines the hexes the currently selected weapon can
+	 * fire at.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 20, 2009
+	 * @date Last Modified:  Apr 20, 2009
+	 */
+	void computeWeaponRange();
+
 protected:
 	/// parent window
 	FBattleScreen * m_parent;
@@ -160,6 +173,10 @@ protected:
 	int m_moved;
 	/// list of turn data elements for each ship stored with the FVehicle ID value as the key
 	std::map<unsigned int, turnData> m_turnInfo;
+	/// set to contain valid target hexes for selected weapon
+	std::set<FPoint> m_targetHexes;
+	/// set to contain valid target hexes for head on shot bonus
+	std::set<FPoint> m_headOnHexes;
 
 
 	/**
@@ -473,13 +490,14 @@ protected:
 	 * supplied Vehicle list.  Once one of the ship names are selected, it
 	 * returns a pointer to the specified ship.
 	 *
+	 * @param v The currently selected vehicle
 	 * @param list The list of ships to display.
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 13, 2009
-	 * @date Last Modified:  Feb 13, 2009
+	 * @date Last Modified:  Apr 20, 2009
 	 */
-	FVehicle * pickShip(const VehicleList & list);
+	FVehicle * pickShip(const FVehicle *v, const VehicleList & list);
 
 	/**
 	 * @brief Draws weapon range hexes on map
@@ -496,31 +514,29 @@ protected:
 	void drawWeaponRange(wxDC &dc);
 
 	/**
-	 * @brief Draws weapon range hexes on map for FF weapons
+	 * @brief Computes weapon range hexes on map for FF weapons
 	 *
 	 * This method determines which hexes are in the forward
 	 * firing range of the weapon and highlights them on the map
 	 * It emphasizes the hexes that get the +10 direct fire bonus.
 	 *
-	 * @param dc The device context to draw on
-	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 15, 2009
-	 * @date Last Modified:  Apr 15, 2009
+	 * @date Last Modified:  Apr 20, 2009
 	 */
-	void drawFFRange(wxDC &dc);
+	void computeFFRange();
 
 	/**
-	 * @brief Draws weapon range hexes on map for battery weapons
+	 * @brief Computes weapon range hexes on map for battery weapons
 	 *
 	 * This method highlights all the hexes on the map where the
 	 * the battery weapon can fire.
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 15, 2009
-	 * @date Last Modified:  Apr 15, 2009
+	 * @date Last Modified:  Apr 20, 2009
 	 */
-	void drawBatteryRange(wxDC &dc);
+	void computeBatteryRange();
 
 	/**
 	 * @brief Draws a shaded hex on the map
@@ -539,6 +555,20 @@ protected:
 	 * @date Last Modified:  Apr 15, 2009
 	 */
 	void drawShadedHex(wxDC& dc, wxColour c, FPoint p);
+
+	/**
+	 * @brief Draws the name of the target of the current weapon
+	 *
+	 * This draws the name of the target of theh current weapon in a small
+	 * box in the top left corner of the screen.
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 20, 2009
+	 * @date Last Modified:  Apr 20, 2009
+	 */
+	void drawTarget(wxDC &dc);
 
 };
 

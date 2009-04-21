@@ -106,6 +106,20 @@ public:
 	 */
 	bool operator!= (const FPoint & p) { return !((*this)==p); }
 
+	/**
+	 * @brief Overloaded less than operator
+	 *
+	 * This overloads the less than operator for the point class.  it first check by
+	 * y value and then by x value
+	 *
+	 * @param p The point to compare to
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 16, 2009
+	 * @date Last Modified:  Apr 16, 2009
+	 */
+	bool operator< (const FPoint &p) const;
+
 private:
 	/// x coordinate
 	int m_x;

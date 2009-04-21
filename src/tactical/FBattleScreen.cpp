@@ -162,6 +162,8 @@ void FBattleScreen::setPhase(int p){
 		m_curShip = NULL;
 	} else if (p==PH_DEFENSE_FIRE){
 		toggleActivePlayer();
+	} else if (p==PH_ATTACK_FIRE){
+		toggleActivePlayer();
 	} else {
 	}
 	m_map->Refresh();

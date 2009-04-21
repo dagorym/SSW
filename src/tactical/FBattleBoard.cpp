@@ -26,6 +26,7 @@ FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos,
 	setConstants(1.0);
 	computeCenters();
 	m_drawRoute = false;
+	m_planetPosition.setPoint(-1,-1);
 
 	SetScrollRate( (int)(2*m_d), (int)(3*m_a) );
 	SetVirtualSize(m_width,m_height);
@@ -72,6 +73,7 @@ void FBattleBoard::draw(wxDC &dc){
 	}
 	if (m_parent->getWeapon()!=NULL){
 		drawWeaponRange(dc);
+		drawTarget(dc);
 	}
 }
 
@@ -126,25 +128,25 @@ void FBattleBoard::drawGrid(wxDC &dc){
 			cx+=m_d+m_d;
 		}
 	}
-	// add the coordinates
-	dc.SetTextForeground(white);
-	dc.SetFont(wxFont((int)(m_size/5),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-	for (int j = 0; j< m_nRow; j++){
-		cy = yoff + m_a + m_a + 3*j*m_a;
-		cx = xoff+m_d;
-		if (j%2){
-			cx += m_d;
-		}
-		for (int i = 0; i< m_nCol; i++){
-			char label[5];
-			sprintf(label,"%02d%02d",i+1,j+1);
-			wxString l = wxString(label);
-			wxCoord w,h;
-			dc.GetTextExtent(l,&w,&h);
-			dc.DrawText(l,(int)round(cx-w/2),(int)round(cy-h/2));
-			cx += m_d + m_d;
-		}
-	}
+	// add the coordinates (currently disabled)
+//	dc.SetTextForeground(white);
+//	dc.SetFont(wxFont((int)(m_size/5),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+//	for (int j = 0; j< m_nRow; j++){
+//		cy = yoff + m_a + m_a + 3*j*m_a;
+//		cx = xoff+m_d;
+//		if (j%2){
+//			cx += m_d;
+//		}
+//		for (int i = 0; i< m_nCol; i++){
+//			char label[5];
+//			sprintf(label,"%02d%02d",i+1,j+1);
+//			wxString l = wxString(label);
+//			wxCoord w,h;
+//			dc.GetTextExtent(l,&w,&h);
+//			dc.DrawText(l,(int)round(cx-w/2),(int)round(cy-h/2));
+//			cx += m_d + m_d;
+//		}
+//	}
 	Update();
 }
 
@@ -183,17 +185,20 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 		case BS_SetupDefendFleet:
 		case BS_SetupAttackFleet:
 			if (m_parent->getControlState()){
-				if( h != m_planetPosition && !m_setRotation){  // place the ship
-					m_hexData[a][b].ships.push_back(m_parent->getShip());
-					m_shipPos = m_hexData[a][b].pos;
-					m_setRotation=true;
-					Refresh();
-				} else {   // set the rotation
-					int heading = computeHeading(event);
-					m_parent->getShip()->setHeading(heading);
-					m_parent->toggleControlState();
-					m_parent->setPhase(PH_SET_SPEED);
-					m_setRotation=false;
+				if( h != m_planetPosition){
+					if (!m_setRotation){  // place the ship
+						std::cerr << "Placing ship in hex (" << a << ", " << b << ")" << std::endl;
+						m_hexData[a][b].ships.push_back(m_parent->getShip());
+						m_shipPos = m_hexData[a][b].pos;
+						m_setRotation=true;
+						Refresh();
+					} else {   // set the rotation
+						int heading = computeHeading(event);
+						m_parent->getShip()->setHeading(heading);
+						m_parent->toggleControlState();
+						m_parent->setPhase(PH_SET_SPEED);
+						m_setRotation=false;
+					}
 				}
 			}
 			break;
@@ -367,22 +372,36 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 	event.GetPosition(&x,&y);
 	int a, b;
 	getHex(x,y,a,b);
+	FVehicle *v = NULL;
 //	std::cerr << "The x and y positions of the click are " << x << ", " << y << std::endl;
 //	std::cerr << "The selected hex is " << a << ", " << b << std::endl;
 	unsigned int shipCount = m_hexData[a][b].ships.size();
 	if (shipCount){  // There is at least one ship in the hex
 //		std::cerr << "There are " << shipCount << " ships in this hex" << std::endl;
 		if (shipCount == 1){
-			m_parent->setShip(m_hexData[a][b].ships[0]);
-//			std::cerr << "Setting " << m_hexData[a][b].ships[0]->getName() << " as current ship." << std::endl;
+			v= m_hexData[a][b].ships[0];
+//			std::cerr << "Setting " << v->getName() << " as current ship." << std::endl;
 		} else {  // we've got  more than one ship and need to pick the one in question
 			///@todo:  Implement selection of ship when more than one are in a hex
 			/// what we want to do is draw a box listing the ships in the hex and based on the selection
 			/// pick that ship to work with.
-			m_parent->setShip(pickShip(m_hexData[a][b].ships));
+			if (m_parent->getWeapon()!=NULL){
+				v=m_parent->getWeapon()->getTarget();
+			} else {
+				v=m_parent->getShip();
+			}
+			v = pickShip(v,m_hexData[a][b].ships);
 		}
+	}
+	if (v==NULL) {
+		return;
+	}
+	if (m_parent->getWeapon()!=NULL && m_parent->getActivePlayerID()!=v->getOwner()){
+		/// assign as target
+		m_parent->getWeapon()->setTarget(v);
+	} else {
+		m_parent->setShip(v);
 		m_parent->setWeapon(NULL);  // clear current weapons since we have selected a new ship
-		m_parent->reDraw();
 		m_shipPos.setPoint(a,b);
 		if (m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()){
 			if (m_parent->getPhase() == PH_MOVE){
@@ -395,6 +414,7 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 			m_drawRoute = false;
 		}
 	}
+	m_parent->reDraw();
 
 }
 
@@ -734,12 +754,12 @@ int FBattleBoard::turnShip(int & heading, int turn){
 	return heading;
 }
 
-FVehicle * FBattleBoard::pickShip(const VehicleList & list){
+FVehicle * FBattleBoard::pickShip(const FVehicle *v, const VehicleList & list){
 	FVehicle * selected = list[0];  // by default set it to the first ship in the list
-	if (m_parent->getShip()==NULL) return selected;
+	if (v==NULL) return selected;
 	VehicleList::const_iterator itr = list.begin();
 	while (itr < list.end()){  // loop over all the ships in the list
-		if ((*itr)->getID()==m_parent->getShip()->getID()){  // If the currently selected ship is in the this
+		if ((*itr)->getID()==v->getID()){  // If the currently selected ship is in the this
 			if (itr+1 != list.end()){  // make sure it's not the last one in the list
 				selected = *(itr+1);   // If not set the selected ship to the next one.  If it is we don't do anything and
 			}                          //   will get the first ship in the list.
@@ -754,27 +774,45 @@ void FBattleBoard::drawWeaponRange(wxDC &dc){
 	if (m_parent->getPhase()!=PH_ATTACK_FIRE && m_parent->getPhase()!=PH_DEFENSE_FIRE ){
 		return;
 	}
-	if (m_parent->getWeapon()->isFF()){
-		drawFFRange(dc);
-	} else {
-		drawBatteryRange(dc);
+	wxColour red(wxT("#FF0000"));
+	std::set<FPoint>::iterator itr = m_targetHexes.begin();
+	for (unsigned int i = 0; i < m_targetHexes.size(); i++){
+		drawShadedHex(dc,red,m_hexData[(*itr).getX()][(*itr).getY()].pos);
+		itr++;
+	}
+	wxColour blue(wxT("#0000FF"));
+	itr=m_headOnHexes.begin();
+	for (unsigned int i = 0; i < m_headOnHexes.size(); i++){
+		drawShadedHex(dc,blue,m_hexData[(*itr).getX()][(*itr).getY()].pos);
+		itr++;
 	}
 }
 
-void FBattleBoard::drawFFRange(wxDC &dc){
-	std::cerr << "drawFFRange() not yet implemented" << std::endl;
+void FBattleBoard::computeWeaponRange(){
+	m_headOnHexes.clear();
+	m_targetHexes.clear();
+	if (m_parent->getWeapon()!=NULL){
+		if (m_parent->getWeapon()->isFF()){
+			computeFFRange();
+		} else {
+			computeBatteryRange();
+		}
+	}
+}
+
+void FBattleBoard::computeFFRange(){
 	wxColour red(wxT("#FF0000"));
 	wxColour blue(wxT("#0000FF"));
 	FVehicle *s = m_parent->getShip();
 	unsigned int range = m_parent->getWeapon()->getRange();
 	int heading = s->getHeading();
-	// draw the straight ahead hexes
+	// compute the straight ahead hexes
 	FPoint curHex = m_shipPos;
 	for (unsigned int i = 0; i<=range; i++){
-		drawShadedHex(dc,red,m_hexData[curHex.getX()][curHex.getY()].pos);
+		m_headOnHexes.insert(curHex);
 		curHex = findNextHex(curHex,heading);
 	}
-	// draw the right column
+	// compute the right column
 	curHex = m_shipPos;
 	heading = s->getHeading();
 	curHex = findNextHex(curHex,heading);
@@ -782,12 +820,11 @@ void FBattleBoard::drawFFRange(wxDC &dc){
 	curHex = findNextHex(curHex,heading);
 	heading=turnShip(heading,1);
 	while (computeHexDistance(m_shipPos.getX(),m_shipPos.getY(),curHex.getX(),curHex.getY()) <= (int)range){
-//		std::cerr <<  "Current hex position is " << curHex.getX() << ", " << curHex.getY() << std::endl;
-		drawShadedHex(dc,blue,m_hexData[curHex.getX()][curHex.getY()].pos);
+		m_targetHexes.insert(curHex);
 		curHex = findNextHex(curHex,heading);
 	}
 
-	// draw the left column
+	// compute the left column
 	curHex = m_shipPos;
 	heading = s->getHeading();
 	curHex = findNextHex(curHex,heading);
@@ -795,14 +832,32 @@ void FBattleBoard::drawFFRange(wxDC &dc){
 	curHex = findNextHex(curHex,heading);
 	heading=turnShip(heading, -1);
 	while (computeHexDistance(m_shipPos.getX(),m_shipPos.getY(),curHex.getX(),curHex.getY()) <= (int)range){
-//		std::cerr <<  "Current hex position is " << curHex.getX() << ", " << curHex.getY() << std::endl;
-		drawShadedHex(dc,blue,m_hexData[curHex.getX()][curHex.getY()].pos);
+		m_targetHexes.insert(curHex);
 		curHex = findNextHex(curHex,heading);
 	}
 }
 
-void FBattleBoard::drawBatteryRange(wxDC &dc){
-	std::cerr << "drawBatteryRange() not yet implemented" << std::endl;
+void FBattleBoard::computeBatteryRange(){
+	wxColour blue(wxT("#0000FF"));
+	unsigned int range = m_parent->getWeapon()->getRange();
+	int xMin = m_shipPos.getX() - range;
+	if (xMin < 0) { xMin = 0; }
+	int xMax = m_shipPos.getX() + range;
+	if (xMax < m_nCol) { xMax = m_nCol; }
+	int yMin = m_shipPos.getY() - range;
+	if (yMin < 0) { yMin = 0; }
+	int yMax = m_shipPos.getY() + range;
+	if (yMax < m_nRow) { yMax = m_nRow; }
+
+	for (int i=xMin;i<=xMax;i++){
+		for (int j=yMin;j<=yMax;j++){
+			FPoint tmp(i,j);
+			if (computeHexDistance(m_shipPos.getX(),m_shipPos.getY(),i,j)<=(int)range){
+				m_targetHexes.insert(FPoint(i,j));
+			}
+		}
+	}
+
 
 }
 
@@ -827,6 +882,29 @@ void FBattleBoard::drawShadedHex(wxDC& dc, wxColour c, FPoint p){
 	wxCoord x,y;
 	CalcScrolledPosition(p.getX(),p.getY(),&x,&y);
 	dc.DrawPolygon(6,pList,x,y);
+}
+
+void FBattleBoard::drawTarget(wxDC &dc){
+	FVehicle *v = m_parent->getWeapon()->getTarget();
+	wxColour black(wxT("#000000"));
+	wxColour white(wxT("#FFFFFF"));
+	dc.SetTextForeground(white);
+	dc.SetTextBackground(black);
+	dc.SetPen(wxPen(white));
+	dc.SetBrush(wxBrush(black));
+	dc.DrawRectangle(0,0,250,35);
+	wxFont bold(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
+	wxFont norm(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	dc.SetFont(bold);
+	std::string text = "Current Target:  ";
+	dc.DrawText(text,10,10);
+	int x = dc.GetTextExtent(text).GetWidth()+10;
+	dc.SetFont(norm);
+	if (v!=NULL){
+		dc.DrawText(v->getName(),x,10);
+	} else {
+		dc.DrawText("None",x,10);
+	}
 }
 
 }
