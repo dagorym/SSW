@@ -9,6 +9,7 @@
 #define FPOINT_H_
 
 #include <vector>
+#include <set>
 
 namespace Frontier {
 
@@ -129,6 +130,7 @@ private:
 
 /// define type for a list of points
 typedef std::vector<FPoint> PointList;
+typedef std::set<FPoint> PointSet;
 
 }
 

@@ -47,8 +47,10 @@ void FWeapon::fire(){
 
 }
 
-void FWeapon::setTarget(FVehicle *v){
+void FWeapon::setTarget(FVehicle *v, int r, bool headOn){
 	m_target = v;
+	m_targetRange = r;
+	m_isHeadOn = headOn;
 
 }
 

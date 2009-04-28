@@ -27,7 +27,7 @@ class FVehicle;
  *
  * @author Tom Stephens
  * @date Created:  Feb 27, 2009
- * @date Last Modified:  Feb 27, 2009
+ * @date Last Modified:  Apr 27, 2009
  */
 class FWeapon: public Frontier::FPObject {
 public:
@@ -74,6 +74,8 @@ public:
 	void setCurrentAmmo(int c) { m_currentAmmo = c; }
 	/// Gets the currently selected target, returns null if not target set
 	FVehicle * getTarget() { return m_target; }
+	/// gets the range to the current target
+	int getTargetRange() { return m_targetRange; }
 
 	/**
 	 * @brief Method to save the weapon data
@@ -125,12 +127,14 @@ public:
 	 *
 	 *
 	 * @param v The FVehicle object to shoot at
+	 * @param r The range to the selected target
+	 * @param headOn Flag for whether or not the target is head on
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 27, 2009
-	 * @date Last Modified:  Feb 27, 2009
+	 * @date Last Modified:  Apr 27, 2009
 	 */
-	void setTarget(FVehicle * v);
+	void setTarget(FVehicle * v,int r, bool headOn = false);
 
 protected:
 	/// weapon's abbreviated name
@@ -161,8 +165,12 @@ protected:
 	int m_damageTableMod;
 	/// Pointer to the weapon's target vessel
 	FVehicle *m_target;
+	/// range to selected target
+	int m_targetRange;
 	/// flag for whether or not the weapon is damaged
 	bool m_isDamaged;
+	/// flag for whether or not the current target gets head-on shot bonus.
+	bool m_isHeadOn;
 };
 
 typedef std::vector<FWeapon *> WeaponList;

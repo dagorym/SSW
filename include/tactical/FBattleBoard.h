@@ -24,7 +24,6 @@
 #include "core/FPoint.h"
 
 #include <map>
-#include <set>
 
 namespace Frontier {
 class FBattleScreen;
@@ -45,8 +44,12 @@ typedef struct {
 	PointList waypoints;
 	/// list of turns made at the waypoints
 	std::vector<int> turns;
+	/// list of hexes ship has moved through
+	std::vector<FPoint> movedHexes;
 	/// ship's final speed
 	int speed;
+	/// ship's starting heading
+	int startHeading;
 	/// ship's final heading
 	int finalHeading;
 	/// ship's current heading
@@ -161,8 +164,6 @@ protected:
 	FPoint m_shipPos;
 	/// list of hexes to highlight for movement
 	std::vector<FPoint> m_movementHexes;
-	/// list of hexes to highlight for ADF range
-	std::vector<FPoint> m_movedHexes;
 	/// list of hexes to highlight for left turn
 	std::vector<FPoint> m_leftHexes;
 	/// list of hexes to highlight for right turn
@@ -174,9 +175,9 @@ protected:
 	/// list of turn data elements for each ship stored with the FVehicle ID value as the key
 	std::map<unsigned int, turnData> m_turnInfo;
 	/// set to contain valid target hexes for selected weapon
-	std::set<FPoint> m_targetHexes;
+	PointSet m_targetHexes;
 	/// set to contain valid target hexes for head on shot bonus
-	std::set<FPoint> m_headOnHexes;
+	PointSet m_headOnHexes;
 
 
 	/**
@@ -520,11 +521,16 @@ protected:
 	 * firing range of the weapon and highlights them on the map
 	 * It emphasizes the hexes that get the +10 direct fire bonus.
 	 *
+	 * @param pos The position to compute the range from.  Defaults to m_shipPos
+	 * @param tList The list of target points to fill in.  This defaults to m_targetHexes
+	 * @param hList The list of head on target points to fill in.  This defaults to m_headOnHexes
+	 * @param heading The heading to compute the range from
+	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 15, 2009
-	 * @date Last Modified:  Apr 20, 2009
+	 * @date Last Modified:  Apr 26, 2009
 	 */
-	void computeFFRange();
+	void computeFFRange(FPoint &pos, PointSet & tList, PointSet & hList, int heading = -1);
 
 	/**
 	 * @brief Computes weapon range hexes on map for battery weapons
@@ -532,11 +538,14 @@ protected:
 	 * This method highlights all the hexes on the map where the
 	 * the battery weapon can fire.
 	 *
+	 * @param pos The position to compute the range from.  Defaults to m_shipPos
+	 * @param tList The list of target points to fill in  This defaults to m_targetHexes
+	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 15, 2009
-	 * @date Last Modified:  Apr 20, 2009
+	 * @date Last Modified:  Apr 28, 2009
 	 */
-	void computeBatteryRange();
+	void computeBatteryRange(FPoint &pos, PointSet & tList);
 
 	/**
 	 * @brief Draws a shaded hex on the map
@@ -570,6 +579,30 @@ protected:
 	 */
 	void drawTarget(wxDC &dc);
 
+	/**
+	 * @brief Sets the target and range if the selected vessel is a valid target
+	 *
+	 * This method determines if the selected vessel is a valid target for the
+	 * selected weapon.  If so it assigns the target vessel and range to the selected
+	 * weapon.  If not, it does nothing.
+	 *
+	 * If the non-moving player is targeting, it loops over the selected vessels
+	 * movement path to find the point it passed closest to the firing vessel.
+	 *
+	 * If the moving player is targeting, it loops over the moving vessel's path
+	 * and computes the range for the weapon at each position and looks to see
+	 * if the target is in range.
+	 *
+	 * In both cases, it stores the closest range for the target
+	 *
+	 * @param v Pointer to the selected target vessel object
+	 * @param p the hex coordinate of the selected target
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 24, 2009
+	 * @date Last Modified:  Apr 26, 2009
+	 */
+	void setIfValidTarget(FVehicle *v, FPoint p);
 };
 
 }
