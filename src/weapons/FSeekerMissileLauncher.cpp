@@ -17,6 +17,7 @@ FSeekerMissileLauncher::FSeekerMissileLauncher() {
 	m_nDice=5;
 	m_ICMMod=-8;
 	m_damageTableMod=-20;
+	m_baseToHitProb = 75;
 }
 
 FSeekerMissileLauncher::~FSeekerMissileLauncher() {

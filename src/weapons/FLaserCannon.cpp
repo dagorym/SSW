@@ -17,6 +17,7 @@ FLaserCannon::FLaserCannon() {
 	m_FF=true;
 	m_nDice=2;
 	m_RD=true;
+	m_baseToHitProb = 60;
 }
 
 FLaserCannon::~FLaserCannon() {

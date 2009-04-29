@@ -20,6 +20,7 @@ FAssaultRocket::FAssaultRocket() {
 	m_FF=true;
 	m_ICMMod=-5;
 	m_damageTableMod=-10;
+	m_baseToHitProb = 60;
 }
 
 FAssaultRocket::~FAssaultRocket() {

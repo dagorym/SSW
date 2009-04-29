@@ -18,6 +18,7 @@ FTorpedo::FTorpedo() {
 	m_MPO=true;
 	m_ICMMod=-10;
 	m_damageTableMod=-20;
+	m_baseToHitProb = 50;
 }
 
 FTorpedo::~FTorpedo() {

@@ -17,6 +17,7 @@ FRocketBattery::FRocketBattery() {
 	m_nDice=2;
 	m_ICMMod=-3;
 	m_damageTableMod=-10;
+	m_baseToHitProb = 40;
 }
 
 FRocketBattery::~FRocketBattery() {

@@ -127,6 +127,23 @@ public:
 	 */
 	std::string getWeaponString();
 
+	/**
+	 * @brief Take damage from a successful hit
+	 *
+	 * This method applies the damage done by the opponent.  Right now
+	 * it just applies the passed in damage to the hull points.
+	 *
+	 * @todo Implement the full advanced damage table.  Subclasses should
+	 * re-implement this virtual function to be specific for the specific
+	 * vessel.
+	 *
+	 * @param damage The amount of hull damage sustained
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 28, 2009
+	 * @date Last Modified:  Apr 28, 2009
+	 */
+	virtual void takeDamage (int damage);
 protected:
 	/// counter for total number of vehicles and next ship ID
 	static unsigned int m_nextID;

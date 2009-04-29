@@ -187,7 +187,7 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 			if (m_parent->getControlState()){
 				if( h != m_planetPosition){
 					if (!m_setRotation){  // place the ship
-						std::cerr << "Placing ship in hex (" << a << ", " << b << ")" << std::endl;
+//						std::cerr << "Placing ship in hex (" << a << ", " << b << ")" << std::endl;
 						m_hexData[a][b].ships.push_back(m_parent->getShip());
 						m_shipPos = m_hexData[a][b].pos;
 						m_setRotation=true;
@@ -215,6 +215,10 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 				checkMoveStatus();
 				break;
 			case PH_DEFENSE_FIRE: {
+				selectVessel(event);
+				break;
+			}
+			case PH_ATTACK_FIRE: {
 				selectVessel(event);
 				break;
 			}
@@ -403,6 +407,7 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 		m_parent->setShip(v);
 		m_parent->setWeapon(NULL);  // clear current weapons since we have selected a new ship
 		m_shipPos.setPoint(a,b);
+		///@todo Suspected logic error.  Should getMovingPlayerID() be getActivePlayerID() or is more logic needed.
 		if (m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()){
 			if (m_parent->getPhase() == PH_MOVE){
 				m_drawRoute = true;
@@ -982,7 +987,7 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 		// the non-headon shot if it is more than two hexes closer than the head on shot.
 		int range = (min<headOnMin-2)?min:headOnMin;
 		m_parent->getWeapon()->setTarget(v,range,headOn);
-		std::cerr << "Setting target with range " << range << std::endl;
+//		std::cerr << "Setting target with range " << range << std::endl;
 	}
 }
 

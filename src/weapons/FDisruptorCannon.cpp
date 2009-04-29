@@ -18,6 +18,7 @@ FDisruptorCannon::FDisruptorCannon() {
 	m_FF=true;
 	m_RD=true;
 	m_damageTableMod=20;
+	m_baseToHitProb = 60;
 }
 
 FDisruptorCannon::~FDisruptorCannon() {

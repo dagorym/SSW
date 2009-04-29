@@ -108,14 +108,17 @@ public:
 	/**
 	 * @brief Fires the weapon
 	 *
-	 * This method fires the weapon at the specified target.  It starts by
-	 * querying the target ship object to get a list of active defenses.
+	 * This method fires the weapon at the specified target.  It currently just
+	 * implements the basic damage system (hull damage only).  It rolls the d100
+	 * and compares that to the To Hit probability modified by the range if
+	 * appropriate.  If the attack is a success, it computes the hull damage and
+	 * passes that along to the target vessel.
 	 *
 	 * @param v The FVehicle object to shoot at
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 27, 2009
-	 * @date Last Modified:  Feb 27, 2009
+	 * @date Last Modified:  Apr 28, 2009
 	 */
 	void fire();
 
@@ -171,6 +174,8 @@ protected:
 	bool m_isDamaged;
 	/// flag for whether or not the current target gets head-on shot bonus.
 	bool m_isHeadOn;
+	/// base probability to hit a RH
+	int m_baseToHitProb;
 };
 
 typedef std::vector<FWeapon *> WeaponList;

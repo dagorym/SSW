@@ -16,6 +16,7 @@ FLaserBattery::FLaserBattery() {
 	m_range=9;
 	m_nDice=1;
 	m_RD=true;
+	m_baseToHitProb = 50;
 }
 
 FLaserBattery::~FLaserBattery() {

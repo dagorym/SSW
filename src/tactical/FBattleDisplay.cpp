@@ -480,7 +480,21 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonDefensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
 //	std::cerr << "Movement Completed" << std::endl;
-	///@todo Fire all the weapons
+	// Fire all the weapons
+	VehicleList sList = m_parent->getShipList(m_parent->getActivePlayerID());
+	// loop over the list of ships
+	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
+//		std::cerr << "Processing " << (*itr)->getName() << std::endl;
+		if ((*itr)->getHP()>0){ // if the ship hasn't been destroyed
+			// loop over all the ship's weapons and tell them to fire
+			int nWeps = (*itr)->getWeaponCount();
+			for (int i = 0; i < nWeps; i++){
+//				std::cerr << "Calling the " << (*itr)->getWeapon(i)->getLongName() << "'s fire() method." << std::endl;
+				(*itr)->getWeapon(i)->fire();
+			}
+		}
+	}
+	// Advance to next phase
 	m_parent->setPhase(PH_ATTACK_FIRE);
 	m_buttonDefensiveFireDone->Hide();
 	m_first=true;

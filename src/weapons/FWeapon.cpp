@@ -8,6 +8,7 @@
 #include "weapons/FWeapon.h"
 #include "weapons/weapons.h"
 #include "ships/FVehicle.h"
+#include "Frontier.h"
 #include "sstream"
 
 namespace Frontier {
@@ -27,7 +28,10 @@ FWeapon::FWeapon() {
 	m_currentAmmo=m_maxAmmo;
 	m_damageTableMod = 0;
 	m_target=NULL;
+	m_targetRange = -1;
 	m_isDamaged = false;
+	m_baseToHitProb = 0;
+	m_isHeadOn = false;
 }
 
 FWeapon::~FWeapon() {
@@ -44,7 +48,30 @@ const std::string FWeapon::getName() const {
 }
 
 void FWeapon::fire(){
-
+	if (!m_isDamaged && m_target!=NULL && m_targetRange>=0){
+		int roll = irand(100);
+		int toHitProb = m_baseToHitProb + ((m_isHeadOn)?10:0);
+//		std::cerr << "toHitProb = " << toHitProb << std::endl;
+		if (m_RD){
+			toHitProb -= 5*m_targetRange;
+//			std::cerr << "toHitProb = " << toHitProb << std::endl;
+		}
+//		std::cerr << "m_baseToHitProb = " << m_baseToHitProb << "  range = " << m_targetRange << std::endl;
+//		std::cerr << "The chance to hit is " << toHitProb << " and we rolled a " << roll << std::endl;
+		if (roll <= toHitProb){
+			int damage = 0;
+			for (unsigned int i = 0; i < m_nDice; i++){
+				damage += irand(10);
+			}
+			damage += m_dMod;
+			m_target->takeDamage(damage);
+//			std::cerr << "The target, " << m_target->getName() << " was hit for "
+//					<< damage << " points of damage." << std::endl;
+		}
+	}
+	// weapon has fired, clear target
+	m_target=NULL;
+	m_targetRange = -1;
 }
 
 void FWeapon::setTarget(FVehicle *v, int r, bool headOn){
