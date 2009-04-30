@@ -182,7 +182,7 @@ public:
 	/// toggles the moving player flag
 	void toggleMovingPlayer() { m_movingPlayer = !m_movingPlayer; /*std::cerr << "It is now side " << m_movingPlayer << "'s move." << std::endl;*/ }
 	/// set the current weapon
-	void setWeapon(FWeapon * w) { m_curWeapon = w; m_map->computeWeaponRange(); }
+	void setWeapon(FWeapon * w);
 	/// get the current weapon
 	FWeapon * getWeapon() { return m_curWeapon; }
 

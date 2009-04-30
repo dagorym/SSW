@@ -13,7 +13,7 @@ FDisruptorCannon::FDisruptorCannon() {
 	m_name="DC";
 	m_fullName = "Disruptor Cannon";
 	m_type=DC;
-	m_range=1;
+	m_range=12;
 	m_nDice=3;
 	m_FF=true;
 	m_RD=true;

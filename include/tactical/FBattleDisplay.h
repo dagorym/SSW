@@ -255,6 +255,9 @@ protected:
 	/// Draws prompt to select ship to fire defensive shots
 	void drawDefensiveFire(wxDC &dc);
 
+	/// Draws prompt to select ship to fire defensive shots
+	void drawAttackFire(wxDC &dc);
+
 	/**
 	 * @brief Draws the ships weapons in the tactical display
 	 *
@@ -295,6 +298,20 @@ protected:
 
 	/// event handler for defensive fire complete button
 	void onOffensiveFireDone( wxCommandEvent& event );
+
+	/**
+	 * @brief Fires all of the active player's targeted weapons
+	 *
+	 * This method loops over all the active player's ships and
+	 * checks each of those ships weapons.  Any weapon that is
+	 * targeted and not damaged is fired and the results are
+	 * computed.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 29, 2009
+	 * @date Last Modified:  Apr 29, 2009
+	 */
+	void fireAllWeapons();
 
 };
 

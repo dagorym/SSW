@@ -819,6 +819,9 @@ void FBattleBoard::computeFFRange(FPoint &pos, PointSet &tList, PointSet &hList,
 	for (unsigned int i = 0; i<=range; i++){
 		hList.insert(curHex);
 		curHex = findNextHex(curHex,heading);
+		if (curHex.getX() < 0 || curHex.getY() < 0 || curHex.getX() > m_nCol || curHex.getY() > m_nRow) {
+			break;  // bust out if we move off the map
+		}
 	}
 	// compute the right column
 	curHex = pos;
@@ -830,6 +833,9 @@ void FBattleBoard::computeFFRange(FPoint &pos, PointSet &tList, PointSet &hList,
 	while (computeHexDistance(pos.getX(),pos.getY(),curHex.getX(),curHex.getY()) <= (int)range){
 		tList.insert(curHex);
 		curHex = findNextHex(curHex,heading);
+		if (curHex.getX() < 0 || curHex.getY() < 0 || curHex.getX() > m_nCol || curHex.getY() > m_nRow) {
+			break;  // bust out if we move off the map
+		}
 	}
 
 	// compute the left column
@@ -842,6 +848,9 @@ void FBattleBoard::computeFFRange(FPoint &pos, PointSet &tList, PointSet &hList,
 	while (computeHexDistance(pos.getX(),pos.getY(),curHex.getX(),curHex.getY()) <= (int)range){
 		tList.insert(curHex);
 		curHex = findNextHex(curHex,heading);
+		if (curHex.getX() < 0 || curHex.getY() < 0 || curHex.getX() > m_nCol || curHex.getY() > m_nRow) {
+			break;  // bust out if we move off the map
+		}
 	}
 }
 

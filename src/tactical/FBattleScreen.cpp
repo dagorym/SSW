@@ -202,5 +202,12 @@ void FBattleScreen::setMoveComplete(bool s) {
 	}
 }
 
+void FBattleScreen::setWeapon(FWeapon * w) {
+	if (w!=NULL) std::cerr << "Setting current weapon to " << w->getLongName() << std::endl;
+	m_curWeapon = w;
+	std::cerr << "computing weapon range" << std::endl;
+	m_map->computeWeaponRange();
+	std::cerr << "range computed." << std::endl;
+}
 
 }

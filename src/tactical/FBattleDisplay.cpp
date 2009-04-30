@@ -38,10 +38,12 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxPoint(leftOffset+60,3*BORDER), wxDefaultSize, 0 );
 	m_buttonMoveDone = new wxButton( this, wxID_ANY, wxT("Movement Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
 	m_buttonDefensiveFireDone = new wxButton( this, wxID_ANY, wxT("Defensive Fire Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
+	m_buttonOffensiveFireDone = new wxButton( this, wxID_ANY, wxT("Offensive Fire Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
 	m_spinCtrl1->Hide();
 	m_button1->Hide();
 	m_buttonMoveDone->Hide();
 	m_buttonDefensiveFireDone->Hide();
+	m_buttonOffensiveFireDone->Hide();
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
 
@@ -92,6 +94,9 @@ void FBattleDisplay::draw(wxDC &dc){
 		case PH_DEFENSE_FIRE:
 			drawDefensiveFire(dc);
 			break;
+		case PH_ATTACK_FIRE:
+			drawAttackFire(dc);
+			break;
 		default:
 			break;
 		}
@@ -139,7 +144,7 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 	case BS_Battle:
 		if (m_parent->getShip()!=NULL
 				&& m_weaponRegions.size()>0
-				&& m_parent->getShip()->getOwner()==m_parent->getActivePlayer()){
+				&& m_parent->getShip()->getOwner()==m_parent->getActivePlayerID()){
 			checkWeaponSelection(event);
 		}
 		break;
@@ -467,10 +472,28 @@ void FBattleDisplay::drawDefensiveFire(wxDC &dc){
 	dc.DrawText(os.str(),leftOffset,BORDER);
 	os.str("Please select a ship to fire weapons.");
 	dc.DrawText(os.str(),leftOffset,BORDER+32);
-		m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
-		if (m_first){
+	m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
+	if (m_first){
 		m_buttonDefensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
 			m_buttonDefensiveFireDone->Show();
+		m_first=false;
+	}
+
+}
+
+void FBattleDisplay::drawAttackFire(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	std::ostringstream os;
+	os << "The moving player may now\ndeclare offensive fire";
+	dc.SetTextForeground(white);
+	dc.DrawText(os.str(),leftOffset,BORDER);
+	os.str("Please select a ship to fire weapons.");
+	dc.DrawText(os.str(),leftOffset,BORDER+32);
+	m_buttonOffensiveFireDone->Enable(m_parent->isMoveComplete());
+	if (m_first){
+		m_buttonOffensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
+			m_buttonOffensiveFireDone->Show();
 		m_first=false;
 	}
 
@@ -480,7 +503,14 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonDefensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
 //	std::cerr << "Movement Completed" << std::endl;
-	// Fire all the weapons
+	fireAllWeapons();
+	// Advance to next phase
+	m_parent->setPhase(PH_ATTACK_FIRE);
+	m_buttonDefensiveFireDone->Hide();
+	m_first=true;
+}
+
+void FBattleDisplay::fireAllWeapons(){
 	VehicleList sList = m_parent->getShipList(m_parent->getActivePlayerID());
 	// loop over the list of ships
 	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
@@ -494,17 +524,14 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 			}
 		}
 	}
-	// Advance to next phase
-	m_parent->setPhase(PH_ATTACK_FIRE);
-	m_buttonDefensiveFireDone->Hide();
-	m_first=true;
+
 }
 
 void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonOffensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
 //	std::cerr << "Movement Completed" << std::endl;
-	///@todo Fire all the weapons
+	fireAllWeapons();
 	m_parent->setPhase(PH_MOVE);
 	m_buttonOffensiveFireDone->Hide();
 	m_first=true;
@@ -558,9 +585,9 @@ void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event){
 			FWeapon *w = m_parent->getShip()->getWeapon(i);
 			if (w->isMPO()==false || m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
 				m_parent->setWeapon(w);
-//				std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
-				m_parent->reDraw();
+				std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
 				found=true;
+				m_parent->reDraw();
 			}
 		}
 	}
