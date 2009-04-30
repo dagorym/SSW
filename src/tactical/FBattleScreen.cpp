@@ -150,6 +150,7 @@ void FBattleScreen::setPhase(int p){
 		if (!m_activePlayer) {  // defender just ended
 			///@todo update turn counters
 			///@todo check for repair turn
+			std::cerr << "Defender just ended their movement turn" << std::endl;
 		}
 		toggleActivePlayer();
 		m_map->resetMoveData();
@@ -203,11 +204,11 @@ void FBattleScreen::setMoveComplete(bool s) {
 }
 
 void FBattleScreen::setWeapon(FWeapon * w) {
-	if (w!=NULL) std::cerr << "Setting current weapon to " << w->getLongName() << std::endl;
+//	if (w!=NULL) std::cerr << "Setting current weapon to " << w->getLongName() << std::endl;
 	m_curWeapon = w;
-	std::cerr << "computing weapon range" << std::endl;
+//	std::cerr << "computing weapon range" << std::endl;
 	m_map->computeWeaponRange();
-	std::cerr << "range computed." << std::endl;
+//	std::cerr << "range computed." << std::endl;
 }
 
 }

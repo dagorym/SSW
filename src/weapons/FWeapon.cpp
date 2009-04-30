@@ -51,13 +51,13 @@ void FWeapon::fire(){
 	if (!m_isDamaged && m_target!=NULL && m_targetRange>=0){
 		int roll = irand(100);
 		int toHitProb = m_baseToHitProb + ((m_isHeadOn)?10:0);
-//		std::cerr << "toHitProb = " << toHitProb << std::endl;
+		if (toHitProb<0)std::cerr << m_name << ":  " << "toHitProb = " << toHitProb << std::endl;
 		if (m_RD){
 			toHitProb -= 5*m_targetRange;
-//			std::cerr << "toHitProb = " << toHitProb << std::endl;
+			if (toHitProb<0) std::cerr << m_name << ":  " << "range adjusted toHitProb = " << toHitProb << std::endl;
 		}
-//		std::cerr << "m_baseToHitProb = " << m_baseToHitProb << "  range = " << m_targetRange << std::endl;
-//		std::cerr << "The chance to hit is " << toHitProb << " and we rolled a " << roll << std::endl;
+		if (toHitProb<0)std::cerr << m_name << ":  " << "m_baseToHitProb = " << m_baseToHitProb << "  range = " << m_targetRange << std::endl;
+		if (toHitProb<0)std::cerr << m_name << ":  " << "The chance to hit is " << toHitProb << " and we rolled a " << roll << std::endl;
 		if (roll <= toHitProb){
 			int damage = 0;
 			for (unsigned int i = 0; i < m_nDice; i++){

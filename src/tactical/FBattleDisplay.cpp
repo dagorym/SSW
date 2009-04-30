@@ -508,6 +508,7 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	m_parent->setPhase(PH_ATTACK_FIRE);
 	m_buttonDefensiveFireDone->Hide();
 	m_first=true;
+	m_parent->setWeapon(NULL);
 }
 
 void FBattleDisplay::fireAllWeapons(){
@@ -532,9 +533,11 @@ void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
 	m_buttonOffensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
 //	std::cerr << "Movement Completed" << std::endl;
 	fireAllWeapons();
-	m_parent->setPhase(PH_MOVE);
 	m_buttonOffensiveFireDone->Hide();
 	m_first=true;
+	m_parent->setWeapon(NULL);
+	m_parent->toggleMovingPlayer();
+	m_parent->setPhase(PH_MOVE);
 }
 
 void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int textSize){
@@ -579,23 +582,17 @@ void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int text
 void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event){
 	int x = event.GetX();
 	int y = event.GetY();
-	bool found=false;
 	for (unsigned int i = 0; i< m_weaponRegions.size(); i++){
 		if (m_weaponRegions[i].Contains(x,y)){
 			FWeapon *w = m_parent->getShip()->getWeapon(i);
 			if (w->isMPO()==false || m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
 				m_parent->setWeapon(w);
-				std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
-				found=true;
-				m_parent->reDraw();
+//				std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
+				break;
 			}
 		}
 	}
-	if (!found){
-		m_parent->setWeapon(NULL);
-		m_parent->reDraw();
-	}
-
+	m_parent->reDraw();
 }
 
 
