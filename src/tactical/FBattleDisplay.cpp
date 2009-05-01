@@ -525,7 +525,7 @@ void FBattleDisplay::fireAllWeapons(){
 			}
 		}
 	}
-
+	m_parent->clearDestroyedShips();
 }
 
 void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){

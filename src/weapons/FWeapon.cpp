@@ -68,10 +68,13 @@ void FWeapon::fire(){
 //			std::cerr << "The target, " << m_target->getName() << " was hit for "
 //					<< damage << " points of damage." << std::endl;
 		}
+		// weapon has fired, clear target and reduce ammo if appropriate
+		m_target=NULL;
+		m_targetRange = -1;
+		if (m_currentAmmo){
+			m_currentAmmo--;
+		}
 	}
-	// weapon has fired, clear target
-	m_target=NULL;
-	m_targetRange = -1;
 }
 
 void FWeapon::setTarget(FVehicle *v, int r, bool headOn){

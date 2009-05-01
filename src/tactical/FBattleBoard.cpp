@@ -11,6 +11,7 @@
 #include <wx/wx.h>
 #include <cmath>
 #include <algorithm>
+#include <sstream>
 
 namespace Frontier {
 
@@ -714,6 +715,7 @@ void FBattleBoard::checkMoveStatus(){
 	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
 	bool finished = true;
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
+//		if ((*itr)->getHP()<=0) { continue; } // skip dead ships.
 		int min = (*itr)->getSpeed()-(*itr)->getADF();
 		if (m_turnInfo[(*itr)->getID()].nMoved<min){
 //			std::cerr << (*itr)->getName() << " is not done moving (" << m_turnInfo[(*itr)->getID()].nMoved << " of " << min <<std::endl;
@@ -920,6 +922,9 @@ void FBattleBoard::drawTarget(wxDC &dc){
 	} else {
 		dc.DrawText("None",x,10);
 	}
+	std::ostringstream os;
+	os << m_parent->getWeapon()->getTargetRange();
+	dc.DrawText(os.str(),10,20);
 }
 
 void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
@@ -999,5 +1004,21 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 //		std::cerr << "Setting target with range " << range << std::endl;
 	}
 }
+
+void FBattleBoard::removeShipFromGame(unsigned int id){
+	for (int i=0; i<m_nCol; i++){
+		for (int j=0; j<m_nRow; j++){
+			if (m_hexData[i][j].ships.size()){
+				for (VehicleList::iterator itr = m_hexData[i][j].ships.begin(); itr < m_hexData[i][j].ships.end(); itr++){
+					if ((*itr)->getID() == id){
+						m_hexData[i][j].ships.erase(itr);
+						return;
+					}
+				}
+			}
+		}
+	}
+}
+
 
 }

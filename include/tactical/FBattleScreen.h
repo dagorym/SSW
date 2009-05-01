@@ -123,6 +123,18 @@ public:
 	 */
 	double computeHexAngle(FPoint s, FPoint d);
 
+	/**
+	 * @brief Removes all destroyed ships from the map
+	 *
+	 * This runs through all the ships of the player that was just fired
+	 * upon and removes them from the game map
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 30, 2009
+	 * @date Last Modified:  Apr 30, 2009
+	 */
+	void clearDestroyedShips();
+
 	/// get the battle board state
 	const int & getState() const { return m_state; }
 	/// set the battle board state
@@ -230,7 +242,8 @@ protected:
 	/// pointer to currently selected weapon
 	FWeapon * m_curWeapon;
 
-
+	// Print a dialog declaring the  winner and exit the window
+	void declareWinner();
 
 };
 

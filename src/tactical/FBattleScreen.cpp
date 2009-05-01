@@ -211,4 +211,36 @@ void FBattleScreen::setWeapon(FWeapon * w) {
 //	std::cerr << "range computed." << std::endl;
 }
 
+void FBattleScreen::clearDestroyedShips(){
+	toggleActivePlayer(); // switch to the player getting shot at
+	VehicleList *sList = NULL;
+	if (m_activePlayer){
+		sList = m_attackShips;
+	} else {
+		sList = m_defendShips;
+	}
+	int liveShips = 0;
+	VehicleList::iterator itr = sList->begin();
+	while ( itr < sList->end()){
+		if ((*itr)->getHP() <= 0 ){
+			m_map->removeShipFromGame((*itr)->getID());
+			sList->erase(itr);
+		} else {
+			liveShips++;
+			itr++;
+		}
+	}
+	toggleActivePlayer();  // switch back
+	if (!liveShips){
+		declareWinner();
+	}
+}
+
+void FBattleScreen::declareWinner(){
+	std::string msg = "The winner of the battle is \nPlayer ";
+	msg+= (getActivePlayer())?"Sathar":"UPF";
+	wxMessageBox( msg, "Enemy Defeated!", wxOK | wxICON_INFORMATION );
+	Destroy();
+}
+
 }

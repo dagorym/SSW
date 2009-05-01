@@ -127,6 +127,21 @@ public:
 	 */
 	void computeWeaponRange();
 
+	/**
+	 * @brief Removes a ship from the game map
+	 *
+	 * This method is currently very brute force.  It runs over all the hexes
+	 * on the map and for hexes with ships looks at each ship to see if its ID
+	 * matches the one passed in.  If so, it is removed from the list.
+	 *
+	 * @param id The ID of the ship to remove
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 30, 2009
+	 * @date Last Modified:  Apr 30, 2009
+	 */
+	void removeShipFromGame(unsigned int id);
+
 protected:
 	/// parent window
 	FBattleScreen * m_parent;
@@ -603,6 +618,7 @@ protected:
 	 * @date Last Modified:  Apr 26, 2009
 	 */
 	void setIfValidTarget(FVehicle *v, FPoint p);
+
 };
 
 }
