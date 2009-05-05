@@ -150,7 +150,7 @@ void FBattleScreen::setPhase(int p){
 		if (!m_activePlayer) {  // defender just ended
 			///@todo update turn counters
 			///@todo check for repair turn
-			std::cerr << "Defender just ended their movement turn" << std::endl;
+//			std::cerr << "Defender just ended their movement turn" << std::endl;
 		}
 		toggleActivePlayer();
 		m_map->resetMoveData();

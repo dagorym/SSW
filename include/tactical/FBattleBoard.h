@@ -619,6 +619,18 @@ protected:
 	 */
 	void setIfValidTarget(FVehicle *v, FPoint p);
 
+	/**
+	 * @brief computes the full range of targets for a moved ship's weapon
+	 *
+	 * This method loops over the path of a moved ships and computes the hexes
+	 * that the selected weapon can fire into over the course of it's entire move.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  May 4, 2009
+	 * @date Last Modified:  May 4, 2009
+	 */
+	void computeMovedWeaponRange();
+
 };
 
 }
