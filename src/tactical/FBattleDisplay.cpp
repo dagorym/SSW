@@ -467,9 +467,10 @@ void FBattleDisplay::drawDefensiveFire(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	std::ostringstream os;
-	os << "The non-moving player may now\ndeclare defensive fire";
+	os << "The non-moving player may now";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,BORDER);
+	dc.DrawText("declare offensive fire.",leftOffset,BORDER+16);
 	os.str("Please select a ship to fire weapons.");
 	dc.DrawText(os.str(),leftOffset,BORDER+32);
 	m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
@@ -485,9 +486,10 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	std::ostringstream os;
-	os << "The moving player may now\ndeclare offensive fire";
+	os << "The moving player may now";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,BORDER);
+	dc.DrawText("declare offensive fire.",leftOffset,BORDER+16);
 	os.str("Please select a ship to fire weapons.");
 	dc.DrawText(os.str(),leftOffset,BORDER+32);
 	m_buttonOffensiveFireDone->Enable(m_parent->isMoveComplete());

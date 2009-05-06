@@ -928,9 +928,9 @@ void FBattleBoard::drawTarget(wxDC &dc){
 	} else {
 		dc.DrawText("None",x,10);
 	}
-	std::ostringstream os;
-	os << m_parent->getWeapon()->getTargetRange();
-	dc.DrawText(os.str(),10,20);
+//	std::ostringstream os;
+//	os << m_parent->getWeapon()->getTargetRange();
+//	dc.DrawText(os.str(),10,20);
 }
 
 void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
@@ -980,13 +980,13 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 					headOnMin = dis;
 				}
 			}
-			if ((*itr) == (*pItr)) { // We are at a waypoint
+			if (pItr != m_turnInfo[m_parent->getShip()->getID()].waypoints.end() && (*itr) == (*pItr) ) { // We are at a waypoint
 				// turn and recompute with new heading
 				if(tItr != m_turnInfo[m_parent->getShip()->getID()].turns.end()){
 					turnShip(heading,*tItr);
+					tItr++;
 				}
 				pItr++;
-				tItr++;
 			} else {  // just move to the next hex
 				itr++;
 			}
@@ -1065,21 +1065,21 @@ void FBattleBoard::computeMovedWeaponRange(){
 //	pItr++;
 	std::vector<int>::iterator tItr = m_turnInfo[m_parent->getShip()->getID()].turns.begin();
 	PointList::iterator itr = m_turnInfo[m_parent->getShip()->getID()].movedHexes.begin();
-	while (itr<m_turnInfo[m_parent->getShip()->getID()].movedHexes.end()) {
+	while (itr < m_turnInfo[m_parent->getShip()->getID()].movedHexes.end() ) {
 //		PointSet tList,hList;
 		if (m_parent->getWeapon()->isFF()){
 			computeFFRange((*itr),m_targetHexes,m_headOnHexes,heading);
 		} else {
 			computeBatteryRange((*itr),m_targetHexes);
 		}
-		if ((*itr) == (*pItr) ) {
+		if (pItr != m_turnInfo[m_parent->getShip()->getID()].waypoints.end() && (*itr) == (*pItr) ) {
 			// We are at a waypoint
 			// turn and recompute with new heading
 			if(tItr != m_turnInfo[m_parent->getShip()->getID()].turns.end()){
 				turnShip(heading,*tItr);
+				tItr++;
 			}
 			pItr++;
-			tItr++;
 		} else {  // just move to the next hex
 			itr++;
 		}

@@ -224,7 +224,7 @@ void FBattleScreen::clearDestroyedShips(){
 	while ( itr < sList->end()){
 		if ((*itr)->getHP() <= 0 ){
 			m_map->removeShipFromGame((*itr)->getID());
-			sList->erase(itr);
+			itr = sList->erase(itr);
 		} else {
 			liveShips++;
 			itr++;

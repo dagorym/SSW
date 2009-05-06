@@ -190,8 +190,8 @@ void FVehicle::takeDamage (int damage){
 	if (m_currentHP < 0) {
 		m_currentHP = 0;
 	}
-	std::cerr << m_name << " took " << damage << " HP and has "
-			<< m_currentHP << " HP remaining." << std::endl;
+//	std::cerr << m_name << " took " << damage << " HP and has "
+//			<< m_currentHP << " HP remaining." << std::endl;
 }
 
 };
