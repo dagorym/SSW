@@ -631,6 +631,24 @@ protected:
 	 */
 	void computeMovedWeaponRange();
 
+	/**
+	 * @brief Checks to see if hex is a planet position
+	 *
+	 * This method treats a collision in the physics sense, either a
+	 * head on collision or a near miss that deflects the path of the ship
+	 * involved i the "collision".  It either returns a bad hex if there
+	 * would be a head on collision or appropriately turns the ship for a
+	 * near miss.
+	 *
+	 * @param currentHex The hex to check
+	 * @param currentHeading The current heading of the ship
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  May 11, 2009
+	 * @date Last Modified:  May 11, 2009
+	 */
+	void checkForPlanetCollision(FPoint & currentHex, int & currentHeading);
+
 };
 
 }

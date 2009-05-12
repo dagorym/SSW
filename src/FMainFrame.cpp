@@ -164,7 +164,7 @@ void FMainFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
 	wxString body = "Star Frontiers Second Sathar War Simulation";
 	body += "\n\nWritten by Tom Stephens";
 	body += "\n\nCopyright 2005-2009 - New Frontier Games";
-	body += "\n\nVersion 0.0.9";
+	body += "\n\nVersion 0.0.10";
 	body += "\n\nStar Frontiers copyright 1982 - Wizards of the Coast";
     wxMessageBox( body, "Star Frontiers Second Sathar War Simulation",
                   wxOK | wxICON_INFORMATION );
@@ -301,8 +301,8 @@ void FMainFrame::onShowBattleScreen(wxCommandEvent& event){
 	FFleet *f = new FFleet();
 	f->setName("UPF");
 	f->addShip(createShip("AssaultScout"));
-	f->addShip(createShip("AssaultScout"));
-	f->addShip(createShip("AssaultScout"));
+//	f->addShip(createShip("AssaultScout"));
+//	f->addShip(createShip("AssaultScout"));
 	FVehicle *s = createShip("Frigate");
 	s->setIcon("../icons/UPFFrigate.png");
 	f->addShip(s);
@@ -319,6 +319,6 @@ void FMainFrame::onShowBattleScreen(wxCommandEvent& event){
 	s->setIcon("../icons/SatharDestroyer.png");
 	f->addShip(s);
 	aList.push_back(f);
-	bb->setupFleets(&aList,&dList,false,NULL);
+	bb->setupFleets(&aList,&dList,true,NULL);
 
 }

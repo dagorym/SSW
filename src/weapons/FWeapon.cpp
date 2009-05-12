@@ -48,6 +48,10 @@ const std::string FWeapon::getName() const {
 }
 
 void FWeapon::fire(){
+	// don't do anything if a LTD weapon and out of ammo
+	if (m_maxAmmo > 0 && m_currentAmmo == 0) {
+		return;
+	}
 	if (!m_isDamaged && m_target!=NULL && m_targetRange>=0){
 		int roll = irand(100);
 		int toHitProb = m_baseToHitProb + ((m_isHeadOn)?10:0);

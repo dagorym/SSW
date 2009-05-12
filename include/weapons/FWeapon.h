@@ -118,7 +118,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 27, 2009
-	 * @date Last Modified:  Apr 28, 2009
+	 * @date Last Modified:  May 11, 2009
 	 */
 	void fire();
 

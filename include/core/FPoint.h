@@ -34,7 +34,7 @@ public:
 	 * @date Created:  Mar 30, 2009
 	 * @date Last Modified:  Mar 30, 2009
 	 */
-	FPoint() { m_x=0; m_y=0; }
+	FPoint() { m_x=-9999; m_y=-9999; }
 
 	/**
 	 * @brief Initializing constructor

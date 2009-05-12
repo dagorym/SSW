@@ -470,6 +470,7 @@ void FBattleBoard::setInitialRoute(){
 		computeRemainingMoves(*(m_turnInfo[ship->getID()].waypoints.end()-1));
 		for (int i = 0; i<m_turnInfo[ship->getID()].nMoved;i++){
 			current=findNextHex(current,curHeading);
+			checkForPlanetCollision(current,curHeading);
 			m_turnInfo[ship->getID()].movedHexes.push_back(current);
 //			std::cerr << current.cx << "," << current.cy << " -> "
 //				<< m_turnInfo[ship->getID()].waypoints[wpCount+1].cx << ","
@@ -481,15 +482,19 @@ void FBattleBoard::setInitialRoute(){
 		}
 	} else {
 		current=m_shipPos;
+		int curHeading = ship->getHeading();
 		m_moved=0;
 		m_turnInfo[ship->getID()].waypoints.clear();
 		m_turnInfo[ship->getID()].waypoints.push_back(current);
 		m_turnInfo[ship->getID()].movedHexes.push_back(current);
 		for (int i=0; i < speed+ADF; i++){
-			current=findNextHex(current,ship->getHeading());
-			if(current.getX()!=-1) {m_movementHexes.push_back(current);}
+			if (current.getX() != -1){
+				current=findNextHex(current,curHeading);
+				checkForPlanetCollision(current,curHeading);
+				if(current.getX()!=-1) {m_movementHexes.push_back(current);}
+			}
 		}
-		m_turnInfo[ship->getID()].curHeading = ship->getHeading();
+		m_turnInfo[ship->getID()].curHeading = curHeading;
 		m_turnInfo[ship->getID()].turns.clear();
 		m_turnInfo[ship->getID()].nMoved=0;
 //		m_turnInfo[ship->getID()].hasMoved=true;
@@ -497,6 +502,7 @@ void FBattleBoard::setInitialRoute(){
 }
 
 FPoint FBattleBoard::findNextHex(FPoint h, int heading){
+	FPoint bad(-1,-1);
 	for (int i=h.getX()-1;i<=h.getX()+1;i++){
 		for (int j=h.getY()-1;j<=h.getY()+1;j++){
 			FPoint tmp(i,j);
@@ -505,7 +511,6 @@ FPoint FBattleBoard::findNextHex(FPoint h, int heading){
 			}
 		}
 	}
-	FPoint bad(-1,-1);
 	return bad;
 }
 
@@ -692,22 +697,33 @@ void FBattleBoard::computeRemainingMoves(FPoint start){
 	if (left >= 6 ) { left -= 6; }
 	int right = m_turnInfo[m_parent->getShip()->getID()].curHeading-1;
 	if (right < 0 ) { right += 6; }
+	int forward = m_turnInfo[m_parent->getShip()->getID()].curHeading;
 	FPoint leftHex = start;
 	FPoint rightHex = start;
 	FPoint forwardHex = start;
+	unsigned int turnLimit = m_parent->getShip()->getMR();
 	m_rightHexes.clear();
 	m_leftHexes.clear();
 	m_movementHexes.clear();
 //	std::cerr << m_moved << ", " << m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF() << std::endl;
 	for (int i=m_moved; i< m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF(); i++){
-		forwardHex = findNextHex(forwardHex,m_turnInfo[m_parent->getShip()->getID()].curHeading);
-		if(forwardHex.getX()!=-1) {m_movementHexes.push_back(forwardHex);}
-		if(m_turnInfo[m_parent->getShip()->getID()].turns.size()<m_parent->getShip()->getMR()){
+		if (forwardHex.getX()!= -1){
+			forwardHex = findNextHex(forwardHex,forward);
+			checkForPlanetCollision(forwardHex,forward);
+			if(forwardHex.getX()!=-1) {m_movementHexes.push_back(forwardHex);}
+		}
+		if(m_turnInfo[m_parent->getShip()->getID()].turns.size() < turnLimit){
 			// we only update these if the MR is not expended
-			leftHex=findNextHex(leftHex,left);
-			if(leftHex.getX()!=-1) {m_leftHexes.push_back(leftHex);}
-			rightHex=findNextHex(rightHex,right);
-			if(rightHex.getX()!=-1) {m_rightHexes.push_back(rightHex);}
+			if (leftHex.getX() != -1){
+				leftHex=findNextHex(leftHex,left);
+				checkForPlanetCollision(leftHex,left);
+				if(leftHex.getX()!=-1) {m_leftHexes.push_back(leftHex);}
+			}
+			if (rightHex.getX()!= -1){
+				rightHex=findNextHex(rightHex,right);
+				checkForPlanetCollision(rightHex,right);
+				if(rightHex.getX()!=-1) {m_rightHexes.push_back(rightHex);}
+			}
 		}
 	}
 //		std::cerr << "m_movementHexes.size() = " << m_movementHexes.size() << std::endl;
@@ -1084,6 +1100,15 @@ void FBattleBoard::computeMovedWeaponRange(){
 			itr++;
 		}
 	}
+}
+
+void FBattleBoard::checkForPlanetCollision(FPoint & currentHex, int & currentHeading){
+	// first make sure we're not going to hit a planet head on (i.e. the next
+	// hex we would move from here is the planet.
+	if (m_planetPosition.getX()>=0 && m_planetPosition == findNextHex(currentHex,currentHeading)){
+		currentHex = FPoint(-1,-1);
+	}
+
 }
 
 }
