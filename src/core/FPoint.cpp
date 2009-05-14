@@ -35,4 +35,10 @@ bool FPoint::operator< (const FPoint &p) const {
 	}
 }
 
+//******  Related Friend Function Definitions ********//
+std::ostream& operator<< (std::ostream& os, const FPoint& p){
+  os << "(" << p.m_x << ", " << p.m_y << ")";
+  return os;
+}
+
 }

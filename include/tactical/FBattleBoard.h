@@ -56,6 +56,12 @@ typedef struct {
 	int curHeading;
 	/// number of hexes it has currently moved
 	int nMoved;
+	/// flag for whether or not the ship had a turn due to gravity
+//	bool gravityTurn;
+	/// location gravity turn occurred as key and direction as value
+	std::map <FPoint,int> gravityTurns;
+	/// direction ship turned due to gravity
+//	int gravityTurnDirection;
 } turnData;
 
 /**
@@ -66,7 +72,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Nov 1, 2008
+ * @date Last Modified:  May 13, 2009
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -193,6 +199,13 @@ protected:
 	PointSet m_targetHexes;
 	/// set to contain valid target hexes for head on shot bonus
 	PointSet m_headOnHexes;
+	/// position on map to turn ship due to gravity
+	/// location gravity turn occurred as key and direction as value
+	std::map <FPoint,int> m_gravityTurns;
+	// direction to turn ship due to gravity
+//	int m_gravityTurnDirection;
+	/// flag indicating that one gravity turn has already been made for this pass
+	bool m_gravityTurnFlag;
 
 
 	/**
@@ -377,7 +390,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  Mar 30, 2009
+	 * @date Last Modified:  May 13, 2009
 	 */
 	void setInitialRoute();
 
@@ -407,7 +420,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 30, 2008
-	 * @date Last Modified:  Mar 30, 2009
+	 * @date Last Modified:  May 13, 2009
 	 */
 	void checkForTurn(wxMouseEvent &event);
 
@@ -470,7 +483,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Mar 30, 2009
+	 * @date Last Modified:  May 13, 2009
 	 */
 	void computeRemainingMoves(FPoint start);
 
@@ -645,9 +658,25 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  May 11, 2009
-	 * @date Last Modified:  May 11, 2009
+	 * @date Last Modified:  May 13, 2009
 	 */
 	void checkForPlanetCollision(FPoint & currentHex, int & currentHeading);
+
+	/**
+	 * @brief computes movement along a heading
+	 *
+	 * This method computes the movement path for a given starting point and
+	 * heading taking into account any planets and their gravity along the way
+	 *
+	 * @param list The list to store the movement hexes in
+	 * @param hex The starting hex
+	 * @param heading The heading of the ship
+	 *
+	 * @author Tom Stephens
+	 * @date Create:  May 13, 2009
+	 * @date Last Modified:  May 13, 2009
+	 */
+	void computePath(PointList &list, FPoint hex, int heading);
 
 };
 

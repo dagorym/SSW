@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <set>
+#include <iostream>
 
 namespace Frontier {
 
@@ -120,6 +121,19 @@ public:
 	 * @date Last Modified:  Apr 16, 2009
 	 */
 	bool operator< (const FPoint &p) const;
+
+	/**
+	 * @brief Overloaded << operator for printing the data contents of the object.
+	 *
+	 * This function overloads the iostream inserter operator (<<) for the
+	 * FPoint class.  It prints out the point tuple in the format (x, y) to
+	 * the output stream.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  May 13, 2009
+	 * @date Last Modified:  May 13, 2009
+	 */
+	friend std::ostream& operator<< (std::ostream &os, const FPoint &p);
 
 private:
 	/// x coordinate

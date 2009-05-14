@@ -461,6 +461,8 @@ void FBattleBoard::setInitialRoute(){
 	m_leftHexes.clear();
 	m_rightHexes.clear();
 	m_turnInfo[ship->getID()].movedHexes.clear();
+	m_gravityTurns.clear();
+	m_gravityTurnFlag = false;
 	if (m_turnInfo[ship->getID()].hasMoved){
 		unsigned int wpCount=0;
 		int curHeading = ship->getHeading();
@@ -479,6 +481,11 @@ void FBattleBoard::setInitialRoute(){
 				curHeading = turnShip(curHeading,m_turnInfo[ship->getID()].turns[wpCount]);
 				wpCount++;
 			}
+//			std::map<FPoint,int>::iterator itr = m_turnInfo[ship->getID()].gravityTurns.find(current);
+//			if ( itr != m_turnInfo[ship->getID()].gravityTurns.end() ){
+//				m_gravityTurnPosition = current;
+//				m_gravityTurnDirection = m_turnInfo[ship->getID()].gravityTurnDirection;
+//			}
 		}
 	} else {
 		current=m_shipPos;
@@ -487,6 +494,9 @@ void FBattleBoard::setInitialRoute(){
 		m_turnInfo[ship->getID()].waypoints.clear();
 		m_turnInfo[ship->getID()].waypoints.push_back(current);
 		m_turnInfo[ship->getID()].movedHexes.push_back(current);
+		m_turnInfo[ship->getID()].curHeading = curHeading;
+		m_turnInfo[ship->getID()].turns.clear();
+		m_turnInfo[ship->getID()].nMoved=0;
 		for (int i=0; i < speed+ADF; i++){
 			if (current.getX() != -1){
 				current=findNextHex(current,curHeading);
@@ -494,9 +504,6 @@ void FBattleBoard::setInitialRoute(){
 				if(current.getX()!=-1) {m_movementHexes.push_back(current);}
 			}
 		}
-		m_turnInfo[ship->getID()].curHeading = curHeading;
-		m_turnInfo[ship->getID()].turns.clear();
-		m_turnInfo[ship->getID()].nMoved=0;
 //		m_turnInfo[ship->getID()].hasMoved=true;
 	}
 }
@@ -546,7 +553,26 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 		PointList::iterator hItr;
 		int moved=0;
 		m_turnInfo[m_parent->getShip()->getID()].curHeading = m_parent->getShip()->getHeading();
+		m_gravityTurns = m_turnInfo[m_parent->getShip()->getID()].gravityTurns;
+//		std::cerr << "The gravity turn list has " << m_gravityTurns.size() << " elements" << std::endl;
+//		if (m_gravityTurns.size() > 0){
+//			std::cerr << "The turn hex is " << m_gravityTurns.begin()->first << std::endl;
+//		}
+		m_turnInfo[m_parent->getShip()->getID()].gravityTurns.clear();
+//		int gturnCount=0;
 		for (hItr = m_turnInfo[m_parent->getShip()->getID()].movedHexes.begin();hItr<m_turnInfo[m_parent->getShip()->getID()].movedHexes.end();hItr++){
+//			std::cerr << "Working on hex " << *hItr << std::endl;
+			std::map<FPoint,int>::iterator gItr = m_gravityTurns.find(*hItr);
+			if (gItr != m_gravityTurns.end()){
+				m_turnInfo[m_parent->getShip()->getID()].gravityTurns[gItr->first] = gItr->second;
+//				std::cerr << "Hit a gravity turn hex" << std::endl;
+				if ((*hItr)==h){  // We're at the end of the check so make sure we change the direction
+					turnShip(m_turnInfo[m_parent->getShip()->getID()].curHeading,(*tItr));
+					wItr++;  // step to next waypoint
+					tItr++;  // step to next turn
+				}
+			}
+//			std::cerr << "The ship's gravity turn list has " << m_turnInfo[m_parent->getShip()->getID()].gravityTurns.size() << " elements" << std::endl;
 			if ((*hItr)==h){ // we've reached the selected hex
 				// first delete every thing beyond this point in the waypoint and turn list
 				m_turnInfo[m_parent->getShip()->getID()].turns.erase(tItr,m_turnInfo[m_parent->getShip()->getID()].turns.end());
@@ -567,7 +593,6 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 				turnShip(m_turnInfo[m_parent->getShip()->getID()].curHeading,(*tItr));
 				wItr++;  // step to next waypoint
 				tItr++;  // step to next turn
-//				turnShip(m_turnInfo[m_parent->getShip()->getID()].curHeading,(*tItr));
 			}
 			moved++;
 		}
@@ -597,10 +622,6 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 		//store the waypoint;
 //		m_moved=moved;
 		m_turnInfo[m_parent->getShip()->getID()].hasMoved = true;
-		m_turnInfo[m_parent->getShip()->getID()].waypoints.push_back(h);
-		if(turn) {
-			m_turnInfo[m_parent->getShip()->getID()].turns.push_back(turn);
-		}
 //		std::cerr << m_parent->getShip()->getName() << " has "
 //				<< m_turnInfo[m_parent->getShip()->getID()].turns.size() << " turns and has "
 //				<< m_turnInfo[m_parent->getShip()->getID()].waypoints.size() << " waypoints." << std::endl;
@@ -622,12 +643,30 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 		//copy all the new hexes into the moved hexes list
 		itr = (*curList).begin();
 		for (int i=0; i< moved; i++){
-			m_turnInfo[m_parent->getShip()->getID()].movedHexes.push_back((*itr));
+//			std::cerr << "Adding " << *itr << " to hex list.  ";
+//			if (m_gravityTurns.size()>0){
+//				std::cerr << "Gravity turn should occur at " << m_gravityTurns.begin()->first;
+//			}
+//			std::cerr << std::endl;
+			m_turnInfo[m_parent->getShip()->getID()].movedHexes.push_back(*itr);
+			std::map<FPoint,int>::iterator tItr = m_gravityTurns.find(*itr);
+			if (tItr != m_gravityTurns.end()){
+//				std::cerr << "Turning at hex " << *itr << std::endl;
+				m_turnInfo[m_parent->getShip()->getID()].waypoints.push_back(*itr);
+				m_turnInfo[m_parent->getShip()->getID()].turns.push_back(tItr->second);
+				m_turnInfo[m_parent->getShip()->getID()].gravityTurns[*itr]=tItr->second;
+				turnShip(m_turnInfo[m_parent->getShip()->getID()].curHeading,tItr->second);
+			}
 			itr++;
 		}
 		itr--;
+		m_turnInfo[m_parent->getShip()->getID()].waypoints.push_back(h);
+		if(turn) {
+			m_turnInfo[m_parent->getShip()->getID()].turns.push_back(turn);
+		}
 		m_moved+=moved;
 		m_turnInfo[m_parent->getShip()->getID()].nMoved+=moved;
+		m_gravityTurnFlag=false;
 		computeRemainingMoves(*itr);
 	} else {
 		m_drawRoute=false;
@@ -637,6 +676,8 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 
 void FBattleBoard::resetMoveData(){
 	m_turnInfo.clear();
+	m_gravityTurnFlag=false;
+	m_gravityTurns.clear();
 	m_parent->setMoveComplete(false);
 	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
@@ -645,6 +686,7 @@ void FBattleBoard::resetMoveData(){
 		d.nMoved=0;
 		d.curHeading=(*itr)->getHeading();
 		d.startHeading=d.curHeading;
+		d.gravityTurns.clear();
 //		std::cerr << (*itr)->getID() << " "  <<(*itr)->getName() << " " << d.hasMoved << std::endl;
 		m_turnInfo[(*itr)->getID()]=d;
 	}
@@ -701,32 +743,54 @@ void FBattleBoard::computeRemainingMoves(FPoint start){
 	FPoint leftHex = start;
 	FPoint rightHex = start;
 	FPoint forwardHex = start;
-	unsigned int turnLimit = m_parent->getShip()->getMR();
+	unsigned int turnLimit = m_parent->getShip()->getMR()+m_turnInfo[m_parent->getShip()->getID()].gravityTurns.size();
 	m_rightHexes.clear();
 	m_leftHexes.clear();
 	m_movementHexes.clear();
 //	std::cerr << m_moved << ", " << m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF() << std::endl;
-	for (int i=m_moved; i< m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF(); i++){
-		if (forwardHex.getX()!= -1){
-			forwardHex = findNextHex(forwardHex,forward);
-			checkForPlanetCollision(forwardHex,forward);
-			if(forwardHex.getX()!=-1) {m_movementHexes.push_back(forwardHex);}
-		}
-		if(m_turnInfo[m_parent->getShip()->getID()].turns.size() < turnLimit){
-			// we only update these if the MR is not expended
-			if (leftHex.getX() != -1){
-				leftHex=findNextHex(leftHex,left);
-				checkForPlanetCollision(leftHex,left);
-				if(leftHex.getX()!=-1) {m_leftHexes.push_back(leftHex);}
-			}
-			if (rightHex.getX()!= -1){
-				rightHex=findNextHex(rightHex,right);
-				checkForPlanetCollision(rightHex,right);
-				if(rightHex.getX()!=-1) {m_rightHexes.push_back(rightHex);}
+	computePath(m_movementHexes,forwardHex,forward);
+	if(m_turnInfo[m_parent->getShip()->getID()].turns.size() < turnLimit){
+		// we only update these if the MR is not expended
+		computePath(m_leftHexes,leftHex,left);
+		computePath(m_rightHexes,rightHex,right);
+	}
+//		std::cerr << "m_movementHexes.size() = " << m_movementHexes.size() << std::endl;
+}
+
+void FBattleBoard::computePath(PointList &list, FPoint hex, int heading){
+	m_gravityTurnFlag = false;
+	if (m_turnInfo[m_parent->getShip()->getID()].gravityTurns.size()>0){
+		// check to see if we are sitting on a gravity turn point and set gravity turn flag to true if we are
+		std::map<FPoint,int>::iterator itr = m_turnInfo[m_parent->getShip()->getID()].gravityTurns.find(hex);
+		m_gravityTurnFlag = (itr!=m_turnInfo[m_parent->getShip()->getID()].gravityTurns.end())?true:false;
+		// make sure we are not next to the planet and only one hex past the turn point as well.
+		if (computeHexDistance(hex.getX(),hex.getY(),m_planetPosition.getX(),m_planetPosition.getY())==1){
+			FPoint turnHex =  m_turnInfo[m_parent->getShip()->getID()].gravityTurns.begin()->first;
+			if(computeHexDistance(hex.getX(),hex.getY(),turnHex.getX(),turnHex.getY()) == 1){
+				int back = heading + 3;
+				back = (back>5)?back-6:back;
+				int back2 = heading + 2;
+				back2 = (back2>5)?back2-6:back;
+				int back3 = heading + 4;
+				back3 = (back3>5)?back3-6:back;
+				int dir = m_parent->computeHeading(m_hexData[hex.getX()][hex.getY()].pos
+						,m_hexData[turnHex.getX()][turnHex.getY()].pos
+						);
+				if (dir==back || dir==back2 || dir==back3){
+					m_gravityTurnFlag=true;
+				}
 			}
 		}
 	}
-//		std::cerr << "m_movementHexes.size() = " << m_movementHexes.size() << std::endl;
+	// compute the path forward
+	for (int i=m_moved; i< m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF(); i++){
+		if (hex.getX()!= -1){
+			hex=findNextHex(hex,heading);
+			checkForPlanetCollision(hex,heading);
+			if(hex.getX()!=-1) {list.push_back(hex);}
+		}
+	}
+
 }
 
 void FBattleBoard::checkMoveStatus(){
@@ -1103,10 +1167,38 @@ void FBattleBoard::computeMovedWeaponRange(){
 }
 
 void FBattleBoard::checkForPlanetCollision(FPoint & currentHex, int & currentHeading){
-	// first make sure we're not going to hit a planet head on (i.e. the next
-	// hex we would move from here is the planet.
-	if (m_planetPosition.getX()>=0 && m_planetPosition == findNextHex(currentHex,currentHeading)){
-		currentHex = FPoint(-1,-1);
+//	m_gravityTurnDirection = 0;
+	// first make sure a planet is on the board
+	if (m_planetPosition.getX()>=0){ // is there a planet on the board?
+		// next make sure we're not going to hit a planet head on (i.e. this hex or
+		// the next hex we would move from here is the planet.
+		if (m_planetPosition == currentHex || m_planetPosition == findNextHex(currentHex,currentHeading)){
+			currentHex = FPoint(-1,-1);
+			return;
+		}
+		// finally, check to see if we are going to be influenced by the planet's gravity
+		// It only affects us if the planet is in our starboard or port back hexes
+		int turnDir=0;
+		// check port side
+		int portBackDir = currentHeading - 2;
+		portBackDir = (portBackDir<0)?portBackDir+6:portBackDir;
+		FPoint testHex = findNextHex(currentHex,portBackDir);
+		if (testHex == m_planetPosition && m_gravityTurnFlag == false){
+			turnDir = -1;
+		}
+		// check starboard side
+		int starboardBackDir = currentHeading + 2;
+		starboardBackDir = (starboardBackDir>5)?starboardBackDir-6:starboardBackDir;
+		testHex = findNextHex(currentHex,starboardBackDir);
+		if (testHex == m_planetPosition && m_gravityTurnFlag == false){
+			turnDir = 1;
+		}
+		if (turnDir){
+			m_gravityTurns[currentHex] = turnDir;
+			currentHeading = turnShip(currentHeading,turnDir);
+			m_gravityTurnFlag = true;
+			return;
+		}
 	}
 
 }
