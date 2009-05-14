@@ -220,13 +220,16 @@ void FBattleDisplay::drawShipChoices (wxDC &dc){
 		m_vList = m_parent->getShipList(m_parent->getActivePlayerID());
 		m_loaded = true;
 		m_parent->setDone(false);
+		if(m_parent->getActivePlayer() == false && m_parent->getStation()!=NULL){
+			m_vList[m_vList.size()-1] = NULL;
+		}
 	}
 	for (unsigned int i=0; i< m_vList.size(); i++){
 		if (m_vList[i]!=NULL){
-		const wxImage *iptr = m_vList[i]->getIcon();
-		wxImage im = iptr->Scale(ICON_SIZE,ICON_SIZE);
-		wxBitmap b(im);
-		dc.DrawBitmap(b,leftOffset+i*ICON_SIZE,BORDER);
+			const wxImage *iptr = m_vList[i]->getIcon();
+			wxImage im = iptr->Scale(ICON_SIZE,ICON_SIZE);
+			wxBitmap b(im);
+			dc.DrawBitmap(b,leftOffset+i*ICON_SIZE,BORDER);
 		}
 	}
 	dc.SetTextForeground(white);
@@ -260,7 +263,9 @@ void FBattleDisplay::makeShipChoice(wxMouseEvent & event){
 			wxClientDC dc(this);
 			Refresh();
 //			std::cerr << "The selection position is (" << xp << "," << yp << ")" << std::endl;
-			if (count == m_vList.size()){
+			unsigned int countLimit = m_vList.size();
+			if (m_parent->getActivePlayer() == false && m_parent->getStation()!=NULL) { countLimit--; }
+			if (count == countLimit){
 				count = 0;
 				m_parent->setDone(true);
 				m_loaded = false;

@@ -678,6 +678,21 @@ protected:
 	 */
 	void computePath(PointList &list, FPoint hex, int heading);
 
+	/**
+	 * @brief Determines turn direction caused by a planet
+	 *
+	 * This method determines which direction the ship should turn when
+	 * it passes close to a planet
+	 *
+	 * @param currentHex The current hex of the ship
+	 * @param currentHeading The heading of the ship
+	 *
+	 * @author Tom Stephens
+	 * @date Create:  May 14, 2009
+	 * @date Last Modified:  May 14, 2009
+	 */
+	int getPlanetTurnDirection(FPoint currentHex, int currentHeading);
+
 };
 
 }

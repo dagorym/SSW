@@ -688,6 +688,16 @@ void FBattleBoard::resetMoveData(){
 		d.startHeading=d.curHeading;
 		d.gravityTurns.clear();
 //		std::cerr << (*itr)->getID() << " "  <<(*itr)->getName() << " " << d.hasMoved << std::endl;
+		if (m_parent->getStation()!=NULL && (*itr)->getID() == m_parent->getStation()->getID()){
+			FPoint nextHex = findNextHex(m_parent->getStationPos(),d.curHeading);
+			d.movedHexes.push_back(nextHex);
+			d.nMoved=1;
+			d.waypoints.push_back(m_parent->getStationPos());
+			d.waypoints.push_back(nextHex);
+			int turnDir = getPlanetTurnDirection(nextHex,d.curHeading);
+			d.turns.push_back(turnDir);
+			d.finalHeading = turnShip(d.curHeading,turnDir);
+		}
 		m_turnInfo[(*itr)->getID()]=d;
 	}
 }
@@ -828,6 +838,10 @@ void FBattleBoard::finalizeMove(){
 				m_hexData[start.getX()][start.getY()].ships.erase(i2);
 				break;
 			}
+		}
+		// update station position
+		if ((*itr)->getType()=="ArmedStation" || (*itr)->getType()=="FortifiedStation" || (*itr)->getType()=="Fortress"){
+			m_parent->setStationPosition(finish);
 		}
 	}
 	m_drawRoute = false;
@@ -1177,22 +1191,7 @@ void FBattleBoard::checkForPlanetCollision(FPoint & currentHex, int & currentHea
 			return;
 		}
 		// finally, check to see if we are going to be influenced by the planet's gravity
-		// It only affects us if the planet is in our starboard or port back hexes
-		int turnDir=0;
-		// check port side
-		int portBackDir = currentHeading - 2;
-		portBackDir = (portBackDir<0)?portBackDir+6:portBackDir;
-		FPoint testHex = findNextHex(currentHex,portBackDir);
-		if (testHex == m_planetPosition && m_gravityTurnFlag == false){
-			turnDir = -1;
-		}
-		// check starboard side
-		int starboardBackDir = currentHeading + 2;
-		starboardBackDir = (starboardBackDir>5)?starboardBackDir-6:starboardBackDir;
-		testHex = findNextHex(currentHex,starboardBackDir);
-		if (testHex == m_planetPosition && m_gravityTurnFlag == false){
-			turnDir = 1;
-		}
+		int turnDir = getPlanetTurnDirection(currentHex,currentHeading);
 		if (turnDir){
 			m_gravityTurns[currentHex] = turnDir;
 			currentHeading = turnShip(currentHeading,turnDir);
@@ -1200,7 +1199,26 @@ void FBattleBoard::checkForPlanetCollision(FPoint & currentHex, int & currentHea
 			return;
 		}
 	}
+}
 
+int FBattleBoard::getPlanetTurnDirection(FPoint currentHex, int currentHeading){
+	// It only affects us if the planet is in our starboard or port back hexes
+	int turnDir=0;
+	// check port side
+	int portBackDir = currentHeading - 2;
+	portBackDir = (portBackDir<0)?portBackDir+6:portBackDir;
+	FPoint testHex = findNextHex(currentHex,portBackDir);
+	if (testHex == m_planetPosition && m_gravityTurnFlag == false){
+		turnDir = -1;
+	}
+	// check starboard side
+	int starboardBackDir = currentHeading + 2;
+	starboardBackDir = (starboardBackDir>5)?starboardBackDir-6:starboardBackDir;
+	testHex = findNextHex(currentHex,starboardBackDir);
+	if (testHex == m_planetPosition && m_gravityTurnFlag == false){
+		turnDir = 1;
+	}
+	return turnDir;
 }
 
 }

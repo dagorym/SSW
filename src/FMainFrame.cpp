@@ -297,7 +297,7 @@ void FMainFrame::onShowBattleScreen(wxCommandEvent& event){
 	FBattleScreen *bb = new FBattleScreen();
 	bb->Show(true);
 	FleetList aList,dList;
-//	FVehicle *st = createShip("ArmedStation");
+	FVehicle *st = createShip("ArmedStation");
 	FFleet *f = new FFleet();
 	f->setName("UPF");
 	f->addShip(createShip("AssaultScout"));
@@ -319,6 +319,6 @@ void FMainFrame::onShowBattleScreen(wxCommandEvent& event){
 	s->setIcon("../icons/SatharDestroyer.png");
 	f->addShip(s);
 	aList.push_back(f);
-	bb->setupFleets(&aList,&dList,true,NULL);
+	bb->setupFleets(&aList,&dList,true,st);
 
 }

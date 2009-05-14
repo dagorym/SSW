@@ -84,6 +84,9 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 			m_defendShips->push_back(sList[j]);
 		}
 	}
+	if (station!=NULL){  // the station always belongs to the defender
+		m_defendShips->push_back(station);
+	}
 	if (m_attackShips) { delete m_attackShips; }
 	m_attackShips = new VehicleList;
 	for (unsigned int i=0; i< m_attackList->size(); i++){
