@@ -27,7 +27,7 @@ namespace Frontier
  *
  * @author Tom Stephens
  * @date Created:  Jan 14, 2005
- * @date Last Modified:  May 30, 2008
+ * @date Last Modified:  May 28, 2009
  */
 class FGame : public Frontier::FPObject {
 private:
@@ -259,6 +259,7 @@ public:
 	 */
 	FPlayer * getPlayer(unsigned int id) const;
 
+
 private:
   /// Vector containing pointers to all players
   PlayerList m_players;
@@ -415,7 +416,7 @@ private:
    *
    * @author Tom Stephens
    * @date Created:  Apr 16, 2008
-   * @date Last Modified:  Apr 16, 2008
+   * @date Last Modified:  May 28, 2009
    */
   int checkForCombat();
 
@@ -429,6 +430,25 @@ private:
    * @date Last Modified:  Apr 16, 2008
    */
   void resolveCombat(std::string sysName);
+
+  /**
+   *
+   * @brief Removes destroyed ships from active fleets
+   *
+   * This method loops over the game objects at the end of a strategic
+   * combat round and removes all destroyed ships from the active fleets
+   * and places them in the player's destroyed ship list.  If a fleet is
+   * empty it will be removed from the game.
+   *
+   * The method also checks all the stations and removes the destroyed
+   * ones from the game.
+   *
+   * @author Tom Stephens
+   * @date Created:  May 28, 2009
+   * @date Last Modified:  May 28, 2009
+   */
+  void cleanUpShips();
+
 
 };
 

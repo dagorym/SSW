@@ -276,7 +276,6 @@ void FBattleDisplay::makeShipChoice(wxMouseEvent & event){
 
 void FBattleDisplay::drawGetSpeed(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
-
 	if (m_first){
 		m_spinCtrl1->Show();
 		m_button1->Show();
@@ -357,7 +356,13 @@ bool FBattleDisplay::setStationRotation(wxMouseEvent &event){
 		m_parent->getStation()->setHeading(heading);
 		m_parent->getStation()->setSpeed(1);
 		m_parent->setPhase(PH_NONE);
-		m_parent->setState(BS_SetupDefendFleet);
+		unsigned int shipCount = m_vList.size();
+		if (shipCount>0){
+			m_parent->setState(BS_SetupDefendFleet);
+		} else {
+			m_parent->setState(BS_SetupAttackFleet);
+			m_parent->toggleActivePlayer();
+		}
 	}
 	return true;
 }

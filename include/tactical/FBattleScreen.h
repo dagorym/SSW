@@ -18,6 +18,8 @@
 #include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/frame.h>
+#include <wx/dialog.h>
+#include <wx/utils.h>
 
 #include "Frontier.h"
 #include "tactical/FBattleBoard.h"
@@ -35,7 +37,7 @@ namespace Frontier {
  * @date Created:  Jul 11, 2008
  * @date Last Modified:  Mar 31, 2009
  */
-class FBattleScreen : public wxFrame
+class FBattleScreen : public wxDialog //wxFrame
 {
 public:
 	/**
@@ -45,7 +47,8 @@ public:
 	 * @date Created:  Jul 11, 2008
 	 * @date Last Modified:  Jul 19, 2008
 	 */
-	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxRESIZE_BORDER );
+//	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 	/// Default destructor
 	~FBattleScreen();
 
@@ -241,6 +244,8 @@ protected:
 	bool m_movingPlayer;
 	/// pointer to currently selected weapon
 	FWeapon * m_curWeapon;
+//	/// window disabler object
+//	wxWindowDisabler *m_wd;
 
 	// Print a dialog declaring the  winner and exit the window
 	void declareWinner();

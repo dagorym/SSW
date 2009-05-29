@@ -12,6 +12,7 @@
 #include "gui/CombatFleetsGUI.h"
 #include "gui/SelectResolutionGUI.h"
 #include "gui/BattleResultsGUI.h"
+#include "tactical/FBattleScreen.h"
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -24,6 +25,8 @@ SelectCombatGUI::SelectCombatGUI( wxWindow* parent, FSystem * sys, FleetList def
 	m_attackerList = attacker;
 	m_playerList = pList;
 	m_satharAttacking = satharAttacking;
+//	std::cerr << "There are " << m_attackerList.size() << " attacking fleets" << std::endl;
+//	std::cerr << "There are " << m_defenderList.size() << " defending fleets" << std::endl;
 
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
@@ -209,18 +212,22 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 	}
 //	std::cerr << "The battle location is " << combatLocation << std::endl;
 	// remove fleets used in the battle from the lists and put them in a temporary list
-	FleetList battleList;
+	FleetList battleList,aList,dList;
 	m_listBox1->GetSelections(aFleets);
 //	std::cerr << "The number of selected attacking fleets is " << aFleets.GetCount() << std::endl;
 	for (int i = aFleets.GetCount()-1; i >= 0; i--){
 //		std::cerr << "i = " << i << "  aFleets[i] = " << aFleets[i] << std::endl;
 		battleList.push_back(*(m_attackerList.begin()+aFleets[i]));
+		std::cerr << "Adding Fleet " << (*(m_attackerList.begin()+aFleets[i]))->getName() << std::endl;;
+		aList.push_back(*(m_attackerList.begin()+aFleets[i]));
 		m_attackerList.erase((m_attackerList.begin()+aFleets[i]));
 	}
 //	std::cerr << "The number of selected defending fleets is " << dFleets.GetCount() << std::endl;
 	if (dFleets.GetCount()>0){
 		for (int i = dFleets.GetCount() - 1; i >= 0; i--){
 			battleList.push_back(*(m_defenderList.begin()+dFleets[i]));
+			std::cerr << "Adding Fleet " << (*(m_defenderList.begin()+dFleets[i]))->getName() << std::endl;
+			dList.push_back(*(m_defenderList.begin()+dFleets[i]));
 			m_defenderList.erase((m_defenderList.begin()+dFleets[i]));
 		}
 	}
@@ -247,6 +254,16 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 		}
 	} else {
 		///@todo implement boardgame
+		FBattleScreen *bb = new FBattleScreen();
+//		bb->MakeModal(true);
+		if (m_satharAttacking){
+			bb->setupFleets(&aList,&dList,!((bool)combatLocation),station);
+		} else {
+			bb->setupFleets(&dList,&aList,!((bool)combatLocation),station);
+		}
+//		bb->Show(true);
+		bb->ShowModal();
+		///@todo clean up ships
 	}
 
 	// if both Players have fleets left, UPF has the opportunity to attack.

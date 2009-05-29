@@ -12,14 +12,17 @@
 
 namespace Frontier {
 
-FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style )
+FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( (wxDialog *)NULL, -1, title, pos, size, style )
+//FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style )
 {
+//	m_wd = new wxWindowDisabler(this);
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+//	this->MakeModal(true);
 	wxColour black(wxT("#000000"));// black
 	wxColour white(wxT("#FFFFFF"));// white
 
-	CreateStatusBar();
-	SetStatusText( "Welcome to the BattleScreen!" );
+//	CreateStatusBar();
+//	SetStatusText( "Welcome to the BattleScreen!" );
 
 
 	wxFlexGridSizer* fgSizer1;
@@ -56,6 +59,8 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 FBattleScreen::~FBattleScreen(){
 	if (m_attackShips) { delete m_attackShips; }
 	if (m_defendShips) { delete m_defendShips; }
+//	delete m_wd;
+//	this->MakeModal(false);
 }
 
 void FBattleScreen::draw(){
@@ -76,6 +81,7 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 
 	//create a list of ships from the list of fleets for the attacker and defenders
 	if (m_defendShips) { delete m_defendShips; }
+	std::cerr << "There are " << m_defendList->size() << " defending fleets" << std::endl;
 	m_defendShips = new VehicleList;
 	for (unsigned int i=0; i< m_defendList->size(); i++){
 		const VehicleList sList = (*m_defendList)[i]->getShipList();
@@ -89,6 +95,7 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 	}
 	if (m_attackShips) { delete m_attackShips; }
 	m_attackShips = new VehicleList;
+//	std::cerr << "There are " << m_attackList->size() << " attacking fleets" << std::endl;
 	for (unsigned int i=0; i< m_attackList->size(); i++){
 		const VehicleList sList = (*m_attackList)[i]->getShipList();
 		for (unsigned int j=0; j< sList.size(); j++){
@@ -111,17 +118,22 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 		m_map->setPlanetImages(iList);
 	} else if (station != NULL){
 		m_state=BS_SetupStation;
-	} else {
+	} else if (m_defendList->size()>0) {
 		m_state=BS_SetupDefendFleet;
+	} else {
+		m_state=BS_SetupAttackFleet;
 	}
 	return 0;
 }
 
 void FBattleScreen::setState(int s) {
-	m_state = s;
 	if (s == BS_SetupStation && m_station == NULL){
-		m_state = BS_SetupDefendFleet;
+		s = BS_SetupDefendFleet;
 	}
+	if (s == BS_SetupDefendFleet && m_defendList->size()==0){
+		s = BS_SetupAttackFleet;
+	}
+	m_state = s;
 	m_map->Refresh();
 	m_display->Refresh();
 }

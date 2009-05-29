@@ -515,8 +515,10 @@ void FGame::endUPFTurn(){
 	m_currentPlayer = m_players[1]->getID();
 	int combat = checkForCombat();
 	if (combat){
-		///@todo Do something appropriate
+		///@todo Do something appropriate  We need to get return values from checkForCombat() or set up flags
 	}
+	///@todo remove all destroyed ships & stations and update stats for victory conditions
+
 	int victory = checkForVictory();
 	if (victory){
 		///@todo Do something appropriate
@@ -1165,6 +1167,8 @@ int FGame::checkForVictory(){
 int FGame::checkForCombat(){
 	// loop over the all the systems to see of there are opposing fleets in the system
 	SystemList sysList = m_universe->getSystemList();
+	bool combatOccurred = false;
+
 	for (SystemList::iterator sItr = sysList.begin(); sItr < sysList.end(); sItr++){
 		bool sathar = false;
 		bool upf = false;
@@ -1189,7 +1193,11 @@ int FGame::checkForCombat(){
 		}
 		if (upf && sathar){ // we have a combat possibility
 			resolveCombat((*sItr)->getName());
+			combatOccurred=true;
 		}
+	}
+	if (combatOccurred){
+		cleanUpShips();
 	}
 
 	return 0;
@@ -1222,6 +1230,55 @@ FPlayer * FGame::getPlayer(unsigned int id) const{
 		}
 	}
 	return NULL;
+}
+
+void FGame::cleanUpShips(){
+	// loop over all systems and planets and check to stations
+	SystemList sysList = m_universe->getSystemList();
+	for (SystemList::iterator sysItr = sysList.begin(); sysItr < sysList.end(); sysItr++){
+		PlanetList pList = (*sysItr)->getPlanetList();
+		for (PlanetList::iterator pItr = pList.begin(); pItr < pList.end(); pItr++){
+			FVehicle *station =  (*pItr)->getStation();
+			if (station!=NULL && station->getHP()<=0){ // If the station has 0 HP it's been destroyed
+				m_stationsDestroyed++;  // increment the destroyed station count
+				(*pItr)->destroyStation();
+			}
+		}
+	}
+
+	// loop over all the player's fleets and check their ships
+	for (PlayerList::iterator pItr = m_players.begin(); pItr < m_players.end(); pItr++){
+		FleetList fList = (*pItr)->getFleetList();
+		for (FleetList::iterator fItr = fList.begin(); fItr < fList.end(); fItr++){
+			VehicleList sList = (*fItr)->getShipList();
+			for (VehicleList::iterator sItr = sList.begin(); sItr < sList.end(); sItr ++){
+				if ((*sItr)->getHP() <= 0){  // if the ship is destroyed remove it
+					(*pItr)->addDestroyedShip(*sItr);  // add the ship to the player's destroyed ship list
+					// update destroyed ship counters
+					if ((*pItr)->getName()=="UPF"){
+						m_lostTendayUPF++;
+					} else {
+						m_lostTendaySathar++;
+						if ((*sItr)->getType()!= "Fighter"){
+							m_lostSatharShips++;
+						}
+						if ((*sItr)->getType() == "HvCruiser"){
+							m_lostHC++;
+						}
+						if ((*sItr)->getType() == "AssaultCarrier"){
+							m_lostAC++;
+						}
+					}
+					sItr = sList.erase(sItr);  // remove the ship from the fleet.
+				}
+			}
+			if (sList.size() == 0){  // if the fleet is now empty remove it
+				unsigned int sysID = (*fItr)->getLocation();
+				m_universe->getSystem(sysID)->removeFleet((*fItr)->getID());  // remove the fleet from the system it's in
+				fItr = fList.erase(fItr);  // remove the fleet from the player's list.
+			}
+		}
+	}
 }
 
 };

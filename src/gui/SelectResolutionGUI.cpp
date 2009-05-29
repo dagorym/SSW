@@ -40,7 +40,7 @@ SelectResolutionGUI::SelectResolutionGUI( wxWindow* parent, FleetList list, std:
 	fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
 	m_button1 = new wxButton( this, wxID_ANY, wxT("To the Battle Board!"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_button1->Enable( false );
+	m_button1->Enable( true );
 
 	fgSizer1->Add( m_button1, 0, wxALL, 5 );
 
