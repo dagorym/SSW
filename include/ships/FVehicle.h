@@ -144,6 +144,19 @@ public:
 	 * @date Last Modified:  Apr 28, 2009
 	 */
 	virtual void takeDamage (int damage);
+
+	/**
+	 * @brief Reloads all the ships weapons
+	 *
+	 * This method loops through all the ships weapons and reloads the ones
+	 * with limited ammo.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jun 03, 2009
+	 * @date Last Modified:  Jun 03, 2009
+	 */
+	void reload();
+
 protected:
 	/// counter for total number of vehicles and next ship ID
 	static unsigned int m_nextID;

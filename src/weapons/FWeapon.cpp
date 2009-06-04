@@ -132,4 +132,10 @@ FWeapon * createWeapon(int type){
 	return w;
 }
 
+void FWeapon::reload(){
+	if (m_currentAmmo < m_maxAmmo){
+		m_currentAmmo = m_maxAmmo;
+	}
+}
+
 };

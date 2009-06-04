@@ -194,4 +194,10 @@ void FVehicle::takeDamage (int damage){
 //			<< m_currentHP << " HP remaining." << std::endl;
 }
 
+void FVehicle::reload(){
+	for (WeaponList::iterator itr = m_weapons.begin(); itr < m_weapons.end(); itr++){
+		(*itr)->reload();
+	}
+}
+
 };

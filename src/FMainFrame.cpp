@@ -301,8 +301,8 @@ void FMainFrame::onShowBattleScreen(wxCommandEvent& event){
 	FFleet *f = new FFleet();
 	f->setName("UPF");
 	f->addShip(createShip("AssaultScout"));
-//	f->addShip(createShip("AssaultScout"));
-//	f->addShip(createShip("AssaultScout"));
+	f->addShip(createShip("AssaultScout"));
+	f->addShip(createShip("AssaultScout"));
 	FVehicle *s = createShip("Frigate");
 	s->setIcon("../icons/UPFFrigate.png");
 	f->addShip(s);

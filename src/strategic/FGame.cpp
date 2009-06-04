@@ -1270,6 +1270,9 @@ void FGame::cleanUpShips(){
 						}
 					}
 					sItr = sList.erase(sItr);  // remove the ship from the fleet.
+				} else { // reload it's weapons
+					///@todo this should eventually check for being in supply
+					(*sItr)->reload();
 				}
 			}
 			if (sList.size() == 0){  // if the fleet is now empty remove it

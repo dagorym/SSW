@@ -139,6 +139,17 @@ public:
 	 */
 	void setTarget(FVehicle * v,int r, bool headOn = false);
 
+	/**
+	 * @brief Reloads the weapon's ammo
+	 *
+	 * This method loops resets the weapon's ammo to full if it has a limited supply
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jun 03, 2009
+	 * @date Last Modified:  Jun 03, 2009
+	 */
+	void reload();
+
 protected:
 	/// weapon's abbreviated name
 	std::string m_name;
