@@ -355,8 +355,8 @@ bool FBattleDisplay::setStationRotation(wxMouseEvent &event){
 		}
 		m_parent->getStation()->setHeading(heading);
 		m_parent->getStation()->setSpeed(1);
+		unsigned int shipCount = (m_parent->getShipList(m_parent->getActivePlayerID())).size();
 		m_parent->setPhase(PH_NONE);
-		unsigned int shipCount = m_vList.size();
 		if (shipCount>0){
 			m_parent->setState(BS_SetupDefendFleet);
 		} else {

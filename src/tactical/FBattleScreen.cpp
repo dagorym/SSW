@@ -130,8 +130,9 @@ void FBattleScreen::setState(int s) {
 	if (s == BS_SetupStation && m_station == NULL){
 		s = BS_SetupDefendFleet;
 	}
-	if (s == BS_SetupDefendFleet && m_defendList->size()==0){
+	if (s == BS_SetupDefendFleet && m_defendShips->size()==1){
 		s = BS_SetupAttackFleet;
+		toggleActivePlayer();
 	}
 	m_state = s;
 	m_map->Refresh();

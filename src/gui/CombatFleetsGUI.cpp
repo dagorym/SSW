@@ -31,7 +31,7 @@ CombatFleetsGUI::CombatFleetsGUI( wxWindow* parent, FSystem *sys, FleetList fLis
 	m_staticText1->Wrap( 300 );
 	fgSizer1->Add( m_staticText1, 0, wxALL, 5 );
 
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_MULTIPLE );
+	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED );
 	for (FleetList::iterator itr = fList.begin(); itr < fList.end(); itr++){
 		m_listBox1->Append((*itr)->getName());
 	}

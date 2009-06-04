@@ -478,7 +478,9 @@ void FBattleBoard::setInitialRoute(){
 //				<< m_turnInfo[ship->getID()].waypoints[wpCount+1].cx << ","
 //				<< m_turnInfo[ship->getID()].waypoints[wpCount+1].cy << std::endl;
 			if (current==m_turnInfo[ship->getID()].waypoints[wpCount+1]){
-				curHeading = turnShip(curHeading,m_turnInfo[ship->getID()].turns[wpCount]);
+				if (m_turnInfo[ship->getID()].turns.size()>wpCount){
+					curHeading = turnShip(curHeading,m_turnInfo[ship->getID()].turns[wpCount]);
+				}
 				wpCount++;
 			}
 //			std::map<FPoint,int>::iterator itr = m_turnInfo[ship->getID()].gravityTurns.find(current);
@@ -580,8 +582,8 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 				// add current position as new last waypoint
 				m_turnInfo[m_parent->getShip()->getID()].waypoints.push_back(*hItr);
 				m_turnInfo[m_parent->getShip()->getID()].movedHexes.erase(hItr+1,m_turnInfo[m_parent->getShip()->getID()].movedHexes.end());
-				m_turnInfo[m_parent->getShip()->getID()].nMoved=m_turnInfo[m_parent->getShip()->getID()].movedHexes.size();
-				m_moved=m_turnInfo[m_parent->getShip()->getID()].movedHexes.size();
+				m_turnInfo[m_parent->getShip()->getID()].nMoved=m_turnInfo[m_parent->getShip()->getID()].movedHexes.size()-1;
+				m_moved=m_turnInfo[m_parent->getShip()->getID()].movedHexes.size()-1;
 //				std::cerr << m_parent->getShip()->getName() << " has made "
 //						<< m_turnInfo[m_parent->getShip()->getID()].turns.size() << " turns and has moved "
 //						<< moved << "(" << m_turnInfo[m_parent->getShip()->getID()].waypoints.size() << ") spaces." << std::endl;
@@ -660,10 +662,16 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 			itr++;
 		}
 		itr--;
-		m_turnInfo[m_parent->getShip()->getID()].waypoints.push_back(h);
 		if(turn) {
+			// add a turn into the list
 			m_turnInfo[m_parent->getShip()->getID()].turns.push_back(turn);
+		} else if (m_turnInfo[m_parent->getShip()->getID()].waypoints.size()>1) {
+			// if there wasn't a turn and there is more than the inital way point in the list
+			// remove the previous waypoint that we didn't turn at from the list
+			PointList::iterator wItr = m_turnInfo[m_parent->getShip()->getID()].waypoints.end();
+			m_turnInfo[m_parent->getShip()->getID()].waypoints.erase(wItr-1,wItr);
 		}
+		m_turnInfo[m_parent->getShip()->getID()].waypoints.push_back(h);
 		m_moved+=moved;
 		m_turnInfo[m_parent->getShip()->getID()].nMoved+=moved;
 		m_gravityTurnFlag=false;
