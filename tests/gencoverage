@@ -1,6 +1,0 @@
-lcov -d ~/Development/ssw -z >& /dev/null
-../SSWTests
-lcov -d ~/Development/ssw -c --output-file ssw_tmp.info >& /dev/null
-lcov -r ./ssw_tmp.info "/usr/*" -r ./ssw_tmp.info "tests/*" --output-file ssw.info >& /dev/null
-rm ssw_tmp.info
-genhtml ssw.info
