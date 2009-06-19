@@ -71,7 +71,7 @@ public:
 	/// set the maximum ammunition value
 	void setMaxAmmo(int m) { m_maxAmmo = m; }
 	/// set the current ammunition value
-	void setCurrentAmmo(int c) { m_currentAmmo = c; }
+	void setCurrentAmmo(int c) { m_currentAmmo = (c<=m_maxAmmo)?c:m_maxAmmo; }
 	/// Gets the currently selected target, returns null if not target set
 	FVehicle * getTarget() { return m_target; }
 	/// gets the range to the current target
