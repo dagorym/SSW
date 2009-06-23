@@ -6,7 +6,7 @@
 #       -lwx_gtk2_qa-2.8 -lwx_gtk2_html-2.8 -lwx_gtk2_adv-2.8 -lwx_gtk2_core-2.8 \
 #       -lwx_base_xml-2.8 -lwx_base_net-2.8 -lwx_base-2.8
 
-CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX 
+CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX
 
 LIBS = `wx-config --libs`
 
@@ -37,16 +37,19 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FWeaponTest.o FAssaultRocketTest.o FDisruptorCannonTest.o \
-       FElectronBatteryTest.o FLaserBatteryTest.o FLaserCannonTest.o \
-       FMineLauncherTest.o FProtonBatteryTest.o FRocketBatteryTest.o \
-       FSeekerMissileLauncherTest.o FTorpedoTest.o  
-
-TARGET = libweaponsTests.a
+OBJS = FVehicleTest.o #\
+       #FAssaultScout.o FAssaultCarrier.o FBattleship.o FDestroyer.o FFighter.o \
+       #FFrigate.o FHvCruiser.o FLtCruiser.o FMinelayer.o \
+       #FFortress.o FArmedStation.o \
+       #FFortifiedStation.o 
+       
+TARGET = libshipsTests.a
 
 all $(TARGET): $(OBJS)
 	ar rcsu $(TARGET) $(OBJS)
 
+#	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
+	
 objs: $(OBJS)
 	rm *.gcda
 	rm *.gcov

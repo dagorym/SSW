@@ -139,8 +139,12 @@ void FWeaponTest::testFireAtTarget(){
 	CPPUNIT_ASSERT( m_w1->getAmmo() == 0);
 	CPPUNIT_ASSERT( m_w1->getTarget() == v);
 	CPPUNIT_ASSERT( m_w1->getTargetRange() == 3);
-
-
 }
+
+void FWeaponTest::testBadIdentifier(){
+	m_w1 = createWeapon(-1);
+	CPPUNIT_ASSERT( m_w1 == NULL );
+}
+
 
 }

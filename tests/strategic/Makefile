@@ -6,7 +6,7 @@
 #       -lwx_gtk2_qa-2.8 -lwx_gtk2_html-2.8 -lwx_gtk2_adv-2.8 -lwx_gtk2_core-2.8 \
 #       -lwx_base_xml-2.8 -lwx_base_net-2.8 -lwx_base-2.8
 
-CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX 
+CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX
 
 LIBS = `wx-config --libs`
 
@@ -37,16 +37,17 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FWeaponTest.o FAssaultRocketTest.o FDisruptorCannonTest.o \
-       FElectronBatteryTest.o FLaserBatteryTest.o FLaserCannonTest.o \
-       FMineLauncherTest.o FProtonBatteryTest.o FRocketBatteryTest.o \
-       FSeekerMissileLauncherTest.o FTorpedoTest.o  
+OBJS = FGameTest.o #FFleet.o \
+       #FPlayer.o FAstroBody.o FPlanet.o FSystem.o FJumpRoute.o FMap.o \
+       #FGame.o 
 
-TARGET = libweaponsTests.a
+TARGET = libstrategicTests.a
 
 all $(TARGET): $(OBJS)
 	ar rcsu $(TARGET) $(OBJS)
 
+#	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
+	
 objs: $(OBJS)
 	rm *.gcda
 	rm *.gcov
@@ -59,3 +60,13 @@ clean:
 
 
 # DO NOT DELETE
+
+FGameTest.o: FGameTest.h ../../include/strategic/FGame.h
+FGameTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FGameTest.o: ../../include/strategic/FPlayer.h
+FGameTest.o: ../../include/strategic/FFleet.h ../../include/ships/FVehicle.h
+FGameTest.o: ../../include/weapons/FWeapon.h ../../include/strategic/FMap.h
+FGameTest.o: ../../include/strategic/FSystem.h
+FGameTest.o: ../../include/strategic/FPlanet.h
+FGameTest.o: ../../include/strategic/FAstroBody.h
+FGameTest.o: ../../include/strategic/FJumpRoute.h

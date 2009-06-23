@@ -28,6 +28,7 @@ class FWeaponTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testFireWhenEmpty );
 	CPPUNIT_TEST( testFireNoTarget );
 	CPPUNIT_TEST( testFireAtTarget );
+	CPPUNIT_TEST( testBadIdentifier );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -48,6 +49,7 @@ public:
 	void testFireWhenEmpty();
 	void testFireNoTarget();
 	void testFireAtTarget();
+	void testBadIdentifier();
 };
 
 }

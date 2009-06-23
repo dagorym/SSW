@@ -1,6 +1,7 @@
-CXXFLAGS = -I../include -I../../src/include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
+CXXFLAGS = -I../include  -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
 
-LIBS = `wx-config --libs` -L./weapons -lweaponsTests -L./core -lcoreTests \
+LIBS = `wx-config --libs` -L./strategic -lstrategicTests -L./ships -lshipsTests \
+       -L./weapons -lweaponsTests -L./core -lcoreTests \
        -lcppunit -L../src/strategic -lstrategic -L../src/gui -lgui -L../src/ships -lships \
        -L../src/tactical -ltactical -L../src/weapons -lweapons -L../src/core -lcore 
        
@@ -27,9 +28,9 @@ LIBS = `wx-config --libs` -L./weapons -lweaponsTests -L./core -lcoreTests \
 
 ############################# Paths #################################
 
-OBJS = SSWTests.o #FPointTest.o FObjectTest.o FWeaponTest.o #FApp.o Frontier.o FMainFrame.o
+OBJS = SSWTests.o #FApp.o Frontier.o FMainFrameTest.o 
 
-OBJ_LIBS = libcoreTests.a libweaponsTests.a #libguiTests.a libshipsTests.a libstrategicTests.a libtacticalTests.a
+OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a  libshipsTests.a #libguiTests.a libtacticalTests.a
 
 TARGET = SSWTests
 
@@ -63,8 +64,8 @@ objs: $(OBJS)
 all_clean:
 	@ cd core; ${MAKE} clean
 #	@ cd gui; ${MAKE} clean
-#	@ cd ships; ${MAKE} clean
-#	@ cd strategic; ${MAKE} clean
+	@ cd ships; ${MAKE} clean
+	@ cd strategic; ${MAKE} clean
 #	@ cd tactical; ${MAKE} clean
 	@ cd weapons; ${MAKE} clean
 	rm $(OBJS)

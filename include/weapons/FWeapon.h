@@ -57,7 +57,7 @@ public:
 	/// get the weapon's current ammo count
 	const int & getAmmo() { return m_currentAmmo; }
 	/// get the weapon's ICM modifier
-	const unsigned int & getICMMod() const { return m_ICMMod; }
+	const int & getICMMod() const { return m_ICMMod; }
 	/// gets a text string with the abbreviated name of the weapon
 	/// @todo expand this comment last updated 4/10/09
 	const std::string getName() const;
@@ -174,7 +174,7 @@ protected:
 	/// ammo count
 	int m_currentAmmo;
 	/// ICM modifier
-	unsigned int m_ICMMod;
+	int m_ICMMod;
 	/// damage table modifier
 	int m_damageTableMod;
 	/// Pointer to the weapon's target vessel
