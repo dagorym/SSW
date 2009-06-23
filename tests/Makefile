@@ -81,4 +81,20 @@ clean:
 SSWTests.o: core/FPointTest.h ../include/core/FPoint.h core/FObjectTest.h
 SSWTests.o: ../include/core/FObject.h weapons/FWeaponTest.h
 SSWTests.o: ../include/weapons/FWeapon.h ../include/core/FPObject.h
-SSWTests.o: ../include/core/FObject.h
+SSWTests.o: ../include/core/FObject.h weapons/FAssaultRocketTest.h
+SSWTests.o: ../include/weapons/FAssaultRocket.h
+SSWTests.o: weapons/FDisruptorCannonTest.h
+SSWTests.o: ../include/weapons/FDisruptorCannon.h
+SSWTests.o: weapons/FElectronBatteryTest.h
+SSWTests.o: ../include/weapons/FElectronBattery.h weapons/FLaserBatteryTest.h
+SSWTests.o: ../include/weapons/FLaserBattery.h weapons/FLaserCannonTest.h
+SSWTests.o: ../include/weapons/FLaserCannon.h weapons/FMineLauncherTest.h
+SSWTests.o: ../include/weapons/FMineLauncher.h weapons/FProtonBatteryTest.h
+SSWTests.o: ../include/weapons/FProtonBattery.h weapons/FRocketBatteryTest.h
+SSWTests.o: ../include/weapons/FRocketBattery.h
+SSWTests.o: weapons/FSeekerMissileLauncherTest.h
+SSWTests.o: ../include/weapons/FSeekerMissileLauncher.h
+SSWTests.o: weapons/FTorpedoTest.h ../include/weapons/FTorpedo.h
+SSWTests.o: ships/FVehicleTest.h ../include/ships/FVehicle.h
+SSWTests.o: ships/FAssaultScoutTest.h ../include/ships/FAssaultScout.h
+SSWTests.o: ../include/ships/FVehicle.h strategic/FGameTest.h

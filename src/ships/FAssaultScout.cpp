@@ -27,8 +27,8 @@ FAssaultScout::FAssaultScout() {
 	m_maxDCR=50;
 	m_currentDCR=m_maxDCR;
 	FWeapon *w = createWeapon(AR);
-	w->setMaxAmmo(3);
-	w->setCurrentAmmo(3);
+	w->setMaxAmmo(4);
+	w->setCurrentAmmo(4);
 	m_weapons.push_back(w);
 	w = createWeapon(LB);
 	m_weapons.push_back(w);

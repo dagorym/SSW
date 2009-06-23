@@ -37,10 +37,10 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FVehicleTest.o #\
-       #FAssaultScout.o FAssaultCarrier.o FBattleship.o FDestroyer.o FFighter.o \
+OBJS = FVehicleTest.o FArmedStationTest.o \
+       FAssaultScoutTest.o #FAssaultCarrier.o FBattleship.o FDestroyer.o FFighter.o \
        #FFrigate.o FHvCruiser.o FLtCruiser.o FMinelayer.o \
-       #FFortress.o FArmedStation.o \
+       #FFortress.o \
        #FFortifiedStation.o 
        
 TARGET = libshipsTests.a
@@ -62,3 +62,12 @@ clean:
 
 
 # DO NOT DELETE
+
+FAssaultScoutTest.o: FAssaultScoutTest.h ../../include/ships/FAssaultScout.h
+FAssaultScoutTest.o: ../../include/ships/FVehicle.h
+FAssaultScoutTest.o: ../../include/core/FPObject.h
+FAssaultScoutTest.o: ../../include/core/FObject.h
+FAssaultScoutTest.o: ../../include/weapons/FWeapon.h
+FVehicleTest.o: FVehicleTest.h ../../include/ships/FVehicle.h
+FVehicleTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FVehicleTest.o: ../../include/weapons/FWeapon.h

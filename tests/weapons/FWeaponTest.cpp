@@ -104,6 +104,7 @@ void FWeaponTest::testSetTarget(){
 	m_w1->setTarget(v,3,true);
 	CPPUNIT_ASSERT( m_w1->getTarget() == v );
 	CPPUNIT_ASSERT( m_w1->getTargetRange() == 3);
+	delete v;
 }
 
 void FWeaponTest::testFireWhenEmpty(){
@@ -139,6 +140,7 @@ void FWeaponTest::testFireAtTarget(){
 	CPPUNIT_ASSERT( m_w1->getAmmo() == 0);
 	CPPUNIT_ASSERT( m_w1->getTarget() == v);
 	CPPUNIT_ASSERT( m_w1->getTargetRange() == 3);
+	delete v;
 }
 
 void FWeaponTest::testBadIdentifier(){
