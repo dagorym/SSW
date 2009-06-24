@@ -40,7 +40,7 @@ PICFLAGS = -fPIC -DPIC
 OBJS = FWeaponTest.o FAssaultRocketTest.o FDisruptorCannonTest.o \
        FElectronBatteryTest.o FLaserBatteryTest.o FLaserCannonTest.o \
        FMineLauncherTest.o FProtonBatteryTest.o FRocketBatteryTest.o \
-       FSeekerMissileLauncherTest.o FTorpedoTest.o  
+       FSeekerMissileLauncherTest.o FTorpedoTest.o #AllWeaponTest.o 
 
 TARGET = libweaponsTests.a
 

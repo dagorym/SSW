@@ -24,6 +24,16 @@
 #include "ships/FVehicleTest.h"
 #include "ships/FAssaultScoutTest.h"
 #include "ships/FArmedStationTest.h"
+#include "ships/FAssaultCarrierTest.h"
+#include "ships/FBattleshipTest.h"
+#include "ships/FDestroyerTest.h"
+#include "ships/FFighterTest.h"
+#include "ships/FFortifiedStationTest.h"
+#include "ships/FFortressTest.h"
+#include "ships/FFrigateTest.h"
+#include "ships/FHvCruiserTest.h"
+#include "ships/FLtCruiserTest.h"
+#include "ships/FMinelayerTest.h"
 #include "strategic/FGameTest.h"
 //#include "FMainFrameTest.h"
 
@@ -49,6 +59,16 @@ int main( int argc, char **argv)
   runner.addTest( FVehicleTest::suite() );
   runner.addTest( FAssaultScoutTest::suite() );
   runner.addTest( FArmedStationTest::suite() );
+  runner.addTest( FAssaultCarrierTest::suite() );
+  runner.addTest( FBattleshipTest::suite() );
+  runner.addTest( FDestroyerTest::suite() );
+  runner.addTest( FFighterTest::suite() );
+  runner.addTest( FFortifiedStationTest::suite() );
+  runner.addTest( FFortressTest::suite() );
+  runner.addTest( FFrigateTest::suite() );
+  runner.addTest( FHvCruiserTest::suite() );
+  runner.addTest( FLtCruiserTest::suite() );
+  runner.addTest( FMinelayerTest::suite() );
   runner.addTest( FGameTest::suite() );
 //  runner.addTest( FMainFrameTest::suite() );
 //  runner.addTest( registry.makeTest() );
