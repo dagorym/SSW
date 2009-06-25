@@ -20,6 +20,7 @@ FPlanet::FPlanet(){
 	m_ID = m_nextID++;
 	m_classCount++;
 	m_station = NULL;
+	m_name = "Unknown";
 }
 
 FPlanet::~FPlanet(){

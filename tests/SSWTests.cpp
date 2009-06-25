@@ -10,6 +10,7 @@
 
 #include "core/FPointTest.h"
 #include "core/FObjectTest.h"
+#include "weapons/AllWeaponTest.h"
 #include "weapons/FWeaponTest.h"
 #include "weapons/FAssaultRocketTest.h"
 #include "weapons/FDisruptorCannonTest.h"
@@ -35,14 +36,17 @@
 #include "ships/FLtCruiserTest.h"
 #include "ships/FMinelayerTest.h"
 #include "strategic/FGameTest.h"
+#include "strategic/FPlanetTest.h"
+#include "strategic/FFleetTest.h"
 //#include "FMainFrameTest.h"
 
 using namespace FrontierTests;
 
 int main( int argc, char **argv)
 {
-  CppUnit::TextUi::TestRunner runner;
-//  CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
+
+	CppUnit::TextUi::TestRunner runner;
+//	CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
   runner.addTest( FPointTest::suite() );
   runner.addTest( FObjectTest::suite() );
   runner.addTest( FWeaponTest::suite() );
@@ -70,8 +74,11 @@ int main( int argc, char **argv)
   runner.addTest( FLtCruiserTest::suite() );
   runner.addTest( FMinelayerTest::suite() );
   runner.addTest( FGameTest::suite() );
+  runner.addTest( FPlanetTest::suite() );
+  runner.addTest( FFleetTest::suite() );
 //  runner.addTest( FMainFrameTest::suite() );
 //  runner.addTest( registry.makeTest() );
+//  std::cout << wepTests << std::endl;
   bool wasSuccessful = runner.run( "", false );
   return wasSuccessful;
 }

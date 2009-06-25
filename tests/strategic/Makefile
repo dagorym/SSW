@@ -37,9 +37,9 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FGameTest.o #FFleet.o \
-       #FPlayer.o FAstroBody.o FPlanet.o FSystem.o FJumpRoute.o FMap.o \
-       #FGame.o 
+OBJS = FGameTest.o FPlanetTest.o FFleetTest.o #FSystemTest.o #\
+       #FPlayer.o FJumpRoute.o FMap.o \
+       #FGame.o FAstroBodyTest.o 
 
 TARGET = libstrategicTests.a
 
@@ -61,12 +61,23 @@ clean:
 
 # DO NOT DELETE
 
+FFleetTest.o: FFleetTest.h ../../include/strategic/FFleet.h
+FFleetTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FFleetTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
+FFleetTest.o: ../../include/strategic/FSystem.h
+FFleetTest.o: ../../include/strategic/FPlanet.h
+FFleetTest.o: ../../include/strategic/FAstroBody.h
+FFleetTest.o: ../../include/strategic/FFleet.h
 FGameTest.o: FGameTest.h ../../include/strategic/FGame.h
 FGameTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FGameTest.o: ../../include/strategic/FPlayer.h
-FGameTest.o: ../../include/strategic/FFleet.h ../../include/ships/FVehicle.h
-FGameTest.o: ../../include/weapons/FWeapon.h ../../include/strategic/FMap.h
+FGameTest.o: ../../include/strategic/FFleet.h ../../include/strategic/FMap.h
 FGameTest.o: ../../include/strategic/FSystem.h
 FGameTest.o: ../../include/strategic/FPlanet.h
 FGameTest.o: ../../include/strategic/FAstroBody.h
+FGameTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
 FGameTest.o: ../../include/strategic/FJumpRoute.h
+FPlanetTest.o: FPlanetTest.h ../../include/strategic/FPlanet.h
+FPlanetTest.o: ../../include/strategic/FAstroBody.h
+FPlanetTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FPlanetTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h

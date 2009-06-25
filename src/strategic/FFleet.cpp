@@ -31,6 +31,8 @@ FFleet::FFleet() {
 	m_pos[0]=0;
 	m_pos[1]=0;
 	m_home="";
+	m_destination = 0;
+	m_jumpRouteID = 0;
 
 }
 

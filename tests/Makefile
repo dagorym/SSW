@@ -79,10 +79,10 @@ clean:
 # DO NOT DELETE
 
 SSWTests.o: core/FPointTest.h ../include/core/FPoint.h core/FObjectTest.h
-SSWTests.o: ../include/core/FObject.h weapons/FWeaponTest.h
-SSWTests.o: ../include/weapons/FWeapon.h ../include/core/FPObject.h
-SSWTests.o: ../include/core/FObject.h weapons/FAssaultRocketTest.h
-SSWTests.o: ../include/weapons/FAssaultRocket.h
+SSWTests.o: ../include/core/FObject.h weapons/AllWeaponTest.h
+SSWTests.o: weapons/FWeaponTest.h ../include/weapons/FWeapon.h
+SSWTests.o: ../include/core/FPObject.h ../include/core/FObject.h
+SSWTests.o: weapons/FAssaultRocketTest.h ../include/weapons/FAssaultRocket.h
 SSWTests.o: weapons/FDisruptorCannonTest.h
 SSWTests.o: ../include/weapons/FDisruptorCannon.h
 SSWTests.o: weapons/FElectronBatteryTest.h
@@ -97,4 +97,18 @@ SSWTests.o: ../include/weapons/FSeekerMissileLauncher.h
 SSWTests.o: weapons/FTorpedoTest.h ../include/weapons/FTorpedo.h
 SSWTests.o: ships/FVehicleTest.h ../include/ships/FVehicle.h
 SSWTests.o: ships/FAssaultScoutTest.h ../include/ships/FAssaultScout.h
-SSWTests.o: ../include/ships/FVehicle.h strategic/FGameTest.h
+SSWTests.o: ../include/ships/FVehicle.h ships/FArmedStationTest.h
+SSWTests.o: ../include/ships/FArmedStation.h ships/FAssaultCarrierTest.h
+SSWTests.o: ../include/ships/FAssaultCarrier.h ships/FBattleshipTest.h
+SSWTests.o: ../include/ships/FBattleship.h ships/FDestroyerTest.h
+SSWTests.o: ../include/ships/FDestroyer.h ships/FFighterTest.h
+SSWTests.o: ../include/ships/FFighter.h ships/FFortifiedStationTest.h
+SSWTests.o: ../include/ships/FFortifiedStation.h ships/FFortressTest.h
+SSWTests.o: ../include/ships/FFortress.h ships/FFrigateTest.h
+SSWTests.o: ../include/ships/FFrigate.h ships/FHvCruiserTest.h
+SSWTests.o: ../include/ships/FHvCruiser.h ships/FLtCruiserTest.h
+SSWTests.o: ../include/ships/FLtCruiser.h ships/FMinelayerTest.h
+SSWTests.o: ../include/ships/FMinelayer.h strategic/FGameTest.h
+SSWTests.o: strategic/FPlanetTest.h ../include/strategic/FPlanet.h
+SSWTests.o: ../include/strategic/FAstroBody.h strategic/FFleetTest.h
+SSWTests.o: ../include/strategic/FFleet.h

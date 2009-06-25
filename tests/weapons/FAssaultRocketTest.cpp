@@ -7,6 +7,8 @@
 
 #include "FAssaultRocketTest.h"
 
+//int ARTests = 1;
+
 namespace FrontierTests {
 using namespace Frontier;
 
