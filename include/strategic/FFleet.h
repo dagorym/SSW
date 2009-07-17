@@ -332,6 +332,19 @@ public:
 
   float getCoord(int i) { return m_pos[i];}
 
+  /**
+   * @brief Detemine the fleet's jump chance
+   *
+   * This method detemines the fleet's chance to successfully make the
+   * desired jump.  It is 100% for speed 1 jumps and decreases as a function
+   * of ship type and speed.  See the SSW game description for values
+   *
+   * @author Tom Stephens
+   * @date Created:  Apr 14, 2008
+   * @date Last Modified:  Apr 14, 2008
+   */
+  int getRJChance();
+
 private:
   /// ID value of the fleet
   unsigned int m_ID;
@@ -376,18 +389,6 @@ private:
   /// y change for one ly of the jump
   float m_dy;
 
-  /**
-   * @brief Detemine the fleet's jump chance
-   *
-   * This method detemines the fleet's chance to successfully make the
-   * desired jump.  It is 100% for speed 1 jumps and decreases as a function
-   * of ship type and speed.  See the SSW game description for values
-   *
-   * @author Tom Stephens
-   * @date Created:  Apr 14, 2008
-   * @date Last Modified:  Apr 14, 2008
-   */
-  int getRJChance();
 };
 
 typedef std::vector<FFleet *> FleetList;

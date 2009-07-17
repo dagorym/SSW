@@ -111,4 +111,6 @@ SSWTests.o: ../include/ships/FLtCruiser.h ships/FMinelayerTest.h
 SSWTests.o: ../include/ships/FMinelayer.h strategic/FGameTest.h
 SSWTests.o: strategic/FPlanetTest.h ../include/strategic/FPlanet.h
 SSWTests.o: ../include/strategic/FAstroBody.h strategic/FFleetTest.h
-SSWTests.o: ../include/strategic/FFleet.h
+SSWTests.o: ../include/strategic/FFleet.h strategic/FJumpRouteTest.h
+SSWTests.o: ../include/strategic/FJumpRoute.h ../include/strategic/FSystem.h
+SSWTests.o: ../include/strategic/FPlanet.h ../include/strategic/FFleet.h

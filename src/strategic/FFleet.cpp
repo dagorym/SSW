@@ -130,6 +130,7 @@ int FFleet::decTransitTime(){
 			m_jumpRouteID=0;
 			m_location = m_destination;
 			m_destination = -1;
+			m_speed = 1;
 		}
 		int change = before-m_transitTime;
 		m_pos[0]+=m_dx*change;

@@ -18,6 +18,10 @@ unsigned int FJumpRoute::m_classCount = 0;
 FJumpRoute::FJumpRoute(){
 //	m_ID = m_nextID++;
 	m_classCount++;
+	m_start = NULL;
+	m_end = NULL;
+	m_length = 0;
+	m_ID = 0;
 }
 
 FJumpRoute::~FJumpRoute(){
@@ -86,10 +90,10 @@ int FJumpRoute::getJumpTime(int s, int l) {
 		return l;
 		break;
 	case 2:
-		return getRJ2Time();
+		return getRJ2Time(l);
 		break;
 	case 3:
-		return getRJ3Time();
+		return getRJ3Time(l);
 		break;
 	default:
 		return l;
@@ -118,7 +122,7 @@ int FJumpRoute::load(std::istream &is){
 	read(is,m_length);
 	unsigned int start,end,pSize;
 	// We'll hide the ID of the system in the pointer variable here and then
-	// extracted it to get the acutal reference once we get back out to a place
+	// extracted it to get the actual reference once we get back out to a place
 	// where we can look up the system using that ID.
 	read(is,start);
 	m_start = (FSystem *)start;
