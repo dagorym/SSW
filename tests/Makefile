@@ -114,3 +114,4 @@ SSWTests.o: ../include/strategic/FAstroBody.h strategic/FFleetTest.h
 SSWTests.o: ../include/strategic/FFleet.h strategic/FJumpRouteTest.h
 SSWTests.o: ../include/strategic/FJumpRoute.h ../include/strategic/FSystem.h
 SSWTests.o: ../include/strategic/FPlanet.h ../include/strategic/FFleet.h
+SSWTests.o: strategic/FSystemTest.h ../include/strategic/FSystem.h

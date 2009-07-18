@@ -71,6 +71,7 @@ void FFleetTest::testSetLocation(){
 	CPPUNIT_ASSERT(m_f1->getTransitTime() == 0 );
 	CPPUNIT_ASSERT(m_f1->getSpeed() == 0 );
 	CPPUNIT_ASSERT(m_f1->getJumpRoute() == -1 );
+	delete s;
 }
 
 void FFleetTest::testSetLocationLong(){
@@ -82,6 +83,7 @@ void FFleetTest::testSetLocationLong(){
 	CPPUNIT_ASSERT(m_f1->getTransitTime() == 10 );
 	CPPUNIT_ASSERT(m_f1->getSpeed() == 2 );
 	CPPUNIT_ASSERT(m_f1->getJumpRoute() == 12 );
+	delete s;
 }
 
 void FFleetTest::testAddRemoveShip(){
@@ -154,6 +156,7 @@ void FFleetTest::testDecTransitTime(){
 	CPPUNIT_ASSERT(m_f1->getDestination() == -1);
 	CPPUNIT_ASSERT(m_f1->getTransitTime() == 0);
 	CPPUNIT_ASSERT(m_f1->getSpeed() == 1);
+	delete s;
 }
 
 void FFleetTest::testGetMaxSpeed(){
@@ -176,6 +179,7 @@ void FFleetTest::testCancelJump(){
 	m_f1->cancelJump();
 	CPPUNIT_ASSERT(m_f1->getTransitTime() == 0 );
 	CPPUNIT_ASSERT(m_f1->getInTransit() == false);
+	delete s;
 }
 
 void FFleetTest::testSetJumpRoute(){
@@ -184,6 +188,8 @@ void FFleetTest::testSetJumpRoute(){
 	m_f1->setJumpRoute(10,s,e,12);
 	CPPUNIT_ASSERT(m_f1->getJumpRoute() == 10);
 	CPPUNIT_ASSERT(m_f1->getTransitTime() == 12);
+	delete s;
+	delete e;
 }
 
 void FFleetTest::testSerialize(){

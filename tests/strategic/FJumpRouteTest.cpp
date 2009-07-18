@@ -58,6 +58,8 @@ void FJumpRouteTest::testGetJumpTimeSpeed1(){
 	p.push_back(0);
 	FJumpRoute j(s,e,p);
 	CPPUNIT_ASSERT(j.getJumpTime(1) == 2);
+	delete s;
+	delete e;
 }
 
 void FJumpRouteTest::testGetJumpTimeSpeed2(){
@@ -93,8 +95,8 @@ void FJumpRouteTest::testSerialize(){
 	CPPUNIT_ASSERT(j2.getLength() == 2);
 	CPPUNIT_ASSERT(j2.isKnown(0) == false);
 	CPPUNIT_ASSERT(j2.isKnown(1) == true);
-
-
+	delete s;
+	delete e;
 }
 
 }
