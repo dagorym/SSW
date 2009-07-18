@@ -38,7 +38,7 @@ PICFLAGS = -fPIC -DPIC
 ############################# Paths #################################
 
 OBJS = FGameTest.o FPlanetTest.o FFleetTest.o FJumpRouteTest.o \
-       FSystemTest.o #FPlayer.o FMap.o \
+       FSystemTest.o FMapTest.o #FPlayer.o \
        #FGame.o FAstroBodyTest.o 
 
 TARGET = libstrategicTests.a
@@ -86,6 +86,14 @@ FJumpRouteTest.o: ../../include/ships/FVehicle.h
 FJumpRouteTest.o: ../../include/weapons/FWeapon.h
 FJumpRouteTest.o: ../../include/strategic/FFleet.h
 FJumpRouteTest.o: ../../include/strategic/FSystem.h
+FMapTest.o: FMapTest.h ../../include/strategic/FMap.h
+FMapTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FMapTest.o: ../../include/strategic/FSystem.h
+FMapTest.o: ../../include/strategic/FPlanet.h
+FMapTest.o: ../../include/strategic/FAstroBody.h
+FMapTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
+FMapTest.o: ../../include/strategic/FFleet.h
+FMapTest.o: ../../include/strategic/FJumpRoute.h
 FPlanetTest.o: FPlanetTest.h ../../include/strategic/FPlanet.h
 FPlanetTest.o: ../../include/strategic/FAstroBody.h
 FPlanetTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h

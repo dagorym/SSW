@@ -40,6 +40,7 @@
 #include "strategic/FFleetTest.h"
 #include "strategic/FJumpRouteTest.h"
 #include "strategic/FSystemTest.h"
+#include "strategic/FMapTest.h"
 //#include "FMainFrameTest.h"
 
 using namespace FrontierTests;
@@ -80,6 +81,7 @@ int main( int argc, char **argv)
   runner.addTest( FFleetTest::suite() );
   runner.addTest( FJumpRouteTest::suite() );
   runner.addTest( FSystemTest::suite() );
+  runner.addTest( FMapTest::suite() );
 //  runner.addTest( FMainFrameTest::suite() );
 //  runner.addTest( registry.makeTest() );
 //  std::cout << wepTests << std::endl;
