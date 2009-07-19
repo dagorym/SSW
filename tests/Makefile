@@ -79,10 +79,10 @@ clean:
 # DO NOT DELETE
 
 SSWTests.o: core/FPointTest.h ../include/core/FPoint.h core/FObjectTest.h
-SSWTests.o: ../include/core/FObject.h weapons/AllWeaponTest.h
-SSWTests.o: weapons/FWeaponTest.h ../include/weapons/FWeapon.h
-SSWTests.o: ../include/core/FPObject.h ../include/core/FObject.h
-SSWTests.o: weapons/FAssaultRocketTest.h ../include/weapons/FAssaultRocket.h
+SSWTests.o: ../include/core/FObject.h weapons/FWeaponTest.h
+SSWTests.o: ../include/weapons/FWeapon.h ../include/core/FPObject.h
+SSWTests.o: ../include/core/FObject.h weapons/FAssaultRocketTest.h
+SSWTests.o: ../include/weapons/FAssaultRocket.h
 SSWTests.o: weapons/FDisruptorCannonTest.h
 SSWTests.o: ../include/weapons/FDisruptorCannon.h
 SSWTests.o: weapons/FElectronBatteryTest.h
@@ -116,4 +116,5 @@ SSWTests.o: ../include/strategic/FJumpRoute.h ../include/strategic/FSystem.h
 SSWTests.o: ../include/strategic/FPlanet.h ../include/strategic/FFleet.h
 SSWTests.o: strategic/FSystemTest.h ../include/strategic/FSystem.h
 SSWTests.o: strategic/FMapTest.h ../include/strategic/FMap.h
-SSWTests.o: ../include/strategic/FJumpRoute.h
+SSWTests.o: ../include/strategic/FJumpRoute.h strategic/FPlayerTest.h
+SSWTests.o: ../include/strategic/FPlayer.h ../include/strategic/FMap.h

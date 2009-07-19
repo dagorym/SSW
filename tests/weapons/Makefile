@@ -59,3 +59,55 @@ clean:
 
 
 # DO NOT DELETE
+
+FAssaultRocketTest.o: FAssaultRocketTest.h
+FAssaultRocketTest.o: ../../include/weapons/FAssaultRocket.h
+FAssaultRocketTest.o: ../../include/weapons/FWeapon.h
+FAssaultRocketTest.o: ../../include/core/FPObject.h
+FAssaultRocketTest.o: ../../include/core/FObject.h
+FDisruptorCannonTest.o: FDisruptorCannonTest.h
+FDisruptorCannonTest.o: ../../include/weapons/FDisruptorCannon.h
+FDisruptorCannonTest.o: ../../include/weapons/FWeapon.h
+FDisruptorCannonTest.o: ../../include/core/FPObject.h
+FDisruptorCannonTest.o: ../../include/core/FObject.h
+FDisruptorCannonTest.o: ../../include/ships/FVehicle.h
+FElectronBatteryTest.o: FElectronBatteryTest.h
+FElectronBatteryTest.o: ../../include/weapons/FElectronBattery.h
+FElectronBatteryTest.o: ../../include/weapons/FWeapon.h
+FElectronBatteryTest.o: ../../include/core/FPObject.h
+FElectronBatteryTest.o: ../../include/core/FObject.h
+FLaserBatteryTest.o: FLaserBatteryTest.h
+FLaserBatteryTest.o: ../../include/weapons/FLaserBattery.h
+FLaserBatteryTest.o: ../../include/weapons/FWeapon.h
+FLaserBatteryTest.o: ../../include/core/FPObject.h
+FLaserBatteryTest.o: ../../include/core/FObject.h
+FLaserCannonTest.o: FLaserCannonTest.h ../../include/weapons/FLaserCannon.h
+FLaserCannonTest.o: ../../include/weapons/FWeapon.h
+FLaserCannonTest.o: ../../include/core/FPObject.h
+FLaserCannonTest.o: ../../include/core/FObject.h
+FMineLauncherTest.o: FMineLauncherTest.h
+FMineLauncherTest.o: ../../include/weapons/FMineLauncher.h
+FMineLauncherTest.o: ../../include/weapons/FWeapon.h
+FMineLauncherTest.o: ../../include/core/FPObject.h
+FMineLauncherTest.o: ../../include/core/FObject.h
+FProtonBatteryTest.o: FProtonBatteryTest.h
+FProtonBatteryTest.o: ../../include/weapons/FProtonBattery.h
+FProtonBatteryTest.o: ../../include/weapons/FWeapon.h
+FProtonBatteryTest.o: ../../include/core/FPObject.h
+FProtonBatteryTest.o: ../../include/core/FObject.h
+FRocketBatteryTest.o: FRocketBatteryTest.h
+FRocketBatteryTest.o: ../../include/weapons/FRocketBattery.h
+FRocketBatteryTest.o: ../../include/weapons/FWeapon.h
+FRocketBatteryTest.o: ../../include/core/FPObject.h
+FRocketBatteryTest.o: ../../include/core/FObject.h
+FSeekerMissileLauncherTest.o: FSeekerMissileLauncherTest.h
+FSeekerMissileLauncherTest.o: ../../include/weapons/FSeekerMissileLauncher.h
+FSeekerMissileLauncherTest.o: ../../include/weapons/FWeapon.h
+FSeekerMissileLauncherTest.o: ../../include/core/FPObject.h
+FSeekerMissileLauncherTest.o: ../../include/core/FObject.h
+FTorpedoTest.o: FTorpedoTest.h ../../include/weapons/FTorpedo.h
+FTorpedoTest.o: ../../include/weapons/FWeapon.h ../../include/core/FPObject.h
+FTorpedoTest.o: ../../include/core/FObject.h
+FWeaponTest.o: FWeaponTest.h ../../include/weapons/FWeapon.h
+FWeaponTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FWeaponTest.o: ../../include/ships/FVehicle.h
