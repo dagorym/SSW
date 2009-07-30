@@ -10,23 +10,26 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-//#include "strategic/FGame.h"
+#include "strategic/FGame.h"
 
 namespace FrontierTests {
-//using namespace Frontier;
+using namespace Frontier;
 
 class FGameTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST_SUITE( FGameTest );
 	CPPUNIT_TEST( testConstructor );
+	CPPUNIT_TEST( testInit );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
+	FGame *m_g1;
 
 public:
 	void setUp();
 	void tearDown();
 
 	void testConstructor();
+	void testInit();
 };
 
 }

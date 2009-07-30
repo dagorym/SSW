@@ -38,7 +38,11 @@ FGame::FGame(wxWindow * win){
 	m_parent = win;
 	m_universe = NULL;
 	m_round = 0;
-	m_gui=true;
+	if (win == NULL){
+		m_gui = false;
+	} else {
+		m_gui=true;
+	}
 	m_currentPlayer = -1;
 	m_tenday = new wxImage("../icons/tenday.png");
 	m_day = new wxImage("../icons/day.png");
@@ -67,7 +71,11 @@ FGame::~FGame(){
 	m_game = 0;
 }
 
-int FGame::init(wxDC &dc,wxWindow *w){
+int FGame::init(wxWindow *w){
+	if (w == NULL){
+		m_gui = false;
+		std::cerr << "m_gui = " << m_gui << std::endl;
+	}
   wxString errorMsg;
   if(getPlayers(m_gui)){
     if (m_gui) {
@@ -89,7 +97,9 @@ int FGame::init(wxDC &dc,wxWindow *w){
     return 1;
   }
   draw();
-  w->Refresh();
+  if (w!=NULL){
+	  w->Refresh();
+  }
 
   int result = initFleets();
   if(result) {
@@ -108,8 +118,10 @@ int FGame::init(wxDC &dc,wxWindow *w){
 		  break;
 	  }
   }
-  SatharRetreatGUI *d = new SatharRetreatGUI(m_parent);
-  m_satharRetreat = d->ShowModal();
+  if (m_gui){
+	  SatharRetreatGUI *d = new SatharRetreatGUI(m_parent);
+	  m_satharRetreat = d->ShowModal();
+  }
   return 0;
 }
 
@@ -169,29 +181,32 @@ int FGame::initMap(bool gui){
 	std::vector<unsigned int> pList;
 	pList.push_back(m_players[0]->getID());
 	pList.push_back(m_players[1]->getID());
-	if(gui){
+//	if(gui){
 		m_universe = &(FMap::create(false,pList));
-	} else {
+//	} else {
     ///@todo Add the console interface
-	}
+//	}
 	return 0;
 }
 
 void FGame::draw(){
 	// draw the base map
-	wxClientDC dc(m_parent);
-	dc.Clear();
-	if(m_universe!=NULL){
-		m_universe->draw(dc/*, m_players[0]->getID()*/);
-		// draw the fleets for each player
-		if(m_players[0]){
-			m_players[0]->drawFleets(dc,m_universe);
-		}
-		if(m_players[1]){
-			m_players[1]->drawFleets(dc,m_universe);
-		}
-		drawTurnCounter();
+	if (m_parent != NULL){
+		wxClientDC dc(m_parent);
+		draw(dc);
 	}
+//	dc.Clear();
+//	if(m_universe!=NULL){
+//		m_universe->draw(dc/*, m_players[0]->getID()*/);
+//		// draw the fleets for each player
+//		if(m_players[0]){
+//			m_players[0]->drawFleets(dc,m_universe);
+//		}
+//		if(m_players[1]){
+//			m_players[1]->drawFleets(dc,m_universe);
+//		}
+//		drawTurnCounter();
+//	}
 }
 
 void FGame::draw(wxDC &dc){
@@ -264,9 +279,14 @@ int FGame::addSatharShips(){
 		m_players[1]->addShip(sPtr);
 	}
 
-	SatharFleetsGUI * d = new SatharFleetsGUI(m_parent,m_players[1],m_universe,true);
-	int result = d->ShowModal();
+	int result;
+	if (m_gui){
+		SatharFleetsGUI * d = new SatharFleetsGUI(m_parent,m_players[1],m_universe,true);
+		result = d->ShowModal();
 //	std::cerr << "Made it out of the dialog box okay." << std::endl;
+	} else {
+		result = 0;
+	}
 	return result;
 }
 
@@ -296,10 +316,15 @@ int FGame::addUPFUnattached(){
 	sPtr->setIcon("../icons/UPFAssaultCarrier.png");
 	m_players[0]->addShip(sPtr);
 
-	UPFUnattachedGUI * d = new UPFUnattachedGUI(m_parent,m_players[0],m_universe);
-	int result = d->ShowModal();
+	int result;
+	if (m_gui){
+		UPFUnattachedGUI * d = new UPFUnattachedGUI(m_parent,m_players[0],m_universe);
+		result = d->ShowModal();
 //	std::cout << "UPF has " << m_players[0]->getShipList().size() << " unattached ships left" << std::endl;
 //	std::cout << "UPF has " << m_players[0]->getFleetList().size() << " fleets" << std::endl;
+	} else {
+		result = 0;
+	}
 	return result;
 }
 

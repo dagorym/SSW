@@ -76,8 +76,8 @@ void FMainFrame::onQuit(wxCommandEvent& WXUNUSED(event)) {
 void FMainFrame::onNew(wxCommandEvent& event) {
 	if(m_game==NULL){
 		m_game = &(FGame::create(this));
-		wxClientDC dc(this);
-		int result = m_game->init(dc,this);
+//		wxClientDC dc(this);
+		int result = m_game->init(this);
 		if (result){
 			switch(result){
 			case 1:

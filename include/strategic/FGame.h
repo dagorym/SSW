@@ -73,7 +73,8 @@ public:
    * @date Created:  Jan 14, 2005
    * @date Last Modified:  Mar 09, 2008
    */
-  int init(wxDC &dc,wxWindow *w);
+	  int init(wxWindow *w);
+//	  int init(wxDC &dc,wxWindow *w);
 
   /**
    * @brief Method to show a dialog with a list of players
