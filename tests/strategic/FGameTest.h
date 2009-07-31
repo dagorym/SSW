@@ -19,6 +19,13 @@ class FGameTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST_SUITE( FGameTest );
 	CPPUNIT_TEST( testConstructor );
 	CPPUNIT_TEST( testInit );
+	CPPUNIT_TEST( testShowPlayers );
+	CPPUNIT_TEST( testEndSatharTurn );
+	CPPUNIT_TEST( testPlaceNova );
+	CPPUNIT_TEST( testEndUPFTurn );
+	CPPUNIT_TEST( testShowRetreatCondition );
+	CPPUNIT_TEST( testGetPlayer );
+	CPPUNIT_TEST( testSerialize );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -30,6 +37,13 @@ public:
 
 	void testConstructor();
 	void testInit();
+	void testShowPlayers();
+	void testPlaceNova();
+	void testEndSatharTurn();
+	void testEndUPFTurn();
+	void testShowRetreatCondition();
+	void testGetPlayer();
+	void testSerialize();
 };
 
 }

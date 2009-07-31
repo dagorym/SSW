@@ -130,7 +130,7 @@ int FGame::getPlayers(bool gui){
   std::string name;     // variable to read in names
   FPlayer *playerPtr;
 
-  if (gui){
+//  if (gui){
 //	  name = wxGetTextFromUser( _T("Enter a name for the UPF Player")
 //			  ,_T("Player's Name:"),_T("UPF"));
 	  name = "UPF";
@@ -146,20 +146,20 @@ int FGame::getPlayers(bool gui){
 	  playerPtr->setName(name);
 	  playerPtr->setFleetIcon("../icons/Sathar.png");
 	  m_players.push_back(playerPtr);
-  } else {
-	  std::cout << "Enter a name for the UPF player => ";
-	  std::cin >> name;
-	  playerPtr = new FPlayer();
-	  playerPtr->setName(name);
-	  playerPtr->setFleetIcon("../icons/UPF.png");
-	  m_players.push_back(playerPtr);
-	  std::cout << "Enter a name for the Sathar player => ";
-	  std::cin >> name;
-	  playerPtr = new FPlayer();
-	  playerPtr->setName(name);
-	  playerPtr->setFleetIcon("../icons/Sathar.png");
-	  m_players.push_back(playerPtr);
-  }
+//  } else {
+////	  std::cout << "Enter a name for the UPF player => ";
+////	  std::cin >> name;
+//	  name = "UPF";
+//	  playerPtr = new FPlayer();
+//	  playerPtr->setName(name);
+//	  playerPtr->setFleetIcon("../icons/UPF.png");
+//	  m_players.push_back(playerPtr);
+//	  name = "Sathar";
+//	  playerPtr = new FPlayer();
+//	  playerPtr->setName(name);
+//	  playerPtr->setFleetIcon("../icons/Sathar.png");
+//	  m_players.push_back(playerPtr);
+//  }
 
   return 0;
 }
@@ -173,8 +173,11 @@ void FGame::showPlayers() {
     msg += tmp;
     i++;
   }
-  std::cout << msg << std::endl;
-  wxMessageBox(msg, _T("Player List"),wxOK);
+  if(m_gui){
+	  wxMessageBox(msg, _T("Player List"),wxOK);
+  } else {
+	  std::cout << msg << std::endl;
+  }
 }
 
 int FGame::initMap(bool gui){
@@ -561,8 +564,12 @@ void FGame::moveFleets(FPlayer * p){
 			if (time == -1){  // we failed the jump
 				std::string msg = "The fleet " + fleets[i]->getName()
 						+ " has failed it's risk jump and has been lost";
-				wxMessageDialog d(m_parent, msg,	"Failed Risk Jump",wxOK);
-				d.ShowModal();
+				if (m_gui){
+					wxMessageDialog d(m_parent, msg,	"Failed Risk Jump",wxOK);
+					d.ShowModal();
+				} else {
+					std::cout << msg << std::endl;
+				}
 				// add code here to remove fleet
 				FFleet *f = p->removeFleet(fleets[i]->getID());
 				m_universe->getSystem(fleets[i]->getLocation())->removeFleet(fleets[i]->getID());
@@ -1089,8 +1096,12 @@ void FGame::showRetreatConditions(){
 		msg << "Error:  No retreat condition selected";
 		break;
 	}
-	wxMessageDialog d(m_parent,msg.str(),"Sathar Retreat Conditions",wxOK);
-	d.ShowModal();
+	if (m_gui){
+		wxMessageDialog d(m_parent,msg.str(),"Sathar Retreat Conditions",wxOK);
+		d.ShowModal();
+	} else {
+		std::cout << msg.str() << std::endl;
+	}
 }
 
 int FGame::checkForVictory(){
