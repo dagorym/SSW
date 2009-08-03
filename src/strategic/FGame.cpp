@@ -16,6 +16,7 @@
 #include "gui/ViewFleetGUI.h"
 #include "gui/SatharRetreatGUI.h"
 #include "gui/SelectCombatGUI.h"
+#include "core/FGameConfig.h"
 #include <wx/wx.h>
 #include <wx/numdlg.h>
 #include <iostream>
@@ -35,6 +36,7 @@ FGame & FGame::create(wxWindow * win){
 }
 
 FGame::FGame(wxWindow * win){
+	FGameConfig &gc = FGameConfig::create();
 	m_parent = win;
 	m_universe = NULL;
 	m_round = 0;
@@ -44,8 +46,8 @@ FGame::FGame(wxWindow * win){
 		m_gui=true;
 	}
 	m_currentPlayer = -1;
-	m_tenday = new wxImage("../icons/tenday.png");
-	m_day = new wxImage("../icons/day.png");
+	m_tenday = new wxImage(gc.getBasePath()+"icons/tenday.png");
+	m_day = new wxImage(gc.getBasePath()+"icons/day.png");
 	srand(time(NULL));  // intialize random number generator
 	m_lostHC = 0;
 	m_lostAC = 0;
@@ -74,7 +76,7 @@ FGame::~FGame(){
 int FGame::init(wxWindow *w){
 	if (w == NULL){
 		m_gui = false;
-		std::cerr << "m_gui = " << m_gui << std::endl;
+//		std::cerr << "m_gui = " << m_gui << std::endl;
 	}
   wxString errorMsg;
   if(getPlayers(m_gui)){
@@ -136,7 +138,7 @@ int FGame::getPlayers(bool gui){
 	  name = "UPF";
 	  playerPtr = new FPlayer();
 	  playerPtr->setName(name);
-	  playerPtr->setFleetIcon("../icons/UPF.png");
+	  playerPtr->setFleetIcon("icons/UPF.png");
 	  m_players.push_back(playerPtr);
 //	  name = wxGetTextFromUser( _T("Enter a name for the Sathar Player")
 //			  ,_T("Player's Name:"),_T("Sathar"));
@@ -144,7 +146,7 @@ int FGame::getPlayers(bool gui){
 	  playerPtr = new FPlayer();
 	  m_currentPlayer = playerPtr->getID();
 	  playerPtr->setName(name);
-	  playerPtr->setFleetIcon("../icons/Sathar.png");
+	  playerPtr->setFleetIcon("icons/Sathar.png");
 	  m_players.push_back(playerPtr);
 //  } else {
 ////	  std::cout << "Enter a name for the UPF player => ";
@@ -152,12 +154,12 @@ int FGame::getPlayers(bool gui){
 //	  name = "UPF";
 //	  playerPtr = new FPlayer();
 //	  playerPtr->setName(name);
-//	  playerPtr->setFleetIcon("../icons/UPF.png");
+//	  playerPtr->setFleetIcon("icons/UPF.png");
 //	  m_players.push_back(playerPtr);
 //	  name = "Sathar";
 //	  playerPtr = new FPlayer();
 //	  playerPtr->setName(name);
-//	  playerPtr->setFleetIcon("../icons/Sathar.png");
+//	  playerPtr->setFleetIcon("icons/Sathar.png");
 //	  m_players.push_back(playerPtr);
 //  }
 
@@ -253,32 +255,32 @@ int FGame::addSatharShips(){
 
 	for (int i = 0; i < 25 ; i++){
 		sPtr = createShip("Fighter");
-		sPtr->setIcon("../icons/SatharFighter.png");
+		sPtr->setIcon("icons/SatharFighter.png");
 		m_players[1]->addShip(sPtr);
 	}
 	for (int i = 0; i < 8 ; i++){
 		sPtr = createShip("Frigate");
-		sPtr->setIcon("../icons/SatharFrigate.png");
+		sPtr->setIcon("icons/SatharFrigate.png");
 		m_players[1]->addShip(sPtr);
 	}
 	for (int i = 0; i < 15 ; i++){
 		sPtr = createShip("Destroyer");
-		sPtr->setIcon("../icons/SatharDestroyer.png");
+		sPtr->setIcon("icons/SatharDestroyer.png");
 		m_players[1]->addShip(sPtr);
 	}
 	for (int i = 0; i < 7 ; i++){
 		sPtr = createShip("LtCruiser");
-		sPtr->setIcon("../icons/SatharLtCruiser.png");
+		sPtr->setIcon("icons/SatharLtCruiser.png");
 		m_players[1]->addShip(sPtr);
 	}
 	for (int i = 0; i < 8 ; i++){
 		sPtr = createShip("HvCruiser");
-		sPtr->setIcon("../icons/SatharHvCruiser.png");
+		sPtr->setIcon("icons/SatharHvCruiser.png");
 		m_players[1]->addShip(sPtr);
 	}
 	for (int i = 0; i < 4 ; i++){
 		sPtr = createShip("AssaultCarrier");
-		sPtr->setIcon("../icons/SatharAssaultCarrier.png");
+		sPtr->setIcon("icons/SatharAssaultCarrier.png");
 		m_players[1]->addShip(sPtr);
 	}
 
@@ -298,7 +300,7 @@ int FGame::addUPFUnattached(){
 
 	for (int i = 0; i < 4 ; i++){
 		sPtr = createShip("Fighter");
-		sPtr->setIcon("../icons/UPFFighter.png");
+		sPtr->setIcon("icons/UPFFighter.png");
 		m_players[0]->addShip(sPtr);
 	}
 	for (int i = 0; i < 3 ; i++){
@@ -307,16 +309,16 @@ int FGame::addUPFUnattached(){
 	}
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("Destroyer");
-		sPtr->setIcon("../icons/UPFDestroyer.png");
+		sPtr->setIcon("icons/UPFDestroyer.png");
 		m_players[0]->addShip(sPtr);
 	}
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("LtCruiser");
-		sPtr->setIcon("../icons/UPFLtCruiser.png");
+		sPtr->setIcon("icons/UPFLtCruiser.png");
 		m_players[0]->addShip(sPtr);
 	}
 	sPtr = createShip("AssaultCarrier");
-	sPtr->setIcon("../icons/UPFAssaultCarrier.png");
+	sPtr->setIcon("icons/UPFAssaultCarrier.png");
 	m_players[0]->addShip(sPtr);
 
 	int result;
@@ -343,7 +345,7 @@ void FGame::createTFCassidine(){
 
 	for (int i = 0; i < 6 ; i++){
 		sPtr = createShip("Fighter");
-		sPtr->setIcon("../icons/UPFFighter.png");
+		sPtr->setIcon("icons/UPFFighter.png");
 		fPtr->addShip(sPtr);
 	}
 	for (int i = 0; i < 3 ; i++){
@@ -354,19 +356,19 @@ void FGame::createTFCassidine(){
 	fPtr->addShip(sPtr);
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("Frigate");
-		sPtr->setIcon("../icons/UPFFrigate.png");
+		sPtr->setIcon("icons/UPFFrigate.png");
 		fPtr->addShip(sPtr);
 	}
 	for (int i = 0; i < 1 ; i++){
 		sPtr = createShip("LtCruiser");
-		sPtr->setIcon("../icons/UPFLtCruiser.png");
+		sPtr->setIcon("icons/UPFLtCruiser.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("HvCruiser");
-	sPtr->setIcon("../icons/UPFHvCruiser.png");
+	sPtr->setIcon("icons/UPFHvCruiser.png");
 	fPtr->addShip(sPtr);
 	sPtr = createShip("AssaultCarrier");
-	sPtr->setIcon("../icons/UPFAssaultCarrier.png");
+	sPtr->setIcon("icons/UPFAssaultCarrier.png");
 	fPtr->addShip(sPtr);
 	sPtr = createShip("Battleship");
 	fPtr->addShip(sPtr);
@@ -396,17 +398,17 @@ void FGame::createTFPrenglar(){
 	}
 	for (int i = 0; i < 3 ; i++){
 		sPtr = createShip("Frigate");
-		sPtr->setIcon("../icons/UPFFrigate.png");
+		sPtr->setIcon("icons/UPFFrigate.png");
 		fPtr->addShip(sPtr);
 	}
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("Destroyer");
-		sPtr->setIcon("../icons/UPFDestroyer.png");
+		sPtr->setIcon("icons/UPFDestroyer.png");
 		fPtr->addShip(sPtr);
 	}
 	for (int i = 0; i < 3 ; i++){
 		sPtr = createShip("LtCruiser");
-		sPtr->setIcon("../icons/UPFLtCruiser.png");
+		sPtr->setIcon("icons/UPFLtCruiser.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Battleship");
@@ -428,7 +430,7 @@ void FGame::createSFNova(){
 
 	for (int i = 0; i < 6 ; i++){
 		sPtr = createShip("Fighter");
-		sPtr->setIcon("../icons/UPFFighter.png");
+		sPtr->setIcon("icons/UPFFighter.png");
 		fPtr->addShip(sPtr);
 	}
 	for (int i = 0; i < 3 ; i++){
@@ -437,19 +439,19 @@ void FGame::createSFNova(){
 	}
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("Frigate");
-		sPtr->setIcon("../icons/UPFFrigate.png");
+		sPtr->setIcon("icons/UPFFrigate.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Destroyer");
-	sPtr->setIcon("../icons/UPFDestroyer.png");
+	sPtr->setIcon("icons/UPFDestroyer.png");
 	fPtr->addShip(sPtr);
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("LtCruiser");
-		sPtr->setIcon("../icons/UPFLtCruiser.png");
+		sPtr->setIcon("icons/UPFLtCruiser.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("AssaultCarrier");
-	sPtr->setIcon("../icons/UPFAssaultCarrier.png");
+	sPtr->setIcon("icons/UPFAssaultCarrier.png");
 	fPtr->addShip(sPtr);
 	sPtr = createShip("Battleship");
 	fPtr->addShip(sPtr);
@@ -670,16 +672,16 @@ void FGame::createWhiteLightMilita(){
 	fPtr->setName("Clarion Militia");
 	fPtr->setLocation(m_universe->getSystem("White Light"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/WL-frigate.png");
+	fPtr->setIcon("icons/WL-frigate.png");
 	fPtr->setMilitia(true,"White Light");
 
 	for (int i = 0; i < 3 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/WL-AS.png");
+		sPtr->setIcon("icons/WL-AS.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Frigate");
-	sPtr->setIcon("../icons/WL-frigate.png");
+	sPtr->setIcon("icons/WL-frigate.png");
 	fPtr->addShip(sPtr);
 
 	m_players[0]->addFleet(fPtr);
@@ -694,12 +696,12 @@ void FGame::createGrunaGaruMilita(){
 	fPtr->setName("Hargut Militia");
 	fPtr->setLocation(m_universe->getSystem("Gruna Garu"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Hargut-AS.png");
+	fPtr->setIcon("icons/Hargut-AS.png");
 	fPtr->setMilitia(true,"Gruna Garu");
 
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Hargut-AS.png");
+		sPtr->setIcon("icons/Hargut-AS.png");
 		fPtr->addShip(sPtr);
 	}
 
@@ -715,16 +717,16 @@ void FGame::createAraksMilita(){
 	fPtr->setName("Hentz Militia");
 	fPtr->setLocation(m_universe->getSystem("Araks"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Hentz-frigate.png");
+	fPtr->setIcon("icons/Hentz-frigate.png");
 	fPtr->setMilitia(true,"Araks");
 
 	for (int i = 0; i < 3 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Hentz-AS.png");
+		sPtr->setIcon("icons/Hentz-AS.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Frigate");
-	sPtr->setIcon("../icons/Hentz-frigate.png");
+	sPtr->setIcon("icons/Hentz-frigate.png");
 	fPtr->addShip(sPtr);
 
 	m_players[0]->addFleet(fPtr);
@@ -740,19 +742,19 @@ void FGame::createDramuneMilita(){
 	fPtr->setName("Inner Reach Militia");
 	fPtr->setLocation(m_universe->getSystem("Dramune"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Dramune-destroyer.png");
+	fPtr->setIcon("icons/Dramune-destroyer.png");
 	fPtr->setMilitia(true,"Dramune");
 
 	for (int i = 0; i < 3 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Dramune-AS.png");
+		sPtr->setIcon("icons/Dramune-AS.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Frigate");
-	sPtr->setIcon("../icons/Dramune-frigate.png");
+	sPtr->setIcon("icons/Dramune-frigate.png");
 	fPtr->addShip(sPtr);
 	sPtr = createShip("Destroyer");
-	sPtr->setIcon("../icons/Dramune-destroyer.png");
+	sPtr->setIcon("icons/Dramune-destroyer.png");
 	fPtr->addShip(sPtr);
 
 	m_players[0]->addFleet(fPtr);
@@ -763,19 +765,19 @@ void FGame::createDramuneMilita(){
 	fPtr->setName("Outer Reach Militia");
 	fPtr->setLocation(m_universe->getSystem("Dramune"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Dramune-frigate.png");
+	fPtr->setIcon("icons/Dramune-frigate.png");
 	fPtr->setMilitia(true,"Dramune");
 
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Dramune-AS.png");
+		sPtr->setIcon("icons/Dramune-AS.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Frigate");
-	sPtr->setIcon("../icons/Dramune-frigate.png");
+	sPtr->setIcon("icons/Dramune-frigate.png");
 	fPtr->addShip(sPtr);
 	sPtr = createShip("Frigate");
-	sPtr->setIcon("../icons/Dramune-frigate.png");
+	sPtr->setIcon("icons/Dramune-frigate.png");
 	fPtr->addShip(sPtr);
 
 	m_players[0]->addFleet(fPtr);
@@ -790,12 +792,12 @@ void FGame::createKakenKarMilita(){
 	fPtr->setName("Ken'zah Kit Militia");
 	fPtr->setLocation(m_universe->getSystem("K'aken-Kar"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Kaken-Kar-AS.png");
+	fPtr->setIcon("icons/Kaken-Kar-AS.png");
 	fPtr->setMilitia(true,"K'aken-Kar");
 
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Kaken-Kar-AS.png");
+		sPtr->setIcon("icons/Kaken-Kar-AS.png");
 		fPtr->addShip(sPtr);
 	}
 
@@ -811,19 +813,19 @@ void FGame::createTheseusMilita(){
 	fPtr->setName("Minotaur Militia");
 	fPtr->setLocation(m_universe->getSystem("Theseus"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Theseus-destroyer.png");
+	fPtr->setIcon("icons/Theseus-destroyer.png");
 	fPtr->setMilitia(true,"Theseus");
 
 	for (int i = 0; i < 4 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Theseus-AS.png");
+		sPtr->setIcon("icons/Theseus-AS.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Frigate");
-	sPtr->setIcon("../icons/Theseus-frigate.png");
+	sPtr->setIcon("icons/Theseus-frigate.png");
 	fPtr->addShip(sPtr);
 	sPtr = createShip("Destroyer");
-	sPtr->setIcon("../icons/Theseus-destroyer.png");
+	sPtr->setIcon("icons/Theseus-destroyer.png");
 	fPtr->addShip(sPtr);
 
 	m_players[0]->addFleet(fPtr);
@@ -838,16 +840,16 @@ void FGame::createTruanesStarMilita(){
 	fPtr->setName("Pale Militia");
 	fPtr->setLocation(m_universe->getSystem("Truane's Star"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Truane-frigate.png");
+	fPtr->setIcon("icons/Truane-frigate.png");
 	fPtr->setMilitia(true,"Truane's Star");
 
 	for (int i = 0; i < 3 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Truane-AS.png");
+		sPtr->setIcon("icons/Truane-AS.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Frigate");
-	sPtr->setIcon("../icons/Truane-frigate.png");
+	sPtr->setIcon("icons/Truane-frigate.png");
 	fPtr->addShip(sPtr);
 
 	m_players[0]->addFleet(fPtr);
@@ -862,16 +864,16 @@ void FGame::createFromeltarMilita(){
 	fPtr->setName("Terledrom Militia");
 	fPtr->setLocation(m_universe->getSystem("Fromeltar"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Fromeltar-frigate.png");
+	fPtr->setIcon("icons/Fromeltar-frigate.png");
 	fPtr->setMilitia(true,"Fromeltar");
 
 	for (int i = 0; i < 3 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Fromeltar-AS.png");
+		sPtr->setIcon("icons/Fromeltar-AS.png");
 		fPtr->addShip(sPtr);
 	}
 	sPtr = createShip("Frigate");
-	sPtr->setIcon("../icons/Fromeltar-frigate.png");
+	sPtr->setIcon("icons/Fromeltar-frigate.png");
 	fPtr->addShip(sPtr);
 
 	m_players[0]->addFleet(fPtr);
@@ -886,12 +888,12 @@ void FGame::createKizkKarMilita(){
 	fPtr->setName("Zik-kit Militia");
 	fPtr->setLocation(m_universe->getSystem("Kizk-Kar"),false);
 	fPtr->setOwner(m_players[0]->getID());
-	fPtr->setIcon("../icons/Kizk-Kar-AS.png");
+	fPtr->setIcon("icons/Kizk-Kar-AS.png");
 	fPtr->setMilitia(true,"Kizk-Kar");
 
 	for (int i = 0; i < 2 ; i++){
 		sPtr = createShip("AssaultScout");
-		sPtr->setIcon("../icons/Kizk-Kar-AS.png");
+		sPtr->setIcon("icons/Kizk-Kar-AS.png");
 		fPtr->addShip(sPtr);
 	}
 

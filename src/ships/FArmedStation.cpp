@@ -12,6 +12,7 @@ namespace Frontier
 {
 
 FArmedStation::FArmedStation() {
+	FGameConfig &gc = FGameConfig::create();
 	m_maxMR = 0;
 	m_maxADF = 0;
 	m_maxHP = 80;
@@ -21,8 +22,8 @@ FArmedStation::FArmedStation() {
 	std::ostringstream os;
 	os << "Armed Station " << m_ID;
 	m_name = os.str();
-	m_iconName = "../icons/UPFArmedStation.png";
-	m_icon = new wxImage(m_iconName);
+	m_iconName = "icons/UPFArmedStation.png";
+	m_icon = new wxImage(gc.getBasePath()+m_iconName);
 	m_type = "ArmedStation";
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;

@@ -9,6 +9,7 @@
 #define _FVEHICLE_H_
 
 #include "core/FPObject.h"
+#include "core/FGameConfig.h"
 #include "weapons/FWeapon.h"
 #include "wx/wx.h"
 #include <vector>

@@ -9,6 +9,7 @@
 #include "strategic/FPlayer.h"
 #include "strategic/FJumpRoute.h"
 #include "ships/FVehicle.h"
+#include "core/FGameConfig.h"
 #include <iostream>
 
 namespace Frontier
@@ -108,8 +109,9 @@ void FPlayer::drawFleets(wxDC &dc, FMap *map){
 }
 
 void FPlayer::setFleetIcon(std::string file){
+	FGameConfig &gc = FGameConfig::create();
 	m_iconName = file;
-	m_fleetIcon.LoadFile(m_iconName);
+	m_fleetIcon.LoadFile(gc.getBasePath()+m_iconName);
 }
 
 int FPlayer::addShip( FVehicle * ship ){
@@ -159,11 +161,12 @@ const int FPlayer::save(std::ostream &os) const{
 }
 
 int FPlayer::load(std::istream &is){
+	FGameConfig &gc = FGameConfig::create();
 //	std::cerr << "Entering FPlayer::load" << std::endl;
 	read(is,m_ID);
 	readString(is,m_name);
 	readString(is,m_iconName);
-	m_fleetIcon.LoadFile(m_iconName);
+	m_fleetIcon.LoadFile(gc.getBasePath()+m_iconName);
 	unsigned int uSize, fSize;
 	read(is,uSize);
 	for(unsigned int i = 0; i < uSize; i++){

@@ -8,6 +8,7 @@
 
 #include "tactical/FBattleScreen.h"
 #include "Frontier.h"
+#include "core/FGameConfig.h"
 #include <wx/wx.h>
 
 namespace Frontier {
@@ -106,13 +107,14 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 
 	m_control=false;
 	if(planet){
+		FGameConfig &gc = FGameConfig::create();
 		m_state = BS_SetupPlanet;
 		ImageList iList;
-		wxImage p0("../icons/planet_01.png");
+		wxImage p0(gc.getBasePath()+"icons/planet_01.png");
 		iList.push_back(p0);
-		wxImage p1("../icons/planet_02.png");
+		wxImage p1(gc.getBasePath()+"icons/planet_02.png");
 		iList.push_back(p1);
-		wxImage p2("../icons/planet_03.png");
+		wxImage p2(gc.getBasePath()+"icons/planet_03.png");
 		iList.push_back(p2);
 		m_display->setImageList(iList);
 		m_map->setPlanetImages(iList);

@@ -37,6 +37,7 @@ FFleet::FFleet() {
 }
 
 FFleet::FFleet(const FFleet & f){
+	FGameConfig &gc = FGameConfig::create();
 	m_ID = m_nextID++;
 	m_classCount++;
 	m_location = f.m_location;
@@ -44,7 +45,7 @@ FFleet::FFleet(const FFleet & f){
 	m_inTransit = f.m_inTransit;
 	m_isMilitia = f.m_isMilitia;
 	m_iconFile = f.m_iconFile;
-	m_icon = new wxImage(m_iconFile);
+	m_icon = new wxImage(gc.getBasePath()+m_iconFile);
 	m_isHolding = f.m_isHolding;
 	m_speed = f.m_speed;
 	m_transitTime = f.m_transitTime;
@@ -168,6 +169,7 @@ const int FFleet::save(std::ostream &os) const {
 }
 
 int FFleet::load(std::istream &is){
+	FGameConfig &gc = FGameConfig::create();
 //	std::cerr << "Entering FFleet::load" << std::endl;
 	read(is,m_ID);
 	readString(is, m_name);
@@ -180,7 +182,7 @@ int FFleet::load(std::istream &is){
 	read(is,m_speed);
 	read(is,m_jumpRouteID);
 	readString(is,m_iconFile);
-	m_icon = new wxImage(m_iconFile);
+	m_icon = new wxImage(gc.getBasePath()+m_iconFile);
 	read(is,m_isMilitia);
 	readString(is,m_home);
 	read(is,m_isHolding);
@@ -203,11 +205,12 @@ int FFleet::load(std::istream &is){
 }
 
 void FFleet::setIcon(std::string icon){
+	FGameConfig &gc = FGameConfig::create();
 	if(m_icon != NULL){
 		delete m_icon;
 	}
 	m_iconFile = icon;
-	m_icon = new wxImage(m_iconFile);
+	m_icon = new wxImage(gc.getBasePath()+m_iconFile);
 }
 
 void FFleet::setSpeed(unsigned int s ) {

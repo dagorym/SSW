@@ -17,6 +17,7 @@ FMainFrame::~FMainFrame() {
 	if(m_game != NULL){
 		delete m_game;
 	}
+	delete m_gameConfig;
 }
 
 FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
@@ -67,6 +68,8 @@ FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& 
 	CreateStatusBar();
 	SetStatusText( "Welcome to the Frontier!" );
 	m_game=NULL;
+	m_gameConfig = &(FGameConfig::create());
+
 }
 
 void FMainFrame::onQuit(wxCommandEvent& WXUNUSED(event)) {
@@ -304,19 +307,19 @@ void FMainFrame::onShowBattleScreen(wxCommandEvent& event){
 	f->addShip(createShip("AssaultScout"));
 	f->addShip(createShip("AssaultScout"));
 	FVehicle *s = createShip("Frigate");
-	s->setIcon("../icons/UPFFrigate.png");
+	s->setIcon("icons/UPFFrigate.png");
 	f->addShip(s);
 //	s = createShip("Destroyer");
-//	s->setIcon("../icons/UPFDestroyer.png");
+//	s->setIcon("icons/UPFDestroyer.png");
 //	f->addShip(s);
 	dList.push_back(f);
 	f = new FFleet();
 	f->setName("Sathar");
 	s = createShip("LtCruiser");
-	s->setIcon("../icons/SatharLtCruiser.png");
+	s->setIcon("icons/SatharLtCruiser.png");
 	f->addShip(s);
 	s = createShip("Destroyer");
-	s->setIcon("../icons/SatharDestroyer.png");
+	s->setIcon("icons/SatharDestroyer.png");
 	f->addShip(s);
 	aList.push_back(f);
 	bb->setupFleets(&aList,&dList,true,st);

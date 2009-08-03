@@ -77,7 +77,7 @@ void FVehicleTest::testSetters(){
 	CPPUNIT_ASSERT(m_v1->getDCR() == 0);
 	m_v1->setHP(0);
 	CPPUNIT_ASSERT(m_v1->getHP() == 0);
-	m_v1->setIcon("../../icons/UPFDestroyer.png");
+	m_v1->setIcon("icons/UPFDestroyer.png");
 	CPPUNIT_ASSERT(m_v1->getIcon() != NULL);
 }
 
@@ -90,7 +90,7 @@ void FVehicleTest::testSerialize(){
 	m_v1->setMR(3);
 	m_v1->setDCR(25);
 	m_v1->setHP(10);
-	m_v1->setIcon("../../icons/UPFFrigate.png");
+	m_v1->setIcon("icons/UPFFrigate.png");
 
 	std::ofstream os("test2",std::ios::binary);
 	m_v1->save(os);

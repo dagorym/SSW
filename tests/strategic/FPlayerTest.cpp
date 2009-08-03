@@ -34,6 +34,7 @@ void FPlayerTest::testSetName(){
 void FPlayerTest::testAddFleet(){
 	FFleet *f = new FFleet;
 	unsigned int id = f->getID();
+	f->setIcon("icons/UPF.png");
 	m_p1->addFleet(f);
 	CPPUNIT_ASSERT(m_p1->getLargestFleetID() == id );
 }
@@ -42,6 +43,7 @@ void FPlayerTest::testGetFleetByName(){
 	FFleet *f = new FFleet;
 	f->setName("Tom's Fleet");
 	unsigned int id = f->getID();
+	f->setIcon("icons/UPF.png");
 	m_p1->addFleet(f);
 	FFleet *f2 = m_p1->getFleet("Tom's Fleet");
 	CPPUNIT_ASSERT( f2->getID() == id);
@@ -54,6 +56,7 @@ void FPlayerTest::testGetFleetList(){
 	CPPUNIT_ASSERT (fList.size() == 0);
 	FFleet *f = new FFleet;
 	unsigned int id = f->getID();
+	f->setIcon("icons/UPF.png");
 	m_p1->addFleet(f);
 	fList = m_p1->getFleetList();
 	CPPUNIT_ASSERT (fList.size() == 1);
@@ -63,6 +66,7 @@ void FPlayerTest::testGetFleetList(){
 void FPlayerTest::testRemoveFleet(){
 	FFleet *f = new FFleet;
 	unsigned int id = f->getID();
+	f->setIcon("icons/UPF.png");
 	m_p1->addFleet(f);
 
 	FFleet *f2 = m_p1->removeFleet(id);
@@ -75,7 +79,7 @@ void FPlayerTest::testRemoveFleet(){
 }
 
 void FPlayerTest::testSetIcon(){
-	std::string name = "../../icons/UPFFleet.png";
+	std::string name = "icons/UPF.png";
 	m_p1->setFleetIcon(name);
 	CPPUNIT_ASSERT(m_p1->getFleetIconName() == name);
 }
@@ -102,7 +106,9 @@ void FPlayerTest::testSerialize(){
 	FVehicle *s = createShip("AssaultScout");
 	unsigned int sID1 = s->getID();
 	f->addShip(s);
+	f->setIcon("icons/UPF.png");
 	m_p1->addFleet(f);
+	m_p1->setFleetIcon("icons/UPF.png");
 	s = createShip("Frigate");
 	unsigned int sID2 = s->getID();
 	m_p1->addShip(s);

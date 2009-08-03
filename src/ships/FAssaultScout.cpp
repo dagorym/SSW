@@ -12,6 +12,7 @@ namespace Frontier
 {
 
 FAssaultScout::FAssaultScout() {
+	FGameConfig &gc = FGameConfig::create();
 	m_maxMR = 4;
 	m_maxADF = 5;
 	m_maxHP = 15;
@@ -21,8 +22,8 @@ FAssaultScout::FAssaultScout() {
 	std::ostringstream os;
 	os << "Assault Scout " << m_ID;
 	m_name = os.str();
-	m_iconName = "../icons/AS.png";
-	m_icon = new wxImage(m_iconName);
+	m_iconName = "icons/AS.png";
+	m_icon = new wxImage(gc.getBasePath()+m_iconName);
 	m_type = "AssaultScout";
 	m_maxDCR=50;
 	m_currentDCR=m_maxDCR;

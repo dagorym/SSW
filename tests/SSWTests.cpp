@@ -10,6 +10,7 @@
 
 #include "core/FPointTest.h"
 #include "core/FObjectTest.h"
+#include "core/FGameConfigTest.h"
 #include "weapons/FWeaponTest.h"
 #include "weapons/FAssaultRocketTest.h"
 #include "weapons/FDisruptorCannonTest.h"
@@ -52,6 +53,7 @@ int main( int argc, char **argv)
 //	CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
   runner.addTest( FPointTest::suite() );
   runner.addTest( FObjectTest::suite() );
+  runner.addTest( FGameConfigTest::suite() );
   runner.addTest( FWeaponTest::suite() );
   runner.addTest( FAssaultRocketTest::suite() );
   runner.addTest( FDisruptorCannonTest::suite() );

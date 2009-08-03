@@ -12,6 +12,7 @@ namespace Frontier
 {
 
 FFortress::FFortress() {
+	FGameConfig &gc = FGameConfig::create();
 	m_maxMR = 0;
 	m_maxADF = 0;
 	m_maxHP = 300;
@@ -21,8 +22,8 @@ FFortress::FFortress() {
 	std::ostringstream os;
 	os << "Fortress " << m_ID;
 	m_name = os.str();
-	m_iconName = "../icons/UPFFortress.png";
-	m_icon = new wxImage(m_iconName);
+	m_iconName = "icons/UPFFortress.png";
+	m_icon = new wxImage(gc.getBasePath()+m_iconName);
 	m_type = "Fortress";
 	m_maxDCR=200;
 	m_currentDCR=m_maxDCR;

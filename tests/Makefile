@@ -3,7 +3,8 @@ CXXFLAGS = -I../include  -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -D
 LIBS = `wx-config --libs` -L./strategic -lstrategicTests -L./ships -lshipsTests \
        -L./weapons -lweaponsTests -L./core -lcoreTests \
        -lcppunit -L../src/strategic -lstrategic -L../src/gui -lgui -L../src/ships -lships \
-       -L../src/tactical -ltactical -L../src/weapons -lweapons -L../src/core -lcore 
+       -L../src/tactical -ltactical -L../src/weapons -lweapons -L../src/core -lcore #\
+#       -l wxGuiTesting
        
 
 #################### the implicit rules #############################
@@ -79,9 +80,10 @@ clean:
 # DO NOT DELETE
 
 SSWTests.o: core/FPointTest.h ../include/core/FPoint.h core/FObjectTest.h
+SSWTests.o: ../include/core/FObject.h core/FGameConfigTest.h
+SSWTests.o: ../include/core/FGameConfig.h ../include/core/FPObject.h
 SSWTests.o: ../include/core/FObject.h weapons/FWeaponTest.h
-SSWTests.o: ../include/weapons/FWeapon.h ../include/core/FPObject.h
-SSWTests.o: ../include/core/FObject.h weapons/FAssaultRocketTest.h
+SSWTests.o: ../include/weapons/FWeapon.h weapons/FAssaultRocketTest.h
 SSWTests.o: ../include/weapons/FAssaultRocket.h
 SSWTests.o: weapons/FDisruptorCannonTest.h
 SSWTests.o: ../include/weapons/FDisruptorCannon.h
@@ -109,12 +111,14 @@ SSWTests.o: ../include/ships/FFrigate.h ships/FHvCruiserTest.h
 SSWTests.o: ../include/ships/FHvCruiser.h ships/FLtCruiserTest.h
 SSWTests.o: ../include/ships/FLtCruiser.h ships/FMinelayerTest.h
 SSWTests.o: ../include/ships/FMinelayer.h strategic/FGameTest.h
-SSWTests.o: strategic/FPlanetTest.h ../include/strategic/FPlanet.h
-SSWTests.o: ../include/strategic/FAstroBody.h strategic/FFleetTest.h
+SSWTests.o: ../include/strategic/FGame.h ../include/strategic/FPlayer.h
+SSWTests.o: ../include/strategic/FFleet.h ../include/strategic/FMap.h
+SSWTests.o: ../include/strategic/FSystem.h ../include/strategic/FPlanet.h
+SSWTests.o: ../include/strategic/FAstroBody.h
+SSWTests.o: ../include/strategic/FJumpRoute.h strategic/FPlanetTest.h
+SSWTests.o: ../include/strategic/FPlanet.h strategic/FFleetTest.h
 SSWTests.o: ../include/strategic/FFleet.h strategic/FJumpRouteTest.h
-SSWTests.o: ../include/strategic/FJumpRoute.h ../include/strategic/FSystem.h
-SSWTests.o: ../include/strategic/FPlanet.h ../include/strategic/FFleet.h
-SSWTests.o: strategic/FSystemTest.h ../include/strategic/FSystem.h
-SSWTests.o: strategic/FMapTest.h ../include/strategic/FMap.h
-SSWTests.o: ../include/strategic/FJumpRoute.h strategic/FPlayerTest.h
-SSWTests.o: ../include/strategic/FPlayer.h ../include/strategic/FMap.h
+SSWTests.o: ../include/strategic/FJumpRoute.h strategic/FSystemTest.h
+SSWTests.o: ../include/strategic/FSystem.h strategic/FMapTest.h
+SSWTests.o: ../include/strategic/FMap.h strategic/FPlayerTest.h
+SSWTests.o: ../include/strategic/FPlayer.h

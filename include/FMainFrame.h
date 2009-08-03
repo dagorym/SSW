@@ -11,6 +11,7 @@
 
 #include <wx/wx.h>
 #include "strategic/FGame.h"
+#include "core/FGameConfig.h"
 
 /**
  * @brief Main frame class for the SSW game
@@ -278,6 +279,8 @@ private:
   Frontier::FGame *m_game;
   /// flag for whether or not SF Nova has been placed
   bool m_novaPlaced;
+  /// Game configuration object
+  Frontier::FGameConfig * m_gameConfig;
 
   /**
    * @brief deletes the game and resets the window

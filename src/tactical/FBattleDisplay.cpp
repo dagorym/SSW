@@ -9,6 +9,7 @@
 //#include "FBattleDisplay.h"
 #include "Frontier.h"
 #include "tactical/FBattleScreen.h"
+#include "core/FGameConfig.h"
 #include <wx/wx.h>
 #include <sstream>
 
@@ -30,8 +31,9 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	wxColour black(wxT("#000000"));// black
 	SetBackgroundColour(black);
 	SetMinSize( wxSize( -1,120 ) );
+	FGameConfig &gc = FGameConfig::create();
 
-	m_zoomImage.LoadFile("../data/zoom.png");
+	m_zoomImage.LoadFile(gc.getBasePath()+"data/zoom.png");
 
 	/// set up the set speed controls
 	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxPoint(leftOffset,3*BORDER+2), wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
@@ -53,7 +55,7 @@ FBattleDisplay::~FBattleDisplay() {
 }
 
 void FBattleDisplay::draw(wxDC &dc){
-//	wxBitmap b("../icons/ufo.png");
+//	wxBitmap b("icons/ufo.png");
 //	dc.DrawBitmap(b, 5, 5);
 	wxColour black(wxT("#000000"));// black
 	m_weaponRegions.clear();

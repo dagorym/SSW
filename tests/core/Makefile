@@ -37,7 +37,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FPointTest.o FObjectTest.o #FPObject.o 
+OBJS = FPointTest.o FObjectTest.o FGameConfigTest.o #FPObject.o 
 
 TARGET = libcoreTests.a
 
@@ -59,5 +59,7 @@ clean:
 
 # DO NOT DELETE
 
+FGameConfigTest.o: FGameConfigTest.h ../../include/core/FGameConfig.h
+FGameConfigTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FObjectTest.o: FObjectTest.h ../../include/core/FObject.h
 FPointTest.o: FPointTest.h ../../include/core/FPoint.h

@@ -51,9 +51,9 @@ void FFleetTest::testBasicSetters(){
 	CPPUNIT_ASSERT( m_f1->getLocation() == 10 );
 	m_f1->setDestination(12);
 	CPPUNIT_ASSERT( m_f1->getDestination() == 12 );
-	m_f1->setIcon("../../icons/UPFFleet.png");
+	m_f1->setIcon("icons/UPF.png");
 	CPPUNIT_ASSERT( m_f1->getIcon() != NULL );
-	m_f1->setIcon("../../icons/SatharFleet.png");
+	m_f1->setIcon("icons/Sathar.png");
 	CPPUNIT_ASSERT( m_f1->getIcon() != NULL );
 	m_f1->setMilitia(true,"Prenglar");
 	CPPUNIT_ASSERT( m_f1->isMilitia() == true );
@@ -161,6 +161,7 @@ void FFleetTest::testDecTransitTime(){
 
 void FFleetTest::testGetMaxSpeed(){
 	FVehicle *v = createShip("Frigate");
+	v->setIcon("icons/UPFFrigate.png");
 	m_f1->addShip(v);
 	CPPUNIT_ASSERT(m_f1->getMaxSpeed() == 4);
 	v = createShip("Minelayer");
@@ -195,6 +196,7 @@ void FFleetTest::testSetJumpRoute(){
 void FFleetTest::testSerialize(){
 	m_f1->addShip(createShip("AssaultScout"));
 	std::ofstream os("test",std::ios::binary);
+	m_f1->setIcon("icons/UPF.png");
 	m_f1->save(os);
 	os.close();
 	FFleet f2;
@@ -208,6 +210,7 @@ void FFleetTest::testSerialize(){
 void FFleetTest::TestCopyConstructor(){
 	m_f1->addShip(createShip("AssaultScout"));
 	m_f1->setName("Test Fleet");
+	m_f1->setIcon("icons/UPF.png");
 	FFleet *f2 = new FFleet(*m_f1);
 	CPPUNIT_ASSERT(f2->getShipCount() == m_f1->getShipCount());
 	VehicleList l1 = m_f1->getShipList();

@@ -7,6 +7,7 @@
  */
 #include "FApp.h"
 #include "FMainFrame.h"
+#include "core/FGameConfig.h"
 #include <wx/splash.h>
 using namespace Frontier;
 
@@ -20,7 +21,8 @@ bool FApp::OnInit() {
 	// Draw splash screen
 	wxInitAllImageHandlers();
 	wxBitmap bitmap;
-	if (bitmap.LoadFile("../data/splash.png", wxBITMAP_TYPE_PNG))
+	FGameConfig &gc = FGameConfig::create();
+	if (bitmap.LoadFile(gc.getBasePath()+"data/splash.png", wxBITMAP_TYPE_PNG))
 	{
 		wxSplashScreen* splash = new wxSplashScreen(bitmap,
 				wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
