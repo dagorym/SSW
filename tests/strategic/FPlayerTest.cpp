@@ -48,6 +48,15 @@ void FPlayerTest::testGetFleetByName(){
 	FFleet *f2 = m_p1->getFleet("Tom's Fleet");
 	CPPUNIT_ASSERT( f2->getID() == id);
 	CPPUNIT_ASSERT( m_p1->getFleet("John's Fleet") == NULL );
+}
+
+void FPlayerTest::testGetFleetByLocation(){
+	FFleet *f = new FFleet;
+	unsigned int id = f->getID();
+	m_p1->addFleet(f);
+	CPPUNIT_ASSERT(m_p1->getFleet(0,0)->getID() == id);
+	CPPUNIT_ASSERT(m_p1->getFleet(0.49,0)->getID() == id);
+	CPPUNIT_ASSERT(m_p1->getFleet(0.51,0) == NULL);
 
 }
 

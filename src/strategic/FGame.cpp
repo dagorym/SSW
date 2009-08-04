@@ -17,7 +17,9 @@
 #include "gui/SatharRetreatGUI.h"
 #include "gui/SelectCombatGUI.h"
 #include "core/FGameConfig.h"
+#include "gui/WXGameDisplay.h"
 #include "gui/WXMapDisplay.h"
+#include "gui/WXPlayerDisplay.h"
 #include <wx/wx.h>
 #include <wx/numdlg.h>
 #include <iostream>
@@ -222,11 +224,12 @@ void FGame::draw(wxDC &dc){
 		WXMapDisplay md;
 		md.draw(dc);
 		// draw the fleets for each player
+		WXPlayerDisplay pd;
 		if(m_players[0]){
-			m_players[0]->drawFleets(dc,m_universe);
+			pd.drawFleets(dc,m_players[0]);
 		}
 		if(m_players[1]){
-			m_players[1]->drawFleets(dc,m_universe);
+			pd.drawFleets(dc,m_players[1]);
 		}
 		drawTurnCounter();
 	}
@@ -464,8 +467,8 @@ void FGame::createSFNova(){
 
 void FGame::onLeftDClick(wxMouseEvent& event) {
 	wxClientDC dc(m_parent);
+	WXMapDisplay md;
 	if (m_universe!=NULL){
-		WXMapDisplay md;
 		FSystem * sys = m_universe->selectSystem(event.m_x/md.getScale(dc),event.m_y/md.getScale(dc));
 		FPlayer * player = (m_players[0]->getID()==m_currentPlayer)?m_players[0]:m_players[1];
 		if (sys!=NULL){
@@ -479,7 +482,7 @@ void FGame::onLeftDClick(wxMouseEvent& event) {
 	if(m_players.size()>0){
 		FFleet *f = NULL;
 		for (unsigned int i = 0; i < m_players.size(); i++){
-			f = m_players[i]->getFleet(event.m_x,event.m_y,m_universe, dc);
+			f = m_players[i]->getFleet(event.m_x/md.getScale(dc),event.m_y/md.getScale(dc));
 			if (f!=NULL){
 				ViewFleetGUI *d = new ViewFleetGUI(m_parent,f,m_universe->getSystem(f->getLocation()),m_universe->getSystem(f->getDestination()));
 				d->ShowModal();

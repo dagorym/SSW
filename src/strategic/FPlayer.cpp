@@ -63,53 +63,6 @@ FFleet * FPlayer::getFleet(std::string name) const {
 	return NULL;
 }
 
-void FPlayer::drawFleets(wxDC &dc, FMap *map){
-	WXMapDisplay mapDisplay;
-	const double scale = mapDisplay.getScale(dc);
-	if (m_fleets.size()>0){
-		for (FleetList::iterator itr = m_fleets.begin(); itr < m_fleets.end(); itr++){
-			wxBitmap b((*itr)->getIcon()->Scale((int)scale,(int)scale));
-			if((*itr)->getInTransit()){  // it's in a jump
-				FJumpRoute *j = map->getJumpRoute((*itr)->getJumpRoute());
-				unsigned int start,end;
-				if(j->getStart()->getID()==(*itr)->getDestination()){
-					start = j->getEnd()->getID();
-					end = j->getStart()->getID();
-				} else {
-					start = j->getStart()->getID();
-					end = j->getEnd()->getID();
-				}
-				float dx = (map->getSystem(start)->getCoord(0)-map->getSystem(end)->getCoord(0));
-				float dy = (map->getSystem(start)->getCoord(1)-map->getSystem(end)->getCoord(1));
-				float frac = 0;
-//				std::cerr << "Fraction is " << frac << std::endl;
-				if ((*itr)->getTransitTime()==j->getLength()){ // we only need to offset when we assign the jump
-					frac = 0.1;
-				}
-				wxCoord x = (wxCoord)(((*itr)->getCoord(0)-0.5-frac*dx) * scale);
-				wxCoord y = (wxCoord)(((*itr)->getCoord(1)-0.5-frac*dy) * scale);
-//				std::cerr << "x = " << x << "  y = " << y << std::endl;
-				dc.DrawBitmap(b,x,y);
-			} else {  // it's in a system
-				double xoffset = -0.2*scale;
-				double yoffset = -0.2*scale;
-				if(m_ID!=1){
-					xoffset = 0.2*scale;
-					yoffset = -0.2*scale;
-				} else if((*itr)->isMilitia()){
-					xoffset = 0;
-					yoffset = 0.2*scale;
-				}
-				if((*itr)->getLocation() != 0) {
-					wxCoord x = (wxCoord)(map->getSystem((*itr)->getLocation())->getCoord(0)*scale-0.5*scale+xoffset);
-					wxCoord y = (wxCoord)(map->getSystem((*itr)->getLocation())->getCoord(1)*scale-0.5*scale+yoffset);
-					dc.DrawBitmap(b,x,y);
-				}
-			}
-		}
-	}
-}
-
 void FPlayer::setFleetIcon(std::string file){
 	FGameConfig &gc = FGameConfig::create();
 	m_iconName = file;
@@ -187,13 +140,12 @@ int FPlayer::load(std::istream &is){
 	return 0;
 }
 
-FFleet * FPlayer::getFleet (int x, int y , FMap * map, wxDC &dc) const {
+FFleet * FPlayer::getFleet (double x, double y) const {
 	WXMapDisplay mapDisplay;
-	const double scale = mapDisplay.getScale(dc);
 	for (unsigned int i=0; i < m_fleets.size(); i++){
-		wxCoord x2 = (wxCoord)((m_fleets[i]->getCoord(0))*scale);
-		wxCoord y2 = (wxCoord)((m_fleets[i]->getCoord(1))*scale);
-		if(sqrt((double)(x-x2)*(x-x2)+(y-y2)*(y-y2))<(0.5*scale)){
+		double x2 = m_fleets[i]->getCoord(0);
+		double y2 = m_fleets[i]->getCoord(1);
+		if(sqrt((double)(x-x2)*(x-x2)+(y-y2)*(y-y2))<0.5){
 			return m_fleets[i];
 		}
 	}

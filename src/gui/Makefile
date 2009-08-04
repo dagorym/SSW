@@ -42,7 +42,7 @@ OBJS = SystemDialogGUI.o SelectJumpGUI.o ViewFleetGUI.o \
        TransferShipsGUI.o  SatharRetreatGUI.o \
        SelectCombatGUI.o TwoPlanetsGUI.o CombatLocationGUI.o \
        CombatFleetsGUI.o SelectResolutionGUI.o BattleResultsGUI.o \
-       WXMapDisplay.o
+       WXMapDisplay.o WXPlayerDisplay.o WXGameDisplay.o
 
 TARGET = libgui.a
 
@@ -214,5 +214,33 @@ ViewFleetGUI.o: ../../include/strategic/FSystem.h
 ViewFleetGUI.o: ../../include/strategic/FPlanet.h
 ViewFleetGUI.o: ../../include/strategic/FAstroBody.h
 ViewFleetGUI.o: ../../include/strategic/FFleet.h
+WXGameDisplay.o: ../../include/gui/WXPlayerDisplay.h
+WXGameDisplay.o: ../../include/strategic/FPlayer.h
+WXGameDisplay.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+WXGameDisplay.o: ../../include/strategic/FFleet.h
+WXGameDisplay.o: ../../include/strategic/FMap.h
+WXGameDisplay.o: ../../include/strategic/FSystem.h
+WXGameDisplay.o: ../../include/strategic/FPlanet.h
+WXGameDisplay.o: ../../include/strategic/FAstroBody.h
+WXGameDisplay.o: ../../include/ships/FVehicle.h
+WXGameDisplay.o: ../../include/core/FGameConfig.h
+WXGameDisplay.o: ../../include/weapons/FWeapon.h
+WXGameDisplay.o: ../../include/strategic/FJumpRoute.h
+WXGameDisplay.o: ../../include/gui/WXMapDisplay.h
+WXGameDisplay.o: ../../include/strategic/FMap.h
 WXMapDisplay.o: ../../include/gui/WXMapDisplay.h
 WXMapDisplay.o: ../../include/strategic/FMap.h
+WXPlayerDisplay.o: ../../include/gui/WXPlayerDisplay.h
+WXPlayerDisplay.o: ../../include/strategic/FPlayer.h
+WXPlayerDisplay.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+WXPlayerDisplay.o: ../../include/strategic/FFleet.h
+WXPlayerDisplay.o: ../../include/strategic/FMap.h
+WXPlayerDisplay.o: ../../include/strategic/FSystem.h
+WXPlayerDisplay.o: ../../include/strategic/FPlanet.h
+WXPlayerDisplay.o: ../../include/strategic/FAstroBody.h
+WXPlayerDisplay.o: ../../include/ships/FVehicle.h
+WXPlayerDisplay.o: ../../include/core/FGameConfig.h
+WXPlayerDisplay.o: ../../include/weapons/FWeapon.h
+WXPlayerDisplay.o: ../../include/strategic/FJumpRoute.h
+WXPlayerDisplay.o: ../../include/gui/WXMapDisplay.h
+WXPlayerDisplay.o: ../../include/strategic/FMap.h

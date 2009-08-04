@@ -21,6 +21,7 @@ class FPlayerTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testSetName );
 	CPPUNIT_TEST( testAddFleet );
 	CPPUNIT_TEST( testGetFleetByName );
+	CPPUNIT_TEST( testGetFleetByLocation );
 	CPPUNIT_TEST( testGetFleetList );
 	CPPUNIT_TEST( testRemoveFleet );
 	CPPUNIT_TEST( testSetIcon );
@@ -40,6 +41,7 @@ public:
 	void testSetName();
 	void testAddFleet();
 	void testGetFleetByName();
+	void testGetFleetByLocation();
 	void testGetFleetList();
 	void testRemoveFleet();
 	void testSetIcon();

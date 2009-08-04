@@ -92,34 +92,19 @@ public:
   /**
    * @brief Get a pointer to a player's fleet
    *
-   * This method takes as input the position of a fleet (in screen coordinates)
+   * This method takes as input the position of a fleet in the internal map
+   * coordinate scale
    * and returns a pointer to that fleet.  If the player does not own a fleet
    * at that position or if an error occured, the method returns a NULL pointer.
    *
    * @param x  The x coordinate of the fleet
    * @param y The y coordinate of the fleet
-   * @param map The FMap object containing the systems and jump routes
-   * @param dc The device context for getting scales
    *
    * @author Tom Stephens
    * @date Created:  Mar 21, 2008
-   * @date Last Modified:  Mar 21, 200
+   * @date Last Modified:  Aug 3, 2009
    */
-  FFleet * getFleet (int x, int y, FMap * map, wxDC &dc) const;
-
-  /**
-   * @brief Draws the player's fleets on the map
-   *
-   * This method takes in the DC from the game object and draws the player's fleets
-   *
-   * @param dc Device Context to draw to
-   * @param map Pointer to the FMap object with the system and jump references
-   *
-   * @author Tom Stephens
-   * @date Created:  Feb 07, 2008
-   * @date Last Modified:  Mar 14, 2008
-   */
-  void drawFleets(wxDC &dc, FMap *map);
+  FFleet * getFleet (double x, double y) const;
 
   /**
    * @brief Set the image for the fleet icon

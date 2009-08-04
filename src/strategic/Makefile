@@ -86,6 +86,7 @@ FGame.o: ../../include/gui/SatharFleetsGUI.h ../../include/gui/ViewFleetGUI.h
 FGame.o: ../../include/strategic/FSystem.h
 FGame.o: ../../include/gui/SatharRetreatGUI.h
 FGame.o: ../../include/gui/SelectCombatGUI.h ../../include/gui/WXMapDisplay.h
+FGame.o: ../../include/gui/WXPlayerDisplay.h
 FJumpRoute.o: ../../include/strategic/FJumpRoute.h
 FJumpRoute.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FJumpRoute.o: ../../include/strategic/FSystem.h
@@ -106,4 +107,5 @@ FPlayer.o: ../../include/strategic/FPlanet.h
 FPlayer.o: ../../include/strategic/FAstroBody.h
 FPlayer.o: ../../include/ships/FVehicle.h ../../include/core/FGameConfig.h
 FPlayer.o: ../../include/weapons/FWeapon.h ../../include/strategic/FFleet.h
+FPlayer.o: ../../include/gui/WXMapDisplay.h ../../include/strategic/FMap.h
 FSystem.o: ../../include/strategic/FSystem.h
