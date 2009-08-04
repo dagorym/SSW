@@ -10,6 +10,7 @@
 #include "strategic/FJumpRoute.h"
 #include "ships/FVehicle.h"
 #include "core/FGameConfig.h"
+#include "gui/WXMapDisplay.h"
 #include <iostream>
 
 namespace Frontier
@@ -63,7 +64,8 @@ FFleet * FPlayer::getFleet(std::string name) const {
 }
 
 void FPlayer::drawFleets(wxDC &dc, FMap *map){
-	const double scale = map->getScale(dc);
+	WXMapDisplay mapDisplay;
+	const double scale = mapDisplay.getScale(dc);
 	if (m_fleets.size()>0){
 		for (FleetList::iterator itr = m_fleets.begin(); itr < m_fleets.end(); itr++){
 			wxBitmap b((*itr)->getIcon()->Scale((int)scale,(int)scale));
@@ -186,7 +188,8 @@ int FPlayer::load(std::istream &is){
 }
 
 FFleet * FPlayer::getFleet (int x, int y , FMap * map, wxDC &dc) const {
-	const double scale = map->getScale(dc);
+	WXMapDisplay mapDisplay;
+	const double scale = mapDisplay.getScale(dc);
 	for (unsigned int i=0; i < m_fleets.size(); i++){
 		wxCoord x2 = (wxCoord)((m_fleets[i]->getCoord(0))*scale);
 		wxCoord y2 = (wxCoord)((m_fleets[i]->getCoord(1))*scale);

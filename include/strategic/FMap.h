@@ -13,7 +13,7 @@
 #include "FSystem.h"
 #include "FJumpRoute.h"
 //#include "FPlayer.h"
-#include <wx/wx.h>
+//#include <wx/wx.h>
 #include <string>
 #include <vector>
 
@@ -132,49 +132,22 @@ public:
 	FSystem * getSystem(unsigned int id) const;
 
 	/**
-	 * @brief Draw the map
-	 *
-	 * This method draws the map on the display
-	 *
-	 * @param dc the Device Context to draw to
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Jan 17, 2005
-	 * @date Last Modified:  Mar 10, 2008
-	 */
-	void draw(wxDC &dc/*, unsigned int id*/);
-
-	/**
 	 * @brief  Select a system close to a given point
 	 *
-	 * This method takes as input a pair of x and y screen coordinates.
+	 * This method takes as input a pair of x and y coordinates in the map's
+	 * coordinate system.
 	 * It then searches through the list of systems to see if any are close
 	 * to the specified coordinates.  If so, it returns a pointer to that
 	 * system.  It returns NULL if nothing is close.
 	 *
 	 * @param x The x coordinate to check
 	 * @param y The y coordinate to check
-	 * @param dc The device context of the window.
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 11, 2008
-	 * @date Last Modified:  Feb 11, 2008
+	 * @date Last Modified:  Aug 2, 2009
 	 */
-	FSystem * selectSystem(wxCoord x, wxCoord y,wxDC &dc) const;
-
-	/**
-	 * @brief returns the scale for the current window dispaly
-	 *
-	 * This method determines the current scale based on the map size
-	 * and the size of the current window
-	 *
-	 * @param dc The device context of the window.
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Feb 11, 2008
-	 * @date Last Modified:  Feb 11, 2008
-	 */
-	const double getScale(wxDC &dc) const;
+	FSystem * selectSystem(double x, double y) const;
 
 	/**
 	 * @brief returns a list of systems you can jump to
@@ -227,6 +200,9 @@ public:
 	/// returns a reference to the list of all the systems
 	const SystemList & getSystemList() const { return m_systems; }
 
+	/// returns a reference to the list of all the systems
+	const JumpRouteList & getJumpList() const { return m_jumps; }
+
 	/**
 	 * @brief Method to save the map data
 	 *
@@ -255,13 +231,16 @@ public:
 	 */
 	virtual int load(std::istream &is);
 
+	// returns the maximum size of the map in it's local coordinate system
+	double getMaxSize() { return (double)m_maxCoord; }
+
 private:
 	/// List of all systems in the game
 	SystemList m_systems;
 	/// Maximum size of game map
 	int m_maxCoord;
 	/// All explored jump routes
-	std::vector<FJumpRoute *> m_jumps;
+	JumpRouteList m_jumps;
 
 	/**
 	 * @brief Initalized the true Frontier map

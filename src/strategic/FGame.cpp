@@ -17,6 +17,7 @@
 #include "gui/SatharRetreatGUI.h"
 #include "gui/SelectCombatGUI.h"
 #include "core/FGameConfig.h"
+#include "gui/WXMapDisplay.h"
 #include <wx/wx.h>
 #include <wx/numdlg.h>
 #include <iostream>
@@ -218,7 +219,8 @@ void FGame::draw(wxDC &dc){
 	// draw the base map
 	dc.Clear();
 	if(m_universe!=NULL){
-		m_universe->draw(dc/*, m_players[0]->getID()*/);
+		WXMapDisplay md;
+		md.draw(dc);
 		// draw the fleets for each player
 		if(m_players[0]){
 			m_players[0]->drawFleets(dc,m_universe);
@@ -463,7 +465,8 @@ void FGame::createSFNova(){
 void FGame::onLeftDClick(wxMouseEvent& event) {
 	wxClientDC dc(m_parent);
 	if (m_universe!=NULL){
-		FSystem * sys = m_universe->selectSystem(event.m_x,event.m_y,dc);
+		WXMapDisplay md;
+		FSystem * sys = m_universe->selectSystem(event.m_x/md.getScale(dc),event.m_y/md.getScale(dc));
 		FPlayer * player = (m_players[0]->getID()==m_currentPlayer)?m_players[0]:m_players[1];
 		if (sys!=NULL){
 			std::string title = sys->getName() + " System Information";

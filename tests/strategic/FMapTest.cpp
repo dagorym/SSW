@@ -76,6 +76,34 @@ void FMapTest::testGetConnectedSystems(){
 	f.setMilitia(true,"Timeon");
 	sList = m.getConnectedSystems("Prenglar",0,&f);
 	CPPUNIT_ASSERT( sList.size() == 1 );
+	f.setMilitia(true,"Dramune");
+	sList = m.getConnectedSystems("Dramune",0,&f);
+	CPPUNIT_ASSERT( sList.size() == 2 );
+}
+
+void FMapTest::testSelectSystemValid(){
+	FMap &m = FMap::getMap();
+	unsigned int id = m.getSystem("Prenglar")->getID();
+	FSystem *s = m.getSystem(id);
+	double x = s->getCoord(0);
+	double y = s->getCoord(1);
+	FSystem *s2 = m.selectSystem(x,y);
+	CPPUNIT_ASSERT(s2->getName() == s->getName());
+	x+=0.6;
+	s2 = m.selectSystem(x,y);
+	CPPUNIT_ASSERT(s2->getName() == s->getName());
+}
+
+void FMapTest::testSelectSystemFail(){
+	FMap &m = FMap::getMap();
+	FSystem *s2 = m.selectSystem(9999,9999);
+	CPPUNIT_ASSERT(s2 == NULL);
+	unsigned int id = m.getSystem("Prenglar")->getID();
+	FSystem *s = m.getSystem(id);
+	double x = s->getCoord(0)+0.71;
+	double y = s->getCoord(1);
+	s2 = m.selectSystem(x,y);
+	CPPUNIT_ASSERT(s2 == NULL);
 }
 
 void FMapTest::testSerialize(){
@@ -89,13 +117,6 @@ void FMapTest::testSerialize(){
 	m->load(is);
 	is.close();
 	CPPUNIT_ASSERT(m->getSystem("White Light") != NULL);
-}
-
-void FMapTest::testDraw(){
-	wxWindow w(NULL,wxID_ANY);
-	wxClientDC dc(&w);
-	FMap &m = FMap::getMap();
-	m.draw(dc);
 }
 
 }

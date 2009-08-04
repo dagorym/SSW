@@ -37,12 +37,12 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = SystemDialogGUI.o SelectJumpGUI.o \
-       ViewFleetGUI.o \
+OBJS = SystemDialogGUI.o SelectJumpGUI.o ViewFleetGUI.o \
        UPFUnattachedGUI.o SatharFleetsGUI.o \
        TransferShipsGUI.o  SatharRetreatGUI.o \
        SelectCombatGUI.o TwoPlanetsGUI.o CombatLocationGUI.o \
        CombatFleetsGUI.o SelectResolutionGUI.o BattleResultsGUI.o \
+       WXMapDisplay.o
 
 TARGET = libgui.a
 
@@ -69,6 +69,7 @@ BattleResultsGUI.o: ../../include/strategic/FFleet.h
 BattleResultsGUI.o: ../../include/core/FPObject.h
 BattleResultsGUI.o: ../../include/core/FObject.h
 BattleResultsGUI.o: ../../include/ships/FVehicle.h
+BattleResultsGUI.o: ../../include/core/FGameConfig.h
 BattleResultsGUI.o: ../../include/weapons/FWeapon.h
 BattleResultsGUI.o: ../../include/strategic/FPlayer.h
 BattleResultsGUI.o: ../../include/strategic/FFleet.h
@@ -86,6 +87,7 @@ CombatFleetsGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 CombatFleetsGUI.o: ../../include/strategic/FPlanet.h
 CombatFleetsGUI.o: ../../include/strategic/FAstroBody.h
 CombatFleetsGUI.o: ../../include/ships/FVehicle.h
+CombatFleetsGUI.o: ../../include/core/FGameConfig.h
 CombatFleetsGUI.o: ../../include/weapons/FWeapon.h
 CombatFleetsGUI.o: ../../include/strategic/FFleet.h
 CombatFleetsGUI.o: ../../include/gui/ViewFleetGUI.h
@@ -96,6 +98,7 @@ CombatLocationGUI.o: ../../include/strategic/FAstroBody.h
 CombatLocationGUI.o: ../../include/core/FPObject.h
 CombatLocationGUI.o: ../../include/core/FObject.h
 CombatLocationGUI.o: ../../include/ships/FVehicle.h
+CombatLocationGUI.o: ../../include/core/FGameConfig.h
 CombatLocationGUI.o: ../../include/weapons/FWeapon.h
 SatharFleetsGUI.o: ../../include/gui/SatharFleetsGUI.h
 SatharFleetsGUI.o: ../../include/strategic/FPlayer.h
@@ -106,6 +109,7 @@ SatharFleetsGUI.o: ../../include/strategic/FSystem.h
 SatharFleetsGUI.o: ../../include/strategic/FPlanet.h
 SatharFleetsGUI.o: ../../include/strategic/FAstroBody.h
 SatharFleetsGUI.o: ../../include/ships/FVehicle.h
+SatharFleetsGUI.o: ../../include/core/FGameConfig.h
 SatharFleetsGUI.o: ../../include/weapons/FWeapon.h
 SatharFleetsGUI.o: ../../include/strategic/FJumpRoute.h
 SatharFleetsGUI.o: ../../include/strategic/FMap.h
@@ -116,6 +120,7 @@ SelectCombatGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 SelectCombatGUI.o: ../../include/strategic/FPlanet.h
 SelectCombatGUI.o: ../../include/strategic/FAstroBody.h
 SelectCombatGUI.o: ../../include/ships/FVehicle.h
+SelectCombatGUI.o: ../../include/core/FGameConfig.h
 SelectCombatGUI.o: ../../include/weapons/FWeapon.h
 SelectCombatGUI.o: ../../include/strategic/FFleet.h
 SelectCombatGUI.o: ../../include/strategic/FPlayer.h
@@ -130,6 +135,11 @@ SelectCombatGUI.o: ../../include/strategic/FPlanet.h
 SelectCombatGUI.o: ../../include/gui/CombatFleetsGUI.h
 SelectCombatGUI.o: ../../include/gui/SelectResolutionGUI.h
 SelectCombatGUI.o: ../../include/gui/BattleResultsGUI.h
+SelectCombatGUI.o: ../../include/tactical/FBattleScreen.h
+SelectCombatGUI.o: ../../include/Frontier.h ../../include/wxWidgets.h
+SelectCombatGUI.o: ../../include/tactical/FBattleBoard.h
+SelectCombatGUI.o: ../../include/core/FPoint.h
+SelectCombatGUI.o: ../../include/tactical/FBattleDisplay.h
 SelectJumpGUI.o: ../../include/gui/SelectJumpGUI.h
 SelectJumpGUI.o: ../../include/strategic/FMap.h
 SelectResolutionGUI.o: ../../include/gui/SelectResolutionGUI.h
@@ -137,6 +147,7 @@ SelectResolutionGUI.o: ../../include/strategic/FFleet.h
 SelectResolutionGUI.o: ../../include/core/FPObject.h
 SelectResolutionGUI.o: ../../include/core/FObject.h
 SelectResolutionGUI.o: ../../include/ships/FVehicle.h
+SelectResolutionGUI.o: ../../include/core/FGameConfig.h
 SelectResolutionGUI.o: ../../include/weapons/FWeapon.h
 SystemDialogGUI.o: ../../include/gui/SystemDialogGUI.h
 SystemDialogGUI.o: ../../include/strategic/FMap.h
@@ -148,6 +159,7 @@ SystemDialogGUI.o: ../../include/strategic/FSystem.h
 SystemDialogGUI.o: ../../include/strategic/FPlanet.h
 SystemDialogGUI.o: ../../include/strategic/FAstroBody.h
 SystemDialogGUI.o: ../../include/ships/FVehicle.h
+SystemDialogGUI.o: ../../include/core/FGameConfig.h
 SystemDialogGUI.o: ../../include/weapons/FWeapon.h
 SystemDialogGUI.o: ../../include/strategic/FJumpRoute.h
 SystemDialogGUI.o: ../../include/gui/SelectJumpGUI.h
@@ -165,6 +177,7 @@ TransferShipsGUI.o: ../../include/strategic/FSystem.h
 TransferShipsGUI.o: ../../include/strategic/FPlanet.h
 TransferShipsGUI.o: ../../include/strategic/FAstroBody.h
 TransferShipsGUI.o: ../../include/ships/FVehicle.h
+TransferShipsGUI.o: ../../include/core/FGameConfig.h
 TransferShipsGUI.o: ../../include/weapons/FWeapon.h
 TransferShipsGUI.o: ../../include/strategic/FJumpRoute.h
 TransferShipsGUI.o: ../../include/strategic/FSystem.h
@@ -174,6 +187,7 @@ TwoPlanetsGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 TwoPlanetsGUI.o: ../../include/strategic/FPlanet.h
 TwoPlanetsGUI.o: ../../include/strategic/FAstroBody.h
 TwoPlanetsGUI.o: ../../include/ships/FVehicle.h
+TwoPlanetsGUI.o: ../../include/core/FGameConfig.h
 TwoPlanetsGUI.o: ../../include/weapons/FWeapon.h
 TwoPlanetsGUI.o: ../../include/strategic/FFleet.h
 UPFUnattachedGUI.o: ../../include/gui/UPFUnattachedGUI.h
@@ -186,6 +200,7 @@ UPFUnattachedGUI.o: ../../include/strategic/FSystem.h
 UPFUnattachedGUI.o: ../../include/strategic/FPlanet.h
 UPFUnattachedGUI.o: ../../include/strategic/FAstroBody.h
 UPFUnattachedGUI.o: ../../include/ships/FVehicle.h
+UPFUnattachedGUI.o: ../../include/core/FGameConfig.h
 UPFUnattachedGUI.o: ../../include/weapons/FWeapon.h
 UPFUnattachedGUI.o: ../../include/strategic/FJumpRoute.h
 UPFUnattachedGUI.o: ../../include/strategic/FMap.h
@@ -193,8 +208,11 @@ ViewFleetGUI.o: ../../include/gui/ViewFleetGUI.h
 ViewFleetGUI.o: ../../include/strategic/FFleet.h
 ViewFleetGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 ViewFleetGUI.o: ../../include/ships/FVehicle.h
+ViewFleetGUI.o: ../../include/core/FGameConfig.h
 ViewFleetGUI.o: ../../include/weapons/FWeapon.h
 ViewFleetGUI.o: ../../include/strategic/FSystem.h
 ViewFleetGUI.o: ../../include/strategic/FPlanet.h
 ViewFleetGUI.o: ../../include/strategic/FAstroBody.h
 ViewFleetGUI.o: ../../include/strategic/FFleet.h
+WXMapDisplay.o: ../../include/gui/WXMapDisplay.h
+WXMapDisplay.o: ../../include/strategic/FMap.h

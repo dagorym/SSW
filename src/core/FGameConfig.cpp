@@ -42,7 +42,7 @@ FGameConfig::FGameConfig(){
 	std::string path(buf);
 	path = path.substr(0,path.find_last_of('/'));
 	m_basePath = path.substr(0,(path.find_last_of('/'))+1);
-	std::cerr << "The path returned was " << m_basePath << std::endl;
+//	std::cerr << "The path returned was " << m_basePath << std::endl;
 
 }
 

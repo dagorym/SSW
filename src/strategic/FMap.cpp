@@ -73,59 +73,6 @@ FSystem * FMap::getSystem(unsigned int id) const {
 	return NULL;
 }
 
-void FMap::draw(wxDC &dc/*, unsigned int id*/) {
-//	wxCoord w, h;
-//	dc.GetSize(&w, &h);
-	double scale = getScale(dc);
-
-	wxColour white,blue,red,lgray,black,dblue,dred;
-	white.Set(wxT("#FFFFFF"));// white
-	blue.Set(wxT("#0000FF"));// blue
-	red.Set(wxT("#FF0000"));// red
-	lgray.Set(wxT("#999999"));// light grey
-	black.Set(wxT("#000000"));// blue
-	dblue.Set(wxT("#000099"));// dark blue
-	dred.Set(wxT("#770000"));// dark red
-
-	dc.SetBackground(wxBrush(black));
-	dc.Clear();
-
-	if (m_jumps.size()>0){
-		std::vector<FJumpRoute *>::iterator itr;
-		for (itr = m_jumps.begin(); itr < m_jumps.end(); itr++){
-			wxCoord x1 = (wxCoord)((*itr)->getStart()->getCoord(0)*scale);
-			wxCoord y1 = (wxCoord)((*itr)->getStart()->getCoord(1)*scale);
-			wxCoord x2 = (wxCoord)((*itr)->getEnd()->getCoord(0)*scale);
-			wxCoord y2 = (wxCoord)((*itr)->getEnd()->getCoord(1)*scale);
-			if ((*itr)->isKnown(1)){
-				dc.SetPen(wxPen(blue));
-			} else {
-				dc.SetPen(wxPen(red));
-			}
-			dc.DrawLine(x1, y1, x2, y2);
-			dc.SetPen(wxPen(white));
-		}
-	}
-
-	dc.SetTextForeground(white);
-	dc.SetFont(wxFont((int)(scale/2),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-	if (m_systems.size()>0){
-		std::vector<FSystem *>::iterator itr;
-		for (itr = m_systems.begin(); itr < m_systems.end(); itr++){
-			wxCoord x = (wxCoord)((*itr)->getCoord(0)*scale);
-			wxCoord y = (wxCoord)((*itr)->getCoord(1)*scale);
-			if ((*itr)->getOwner()==1){
-				dc.SetBrush(wxBrush(dblue));
-				dc.SetPen(wxPen(dblue));
-			} else {
-				dc.SetBrush(wxBrush(dred));
-				dc.SetPen(wxPen(dred));
-			}
-			dc.DrawCircle(x,y,(wxCoord)(0.5*scale));
-			dc.DrawText((*itr)->getName(),x-(wxCoord)(0.75*scale),y+(wxCoord)(0.75*scale));
-		}
-	}
-}
 
 void FMap::setUpFrontier(std::vector<unsigned int> pList){
 	FPlanet *p;
@@ -308,26 +255,17 @@ void FMap::setUpFrontier(std::vector<unsigned int> pList){
 	m_jumps.push_back(j);
 }
 
-FSystem * FMap::selectSystem(wxCoord x, wxCoord y, wxDC &dc) const{
+FSystem * FMap::selectSystem(double x, double y) const{
 	if (m_systems.size()>0){
-		double scale = getScale(dc);
 		for (unsigned int i = 0; i < m_systems.size(); i++){
-			wxCoord x2 = (wxCoord)(m_systems[i]->getCoord(0)*scale);
-			wxCoord y2 = (wxCoord)(m_systems[i]->getCoord(1)*scale);
-			if(sqrt((double)(x-x2)*(x-x2)+(y-y2)*(y-y2))<(0.7*scale)){
+			double x2 = m_systems[i]->getCoord(0);
+			double y2 = m_systems[i]->getCoord(1);
+			if(sqrt((x-x2)*(x-x2)+(y-y2)*(y-y2)) < 0.7){
 				return m_systems[i];
 			}
 		}
 	}
 	return NULL;
-}
-
-const double FMap::getScale(wxDC &dc) const {
-	wxCoord w, h;
-	dc.GetSize(&w, &h);
-	double scaleX=(double)w/m_maxCoord;
-	double scaleY=(double)h/m_maxCoord;
-	return std::min(scaleX,scaleY);
 }
 
 std::vector<std::string> FMap::getConnectedSystems(std::string system, unsigned int player, FFleet * fleet){

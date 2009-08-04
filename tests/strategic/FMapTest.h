@@ -24,8 +24,9 @@ class FMapTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( getJumpRouteBySystems );
 	CPPUNIT_TEST( getJumpRouteByID );
 	CPPUNIT_TEST( testGetConnectedSystems );
+	CPPUNIT_TEST( testSelectSystemValid );
+	CPPUNIT_TEST( testSelectSystemFail );
 	CPPUNIT_TEST( testSerialize );
-//	CPPUNIT_TEST( testDraw );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -42,8 +43,9 @@ public:
 	void getJumpRouteBySystems();
 	void getJumpRouteByID();
 	void testGetConnectedSystems();
+	void testSelectSystemValid();
+	void testSelectSystemFail();
 	void testSerialize();
-	void testDraw();
 };
 
 }

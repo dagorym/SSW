@@ -235,6 +235,8 @@ private:
   int getRJ3Time(int l=0);
 };
 
+/// define the JumpRouteList type to be a vector of FJumpRoute pointers
+typedef std::vector<FJumpRoute *> JumpRouteList;
 };
 
 #endif //_FJUMPROUTE_H_
