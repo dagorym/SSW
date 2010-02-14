@@ -27,7 +27,7 @@ LIBS = `wx-config --libs` -Lstrategic -lstrategic -Lgui -lgui -Lships -lships \
 
 OBJS = FApp.o Frontier.o FMainFrame.o
 
-OBJ_LIBS = libcore.a libgui.a libships.a libstrategic.a libtactical.a libweapons.a
+OBJ_LIBS = libcore.a libgui.a libships.a libstrategic.a libtactical.a libweapons.a libdefenses.a
 
 TARGET = SSW
 
@@ -52,6 +52,9 @@ libtactical.a:
 libweapons.a:
 	@ cd weapons; $(MAKE) $@
 	
+libdefenses.a:
+	@ cd defenses; $(MAKE) $@
+	
 objs: $(OBJS)
 	rm *.gcda
 	rm *.gcov
@@ -65,6 +68,7 @@ all_clean:
 	@ cd strategic; ${MAKE} clean
 	@ cd tactical; ${MAKE} clean
 	@ cd weapons; ${MAKE} clean
+	@ cd defenses; ${MAKE} clean
 	rm $(OBJS)
 	rm $(TARGET)
 	

@@ -9,7 +9,7 @@
 #define WXGAMEDISPALY_H_
 
 #include <wx/wx.h>
-#include "strategic/FGame.h"
+//#include "strategic/FGame.h"
 
 namespace Frontier
 {

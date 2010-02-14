@@ -9,7 +9,7 @@
 #define WXMAPDISPALY_H_
 
 #include <wx/wx.h>
-#include "strategic/FMap.h"
+//#include "strategic/FMap.h"
 
 namespace Frontier
 {
