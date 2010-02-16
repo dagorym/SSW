@@ -103,6 +103,12 @@ int FWeapon::load(std::istream &is){
 	return 0;
 }
 
+void FWeapon::reload(){
+	if (m_currentAmmo < m_maxAmmo){
+		m_currentAmmo = m_maxAmmo;
+	}
+}
+
 FWeapon * createWeapon(int type){
 	FWeapon *w;
 	if(type == LB){
@@ -130,12 +136,6 @@ FWeapon * createWeapon(int type){
 		w = NULL;
 	}
 	return w;
-}
-
-void FWeapon::reload(){
-	if (m_currentAmmo < m_maxAmmo){
-		m_currentAmmo = m_maxAmmo;
-	}
 }
 
 };
