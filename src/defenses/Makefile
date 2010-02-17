@@ -37,7 +37,8 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FDefense.o \
+OBJS = FDefense.o FNone.o FReflectiveHull.o FMaskingScreen.o FICM.o \
+       FStasisScreen.o FProtonScreen.o FElectronScreen.o
 
 TARGET = libdefenses.a
 

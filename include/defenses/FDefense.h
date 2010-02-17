@@ -13,7 +13,7 @@
 
 namespace Frontier {
 /// types of defenses
-enum {NONE,RH,MS,ICM,SS,PS,ES};
+enum Defense {UNDEF,NONE,RH,MS,ICM,SS,PS,ES};
 
 
 /**
@@ -97,7 +97,7 @@ public:
 
 
 
-private:
+protected:
 	/// defense's abbreviated name
 	std::string m_name;
 	/// full name of defense
@@ -118,7 +118,7 @@ typedef std::vector<FDefense *> DefenseList;
 
 /// This factory method takes the weapon type and returns a pointer to an
 /// object of that type
-FDefense * createDefense (int type);
+FDefense * createDefense (Defense type);
 
 }
 

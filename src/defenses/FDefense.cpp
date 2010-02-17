@@ -12,7 +12,7 @@ namespace Frontier {
 FDefense::FDefense() {
 	m_name="NAD";
 	m_fullName = "Not a Defense";
-	m_type=NONE;
+	m_type=UNDEF;
 	m_maxAmmo=0;
 	m_currentAmmo=m_maxAmmo;
 	m_isDamaged = false;
@@ -45,7 +45,7 @@ void FDefense::reload(){
 }
 
 
-FDefense * createDefense(int type){
+FDefense * createDefense(Defense type){
 	FDefense *d;
 	if(type == NONE){
 //		d = new FLaserBattery;
