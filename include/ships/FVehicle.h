@@ -11,6 +11,7 @@
 #include "core/FPObject.h"
 #include "core/FGameConfig.h"
 #include "weapons/FWeapon.h"
+#include "defenses/FDefense.h"
 #include "wx/wx.h"
 #include <vector>
 
@@ -85,6 +86,11 @@ public:
 	unsigned int getWeaponCount() { return m_weapons.size(); }
 	/// get pointer to specified weapon;
 	FWeapon * getWeapon(unsigned int i) { if (i<m_weapons.size()) { return m_weapons[i]; } else { return NULL; } }
+	/// get pointer to specified defense;
+	FDefense * getDefense(unsigned int i) { if (i<m_defenses.size()) { return m_defenses[i]; } else { return NULL; } }
+	/// get pointer to current defense
+	FDefense * getCurrentDefense() { return m_currentDefense; }
+	void setCurrentDefense(unsigned int i) { if (i<m_defenses.size()) { m_currentDefense=m_defenses[i]; } else { m_currentDefense=m_defenses[0]; } }
 
 
 	/**
@@ -197,6 +203,10 @@ protected:
 	unsigned int m_currentDCR;
 	/// list of ship's weapons
 	WeaponList m_weapons;
+	/// List of ship's defenses
+	DefenseList m_defenses;
+	/// pointer to currently active defense
+	FDefense * m_currentDefense;
 };
 
 typedef std::vector<FVehicle *> VehicleList;

@@ -12,9 +12,6 @@
 #include <vector>
 
 namespace Frontier {
-/// types of defenses
-enum Defense {UNDEF,NONE,RH,MS,ICM,SS,PS,ES};
-
 
 /**
  * @class FDefense
@@ -30,13 +27,16 @@ enum Defense {UNDEF,NONE,RH,MS,ICM,SS,PS,ES};
  */
 class FDefense: public Frontier::FPObject {
 public:
+	/// types of defenses
+	enum Defense {UNDEF,NONE,RH,MS,ICM,SS,PS,ES};
+
 	/// default constructor
 	FDefense();
 	/// default destructor
 	virtual ~FDefense() = 0;
 
 	/// return the weapon type
-	const Defense & getType() const { return m_type;}
+	const FDefense::Defense & getType() const { return m_type;}
 	/// gets a text string with the abbreviated name of the weapon
 	const std::string getName() const;
     /// gets a text string with the full name of the weapon
@@ -103,23 +103,20 @@ protected:
 	/// full name of defense
 	std::string m_fullName;
 	/// defense type
-	Defense m_type;
+	FDefense::Defense m_type;
     /// damage status
 	bool m_isDamaged;
 	/// maximum number of charges/rockets in defense
 	int m_maxAmmo;
 	/// current number of charges/rockets in defense
 	int m_currentAmmo;
-
-
 };
 
 typedef std::vector<FDefense *> DefenseList;
 
-/// This factory method takes the weapon type and returns a pointer to an
+/// This factory method takes the defense type and returns a pointer to an
 /// object of that type
-FDefense * createDefense (Defense type);
+FDefense * createDefense (FDefense::Defense type);
 
-}
-
+};
 #endif /* FDEFENSE_H_ */

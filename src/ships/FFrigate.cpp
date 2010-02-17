@@ -24,18 +24,28 @@ FFrigate::FFrigate() {
 	m_type = "Frigate";
 	m_maxDCR=70;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(LC);
+	FWeapon *w = createWeapon(FWeapon::LC);
 	m_weapons.push_back(w);
-	w = createWeapon(LB);
+	w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(T);
+	w = createWeapon(FWeapon::T);
 	w->setMaxAmmo(2);
 	w->setCurrentAmmo(2);
 	m_weapons.push_back(w);
-	w = createWeapon(RB);
+	w = createWeapon(FWeapon::RB);
 	w->setMaxAmmo(4);
 	w->setCurrentAmmo(4);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::MS);
+	d->setMaxAmmo(2);
+	d->setCurrentAmmo(2);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ICM);
+	d->setMaxAmmo(4);
+	d->setCurrentAmmo(4);
+	m_defenses.push_back(d);
 
 }
 

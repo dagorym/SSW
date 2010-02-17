@@ -6,13 +6,14 @@
  */
 
 #include "defenses/FDefense.h"
+#include "defenses/defenses.h"
 
 namespace Frontier {
 
 FDefense::FDefense() {
 	m_name="NAD";
 	m_fullName = "Not a Defense";
-	m_type=UNDEF;
+	m_type=FDefense::UNDEF;
 	m_maxAmmo=0;
 	m_currentAmmo=m_maxAmmo;
 	m_isDamaged = false;
@@ -45,22 +46,22 @@ void FDefense::reload(){
 }
 
 
-FDefense * createDefense(Defense type){
+FDefense * createDefense (FDefense::Defense type){
 	FDefense *d;
-	if(type == NONE){
-//		d = new FLaserBattery;
-	} else if (type == RH) {
-//		d = new FLaserCannon;
-	} else if (type == MS) {
-//		d = new FElectronBattery;
-	} else if (type == ICM) {
-//		d = new FProtonBattery;
-	} else if (type == SS) {
-//		d = new FRocketBattery;
-	} else if (type == PS) {
-//		d = new FDisruptorCannon;
-	} else if (type == ES) {
-//		d = new FTorpedo;
+	if(type == FDefense::NONE){
+		d = new FNone;
+	} else if (type == FDefense::RH) {
+		d = new FReflectiveHull;
+	} else if (type == FDefense::MS) {
+		d = new FMaskingScreen;
+	} else if (type == FDefense::ICM) {
+		d = new FICM;
+	} else if (type == FDefense::SS) {
+		d = new FStasisScreen;
+	} else if (type == FDefense::PS) {
+		d = new FProtonScreen;
+	} else if (type == FDefense::ES) {
+		d = new FElectronScreen;
 	} else {
 		// there was an error
 		d = NULL;
@@ -68,4 +69,4 @@ FDefense * createDefense(Defense type){
 	return d;
 }
 
-}
+};

@@ -7,6 +7,7 @@
  */
 #include "ships/FVehicle.h"
 #include "weapons/FWeapon.h"
+#include "defenses/FDefense.h"
 #include "ships/ships.h"
 #include <sstream>
 
@@ -44,6 +45,9 @@ FVehicle::~FVehicle(){
 	for (unsigned int i=0; i< m_weapons.size(); i++){  // delete weapons
 		delete m_weapons[i];
 	}
+	for (unsigned int i=0; i< m_defenses.size(); i++){  // delete defenses
+		delete m_defenses[i];
+	}
 	m_classCount--;
 	if (m_classCount==0){  // if all players have been deleted
 		m_nextID=0;  // reset the id counter
@@ -64,6 +68,10 @@ const int FVehicle::save(std::ostream &os) const {
 	write(os,m_currentDCR);
 	write(os,m_weapons.size());
 	for (WeaponList::const_iterator itr = m_weapons.begin(); itr != m_weapons.end(); itr++){
+		(*itr)->save(os);
+	}
+	write(os,m_defenses.size());
+	for (DefenseList::const_iterator itr = m_defenses.begin(); itr != m_defenses.end(); itr++){
 		(*itr)->save(os);
 	}
 	return 0;
@@ -97,11 +105,23 @@ int FVehicle::load(std::istream &is) {
 	}										// wasteful in resources and could be done better.
 	m_weapons.clear();
 	for (unsigned int i=0; i<count; i++){
-		Weapon type;
+		FWeapon::Weapon type;
 		read(is,type);
 		FWeapon *w = createWeapon(type);
 		w->load(is);
 		m_weapons.push_back(w);
+	}
+	read(is,count);
+	for (unsigned int i=0; i< m_defenses.size(); i++){	// they were populated with default values
+		delete m_defenses[i];				// at creation so we need to clear them this is a bit
+	}										// wasteful in resources and could be done better.
+	m_defenses.clear();
+	for (unsigned int i=0; i<count; i++){
+		FDefense::Defense defType;
+		read(is,defType);
+		FDefense *d = createDefense(defType);
+		d->load(is);
+		m_defenses.push_back(d);
 	}
 	return 0;
 }

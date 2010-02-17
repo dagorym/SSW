@@ -12,7 +12,7 @@ namespace Frontier {
 FReflectiveHull::FReflectiveHull() {
 	m_name="RH";
 	m_fullName = "Reflective Hull";
-	m_type=RH;
+	m_type=FDefense::RH;
 	m_maxAmmo=0;
 	m_currentAmmo=m_maxAmmo;
 	m_isDamaged = false;

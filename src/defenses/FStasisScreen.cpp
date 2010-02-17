@@ -12,7 +12,7 @@ namespace Frontier {
 FStasisScreen::FStasisScreen() {
 	m_name="SS";
 	m_fullName = "Stasis Screen";
-	m_type=SS;
+	m_type=FDefense::SS;
 	m_maxAmmo=0;
 	m_currentAmmo=m_maxAmmo;
 	m_isDamaged = false;

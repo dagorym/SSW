@@ -24,22 +24,32 @@ FLtCruiser::FLtCruiser() {
 	m_type = "LtCruiser";
 	m_maxDCR=100;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(DC);
+	FWeapon *w = createWeapon(FWeapon::DC);
 	m_weapons.push_back(w);
-	w = createWeapon(LB);
+	w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(T);
+	w = createWeapon(FWeapon::T);
 	w->setMaxAmmo(4);
 	w->setCurrentAmmo(4);
 	m_weapons.push_back(w);
-	w = createWeapon(RB);
+	w = createWeapon(FWeapon::RB);
 	w->setMaxAmmo(6);
 	w->setCurrentAmmo(6);
 	m_weapons.push_back(w);
-	w = createWeapon(EB);
+	w = createWeapon(FWeapon::EB);
 	m_weapons.push_back(w);
-	w = createWeapon(PB);
+	w = createWeapon(FWeapon::PB);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ES);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::SS);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ICM);
+	d->setMaxAmmo(8);
+	d->setCurrentAmmo(8);
+	m_defenses.push_back(d);
 
 }
 

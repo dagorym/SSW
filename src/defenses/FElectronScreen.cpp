@@ -12,7 +12,7 @@ namespace Frontier {
 FElectronScreen::FElectronScreen() {
 	m_name="ES";
 	m_fullName = "Electron Screen";
-	m_type=ES;
+	m_type=FDefense::ES;
 	m_maxAmmo=0;
 	m_currentAmmo=m_maxAmmo;
 	m_isDamaged = false;

@@ -16,7 +16,7 @@ namespace Frontier {
 FWeapon::FWeapon() {
 	m_name="NAW";
 	m_fullName = "Not a Weapon";
-	m_type=NONE;
+	m_type=FWeapon::NONE;
 	m_range=0;
 	m_nDice=0;
 	m_dMod=0;
@@ -109,27 +109,27 @@ void FWeapon::reload(){
 	}
 }
 
-FWeapon * createWeapon(Weapon type){
+FWeapon * createWeapon(FWeapon::Weapon type){
 	FWeapon *w;
-	if(type == LB){
+	if(type == FWeapon::LB){
 		w = new FLaserBattery;
-	} else if (type == LC) {
+	} else if (type == FWeapon::LC) {
 		w = new FLaserCannon;
-	} else if (type == EB) {
+	} else if (type == FWeapon::EB) {
 		w = new FElectronBattery;
-	} else if (type == PB) {
+	} else if (type == FWeapon::PB) {
 		w = new FProtonBattery;
-	} else if (type == RB) {
+	} else if (type == FWeapon::RB) {
 		w = new FRocketBattery;
-	} else if (type == DC) {
+	} else if (type == FWeapon::DC) {
 		w = new FDisruptorCannon;
-	} else if (type == T) {
+	} else if (type == FWeapon::T) {
 		w = new FTorpedo;
-	} else if (type == AR) {
+	} else if (type == FWeapon::AR) {
 		w = new FAssaultRocket;
-	} else if (type == SM) {
+	} else if (type == FWeapon::SM) {
 		w = new FSeekerMissileLauncher;
-	} else if (type == M) {
+	} else if (type == FWeapon::M) {
 		w = new FMineLauncher;
 	} else {
 		// there was an error

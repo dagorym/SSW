@@ -27,14 +27,24 @@ FFortifiedStation::FFortifiedStation() {
 	m_type = "FortifiedStation";
 	m_maxDCR=100;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(LB);
+	FWeapon *w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(LB);
+	w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(RB);
+	w = createWeapon(FWeapon::RB);
 	w->setMaxAmmo(8);
 	w->setCurrentAmmo(8);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::MS);
+	d->setMaxAmmo(2);
+	d->setCurrentAmmo(2);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ICM);
+	d->setMaxAmmo(10);
+	d->setCurrentAmmo(10);
+	m_defenses.push_back(d);
 
 }
 

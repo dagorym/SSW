@@ -27,12 +27,14 @@ FAssaultScout::FAssaultScout() {
 	m_type = "AssaultScout";
 	m_maxDCR=50;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(AR);
+	FWeapon *w = createWeapon(FWeapon::AR);
 	w->setMaxAmmo(4);
 	w->setCurrentAmmo(4);
 	m_weapons.push_back(w);
-	w = createWeapon(LB);
+	w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
 }
 
 FAssaultScout::~FAssaultScout(){

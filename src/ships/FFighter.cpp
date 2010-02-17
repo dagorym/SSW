@@ -24,10 +24,12 @@ FFighter::FFighter() {
 	m_type = "Fighter";
 	m_maxDCR=30;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(AR);
+	FWeapon *w = createWeapon(FWeapon::AR);
 	w->setMaxAmmo(3);
 	w->setCurrentAmmo(3);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
 }
 
 FFighter::~FFighter(){

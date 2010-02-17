@@ -27,12 +27,22 @@ FArmedStation::FArmedStation() {
 	m_type = "ArmedStation";
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(LB);
+	FWeapon *w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(RB);
+	w = createWeapon(FWeapon::RB);
 	w->setMaxAmmo(6);
 	w->setCurrentAmmo(6);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::MS);
+	d->setMaxAmmo(2);
+	d->setCurrentAmmo(2);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ICM);
+	d->setMaxAmmo(6);
+	d->setCurrentAmmo(6);
+	m_defenses.push_back(d);
 }
 
 FArmedStation::~FArmedStation(){

@@ -27,20 +27,34 @@ FFortress::FFortress() {
 	m_type = "Fortress";
 	m_maxDCR=200;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(LB);
+	FWeapon *w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(LB);
+	w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(LB);
+	w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(EB);
+	w = createWeapon(FWeapon::EB);
 	m_weapons.push_back(w);
-	w = createWeapon(PB);
+	w = createWeapon(FWeapon::PB);
 	m_weapons.push_back(w);
-	w = createWeapon(RB);
+	w = createWeapon(FWeapon::RB);
 	w->setMaxAmmo(12);
 	w->setCurrentAmmo(12);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::MS);
+	d->setMaxAmmo(3);
+	d->setCurrentAmmo(3);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ES);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::PS);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ICM);
+	d->setMaxAmmo(20);
+	d->setCurrentAmmo(20);
+	m_defenses.push_back(d);
 
 }
 

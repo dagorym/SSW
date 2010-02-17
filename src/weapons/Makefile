@@ -104,3 +104,6 @@ FWeapon.o: ../../include/weapons/FTorpedo.h
 FWeapon.o: ../../include/weapons/FAssaultRocket.h
 FWeapon.o: ../../include/weapons/FSeekerMissileLauncher.h
 FWeapon.o: ../../include/weapons/FMineLauncher.h
+FWeapon.o: ../../include/ships/FVehicle.h ../../include/core/FGameConfig.h
+FWeapon.o: ../../include/defenses/FDefense.h ../../include/Frontier.h
+FWeapon.o: ../../include/wxWidgets.h

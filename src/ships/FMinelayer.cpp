@@ -27,18 +27,24 @@ FMinelayer::FMinelayer() {
 	m_type = "Minelayer";
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(LB);
+	FWeapon *w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(LB);
+	w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(SM);
+	w = createWeapon(FWeapon::SM);
 	w->setMaxAmmo(4);
 	w->setCurrentAmmo(4);
 	m_weapons.push_back(w);
-	w = createWeapon(M);
+	w = createWeapon(FWeapon::M);
 	w->setMaxAmmo(20);
 	w->setCurrentAmmo(20);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ICM);
+	d->setMaxAmmo(4);
+	d->setCurrentAmmo(4);
+	m_defenses.push_back(d);
 
 }
 

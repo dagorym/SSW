@@ -1,7 +1,7 @@
 CXXFLAGS = -I../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
 
 LIBS = `wx-config --libs` -Lstrategic -lstrategic -Lgui -lgui -Lships -lships \
-       -Ltactical -ltactical -Lweapons -lweapons -Lcore -lcore
+       -Ltactical -ltactical -Lweapons -lweapons -Ldefenses -ldefenses -Lcore -lcore
 
 #################### the implicit rules #############################
 
@@ -27,7 +27,7 @@ LIBS = `wx-config --libs` -Lstrategic -lstrategic -Lgui -lgui -Lships -lships \
 
 OBJS = FApp.o Frontier.o FMainFrame.o
 
-OBJ_LIBS = libcore.a libgui.a libships.a libstrategic.a libtactical.a libweapons.a libdefenses.a
+OBJ_LIBS = libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libdefenses.a libships.a
 
 TARGET = SSW
 

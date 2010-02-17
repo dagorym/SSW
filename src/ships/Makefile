@@ -65,45 +65,69 @@ clean:
 
 FArmedStation.o: ../../include/ships/FArmedStation.h
 FArmedStation.o: ../../include/ships/FVehicle.h ../../include/core/FPObject.h
-FArmedStation.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
+FArmedStation.o: ../../include/core/FObject.h
+FArmedStation.o: ../../include/core/FGameConfig.h
+FArmedStation.o: ../../include/weapons/FWeapon.h
+FArmedStation.o: ../../include/defenses/FDefense.h
 FAssaultCarrier.o: ../../include/ships/FAssaultCarrier.h
 FAssaultCarrier.o: ../../include/ships/FVehicle.h
 FAssaultCarrier.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FAssaultCarrier.o: ../../include/core/FGameConfig.h
 FAssaultCarrier.o: ../../include/weapons/FWeapon.h
+FAssaultCarrier.o: ../../include/defenses/FDefense.h
 FAssaultScout.o: ../../include/ships/FAssaultScout.h
 FAssaultScout.o: ../../include/ships/FVehicle.h ../../include/core/FPObject.h
-FAssaultScout.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
+FAssaultScout.o: ../../include/core/FObject.h
+FAssaultScout.o: ../../include/core/FGameConfig.h
+FAssaultScout.o: ../../include/weapons/FWeapon.h
+FAssaultScout.o: ../../include/defenses/FDefense.h
 FBattleship.o: ../../include/ships/FBattleship.h
 FBattleship.o: ../../include/ships/FVehicle.h ../../include/core/FPObject.h
-FBattleship.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
+FBattleship.o: ../../include/core/FObject.h ../../include/core/FGameConfig.h
+FBattleship.o: ../../include/weapons/FWeapon.h
+FBattleship.o: ../../include/defenses/FDefense.h
 FDestroyer.o: ../../include/ships/FDestroyer.h ../../include/ships/FVehicle.h
 FDestroyer.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FDestroyer.o: ../../include/core/FGameConfig.h
 FDestroyer.o: ../../include/weapons/FWeapon.h
+FDestroyer.o: ../../include/defenses/FDefense.h
 FFighter.o: ../../include/ships/FFighter.h ../../include/ships/FVehicle.h
 FFighter.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FFighter.o: ../../include/weapons/FWeapon.h
+FFighter.o: ../../include/core/FGameConfig.h ../../include/weapons/FWeapon.h
+FFighter.o: ../../include/defenses/FDefense.h
 FFortifiedStation.o: ../../include/ships/FFortifiedStation.h
 FFortifiedStation.o: ../../include/ships/FVehicle.h
 FFortifiedStation.o: ../../include/core/FPObject.h
 FFortifiedStation.o: ../../include/core/FObject.h
+FFortifiedStation.o: ../../include/core/FGameConfig.h
 FFortifiedStation.o: ../../include/weapons/FWeapon.h
+FFortifiedStation.o: ../../include/defenses/FDefense.h
 FFortress.o: ../../include/ships/FFortress.h ../../include/ships/FVehicle.h
 FFortress.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FFortress.o: ../../include/weapons/FWeapon.h
+FFortress.o: ../../include/core/FGameConfig.h ../../include/weapons/FWeapon.h
+FFortress.o: ../../include/defenses/FDefense.h
 FFrigate.o: ../../include/ships/FFrigate.h ../../include/ships/FVehicle.h
 FFrigate.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FFrigate.o: ../../include/weapons/FWeapon.h
+FFrigate.o: ../../include/core/FGameConfig.h ../../include/weapons/FWeapon.h
+FFrigate.o: ../../include/defenses/FDefense.h
 FHvCruiser.o: ../../include/ships/FHvCruiser.h ../../include/ships/FVehicle.h
 FHvCruiser.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FHvCruiser.o: ../../include/core/FGameConfig.h
 FHvCruiser.o: ../../include/weapons/FWeapon.h
+FHvCruiser.o: ../../include/defenses/FDefense.h
 FLtCruiser.o: ../../include/ships/FLtCruiser.h ../../include/ships/FVehicle.h
 FLtCruiser.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FLtCruiser.o: ../../include/core/FGameConfig.h
 FLtCruiser.o: ../../include/weapons/FWeapon.h
+FLtCruiser.o: ../../include/defenses/FDefense.h
 FMinelayer.o: ../../include/ships/FMinelayer.h ../../include/ships/FVehicle.h
 FMinelayer.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FMinelayer.o: ../../include/core/FGameConfig.h
 FMinelayer.o: ../../include/weapons/FWeapon.h
+FMinelayer.o: ../../include/defenses/FDefense.h
 FVehicle.o: ../../include/ships/FVehicle.h ../../include/core/FPObject.h
-FVehicle.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
+FVehicle.o: ../../include/core/FObject.h ../../include/core/FGameConfig.h
+FVehicle.o: ../../include/weapons/FWeapon.h ../../include/defenses/FDefense.h
 FVehicle.o: ../../include/ships/ships.h ../../include/ships/FFighter.h
 FVehicle.o: ../../include/ships/FVehicle.h
 FVehicle.o: ../../include/ships/FAssaultScout.h

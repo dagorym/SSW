@@ -12,7 +12,7 @@ namespace Frontier {
 FMaskingScreen::FMaskingScreen() {
 	m_name="MS";
 	m_fullName = "Masking Screen";
-	m_type=MS;
+	m_type=FDefense::MS;
 	m_maxAmmo=2;
 	m_currentAmmo=m_maxAmmo;
 	m_isDamaged = false;

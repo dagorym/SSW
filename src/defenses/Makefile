@@ -55,8 +55,33 @@ clean:
 	rm $(OBJS)
 	rm $(TARGET)
 
-	# DO NOT DELETE
 # DO NOT DELETE
 
 FDefense.o: ../../include/defenses/FDefense.h ../../include/core/FPObject.h
-FDefense.o: ../../include/core/FObject.h
+FDefense.o: ../../include/core/FObject.h ../../include/defenses/defenses.h
+FDefense.o: ../../include/defenses/FNone.h
+FDefense.o: ../../include/defenses/FReflectiveHull.h
+FDefense.o: ../../include/defenses/FMaskingScreen.h
+FDefense.o: ../../include/defenses/FICM.h
+FDefense.o: ../../include/defenses/FStasisScreen.h
+FDefense.o: ../../include/defenses/FProtonScreen.h
+FDefense.o: ../../include/defenses/FElectronScreen.h
+FElectronScreen.o: ../../include/defenses/FElectronScreen.h
+FElectronScreen.o: ../../include/defenses/FDefense.h
+FElectronScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FICM.o: ../../include/defenses/FICM.h ../../include/defenses/FDefense.h
+FICM.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FMaskingScreen.o: ../../include/defenses/FMaskingScreen.h
+FMaskingScreen.o: ../../include/defenses/FDefense.h
+FMaskingScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FNone.o: ../../include/defenses/FNone.h ../../include/defenses/FDefense.h
+FNone.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FProtonScreen.o: ../../include/defenses/FProtonScreen.h
+FProtonScreen.o: ../../include/defenses/FDefense.h
+FProtonScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FReflectiveHull.o: ../../include/defenses/FReflectiveHull.h
+FReflectiveHull.o: ../../include/defenses/FDefense.h
+FReflectiveHull.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FStasisScreen.o: ../../include/defenses/FStasisScreen.h
+FStasisScreen.o: ../../include/defenses/FDefense.h
+FStasisScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h

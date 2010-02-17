@@ -24,14 +24,24 @@ FAssaultCarrier::FAssaultCarrier() {
 	m_type = "AssaultCarrier";
 	m_maxDCR=150;
 	m_currentDCR=m_maxDCR;
-	FWeapon *w = createWeapon(LB);
+	FWeapon *w = createWeapon(FWeapon::LB);
 	m_weapons.push_back(w);
-	w = createWeapon(PB);
+	w = createWeapon(FWeapon::PB);
 	m_weapons.push_back(w);
-	w = createWeapon(RB);
+	w = createWeapon(FWeapon::RB);
 	w->setMaxAmmo(8);
 	w->setCurrentAmmo(8);
 	m_weapons.push_back(w);
+	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::MS);
+	d->setMaxAmmo(4);
+	d->setCurrentAmmo(4);
+	m_defenses.push_back(d);
+	d = createDefense(FDefense::ICM);
+	d->setMaxAmmo(10);
+	d->setCurrentAmmo(10);
+	m_defenses.push_back(d);
 
 }
 
