@@ -109,7 +109,7 @@ void FWeapon::reload(){
 	}
 }
 
-FWeapon * createWeapon(int type){
+FWeapon * createWeapon(Weapon type){
 	FWeapon *w;
 	if(type == LB){
 		w = new FLaserBattery;

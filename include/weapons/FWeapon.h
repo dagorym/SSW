@@ -15,7 +15,7 @@
 namespace Frontier
 {
 /// types of weapons
-enum {NONE,LB,LC,DC,EB,PB,RB,AR,T,SM,M};
+enum Weapon {NONE,LB,LC,DC,EB,PB,RB,AR,T,SM,M};
 
 class FVehicle;
 
@@ -37,7 +37,7 @@ public:
 	virtual ~FWeapon();
 
 	/// return the weapon type
-	const unsigned int & getType() const { return m_type;}
+	const Weapon & getType() const { return m_type;}
 	/// return the weapon's range
 	const unsigned int & getRange() const { return m_range; }
 	/// return the weapon's number of damage dice
@@ -156,7 +156,7 @@ protected:
 	/// full name of weapon
 	std::string m_fullName;
 	/// weapon type
-	unsigned int m_type;
+	Weapon m_type;
 	/// weapon range
 	unsigned int m_range;
 	/// number of dice of damage
@@ -193,7 +193,7 @@ typedef std::vector<FWeapon *> WeaponList;
 
 /// This factory method takes the weapon type and returns a pointer to an
 /// object of that type
-FWeapon * createWeapon (int type);
+FWeapon * createWeapon (Weapon type);
 
 };
 #endif /* FWEAPON_H_ */

@@ -97,7 +97,7 @@ int FVehicle::load(std::istream &is) {
 	}										// wasteful in resources and could be done better.
 	m_weapons.clear();
 	for (unsigned int i=0; i<count; i++){
-		unsigned int type;
+		Weapon type;
 		read(is,type);
 		FWeapon *w = createWeapon(type);
 		w->load(is);

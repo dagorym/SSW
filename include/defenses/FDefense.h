@@ -36,7 +36,7 @@ public:
 	virtual ~FDefense() = 0;
 
 	/// return the weapon type
-	const unsigned int & getType() const { return m_type;}
+	const Defense & getType() const { return m_type;}
 	/// gets a text string with the abbreviated name of the weapon
 	const std::string getName() const;
     /// gets a text string with the full name of the weapon
@@ -103,7 +103,7 @@ protected:
 	/// full name of defense
 	std::string m_fullName;
 	/// defense type
-	unsigned int m_type;
+	Defense m_type;
     /// damage status
 	bool m_isDamaged;
 	/// maximum number of charges/rockets in defense
