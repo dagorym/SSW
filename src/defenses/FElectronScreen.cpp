@@ -1,6 +1,6 @@
 /**
- * @file FReflectiveHull.h
- * @brief Implementation file for FReflectiveHull class
+ * @file FElectronScreen.h
+ * @brief Implementation file for FElectronScreen class
  * @date Created: Feb 16, 2010
  * @author Tom Stephens
  */
