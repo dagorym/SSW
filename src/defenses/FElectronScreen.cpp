@@ -23,4 +23,32 @@ FElectronScreen::~FElectronScreen() {
 	// TODO Auto-generated destructor stub
 }
 
+int FElectronScreen::getAttackModifier (FWeapon::Weapon wType){
+	int modifier;
+	switch(wType){
+	case FWeapon::LC:
+	case FWeapon::LB:
+		modifier = 15;
+		break;
+	case FWeapon::PB:
+		modifier = 10;
+		break;
+	case FWeapon::EB:
+		modifier = -35;
+		break;
+	case FWeapon::DC:
+		modifier = -10;
+		break;
+	case FWeapon::M:
+	case FWeapon::SM:
+	case FWeapon::T:
+	case FWeapon::AR:
+	case FWeapon::RB:
+	default:
+		modifier = 0;
+		break;
+	}
+	return modifier;
+}
+
 }

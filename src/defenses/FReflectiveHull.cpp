@@ -23,4 +23,8 @@ FReflectiveHull::~FReflectiveHull() {
 	// TODO Auto-generated destructor stub
 }
 
+int FReflectiveHull::getAttackModifier (FWeapon::Weapon wType){
+	return 0;
+}
+
 }

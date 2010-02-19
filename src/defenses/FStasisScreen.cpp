@@ -23,4 +23,32 @@ FStasisScreen::~FStasisScreen() {
 	// TODO Auto-generated destructor stub
 }
 
+int FStasisScreen::getAttackModifier (FWeapon::Weapon wType){
+	int modifier;
+	switch(wType){
+	case FWeapon::LC:
+	case FWeapon::LB:
+	case FWeapon::SM:
+		modifier = 15;
+		break;
+	case FWeapon::PB:
+	case FWeapon::EB:
+	case FWeapon::DC:
+		modifier = -20;
+		break;
+	case FWeapon::T:
+		modifier = 25;
+		break;
+	case FWeapon::M:
+		modifier = 20;
+		break;
+	case FWeapon::AR:
+	case FWeapon::RB:
+	default:
+		modifier = 0;
+		break;
+	}
+	return modifier;
+}
+
 }

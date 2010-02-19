@@ -24,6 +24,10 @@ FDefense::~FDefense() {
 	// TODO Auto-generated destructor stub
 }
 
+//int getAttackModifier (FWeapon::Weapon wType){
+//	return 0;
+//}
+
 const int FDefense::save(std::ostream &os) const{
 	write(os, m_type);
 	write(os, m_maxAmmo);

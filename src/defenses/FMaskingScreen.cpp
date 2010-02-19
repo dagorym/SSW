@@ -23,4 +23,30 @@ FMaskingScreen::~FMaskingScreen() {
 	// TODO Auto-generated destructor stub
 }
 
+int FMaskingScreen::getAttackModifier (FWeapon::Weapon wType){
+	int modifier;
+	switch(wType){
+	case FWeapon::LC:
+		modifier = -35;
+		break;
+	case FWeapon::LB:
+		modifier = -30;
+		break;
+	case FWeapon::PB:
+	case FWeapon::EB:
+	case FWeapon::DC:
+		modifier = -10;
+		break;
+	case FWeapon::SM:
+	case FWeapon::T:
+	case FWeapon::AR:
+	case FWeapon::M:
+	case FWeapon::RB:
+	default:
+		modifier = 0;
+		break;
+	}
+	return modifier;
+}
+
 }

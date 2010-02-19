@@ -9,6 +9,7 @@
 #define FDEFENSE_H_
 
 #include "core/FPObject.h"
+#include "weapons/FWeapon.h"
 #include <vector>
 
 namespace Frontier {
@@ -23,7 +24,7 @@ namespace Frontier {
  *
  * @author Tom Stephens
  * @date Created:  Oct 22, 2009
- * @date Last Modified:  Feb 15, 2010
+ * @date Last Modified:  Feb 18, 2010
  */
 class FDefense: public Frontier::FPObject {
 public:
@@ -55,6 +56,25 @@ public:
 	void setMaxAmmo(int m) { m_maxAmmo = m; }
 	/// set the current ammunition value
 	void setCurrentAmmo(int c) { m_currentAmmo = (c<=m_maxAmmo)?c:m_maxAmmo; }
+
+	/**
+	 * @brief Returns the to hit modifier for the defense
+	 *
+	 * This method returns the to hit modifier for the defense based on the
+	 * weapon that is attacking it.  These will all be based on the Reflective
+	 * Hull having no modifier as that was the base to hit modifier assigned
+	 * to each ship.  It returns an integer value that is added to the to hit
+	 * chance.
+	 *
+	 * This is a pure virtual function that must implemented for each ship class
+	 *
+	 * @param weapon The weapon type that is firing at the defense
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 18, 2010
+	 * @date Last Modified:  Feb 18, 2010
+	 */
+	virtual int getAttackModifier (FWeapon::Weapon wType) = 0;
 
 	/**
 	 * @brief Method to save the defense data

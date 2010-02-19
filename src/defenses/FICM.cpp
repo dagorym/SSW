@@ -23,4 +23,32 @@ FICM::~FICM() {
 	// TODO Auto-generated destructor stub
 }
 
+int FICM::getAttackModifier (FWeapon::Weapon wType){
+	int modifier;
+	switch(wType){
+	case FWeapon::SM:
+		modifier = -8;
+		break;
+	case FWeapon::T:
+		modifier = -10;
+		break;
+	case FWeapon::AR:
+	case FWeapon::M:
+		modifier = -5;
+		break;
+	case FWeapon::RB:
+		modifier = -3;
+		break;
+	case FWeapon::LC:
+	case FWeapon::LB:
+	case FWeapon::PB:
+	case FWeapon::EB:
+	case FWeapon::DC:
+	default:
+		modifier = 0;
+		break;
+	}
+	return modifier;
+}
+
 }
