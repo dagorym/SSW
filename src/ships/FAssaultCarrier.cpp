@@ -42,7 +42,7 @@ FAssaultCarrier::FAssaultCarrier() {
 	d->setMaxAmmo(10);
 	d->setCurrentAmmo(10);
 	m_defenses.push_back(d);
-
+	m_currentDefense = m_defenses[0];
 }
 
 FAssaultCarrier::~FAssaultCarrier(){

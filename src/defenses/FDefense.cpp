@@ -7,6 +7,7 @@
 
 #include "defenses/FDefense.h"
 #include "defenses/defenses.h"
+#include <sstream>
 
 namespace Frontier {
 
@@ -47,6 +48,15 @@ void FDefense::reload(){
 	if (m_currentAmmo < m_maxAmmo){
 		m_currentAmmo = m_maxAmmo;
 	}
+}
+
+const std::string FDefense::getName() const {
+	std::ostringstream os;
+	os << m_name;
+	if (m_maxAmmo){
+		os << "(x" << m_currentAmmo << ")";
+	}
+	return os.str();
 }
 
 

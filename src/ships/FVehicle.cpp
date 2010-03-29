@@ -175,6 +175,16 @@ std::string FVehicle::getWeaponString(){
 
 }
 
+std::string FVehicle::getDefenseString(){
+	std::ostringstream os;
+	for (unsigned int i = 0; i < m_defenses.size(); i++){
+		FDefense *d = m_defenses[i];
+		os << d->getName() << "  ";
+	}
+	return os.str();
+
+}
+
 FVehicle * createShip(std::string type){
 	FVehicle *v;
 	if(type == "AssaultScout"){

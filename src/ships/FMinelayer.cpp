@@ -45,6 +45,7 @@ FMinelayer::FMinelayer() {
 	d->setMaxAmmo(4);
 	d->setCurrentAmmo(4);
 	m_defenses.push_back(d);
+	m_currentDefense = m_defenses[0];
 
 }
 

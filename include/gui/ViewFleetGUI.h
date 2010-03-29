@@ -44,7 +44,7 @@ class ViewFleetGUI : public wxDialog
 		wxStaticText* m_staticText7;
 		wxStaticText* m_staticText8;
 		wxStaticText* m_staticText9;
-		wxStaticText *ADF,*MR,*HP,*DCR,*Weapons;
+		wxStaticText *ADF,*MR,*HP,*DCR,*Weapons,*Defenses;
 		wxListBox* m_listBox1;
 		wxButton* m_button1;
 		wxButton* m_button2;

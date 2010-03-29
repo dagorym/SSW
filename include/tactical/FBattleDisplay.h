@@ -36,7 +36,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Apr 15, 2009
+ * @date Last Modified:  Mar 28 2010
  */
 class FBattleDisplay : public wxPanel
 {
@@ -84,6 +84,8 @@ protected:
 	wxButton* m_buttonOffensiveFireDone;
 	/// list of active regions for weapons of currently selected ship
 	std::vector<wxRect> m_weaponRegions;
+	/// list of active regions for defenses of currently selected ship
+	std::vector<wxRect> m_defenseRegions;
 
 	/// Event handler for setting the ship's speed
 	void onSetSpeed( wxCommandEvent& event );
@@ -282,6 +284,28 @@ protected:
 	void drawWeaponList(wxDC &dc, int lMargin, int tMargin, int tSize);
 
 	/**
+	 * @brief Draws the ships defenses in the tactical display
+	 *
+	 * This method draws the ships defenses in tactical display.  The defenses are higlighted
+	 * depending on the current player, the ship's owner and the status of the defense.
+	 *
+	 * Damaged defenses are colored red,
+	 * inactive defenses are white and the currently active defense is green.
+	 *
+	 * This method also sets up the active blocks on the display used for selecting the weapons.
+	 *
+	 * @param dc The device context to draw on
+	 * @param lMargin The x position on the canvas to start drawing the text
+	 * @param tMargin The y position on the canvas to start drawing the text
+	 * @param tSize The font size to use.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 28, 2010
+	 * @date Last Modified:  Mar 28, 2010
+	 */
+	void drawDefenseList(wxDC &dc, int lMargin, int tMargin, int tSize);
+
+	/**
 	 * @brief runs through current list of weapons to find if the user selected one
 	 *
 	 * This method runs through the current active weapon regions to see if the user
@@ -295,6 +319,21 @@ protected:
 	 * @date Last Modified:  Apr 15, 2009
 	 */
 	void checkWeaponSelection(wxMouseEvent &event);
+
+	/**
+	 * @brief runs through current list of defenses to find if the user selected one
+	 *
+	 * This method runs through the current active defense regions to see if the user
+	 * selected one of the defenses.  If so it sets the current defense pointer to the
+	 * selected defense.
+	 *
+	 * @param event The mouse event with the click position.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 28, 2010
+	 * @date Last Modified:  Mar 28, 2010
+	 */
+	void checkDefenseSelection(wxMouseEvent &event);
 
 	/// event handler for defensive fire complete button
 	void onOffensiveFireDone( wxCommandEvent& event );

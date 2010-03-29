@@ -55,6 +55,7 @@ FFortress::FFortress() {
 	d->setMaxAmmo(20);
 	d->setCurrentAmmo(20);
 	m_defenses.push_back(d);
+	m_currentDefense = m_defenses[0];
 
 }
 

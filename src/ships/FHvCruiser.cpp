@@ -58,6 +58,7 @@ FHvCruiser::FHvCruiser() {
 	d->setMaxAmmo(8);
 	d->setCurrentAmmo(8);
 	m_defenses.push_back(d);
+	m_currentDefense = m_defenses[0];
 
 }
 

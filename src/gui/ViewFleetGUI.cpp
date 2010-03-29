@@ -118,6 +118,10 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 	Weapons->Wrap(100);
 	sbSizer2->Add( Weapons, 0, wxBOTTOM|wxLEFT, 5 );
 
+	Defenses = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0 );
+	Defenses->Wrap(100);
+	sbSizer2->Add( Defenses, 0, wxBOTTOM|wxLEFT, 5 );
+
 	fgSizer2->Add( sbSizer2, 2 , wxEXPAND, 5 );
 
 	bSizer1->Add( fgSizer2, 1 , wxEXPAND, 5 );
@@ -172,6 +176,8 @@ void ViewFleetGUI::onSelectShip( wxMouseEvent& event ){
 	DCR->SetLabel(os.str());
 	Weapons->SetLabel(m_ship->getWeaponString());
 	Weapons->Wrap(200);
+	Defenses->SetLabel(m_ship->getDefenseString());
+	Defenses->Wrap(200);
 
 
 

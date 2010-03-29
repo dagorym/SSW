@@ -43,6 +43,7 @@ FArmedStation::FArmedStation() {
 	d->setMaxAmmo(6);
 	d->setCurrentAmmo(6);
 	m_defenses.push_back(d);
+	m_currentDefense = m_defenses[0];
 }
 
 FArmedStation::~FArmedStation(){

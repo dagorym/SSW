@@ -65,6 +65,7 @@ FBattleship::FBattleship() {
 	d->setMaxAmmo(12);
 	d->setCurrentAmmo(12);
 	m_defenses.push_back(d);
+	m_currentDefense = m_defenses[0];
 
 }
 

@@ -48,6 +48,7 @@ FDestroyer::FDestroyer() {
 	d->setMaxAmmo(5);
 	d->setCurrentAmmo(5);
 	m_defenses.push_back(d);
+	m_currentDefense = m_defenses[0];
 }
 
 FDestroyer::~FDestroyer(){

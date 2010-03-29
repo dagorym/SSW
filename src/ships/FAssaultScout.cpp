@@ -35,6 +35,7 @@ FAssaultScout::FAssaultScout() {
 	m_weapons.push_back(w);
 	FDefense *d = createDefense(FDefense::RH);
 	m_defenses.push_back(d);
+	m_currentDefense = m_defenses[0];
 }
 
 FAssaultScout::~FAssaultScout(){

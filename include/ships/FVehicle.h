@@ -25,7 +25,7 @@ namespace Frontier
  *
  * @author Tom Stephens
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Feb 27, 2009
+ * @date Last Modified:  Mar 28 2010
  */
 class FVehicle : public Frontier::FPObject
 {
@@ -90,7 +90,10 @@ public:
 	FDefense * getDefense(unsigned int i) { if (i<m_defenses.size()) { return m_defenses[i]; } else { return NULL; } }
 	/// get pointer to current defense
 	FDefense * getCurrentDefense() { return m_currentDefense; }
+	/// sets the pointer to the currently active defense.
 	void setCurrentDefense(unsigned int i) { if (i<m_defenses.size()) { m_currentDefense=m_defenses[i]; } else { m_currentDefense=m_defenses[0]; } }
+	/// get count of ship's defenses
+	unsigned int getDefenseCount() { return m_defenses.size(); }
 
 
 	/**
@@ -133,6 +136,19 @@ public:
 	 * @date Last Modified: Mar 13, 2009
 	 */
 	std::string getWeaponString();
+
+	/**
+	 * @brief generates a string listing all defenses
+	 *
+	 * This method cycles through the list of defenses and creates a string showing
+	 * all the defenses and their current ammo where appropriate.  It is returned
+	 * as a std::string
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 13, 2009
+	 * @date Last Modified: Mar 13, 2009
+	 */
+	std::string getDefenseString();
 
 	/**
 	 * @brief Take damage from a successful hit

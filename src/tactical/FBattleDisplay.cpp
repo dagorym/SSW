@@ -59,6 +59,7 @@ void FBattleDisplay::draw(wxDC &dc){
 //	dc.DrawBitmap(b, 5, 5);
 	wxColour black(wxT("#000000"));// black
 	m_weaponRegions.clear();
+	m_defenseRegions.clear();
 	dc.SetBackground(wxBrush(black));
 	dc.DrawBitmap(wxBitmap(m_zoomImage),0,0);
 	switch (m_parent->getState()){
@@ -148,6 +149,11 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 				&& m_weaponRegions.size()>0
 				&& m_parent->getShip()->getOwner()==m_parent->getActivePlayerID()){
 			checkWeaponSelection(event);
+		}
+		if (m_parent->getShip()!=NULL
+				&& m_defenseRegions.size()>0
+				&& m_parent->getShip()->getOwner()==m_parent->getActivePlayerID()){
+			checkDefenseSelection(event);
 		}
 		break;
 	default:
@@ -442,8 +448,9 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 //			wxSize tSize= dc.GetTextExtent(wName);
 //			x+= (int)tSize.GetWidth();
 //		}
-//		x = lMargin+80;
-//		y += (int)(1.6*tSize);
+		x = lMargin+80;
+		y += (int)(1.6*textSize);
+		drawDefenseList(dc,x,y,textSize);
 	}
 }
 
@@ -593,6 +600,38 @@ void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int text
 	}
 }
 
+void FBattleDisplay::drawDefenseList(wxDC &dc, int lMargin, int tMargin, int textSize){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour red(wxT("#FF0000"));
+	wxColour green(wxT("#00FF00"));
+	wxColour yellow(wxT("#FFFF00"));
+	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	dc.SetTextForeground(white);
+	FVehicle *s = m_parent->getShip();
+	bool active = false;
+	if (m_parent->getActivePlayerID()==s->getOwner()){
+		active = true;
+	}
+	int x = lMargin;
+	unsigned int dCount = s->getDefenseCount();
+	for (unsigned int i =0; i< dCount; i++){
+		// select the text color for this weapon
+		FDefense *d = s->getDefense(i);
+		if (d->isDamaged()){
+			dc.SetTextForeground(red);
+		} else if (s->getCurrentDefense()->getType()==d->getType()){
+			dc.SetTextForeground(green);
+		} else {
+			dc.SetTextForeground(white);
+		}
+		std::string dName = d->getName() + "  ";
+		dc.DrawText(dName,x,tMargin);
+		wxSize tSize= dc.GetTextExtent(dName);
+		m_defenseRegions.push_back(wxRect(x,tMargin,tSize.GetWidth(),tSize.GetHeight()));
+		x+= (int)tSize.GetWidth();
+	}
+}
+
 void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event){
 	int x = event.GetX();
 	int y = event.GetY();
@@ -602,6 +641,22 @@ void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event){
 			if (w->isMPO()==false || m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
 				m_parent->setWeapon(w);
 //				std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
+				break;
+			}
+		}
+	}
+	m_parent->reDraw();
+}
+
+void FBattleDisplay::checkDefenseSelection(wxMouseEvent &event){
+	int x = event.GetX();
+	int y = event.GetY();
+	for (unsigned int i = 0; i< m_defenseRegions.size(); i++){
+		if (m_defenseRegions[i].Contains(x,y)){
+			FDefense *d = m_parent->getShip()->getDefense(i);
+			if (d->getType()!=FDefense::ICM  && m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
+				m_parent->getShip()->setCurrentDefense(i);
+//				std::cerr << "You selected the " << m_parent->getDefense()->getLongName() << std::endl;
 				break;
 			}
 		}
