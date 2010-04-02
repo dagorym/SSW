@@ -55,6 +55,8 @@ void FWeapon::fire(){
 	if (!m_isDamaged && m_target!=NULL && m_targetRange>=0){
 		int roll = irand(100);
 		int toHitProb = m_baseToHitProb + ((m_isHeadOn)?10:0);
+		// modify based on target's current defensive system
+		toHitProb += m_target->getCurrentDefense()->getAttackModifier(m_type);
 //		if (toHitProb<0)std::cerr << m_name << ":  " << "toHitProb = " << toHitProb << std::endl;
 		if (m_RD){
 			toHitProb -= 5*m_targetRange;
@@ -62,12 +64,20 @@ void FWeapon::fire(){
 		}
 //		if (toHitProb<0)std::cerr << m_name << ":  " << "m_baseToHitProb = " << m_baseToHitProb << "  range = " << m_targetRange << std::endl;
 //		if (toHitProb<0)std::cerr << m_name << ":  " << "The chance to hit is " << toHitProb << " and we rolled a " << roll << std::endl;
+		// you always have a 5% chance to hit
+		if (toHitProb < 5){
+			toHitProb = 5;
+		}
 		if (roll <= toHitProb){
 			int damage = 0;
 			for (unsigned int i = 0; i < m_nDice; i++){
 				damage += irand(10);
 			}
 			damage += m_dMod;
+			// reduce damage if shooting a laser weapon at a masking screen
+			if((m_type==FWeapon::LC || m_type==FWeapon::LB) && m_target->getCurrentDefense()->getType()==FDefense::MS){
+				damage /= 2 + damage%2;
+			}
 			m_target->takeDamage(damage);
 //			std::cerr << "The target, " << m_target->getName() << " was hit for "
 //					<< damage << " points of damage." << std::endl;

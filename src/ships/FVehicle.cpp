@@ -233,4 +233,21 @@ void FVehicle::reload(){
 	}
 }
 
+void FVehicle::setCurrentDefense(unsigned int i) {
+	if (i<m_defenses.size()) {
+		// turning on Masking Screen
+		if (m_defenses[i]->getType() == FDefense::MS and m_defenses[i]!=m_currentDefense){
+			if (m_defenses[i]->getAmmo()>0){
+				m_defenses[i]->setCurrentAmmo(m_defenses[i]->getAmmo()-1);
+			} else {
+				//Only allow it to be set if there was a masking screen to use.
+				//If not, return without changing the current defense
+				return;
+			}
+		}
+		m_currentDefense=m_defenses[i];
+	} else {
+		m_currentDefense=m_defenses[0];
+	}
+}
 };

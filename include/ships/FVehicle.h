@@ -90,8 +90,6 @@ public:
 	FDefense * getDefense(unsigned int i) { if (i<m_defenses.size()) { return m_defenses[i]; } else { return NULL; } }
 	/// get pointer to current defense
 	FDefense * getCurrentDefense() { return m_currentDefense; }
-	/// sets the pointer to the currently active defense.
-	void setCurrentDefense(unsigned int i) { if (i<m_defenses.size()) { m_currentDefense=m_defenses[i]; } else { m_currentDefense=m_defenses[0]; } }
 	/// get count of ship's defenses
 	unsigned int getDefenseCount() { return m_defenses.size(); }
 
@@ -179,6 +177,23 @@ public:
 	 * @date Last Modified:  Jun 03, 2009
 	 */
 	void reload();
+
+	/*
+	 * @ brief sets the pointer to the currently active defense.
+	 *
+	 * This method sets the current defense to the one specified
+	 * and handles any book keeping associated with changing the
+	 * defense type such as setting the masking screen flag and
+	 * reducing the number of masking screen charges
+	 *
+	 * @param i the index of the defense to set as current
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 13, 2010
+	 * @date Last Modified:  Apr 1, 2010
+	 */
+	void setCurrentDefense(unsigned int i);
+
 
 protected:
 	/// counter for total number of vehicles and next ship ID
