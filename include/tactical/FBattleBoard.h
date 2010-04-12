@@ -206,6 +206,8 @@ protected:
 //	int m_gravityTurnDirection;
 	/// flag indicating that one gravity turn has already been made for this pass
 	bool m_gravityTurnFlag;
+	/// pointer to masking screen icon image
+	wxImage * m_maskingScreenIcon;
 
 
 	/**

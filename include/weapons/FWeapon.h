@@ -76,6 +76,10 @@ public:
 	FVehicle * getTarget() { return m_target; }
 	/// gets the range to the current target
 	int getTargetRange() { return m_targetRange; }
+	/// set pointer to ship the weapon is a part of
+	void setParent(FVehicle *v) { m_parent = v; }
+	/// get pointer to the ship the weapon is a part of
+	const FVehicle * getParent() const { return m_parent; }
 
 	/**
 	 * @brief Method to save the weapon data
@@ -151,6 +155,8 @@ public:
 	void reload();
 
 protected:
+	/// pointer to ship weapon is a part of
+	FVehicle * m_parent;
 	/// weapon's abbreviated name
 	std::string m_name;
 	/// full name of weapon

@@ -92,6 +92,8 @@ public:
 	FDefense * getCurrentDefense() { return m_currentDefense; }
 	/// get count of ship's defenses
 	unsigned int getDefenseCount() { return m_defenses.size(); }
+	/// get the number of turns left until the masking screen runs out
+	int getMSTurnCount(){return m_maskingScreenTurnCount;}
 
 
 	/**
@@ -195,6 +197,19 @@ public:
 	void setCurrentDefense(unsigned int i);
 
 
+	/**
+	 * Decrease the turns for the masking screen and remove it if zero
+	 *
+	 * This method decreases the number of turns left for a masking
+	 * screen for a station and then removes the masking screen if
+	 * the count goes to zero.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 08, 2010
+	 * @date Last Modified:  Apr 08 2010
+	 */
+	void decrementMSTurnCount();
+
 protected:
 	/// counter for total number of vehicles and next ship ID
 	static unsigned int m_nextID;
@@ -238,6 +253,8 @@ protected:
 	DefenseList m_defenses;
 	/// pointer to currently active defense
 	FDefense * m_currentDefense;
+	/// turns until MS runs out
+	int m_maskingScreenTurnCount;
 };
 
 typedef std::vector<FVehicle *> VehicleList;

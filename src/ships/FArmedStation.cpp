@@ -28,8 +28,10 @@ FArmedStation::FArmedStation() {
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;
 	FWeapon *w = createWeapon(FWeapon::LB);
+	w->setParent(this);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::RB);
+	w->setParent(this);
 	w->setMaxAmmo(6);
 	w->setCurrentAmmo(6);
 	m_weapons.push_back(w);

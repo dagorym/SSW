@@ -28,10 +28,13 @@ FFortifiedStation::FFortifiedStation() {
 	m_maxDCR=100;
 	m_currentDCR=m_maxDCR;
 	FWeapon *w = createWeapon(FWeapon::LB);
+	w->setParent(this);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::LB);
+	w->setParent(this);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::RB);
+	w->setParent(this);
 	w->setMaxAmmo(8);
 	w->setCurrentAmmo(8);
 	m_weapons.push_back(w);

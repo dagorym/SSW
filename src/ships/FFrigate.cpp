@@ -25,14 +25,18 @@ FFrigate::FFrigate() {
 	m_maxDCR=70;
 	m_currentDCR=m_maxDCR;
 	FWeapon *w = createWeapon(FWeapon::LC);
+	w->setParent(this);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::LB);
+	w->setParent(this);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::T);
+	w->setParent(this);
 	w->setMaxAmmo(2);
 	w->setCurrentAmmo(2);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::RB);
+	w->setParent(this);
 	w->setMaxAmmo(4);
 	w->setCurrentAmmo(4);
 	m_weapons.push_back(w);

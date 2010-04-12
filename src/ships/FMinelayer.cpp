@@ -28,14 +28,18 @@ FMinelayer::FMinelayer() {
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;
 	FWeapon *w = createWeapon(FWeapon::LB);
+	w->setParent(this);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::LB);
+	w->setParent(this);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::SM);
+	w->setParent(this);
 	w->setMaxAmmo(4);
 	w->setCurrentAmmo(4);
 	m_weapons.push_back(w);
 	w = createWeapon(FWeapon::M);
+	w->setParent(this);
 	w->setMaxAmmo(20);
 	w->setCurrentAmmo(20);
 	m_weapons.push_back(w);

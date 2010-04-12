@@ -28,6 +28,8 @@ FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos,
 	computeCenters();
 	m_drawRoute = false;
 	m_planetPosition.setPoint(-1,-1);
+	FGameConfig &gc = FGameConfig::create();
+	m_maskingScreenIcon = new wxImage(gc.getBasePath()+"icons/MaskingScreen.png");
 
 	SetScrollRate( (int)(2*m_d), (int)(3*m_a) );
 	SetVirtualSize(m_width,m_height);
@@ -328,7 +330,13 @@ void FBattleBoard::drawShips(){
 			if (m_hexData[i][j].ships.size()){
 				FPoint h(i,j);
 				for (unsigned int k = 0; k<m_hexData[i][j].ships.size(); k++){
-					drawCenteredOnHex(*(m_hexData[i][j].ships[k]->getIcon()),h,m_hexData[i][j].ships[k]->getHeading());
+					const wxImage *icon;
+					if (m_hexData[i][j].ships[k]->getCurrentDefense()->getType()!=FDefense::MS){
+						icon = m_hexData[i][j].ships[k]->getIcon();
+					} else {
+						icon = m_maskingScreenIcon;
+					}
+					drawCenteredOnHex(*icon,h,m_hexData[i][j].ships[k]->getHeading());
 				}
 			}
 		}
@@ -836,6 +844,10 @@ void FBattleBoard::finalizeMove(){
 		unsigned int id = (*itr)->getID();
 		FPoint &start = m_turnInfo[id].waypoints[0];
 		FPoint &finish = *(m_turnInfo[id].waypoints.end()-1);
+		bool changedSpeed = false; // flag for whether or not the ship changed speed
+		if (m_turnInfo[id].nMoved != (*itr)->getSpeed()){
+			changedSpeed = true;
+		}
 		(*itr)->setSpeed(m_turnInfo[id].nMoved);
 		(*itr)->setHeading(m_turnInfo[id].curHeading);
 		// move the ship to it's new location
@@ -847,9 +859,20 @@ void FBattleBoard::finalizeMove(){
 				break;
 			}
 		}
+		bool isStation=false;
 		// update station position
 		if ((*itr)->getType()=="ArmedStation" || (*itr)->getType()=="FortifiedStation" || (*itr)->getType()=="Fortress"){
 			m_parent->setStationPosition(finish);
+			isStation=true;
+		}
+		// clear masking screen if the vehicle is not a station and has turned and has a MS as current defense
+		if ((*itr)->getCurrentDefense()->getType()==FDefense::MS && m_turnInfo[id].turns.size()>0 || changedSpeed==true){
+			if (isStation){
+				std::cerr << "Decrementing MS Turn Count" << std::endl;
+				(*itr)->decrementMSTurnCount();
+			} else {
+				(*itr)->setCurrentDefense(0);
+			}
 		}
 	}
 	m_drawRoute = false;

@@ -66,6 +66,7 @@ const int FVehicle::save(std::ostream &os) const {
 	write(os,m_heading);
 	write(os,m_owner);
 	write(os,m_currentDCR);
+	write(os,m_maskingScreenTurnCount);
 	write(os,m_weapons.size());
 	for (WeaponList::const_iterator itr = m_weapons.begin(); itr != m_weapons.end(); itr++){
 		(*itr)->save(os);
@@ -98,6 +99,7 @@ int FVehicle::load(std::istream &is) {
 	read(is,m_heading);
 	read(is,m_owner);
 	read(is,m_currentDCR);
+	read(is,m_maskingScreenTurnCount);
 	unsigned int count = 0;
 	read(is,count);
 	for (unsigned int i=0; i< m_weapons.size(); i++){	// they were populated with default values
@@ -108,6 +110,7 @@ int FVehicle::load(std::istream &is) {
 		FWeapon::Weapon type;
 		read(is,type);
 		FWeapon *w = createWeapon(type);
+		w->setParent(this);
 		w->load(is);
 		m_weapons.push_back(w);
 	}
@@ -239,6 +242,9 @@ void FVehicle::setCurrentDefense(unsigned int i) {
 		if (m_defenses[i]->getType() == FDefense::MS and m_defenses[i]!=m_currentDefense){
 			if (m_defenses[i]->getAmmo()>0){
 				m_defenses[i]->setCurrentAmmo(m_defenses[i]->getAmmo()-1);
+				if (m_type=="ArmedStation" || m_type=="FortifiedStation" || m_type == "Fortress"){
+					m_maskingScreenTurnCount = 5;
+				}
 			} else {
 				//Only allow it to be set if there was a masking screen to use.
 				//If not, return without changing the current defense
@@ -250,4 +256,14 @@ void FVehicle::setCurrentDefense(unsigned int i) {
 		m_currentDefense=m_defenses[0];
 	}
 }
+
+void FVehicle::decrementMSTurnCount() {
+	if (m_maskingScreenTurnCount>0) {
+		m_maskingScreenTurnCount--;
+	} else {
+		m_currentDefense=m_defenses[0];
+	}
+
+}
+
 };
