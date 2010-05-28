@@ -223,9 +223,9 @@ void ICMSelectionGUI::finalizeAssignments( wxCommandEvent& event ){
 		std::cerr << vItr->second->getName() << ":  ";
 		FDefense * d = vItr->second->getDefense(vItr->second->hasDefense(FDefense::ICM));
 		int expendedICMs= m_shipICMData[vItr->first]->getAllocatedICMs();
-		std::cerr << "expendedICMs = " << expendedICMs << " current ammo = " << d->getAmmo();
+//		std::cerr << "expendedICMs = " << expendedICMs << " current ammo = " << d->getAmmo();
 		d->setCurrentAmmo(d->getAmmo()-expendedICMs);
-		std::cerr << " updated ammo = " << d->getAmmo() << std::endl;
+//		std::cerr << " updated ammo = " << d->getAmmo() << std::endl;
 		vItr++;
 	}
 

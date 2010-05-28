@@ -80,7 +80,7 @@ void FWeapon::fire(){
 		toHitProb += m_assignedICMCount * m_ICMMod;
 		m_assignedICMCount=0;  // clear out the used ICMs
 
-		std::cerr << m_name << ": toHitProb = "<< toHitProb << "  roll = " << roll << std::endl;
+//		std::cerr << m_name << ": toHitProb = "<< toHitProb << "  roll = " << roll << std::endl;
 
 		if (roll <= toHitProb){
 			int damage = 0;
