@@ -25,7 +25,7 @@ namespace Frontier
  *
  * @author Tom Stephens
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Mar 28 2010
+ * @date Last Modified:  Apr 22, 2010
  */
 class FVehicle : public Frontier::FPObject
 {
@@ -206,9 +206,25 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 08, 2010
-	 * @date Last Modified:  Apr 08 2010
+	 * @date Last Modified:  Apr 08, 2010
 	 */
 	void decrementMSTurnCount();
+
+	/**
+	 * @brief check to see if ship has specified defense
+	 *
+	 * This method searches through the ship's defenses to see if
+	 * the specified defense is one of them.  If not it returns 0.
+	 * Otherwise it returns the index of the defense in the ship's
+	 * defense list
+	 *
+	 * @param d defense type
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 22, 2010
+	 * @date Last Modified:  Apr 22, 2010
+	 */
+	unsigned int hasDefense(FDefense::Defense d);
 
 protected:
 	/// counter for total number of vehicles and next ship ID
@@ -262,6 +278,20 @@ typedef std::vector<FVehicle *> VehicleList;
 /// This factory method takes the ship type name and returns a pointer to an
 /// object of that type
 FVehicle * createShip(std::string type);
+
+/**
+ * @brief structure to hold ICM targeting information
+ *
+ * @author Tom Stephens
+ * @date Created:  Apr 22, 2010
+ * @date Last Modified:  Apr 22, 2010
+ */
+typedef struct {
+	/// Weapon to fire ICM's against
+	FWeapon * weapon;
+	/// Ships in target hex
+	VehicleList * vehicles;
+} ICMData;
 
 
 };

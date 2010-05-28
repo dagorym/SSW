@@ -72,7 +72,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 13, 2009
+ * @date Last Modified:  Apr 22, 2010
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -147,6 +147,20 @@ public:
 	 * @date Last Modified:  Apr 30, 2009
 	 */
 	void removeShipFromGame(unsigned int id);
+
+	/**
+	 * @ brief Returns a list of vehicles in the hex containing the specified ship
+	 *
+	 * This method searches over the map and locates the hex that contains
+	 * the specified ship, once found it returns the list of all ships in that hex.
+	 *
+	 * @param v the vehicle to locate
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 22, 2010
+	 * @date Last Modified:  Apr 22, 2010
+	 */
+	VehicleList * getShipList(FVehicle * v);
 
 protected:
 	/// parent window

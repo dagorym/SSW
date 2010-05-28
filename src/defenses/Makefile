@@ -58,8 +58,8 @@ clean:
 # DO NOT DELETE
 
 FDefense.o: ../../include/defenses/FDefense.h ../../include/core/FPObject.h
-FDefense.o: ../../include/core/FObject.h ../../include/defenses/defenses.h
-FDefense.o: ../../include/defenses/FNone.h
+FDefense.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
+FDefense.o: ../../include/defenses/defenses.h ../../include/defenses/FNone.h
 FDefense.o: ../../include/defenses/FReflectiveHull.h
 FDefense.o: ../../include/defenses/FMaskingScreen.h
 FDefense.o: ../../include/defenses/FICM.h
@@ -69,19 +69,26 @@ FDefense.o: ../../include/defenses/FElectronScreen.h
 FElectronScreen.o: ../../include/defenses/FElectronScreen.h
 FElectronScreen.o: ../../include/defenses/FDefense.h
 FElectronScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FElectronScreen.o: ../../include/weapons/FWeapon.h
 FICM.o: ../../include/defenses/FICM.h ../../include/defenses/FDefense.h
 FICM.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FICM.o: ../../include/weapons/FWeapon.h
 FMaskingScreen.o: ../../include/defenses/FMaskingScreen.h
 FMaskingScreen.o: ../../include/defenses/FDefense.h
 FMaskingScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FMaskingScreen.o: ../../include/weapons/FWeapon.h
 FNone.o: ../../include/defenses/FNone.h ../../include/defenses/FDefense.h
 FNone.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FNone.o: ../../include/weapons/FWeapon.h
 FProtonScreen.o: ../../include/defenses/FProtonScreen.h
 FProtonScreen.o: ../../include/defenses/FDefense.h
 FProtonScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FProtonScreen.o: ../../include/weapons/FWeapon.h
 FReflectiveHull.o: ../../include/defenses/FReflectiveHull.h
 FReflectiveHull.o: ../../include/defenses/FDefense.h
 FReflectiveHull.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FReflectiveHull.o: ../../include/weapons/FWeapon.h
 FStasisScreen.o: ../../include/defenses/FStasisScreen.h
 FStasisScreen.o: ../../include/defenses/FDefense.h
 FStasisScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FStasisScreen.o: ../../include/weapons/FWeapon.h

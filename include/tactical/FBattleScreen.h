@@ -35,7 +35,7 @@ namespace Frontier {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Mar 31, 2009
+ * @date Last Modified:  Apr 22, 2010
  */
 class FBattleScreen : public wxDialog //wxFrame
 {
@@ -138,6 +138,20 @@ public:
 	 */
 	void clearDestroyedShips();
 
+	/**
+	 * determine ICM's being fired
+	 *
+	 * This method loops over all the weapons being fired and
+	 * determines the ones that can have ICMs fired at them.  The
+	 * defending player is then given the option to target ICMs
+	 * at these weapons
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Apr 22, 2010
+	 * @date Last Modified:  Apr 22, 2010
+	 */
+	void fireICM();
+
 	/// get the battle board state
 	const int & getState() const { return m_state; }
 	/// set the battle board state
@@ -200,6 +214,8 @@ public:
 	void setWeapon(FWeapon * w);
 	/// get the current weapon
 	FWeapon * getWeapon() { return m_curWeapon; }
+	/// list of ICM targets
+	std::vector<ICMData *> m_ICMData;
 
 protected:
 	/// The map window

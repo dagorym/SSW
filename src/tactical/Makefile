@@ -65,7 +65,9 @@ FBattleBoard.o: ../../include/tactical/FBattleBoard.h
 FBattleBoard.o: ../../include/strategic/FFleet.h
 FBattleBoard.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FBattleBoard.o: ../../include/ships/FVehicle.h
+FBattleBoard.o: ../../include/core/FGameConfig.h
 FBattleBoard.o: ../../include/weapons/FWeapon.h
+FBattleBoard.o: ../../include/defenses/FDefense.h ../../include/core/FPoint.h
 FBattleBoard.o: ../../include/tactical/FBattleDisplay.h
 FBattleDisplay.o: ../../include/Frontier.h ../../include/wxWidgets.h
 FBattleDisplay.o: ../../include/tactical/FBattleScreen.h
@@ -73,7 +75,10 @@ FBattleDisplay.o: ../../include/tactical/FBattleBoard.h
 FBattleDisplay.o: ../../include/strategic/FFleet.h
 FBattleDisplay.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FBattleDisplay.o: ../../include/ships/FVehicle.h
+FBattleDisplay.o: ../../include/core/FGameConfig.h
 FBattleDisplay.o: ../../include/weapons/FWeapon.h
+FBattleDisplay.o: ../../include/defenses/FDefense.h
+FBattleDisplay.o: ../../include/core/FPoint.h
 FBattleDisplay.o: ../../include/tactical/FBattleDisplay.h
 FBattleScreen.o: ../../include/tactical/FBattleScreen.h
 FBattleScreen.o: ../../include/Frontier.h ../../include/wxWidgets.h
@@ -81,5 +86,9 @@ FBattleScreen.o: ../../include/tactical/FBattleBoard.h
 FBattleScreen.o: ../../include/strategic/FFleet.h
 FBattleScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FBattleScreen.o: ../../include/ships/FVehicle.h
+FBattleScreen.o: ../../include/core/FGameConfig.h
 FBattleScreen.o: ../../include/weapons/FWeapon.h
+FBattleScreen.o: ../../include/defenses/FDefense.h
+FBattleScreen.o: ../../include/core/FPoint.h
 FBattleScreen.o: ../../include/tactical/FBattleDisplay.h
+FBattleScreen.o: ../../include/gui/ICMSelectionGUI.h

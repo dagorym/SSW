@@ -24,7 +24,7 @@ class FVehicle;
  *
  * @author Tom Stephens
  * @date Created:  Feb 27, 2009
- * @date Last Modified:  Apr 27, 2009
+ * @date Last Modified:  May 28, 2010
  */
 class FWeapon: public Frontier::FPObject {
 public:
@@ -36,7 +36,9 @@ public:
 	/// default destructor;
 	virtual ~FWeapon();
 
-	/// return the weapon type
+	/// get the weapon's ID
+	const unsigned int & getID() const { return m_ID; }
+/// return the weapon type
 	const FWeapon::Weapon & getType() const { return m_type;}
 	/// return the weapon's range
 	const unsigned int & getRange() const { return m_range; }
@@ -80,6 +82,8 @@ public:
 	void setParent(FVehicle *v) { m_parent = v; }
 	/// get pointer to the ship the weapon is a part of
 	const FVehicle * getParent() const { return m_parent; }
+	/// set the number of ICMs defending against this weapon
+	void setAssignedICMCount(int count){ m_assignedICMCount=count; }
 
 	/**
 	 * @brief Method to save the weapon data
@@ -122,7 +126,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 27, 2009
-	 * @date Last Modified:  May 11, 2009
+	 * @date Last Modified:  May 28, 2010
 	 */
 	void fire();
 
@@ -155,6 +159,10 @@ public:
 	void reload();
 
 protected:
+	/// counter for total number of weapons and next weapon ID
+	static unsigned int m_nextID;
+	/// weapon ID number
+	unsigned int m_ID;
 	/// pointer to ship weapon is a part of
 	FVehicle * m_parent;
 	/// weapon's abbreviated name
@@ -193,6 +201,8 @@ protected:
 	bool m_isHeadOn;
 	/// base probability to hit a RH
 	int m_baseToHitProb;
+	/// number of assigned ICMs
+	int m_assignedICMCount;
 };
 
 typedef std::vector<FWeapon *> WeaponList;

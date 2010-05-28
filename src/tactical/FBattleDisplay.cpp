@@ -534,7 +534,8 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 
 void FBattleDisplay::fireAllWeapons(){
 	VehicleList sList = m_parent->getShipList(m_parent->getActivePlayerID());
-	// loop over the list of ships
+	m_parent->fireICM();
+	// loop over the list of ships and fire all weapons
 	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
 //		std::cerr << "Processing " << (*itr)->getName() << std::endl;
 		if ((*itr)->getHP()>0){ // if the ship hasn't been destroyed

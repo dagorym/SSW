@@ -74,5 +74,13 @@ clean:
 
 # DO NOT DELETE
 
+FGameConfig.o: ../../include/core/FGameConfig.h ../../include/core/FPObject.h
+FGameConfig.o: ../../include/core/FObject.h /usr/include/unistd.h
+FGameConfig.o: /usr/include/features.h /usr/include/sys/cdefs.h
+FGameConfig.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+FGameConfig.o: /usr/include/gnu/stubs-32.h /usr/include/bits/posix_opt.h
+FGameConfig.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+FGameConfig.o: /usr/include/bits/confname.h /usr/include/getopt.h
 FObject.o: ../../include/core/FObject.h
 FPObject.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FPoint.o: ../../include/core/FPoint.h

@@ -49,7 +49,7 @@ FVehicle::~FVehicle(){
 		delete m_defenses[i];
 	}
 	m_classCount--;
-	if (m_classCount==0){  // if all players have been deleted
+	if (m_classCount==0){  // if all vehicles have been deleted
 		m_nextID=0;  // reset the id counter
 	}
 }
@@ -264,6 +264,15 @@ void FVehicle::decrementMSTurnCount() {
 		m_currentDefense=m_defenses[0];
 	}
 
+}
+
+unsigned int FVehicle::hasDefense(FDefense::Defense d){
+	for (unsigned int i = 0; i< m_defenses.size(); i++){
+		if (m_defenses[i]->getType()==d) {
+			return i;
+		}
+	}
+	return 0;
 }
 
 };

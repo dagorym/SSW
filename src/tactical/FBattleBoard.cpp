@@ -1252,4 +1252,19 @@ int FBattleBoard::getPlanetTurnDirection(FPoint currentHex, int currentHeading){
 	return turnDir;
 }
 
+VehicleList * FBattleBoard::getShipList(FVehicle * v){
+	for (int i=0; i< m_nRow; i++){
+		for (int j=0; j<m_nCol; j++){
+			if (m_hexData[i][j].ships.size()>0){
+				for (VehicleList::iterator itr = m_hexData[i][j].ships.begin(); itr < m_hexData[i][j].ships.end(); itr++){
+					if ((*itr)->getID() == v->getID()){
+						return & m_hexData[i][j].ships;
+					}
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
 }

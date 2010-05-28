@@ -42,7 +42,8 @@ OBJS = SystemDialogGUI.o SelectJumpGUI.o ViewFleetGUI.o \
        TransferShipsGUI.o  SatharRetreatGUI.o \
        SelectCombatGUI.o TwoPlanetsGUI.o CombatLocationGUI.o \
        CombatFleetsGUI.o SelectResolutionGUI.o BattleResultsGUI.o \
-       WXMapDisplay.o WXPlayerDisplay.o WXGameDisplay.o
+       WXMapDisplay.o WXPlayerDisplay.o WXGameDisplay.o \
+       ICMSelectionGUI.o AssignedICMData.o
 
 TARGET = libgui.a
 
@@ -71,6 +72,7 @@ BattleResultsGUI.o: ../../include/core/FObject.h
 BattleResultsGUI.o: ../../include/ships/FVehicle.h
 BattleResultsGUI.o: ../../include/core/FGameConfig.h
 BattleResultsGUI.o: ../../include/weapons/FWeapon.h
+BattleResultsGUI.o: ../../include/defenses/FDefense.h
 BattleResultsGUI.o: ../../include/strategic/FPlayer.h
 BattleResultsGUI.o: ../../include/strategic/FFleet.h
 BattleResultsGUI.o: ../../include/strategic/FMap.h
@@ -89,6 +91,7 @@ CombatFleetsGUI.o: ../../include/strategic/FAstroBody.h
 CombatFleetsGUI.o: ../../include/ships/FVehicle.h
 CombatFleetsGUI.o: ../../include/core/FGameConfig.h
 CombatFleetsGUI.o: ../../include/weapons/FWeapon.h
+CombatFleetsGUI.o: ../../include/defenses/FDefense.h
 CombatFleetsGUI.o: ../../include/strategic/FFleet.h
 CombatFleetsGUI.o: ../../include/gui/ViewFleetGUI.h
 CombatFleetsGUI.o: ../../include/strategic/FFleet.h
@@ -100,6 +103,13 @@ CombatLocationGUI.o: ../../include/core/FObject.h
 CombatLocationGUI.o: ../../include/ships/FVehicle.h
 CombatLocationGUI.o: ../../include/core/FGameConfig.h
 CombatLocationGUI.o: ../../include/weapons/FWeapon.h
+CombatLocationGUI.o: ../../include/defenses/FDefense.h
+ICMSelectionGUI.o: ../../include/gui/ICMSelectionGUI.h
+ICMSelectionGUI.o: ../../include/ships/FVehicle.h
+ICMSelectionGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+ICMSelectionGUI.o: ../../include/core/FGameConfig.h
+ICMSelectionGUI.o: ../../include/weapons/FWeapon.h
+ICMSelectionGUI.o: ../../include/defenses/FDefense.h
 SatharFleetsGUI.o: ../../include/gui/SatharFleetsGUI.h
 SatharFleetsGUI.o: ../../include/strategic/FPlayer.h
 SatharFleetsGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
@@ -111,6 +121,7 @@ SatharFleetsGUI.o: ../../include/strategic/FAstroBody.h
 SatharFleetsGUI.o: ../../include/ships/FVehicle.h
 SatharFleetsGUI.o: ../../include/core/FGameConfig.h
 SatharFleetsGUI.o: ../../include/weapons/FWeapon.h
+SatharFleetsGUI.o: ../../include/defenses/FDefense.h
 SatharFleetsGUI.o: ../../include/strategic/FJumpRoute.h
 SatharFleetsGUI.o: ../../include/strategic/FMap.h
 SatharRetreatGUI.o: ../../include/gui/SatharRetreatGUI.h
@@ -122,6 +133,7 @@ SelectCombatGUI.o: ../../include/strategic/FAstroBody.h
 SelectCombatGUI.o: ../../include/ships/FVehicle.h
 SelectCombatGUI.o: ../../include/core/FGameConfig.h
 SelectCombatGUI.o: ../../include/weapons/FWeapon.h
+SelectCombatGUI.o: ../../include/defenses/FDefense.h
 SelectCombatGUI.o: ../../include/strategic/FFleet.h
 SelectCombatGUI.o: ../../include/strategic/FPlayer.h
 SelectCombatGUI.o: ../../include/strategic/FMap.h
@@ -149,6 +161,7 @@ SelectResolutionGUI.o: ../../include/core/FObject.h
 SelectResolutionGUI.o: ../../include/ships/FVehicle.h
 SelectResolutionGUI.o: ../../include/core/FGameConfig.h
 SelectResolutionGUI.o: ../../include/weapons/FWeapon.h
+SelectResolutionGUI.o: ../../include/defenses/FDefense.h
 SystemDialogGUI.o: ../../include/gui/SystemDialogGUI.h
 SystemDialogGUI.o: ../../include/strategic/FMap.h
 SystemDialogGUI.o: ../../include/strategic/FPlayer.h
@@ -161,6 +174,7 @@ SystemDialogGUI.o: ../../include/strategic/FAstroBody.h
 SystemDialogGUI.o: ../../include/ships/FVehicle.h
 SystemDialogGUI.o: ../../include/core/FGameConfig.h
 SystemDialogGUI.o: ../../include/weapons/FWeapon.h
+SystemDialogGUI.o: ../../include/defenses/FDefense.h
 SystemDialogGUI.o: ../../include/strategic/FJumpRoute.h
 SystemDialogGUI.o: ../../include/gui/SelectJumpGUI.h
 SystemDialogGUI.o: ../../include/gui/ViewFleetGUI.h
@@ -179,6 +193,7 @@ TransferShipsGUI.o: ../../include/strategic/FAstroBody.h
 TransferShipsGUI.o: ../../include/ships/FVehicle.h
 TransferShipsGUI.o: ../../include/core/FGameConfig.h
 TransferShipsGUI.o: ../../include/weapons/FWeapon.h
+TransferShipsGUI.o: ../../include/defenses/FDefense.h
 TransferShipsGUI.o: ../../include/strategic/FJumpRoute.h
 TransferShipsGUI.o: ../../include/strategic/FSystem.h
 TwoPlanetsGUI.o: ../../include/gui/TwoPlanetsGUI.h
@@ -189,6 +204,7 @@ TwoPlanetsGUI.o: ../../include/strategic/FAstroBody.h
 TwoPlanetsGUI.o: ../../include/ships/FVehicle.h
 TwoPlanetsGUI.o: ../../include/core/FGameConfig.h
 TwoPlanetsGUI.o: ../../include/weapons/FWeapon.h
+TwoPlanetsGUI.o: ../../include/defenses/FDefense.h
 TwoPlanetsGUI.o: ../../include/strategic/FFleet.h
 UPFUnattachedGUI.o: ../../include/gui/UPFUnattachedGUI.h
 UPFUnattachedGUI.o: ../../include/strategic/FPlayer.h
@@ -202,6 +218,7 @@ UPFUnattachedGUI.o: ../../include/strategic/FAstroBody.h
 UPFUnattachedGUI.o: ../../include/ships/FVehicle.h
 UPFUnattachedGUI.o: ../../include/core/FGameConfig.h
 UPFUnattachedGUI.o: ../../include/weapons/FWeapon.h
+UPFUnattachedGUI.o: ../../include/defenses/FDefense.h
 UPFUnattachedGUI.o: ../../include/strategic/FJumpRoute.h
 UPFUnattachedGUI.o: ../../include/strategic/FMap.h
 ViewFleetGUI.o: ../../include/gui/ViewFleetGUI.h
@@ -210,10 +227,13 @@ ViewFleetGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 ViewFleetGUI.o: ../../include/ships/FVehicle.h
 ViewFleetGUI.o: ../../include/core/FGameConfig.h
 ViewFleetGUI.o: ../../include/weapons/FWeapon.h
+ViewFleetGUI.o: ../../include/defenses/FDefense.h
 ViewFleetGUI.o: ../../include/strategic/FSystem.h
 ViewFleetGUI.o: ../../include/strategic/FPlanet.h
 ViewFleetGUI.o: ../../include/strategic/FAstroBody.h
 ViewFleetGUI.o: ../../include/strategic/FFleet.h
+WXGameDisplay.o: ../../include/gui/WXGameDisplay.h
+WXGameDisplay.o: ../../include/gui/WXMapDisplay.h
 WXGameDisplay.o: ../../include/gui/WXPlayerDisplay.h
 WXGameDisplay.o: ../../include/strategic/FPlayer.h
 WXGameDisplay.o: ../../include/core/FPObject.h ../../include/core/FObject.h
@@ -225,9 +245,10 @@ WXGameDisplay.o: ../../include/strategic/FAstroBody.h
 WXGameDisplay.o: ../../include/ships/FVehicle.h
 WXGameDisplay.o: ../../include/core/FGameConfig.h
 WXGameDisplay.o: ../../include/weapons/FWeapon.h
+WXGameDisplay.o: ../../include/defenses/FDefense.h
 WXGameDisplay.o: ../../include/strategic/FJumpRoute.h
-WXGameDisplay.o: ../../include/gui/WXMapDisplay.h
-WXGameDisplay.o: ../../include/strategic/FMap.h
+WXGameDisplay.o: ../../include/strategic/FGame.h
+WXGameDisplay.o: ../../include/strategic/FPlayer.h
 WXMapDisplay.o: ../../include/gui/WXMapDisplay.h
 WXMapDisplay.o: ../../include/strategic/FMap.h
 WXPlayerDisplay.o: ../../include/gui/WXPlayerDisplay.h
@@ -241,6 +262,6 @@ WXPlayerDisplay.o: ../../include/strategic/FAstroBody.h
 WXPlayerDisplay.o: ../../include/ships/FVehicle.h
 WXPlayerDisplay.o: ../../include/core/FGameConfig.h
 WXPlayerDisplay.o: ../../include/weapons/FWeapon.h
+WXPlayerDisplay.o: ../../include/defenses/FDefense.h
 WXPlayerDisplay.o: ../../include/strategic/FJumpRoute.h
 WXPlayerDisplay.o: ../../include/gui/WXMapDisplay.h
-WXPlayerDisplay.o: ../../include/strategic/FMap.h

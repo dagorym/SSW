@@ -13,7 +13,10 @@
 
 namespace Frontier {
 
+unsigned int FWeapon::m_nextID = 0;
+
 FWeapon::FWeapon() {
+	m_ID = m_nextID++;
 	m_name="NAW";
 	m_fullName = "Not a Weapon";
 	m_type=FWeapon::NONE;
@@ -32,6 +35,7 @@ FWeapon::FWeapon() {
 	m_isDamaged = false;
 	m_baseToHitProb = 0;
 	m_isHeadOn = false;
+	m_assignedICMCount = 0;
 }
 
 FWeapon::~FWeapon() {
@@ -72,6 +76,12 @@ void FWeapon::fire(){
 		if (toHitProb < 5){
 			toHitProb = 5;
 		}
+		// reduce to hit probablity for ICMs
+		toHitProb += m_assignedICMCount * m_ICMMod;
+		m_assignedICMCount=0;  // clear out the used ICMs
+
+		std::cerr << m_name << ": toHitProb = "<< toHitProb << "  roll = " << roll << std::endl;
+
 		if (roll <= toHitProb){
 			int damage = 0;
 			for (unsigned int i = 0; i < m_nDice; i++){
@@ -81,7 +91,7 @@ void FWeapon::fire(){
 			// reduce damage if shooting a laser weapon at (or out of) a masking screen
 			if((m_type==FWeapon::LC || m_type==FWeapon::LB) &&
 					(m_target->getCurrentDefense()->getType()==FDefense::MS||m_parent->getCurrentDefense()->getType()==FDefense::MS)){
-				damage /= 2 + damage%2;  // half damage rounded up
+				damage = damage/2 + damage%2;  // half damage rounded up
 			}
 			m_target->takeDamage(damage);
 //			std::cerr << "The target, " << m_target->getName() << " was hit for "

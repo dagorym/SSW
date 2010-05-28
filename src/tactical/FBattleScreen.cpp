@@ -9,6 +9,7 @@
 #include "tactical/FBattleScreen.h"
 #include "Frontier.h"
 #include "core/FGameConfig.h"
+#include "gui/ICMSelectionGUI.h"
 #include <wx/wx.h>
 
 namespace Frontier {
@@ -82,7 +83,7 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 
 	//create a list of ships from the list of fleets for the attacker and defenders
 	if (m_defendShips) { delete m_defendShips; }
-	std::cerr << "There are " << m_defendList->size() << " defending fleets" << std::endl;
+//	std::cerr << "There are " << m_defendList->size() << " defending fleets" << std::endl;
 	m_defendShips = new VehicleList;
 	for (unsigned int i=0; i< m_defendList->size(); i++){
 		const VehicleList sList = (*m_defendList)[i]->getShipList();
@@ -259,6 +260,46 @@ void FBattleScreen::declareWinner(){
 	msg+= (getActivePlayer())?"Sathar":"UPF";
 	wxMessageBox( msg, "Enemy Defeated!", wxOK | wxICON_INFORMATION );
 	Destroy();
+}
+
+void FBattleScreen::fireICM() {
+	VehicleList sList = getShipList(getActivePlayerID());
+	// loop over all ships and weapons to find rocket weapons that have targets
+	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
+		if ((*itr)->getHP()>0){ // if the ship hasn't been destroyed
+			int nWeps = (*itr)->getWeaponCount();
+			for (int i = 0; i < nWeps; i++){
+				FWeapon *w = (*itr)->getWeapon(i);
+				// if the weapon can be affected by ICMs
+				if (w->getTarget()!=NULL && w->getICMMod() != 0){
+					ICMData *d = new ICMData;
+					d->weapon = w;
+					d->vehicles = m_map->getShipList(w->getTarget());
+					if (d->vehicles != NULL){ // if we have vehicles
+						// check to see if any ships in the list have ICMs to use
+						bool haveICMs = false;
+						for (VehicleList::iterator vItr=d->vehicles->begin(); vItr<d->vehicles->end(); vItr++){
+							unsigned int index = (*vItr)->hasDefense(FDefense::ICM);
+							if (index && (*vItr)->getDefense(index)->getAmmo()){
+								haveICMs = true;
+								break;  // once at least one ship has ICMs we can stop
+							}
+						}
+						// if so add the weapon to the list
+						if (haveICMs){
+							m_ICMData.push_back(d);
+						}
+					}
+				}
+			}
+		}
+	}
+	// now display the ICM targeting panel
+	if (m_ICMData.size()>0){
+		ICMSelectionGUI *panel = new ICMSelectionGUI( this, &m_ICMData);
+		panel->ShowModal();
+	}
+	m_ICMData.clear();
 }
 
 }
