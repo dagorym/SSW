@@ -220,7 +220,7 @@ void ICMSelectionGUI::finalizeAssignments( wxCommandEvent& event ){
 	// reduce the ships' ICMs by number expended
 	std::map<unsigned int,FVehicle *>::iterator vItr = shipList.begin();
 	for (unsigned int i=0; i<shipList.size(); i++){
-		std::cerr << vItr->second->getName() << ":  ";
+//		std::cerr << vItr->second->getName() << ":  ";
 		FDefense * d = vItr->second->getDefense(vItr->second->hasDefense(FDefense::ICM));
 		int expendedICMs= m_shipICMData[vItr->first]->getAllocatedICMs();
 //		std::cerr << "expendedICMs = " << expendedICMs << " current ammo = " << d->getAmmo();

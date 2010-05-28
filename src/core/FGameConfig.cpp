@@ -9,8 +9,11 @@
 #include "core/FGameConfig.h"
 
 #include <iostream>
+#ifdef LINUX
 #include <unistd.h>
-
+#else
+#include <Windows.h>
+#endif
 namespace Frontier
 {
 
@@ -36,7 +39,7 @@ FGameConfig::FGameConfig(){
 #ifdef LINUX
 	ssize_t size = readlink("/proc/self/exe", buf, bufsize);
 #else
-	GetModuleFileName(NULL, buf, bufsize)
+	DWORD size = GetModuleFileName(NULL, buf, bufsize);
 #endif
 	buf[size]=0;  // add the null termination
 	std::string path(buf);

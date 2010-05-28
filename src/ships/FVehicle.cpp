@@ -239,7 +239,7 @@ void FVehicle::reload(){
 void FVehicle::setCurrentDefense(unsigned int i) {
 	if (i<m_defenses.size()) {
 		// turning on Masking Screen
-		if (m_defenses[i]->getType() == FDefense::MS and m_defenses[i]!=m_currentDefense){
+		if (m_defenses[i]->getType() == FDefense::MS && m_defenses[i]!=m_currentDefense){
 			if (m_defenses[i]->getAmmo()>0){
 				m_defenses[i]->setCurrentAmmo(m_defenses[i]->getAmmo()-1);
 				if (m_type=="ArmedStation" || m_type=="FortifiedStation" || m_type == "Fortress"){
