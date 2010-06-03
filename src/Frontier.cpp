@@ -9,7 +9,6 @@
 
 #include "FApp.h"
 #include "FMainFrame.h"
-#include "tactical/FBattleScreen.h"
 #include "Frontier.h"
 #include <wx/wx.h>
 
