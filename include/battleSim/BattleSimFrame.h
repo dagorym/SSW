@@ -34,7 +34,7 @@ class BattleSimFrame : public wxFrame
 		
 		// Virtual event handlers, overide them in your derived class
 //		virtual void onQuit( wxCloseEvent& event ){ event.Skip(); }
-		virtual void onPlayLocal( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onPlayLocal( wxCommandEvent& event );
 		virtual void onPlayNetwork( wxCommandEvent& event ){ event.Skip(); }
 		virtual void onQuit( wxCommandEvent& event ){ exit(0); event.Skip(); }
 		

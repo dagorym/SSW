@@ -6,6 +6,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "battleSim/BattleSimFrame.h"
+#include "battleSim/LocalGameDialog.h"
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -45,4 +46,12 @@ BattleSimFrame::~BattleSimFrame()
 	m_localGame->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BattleSimFrame::onPlayLocal ), NULL, this );
 	m_networkGame->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BattleSimFrame::onPlayNetwork ), NULL, this );
 	m_quitButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BattleSimFrame::onQuit ), NULL, this );
+}
+
+void BattleSimFrame::onPlayLocal( wxCommandEvent& event ){
+	LocalGameDialog d(this);
+	Hide();
+	d.ShowModal();
+	Show();
+	event.Skip();
 }

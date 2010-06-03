@@ -37,7 +37,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = BattleSimFrame.o
+OBJS = BattleSimFrame.o LocalGameDialog.o ScenarioDialog.o
 
 TARGET = libbattleSim.a
 
@@ -59,3 +59,6 @@ clean:
 # DO NOT DELETE
 
 BattleSimFrame.o: ../../include/battleSim/BattleSimFrame.h
+BattleSimFrame.o: ../../include/battleSim/LocalGameDialog.h
+LocalGameDialog.o: ../../include/battleSim/LocalGameDialog.h
+LocalGameDialog.o: ../../include/battleSim/ScenarioDialog.h
