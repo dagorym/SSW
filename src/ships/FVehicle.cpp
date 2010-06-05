@@ -221,6 +221,13 @@ FVehicle * createShip(std::string type){
 	return v;
 }
 
+FVehicle * createShip(std::string type, std::string name){
+	FVehicle *v= createShip(type);
+	v->setName(name);
+
+	return v;
+}
+
 void FVehicle::takeDamage (int damage){
 	m_currentHP -= damage;
 	if (m_currentHP < 0) {

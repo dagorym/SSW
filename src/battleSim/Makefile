@@ -62,3 +62,15 @@ BattleSimFrame.o: ../../include/battleSim/BattleSimFrame.h
 BattleSimFrame.o: ../../include/battleSim/LocalGameDialog.h
 LocalGameDialog.o: ../../include/battleSim/LocalGameDialog.h
 LocalGameDialog.o: ../../include/battleSim/ScenarioDialog.h
+ScenarioDialog.o: ../../include/battleSim/ScenarioDialog.h
+ScenarioDialog.o: ../../include/tactical/FBattleScreen.h
+ScenarioDialog.o: ../../include/Frontier.h ../../include/wxWidgets.h
+ScenarioDialog.o: ../../include/tactical/FBattleBoard.h
+ScenarioDialog.o: ../../include/strategic/FFleet.h
+ScenarioDialog.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+ScenarioDialog.o: ../../include/ships/FVehicle.h
+ScenarioDialog.o: ../../include/core/FGameConfig.h
+ScenarioDialog.o: ../../include/weapons/FWeapon.h
+ScenarioDialog.o: ../../include/defenses/FDefense.h
+ScenarioDialog.o: ../../include/core/FPoint.h
+ScenarioDialog.o: ../../include/tactical/FBattleDisplay.h

@@ -42,10 +42,10 @@ class ScenarioDialog : public wxDialog
 		wxButton* m_doneButton;
 		
 		// Virtual event handlers, overide them in your derived class
-		virtual void onScenario1( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onScenario2( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onScenario3( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onScenario4( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onScenario1( wxCommandEvent& event );
+		virtual void onScenario2( wxCommandEvent& event );
+		virtual void onScenario3( wxCommandEvent& event );
+		virtual void onScenario4( wxCommandEvent& event );
 		virtual void onDone( wxCommandEvent& event ){ EndModal(0); event.Skip(); }
 		
 	

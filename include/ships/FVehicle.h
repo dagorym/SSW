@@ -279,6 +279,10 @@ typedef std::vector<FVehicle *> VehicleList;
 /// object of that type
 FVehicle * createShip(std::string type);
 
+/// This factory method takes the ship type name and returns a pointer to an
+/// object of that type
+FVehicle * createShip(std::string type, std::string name);
+
 /**
  * @brief structure to hold ICM targeting information
  *
