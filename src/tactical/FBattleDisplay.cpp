@@ -489,7 +489,7 @@ void FBattleDisplay::drawDefensiveFire(wxDC &dc){
 	os << "The non-moving player may now";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,BORDER);
-	dc.DrawText("declare offensive fire.",leftOffset,BORDER+16);
+	dc.DrawText("declare defensive fire.",leftOffset,BORDER+16);
 	os.str("Please select a ship to fire weapons.");
 	dc.DrawText(os.str(),leftOffset,BORDER+32);
 	m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());

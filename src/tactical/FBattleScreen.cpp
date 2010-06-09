@@ -260,6 +260,7 @@ void FBattleScreen::declareWinner(){
 	msg+= (getActivePlayer())?"Sathar":"UPF";
 	wxMessageBox( msg, "Enemy Defeated!", wxOK | wxICON_INFORMATION );
 	Destroy();
+	EndModal(0);
 }
 
 void FBattleScreen::fireICM() {

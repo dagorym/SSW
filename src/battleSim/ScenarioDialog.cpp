@@ -124,7 +124,7 @@ void ScenarioDialog::onScenario1( wxCommandEvent& event ){
 	bb->ShowModal();
 	Show();
 
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioDialog::onScenario2( wxCommandEvent& event ){
@@ -197,7 +197,7 @@ void ScenarioDialog::onScenario2( wxCommandEvent& event ){
 	bb->ShowModal();
 	Show();
 
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioDialog::onScenario3( wxCommandEvent& event ){
@@ -241,7 +241,7 @@ void ScenarioDialog::onScenario3( wxCommandEvent& event ){
 	bb->ShowModal();
 	Show();
 
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioDialog::onScenario4( wxCommandEvent& event ){
@@ -323,5 +323,5 @@ void ScenarioDialog::onScenario4( wxCommandEvent& event ){
 	bb->ShowModal();
 	Show();
 
-	event.Skip();
+//	event.Skip();
 }

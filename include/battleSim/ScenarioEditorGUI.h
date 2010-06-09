@@ -70,7 +70,7 @@ class ScenarioEditorGUI : public wxDialog
 	 */
 	StringList convertNames(wxListBox * ships);
 
-	FFleet * createFleet(StringList ships, std::string teamName);
+	FFleet * createFleet(StringList ships, std::string teamName, unsigned int id);
 
 	protected:
 		wxChoice* m_defenderTeam;

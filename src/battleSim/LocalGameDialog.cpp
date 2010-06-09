@@ -57,7 +57,7 @@ void LocalGameDialog::onPlayPredefined( wxCommandEvent& event ){
 	Hide();
 	d.ShowModal();
 	Show();
-	event.Skip();
+//	event.Skip();
 }
 
 void LocalGameDialog::onCreateNew( wxCommandEvent& event ){
@@ -65,5 +65,5 @@ void LocalGameDialog::onCreateNew( wxCommandEvent& event ){
 	Hide();
 	d.ShowModal();
 	Show();
-	event.Skip();
+//	event.Skip();
 }

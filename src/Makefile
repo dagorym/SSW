@@ -34,7 +34,7 @@ OBJ_LIBS = libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libdefen
 
 BS_OBJS = FBattleSimApp.o BattleSim.o 
 
-BS_OBJ_LIBS = libcore.a libtactical.a libweapons.a libdefenses.a libships.a libbattleSim.a
+BS_OBJ_LIBS = libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libdefenses.a libships.a libbattleSim.a
 
 TARGET = SSW
 
@@ -89,10 +89,14 @@ all_clean:
 	@ cd battleSim; ${MAKE} clean
 	rm $(OBJS)
 	rm $(TARGET)
+	rm $(BS_OBS)
+	rm $(BS_TARGET)
 	
 clean:
 	rm $(OBJS)
 	rm $(TARGET)
+	rm $(BS_OBS)
+	rm $(BS_TARGET)
 
 # DO NOT DELETE
 

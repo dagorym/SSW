@@ -292,43 +292,43 @@ void ScenarioEditorGUI::onSelectDefenderTeam( wxCommandEvent& event ){
 			m_planetNo->SetValue( true );
 		}
 	}
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onSelectDefenderType( wxCommandEvent& event ){
 	m_defenderAddButton->Enable(true);
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onAddDefenderShip( wxCommandEvent& event ){
 	m_assignedDefenderListBox->Append(m_availableDefenderListBox->GetStringSelection());
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onRemoveDefenderShip( wxCommandEvent& event ){
 	m_assignedDefenderListBox->Delete(m_assignedDefenderListBox->GetSelection());
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onSelectDefenderShip( wxCommandEvent& event ){
 	m_defenderRemoveButton->Enable(true);
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onSelectStationYes( wxCommandEvent& event ){
 	m_stationChoice->Enable( true );
 	m_staticText3->Enable( true );
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onSelectStationNo( wxCommandEvent& event ){
 	m_stationChoice->Enable( false );
 	m_staticText3->Enable( false );
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onSelectStationType( wxCommandEvent& event ){
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onSelectAttackerTeam( wxCommandEvent& event ){
@@ -354,34 +354,34 @@ void ScenarioEditorGUI::onSelectAttackerTeam( wxCommandEvent& event ){
 			m_planetNo->SetValue( true );
 		}
 	}
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onSelectAttackerType( wxCommandEvent& event ){
 	m_attackerAddButton->Enable(true);
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onAddAttackerShip( wxCommandEvent& event ){
 	m_assignedAttackerListBox->Append(m_availableAttackerListBox->GetStringSelection());
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onRemoveAttackerShip( wxCommandEvent& event ){
 	m_assignedAttackerListBox->Delete(m_assignedAttackerListBox->GetSelection());
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onSelectAttakerShip( wxCommandEvent& event ){
 	m_attackerRemoveButton->Enable(true);
-	event.Skip();
+//	event.Skip();
 }
 
 void ScenarioEditorGUI::onStartBattle( wxCommandEvent& event ){
 	// do we have a planet
 	bool hasPlanet = m_planetYes->GetValue();
 	// create a station if present
-	FVehicle *station;
+	FVehicle *station=NULL;
 	if (hasPlanet){ // there's only a station if there is a planet
 		switch (m_stationChoice->GetSelection()){
 		case 1:
@@ -398,23 +398,38 @@ void ScenarioEditorGUI::onStartBattle( wxCommandEvent& event ){
 			break;
 		}
 	}
+	unsigned int defenderID = m_defenderTeam->GetSelection();
+	unsigned int attackerID = m_attackerTeam->GetSelection();
+	if (station != NULL) {
+		station->setOwner(defenderID);
+	}
 	FleetList aList,dList;
 	// generate a fleet list for the attackers
 	StringList attackers = convertNames(m_assignedAttackerListBox);
-	FFleet *attackFleet = createFleet(attackers,m_attackerTeam->GetStringSelection().c_str());
+	FFleet *attackFleet = createFleet(attackers,m_attackerTeam->GetStringSelection().c_str(),attackerID);
 	aList.push_back(attackFleet);
 	// generate a fleet list for the defenders
 	StringList defenders = convertNames(m_assignedDefenderListBox);
-	FFleet *defendFleet = createFleet(defenders,m_defenderTeam->GetStringSelection().c_str());
+	FFleet *defendFleet = createFleet(defenders,m_defenderTeam->GetStringSelection().c_str(),defenderID);
 	dList.push_back(defendFleet);
 	// start the battle
-	FBattleScreen bb;
-	bb.setupFleets(&aList,&dList,hasPlanet,station);
+	FBattleScreen *bb = new FBattleScreen();
+	bb->setupFleets(&aList,&dList,hasPlanet,station);
 	Hide();
-	bb.ShowModal();
-	Show();
+	bb->ShowModal();
 	///@todo clean up ships and fleets
-	event.Skip();
+//	VehicleList vList = attackFleet->getShipList();
+//	for (VehicleList::iterator itr=vList.begin(); itr< vList.end(); itr++){
+//		delete (*itr);
+//	}
+//	delete attackFleet;
+//	vList = defendFleet->getShipList();
+//	for (VehicleList::iterator itr=vList.begin(); itr< vList.end(); itr++){
+//		delete (*itr);
+//	}
+//	delete defendFleet;
+	EndModal(0);
+//	event.Skip();
 }
 
 StringList ScenarioEditorGUI::getAvailableShipTypes(int teamID){
@@ -465,11 +480,13 @@ StringList ScenarioEditorGUI::convertNames(wxListBox * ships){
 	return shipTypes;
 }
 
-FFleet * ScenarioEditorGUI::createFleet(StringList ships, std::string teamName){
+FFleet * ScenarioEditorGUI::createFleet(StringList ships, std::string teamName,unsigned int id){
 	FFleet *f = new FFleet;
+	f->setOwner(id);
 	f->setName(teamName);
 	for(StringList::iterator itr = ships.begin(); itr<ships.end(); itr++){
 		FVehicle *s = createShip(*itr);
+		s->setOwner(id);
 		std::ostringstream os;
 		os << "icons/" << teamName;
 		if ((*itr)=="Fighter"){
