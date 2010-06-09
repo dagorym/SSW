@@ -35,7 +35,7 @@ class LocalGameDialog : public wxDialog
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void onLoad( wxCommandEvent& event ){ event.Skip(); }
-		virtual void onCreateNew( wxCommandEvent& event ){ event.Skip(); }
+		virtual void onCreateNew( wxCommandEvent& event );
 		virtual void onPlayPredefined( wxCommandEvent& event );
 		virtual void onQuit( wxCommandEvent& event ){ EndModal(0); event.Skip(); }
 		

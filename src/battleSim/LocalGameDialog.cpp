@@ -7,6 +7,7 @@
 
 #include "battleSim/LocalGameDialog.h"
 #include "battleSim/ScenarioDialog.h"
+#include "battleSim/ScenarioEditorGUI.h"
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -23,8 +24,6 @@ LocalGameDialog::LocalGameDialog( wxWindow* parent, wxWindowID id, const wxStrin
 	bSizer1->Add( m_loadButton, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10 );
 	
 	m_customGameButton = new wxButton( this, wxID_ANY, wxT("Create a New Custom Game"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_customGameButton->Enable( false );
-	
 	bSizer1->Add( m_customGameButton, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10 );
 	
 	m_predefinedButton = new wxButton( this, wxID_ANY, wxT("Play a Predefined Scenario"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -55,6 +54,14 @@ LocalGameDialog::~LocalGameDialog()
 
 void LocalGameDialog::onPlayPredefined( wxCommandEvent& event ){
 	ScenarioDialog d(this);
+	Hide();
+	d.ShowModal();
+	Show();
+	event.Skip();
+}
+
+void LocalGameDialog::onCreateNew( wxCommandEvent& event ){
+	ScenarioEditorGUI d(this);
 	Hide();
 	d.ShowModal();
 	Show();
