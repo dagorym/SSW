@@ -14,7 +14,7 @@ using namespace Frontier;
 CPPUNIT_TEST_SUITE_REGISTRATION( FElectronBatteryTest );
 
 void FElectronBatteryTest::setUp(){
-	m_w1 = createWeapon(EB);
+	m_w1 = createWeapon(FWeapon::EB);
 }
 
 void FElectronBatteryTest::tearDown(){
@@ -24,7 +24,7 @@ void FElectronBatteryTest::tearDown(){
 void FElectronBatteryTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getName() == "EB" );
 	CPPUNIT_ASSERT( m_w1->getLongName() == "Electron Battery" );
-	CPPUNIT_ASSERT( m_w1->getType() == EB );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::EB );
 	CPPUNIT_ASSERT( m_w1->getRange() == 12 );
 	CPPUNIT_ASSERT( m_w1->getDice() == 1 );
 	CPPUNIT_ASSERT( m_w1->getDamageMod() == 0 );

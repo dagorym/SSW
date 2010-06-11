@@ -14,7 +14,7 @@ using namespace Frontier;
 CPPUNIT_TEST_SUITE_REGISTRATION( FLaserBatteryTest );
 
 void FLaserBatteryTest::setUp(){
-	m_w1 = createWeapon(LB);
+	m_w1 = createWeapon(FWeapon::LB);
 }
 
 void FLaserBatteryTest::tearDown(){
@@ -24,7 +24,7 @@ void FLaserBatteryTest::tearDown(){
 void FLaserBatteryTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getName() == "LB" );
 	CPPUNIT_ASSERT( m_w1->getLongName() == "Laser Battery" );
-	CPPUNIT_ASSERT( m_w1->getType() == LB );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::LB );
 	CPPUNIT_ASSERT( m_w1->getRange() == 9 );
 	CPPUNIT_ASSERT( m_w1->getDice() == 1 );
 	CPPUNIT_ASSERT( m_w1->getDamageMod() == 0 );

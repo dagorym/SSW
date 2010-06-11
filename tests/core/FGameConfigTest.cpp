@@ -23,7 +23,7 @@ void FGameConfigTest::tearDown(){
 
 void FGameConfigTest::testConstructor(){
 	std::string basePath = m_c1->getBasePath();
-	CPPUNIT_ASSERT (basePath == "/home/tstephen/Development/ssw/");
+	CPPUNIT_ASSERT (basePath == "/home/tstephen/Development/SSW/");
 }
 
 void FGameConfigTest::testSerialize(){

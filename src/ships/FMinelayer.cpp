@@ -43,6 +43,7 @@ FMinelayer::FMinelayer() {
 	w->setMaxAmmo(20);
 	w->setCurrentAmmo(20);
 	m_weapons.push_back(w);
+	m_defenses.clear();
 	FDefense *d = createDefense(FDefense::RH);
 	m_defenses.push_back(d);
 	d = createDefense(FDefense::ICM);

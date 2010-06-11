@@ -55,6 +55,7 @@ FHvCruiser::FHvCruiser() {
 	w->setCurrentAmmo(2);
 	m_weapons.push_back(w);
 	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.clear();
 	m_defenses.push_back(d);
 	d = createDefense(FDefense::ES);
 	m_defenses.push_back(d);

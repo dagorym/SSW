@@ -14,7 +14,7 @@ using namespace Frontier;
 CPPUNIT_TEST_SUITE_REGISTRATION( FMineLauncherTest );
 
 void FMineLauncherTest::setUp(){
-	m_w1 = createWeapon(M);
+	m_w1 = createWeapon(FWeapon::M);
 }
 
 void FMineLauncherTest::tearDown(){
@@ -24,7 +24,7 @@ void FMineLauncherTest::tearDown(){
 void FMineLauncherTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getName() == "M" );
 	CPPUNIT_ASSERT( m_w1->getLongName() == "Mine" );
-	CPPUNIT_ASSERT( m_w1->getType() == M );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::M );
 	CPPUNIT_ASSERT( m_w1->getRange() == 0 );
 	CPPUNIT_ASSERT( m_w1->getDice() == 3 );
 	CPPUNIT_ASSERT( m_w1->getDamageMod() == 5);

@@ -14,7 +14,7 @@ using namespace Frontier;
 CPPUNIT_TEST_SUITE_REGISTRATION( FTorpedoTest );
 
 void FTorpedoTest::setUp(){
-	m_w1 = createWeapon(T);
+	m_w1 = createWeapon(FWeapon::T);
 }
 
 void FTorpedoTest::tearDown(){
@@ -24,7 +24,7 @@ void FTorpedoTest::tearDown(){
 void FTorpedoTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getName() == "T" );
 	CPPUNIT_ASSERT( m_w1->getLongName() == "Torpedo" );
-	CPPUNIT_ASSERT( m_w1->getType() == T );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::T );
 	CPPUNIT_ASSERT( m_w1->getRange() == 4 );
 	CPPUNIT_ASSERT( m_w1->getDice() == 4 );
 	CPPUNIT_ASSERT( m_w1->getICMMod() == -10 );

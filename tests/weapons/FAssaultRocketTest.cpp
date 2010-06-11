@@ -16,7 +16,7 @@ using namespace Frontier;
 CPPUNIT_TEST_SUITE_REGISTRATION( FAssaultRocketTest );
 
 void FAssaultRocketTest::setUp(){
-	m_w1 = createWeapon(AR);
+	m_w1 = createWeapon(FWeapon::AR);
 }
 
 void FAssaultRocketTest::tearDown(){
@@ -26,7 +26,7 @@ void FAssaultRocketTest::tearDown(){
 void FAssaultRocketTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getName() == "AR" );
 	CPPUNIT_ASSERT( m_w1->getLongName() == "Assault Rocket" );
-	CPPUNIT_ASSERT( m_w1->getType() == AR );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::AR );
 	CPPUNIT_ASSERT( m_w1->getRange() == 4 );
 	CPPUNIT_ASSERT( m_w1->getDice() == 2 );
 	CPPUNIT_ASSERT( m_w1->getDamageMod() == 4 );

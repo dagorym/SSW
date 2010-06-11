@@ -14,7 +14,7 @@ using namespace Frontier;
 CPPUNIT_TEST_SUITE_REGISTRATION( FLaserCannonTest );
 
 void FLaserCannonTest::setUp(){
-	m_w1 = createWeapon(LC);
+	m_w1 = createWeapon(FWeapon::LC);
 }
 
 void FLaserCannonTest::tearDown(){
@@ -24,7 +24,7 @@ void FLaserCannonTest::tearDown(){
 void FLaserCannonTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getName() == "LC" );
 	CPPUNIT_ASSERT( m_w1->getLongName() == "Laser Cannon" );
-	CPPUNIT_ASSERT( m_w1->getType() == LC );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::LC );
 	CPPUNIT_ASSERT( m_w1->getRange() == 10 );
 	CPPUNIT_ASSERT( m_w1->getDice() == 2 );
 	CPPUNIT_ASSERT( m_w1->isRD() == true );

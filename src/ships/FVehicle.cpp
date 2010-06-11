@@ -8,6 +8,7 @@
 #include "ships/FVehicle.h"
 #include "weapons/FWeapon.h"
 #include "defenses/FDefense.h"
+#include "defenses/FNone.h"
 #include "ships/ships.h"
 #include <sstream>
 
@@ -37,6 +38,9 @@ FVehicle::FVehicle(){
 	m_owner = 0;
 	m_maxDCR = 0;
 	m_currentDCR = 0;
+	FDefense *d = new FNone();
+	m_defenses.push_back(d);
+	m_currentDefense = d;
 }
 
 FVehicle::~FVehicle(){

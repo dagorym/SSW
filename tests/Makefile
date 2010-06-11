@@ -1,10 +1,12 @@
 CXXFLAGS = -I../include  -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
 
-LIBS = `wx-config --libs` -L./strategic -lstrategicTests -L./ships -lshipsTests \
+LIBS = `wx-config --libs` \
+       -L./strategic -lstrategicTests -L./ships -lshipsTests \
        -L./weapons -lweaponsTests -L./core -lcoreTests \
-       -lcppunit -L../src/strategic -lstrategic -L../src/gui -lgui -L../src/ships -lships \
-       -L../src/tactical -ltactical -L../src/weapons -lweapons -L../src/core -lcore #\
-#       -l wxGuiTesting
+       -lcppunit -L../src/strategic -lstrategic -L../src/ships -lships -L../src/gui -lgui -L../src/tactical -ltactical \
+       -L../src/weapons -lweapons -L../src/defenses -ldefenses \
+       -L../src/core -lcore -L../src/gui -lgui \
+        #-l wxGuiTesting
        
 
 #################### the implicit rules #############################
@@ -31,7 +33,7 @@ LIBS = `wx-config --libs` -L./strategic -lstrategicTests -L./ships -lshipsTests 
 
 OBJS = SSWTests.o #FApp.o Frontier.o FMainFrameTest.o 
 
-OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a  libshipsTests.a #libguiTests.a libtacticalTests.a
+OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a libshipsTests.a #libguiTests.a libtacticalTests.a
 
 TARGET = SSWTests
 

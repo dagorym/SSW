@@ -15,7 +15,7 @@ using namespace Frontier;
 CPPUNIT_TEST_SUITE_REGISTRATION( FDisruptorCannonTest );
 
 void FDisruptorCannonTest::setUp(){
-	m_w1 = createWeapon(DC);
+	m_w1 = createWeapon(FWeapon::DC);
 }
 
 void FDisruptorCannonTest::tearDown(){
@@ -25,7 +25,7 @@ void FDisruptorCannonTest::tearDown(){
 void FDisruptorCannonTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getName() == "DC" );
 	CPPUNIT_ASSERT( m_w1->getLongName() == "Disruptor Cannon" );
-	CPPUNIT_ASSERT( m_w1->getType() == DC );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::DC );
 	CPPUNIT_ASSERT( m_w1->getRange() == 12 );
 	CPPUNIT_ASSERT( m_w1->getDice() == 3 );
 	CPPUNIT_ASSERT( m_w1->getDamageMod() == 0 );
@@ -39,6 +39,7 @@ void FDisruptorCannonTest::testConstructor(){
 
 void FDisruptorCannonTest::testFireCoverage() {
 	FVehicle v;
+	m_w1->setParent(&v);
 	m_w1->setTarget(&v,0,true);
 	m_w1->fire();
 	m_w1->setTarget(&v,0,true);

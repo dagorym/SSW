@@ -14,7 +14,7 @@ using namespace Frontier;
 CPPUNIT_TEST_SUITE_REGISTRATION( FSeekerMissileLauncherTest );
 
 void FSeekerMissileLauncherTest::setUp(){
-	m_w1 = createWeapon(SM);
+	m_w1 = createWeapon(FWeapon::SM);
 }
 
 void FSeekerMissileLauncherTest::tearDown(){
@@ -24,7 +24,7 @@ void FSeekerMissileLauncherTest::tearDown(){
 void FSeekerMissileLauncherTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getName() == "SM" );
 	CPPUNIT_ASSERT( m_w1->getLongName() == "Seeker Missile" );
-	CPPUNIT_ASSERT( m_w1->getType() == SM );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::SM );
 	CPPUNIT_ASSERT( m_w1->getRange() == 0 );
 	CPPUNIT_ASSERT( m_w1->getDice() == 5 );
 	CPPUNIT_ASSERT( m_w1->getICMMod() == -8 );

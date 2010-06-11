@@ -89,13 +89,13 @@ all_clean:
 	@ cd battleSim; ${MAKE} clean
 	rm $(OBJS)
 	rm $(TARGET)
-	rm $(BS_OBS)
+	rm $(BS_OBJS)
 	rm $(BS_TARGET)
 	
 clean:
 	rm $(OBJS)
 	rm $(TARGET)
-	rm $(BS_OBS)
+	rm $(BS_OBJS)
 	rm $(BS_TARGET)
 
 # DO NOT DELETE

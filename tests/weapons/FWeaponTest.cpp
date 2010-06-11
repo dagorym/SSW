@@ -7,6 +7,7 @@
 
 #include "FWeaponTest.h"
 #include "ships/FVehicle.h"
+#include "ships/FAssaultScout.h"
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -32,7 +33,7 @@ void FWeaponTest::testConstructor(){
 	CPPUNIT_ASSERT( m_w1->getRange() == 0 );
 	CPPUNIT_ASSERT( m_w1->getTarget() == NULL );
 	CPPUNIT_ASSERT( m_w1->getTargetRange() == -1 );
-	CPPUNIT_ASSERT( m_w1->getType() == NONE );
+	CPPUNIT_ASSERT( m_w1->getType() == FWeapon::NONE );
 	CPPUNIT_ASSERT( m_w1->hasAmmo() == false );
 	CPPUNIT_ASSERT( m_w1->isDamaged() == false );
 	CPPUNIT_ASSERT( m_w1->isFF() == false );
@@ -117,9 +118,9 @@ void FWeaponTest::testFireNoTarget(){
 }
 
 void FWeaponTest::testFireAtTarget(){
-	FVehicle *v = new FVehicle;
+	FVehicle *v = new FAssaultScout;
+	m_w1->setParent(v);
 	m_w1->setTarget(v,3,true);
-//	m_w1->fire();
 	m_w1->setMaxAmmo(3);
 	m_w1->setCurrentAmmo(3);
 	m_w1->fire();
@@ -144,7 +145,7 @@ void FWeaponTest::testFireAtTarget(){
 }
 
 void FWeaponTest::testBadIdentifier(){
-	m_w1 = createWeapon(-1);
+	m_w1 = createWeapon(FWeapon::NONE);
 	CPPUNIT_ASSERT( m_w1 == NULL );
 }
 

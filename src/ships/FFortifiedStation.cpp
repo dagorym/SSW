@@ -39,6 +39,7 @@ FFortifiedStation::FFortifiedStation() {
 	w->setCurrentAmmo(8);
 	m_weapons.push_back(w);
 	FDefense *d = createDefense(FDefense::RH);
+	m_defenses.clear();
 	m_defenses.push_back(d);
 	d = createDefense(FDefense::MS);
 	d->setMaxAmmo(2);
