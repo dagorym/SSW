@@ -190,26 +190,6 @@ void FBattleScreen::setPhase(int p){
 	m_display->Refresh();
 }
 
-int FBattleScreen::computeHeading(FPoint s, FPoint d){
-
-	double angle = computeHexAngle(s,d);
-	if (angle<0) { angle += 360.; }
-	int ang = (int)floor(angle+30);
-	if (ang>=360) { ang -= 360; }
-//	std::cerr << "angle = " << angle << "  ang = " << ang << "  heading = " << ang/60 << std::endl;
-	return (ang/60);
-}
-
-double FBattleScreen::computeHexAngle(FPoint s, FPoint d){
-	double dis = 1.0;
-	double a = dis/sqrt(3.);
-	double sx = dis + (2 * dis * s.getX()) + dis * (s.getY()%2);
-	double sy = 2 * a + (3 * a * s.getY());
-	double dx = dis + (2 * dis * d.getX()) + dis * (d.getY()%2);
-	double dy = 2 * a + (3 * a * d.getY());
-	return atan2((dy-sy),(sx-dx))*180/acos(-1.0);  // angle in degrees;
-}
-
 void FBattleScreen::setMoveComplete(bool s) {
 	bool refresh = false;
 	if (m_moveComplete!=s){

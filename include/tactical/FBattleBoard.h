@@ -72,7 +72,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Apr 22, 2010
+ * @date Last Modified:  Oct 04, 2010
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -309,25 +309,6 @@ protected:
 	void drawCenteredOnHex(wxImage img, FPoint p, int rot = 0);
 
 	/**
-	 * @brief Computes the distance between two hexes on the map
-	 *
-	 * This method determines the number of hexes in the shortest path
-	 * between two specified hexes on the map
-	 *
-	 * @param sx The horizontal hex coordinate of the starting hex
-	 * @param sy The vertical hex coordinate of the starting hex
-	 * @param ex The horizontal hex coordinate of the ending hex
-	 * @param ey The vertical hex coordinate of the ending hex
-	 *
-	 * @todo:  This method should probably be rewritten to take FPoint input
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Sep 14, 2008
-	 * @date Last Modified:  Sep 14, 2008
-	 */
-	int computeHexDistance(int sx, int sy, int ex, int ey);
-
-	/**
 	 * @brief Draws ships on map
 	 *
 	 * This method runs through all the hexes and if there are any ships
@@ -409,21 +390,6 @@ protected:
 	 * @date Last Modified:  May 13, 2009
 	 */
 	void setInitialRoute();
-
-	/**
-	 * @brief Finds the next hex in the specified direction
-	 *
-	 * Given the current hex array coordinates (passed in a hexData structure)
-	 * and a heading, this method computes the next hex along the path.
-	 *
-	 * @param h hexData structure containing array coordinates of hex ship is in
-	 * @param heading Hexside the ship is facing
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  Mar 30, 2009
-	 */
-	FPoint findNextHex(FPoint h, int heading);
 
 	/**
 	 * @brief Checks to see if the selected hex in along the valid paths

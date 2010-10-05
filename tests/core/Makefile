@@ -37,7 +37,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FPointTest.o FObjectTest.o FGameConfigTest.o #FPObject.o 
+OBJS = FPointTest.o FObjectTest.o FGameConfigTest.o FHexPathTest.o #FPObject.o 
 
 TARGET = libcoreTests.a
 

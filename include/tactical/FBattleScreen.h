@@ -97,36 +97,6 @@ public:
 	VehicleList getShipList(unsigned int id) const;
 
 	/**
-	 * @brief Returns heading from one hex to another
-	 *
-	 * This method takes as input a source and destination hex (grid positions) and computes
-	 * the closest heading (hex facing) from the source to the destination.  The computed
-	 * heading is returned to the user
-	 *
-	 * @param s source hex
-	 * @param d destination hex
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Oct 26, 2008
-	 * @date Last Modified:  Oct 26, 2008
-	 */
-	int computeHeading(FPoint s, FPoint d);
-
-	/**
-	 * @brief Computes angle between two hexes
-	 *
-	 * This returns the angle in degrees between the two passed hexes
-	 *
-	 * @param s the source hex
-	 * @param d the destination hex
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Nov 1, 2008
-	 * @date Last Modified:  Nov 1, 2008
-	 */
-	double computeHexAngle(FPoint s, FPoint d);
-
-	/**
 	 * @brief Removes all destroyed ships from the map
 	 *
 	 * This runs through all the ships of the player that was just fired

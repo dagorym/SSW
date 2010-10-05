@@ -10,6 +10,7 @@
 #include "Frontier.h"
 #include "tactical/FBattleScreen.h"
 #include "core/FGameConfig.h"
+#include "core/FHexMap.h"
 #include <wx/wx.h>
 #include <sstream>
 
@@ -352,7 +353,7 @@ bool FBattleDisplay::setStationRotation(wxMouseEvent &event){
 	int w=140;  // these come from the drawSelectRotation() method
 	int h=30;
 	if (x>leftOffset && x<leftOffset+BORDER+2*w && y>BORDER && y<BORDER+h){
-		int heading = m_parent->computeHeading(m_parent->getStationPos(),m_parent->getPlanetPos());
+		int heading = FHexMap::computeHeading(m_parent->getStationPos(),m_parent->getPlanetPos());
 		if(x<leftOffset+w){					// clockwise
 			heading = (heading+1)%6;
 		} else if (x>leftOffset+w+BORDER){	// ccw

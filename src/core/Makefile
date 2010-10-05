@@ -37,22 +37,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FObject.o FPObject.o FPoint.o FGameConfig.o
-#       FVehicle.o FFleet.o \
-#       FPlayer.o FAstroBody.o FPlanet.o FSystem.o FJumpRoute.o FMap.o \
-#       FGame.o FApp.o FMainFrame.o Frontier.o SystemDialogGUI.o SelectJumpGUI.o \
-#       FAssaultScout.o FAssaultCarrier.o FBattleship.o FDestroyer.o FFighter.o \
-#       FFrigate.o FHvCruiser.o FLtCruiser.o FMinelayer.o ViewFleetGUI.o \
-#       UPFUnattachedGUI.o SatharFleetsGUI.o FFortress.o FArmedStation.o \
-#       FFortifiedStation.o TransferShipsGUI.o  SatharRetreatGUI.o \
-#       SelectCombatGUI.o TwoPlanetsGUI.o CombatLocationGUI.o \
-#       CombatFleetsGUI.o SelectResolutionGUI.o BattleResultsGUI.o \
-#       FBattleBoard.o FBattleScreen.o FBattleDisplay.o FWeapon.o \
-#       FLaserBattery.o FLaserCannon.o FProtonBattery.o FElectronBattery.o \
-#       FDisruptorCannon.o FRocketBattery.o FAssaultRocket.o FTorpedo.o \
-#       FSeekerMissileLauncher.o FMineLauncher.o
-
-#OBJS = FApp.o FMainFrame.o Frontier.o FObject.o FPObject.o
+OBJS = FObject.o FPObject.o FPoint.o FGameConfig.o FHexMap.o FHexPath.o
 
 TARGET = libcore.a
 

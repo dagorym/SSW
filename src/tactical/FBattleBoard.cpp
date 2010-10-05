@@ -8,6 +8,7 @@
 
 #include "Frontier.h"
 #include "tactical/FBattleScreen.h"
+#include "core/FHexMap.h"
 #include <wx/wx.h>
 #include <cmath>
 #include <algorithm>
@@ -176,7 +177,7 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 			}
 			break;
 		case BS_SetupStation:
-			if (computeHexDistance(a,b,m_planetPosition.getX(),m_planetPosition.getY())==1){
+			if (FHexMap::computeHexDistance(a,b,m_planetPosition.getX(),m_planetPosition.getY())==1){
 				// valid choice
 				m_parent->setStationPosition(h);
 //				m_parent->setState(BS_SetupDefendFleet);
@@ -297,24 +298,6 @@ void FBattleBoard::drawCenteredOnHex(wxImage img, FPoint p, int rot){
 	wxCoord xx,yy;
 	CalcScrolledPosition(x,y,&xx,&yy);
 	dc.DrawBitmap(b,xx,yy);
-}
-
-int FBattleBoard::computeHexDistance(int sx, int sy, int ex, int ey){
-	int dis=1;
-    // calculate hexspace coordinates of A and B
-    int x1 = sx - Floor2(sy);
-    int y1 = sx + Ceil2(sy);
-    int x2 = ex - Floor2(ey);
-    int y2 = ex + Ceil2(ey);
-    // calculate distance using hexcoords as per previous algorithm
-    int dx = x2 - x1;
-    int dy = y2 - y1;
-    if (sign(dx) == sign(dy)) {
-        dis = std::max(abs(dx),abs(dy));
-    } else {
-        dis = abs(dx) + abs(dy);
-    }
-	return dis;
 }
 
 void FBattleBoard::setScale(double factor) {
@@ -479,7 +462,7 @@ void FBattleBoard::setInitialRoute(){
 		m_moved=m_turnInfo[ship->getID()].nMoved;
 		computeRemainingMoves(*(m_turnInfo[ship->getID()].waypoints.end()-1));
 		for (int i = 0; i<m_turnInfo[ship->getID()].nMoved;i++){
-			current=findNextHex(current,curHeading);
+			current=FHexMap::findNextHex(current,curHeading);
 			checkForPlanetCollision(current,curHeading);
 			m_turnInfo[ship->getID()].movedHexes.push_back(current);
 //			std::cerr << current.cx << "," << current.cy << " -> "
@@ -509,26 +492,13 @@ void FBattleBoard::setInitialRoute(){
 		m_turnInfo[ship->getID()].nMoved=0;
 		for (int i=0; i < speed+ADF; i++){
 			if (current.getX() != -1){
-				current=findNextHex(current,curHeading);
+				current=FHexMap::findNextHex(current,curHeading);
 				checkForPlanetCollision(current,curHeading);
 				if(current.getX()!=-1) {m_movementHexes.push_back(current);}
 			}
 		}
 //		m_turnInfo[ship->getID()].hasMoved=true;
 	}
-}
-
-FPoint FBattleBoard::findNextHex(FPoint h, int heading){
-	FPoint bad(-1,-1);
-	for (int i=h.getX()-1;i<=h.getX()+1;i++){
-		for (int j=h.getY()-1;j<=h.getY()+1;j++){
-			FPoint tmp(i,j);
-			if (i>=0 && j>=0 && m_parent->computeHeading(h,tmp)==heading && computeHexDistance(h.getX(),h.getY(),i,j)==1){
-				return tmp;
-			}
-		}
-	}
-	return bad;
 }
 
 bool FBattleBoard::findHexInList(PointList list, FPoint ref, int &count){
@@ -705,7 +675,7 @@ void FBattleBoard::resetMoveData(){
 		d.gravityTurns.clear();
 //		std::cerr << (*itr)->getID() << " "  <<(*itr)->getName() << " " << d.hasMoved << std::endl;
 		if (m_parent->getStation()!=NULL && (*itr)->getID() == m_parent->getStation()->getID()){
-			FPoint nextHex = findNextHex(m_parent->getStationPos(),d.curHeading);
+			FPoint nextHex = FHexMap::findNextHex(m_parent->getStationPos(),d.curHeading);
 			d.movedHexes.push_back(nextHex);
 			d.nMoved=1;
 			d.waypoints.push_back(m_parent->getStationPos());
@@ -790,16 +760,16 @@ void FBattleBoard::computePath(PointList &list, FPoint hex, int heading){
 		std::map<FPoint,int>::iterator itr = m_turnInfo[m_parent->getShip()->getID()].gravityTurns.find(hex);
 		m_gravityTurnFlag = (itr!=m_turnInfo[m_parent->getShip()->getID()].gravityTurns.end())?true:false;
 		// make sure we are not next to the planet and only one hex past the turn point as well.
-		if (computeHexDistance(hex.getX(),hex.getY(),m_planetPosition.getX(),m_planetPosition.getY())==1){
+		if (FHexMap::computeHexDistance(hex,m_planetPosition)==1){
 			FPoint turnHex =  m_turnInfo[m_parent->getShip()->getID()].gravityTurns.begin()->first;
-			if(computeHexDistance(hex.getX(),hex.getY(),turnHex.getX(),turnHex.getY()) == 1){
+			if(FHexMap::computeHexDistance(hex,turnHex) == 1){
 				int back = heading + 3;
 				back = (back>5)?back-6:back;
 				int back2 = heading + 2;
 				back2 = (back2>5)?back2-6:back;
 				int back3 = heading + 4;
 				back3 = (back3>5)?back3-6:back;
-				int dir = m_parent->computeHeading(m_hexData[hex.getX()][hex.getY()].pos
+				int dir = FHexMap::computeHeading(m_hexData[hex.getX()][hex.getY()].pos
 						,m_hexData[turnHex.getX()][turnHex.getY()].pos
 						);
 				if (dir==back || dir==back2 || dir==back3){
@@ -811,7 +781,7 @@ void FBattleBoard::computePath(PointList &list, FPoint hex, int heading){
 	// compute the path forward
 	for (int i=m_moved; i< m_parent->getShip()->getSpeed()+m_parent->getShip()->getADF(); i++){
 		if (hex.getX()!= -1){
-			hex=findNextHex(hex,heading);
+			hex=FHexMap::findNextHex(hex,heading);
 			checkForPlanetCollision(hex,heading);
 			if(hex.getX()!=-1) {list.push_back(hex);}
 		}
@@ -951,7 +921,7 @@ void FBattleBoard::computeFFRange(FPoint &pos, PointSet &tList, PointSet &hList,
 	FPoint curHex = pos;
 	for (unsigned int i = 0; i<=range; i++){
 		hList.insert(curHex);
-		curHex = findNextHex(curHex,heading);
+		curHex = FHexMap::findNextHex(curHex,heading);
 		if (curHex.getX() < 0 || curHex.getY() < 0 || curHex.getX() > m_nCol || curHex.getY() > m_nRow) {
 			break;  // bust out if we move off the map
 		}
@@ -959,13 +929,13 @@ void FBattleBoard::computeFFRange(FPoint &pos, PointSet &tList, PointSet &hList,
 	// compute the right column
 	curHex = pos;
 //	heading = s->getHeading();
-	curHex = findNextHex(curHex,heading);
+	curHex = FHexMap::findNextHex(curHex,heading);
 	heading=turnShip(heading,-1);
-	curHex = findNextHex(curHex,heading);
+	curHex = FHexMap::findNextHex(curHex,heading);
 	heading=turnShip(heading,1);
-	while (computeHexDistance(pos.getX(),pos.getY(),curHex.getX(),curHex.getY()) <= (int)range){
+	while (FHexMap::computeHexDistance(pos,curHex) <= (int)range){
 		tList.insert(curHex);
-		curHex = findNextHex(curHex,heading);
+		curHex = FHexMap::findNextHex(curHex,heading);
 		if (curHex.getX() < 0 || curHex.getY() < 0 || curHex.getX() > m_nCol || curHex.getY() > m_nRow) {
 			break;  // bust out if we move off the map
 		}
@@ -974,13 +944,13 @@ void FBattleBoard::computeFFRange(FPoint &pos, PointSet &tList, PointSet &hList,
 	// compute the left column
 	curHex = pos;
 //	heading = s->getHeading();
-	curHex = findNextHex(curHex,heading);
+	curHex = FHexMap::findNextHex(curHex,heading);
 	heading=turnShip(heading, 1);
-	curHex = findNextHex(curHex,heading);
+	curHex = FHexMap::findNextHex(curHex,heading);
 	heading=turnShip(heading, -1);
-	while (computeHexDistance(pos.getX(),pos.getY(),curHex.getX(),curHex.getY()) <= (int)range){
+	while (FHexMap::computeHexDistance(pos,curHex) <= (int)range){
 		tList.insert(curHex);
-		curHex = findNextHex(curHex,heading);
+		curHex = FHexMap::findNextHex(curHex,heading);
 		if (curHex.getX() < 0 || curHex.getY() < 0 || curHex.getX() > m_nCol || curHex.getY() > m_nRow) {
 			break;  // bust out if we move off the map
 		}
@@ -1002,7 +972,7 @@ void FBattleBoard::computeBatteryRange(FPoint &pos, PointSet &tList){
 	for (int i=xMin;i<=xMax;i++){
 		for (int j=yMin;j<=yMax;j++){
 			FPoint tmp(i,j);
-			if (computeHexDistance(pos.getX(),pos.getY(),i,j)<=(int)range){
+			if (FHexMap::computeHexDistance(pos.getX(),pos.getY(),i,j)<=(int)range){
 				tList.insert(FPoint(i,j));
 			}
 		}
@@ -1090,7 +1060,7 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 			} else {
 				computeBatteryRange((*itr),tList);
 			}
-			unsigned int dis = computeHexDistance(p.getX(),p.getY(),(*itr).getX(),(*itr).getY());
+			unsigned int dis = FHexMap::computeHexDistance(p,(*itr));
 			if (m_targetHexes.find(*itr)!=m_targetHexes.end()){
 				// target is in general hex list
 				if (dis < min) {
@@ -1120,7 +1090,7 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 		// defensive player - For the defensive player we just need to run over the path of the
 		// moving ship and see where the closest point in the path is for the the target vessel
 		for (PointList::iterator itr = m_turnInfo[v->getID()].movedHexes.begin(); itr<m_turnInfo[v->getID()].movedHexes.end();itr++) {
-			unsigned int dis = computeHexDistance(m_shipPos.getX(),m_shipPos.getY(),(*itr).getX(),(*itr).getY());
+			unsigned int dis = FHexMap::computeHexDistance(m_shipPos,(*itr));
 //			std::cerr << "MP: Checking hex (" << itr->getX() << ", " << itr->getY() <<
 //				").  Range = " << dis << "  min = " << min << "  headOnMin = " << headOnMin << std::endl;
 			if (m_targetHexes.find(*itr)!=m_targetHexes.end()){
@@ -1217,7 +1187,7 @@ void FBattleBoard::checkForPlanetCollision(FPoint & currentHex, int & currentHea
 	if (m_planetPosition.getX()>=0){ // is there a planet on the board?
 		// next make sure we're not going to hit a planet head on (i.e. this hex or
 		// the next hex we would move from here is the planet.
-		if (m_planetPosition == currentHex || m_planetPosition == findNextHex(currentHex,currentHeading)){
+		if (m_planetPosition == currentHex || m_planetPosition == FHexMap::findNextHex(currentHex,currentHeading)){
 			currentHex = FPoint(-1,-1);
 			return;
 		}
@@ -1238,14 +1208,14 @@ int FBattleBoard::getPlanetTurnDirection(FPoint currentHex, int currentHeading){
 	// check port side
 	int portBackDir = currentHeading - 2;
 	portBackDir = (portBackDir<0)?portBackDir+6:portBackDir;
-	FPoint testHex = findNextHex(currentHex,portBackDir);
+	FPoint testHex = FHexMap::findNextHex(currentHex,portBackDir);
 	if (testHex == m_planetPosition && m_gravityTurnFlag == false){
 		turnDir = -1;
 	}
 	// check starboard side
 	int starboardBackDir = currentHeading + 2;
 	starboardBackDir = (starboardBackDir>5)?starboardBackDir-6:starboardBackDir;
-	testHex = findNextHex(currentHex,starboardBackDir);
+	testHex = FHexMap::findNextHex(currentHex,starboardBackDir);
 	if (testHex == m_planetPosition && m_gravityTurnFlag == false){
 		turnDir = 1;
 	}
