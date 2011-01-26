@@ -347,8 +347,8 @@ int FMap::load(std::istream &is){
 	for (unsigned int i = 0; i < jumpCount; i++){
 		FJumpRoute *j = new FJumpRoute;
 		j->load(is);
-		j->setStart(getSystem((unsigned int)(j->getStart())));
-		j->setEnd(getSystem((unsigned int)(j->getEnd())));
+		j->setStart(getSystem((j->getStart())->getID()));
+		j->setEnd(getSystem((j->getEnd())->getID()));
 		m_jumps.push_back(j);
 	}
 
