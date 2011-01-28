@@ -10,6 +10,7 @@
 #include "defenses/FDefense.h"
 #include "defenses/FNone.h"
 #include "ships/ships.h"
+#include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
@@ -41,6 +42,7 @@ FVehicle::FVehicle(){
 	FDefense *d = new FNone();
 	m_defenses.push_back(d);
 	m_currentDefense = d;
+	m_combatControlDamaged = false;
 }
 
 FVehicle::~FVehicle(){
@@ -71,6 +73,7 @@ const int FVehicle::save(std::ostream &os) const {
 	write(os,m_owner);
 	write(os,m_currentDCR);
 	write(os,m_maskingScreenTurnCount);
+	write(os,m_combatControlDamaged);
 	write(os,m_weapons.size());
 	for (WeaponList::const_iterator itr = m_weapons.begin(); itr != m_weapons.end(); itr++){
 		(*itr)->save(os);
@@ -104,6 +107,7 @@ int FVehicle::load(std::istream &is) {
 	read(is,m_owner);
 	read(is,m_currentDCR);
 	read(is,m_maskingScreenTurnCount);
+	read(is,m_combatControlDamaged);
 	unsigned int count = 0;
 	read(is,count);
 	for (unsigned int i=0; i< m_weapons.size(); i++){	// they were populated with default values
@@ -232,13 +236,12 @@ FVehicle * createShip(std::string type, std::string name){
 	return v;
 }
 
-void FVehicle::takeDamage (int damage){
-	m_currentHP -= damage;
-	if (m_currentHP < 0) {
-		m_currentHP = 0;
+void FVehicle::takeDamage (int damage, int damageMod, bool basic){
+	if (basic){  // if we're just using the basic damage rules all there is is hull damage
+		takeHullDamage(damage);
+	} else {
+		advancedDamage(damage,damageMod);
 	}
-//	std::cerr << m_name << " took " << damage << " HP and has "
-//			<< m_currentHP << " HP remaining." << std::endl;
 }
 
 void FVehicle::reload(){
@@ -282,6 +285,135 @@ unsigned int FVehicle::hasDefense(FDefense::Defense d){
 		if (m_defenses[i]->getType()==d) {
 			return i;
 		}
+	}
+	return 0;
+}
+
+void FVehicle::takeHullDamage(int damage){
+	m_currentHP -= damage;
+	if (m_currentHP < 0) {
+		m_currentHP = 0;
+	}
+}
+
+void FVehicle::advancedDamage(int damage, int damageMod){
+	int roll = irand(100) + damageMod; // roll on the damage table
+	if ( roll <= 10 ) {            // double hull damage
+		takeHullDamage(damage*2);
+	} else if ( roll <= 45 ) {     // normal hull damage
+		takeHullDamage(damage);
+	} else if ( roll <= 49 ) {     //  Lose 1 ADF
+		setADF(getADF()-1);
+	} else if ( roll <= 52 ) {     //  Lose 1/2 ADF
+		int adfLost = getMaxADF()/2 + getMaxADF()%2;  // half of original ADF rounded up.
+		setADF(getADF()-adfLost);
+	} else if ( roll == 53 ) {     //  Lose all ADF
+		setADF(0);
+	} else if ( roll <= 58 ) {     //  Lose 1 MR
+		setMR(getMR()-1);
+	} else if ( roll <= 60 ) {     //  Lose all MR
+		setMR(0);
+	} else if ( roll <= 62 ) {     //  Weapon Hit
+		int wList[] = {FWeapon::LC,FWeapon::LB,FWeapon::PB,FWeapon::EB,FWeapon::AR,FWeapon::RB,FWeapon::NONE};
+		if (damageWeapon(wList)==0) { // didn't hit a weapon
+			takeHullDamage(damage);
+		}
+	} else if ( roll <= 64 ) {     //  Weapon Hit
+		int wList[] = {FWeapon::PB,FWeapon::EB,FWeapon::LB,FWeapon::RB,FWeapon::T,FWeapon::AR,FWeapon::NONE};
+		if (damageWeapon(wList)==0) { // didn't hit a weapon
+			takeHullDamage(damage);
+		}
+	} else if ( roll <= 66 ) {     //  Weapon Hit
+		int wList[] = {FWeapon::DC,FWeapon::LC,FWeapon::AR,FWeapon::T,FWeapon::LB,FWeapon::NONE};
+		if (damageWeapon(wList)==0) { // didn't hit a weapon
+			takeHullDamage(damage);
+		}
+	} else if ( roll <= 68 ) {     //  Weapon Hit
+		int wList[] = {FWeapon::T,FWeapon::AR,FWeapon::EB,FWeapon::PB,FWeapon::LB,FWeapon::RB,FWeapon::NONE};
+		if (damageWeapon(wList)==0) { // didn't hit a weapon
+			takeHullDamage(damage);
+		}
+	} else if ( roll <= 70 ) {     //  Weapon Hit
+		int wList[] = {FWeapon::LB,FWeapon::RB,FWeapon::T,FWeapon::AR,FWeapon::PB,FWeapon::EB,FWeapon::LC,FWeapon::NONE};
+		if (damageWeapon(wList)==0) { // didn't hit a weapon
+			takeHullDamage(damage);
+		}
+	} else if ( roll <= 74 ) {     //  Loose all screens and ICMs
+
+		//***********  Implementation needed
+
+	} else if ( roll <= 77 ) {     //  Defense Hit
+		int dList[] = {FDefense::PS,FDefense::ES,FDefense::SS,FDefense::MS,FDefense::ICM,FDefense::UNDEF};
+		if (damageDefense(dList)==0) { // didn't hit a weapon
+			takeHullDamage(damage);
+		}
+	} else if ( roll <= 80 ) {     //  Defense Hit
+		int dList[] = {FDefense::MS,FDefense::ICM,FDefense::SS,FDefense::PS,FDefense::ES,FDefense::UNDEF};
+		if (damageDefense(dList)==0) { // didn't hit a weapon
+			takeHullDamage(damage);
+		}
+	} else if ( roll <= 84 ) {     //  Defense Hit
+		int dList[] = {FDefense::ICM,FDefense::SS,FDefense::PS,FDefense::ES,FDefense::MS,FDefense::UNDEF};
+		if (damageDefense(dList)==0) { // didn't hit a weapon
+			takeHullDamage(damage);
+		}
+	} else if ( roll <= 91 ) {     //  Combat Control System Hit (-10%)
+		m_combatControlDamaged = true;
+	} else if ( roll <= 97 ) {     //  Navigation Hit
+
+		//***********  Implementation needed
+
+	} else if ( roll <= 105 ) {    //  Electrical Fire
+
+		//***********  Implementation needed
+
+	} else if ( roll <= 116 ) {    //  Lose 1/2 DCR
+		int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
+		setDCR(getDCR()-dcrLost);
+	} else if ( roll <= 120 ) {    //  Disastrous Fire
+		setADF(0);
+		setMR(0);
+		int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
+		setDCR(getDCR()-dcrLost);
+		m_combatControlDamaged = true;
+
+		//***********  Implementation needed for electrical fire portion
+
+	} else {                       // we should never get here
+		takeHullDamage(damage);
+	}
+}
+
+int FVehicle::damageWeapon(int * wList){
+	bool wHit = false;
+	// loop over weapon types
+	while ((*wList)!=FWeapon::NONE && wHit == false){  // only check until a weapon has been hit
+		WeaponList::iterator wItr;
+		for (wItr= m_weapons.begin(); wItr < m_weapons.end(); wItr++){
+			if ((*wItr)->getType() == *wList && ((*wItr)->isDamaged()==false)){  // if this weapon exists and is functional
+				(*wItr)->setDamageStatus(true);  // knock it out
+				wHit=true;
+				return 1;  // stop after first weapon has been hit
+			}
+		}
+		wList++;
+	}
+	return 0;
+}
+
+int FVehicle::damageDefense(int * dList){
+	bool dHit = false;
+	// loop over defense types
+	while ((*dList)!=FDefense::UNDEF && dHit == false){  // only check until a defense has been hit
+		DefenseList::iterator dItr;
+		for (dItr= m_defenses.begin(); dItr < m_defenses.end(); dItr++){
+			if ((*dItr)->getType() == *dList && ((*dItr)->isDamaged()==false)){  // if this defense exists and is functional
+				(*dItr)->setDamageStatus(true);  // knock it out
+				dHit=true;
+				return 1;  // stop after first defense has been hit
+			}
+		}
+		dList++;
 	}
 	return 0;
 }

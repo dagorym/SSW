@@ -80,6 +80,11 @@ void FWeapon::fire(){
 		toHitProb += m_assignedICMCount * m_ICMMod;
 		m_assignedICMCount=0;  // clear out the used ICMs
 
+		// reduce to hit probabilty if ship's combat control system is damaged
+		if (m_parent->isCombatControlDamaged()){
+			toHitProb -= 10;
+		}
+
 //		std::cerr << m_name << ": toHitProb = "<< toHitProb << "  roll = " << roll << std::endl;
 
 		if (roll <= toHitProb){

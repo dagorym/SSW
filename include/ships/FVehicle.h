@@ -25,7 +25,7 @@ namespace Frontier
  *
  * @author Tom Stephens
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Apr 22, 2010
+ * @date Last Modified:  Jan 28, 2011
  */
 class FVehicle : public Frontier::FPObject
 {
@@ -94,6 +94,8 @@ public:
 	unsigned int getDefenseCount() { return m_defenses.size(); }
 	/// get the number of turns left until the masking screen runs out
 	int getMSTurnCount(){return m_maskingScreenTurnCount;}
+	/// determine if combat control system is damaged
+	bool isCombatControlDamaged() { return m_combatControlDamaged; }
 
 
 	/**
@@ -153,20 +155,19 @@ public:
 	/**
 	 * @brief Take damage from a successful hit
 	 *
-	 * This method applies the damage done by the opponent.  Right now
-	 * it just applies the passed in damage to the hull points.
-	 *
-	 * @todo Implement the full advanced damage table.  Subclasses should
-	 * re-implement this virtual function to be specific for the specific
-	 * vessel.
+	 * This method provides the damage interface for the vessel.  Based on the
+	 * basic flag, it will either just apply hull damage or call the advanced
+	 * damage table for the vessel.
 	 *
 	 * @param damage The amount of hull damage sustained
+	 * @param damageMod The table modifier for the advanced damage table.  Default is 0
+	 * @param basic Flag for whether or not to just use basic damage (hull hits only).  Default is false
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 28, 2009
-	 * @date Last Modified:  Apr 28, 2009
+	 * @date Last Modified:  Jan 28, 2011
 	 */
-	virtual void takeDamage (int damage);
+	virtual void takeDamage (int damage, int damageMod = 0, bool basic = false);
 
 	/**
 	 * @brief Reloads all the ships weapons
@@ -271,6 +272,72 @@ protected:
 	FDefense * m_currentDefense;
 	/// turns until MS runs out
 	int m_maskingScreenTurnCount;
+	/// Flag for damage to combat control system
+	bool m_combatControlDamaged;
+
+	/**
+	 * @brief assign hull damage to the ship.
+	 *
+	 * This method simply deducts the amount of hull damage specified
+	 * from the ships hull points with a floor of zero.
+	 *
+	 * @param damage The amount of damage to subtract
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jan 28, 2011
+	 * @date Last Modified:  Jan 28, 2011
+	 */
+	void takeHullDamage(int damage);
+
+	/**
+	 * @brief Implements the advanced damage table.
+	 *
+	 * This method implements the default advanced damage table from the
+	 * Tactical Operations Manual.  It can be overridden for derived
+	 * classes to reflect the specifics of the derived class.
+	 *
+	 * @param damage The amount of hull damage to apply if applicable
+	 * @param damageMod The damage table modifier for the attacking weapon
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jan 28, 2011
+	 * @date Last Modified:  Jan 28, 2011
+	 */
+	virtual void advancedDamage(int damage, int damageMod);
+
+	/**
+	 * @brief Applies damage to a weapon hit in combat
+	 *
+	 * This method takes a list of weapons and loops over the weapons
+	 * carried by the ship.  If one of the weapons in the listed is
+	 * carried by the ship and undamaged it is marked as damaged and
+	 * a 1 is returned to indicate that a weapon was hit.  If
+	 * no weapons from the list are found it returns a 0.
+	 *
+	 * @param wList List of weapons to check existence of
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jan 28, 2011
+	 * @date Last Modified:  Jan 28, 2011
+	 */
+	int damageWeapon(int * wList);
+
+	/**
+	 * @brief Applies damage to a weapon hit in combat
+	 *
+	 * This method takes a list of defenses and loops over the defenses
+	 * carried by the ship.  If one of the defenses in the listed is
+	 * carried by the ship and undamaged it is marked as damaged and
+	 * a 1 is returned to indicate that a defense was hit.  If
+	 * no defenses from the list are found it returns a 0.
+	 *
+	 * @param dList List of defenses to check existence of
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jan 28, 2011
+	 * @date Last Modified:  Jan 28, 2011
+	 */
+	int damageDefense(int * dList);
 };
 
 typedef std::vector<FVehicle *> VehicleList;
