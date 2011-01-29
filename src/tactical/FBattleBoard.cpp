@@ -791,16 +791,16 @@ void FBattleBoard::computePath(PointList &list, FPoint hex, int heading){
 
 void FBattleBoard::checkMoveStatus(){
 	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
-	bool finished = true;
+	bool finished = false;
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
 //		if ((*itr)->getHP()<=0) { continue; } // skip dead ships.
 		int min = (*itr)->getSpeed()-(*itr)->getADF();
-		if (m_turnInfo[(*itr)->getID()].nMoved<min){
+		if (m_turnInfo[(*itr)->getID()].nMoved>=min){
 //			std::cerr << (*itr)->getName() << " is not done moving (" << m_turnInfo[(*itr)->getID()].nMoved << " of " << min <<std::endl;
-			finished = false;
-		} else {
+			finished = true;
+		} //else {
 //			std::cerr << (*itr)->getName() << " is done moving (" << m_turnInfo[(*itr)->getID()].nMoved << " of " << min <<std::endl;
-		}
+//		}
 	}
 	std::string val = (finished)?"true ":"false";
 //	std::cerr << "The current movement status is " << val << std::endl;

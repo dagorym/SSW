@@ -471,7 +471,7 @@ StringList ScenarioEditorGUI::convertNames(wxListBox * ships){
 			shipTypes.push_back("LtCruiser");
 		} else if(ships->GetString(i)=="Heavy Cruiser"){
 			shipTypes.push_back("HvCruiser");
-		} else if(ships->GetString(i)=="Asssault Carrier"){
+		} else if(ships->GetString(i)=="Assault Carrier"){
 			shipTypes.push_back("AssaultCarrier");
 		} else {
 			shipTypes.push_back(ships->GetString(i).c_str());

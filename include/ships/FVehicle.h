@@ -284,7 +284,7 @@ protected:
 	bool m_onFire;
 	/// Flag for whether or not the power system (screens and ICM's) have been damaged
 	bool m_powerSystemDamaged;
-	/// Flag for navigation control hit (1=right, 0 = none, -1 = left)
+	/// Flag for navigation control hit (-1=right, 0 = none, 1 = left)
 	int m_navError;
 
 	/**
