@@ -96,6 +96,12 @@ public:
 	int getMSTurnCount(){return m_maskingScreenTurnCount;}
 	/// determine if combat control system is damaged
 	bool isCombatControlDamaged() { return m_combatControlDamaged; }
+	/// determine if combat control system is damaged
+	bool isOnFire() { return m_onFire; }
+	/// determine if power system is damaged
+	bool isPowerSystemDamaged() { return m_powerSystemDamaged; }
+	/// get navigation control error
+	int getNavControlError() { return m_navError; }
 
 
 	/**
@@ -274,6 +280,12 @@ protected:
 	int m_maskingScreenTurnCount;
 	/// Flag for damage to combat control system
 	bool m_combatControlDamaged;
+	/// Flag for existence of electrical fire
+	bool m_onFire;
+	/// Flag for whether or not the power system (screens and ICM's) have been damaged
+	bool m_powerSystemDamaged;
+	/// Flag for navigation control hit (1=right, 0 = none, -1 = left)
+	int m_navError;
 
 	/**
 	 * @brief assign hull damage to the ship.

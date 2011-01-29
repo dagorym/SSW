@@ -36,7 +36,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Mar 28 2010
+ * @date Last Modified:  Jan 28, 2011
  */
 class FBattleDisplay : public wxPanel
 {
@@ -279,7 +279,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 15, 2009
-	 * @date Last Modified:  Apr 15, 2009
+	 * @date Last Modified:  Jan 28, 2011
 	 */
 	void drawWeaponList(wxDC &dc, int lMargin, int tMargin, int tSize);
 
@@ -301,7 +301,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Mar 28, 2010
-	 * @date Last Modified:  Mar 28, 2010
+	 * @date Last Modified:  Jan 28, 2011
 	 */
 	void drawDefenseList(wxDC &dc, int lMargin, int tMargin, int tSize);
 
@@ -316,7 +316,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 15, 2009
-	 * @date Last Modified:  Apr 15, 2009
+	 * @date Last Modified:  Jan 28, 2011
 	 */
 	void checkWeaponSelection(wxMouseEvent &event);
 
@@ -331,7 +331,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Mar 28, 2010
-	 * @date Last Modified:  Mar 28, 2010
+	 * @date Last Modified:  Jan 28, 2011
 	 */
 	void checkDefenseSelection(wxMouseEvent &event);
 
@@ -352,6 +352,23 @@ protected:
 	 */
 	void fireAllWeapons();
 
+	/**
+	 * @brief Draws the ships defenses in the tactical display
+	 *
+	 * This method draws the ships final status line showing the other miscellaneous
+	 * damage status that the ship might have such as electrical fire, power system
+	 * short circuit, etc.  If no systems are damage it just displays "none".
+	 *	 *
+	 * @param dc The device context to draw on
+	 * @param lMargin The x position on the canvas to start drawing the text
+	 * @param tMargin The y position on the canvas to start drawing the text
+	 * @param tSize The font size to use.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jan 28, 2011
+	 * @date Last Modified:  Jan 28, 2011
+	 */
+	void drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int textSize);
 };
 
 }

@@ -35,7 +35,7 @@ namespace Frontier {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Apr 22, 2010
+ * @date Last Modified:  Jan 28, 2011
  */
 class FBattleScreen : public wxDialog //wxFrame
 {
@@ -235,6 +235,20 @@ protected:
 
 	// Print a dialog declaring the  winner and exit the window
 	void declareWinner();
+
+	/**
+	 * @brief applies damage to ships from electrical fires
+	 *
+	 * This method is run at the start of the moving player's combat phase.
+	 * It loops through all the non-moving player's ships and checks to see
+	 * if they are suffering from an electrical fire.  If so, it generates a
+	 * damage roll and calls the ship's takeDamage() method.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jan 28, 2011
+	 * @date Last Modified:  Jan 28, 2011
+	 */
+	void applyFireDamage();
 
 };
 

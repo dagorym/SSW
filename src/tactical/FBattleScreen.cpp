@@ -173,6 +173,7 @@ void FBattleScreen::setPhase(int p){
 		}
 		toggleActivePlayer();
 		m_map->resetMoveData();
+
 	} else 	if (p==PH_FINALIZE_MOVE){
 		m_map->finalizeMove();
 		/// @todo drop into combat phase
@@ -183,6 +184,7 @@ void FBattleScreen::setPhase(int p){
 	} else if (p==PH_DEFENSE_FIRE){
 		toggleActivePlayer();
 	} else if (p==PH_ATTACK_FIRE){
+		applyFireDamage();
 		toggleActivePlayer();
 	} else {
 	}
@@ -281,6 +283,16 @@ void FBattleScreen::fireICM() {
 		panel->ShowModal();
 	}
 	m_ICMData.clear();
+}
+
+void FBattleScreen::applyFireDamage(){
+	VehicleList sList = getShipList(getActivePlayerID());
+	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
+		if ((*itr)->isOnFire()){
+			int roll = irand(10);
+			(*itr)->takeDamage(roll,20);
+		}
+	}
 }
 
 }

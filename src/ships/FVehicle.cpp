@@ -43,6 +43,9 @@ FVehicle::FVehicle(){
 	m_defenses.push_back(d);
 	m_currentDefense = d;
 	m_combatControlDamaged = false;
+	m_onFire=false;
+	m_powerSystemDamaged = false;
+	m_navError = 0;
 }
 
 FVehicle::~FVehicle(){
@@ -74,6 +77,9 @@ const int FVehicle::save(std::ostream &os) const {
 	write(os,m_currentDCR);
 	write(os,m_maskingScreenTurnCount);
 	write(os,m_combatControlDamaged);
+	write(os,m_onFire);
+	write(os,m_powerSystemDamaged);
+	write(os,m_navError);
 	write(os,m_weapons.size());
 	for (WeaponList::const_iterator itr = m_weapons.begin(); itr != m_weapons.end(); itr++){
 		(*itr)->save(os);
@@ -108,6 +114,9 @@ int FVehicle::load(std::istream &is) {
 	read(is,m_currentDCR);
 	read(is,m_maskingScreenTurnCount);
 	read(is,m_combatControlDamaged);
+	read(is,m_onFire);
+	read(is,m_powerSystemDamaged);
+	read(is,m_navError);
 	unsigned int count = 0;
 	read(is,count);
 	for (unsigned int i=0; i< m_weapons.size(); i++){	// they were populated with default values
@@ -339,9 +348,7 @@ void FVehicle::advancedDamage(int damage, int damageMod){
 			takeHullDamage(damage);
 		}
 	} else if ( roll <= 74 ) {     //  Loose all screens and ICMs
-
-		//***********  Implementation needed
-
+		m_powerSystemDamaged = true;
 	} else if ( roll <= 77 ) {     //  Defense Hit
 		int dList[] = {FDefense::PS,FDefense::ES,FDefense::SS,FDefense::MS,FDefense::ICM,FDefense::UNDEF};
 		if (damageDefense(dList)==0) { // didn't hit a weapon
@@ -360,13 +367,13 @@ void FVehicle::advancedDamage(int damage, int damageMod){
 	} else if ( roll <= 91 ) {     //  Combat Control System Hit (-10%)
 		m_combatControlDamaged = true;
 	} else if ( roll <= 97 ) {     //  Navigation Hit
-
-		//***********  Implementation needed
-
+		if (irand(2)==1){
+			m_navError = -1;
+		} else {
+			m_navError = 1;
+		}
 	} else if ( roll <= 105 ) {    //  Electrical Fire
-
-		//***********  Implementation needed
-
+		m_onFire=true;
 	} else if ( roll <= 116 ) {    //  Lose 1/2 DCR
 		int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
 		setDCR(getDCR()-dcrLost);
@@ -376,9 +383,7 @@ void FVehicle::advancedDamage(int damage, int damageMod){
 		int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
 		setDCR(getDCR()-dcrLost);
 		m_combatControlDamaged = true;
-
-		//***********  Implementation needed for electrical fire portion
-
+		m_onFire=true;
 	} else {                       // we should never get here
 		takeHullDamage(damage);
 	}

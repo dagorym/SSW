@@ -420,6 +420,7 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 		dc.DrawText("DCR: ",lMargin+240,BORDER+(int)(1.6*(textSize*2.3)));
 		dc.DrawText("Weapons:",lMargin,BORDER+(int)(1.6*(textSize*3.3)));
 		dc.DrawText("Defenses:",lMargin,BORDER+(int)(1.6*(textSize*4.3)));
+		dc.DrawText("Other Status:",lMargin,BORDER+(int)(1.6*(textSize*5.3)));
 		dc.SetFont(large);
 		dc.DrawText(s->getName(),lMargin,BORDER);
 		dc.SetFont(normal);
@@ -442,16 +443,13 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 		int x = lMargin+80;
 		int y = BORDER+(int)(1.6*(textSize*3.3));
 		drawWeaponList(dc,x,y,textSize);
-//		unsigned int wCount = s->getWeaponCount();
-//		for (unsigned int i =0; i< wCount; i++){
-//			std::string wName = s->getWeapon(i)->getName() + "  ";
-//			dc.DrawText(wName,x,y);
-//			wxSize tSize= dc.GetTextExtent(wName);
-//			x+= (int)tSize.GetWidth();
-//		}
 		x = lMargin+80;
 		y += (int)(1.6*textSize);
 		drawDefenseList(dc,x,y,textSize);
+		x = lMargin+110;
+		y += (int)(1.6*textSize);
+		drawOtherStatus(dc,x,y,textSize);
+
 	}
 }
 
@@ -610,6 +608,7 @@ void FBattleDisplay::drawDefenseList(wxDC &dc, int lMargin, int tMargin, int tex
 	wxColour red(wxT("#FF0000"));
 	wxColour green(wxT("#00FF00"));
 	wxColour yellow(wxT("#FFFF00"));
+	wxColour orange(wxT("#FFA000"));
 	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
 	dc.SetTextForeground(white);
 	FVehicle *s = m_parent->getShip();
@@ -626,6 +625,8 @@ void FBattleDisplay::drawDefenseList(wxDC &dc, int lMargin, int tMargin, int tex
 			dc.SetTextForeground(red);
 		} else if (s->getCurrentDefense()->getType()==d->getType()){
 			dc.SetTextForeground(green);
+		} else if(s->isPowerSystemDamaged() && d->getType() != FDefense::RH){
+			dc.SetTextForeground(orange);
 		} else {
 			dc.SetTextForeground(white);
 		}
@@ -662,7 +663,9 @@ void FBattleDisplay::checkDefenseSelection(wxMouseEvent &event){
 		if (m_defenseRegions[i].Contains(x,y)){
 			FDefense *d = m_parent->getShip()->getDefense(i);
 			if (d->getType()!=FDefense::ICM  && m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
-				m_parent->getShip()->setCurrentDefense(i);
+				if (d->getType()==FDefense::RH || !(m_parent->getShip()->isPowerSystemDamaged())) {
+					m_parent->getShip()->setCurrentDefense(i);
+				}
 //				std::cerr << "You selected the " << m_parent->getDefense()->getLongName() << std::endl;
 				break;
 			}
@@ -671,5 +674,47 @@ void FBattleDisplay::checkDefenseSelection(wxMouseEvent &event){
 	m_parent->reDraw();
 }
 
+void FBattleDisplay::drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int textSize){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour red(wxT("#FF0000"));
+	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	dc.SetTextForeground(red);
+	FVehicle *s = m_parent->getShip();
+	int x = lMargin;
+	bool damage = false;
+	if (s->isOnFire()){  // Check for electrical fire
+		std::string txt = "Fire  ";
+		dc.DrawText(txt,x,tMargin);
+		wxSize tSize= dc.GetTextExtent(txt);
+		x+= (int)tSize.GetWidth();
+		damage = true;
+	}
+	if (s->isCombatControlDamaged()){ // check for Combat control systems hit
+		std::string txt = "Combat Sys Damaged  ";
+		dc.DrawText(txt,x,tMargin);
+		wxSize tSize= dc.GetTextExtent(txt);
+		x+= (int)tSize.GetWidth();
+		damage = true;
+	}
+	if (s->isPowerSystemDamaged()){
+		std::string txt = "Power Short Circuit  ";
+		dc.DrawText(txt,x,tMargin);
+		wxSize tSize= dc.GetTextExtent(txt);
+		x+= (int)tSize.GetWidth();
+		damage = true;
+	}
+	if (s->getNavControlError()){
+		std::string txt = "Nav Sys Damaged  ";
+		dc.DrawText(txt,x,tMargin);
+		wxSize tSize= dc.GetTextExtent(txt);
+		x+= (int)tSize.GetWidth();
+		damage = true;
+	}
+	if (!damage){
+		dc.SetTextForeground(white);
+		std::string txt = "none";
+		dc.DrawText(txt,x,tMargin);
+	}
+}
 
 }
