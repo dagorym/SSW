@@ -591,6 +591,9 @@ void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int text
 			if (w->isMPO() && m_parent->getPhase()==PH_DEFENSE_FIRE){
 				dc.SetTextForeground(white);
 			}
+			if (w->getMaxAmmo() && w->getAmmo()==0){ // all the ammo is used up.
+				dc.SetTextForeground(white);
+			}
 		} else {
 			dc.SetTextForeground(white);
 		}
@@ -641,7 +644,9 @@ void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event){
 		if (m_weaponRegions[i].Contains(x,y)){
 			FWeapon *w = m_parent->getShip()->getWeapon(i);
 			if (w->isMPO()==false || m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
-				m_parent->setWeapon(w);
+				if (!(w->isDamaged() || (w->getMaxAmmo() && w->getAmmo()==0))){ // only activate selection on undamaged weapons with ammo
+					m_parent->setWeapon(w);
+				}
 //				std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
 				break;
 			}
