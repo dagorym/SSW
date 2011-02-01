@@ -401,7 +401,7 @@ void ScenarioEditorGUI::onStartBattle( wxCommandEvent& event ){
 	unsigned int defenderID = m_defenderTeam->GetSelection();
 	unsigned int attackerID = m_attackerTeam->GetSelection();
 	if (station != NULL) {
-		station->setOwner(defenderID);
+		station->setOwner(defenderID-1);
 	}
 	FleetList aList,dList;
 	// generate a fleet list for the attackers

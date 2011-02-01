@@ -113,11 +113,12 @@ public:
 	 * @brief Finalize movement phase
 	 *
 	 * This method iterates over the ships and updates their current status
-	 * to reflect their movement.
+	 * to reflect their movement.  It also marks them destroyed and removes
+	 * them from play if they move off the map or run into a planet.
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Mar 30, 2009
+	 * @date Last Modified:  Jan 31, 2011
 	 */
 	void finalizeMove();
 
@@ -474,11 +475,11 @@ protected:
 	 *
 	 * This method iterates through all the current players ships and checks to see
 	 * if they have moved at least the minimum distance required by their current
-	 * speed and ADF.
+	 * speed and ADF or if they have moved off the map or are running into a planet.
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Feb 8, 2009
+	 * @date Last Modified:  Jan 31, 2011
 	 */
 	void checkMoveStatus();
 

@@ -791,13 +791,19 @@ void FBattleBoard::computePath(PointList &list, FPoint hex, int heading){
 
 void FBattleBoard::checkMoveStatus(){
 	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
-	bool finished = false;
+	bool finished = true;
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
 //		if ((*itr)->getHP()<=0) { continue; } // skip dead ships.
 		int min = (*itr)->getSpeed()-(*itr)->getADF();
-		if (m_turnInfo[(*itr)->getID()].nMoved>=min){
+		if (m_turnInfo[(*itr)->getID()].nMoved<min){ // we still have spaces to move
 //			std::cerr << (*itr)->getName() << " is not done moving (" << m_turnInfo[(*itr)->getID()].nMoved << " of " << min <<std::endl;
-			finished = true;
+		///@todo Check for movement off the map or into a planet and allow it.
+			FPoint pos = m_turnInfo[(*itr)->getID()].movedHexes.back();
+			FPoint next = FHexMap::findNextHex(pos,m_turnInfo[(*itr)->getID()].curHeading);
+			if (next.getX()>=0 && next.getX()<m_nCol && next.getY()>=0 && next.getY()<m_nRow && next != m_planetPosition){
+				// we're not at the edge of the map and not running into a planet
+				finished = false;
+			}
 		} //else {
 //			std::cerr << (*itr)->getName() << " is done moving (" << m_turnInfo[(*itr)->getID()].nMoved << " of " << min <<std::endl;
 //		}
@@ -820,8 +826,16 @@ void FBattleBoard::finalizeMove(){
 		}
 		(*itr)->setSpeed(m_turnInfo[id].nMoved);
 		(*itr)->setHeading(m_turnInfo[id].curHeading);
-		// move the ship to it's new location
-		m_hexData[finish.getX()][finish.getY()].ships.push_back(*itr);
+
+		FPoint next = FHexMap::findNextHex(finish,m_turnInfo[id].curHeading);
+		if (next.getX()>=0 && next.getX()<m_nCol && next.getY()>=0 && next.getY()<m_nRow && next != m_planetPosition){
+			// we're not at the edge of the map and not running into a planet
+			// move the ship to it's new location
+			m_hexData[finish.getX()][finish.getY()].ships.push_back(*itr);
+		} else {
+			// mark it destroyed
+			(*itr)->setHP(0);
+		}
 		// and remove it from it's old location
 		for (VehicleList::iterator i2 = m_hexData[start.getX()][start.getY()].ships.begin(); i2 < m_hexData[start.getX()][start.getY()].ships.end(); i2++){
 			if ((*i2)->getID() == id){
@@ -1187,7 +1201,7 @@ void FBattleBoard::checkForPlanetCollision(FPoint & currentHex, int & currentHea
 	if (m_planetPosition.getX()>=0){ // is there a planet on the board?
 		// next make sure we're not going to hit a planet head on (i.e. this hex or
 		// the next hex we would move from here is the planet.
-		if (m_planetPosition == currentHex || m_planetPosition == FHexMap::findNextHex(currentHex,currentHeading)){
+		if (m_planetPosition == currentHex /*|| m_planetPosition == FHexMap::findNextHex(currentHex,currentHeading)*/){
 			currentHex = FPoint(-1,-1);
 			return;
 		}
