@@ -263,7 +263,7 @@ void FBattleScreen::fireICM() {
 						bool haveICMs = false;
 						for (VehicleList::iterator vItr=d->vehicles->begin(); vItr<d->vehicles->end(); vItr++){
 							unsigned int index = (*vItr)->hasDefense(FDefense::ICM);
-							if (index && (*vItr)->getDefense(index)->getAmmo()){
+							if (index && (*vItr)->getDefense(index)->getAmmo() && (*vItr)->isPowerSystemDamaged()==false){
 								haveICMs = true;
 								break;  // once at least one ship has ICMs we can stop
 							}

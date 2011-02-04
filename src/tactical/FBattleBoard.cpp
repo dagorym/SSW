@@ -798,7 +798,12 @@ void FBattleBoard::checkMoveStatus(){
 		if (m_turnInfo[(*itr)->getID()].nMoved<min){ // we still have spaces to move
 //			std::cerr << (*itr)->getName() << " is not done moving (" << m_turnInfo[(*itr)->getID()].nMoved << " of " << min <<std::endl;
 		///@todo Check for movement off the map or into a planet and allow it.
-			FPoint pos = m_turnInfo[(*itr)->getID()].movedHexes.back();
+			FPoint pos;
+			if (m_turnInfo[(*itr)->getID()].movedHexes.size()>0){
+				pos = m_turnInfo[(*itr)->getID()].movedHexes.back();
+			} else {
+				pos = m_shipPos;
+			}
 			FPoint next = FHexMap::findNextHex(pos,m_turnInfo[(*itr)->getID()].curHeading);
 			if (next.getX()>=0 && next.getX()<m_nCol && next.getY()>=0 && next.getY()<m_nRow && next != m_planetPosition){
 				// we're not at the edge of the map and not running into a planet
