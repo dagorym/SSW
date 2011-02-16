@@ -491,27 +491,7 @@ void FBattleBoard::setInitialRoute(){
 				checkForPlanetCollision(current,curHeading);
 				if(current.getX()!=-1) {
 					m_movementHexes.push_back(current);
-					// Force a turn if Navigation hit damage exists
-					int turnDirection = ship->getNavControlError();
-					if ( turnDirection != 0 && m_turnInfo[ship->getID()].turns.size() < ship->getMR() ){
-						curHeading = turnShip(curHeading,turnDirection);
-						m_turnInfo[ship->getID()].waypoints.push_back(current);
-						m_turnInfo[ship->getID()].turns.push_back(turnDirection);
-						m_turnInfo[ship->getID()].movedHexes.push_back(current);
-						m_turnInfo[ship->getID()].curHeading = curHeading;
-						m_turnInfo[ship->getID()].nMoved++;
-						m_turnInfo[ship->getID()].hasMoved=true;
-						std::cerr << i << ": movedHexes = " << m_turnInfo[ship->getID()].movedHexes.size()
-								<< "  waypoints = " << m_turnInfo[ship->getID()].waypoints.size()
-								<< "  turns = " << m_turnInfo[ship->getID()].turns.size()
-								<< "  curHeading = " << m_turnInfo[ship->getID()].curHeading << std::endl;
-					}
-					if ( turnDirection != 0 && i == ship->getMR() ){
-						// this sets a final waypoint so the path is drawn correctly
-						m_turnInfo[ship->getID()].waypoints.push_back(current);
-						m_turnInfo[ship->getID()].movedHexes.push_back(current);
-						m_turnInfo[ship->getID()].nMoved++;
-					}
+					curHeading = forceTurn(ship,curHeading,current);  // Force a turn if Navigation hit damage exists
 				}
 			}
 		}
@@ -801,7 +781,10 @@ void FBattleBoard::computePath(PointList &list, FPoint hex, int heading){
 		if (hex.getX()!= -1){
 			hex=FHexMap::findNextHex(hex,heading);
 			checkForPlanetCollision(hex,heading);
-			if(hex.getX()!=-1) {list.push_back(hex);}
+			if(hex.getX()!=-1) {
+				list.push_back(hex);
+				heading=forceTurn(m_parent->getShip(),heading,hex);
+			}
 		}
 	}
 
@@ -1272,6 +1255,27 @@ VehicleList * FBattleBoard::getShipList(FVehicle * v){
 		}
 	}
 	return NULL;
+}
+
+int FBattleBoard::forceTurn(FVehicle * ship, int curHeading, FPoint current){
+	// Force a turn if Navigation hit damage exists
+	int turnDirection = ship->getNavControlError();
+	if ( turnDirection != 0 && m_turnInfo[ship->getID()].turns.size() < ship->getMR() ){
+		curHeading = turnShip(curHeading,turnDirection);
+		m_turnInfo[ship->getID()].waypoints.push_back(current);
+		m_turnInfo[ship->getID()].turns.push_back(turnDirection);
+		m_turnInfo[ship->getID()].movedHexes.push_back(current);
+		m_turnInfo[ship->getID()].curHeading = curHeading;
+		m_turnInfo[ship->getID()].nMoved++;
+		m_turnInfo[ship->getID()].hasMoved=true;
+//		if ( m_turnInfo[ship->getID()].nMoved == (int)(ship->getMR()) ){
+//			// this sets a final waypoint so the path is drawn correctly
+//			m_turnInfo[ship->getID()].waypoints.push_back(current);
+//			m_turnInfo[ship->getID()].movedHexes.push_back(current);
+//			m_turnInfo[ship->getID()].nMoved++;
+//		}
+	}
+	return curHeading;
 }
 
 }

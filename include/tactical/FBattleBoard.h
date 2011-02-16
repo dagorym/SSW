@@ -72,7 +72,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Oct 04, 2010
+ * @date Last Modified:  Feb 15, 2011
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -388,7 +388,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  May 13, 2009
+	 * @date Last Modified:  Feb 15, 2011
 	 */
 	void setInitialRoute();
 
@@ -657,7 +657,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Create:  May 13, 2009
-	 * @date Last Modified:  May 13, 2009
+	 * @date Last Modified:  Feb 15, 2011
 	 */
 	void computePath(PointList &list, FPoint hex, int heading);
 
@@ -676,6 +676,21 @@ protected:
 	 */
 	int getPlanetTurnDirection(FPoint currentHex, int currentHeading);
 
+	/**
+	 * @brief updated path for forced turns
+	 *
+	 * This method updates the movement information properly for ships
+	 * that are forced to turn due to navigation hit damage.
+	 *
+	 * @param ship The ship that is moving
+	 * @param curHeading The heading of the ship
+	 * @param current The current hex of the ship
+	 *
+	 * @author Tom Stephens
+	 * @date Create:  Feb 15, 2011
+	 * @date Last Modified:  Feb 15, 2011
+	 */
+	int forceTurn(FVehicle * ship, int curHeading, FPoint current);
 };
 
 }
