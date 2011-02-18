@@ -16,7 +16,6 @@
 
 namespace Frontier {
 
-typedef std::vector<FPoint> HexPathList;
 typedef std::map<FPoint,int> FlagMap;
 
 /**
@@ -24,11 +23,14 @@ typedef std::map<FPoint,int> FlagMap;
  *
  * This class is used to store a path through a hex map.  It
  * records each hex traversed as well as any special flags for
- * events in each hex
+ * events in each hex.
+ *
+ * The flags are stored as bits in an integer and defined by the
+ * calling classes.
  *
  * @author Tom Stephens
  * @date Created:  Oct 04, 2010
- * @date Last Modified:  Oct 04, 2010
+ * @date Last Modified:  Feb 18, 2011
  */
 class FHexPath: public Frontier::FObject {
 public:
@@ -105,11 +107,80 @@ public:
 
 	/// returns the path length
 	unsigned int getPathLength() { return m_hexList.size(); }
+	/// clears the object data
+	void clear() { m_hexList.clear(); m_flags.clear(); }
+
+	/**
+	 * @brief returns the end point of the path
+	 *
+	 * This method returns an FPoint object corresponding to the
+	 * last point on the current path
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 18, 2011
+	 * @date Last Modified:  Feb 18, 2011
+	 */
+	FPoint endPoint();
+
+	/**
+	 * @brief returns the start point of the path
+	 *
+	 * This method returns an FPoint object corresponding to the
+	 * first point on the current path
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 18, 2011
+	 * @date Last Modified:  Feb 18, 2011
+	 */
+	FPoint startPoint();
+
+	/**
+	 * @brief Count number of occurrences of a given flag
+	 *
+	 * This method looks through the flag list and looks to see how many times
+	 * the specified flag occurs.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 18, 2011
+	 * @date Last Modified:  Feb 18, 2011
+	 */
+	unsigned int countFlags(int flag);
+
+	/**
+	 * @brief removes all points in path beyond the one specified
+	 *
+	 * This method removes all the points in the path beyond
+	 * the one specified in the input parameter.  It also removes any flags
+	 * associated with those points.  The method returns the remaining size
+	 * of the path once finished.
+	 *
+	 * @param point The point that should become the last point on the path
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 18, 2011
+	 * @date Last Modified:  Feb 18, 2011
+	 */
+	unsigned int removeTrailingPoints(FPoint point);
+
+	/**
+	 * @brief Determines the heading based on the last two points in the path
+	 *
+	 * This method determines the heading based on the last two points in the
+	 * path by calling the FHexMap::computeHeading function.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 18, 2011
+	 * @date Last Modified:  Feb 18, 2011
+	 */
+	unsigned int getLastHeading();
+
+	/// returns a copy of the path list
+	PointList getFullPath() const { return m_hexList; }
 
 private:
 
 	// List of hexes in the path
-	HexPathList m_hexList;
+	PointList m_hexList;
 	// Special flags for specified hex
 	FlagMap m_flags;
 };

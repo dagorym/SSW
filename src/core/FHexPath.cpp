@@ -44,12 +44,48 @@ int FHexPath::getFlag(FPoint point){
 }
 
 bool FHexPath::isPointOnPath(FPoint point){
-	for (HexPathList::iterator itr = m_hexList.begin(); itr < m_hexList.end(); itr++){
+	for (PointList::iterator itr = m_hexList.begin(); itr < m_hexList.end(); itr++){
 		if (*itr == point){
 			return true;
 		}
 	}
 	return false;
+}
+
+FPoint FHexPath::endPoint(){
+	std::cerr << "The current endpoint is (" << m_hexList.back().getX() << ", " << m_hexList.back().getY() << ")" << std::endl;
+	return m_hexList.back();
+}
+
+FPoint FHexPath::startPoint(){
+	return m_hexList[0];
+}
+
+unsigned int FHexPath::countFlags(int flag){
+	unsigned int count = 0;
+	FlagMap::iterator itr = m_flags.begin();
+	while (itr != m_flags.end() ){
+		if (itr->second & flag){
+			count++;
+		}
+		itr++;
+	}
+	return count;
+}
+
+unsigned int FHexPath::removeTrailingPoints(FPoint point){
+	while (m_hexList.back() != point){ // loop until we get to the point in question
+		// remove associated flags
+		m_flags.erase(m_hexList.back());
+		// remove last point from list
+		m_hexList.pop_back();
+	}
+	return m_hexList.size();
+}
+
+unsigned int FHexPath::getLastHeading(){
+	 unsigned int size = m_hexList.size();
+	 return FHexMap::computeHeading(m_hexList[size-2], m_hexList[size-1]);
 }
 
 }

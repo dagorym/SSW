@@ -22,8 +22,12 @@
 #include "Frontier.h"
 #include "strategic/FFleet.h"
 #include "core/FPoint.h"
+#include "core/FHexPath.h"
 
 #include <map>
+
+#define MR_TURN 		1
+#define GRAVITY_TURN 	2
 
 namespace Frontier {
 class FBattleScreen;
@@ -62,6 +66,8 @@ typedef struct {
 	std::map <FPoint,int> gravityTurns;
 	/// direction ship turned due to gravity
 //	int gravityTurnDirection;
+	/// Ship's path this turn
+	FHexPath path;
 } turnData;
 
 /**
@@ -105,7 +111,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Dec 03, 2008
-	 * @date Last Modified:  Dec 03, 2008
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void resetMoveData();
 
@@ -118,7 +124,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Jan 31, 2011
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void finalizeMove();
 
@@ -388,7 +394,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  Feb 15, 2011
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void setInitialRoute();
 
@@ -403,7 +409,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 30, 2008
-	 * @date Last Modified:  May 13, 2009
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void checkForTurn(wxMouseEvent &event);
 
@@ -455,7 +461,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Mar 30, 2009
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void drawMovedHexes(wxDC &dc, PointList list, bool current=false);
 
@@ -466,7 +472,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  May 13, 2009
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void computeRemainingMoves(FPoint start);
 
@@ -479,7 +485,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Jan 31, 2011
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void checkMoveStatus();
 
@@ -641,7 +647,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  May 11, 2009
-	 * @date Last Modified:  May 13, 2009
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void checkForPlanetCollision(FPoint & currentHex, int & currentHeading);
 
@@ -657,7 +663,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Create:  May 13, 2009
-	 * @date Last Modified:  Feb 15, 2011
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	void computePath(PointList &list, FPoint hex, int heading);
 
@@ -672,7 +678,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Create:  May 14, 2009
-	 * @date Last Modified:  May 14, 2009
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	int getPlanetTurnDirection(FPoint currentHex, int currentHeading);
 
@@ -688,7 +694,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Create:  Feb 15, 2011
-	 * @date Last Modified:  Feb 15, 2011
+	 * @date Last Modified:  Feb 18, 2011
 	 */
 	int forceTurn(FVehicle * ship, int curHeading, FPoint current);
 };
