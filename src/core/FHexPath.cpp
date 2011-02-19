@@ -53,7 +53,7 @@ bool FHexPath::isPointOnPath(FPoint point){
 }
 
 FPoint FHexPath::endPoint(){
-	std::cerr << "The current endpoint is (" << m_hexList.back().getX() << ", " << m_hexList.back().getY() << ")" << std::endl;
+//	std::cerr << "The current endpoint is (" << m_hexList.back().getX() << ", " << m_hexList.back().getY() << ")" << std::endl;
 	return m_hexList.back();
 }
 
@@ -84,8 +84,16 @@ unsigned int FHexPath::removeTrailingPoints(FPoint point){
 }
 
 unsigned int FHexPath::getLastHeading(){
-	 unsigned int size = m_hexList.size();
-	 return FHexMap::computeHeading(m_hexList[size-2], m_hexList[size-1]);
+	unsigned int size = m_hexList.size();
+	return FHexMap::computeHeading(m_hexList[size-2], m_hexList[size-1]);
+}
+
+unsigned int FHexPath::getPointHeading(FPoint point){
+	PointList::iterator itr = m_hexList.begin();
+	while (*itr != point && itr != m_hexList.end()) {
+		itr++;
+	}
+	return FHexMap::computeHeading(*(itr-1), *itr);
 }
 
 }

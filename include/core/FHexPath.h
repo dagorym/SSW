@@ -174,6 +174,19 @@ public:
 	 */
 	unsigned int getLastHeading();
 
+	/**
+	 * @brief Determines the heading for any point on the path
+	 *
+	 * This method determines the heading for any point on the path
+	 * based on the current and previous points in the
+	 * path by calling the FHexMap::computeHeading function.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 18, 2011
+	 * @date Last Modified:  Feb 18, 2011
+	 */
+	unsigned int getPointHeading(FPoint point);
+
 	/// returns a copy of the path list
 	PointList getFullPath() const { return m_hexList; }
 

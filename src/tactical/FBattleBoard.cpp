@@ -592,10 +592,7 @@ void FBattleBoard::resetMoveData(){
 			d.path.addPoint(nextHex);
 			d.path.addFlag(nextHex,GRAVITY_TURN);
 			d.nMoved=1;
-//			d.waypoints.push_back(m_parent->getStationPos());
-//			d.waypoints.push_back(nextHex);
 			int turnDir = getPlanetTurnDirection(nextHex,d.curHeading);
-//			d.turns.push_back(turnDir);
 			d.finalHeading = turnShip(d.curHeading,turnDir);
 		}
 		m_turnInfo[(*itr)->getID()]=d;
@@ -773,7 +770,7 @@ void FBattleBoard::finalizeMove(){
 			isStation=true;
 		}
 		// clear masking screen if the vehicle is not a station and has turned and has a MS as current defense
-		if ((*itr)->getCurrentDefense()->getType()==FDefense::MS && m_turnInfo[id].turns.size()>0 || changedSpeed==true){
+		if ((*itr)->getCurrentDefense()->getType()==FDefense::MS && m_turnInfo[id].path.countFlags(MR_TURN)>0 || changedSpeed==true){
 			if (isStation){
 				std::cerr << "Decrementing MS Turn Count" << std::endl;
 				(*itr)->decrementMSTurnCount();
@@ -977,21 +974,12 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 		// moving player - For the moving player, we need to step through each hex along it's path
 		// and check to see if the target vessel falls within the weapon's field of fire.  If it
 		// does we store the closest approach
-		FPoint curHex = m_turnInfo[m_parent->getShip()->getID()].movedHexes[0];
+		FPoint curHex = m_turnInfo[m_parent->getShip()->getID()].path.startPoint();
 		int heading = m_turnInfo[m_parent->getShip()->getID()].startHeading;
+		PointList path = m_turnInfo[m_parent->getShip()->getID()].path.getFullPath();
+		PointList::iterator itr = path.begin()+1;
 		PointSet tList,hList;
-		PointList::iterator pItr = m_turnInfo[m_parent->getShip()->getID()].waypoints.begin()+1;
-//		// compute at initial move position
-//		if (m_parent->getWeapon()->isFF()){
-//			computeFFRange((*pItr),tList,hList,heading);
-//		} else {
-//			computeBatteryRange((*pItr),tList);
-//		}
-//		pItr++;
-		std::vector<int>::iterator tItr = m_turnInfo[m_parent->getShip()->getID()].turns.begin();
-		PointList::iterator itr = m_turnInfo[m_parent->getShip()->getID()].movedHexes.begin();
-		while (itr<m_turnInfo[m_parent->getShip()->getID()].movedHexes.end()) {
-//			std::cerr << "MP: Checking hex (" << itr->getX() << ", " << itr->getY() << ")" << std::endl;
+		while (itr < path.end() ){
 			if (w->isFF()){
 				computeFFRange((*itr),tList,hList,heading);
 			} else {
@@ -1012,21 +1000,19 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 					headOnMin = dis;
 				}
 			}
-			if (pItr != m_turnInfo[m_parent->getShip()->getID()].waypoints.end() && (*itr) == (*pItr) ) { // We are at a waypoint
-				// turn and recompute with new heading
-				if(tItr != m_turnInfo[m_parent->getShip()->getID()].turns.end()){
-					turnShip(heading,*tItr);
-					tItr++;
+			itr++;  // move to next point
+			if (itr != path.end()){
+				unsigned int newHeading = m_turnInfo[m_parent->getShip()->getID()].path.getPointHeading(*itr);
+				if (newHeading != (unsigned int)heading ) { // we turned
+					itr--; //back up to original hex
+					heading=newHeading; // but stay turned so that we compute weapon ranges properly.
 				}
-				pItr++;
-			} else {  // just move to the next hex
-				itr++;
 			}
 		}
 	} else {
 		// defensive player - For the defensive player we just need to run over the path of the
 		// moving ship and see where the closest point in the path is for the the target vessel
-		for (PointList::iterator itr = m_turnInfo[v->getID()].movedHexes.begin(); itr<m_turnInfo[v->getID()].movedHexes.end();itr++) {
+		for (PointList::iterator itr = m_turnInfo[v->getID()].path.getFullPath().begin(); itr<m_turnInfo[v->getID()].path.getFullPath().end();itr++) {
 			unsigned int dis = FHexMap::computeHexDistance(m_shipPos,(*itr));
 //			std::cerr << "MP: Checking hex (" << itr->getX() << ", " << itr->getY() <<
 //				").  Range = " << dis << "  min = " << min << "  headOnMin = " << headOnMin << std::endl;
@@ -1085,35 +1071,24 @@ void FBattleBoard::computeMovedWeaponRange(){
 	// does we store the closest approach
 	m_headOnHexes.clear();
 	m_targetHexes.clear();
-	FPoint curHex = m_turnInfo[m_parent->getShip()->getID()].movedHexes[0];
+	FPoint curHex = m_turnInfo[m_parent->getShip()->getID()].path.startPoint();
 	int heading = m_turnInfo[m_parent->getShip()->getID()].startHeading;
-	PointList::iterator pItr = m_turnInfo[m_parent->getShip()->getID()].waypoints.begin()+1;
-//	// compute at initial move position
-//	if (m_parent->getWeapon()->isFF()){
-//		computeFFRange((*pItr),m_targetHexes,m_headOnHexes,heading);
-//	} else {
-//		computeBatteryRange((*pItr),m_targetHexes);
-//	}
-//	pItr++;
-	std::vector<int>::iterator tItr = m_turnInfo[m_parent->getShip()->getID()].turns.begin();
-	PointList::iterator itr = m_turnInfo[m_parent->getShip()->getID()].movedHexes.begin();
-	while (itr < m_turnInfo[m_parent->getShip()->getID()].movedHexes.end() ) {
-//		PointSet tList,hList;
+	PointList path = m_turnInfo[m_parent->getShip()->getID()].path.getFullPath();
+	PointList::iterator itr = path.begin();
+	while (itr < path.end() ) {
+		std::cerr << "(" << (*itr).getX() << "," << (*itr).getY() << ") - heading = " << heading << std::endl;
 		if (m_parent->getWeapon()->isFF()){
 			computeFFRange((*itr),m_targetHexes,m_headOnHexes,heading);
 		} else {
 			computeBatteryRange((*itr),m_targetHexes);
 		}
-		if (pItr != m_turnInfo[m_parent->getShip()->getID()].waypoints.end() && (*itr) == (*pItr) ) {
-			// We are at a waypoint
-			// turn and recompute with new heading
-			if(tItr != m_turnInfo[m_parent->getShip()->getID()].turns.end()){
-				turnShip(heading,*tItr);
-				tItr++;
+		itr++;  // move to next point
+		if (itr != path.end()){
+			unsigned int newHeading = m_turnInfo[m_parent->getShip()->getID()].path.getPointHeading(*itr);
+			if (newHeading != (unsigned int)heading ) { // we turned
+				itr--; //back up to original hex
+				heading=newHeading; // but stay turned so that we compute weapon ranges properly.
 			}
-			pItr++;
-		} else {  // just move to the next hex
-			itr++;
 		}
 	}
 }
