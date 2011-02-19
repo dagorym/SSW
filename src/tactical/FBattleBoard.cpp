@@ -452,7 +452,9 @@ void FBattleBoard::setInitialRoute(){
 	m_gravityTurns.clear();
 	m_gravityTurnFlag = false;
 
-	m_turnInfo[ship->getID()].path.clear();
+//	m_turnInfo[ship->getID()].path.clear();
+//	std::cerr << "For " << ship->getName() << " the current path length is " << m_turnInfo[ship->getID()].path.getPathLength()
+//			<< " and nMoved = " << m_turnInfo[ship->getID()].nMoved << std::endl;
 	if (m_turnInfo[ship->getID()].path.getPathLength() > 1 ) { // the ship has already moved
 		m_moved = m_turnInfo[ship->getID()].path.getPathLength()-1;
 		current = m_turnInfo[ship->getID()].path.endPoint();
@@ -977,29 +979,33 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 		FPoint curHex = m_turnInfo[m_parent->getShip()->getID()].path.startPoint();
 		int heading = m_turnInfo[m_parent->getShip()->getID()].startHeading;
 		PointList path = m_turnInfo[m_parent->getShip()->getID()].path.getFullPath();
-		PointList::iterator itr = path.begin()+1;
-		PointSet tList,hList;
+		PointList::iterator itr = path.begin();
 		while (itr < path.end() ){
+			PointSet tList,hList;
 			if (w->isFF()){
 				computeFFRange((*itr),tList,hList,heading);
 			} else {
 				computeBatteryRange((*itr),tList);
 			}
 			unsigned int dis = FHexMap::computeHexDistance(p,(*itr));
-			if (m_targetHexes.find(*itr)!=m_targetHexes.end()){
+			if (tList.find(p)!=tList.end()){
 				// target is in general hex list
 				if (dis < min) {
+//					std::cerr << "Target is in general hex list" << std::endl;
 					isTarget = true;
 					min = dis;
 				}
-			} else if (m_headOnHexes.find(*itr)!=m_headOnHexes.end()){
+			} else if (hList.find(p)!=hList.end()){
 				// target is in head on hex list
 				if (dis < headOnMin){
+//					std::cerr << "Target is in head-on hex list" << std::endl;
 					isTarget = true;
 					headOn = true;
 					headOnMin = dis;
 				}
 			}
+//			std::cerr << "MP: Checking hex (" << itr->getX() << ", " << itr->getY()
+//					<< ").  Range = " << dis << "  min = " << min << "  headOnMin = " << headOnMin << std::endl;
 			itr++;  // move to next point
 			if (itr != path.end()){
 				unsigned int newHeading = m_turnInfo[m_parent->getShip()->getID()].path.getPointHeading(*itr);
@@ -1012,12 +1018,12 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 	} else {
 		// defensive player - For the defensive player we just need to run over the path of the
 		// moving ship and see where the closest point in the path is for the the target vessel
-		for (PointList::iterator itr = m_turnInfo[v->getID()].path.getFullPath().begin(); itr<m_turnInfo[v->getID()].path.getFullPath().end();itr++) {
+		PointList path = m_turnInfo[v->getID()].path.getFullPath();
+		for (PointList::iterator itr = path.begin(); itr < path.end(); itr++) {
 			unsigned int dis = FHexMap::computeHexDistance(m_shipPos,(*itr));
-//			std::cerr << "MP: Checking hex (" << itr->getX() << ", " << itr->getY() <<
-//				").  Range = " << dis << "  min = " << min << "  headOnMin = " << headOnMin << std::endl;
 			if (m_targetHexes.find(*itr)!=m_targetHexes.end()){
 				// target is in general hex list
+//				std::cerr << "Target is in general hex list" << std::endl;
 				if (dis < min) {
 					isTarget = true;
 					min = dis;
@@ -1025,11 +1031,14 @@ void FBattleBoard::setIfValidTarget(FVehicle *v, FPoint p){
 			} else if (m_headOnHexes.find(*itr)!=m_headOnHexes.end()){
 				// target is in head on hex list
 				if (dis < headOnMin){
+//					std::cerr << "Target is in head-on hex list" << std::endl;
 					isTarget = true;
 					headOn = true;
 					headOnMin = dis;
 				}
 			}
+//			std::cerr << "MP: Checking hex (" << itr->getX() << ", " << itr->getY()
+//					<< ").  Range = " << dis << "  min = " << min << "  headOnMin = " << headOnMin << std::endl;
 		}
 	}
 	// So if we have a target
@@ -1076,7 +1085,7 @@ void FBattleBoard::computeMovedWeaponRange(){
 	PointList path = m_turnInfo[m_parent->getShip()->getID()].path.getFullPath();
 	PointList::iterator itr = path.begin();
 	while (itr < path.end() ) {
-		std::cerr << "(" << (*itr).getX() << "," << (*itr).getY() << ") - heading = " << heading << std::endl;
+//		std::cerr << "(" << (*itr).getX() << "," << (*itr).getY() << ") - heading = " << heading << std::endl;
 		if (m_parent->getWeapon()->isFF()){
 			computeFFRange((*itr),m_targetHexes,m_headOnHexes,heading);
 		} else {
