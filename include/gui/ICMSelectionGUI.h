@@ -87,7 +87,7 @@ class ICMSelectionGUI : public wxDialog
 		 *
 		 * @author Tom Stephens
 		 * @date Created:  Apr 25, 2010
-		 * @date Last Modified:  Apr 25, 2010
+		 * @date Last Modified:  Feb 20, 2011
 		 */
 		void selectWeapon(int row);
 	

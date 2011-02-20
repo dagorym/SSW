@@ -78,7 +78,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Feb 15, 2011
+ * @date Last Modified:  Feb 20, 2011
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -367,7 +367,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 1, 2008
-	 * @date Last Modified:  Mar 30, 2009
+	 * @date Last Modified:  Feb 20, 2011
 	 */
 	void selectVessel(wxMouseEvent &event);
 
@@ -394,7 +394,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 21, 2008
-	 * @date Last Modified:  Feb 18, 2011
+	 * @date Last Modified:  Feb 20, 2011
 	 */
 	void setInitialRoute();
 
@@ -409,7 +409,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 30, 2008
-	 * @date Last Modified:  Feb 18, 2011
+	 * @date Last Modified:  Feb 20, 2011
 	 */
 	void checkForTurn(wxMouseEvent &event);
 
@@ -617,7 +617,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 24, 2009
-	 * @date Last Modified:  Apr 26, 2009
+	 * @date Last Modified:  Feb 20, 2011
 	 */
 	void setIfValidTarget(FVehicle *v, FPoint p);
 
@@ -629,7 +629,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  May 4, 2009
-	 * @date Last Modified:  May 4, 2009
+	 * @date Last Modified:  Feb 20, 2011
 	 */
 	void computeMovedWeaponRange();
 

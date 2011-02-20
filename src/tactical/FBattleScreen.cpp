@@ -263,7 +263,10 @@ void FBattleScreen::fireICM() {
 						bool haveICMs = false;
 						for (VehicleList::iterator vItr=d->vehicles->begin(); vItr<d->vehicles->end(); vItr++){
 							unsigned int index = (*vItr)->hasDefense(FDefense::ICM);
-							if (index && (*vItr)->getDefense(index)->getAmmo() && (*vItr)->isPowerSystemDamaged()==false){
+							if (index && (*vItr)->getDefense(index)->getAmmo()           // It has ICMs left,
+									&& (*vItr)->isPowerSystemDamaged()==false            // it can use them,
+									&& (*vItr)->getDefense(index)->isDamaged()==false
+									&& w->getTarget()->getOwner() == (*vItr)->getOwner()) {  // and it's on the same team as the defending ship
 								haveICMs = true;
 								break;  // once at least one ship has ICMs we can stop
 							}

@@ -371,17 +371,17 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 	FVehicle *v = NULL;
 //	std::cerr << "The x and y positions of the click are " << x << ", " << y << std::endl;
 //	std::cerr << "The selected hex is " << a << ", " << b << std::endl;
-	if (m_parent->getShip() != NULL ){
-		std::cerr << "m_parent ship is currently set to " << m_parent->getShip()->getName() << std::endl;
-	} else {
-		std::cerr << "No parent ship selected" << std::endl;
-	}
+//	if (m_parent->getShip() != NULL ){
+//		std::cerr << "m_parent ship is currently set to " << m_parent->getShip()->getName() << std::endl;
+//	} else {
+//		std::cerr << "No parent ship selected" << std::endl;
+//	}
 	unsigned int shipCount = m_hexData[a][b].ships.size();
 	if (shipCount){  // There is at least one ship in the hex
-		std::cerr << "There are " << shipCount << " ships in this hex" << std::endl;
+//		std::cerr << "There are " << shipCount << " ships in this hex" << std::endl;
 		if (shipCount == 1){
 			v= m_hexData[a][b].ships[0];
-			std::cerr << "Setting " << v->getName() << " as current ship." << std::endl;
+//			std::cerr << "Setting " << v->getName() << " as current ship." << std::endl;
 		} else {  // we've got  more than one ship and need to pick the one in question
 			///@todo:  Implement selection of ship when more than one are in a hex
 			/// what we want to do is draw a box listing the ships in the hex and based on the selection
@@ -398,11 +398,11 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 				v = m_parent->getShip();
 				v = pickShip(v,m_hexData[a][b].ships);
 			}
-			if (v==NULL){
-				std::cerr << "No ship selected" << std::endl;
-			} else {
-				std::cerr << "Selecting " << v->getName() << std::endl;
-			}
+//			if (v==NULL){
+//				std::cerr << "No ship selected" << std::endl;
+//			} else {
+//				std::cerr << "Selecting " << v->getName() << std::endl;
+//			}
 //			v = pickShip(v,m_hexData[a][b].ships);
 //			std::cerr << "Final Ship selection is " << v->getName() << std::endl;
 		}
@@ -418,10 +418,10 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 	}
 	if (m_parent->getWeapon()!=NULL && m_parent->getActivePlayerID()!=v->getOwner()){
 		/// assign as target
-		std::cerr << "Setting as new target " << v->getName() << std::endl;
+//		std::cerr << "Setting as new target " << v->getName() << std::endl;
 		setIfValidTarget(v,FPoint(a,b));
 	} else {
-		std::cerr << "Selecting as new ship " << v->getName() << std::endl;
+//		std::cerr << "Selecting as new ship " << v->getName() << std::endl;
 		m_parent->setShip(v);
 		m_parent->setWeapon(NULL);  // clear current weapons since we have selected a new ship
 		m_shipPos.setPoint(a,b);
@@ -436,7 +436,7 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 		} else {
 			m_drawRoute = false;
 		}
-		std::cerr << "m_parent = " << m_parent->getShip()->getName() << std::endl << std::endl;
+//		std::cerr << "m_parent = " << m_parent->getShip()->getName() << std::endl << std::endl;
 	}
 	m_parent->reDraw();
 

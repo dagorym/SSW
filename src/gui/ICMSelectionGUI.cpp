@@ -61,7 +61,8 @@ ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMD
 			shipList << "None";
 		} else {
 			for (unsigned int i=0; i<d->vehicles->size(); i++){
-				if ( (*(d->vehicles))[i]->getID() != d->weapon->getTarget()->getID() ){
+				if ( (*(d->vehicles))[i]->getID() != d->weapon->getTarget()->getID()  // it's not the target ship
+						&& (*(d->vehicles))[i]->getOwner() == d->weapon->getTarget()->getOwner()){ // and they're on the same team
 					shipList << (*(d->vehicles))[i]->getName() << " ";
 				}
 				if (m_shipICMData.find((*(d->vehicles))[i]->getID()) == m_shipICMData.end()){
@@ -258,27 +259,30 @@ void ICMSelectionGUI::selectWeapon(int row){
 	gSizer1->Add( m_staticText7, 0, wxALIGN_CENTER|wxALL, 5 );
 
 	// add in the information
+	int count = 0;
 	for (unsigned int i = 0; i< m_currentRowData->vehicles->size(); i++){
 		// ship name
 		VehicleList *vList = m_currentRowData->vehicles;
-		m_shipNames.push_back(new wxStaticText( m_panel1, wxID_ANY, wxT((*vList)[i]->getName()), wxDefaultPosition, wxDefaultSize, 0 ));
-		m_shipNames[i]->Wrap(-1);
-		gSizer1->Add( m_shipNames[i], 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+		if ((*vList)[i]->getOwner() == m_currentRowData->weapon->getTarget()->getOwner()){
+			m_shipNames.push_back(new wxStaticText( m_panel1, wxID_ANY, wxT((*vList)[i]->getName()), wxDefaultPosition, wxDefaultSize, 0 ));
+			m_shipNames[count]->Wrap(-1);
+			gSizer1->Add( m_shipNames[count], 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
-		// available ICMs
-//		unsigned int ICMIndex = (*vList)[i]->hasDefense(FDefense::ICM);
-		std::ostringstream os;
-		AssignedICMData * ICMdata = (m_shipICMData.find((*vList)[i]->getID()))->second;
-		unsigned int maxICMs = ICMdata->getMaxICMs() - ICMdata->getAllocatedICMs() + ICMdata->getICMsAllocatedToWeapon(m_currentRowData->weapon);
-		os << maxICMs;
-		m_ICMsAvailable.push_back( new wxStaticText( m_panel1, wxID_ANY, wxT(os.str()), wxDefaultPosition, wxDefaultSize, 0 ) );
-		m_ICMsAvailable[i]->Wrap(-1);
-		gSizer1->Add( m_ICMsAvailable[i], 0, wxALIGN_CENTER|wxALL, 5 );
+			// available ICMs
+			std::ostringstream os;
+			AssignedICMData * ICMdata = (m_shipICMData.find((*vList)[i]->getID()))->second;
+			unsigned int maxICMs = ICMdata->getMaxICMs() - ICMdata->getAllocatedICMs() + ICMdata->getICMsAllocatedToWeapon(m_currentRowData->weapon);
+			os << maxICMs;
+			m_ICMsAvailable.push_back( new wxStaticText( m_panel1, wxID_ANY, wxT(os.str()), wxDefaultPosition, wxDefaultSize, 0 ) );
+			m_ICMsAvailable[count]->Wrap(-1);
+			gSizer1->Add( m_ICMsAvailable[count], 0, wxALIGN_CENTER|wxALL, 5 );
 
-		// add in the spinner control
-		m_ICMsApplied.push_back(new wxSpinCtrl( m_panel1, i, wxEmptyString, wxDefaultPosition, wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, maxICMs, ICMdata->getICMsAllocatedToWeapon(m_currentRowData->weapon) ));
-		gSizer1->Add( m_ICMsApplied[i], 0, wxALIGN_CENTER, 5 );
-		m_ICMsApplied[i]->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( ICMSelectionGUI::updateICMCount ), NULL, this );
+			// add in the spinner control
+			m_ICMsApplied.push_back(new wxSpinCtrl( m_panel1, count, wxEmptyString, wxDefaultPosition, wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, maxICMs, ICMdata->getICMsAllocatedToWeapon(m_currentRowData->weapon) ));
+			gSizer1->Add( m_ICMsApplied[count], 0, wxALIGN_CENTER, 5 );
+			m_ICMsApplied[count]->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( ICMSelectionGUI::updateICMCount ), NULL, this );
+			count++;
+		}
 	}
 
 	// Update the layout

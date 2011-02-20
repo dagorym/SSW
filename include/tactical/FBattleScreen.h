@@ -118,7 +118,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Apr 22, 2010
-	 * @date Last Modified:  Apr 22, 2010
+	 * @date Last Modified:  Feb 20, 2011
 	 */
 	void fireICM();
 
