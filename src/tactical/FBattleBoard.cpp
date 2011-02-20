@@ -371,22 +371,46 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 	FVehicle *v = NULL;
 //	std::cerr << "The x and y positions of the click are " << x << ", " << y << std::endl;
 //	std::cerr << "The selected hex is " << a << ", " << b << std::endl;
+	if (m_parent->getShip() != NULL ){
+		std::cerr << "m_parent ship is currently set to " << m_parent->getShip()->getName() << std::endl;
+	} else {
+		std::cerr << "No parent ship selected" << std::endl;
+	}
 	unsigned int shipCount = m_hexData[a][b].ships.size();
 	if (shipCount){  // There is at least one ship in the hex
-//		std::cerr << "There are " << shipCount << " ships in this hex" << std::endl;
+		std::cerr << "There are " << shipCount << " ships in this hex" << std::endl;
 		if (shipCount == 1){
 			v= m_hexData[a][b].ships[0];
-//			std::cerr << "Setting " << v->getName() << " as current ship." << std::endl;
+			std::cerr << "Setting " << v->getName() << " as current ship." << std::endl;
 		} else {  // we've got  more than one ship and need to pick the one in question
 			///@todo:  Implement selection of ship when more than one are in a hex
 			/// what we want to do is draw a box listing the ships in the hex and based on the selection
 			/// pick that ship to work with.
-			if (m_parent->getWeapon()!=NULL){
-				v=m_parent->getWeapon()->getTarget();
-			} else {
-				v=m_parent->getShip();
+//			if (m_parent->getWeapon()!=NULL){
+//				v=m_parent->getWeapon()->getTarget();
+//			} else {
+//				v=m_parent->getShip();
+//			}
+			if (m_parent->getWeapon()!=NULL){  // we're targeting
+				v = m_parent->getWeapon()->getTarget();
+				v = pickTarget(v,m_hexData[a][b].ships);
+			} else {  // we just picking a ship
+				v = m_parent->getShip();
+				v = pickShip(v,m_hexData[a][b].ships);
 			}
-			v = pickShip(v,m_hexData[a][b].ships);
+			if (v==NULL){
+				std::cerr << "No ship selected" << std::endl;
+			} else {
+				std::cerr << "Selecting " << v->getName() << std::endl;
+			}
+//			v = pickShip(v,m_hexData[a][b].ships);
+//			std::cerr << "Final Ship selection is " << v->getName() << std::endl;
+		}
+	} else {
+		if (m_parent->getShip() != NULL){
+			m_parent->setWeapon(NULL);
+			m_parent->reDraw();
+			return;
 		}
 	}
 	if (v==NULL) {
@@ -394,8 +418,10 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 	}
 	if (m_parent->getWeapon()!=NULL && m_parent->getActivePlayerID()!=v->getOwner()){
 		/// assign as target
+		std::cerr << "Setting as new target " << v->getName() << std::endl;
 		setIfValidTarget(v,FPoint(a,b));
 	} else {
+		std::cerr << "Selecting as new ship " << v->getName() << std::endl;
 		m_parent->setShip(v);
 		m_parent->setWeapon(NULL);  // clear current weapons since we have selected a new ship
 		m_shipPos.setPoint(a,b);
@@ -410,6 +436,7 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 		} else {
 			m_drawRoute = false;
 		}
+		std::cerr << "m_parent = " << m_parent->getShip()->getName() << std::endl << std::endl;
 	}
 	m_parent->reDraw();
 
@@ -801,12 +828,37 @@ FVehicle * FBattleBoard::pickShip(const FVehicle *v, const VehicleList & list){
 	VehicleList::const_iterator itr = list.begin();
 	while (itr < list.end()){  // loop over all the ships in the list
 		if ((*itr)->getID()==v->getID()){  // If the currently selected ship is in the this
-			if (itr+1 != list.end()){  // make sure it's not the last one in the list
-				selected = *(itr+1);   // If not set the selected ship to the next one.  If it is we don't do anything and
+			if (itr+1 != list.end()){  // make sure it's not the last one in the list (or the currently selected ship)
+				selected = *(itr+1);   // If not, set the selected ship to the next one.  If it is we don't do anything and
 			}                          //   will get the first ship in the list.
 			break;                     // We've found a ship so we're done.
 		}
 		itr++;
+	}
+	return selected;
+}
+
+FVehicle * FBattleBoard::pickTarget(const FVehicle *v, const VehicleList & list){
+	FVehicle * selected = NULL;  // by default set it to no target
+	VehicleList::const_iterator itr = list.begin();
+	while (itr < list.end()){  // loop over all the ships in the list
+		if ((*itr)->getOwner() == m_parent->getActivePlayerID()){   // if the ship is owned by the firing player
+			itr++;
+			continue;												// skip it
+		}
+		// we get here on the first ship that is not owned by the firing player
+		if (v==NULL) {  // if no ship was previously selected set it to this ship
+			return (*itr);
+		}
+		if ((*itr)->getID()==v->getID()){  // If the currently selected ship is the current one
+			itr++;							// skip it and go on.
+			continue;
+		} else {
+			if ((*itr)->getOwner() != m_parent->getActivePlayerID()){  // ship is not owned by the firing player
+				return (*itr);
+			}
+			itr++;
+		}
 	}
 	return selected;
 }

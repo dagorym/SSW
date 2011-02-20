@@ -697,6 +697,22 @@ protected:
 	 * @date Last Modified:  Feb 18, 2011
 	 */
 	int forceTurn(FVehicle * ship, int curHeading, FPoint current);
+
+	/**
+	 * @brief
+	 *
+	 *
+	 *
+	 * @param v The currently selected vehicle
+	 * @param list The list of ships to display.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 13, 2009
+	 * @date Last Modified:  Feb 20, 2011
+	 */
+	FVehicle * pickTarget(const FVehicle *v, const VehicleList & list);
+
+
 };
 
 }
