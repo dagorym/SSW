@@ -839,28 +839,18 @@ FVehicle * FBattleBoard::pickShip(const FVehicle *v, const VehicleList & list){
 }
 
 FVehicle * FBattleBoard::pickTarget(const FVehicle *v, const VehicleList & list){
-	FVehicle * selected = NULL;  // by default set it to no target
-	VehicleList::const_iterator itr = list.begin();
-	while (itr < list.end()){  // loop over all the ships in the list
-		if ((*itr)->getOwner() == m_parent->getActivePlayerID()){   // if the ship is owned by the firing player
-			itr++;
-			continue;												// skip it
-		}
-		// we get here on the first ship that is not owned by the firing player
-		if (v==NULL) {  // if no ship was previously selected set it to this ship
-			return (*itr);
-		}
-		if ((*itr)->getID()==v->getID()){  // If the currently selected ship is the current one
-			itr++;							// skip it and go on.
-			continue;
-		} else {
-			if ((*itr)->getOwner() != m_parent->getActivePlayerID()){  // ship is not owned by the firing player
-				return (*itr);
-			}
-			itr++;
+	VehicleList targets;
+	// build a list of all ships in the group not owned by the firing player
+	for (VehicleList::const_iterator itr = list.begin(); itr < list.end(); itr++){
+		if ((*itr)->getOwner() != m_parent->getActivePlayerID()){
+			targets.push_back(*itr);
 		}
 	}
-	return selected;
+	if (targets.size() == 0){
+		return NULL;
+	} else {
+		return pickShip(v,targets);
+	}
 }
 
 void FBattleBoard::drawWeaponRange(wxDC &dc){
