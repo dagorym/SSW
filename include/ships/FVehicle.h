@@ -25,7 +25,7 @@ namespace Frontier
  *
  * @author Tom Stephens
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Jan 28, 2011
+ * @date Last Modified:  Feb 22, 2011
  */
 class FVehicle : public Frontier::FPObject
 {
@@ -232,6 +232,22 @@ public:
 	 * @date Last Modified:  Apr 22, 2010
 	 */
 	unsigned int hasDefense(FDefense::Defense d);
+
+	/**
+	 * @brief check to see if ship has specified weapon
+	 *
+	 * This method searches through the ship's weapons to see if
+	 * the specified weapon is one of them.  If not it returns 0.
+	 * Otherwise it returns the index of the weapon in the ship's
+	 * weapon list
+	 *
+	 * @param w weapon type
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 22, 2011
+	 * @date Last Modified:  Feb 22, 2011
+	 */
+	unsigned int hasWeapon(FWeapon::Weapon w);
 
 protected:
 	/// counter for total number of vehicles and next ship ID

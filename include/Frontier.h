@@ -21,6 +21,7 @@ enum {
 	BS_SetupPlanet,
 	BS_SetupStation,
 	BS_SetupDefendFleet,
+	BS_PlaceMines,
 	BS_SetupAttackFleet,
 	BS_Battle
 };

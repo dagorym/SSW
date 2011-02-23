@@ -298,6 +298,15 @@ unsigned int FVehicle::hasDefense(FDefense::Defense d){
 	return 0;
 }
 
+unsigned int FVehicle::hasWeapon(FWeapon::Weapon w){
+	for (unsigned int i = 0; i< m_weapons.size(); i++){
+		if (m_weapons[i]->getType()==w) {
+			return i;
+		}
+	}
+	return 0;
+}
+
 void FVehicle::takeHullDamage(int damage){
 	m_currentHP -= damage;
 	if (m_currentHP < 0) {

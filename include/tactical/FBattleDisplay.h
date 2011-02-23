@@ -36,7 +36,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jan 28, 2011
+ * @date Last Modified:  Feb 22, 2011
  */
 class FBattleDisplay : public wxPanel
 {
@@ -86,6 +86,12 @@ protected:
 	std::vector<wxRect> m_weaponRegions;
 	/// list of active regions for defenses of currently selected ship
 	std::vector<wxRect> m_defenseRegions;
+	/// button for signaling completion of placing mines phase
+	wxButton* m_buttonMinePlacementDone;
+	/// List of ships with mines
+	VehicleList m_shipsWithMines;
+	/// list of active regions for selection of a ship's name
+	std::vector<wxRect> m_shipNameRegions;
 
 	/// Event handler for setting the ship's speed
 	void onSetSpeed( wxCommandEvent& event );
@@ -95,6 +101,9 @@ protected:
 
 	/// event handler for defensive fire complete button
 	void onDefensiveFireDone( wxCommandEvent& event );
+
+	/// event handler for mine placement complete button
+	void onMinePlacementDone( wxCommandEvent& event );
 
 	/**
 	 * @brief Draws choice of planet icons on display
@@ -369,6 +378,49 @@ protected:
 	 * @date Last Modified:  Jan 28, 2011
 	 */
 	void drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int textSize);
+
+	/**
+	 * @brief Allows the defending player to place mines at the beginning of the game
+	 *
+	 * This method determines the number (if any) of mines the player is allowed
+	 * to place and continues to update as the player adds mines to the field.  If
+	 * no defending ships have mines, it returns false.  Otherwise it sets up the
+	 * state for adding mines and returns true.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 22, 2011
+	 * @date Last Modified:  Feb 22, 2011
+	 */
+	bool placeMines();
+
+	/**
+	 * @brief Draws the display for placing mines
+	 *
+	 * This method draws the display for placing mines on the field during setup.
+	 * It shows each ship that has mines and the number available for deployment.
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 22, 2011
+	 * @date Last Modified:  Feb 22, 2011
+	 */
+	void drawPlaceMines(wxDC &dc);
+
+	/**
+	 * @brief runs through current list of ship names to find if the user selected one
+	 *
+	 * This method runs through the current ship list to see if the user
+	 * selected one of the ships.  If so it sets the current ship pointer to the
+	 * selected ship.
+	 *
+	 * @param event The mouse event with the click position.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Feb 22, 2011
+	 * @date Last Modified:  Feb 22, 2011
+	 */
+	void checkShipSelection(wxMouseEvent &event);
 };
 
 }

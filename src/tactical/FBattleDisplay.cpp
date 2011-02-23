@@ -42,11 +42,13 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonMoveDone = new wxButton( this, wxID_ANY, wxT("Movement Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
 	m_buttonDefensiveFireDone = new wxButton( this, wxID_ANY, wxT("Defensive Fire Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
 	m_buttonOffensiveFireDone = new wxButton( this, wxID_ANY, wxT("Offensive Fire Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
+	m_buttonMinePlacementDone = new wxButton( this, wxID_ANY, wxT("Mine Placement Done"), wxPoint(leftOffset,ICON_SIZE+2*BORDER), wxDefaultSize, 0 );
 	m_spinCtrl1->Hide();
 	m_button1->Hide();
 	m_buttonMoveDone->Hide();
 	m_buttonDefensiveFireDone->Hide();
 	m_buttonOffensiveFireDone->Hide();
+	m_buttonMinePlacementDone->Hide();
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
 
@@ -89,6 +91,9 @@ void FBattleDisplay::draw(wxDC &dc){
 				drawGetSpeed(dc);
 			}
 		}
+		break;
+	case BS_PlaceMines:
+		drawPlaceMines(dc);
 		break;
 	case BS_Battle: {
 		switch (m_parent->getPhase()){
@@ -144,6 +149,9 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 		if (m_parent->getControlState()==false && m_parent->getPhase()==PH_NONE){
 			makeShipChoice(event);
 		}
+		break;
+	case BS_PlaceMines:
+		checkShipSelection(event);
 		break;
 	case BS_Battle:
 		if (m_parent->getShip()!=NULL
@@ -314,8 +322,10 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 	m_parent->setPhase(PH_NONE);
 	if(m_parent->getDone()){
 		if(m_parent->getState()==BS_SetupDefendFleet){
-			m_parent->setState(BS_SetupAttackFleet);
-			m_parent->toggleActivePlayer();
+			if(!placeMines()){
+				m_parent->setState(BS_SetupAttackFleet);
+				m_parent->toggleActivePlayer();
+			}
 		} else {
 			m_parent->setState(BS_Battle);
 			m_parent->toggleActivePlayer();
@@ -716,5 +726,90 @@ void FBattleDisplay::drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int tex
 		dc.DrawText(txt,x,tMargin);
 	}
 }
+
+bool FBattleDisplay::placeMines(){
+	// Determine if there are any mines to place and generate a list of ships that have them.
+	VehicleList vList = m_parent->getShipList(m_parent->getActivePlayerID());
+	m_shipsWithMines.clear();
+	for (VehicleList::iterator itr = vList.begin(); itr < vList.end(); itr++){
+		if ((*itr)->hasWeapon(FWeapon::M)){
+			m_shipsWithMines.push_back(*itr);
+		}
+	}
+	if (m_shipsWithMines.size()==0){  // no mines so we're done
+		return false;
+	}
+	// set phase to placing mines
+	m_parent->setState(BS_PlaceMines);
+	return true;
+}
+
+void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event ){
+	// disconnect the button
+	m_buttonMinePlacementDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
+	m_buttonMinePlacementDone->Hide();
+	// move to next step
+	m_parent->setState(BS_SetupAttackFleet);
+	m_parent->toggleActivePlayer();
+	m_first=true;
+}
+
+void FBattleDisplay::drawPlaceMines(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour green(wxT("#00FF00"));
+	int textSize = 10;		// text height
+	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	wxFont bold(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
+	dc.SetFont(normal);
+	std::ostringstream os;
+	os << "The defensive player may now place\n  mines before the attacker\n  sets up their ships.";
+	dc.SetTextForeground(white);
+	dc.DrawText(os.str(),leftOffset,BORDER);
+	int lMargin = 310;	// left margin for ship display
+	os.str("");
+	os << "Select a ship from the list below to dispense mines";
+	int y = BORDER;
+	dc.DrawText(os.str(),lMargin,y);
+	y+= (int)(1.6*textSize*1.3);
+	m_shipNameRegions.clear();
+	for (VehicleList::iterator itr = m_shipsWithMines.begin(); itr < m_shipsWithMines.end(); itr++){
+		if (m_parent->getShip()!=NULL && (*itr)->getID()==m_parent->getShip()->getID()){
+			dc.SetFont(bold);
+			dc.SetTextForeground(green);
+		} else {
+			dc.SetFont(normal);
+			dc.SetTextForeground(white);
+		}
+		dc.DrawText((*itr)->getName(),lMargin,y);
+		wxSize tSize= dc.GetTextExtent((*itr)->getName());
+		m_shipNameRegions.push_back(wxRect(lMargin,y,tSize.GetWidth(),tSize.GetHeight()));
+		os.str("");
+		os << "Mines: " << (*itr)->getWeapon((*itr)->hasWeapon(FWeapon::M))->getAmmo();
+		dc.DrawText(os.str(),lMargin+200,y);
+		y+= (int)(1.6*textSize);
+
+	}
+
+	// turn on the button
+	m_buttonMinePlacementDone->Enable(true);
+	if (m_first){
+		m_buttonMinePlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
+		m_buttonMinePlacementDone->Show();
+		m_first=false;
+	}
+}
+
+void FBattleDisplay::checkShipSelection(wxMouseEvent &event){
+	int x = event.GetX();
+	int y = event.GetY();
+	for (unsigned int i = 0; i< m_shipNameRegions.size(); i++){
+		if (m_shipNameRegions[i].Contains(x,y)){
+			m_parent->setShip(m_shipsWithMines[i]);
+			break;
+		}
+	}
+	m_parent->reDraw();
+}
+
 
 }
