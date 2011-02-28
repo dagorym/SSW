@@ -78,7 +78,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Feb 20, 2011
+ * @date Last Modified:  Feb 23, 2011
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -229,6 +229,8 @@ protected:
 	bool m_gravityTurnFlag;
 	/// pointer to masking screen icon image
 	wxImage * m_maskingScreenIcon;
+	/// set of hexes with mines
+	PointSet m_minedHexList;
 
 
 	/**

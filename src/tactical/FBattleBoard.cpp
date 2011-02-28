@@ -76,8 +76,12 @@ void FBattleBoard::draw(wxDC &dc){
 		drawRoute(dc);
 	}
 	if (m_parent->getWeapon()!=NULL){
-		drawWeaponRange(dc);
-		drawTarget(dc);
+		if (m_parent->getWeapon()->getType == FWeapon::M){
+			///@todo add mine display code here
+		} else {
+			drawWeaponRange(dc);
+			drawTarget(dc);
+		}
 	}
 }
 
@@ -205,6 +209,9 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 					}
 				}
 			}
+			break;
+		case BS_PlaceMines:
+			///@todo handle mine placement selection
 			break;
 		case BS_Battle: {
 			switch(m_parent->getPhase()){
