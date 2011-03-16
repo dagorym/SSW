@@ -75,9 +75,12 @@ void FBattleBoard::draw(wxDC &dc){
 	if (m_parent->getState()==BS_Battle){
 		drawRoute(dc);
 	}
+	if(m_parent->getState()==BS_PlaceMines){
+		drawMinedHexes(dc);
+	}
 	if (m_parent->getWeapon()!=NULL){
-		if (m_parent->getWeapon()->getType == FWeapon::M){
-			///@todo add mine display code here
+		if (m_parent->getWeapon()->getType() == FWeapon::M){
+			drawMinedHexes(dc);
 		} else {
 			drawWeaponRange(dc);
 			drawTarget(dc);
@@ -212,6 +215,7 @@ void FBattleBoard::onLeftUp(wxMouseEvent & event) {
 			break;
 		case BS_PlaceMines:
 			///@todo handle mine placement selection
+			placeMine(h);
 			break;
 		case BS_Battle: {
 			switch(m_parent->getPhase()){
@@ -1218,6 +1222,40 @@ int FBattleBoard::forceTurn(FVehicle * ship, int curHeading, FPoint current){
 		m_moved++;
 	}
 	return curHeading;
+}
+
+void FBattleBoard::drawMinedHexes(wxDC &dc){
+	wxColour blue(wxT("#0000FF"));// blue
+	PointSet::iterator itr = m_minedHexList.begin();
+	while ( itr != m_minedHexList.end() ){
+		drawShadedHex(dc,blue,m_hexData[itr->getX()][itr->getY()].pos);
+		itr++;
+	}
+}
+
+void FBattleBoard::placeMine(FPoint h){
+	if (m_parent->getWeapon()->getType() != FWeapon::M) return;// mine spreader should be currently selected weapon
+	FWeapon * w = m_parent->getWeapon();
+	if (m_minedHexList.find(h) == m_minedHexList.end()){  // the hex isn't currently mined
+		if (w->getAmmo()>0){                         // and we have mines left
+			// add the hex to the list
+			m_minedHexList.insert(h);
+			// decrement the mine count for the ship  (it should be the currently selected weapon)
+			w->setCurrentAmmo(w->getAmmo()-1);
+		}
+
+	} else {  // there is a mine there
+		if (m_parent->getState()==BS_PlaceMines){  // we're in the setup phase so we allow mines to be removed
+			// check to see that the current mine spreader doesn't already have all of it's mines
+			if( w->getAmmo() != w->getMaxAmmo()){
+				// if not remove the mine from the list
+				m_minedHexList.erase(h);
+				// and add it back to the ship's tally.
+				w->setCurrentAmmo(w->getAmmo()+1);
+			}
+		}
+	}
+	m_parent->reDraw();
 }
 
 }

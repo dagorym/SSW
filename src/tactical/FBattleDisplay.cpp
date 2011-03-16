@@ -751,6 +751,8 @@ void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event ){
 	// move to next step
 	m_parent->setState(BS_SetupAttackFleet);
 	m_parent->toggleActivePlayer();
+	m_parent->setShip(NULL);
+	m_parent->setWeapon(NULL);
 	m_first=true;
 }
 
@@ -805,6 +807,7 @@ void FBattleDisplay::checkShipSelection(wxMouseEvent &event){
 	for (unsigned int i = 0; i< m_shipNameRegions.size(); i++){
 		if (m_shipNameRegions[i].Contains(x,y)){
 			m_parent->setShip(m_shipsWithMines[i]);
+			m_parent->setWeapon(m_shipsWithMines[i]->getWeapon(m_shipsWithMines[i]->hasWeapon(FWeapon::M)));
 			break;
 		}
 	}

@@ -19,6 +19,7 @@ FMineLauncher::FMineLauncher() {
 	m_ICMMod=-5;
 	m_damageTableMod=-20;
 	m_baseToHitProb = 60;
+	m_MPO=true;
 }
 
 FMineLauncher::~FMineLauncher() {

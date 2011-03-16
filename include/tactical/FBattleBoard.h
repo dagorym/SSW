@@ -78,7 +78,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Feb 23, 2011
+ * @date Last Modified:  Mar 14, 2011
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -714,7 +714,35 @@ protected:
 	 */
 	FVehicle * pickTarget(const FVehicle *v, const VehicleList & list);
 
+	/**
+	 * @brief Highlights all the hexes with mines
+	 *
+	 * This method loops over the list of mined hexes and highlights
+	 * them for identification
+	 *
+	 * @param dc The device context to draw on
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 14, 2011
+	 * @date Last Modified:  Mar 14, 2011
+	 */
+	void drawMinedHexes(wxDC &dc);
 
+
+	/**
+	 * @brief Handles placement of mines on map
+	 *
+	 * This method checkes the selected hex to determine if a
+	 * mine is currently in that hex.  If not, one is added.  if a mine
+	 * is already there, nothing is done
+	 *
+	 * @param h The hex to add the mine to.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 14, 2011
+	 * @date Last Modified:  Mar 14, 2011
+	 */
+	void placeMine(FPoint h);
 };
 
 }
