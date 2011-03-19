@@ -23,6 +23,7 @@
 #include "strategic/FFleet.h"
 #include "core/FPoint.h"
 #include "core/FHexPath.h"
+#include "core/FHexMap.h"
 
 #include <map>
 
@@ -78,7 +79,7 @@ typedef struct {
  *
  * @author Tom Stephens
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Mar 14, 2011
+ * @date Last Modified:  Mar 18, 2011
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -124,7 +125,7 @@ public:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 8, 2009
-	 * @date Last Modified:  Feb 18, 2011
+	 * @date Last Modified:  Mar 18, 2011
 	 */
 	void finalizeMove();
 
@@ -231,6 +232,8 @@ protected:
 	wxImage * m_maskingScreenIcon;
 	/// set of hexes with mines
 	PointSet m_minedHexList;
+	/// list of mined hexes triggered and their targets.
+	FHexMap m_mineTargetList;
 
 
 	/**
@@ -369,7 +372,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Nov 1, 2008
-	 * @date Last Modified:  Feb 20, 2011
+	 * @date Last Modified:  Mar 18, 2011
 	 */
 	void selectVessel(wxMouseEvent &event);
 
@@ -724,7 +727,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Mar 14, 2011
-	 * @date Last Modified:  Mar 14, 2011
+	 * @date Last Modified:  Mar 18, 2011
 	 */
 	void drawMinedHexes(wxDC &dc);
 
@@ -743,6 +746,52 @@ protected:
 	 * @date Last Modified:  Mar 14, 2011
 	 */
 	void placeMine(FPoint h);
+
+	/**
+	 * @brief Check to see if you can place a mine in the specified hex
+	 *
+	 * This method checks to see if the passed in hex is in the path traveled
+	 * by the selected ship.  If it is, it is considered 'minable' and will
+	 * allow mines to be placed there.
+	 *
+	 * @param hex The hex to check
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 18, 2011
+	 * @date Last Modified:  Mar 18, 2011
+	 */
+	bool isHexMinable(FPoint hex);
+
+	/**
+	 * @brief Check to see if a ship hit a mine
+	 *
+	 * This method checks the path of the moving ship to see if it passed through
+	 * a mined hex.  If so, the ship is added to a list of ships damaged by mines
+	 * along with the hex that the mine was in.  These lists will be used to allow
+	 * ICM's to be applied to defense against the mines
+	 *
+	 * @param v Pointer to the ship object we are checking.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 18, 2011
+	 * @date Last Modified:  Mar 18, 2011
+	 */
+	void checkForMines(FVehicle * v);
+	/**
+	 * @brief Apply damage to any ships that passed through mines
+	 *
+	 * This method visits each hex that had ships trigger mines and applies
+	 * the damage from those mines after first allowing the moving player
+	 * to apply ICM's towards the mine's chance to hit.
+	 *
+	 * All damage from the mines are immediately applied to the ships that
+	 * triggered them.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 18, 2011
+	 * @date Last Modified:  Mar 18, 2011
+	 */
+	void applyMineDamage();
 };
 
 }

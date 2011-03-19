@@ -74,4 +74,7 @@ double FHexMap::computeHexAngle(FPoint s, FPoint d){
 	return atan2((dy-sy),(sx-dx))*180/acos(-1.0);  // angle in degrees;
 }
 
+void FHexMap::addShip(FPoint p, FVehicle * v){
+	m_hexList[p].push_back(v);
+}
 }

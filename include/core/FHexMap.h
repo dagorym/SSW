@@ -10,6 +10,9 @@
 
 #include "core/FPObject.h"
 #include "core/FPoint.h"
+#include "ships/FVehicle.h"
+
+#include <map>
 
 namespace Frontier {
 
@@ -21,7 +24,7 @@ namespace Frontier {
  *
  * @author Tom Stephens
  * @date Created:  Oct 04, 2010
- * @date Last Modified:  Oct 04, 2010
+ * @date Last Modified:  Mar 18, 2011
  */
 class FHexMap: public Frontier::FPObject {
 public:
@@ -109,6 +112,30 @@ public:
 	 */
 	static double computeHexAngle(FPoint s, FPoint d);
 
+	/**
+	 * @brief  Add a ship to the map
+	 *
+	 * This method adds the pointer to the ship passed as the second parameter
+	 * to the list of ships in the position passed in as the first parameter.
+	 *
+	 * This method is only to be used when adding completely new ships to
+	 * the map.  If you are moving a ship from one point to another use the
+	 * moveShip() method.
+	 *
+	 * @param p the hex to place the ship in
+	 * @param v pointer to the ship being added
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 18, 2011
+	 * @date Last Modified:  Mar 18, 2011
+	 */
+	void addShip(FPoint p, FVehicle * v);
+
+	const virtual int save(std::ostream &os) const {return 0;}
+	virtual int load(std::istream &is) { return 0; }
+
+private:
+	std::map<FPoint,VehicleList> m_hexList;
 
 };
 

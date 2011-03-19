@@ -79,11 +79,10 @@ void FBattleBoard::draw(wxDC &dc){
 		drawMinedHexes(dc);
 	}
 	if (m_parent->getWeapon()!=NULL){
+		drawWeaponRange(dc);
+		drawTarget(dc);
 		if (m_parent->getWeapon()->getType() == FWeapon::M){
 			drawMinedHexes(dc);
-		} else {
-			drawWeaponRange(dc);
-			drawTarget(dc);
 		}
 	}
 }
@@ -397,11 +396,6 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 			///@todo:  Implement selection of ship when more than one are in a hex
 			/// what we want to do is draw a box listing the ships in the hex and based on the selection
 			/// pick that ship to work with.
-//			if (m_parent->getWeapon()!=NULL){
-//				v=m_parent->getWeapon()->getTarget();
-//			} else {
-//				v=m_parent->getShip();
-//			}
 			if (m_parent->getWeapon()!=NULL){  // we're targeting
 				v = m_parent->getWeapon()->getTarget();
 				v = pickTarget(v,m_hexData[a][b].ships);
@@ -418,6 +412,11 @@ void FBattleBoard::selectVessel(wxMouseEvent &event){
 //			std::cerr << "Final Ship selection is " << v->getName() << std::endl;
 		}
 	} else {
+		if (m_parent->getWeapon()!=NULL && m_parent->getWeapon()->getType()==FWeapon::M && isHexMinable(FPoint(a,b))){
+			placeMine(FPoint(a,b));
+			m_parent->reDraw();
+			return;
+		}
 		if (m_parent->getShip() != NULL){
 			m_parent->setWeapon(NULL);
 			m_parent->reDraw();
@@ -776,7 +775,9 @@ void FBattleBoard::checkMoveStatus(){
 void FBattleBoard::finalizeMove(){
 	VehicleList ships = m_parent->getShipList(m_parent->getMovingPlayerID());
 	for (VehicleList::iterator itr=ships.begin(); itr<ships.end();itr++){
-		///@todo Check for mines
+		// Check to see if the ship passed through any mined hexes
+		checkForMines(*itr);
+
 		unsigned int id = (*itr)->getID();
 		FPoint start = m_turnInfo[id].path.startPoint();
 		FPoint finish = m_turnInfo[id].path.endPoint();
@@ -819,6 +820,8 @@ void FBattleBoard::finalizeMove(){
 			}
 		}
 	}
+	// Apply mine damage if any.
+	applyMineDamage();
 	m_drawRoute = false;
 }
 
@@ -1225,10 +1228,10 @@ int FBattleBoard::forceTurn(FVehicle * ship, int curHeading, FPoint current){
 }
 
 void FBattleBoard::drawMinedHexes(wxDC &dc){
-	wxColour blue(wxT("#0000FF"));// blue
+	wxColour green(wxT("#00FF00"));// green
 	PointSet::iterator itr = m_minedHexList.begin();
 	while ( itr != m_minedHexList.end() ){
-		drawShadedHex(dc,blue,m_hexData[itr->getX()][itr->getY()].pos);
+		drawShadedHex(dc,green,m_hexData[itr->getX()][itr->getY()].pos);
 		itr++;
 	}
 }
@@ -1256,6 +1259,29 @@ void FBattleBoard::placeMine(FPoint h){
 		}
 	}
 	m_parent->reDraw();
+}
+
+bool FBattleBoard::isHexMinable(FPoint hex){
+	// a hex is minable if the it lies on the ship's path so just look up the
+	// current ship's path and see if the selected hex is in it.
+	return m_turnInfo[m_parent->getShip()->getID()].path.isPointOnPath(hex);
+}
+
+void FBattleBoard::checkForMines(FVehicle * v){
+	std::vector<ICMData *> icmList;
+	//loop over the list of mined hexes and see if the ship passed through any
+	// it could pass through more than one so we need to check every single one
+	// and not stop at the first one.
+	for(PointSet::iterator itr = m_minedHexList.begin(); itr != m_minedHexList.end(); itr++){
+		if (m_turnInfo[v->getID()].path.isPointOnPath(*itr)){  // if this mined hex in on the ship's path
+			std::cerr << "Adding ship " << v->getName() << " to mined hex list for " << *itr << std::endl;
+			m_mineTargetList.addShip(*itr,v);                  // add it to a list
+		}
+	}
+}
+
+void FBattleBoard::applyMineDamage(){
+
 }
 
 }
