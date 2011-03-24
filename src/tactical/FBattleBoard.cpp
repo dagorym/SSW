@@ -9,6 +9,7 @@
 #include "Frontier.h"
 #include "tactical/FBattleScreen.h"
 #include "core/FHexMap.h"
+#include "gui/ICMSelectionGUI.h"
 #include <wx/wx.h>
 #include <cmath>
 #include <algorithm>
@@ -1268,20 +1269,75 @@ bool FBattleBoard::isHexMinable(FPoint hex){
 }
 
 void FBattleBoard::checkForMines(FVehicle * v){
-	std::vector<ICMData *> icmList;
 	//loop over the list of mined hexes and see if the ship passed through any
 	// it could pass through more than one so we need to check every single one
 	// and not stop at the first one.
 	for(PointSet::iterator itr = m_minedHexList.begin(); itr != m_minedHexList.end(); itr++){
 		if (m_turnInfo[v->getID()].path.isPointOnPath(*itr)){  // if this mined hex in on the ship's path
-			std::cerr << "Adding ship " << v->getName() << " to mined hex list for " << *itr << std::endl;
+//			std::cerr << "Adding ship " << v->getName() << " to mined hex list for " << *itr << std::endl;
 			m_mineTargetList.addShip(*itr,v);                  // add it to a list
 		}
 	}
 }
 
 void FBattleBoard::applyMineDamage(){
-
+//	std::cerr << "Entering FBattleBoard::applyMineDamage()" << std::endl;
+	// we need to convert the data in the m_mineTargetList to the form needed to pass it into the
+	// ICMSelection GUI
+	WeaponList mines;
+	std::vector<ICMData *> icmData;
+	PointSet minedHexes = m_mineTargetList.getOccupiedHexList();
+	// for each hex that had triggered mines, we need to (for each ship that passed through that hex
+	for (PointSet::iterator itr = minedHexes.begin(); itr!=minedHexes.end(); itr++){
+		VehicleList *vList = new VehicleList;
+		*vList = m_mineTargetList.getShipList(*itr);
+		for (VehicleList::iterator vItr = vList->begin(); vItr < vList->end(); vItr++){
+			// 1) create a mine weapon and set the ship as target
+			FWeapon *w = createWeapon(FWeapon::M);
+			w->setTarget(*vItr,0,false);
+			w->setParent(NULL);
+			mines.push_back(w);
+			// 2) create an ICMData object for that weapon/ship combo
+			ICMData *iData = new ICMData;
+			iData->weapon = w;
+			iData->vehicles = vList;
+			// 3) store ICMData object in vector
+			icmData.push_back(iData);
+		}
+		// We've assigned the mine to all relevant ships so remove spent mines from mine list
+		PointSet::iterator pItr = m_minedHexList.find(*itr);
+		if (pItr!=m_minedHexList.end()){
+			m_minedHexList.erase(pItr);
+		}
+	}
+	// then we need to
+	if (mines.size()>0){
+		// 4) Call the ICMSelection GUI
+		ICMSelectionGUI *gui = new ICMSelectionGUI(m_parent,&icmData);
+		gui->ShowModal();
+		// 5) Call fire() on each of the weapons from step 1
+		for (WeaponList::iterator itr = mines.begin(); itr < mines.end(); itr++){
+			(*itr)->fire();
+		}
+	}
+	// 6) cleanup the objects created.
+	// delete ICMData structures
+	while (icmData.size() >0){
+		ICMData * data = icmData.back();
+		icmData.pop_back();
+		delete data;
+	}
+	// delete all the mine objects
+	while (mines.size() >0){
+		FWeapon * m = mines.back();
+		mines.pop_back();
+		delete m;
+	}
+	m_mineTargetList.clear();
+	m_parent->toggleActivePlayer();
+	m_parent->clearDestroyedShips();
+	m_parent->toggleActivePlayer();
+//	std::cerr << "Leaving FBattleBoard::applyMineDamage()" << std::endl;
 }
 
 }

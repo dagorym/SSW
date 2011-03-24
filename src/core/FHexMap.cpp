@@ -77,4 +77,28 @@ double FHexMap::computeHexAngle(FPoint s, FPoint d){
 void FHexMap::addShip(FPoint p, FVehicle * v){
 	m_hexList[p].push_back(v);
 }
+
+PointSet FHexMap::getOccupiedHexList(){
+	PointSet hexList;
+	HexMap::iterator itr = m_hexList.begin();
+	while (itr != m_hexList.end()){
+		hexList.insert(itr->first);
+		itr++;
+	}
+	return hexList;
+}
+
+VehicleList FHexMap::getShipList(FPoint h){
+	if (m_hexList.find(h)!= m_hexList.end()){
+		return m_hexList[h];
+	} else {
+		VehicleList empty;
+		return empty;
+	}
+}
+
+void FHexMap::clear(){
+	m_hexList.clear();
+}
+
 }

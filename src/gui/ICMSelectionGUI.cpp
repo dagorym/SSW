@@ -74,7 +74,6 @@ ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMD
 		m_grid1->SetCellValue(row,3,shipList.str());
 	}
 
-
 	// Label Appearance
 	m_grid1->SetLabelFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
 	m_grid1->AutoSizeColumns();
@@ -155,6 +154,7 @@ ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMD
 	m_grid1->Connect( wxEVT_GRID_LABEL_LEFT_CLICK, wxGridEventHandler( ICMSelectionGUI::onPickRow ), NULL, this );
 	m_grid1->Connect( wxEVT_GRID_SELECT_CELL, wxGridEventHandler( ICMSelectionGUI::onPickWeapon ), NULL, this );
 	m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ICMSelectionGUI::finalizeAssignments ), NULL, this );
+
 }
 
 ICMSelectionGUI::~ICMSelectionGUI()

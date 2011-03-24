@@ -60,7 +60,7 @@ void FWeapon::fire(){
 		int roll = irand(100);
 		int toHitProb = m_baseToHitProb + ((m_isHeadOn)?10:0);
 		// modify based on target's current defensive system or the attacker's if the attacker has a MS up
-		if (m_parent->getCurrentDefense()->getType()==FDefense::MS){
+		if (m_parent!=NULL && m_parent->getCurrentDefense()->getType()==FDefense::MS){
 			toHitProb += m_parent->getCurrentDefense()->getAttackModifier(m_type);
 		} else {
 			toHitProb += m_target->getCurrentDefense()->getAttackModifier(m_type);
@@ -81,7 +81,7 @@ void FWeapon::fire(){
 		m_assignedICMCount=0;  // clear out the used ICMs
 
 		// reduce to hit probabilty if ship's combat control system is damaged
-		if (m_parent->isCombatControlDamaged()){
+		if (m_parent!=NULL && m_parent->isCombatControlDamaged()){
 			toHitProb -= 10;
 		}
 

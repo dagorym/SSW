@@ -14,7 +14,6 @@ AssignedICMData::AssignedICMData(FVehicle * ship) {
 	m_id = ship->getID();
 	m_maxICMs = ship->getDefense(ship->hasDefense(FDefense::ICM))->getAmmo();
 	m_allocatedICMs = 0;
-
 }
 
 AssignedICMData::~AssignedICMData() {

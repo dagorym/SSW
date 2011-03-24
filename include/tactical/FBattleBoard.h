@@ -789,7 +789,7 @@ protected:
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Mar 18, 2011
-	 * @date Last Modified:  Mar 18, 2011
+	 * @date Last Modified:  Mar 24, 2011
 	 */
 	void applyMineDamage();
 };

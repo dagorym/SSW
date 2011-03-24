@@ -291,6 +291,7 @@ void FVehicle::decrementMSTurnCount() {
 
 unsigned int FVehicle::hasDefense(FDefense::Defense d){
 	for (unsigned int i = 0; i< m_defenses.size(); i++){
+//		std::cerr << "checking defense " << i << " = " << m_defenses[i]->getName() << std::endl;
 		if (m_defenses[i]->getType()==d) {
 			return i;
 		}

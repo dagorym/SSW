@@ -15,6 +15,7 @@
 #include <map>
 
 namespace Frontier {
+typedef std::map<FPoint,VehicleList> HexMap;
 
 /**
  * @brief HexMap object
@@ -24,7 +25,7 @@ namespace Frontier {
  *
  * @author Tom Stephens
  * @date Created:  Oct 04, 2010
- * @date Last Modified:  Mar 18, 2011
+ * @date Last Modified:  Mar 24, 2011
  */
 class FHexMap: public Frontier::FPObject {
 public:
@@ -131,11 +132,47 @@ public:
 	 */
 	void addShip(FPoint p, FVehicle * v);
 
+	/**
+	 * @brief Returns list of occupied hexes
+	 *
+	 * This method goes through the list of hexes and creates a PointSet
+	 * containing all the points that have something in them
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 22, 2011
+	 * @date Last Modified:  Mar 22, 2011
+	 */
+	PointSet getOccupiedHexList();
+
+	/**
+	 * @brief Returns list of ships in the specified hex
+	 *
+	 * This method returns a list of vehicles contained in the specified hex.
+	 *
+	 * @param h The hex to get the list of.
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 22, 2011
+	 * @date Last Modified:  Mar 22, 2011
+	 */
+	VehicleList getShipList(FPoint h);
+
+	/**
+	 * @brief Completely clear the map
+	 *
+	 * This method clears the map and resets all counters
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Mar 24, 2011
+	 * @date Last Modified:  Mar 24, 2011
+	 */
+	void clear();
+
 	const virtual int save(std::ostream &os) const {return 0;}
 	virtual int load(std::istream &is) { return 0; }
 
 private:
-	std::map<FPoint,VehicleList> m_hexList;
+	HexMap m_hexList;
 
 };
 
