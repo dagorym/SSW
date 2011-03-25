@@ -764,9 +764,13 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	wxFont bold(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
 	dc.SetFont(normal);
 	std::ostringstream os;
-	os << "The defensive player may now place\n  mines before the attacker\n  sets up their ships.";
+	os << "The defensive player may now place";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,BORDER);
+	os.str("  mines before the attacker");
+	dc.DrawText(os.str(),leftOffset,BORDER+16);
+	os.str("  sets up their ships.");
+	dc.DrawText(os.str(),leftOffset,BORDER+32);
 	int lMargin = 310;	// left margin for ship display
 	os.str("");
 	os << "Select a ship from the list below to dispense mines";
