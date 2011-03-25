@@ -234,6 +234,8 @@ protected:
 	PointSet m_minedHexList;
 	/// list of mined hexes triggered and their targets.
 	FHexMap m_mineTargetList;
+	/// player id of mine owner
+	unsigned int m_mineOwner;
 
 
 	/**

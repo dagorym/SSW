@@ -32,6 +32,7 @@ FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos,
 	m_planetPosition.setPoint(-1,-1);
 	FGameConfig &gc = FGameConfig::create();
 	m_maskingScreenIcon = new wxImage(gc.getBasePath()+"icons/MaskingScreen.png");
+	m_mineOwner = 99;
 
 	SetScrollRate( (int)(2*m_d), (int)(3*m_a) );
 	SetVirtualSize(m_width,m_height);
@@ -1259,6 +1260,7 @@ void FBattleBoard::placeMine(FPoint h){
 			}
 		}
 	}
+	m_mineOwner = m_parent->getShip()->getOwner();
 	m_parent->reDraw();
 }
 
@@ -1269,6 +1271,7 @@ bool FBattleBoard::isHexMinable(FPoint hex){
 }
 
 void FBattleBoard::checkForMines(FVehicle * v){
+	if(v->getOwner() == m_mineOwner) return;  // mines don't attack your own ships.
 	//loop over the list of mined hexes and see if the ship passed through any
 	// it could pass through more than one so we need to check every single one
 	// and not stop at the first one.
