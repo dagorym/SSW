@@ -264,7 +264,7 @@ void ICMSelectionGUI::selectWeapon(int row){
 		// ship name
 		VehicleList *vList = m_currentRowData->vehicles;
 		if ((*vList)[i]->getOwner() == m_currentRowData->weapon->getTarget()->getOwner()){
-			m_shipNames.push_back(new wxStaticText( m_panel1, wxID_ANY, wxT((*vList)[i]->getName()), wxDefaultPosition, wxDefaultSize, 0 ));
+			m_shipNames.push_back(new wxStaticText( m_panel1, wxID_ANY, (*vList)[i]->getName(), wxDefaultPosition, wxDefaultSize, 0 ));
 			m_shipNames[count]->Wrap(-1);
 			gSizer1->Add( m_shipNames[count], 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
@@ -273,7 +273,7 @@ void ICMSelectionGUI::selectWeapon(int row){
 			AssignedICMData * ICMdata = (m_shipICMData.find((*vList)[i]->getID()))->second;
 			unsigned int maxICMs = ICMdata->getMaxICMs() - ICMdata->getAllocatedICMs() + ICMdata->getICMsAllocatedToWeapon(m_currentRowData->weapon);
 			os << maxICMs;
-			m_ICMsAvailable.push_back( new wxStaticText( m_panel1, wxID_ANY, wxT(os.str()), wxDefaultPosition, wxDefaultSize, 0 ) );
+			m_ICMsAvailable.push_back( new wxStaticText( m_panel1, wxID_ANY, os.str(), wxDefaultPosition, wxDefaultSize, 0 ) );
 			m_ICMsAvailable[count]->Wrap(-1);
 			gSizer1->Add( m_ICMsAvailable[count], 0, wxALIGN_CENTER|wxALL, 5 );
 

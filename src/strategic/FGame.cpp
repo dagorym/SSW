@@ -934,7 +934,7 @@ void FGame::drawTurnCounter(){
 			dc.DrawRectangle(i*s,j*s,s,s);
 			std::ostringstream os;
 			os << i+5*j;
-			dc.DrawText(_T(os.str()),(wxCoord)(i*s+0.3*s),(wxCoord)(j*s+0.1*s));
+			dc.DrawText(os.str(),(wxCoord)(i*s+0.3*s),(wxCoord)(j*s+0.1*s));
 
 		}
 	}

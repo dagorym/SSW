@@ -25,7 +25,7 @@ SelectJumpGUI::SelectJumpGUI( wxWindow* parent, FFleet * fleet, FMap * map, std:
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
 
 	std::string txt = "Possible jump routes for " + fleet->getName();
-	m_staticText1 = new wxStaticText( this, wxID_ANY, wxT(txt), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText1 = new wxStaticText( this, wxID_ANY, txt, wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText1->Wrap( -1 );
 	bSizer1->Add( m_staticText1, 0, wxALL, 5 );
 

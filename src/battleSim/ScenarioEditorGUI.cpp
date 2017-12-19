@@ -406,11 +406,11 @@ void ScenarioEditorGUI::onStartBattle( wxCommandEvent& event ){
 	FleetList aList,dList;
 	// generate a fleet list for the attackers
 	StringList attackers = convertNames(m_assignedAttackerListBox);
-	FFleet *attackFleet = createFleet(attackers,m_attackerTeam->GetStringSelection().c_str(),attackerID);
+	FFleet *attackFleet = createFleet(attackers,m_attackerTeam->GetStringSelection().ToStdString(),attackerID);
 	aList.push_back(attackFleet);
 	// generate a fleet list for the defenders
 	StringList defenders = convertNames(m_assignedDefenderListBox);
-	FFleet *defendFleet = createFleet(defenders,m_defenderTeam->GetStringSelection().c_str(),defenderID);
+	FFleet *defendFleet = createFleet(defenders,m_defenderTeam->GetStringSelection().ToStdString(),defenderID);
 	dList.push_back(defendFleet);
 	// start the battle
 	FBattleScreen *bb = new FBattleScreen();
@@ -474,7 +474,7 @@ StringList ScenarioEditorGUI::convertNames(wxListBox * ships){
 		} else if(ships->GetString(i)=="Assault Carrier"){
 			shipTypes.push_back("AssaultCarrier");
 		} else {
-			shipTypes.push_back(ships->GetString(i).c_str());
+			shipTypes.push_back(ships->GetString(i).ToStdString());
 		}
 	}
 	return shipTypes;

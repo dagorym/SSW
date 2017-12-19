@@ -18,12 +18,12 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
 
-	m_staticText1 = new wxStaticText( this, wxID_ANY, wxT(fleet->getName()), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText1 = new wxStaticText( this, wxID_ANY, fleet->getName(), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText1->Wrap( -1 );
 	bSizer1->Add( m_staticText1, 0, wxALL, 5 );
 
 	std::string txt = "Current Location:  " + sys->getName();
-	m_staticText2 = new wxStaticText( this, wxID_ANY, wxT(txt), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText2 = new wxStaticText( this, wxID_ANY, txt, wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText2->Wrap( -1 );
 	bSizer1->Add( m_staticText2, 0, wxALL, 5 );
 
@@ -37,11 +37,11 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 		txt += "none";
 		os << "N/A";
 	}
-	m_staticText3 = new wxStaticText( this, wxID_ANY, wxT(txt), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText3 = new wxStaticText( this, wxID_ANY, txt, wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText3->Wrap( -1 );
 	bSizer1->Add( m_staticText3, 0, wxALL, 5 );
 
-	m_staticText4 = new wxStaticText( this, wxID_ANY, wxT(os.str()), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText4 = new wxStaticText( this, wxID_ANY, os.str(), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText4->Wrap( -1 );
 	bSizer1->Add( m_staticText4, 0, wxALL, 5 );
 
