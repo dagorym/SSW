@@ -1,0 +1,12 @@
+*.gcno
+*.gcda
+*.o
+BattleSim
+SSW
+.project
+.cproject
+*.ssw
+*.a
+*.so
+.settings
+
