@@ -1132,7 +1132,7 @@ int FGame::checkForVictory(){
 		}
 	}
 	// and check to see if the Sathar have destroyed enough to win.
-	if (fortressCount == 0 & stationCount <=7 ){
+	if (fortressCount == 0 && stationCount <=7 ){
 		SatharVictory = true;
 	}
 	// now check for victory based on sathar retreat conditions

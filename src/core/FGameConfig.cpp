@@ -37,7 +37,7 @@ FGameConfig::FGameConfig(){
 	char buf[1000];
 	// read in the path.  They way to do this varies by OS.
 #ifdef LINUX
-	ssize_t size = readlink("/proc/self/exe", buf, bufsize);
+	size_t size = readlink("/proc/self/exe", buf, bufsize);
 #else
 	DWORD size = GetModuleFileName(NULL, buf, bufsize);
 #endif
