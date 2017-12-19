@@ -6,9 +6,9 @@
 #       -lwx_gtk2_qa-2.8 -lwx_gtk2_html-2.8 -lwx_gtk2_adv-2.8 -lwx_gtk2_core-2.8 \
 #       -lwx_base_xml-2.8 -lwx_base_net-2.8 -lwx_base-2.8
 
-CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
+CXXFLAGS = -I../../include -g `wx-config-3.0 --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
 
-LIBS = `wx-config --libs`
+LIBS = `wx-config-3.0 --libs`
 
 PICFLAGS = -fPIC -DPIC
 
@@ -63,7 +63,6 @@ FGameConfig.o: ../../include/core/FGameConfig.h ../../include/core/FPObject.h
 FGameConfig.o: ../../include/core/FObject.h /usr/include/unistd.h
 FGameConfig.o: /usr/include/features.h /usr/include/sys/cdefs.h
 FGameConfig.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
-FGameConfig.o: /usr/include/gnu/stubs-32.h /usr/include/bits/posix_opt.h
 FGameConfig.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
 FGameConfig.o: /usr/include/bits/confname.h /usr/include/getopt.h
 FObject.o: ../../include/core/FObject.h
