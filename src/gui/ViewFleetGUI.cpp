@@ -14,6 +14,7 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	m_fleet = fleet;
+	m_ship = NULL;
 
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );

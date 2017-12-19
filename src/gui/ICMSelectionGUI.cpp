@@ -17,6 +17,8 @@ using namespace Frontier;
 ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMData, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	m_ICMData = ICMData;
+	m_currentRowData = NULL;
+	m_currentRow = 0;
 
 
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );

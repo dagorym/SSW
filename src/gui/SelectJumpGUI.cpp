@@ -20,6 +20,7 @@ SelectJumpGUI::SelectJumpGUI( wxWindow* parent, FFleet * fleet, FMap * map, std:
 	m_fleet = fleet;
 	m_system = system;
 	m_parent = parent;
+	m_jump = NULL;
 
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );

@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////////////////////////////
 // C++ code generated with wxFormBuilder (version Apr 17 2008)
 // http://www.wxformbuilder.org/
@@ -51,13 +52,6 @@ class ICMSelectionGUI : public wxDialog
 		std::vector<wxStaticText*> m_shipNames;
 		std::vector<wxStaticText*> m_ICMsAvailable;
 		std::vector<wxSpinCtrl*> m_ICMsApplied;
-
-		wxStaticText* m_staticText8;
-		wxStaticText* m_staticText9;
-		wxSpinCtrl* m_spinCtrl1;
-		wxStaticText* m_staticText10;
-		wxStaticText* m_staticText11;
-		wxSpinCtrl* m_spinCtrl2;
 
 		wxButton* m_button1;
 		std::vector<ICMData *> *m_ICMData;

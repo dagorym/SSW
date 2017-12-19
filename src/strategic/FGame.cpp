@@ -58,6 +58,7 @@ FGame::FGame(wxWindow * win){
 	m_lostTendaySathar = 0;
 	m_lostTendayUPF = 0;
 	m_stationsDestroyed = 0;
+	m_satharRetreat = -1;
 
 }
 
