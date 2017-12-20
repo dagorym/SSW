@@ -191,7 +191,7 @@ int FFleet::load(std::istream &is){
 	read(is,m_dx);
 	read(is,m_dy);
 //	read(is,m_garrison);
-	unsigned int sCount;
+	size_t sCount;
 	read(is,sCount);
 	for(unsigned int i = 0; i < sCount; i++){
 		std::string type;

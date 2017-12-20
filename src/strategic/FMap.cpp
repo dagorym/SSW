@@ -336,7 +336,7 @@ const int FMap::save(std::ostream &os) const{
 int FMap::load(std::istream &is){
 //	std::cerr << "Entering FMap::load" << std::endl;
 	read(is,m_maxCoord);
-	unsigned int sysCount,jumpCount;
+	size_t sysCount,jumpCount;
 	read(is,sysCount);
 	for (unsigned int i = 0; i < sysCount; i++){
 		FSystem *s = new FSystem;
@@ -347,8 +347,8 @@ int FMap::load(std::istream &is){
 	for (unsigned int i = 0; i < jumpCount; i++){
 		FJumpRoute *j = new FJumpRoute;
 		j->load(is);
-		j->setStart(getSystem((j->getStart())->getID()));
-		j->setEnd(getSystem((j->getEnd())->getID()));
+		j->setStart(getSystem((unsigned int)((long)(j->getStart()) & 0x0000FFFFL)));
+		j->setEnd(getSystem((unsigned int)((long)(j->getEnd()) & 0x0000FFFFL)));
 		m_jumps.push_back(j);
 	}
 

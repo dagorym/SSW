@@ -44,7 +44,7 @@ const int FPlanet::save(std::ostream &os) const{
 	write(os,m_ID);
 	writeString(os,m_name);
 	if (m_station!=NULL){
-		write(os,1);
+		write(os,1); // @todo this might be a problem, check size
 		m_station->save(os);
 	} else {
 		write (os,0);

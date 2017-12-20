@@ -637,7 +637,7 @@ int FGame::load(std::istream &is){
 	read(is,m_stationsDestroyed);
 	m_universe = &(FMap::create());
 	m_universe->load(is);
-	unsigned int pCount;
+	size_t pCount;
 	read(is,pCount);
 //	std::cerr << "There are " << pCount << " players" << std::endl;
 	for (unsigned int i = 0; i < pCount; i++){
