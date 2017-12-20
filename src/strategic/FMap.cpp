@@ -336,7 +336,7 @@ const int FMap::save(std::ostream &os) const{
 int FMap::load(std::istream &is){
 //	std::cerr << "Entering FMap::load" << std::endl;
 	read(is,m_maxCoord);
-	unsigned int sysCount,jumpCount;
+	size_t sysCount,jumpCount;
 	read(is,sysCount);
 	for (unsigned int i = 0; i < sysCount; i++){
 		FSystem *s = new FSystem;

@@ -117,7 +117,7 @@ int FVehicle::load(std::istream &is) {
 	read(is,m_onFire);
 	read(is,m_powerSystemDamaged);
 	read(is,m_navError);
-	unsigned int count = 0;
+	size_t count = 0;
 	read(is,count);
 	for (unsigned int i=0; i< m_weapons.size(); i++){	// they were populated with default values
 		delete m_weapons[i];				// at creation so we need to clear them this is a bit

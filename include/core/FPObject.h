@@ -91,7 +91,9 @@ protected:
 	 * @date Last Modified:  Mar 06, 2008
 	 */
 	template<typename T> const int write(std::ostream &os, const T &d) const{
+		std::streampos pos = os.tellp();
 		os.write((char*)&d,sizeof(T));
+		os.flush();
 		return 0;
 	}
 
@@ -124,6 +126,7 @@ protected:
 	 * @date Last Modified:  Mar 06, 2008
 	 */
 	template<typename T> int read(std::istream &is, T &d){
+		std::streampos pos = is.tellg();
 		is.read((char*)&d,sizeof(T));
 		return 0;
 	}

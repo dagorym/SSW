@@ -17,6 +17,7 @@ unsigned int FSystem::m_classCount = 0;
 FSystem::FSystem(){
 	m_ID = ++m_nextID;
 	m_classCount++;
+	m_owner=-1;
 }
 
 FSystem::~FSystem(){
@@ -91,7 +92,7 @@ int FSystem::load(std::istream &is){
 	readString(is,m_name);
 	read(is,m_owner);
 	read(is,m_coords);
-	unsigned int planetCount;
+	size_t planetCount;
 	read(is,planetCount);
 	for (unsigned int i = 0; i < planetCount; i++){
 		FPlanet *p = new FPlanet;

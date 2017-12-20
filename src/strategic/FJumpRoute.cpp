@@ -120,7 +120,8 @@ int FJumpRoute::load(std::istream &is){
 //	std::cerr << "Entering FJumpRoute::load" << std::endl;
 	read(is,m_ID);
 	read(is,m_length);
-	unsigned int start,end,pSize;
+	unsigned int start,end;
+	size_t pSize;
 	// We'll hide the ID of the system in the pointer variable here and then
 	// extracted it to get the actual reference once we get back out to a place
 	// where we can look up the system using that ID.

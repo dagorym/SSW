@@ -122,7 +122,7 @@ int FPlayer::load(std::istream &is){
 	readString(is,m_name);
 	readString(is,m_iconName);
 	m_fleetIcon.LoadFile(gc.getBasePath()+m_iconName);
-	unsigned int uSize, fSize;
+	size_t uSize, fSize;
 	read(is,uSize);
 	for(unsigned int i = 0; i < uSize; i++){
 		std::string type;
