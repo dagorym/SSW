@@ -6,7 +6,7 @@
 #       -lwx_gtk2_qa-2.8 -lwx_gtk2_html-2.8 -lwx_gtk2_adv-2.8 -lwx_gtk2_core-2.8 \
 #       -lwx_base_xml-2.8 -lwx_base_net-2.8 -lwx_base-2.8
 
-CXXFLAGS = -I../../include -g `wx-config-3.0 --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
+CXXFLAGS = -I../../include -g `wx-config-3.0 --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage -fpermissive
 
 LIBS = `wx-config-3.0 --libs`
 
