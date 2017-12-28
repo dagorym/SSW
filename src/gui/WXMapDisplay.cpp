@@ -79,9 +79,11 @@ const double WXMapDisplay::getScale(wxDC &dc) const {
 	FMap &map = FMap::getMap();
 	wxCoord w, h;
 	dc.GetSize(&w, &h);
+//	std::cerr << "w = " << w << " h = " << h << std::endl;
 	double scaleX=(double)w/map.getMaxSize();
 	double scaleY=(double)h/map.getMaxSize();
-	return std::min(scaleX,scaleY);
+	double minscale = 1;
+	return std::max(minscale,std::min(scaleX,scaleY));
 }
 
 }

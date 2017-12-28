@@ -100,6 +100,7 @@ void FBattleBoard::drawGrid(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));// white
 	wxColour black(wxT("#000000"));// black
 	dc.SetBackground(wxBrush(black));
+	dc.Clear();
 	int x,y;
 	dc.SetPen(wxPen(white));
 	SetVirtualSize(m_width,m_height);

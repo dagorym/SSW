@@ -281,6 +281,8 @@ private:
   bool m_novaPlaced;
   /// Game configuration object
   Frontier::FGameConfig * m_gameConfig;
+  // wxPanel for drawing in
+  wxPanel * m_drawingPanel;
 
   /**
    * @brief deletes the game and resets the window
