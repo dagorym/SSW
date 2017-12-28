@@ -457,6 +457,7 @@ void FGame::createSFNova(){
 void FGame::onLeftDClick(wxMouseEvent& event) {
 	wxClientDC dc(m_parent);
 	WXMapDisplay md;
+	std::cout << "m_x = " << event.m_x << ", m_y = " << event.m_y << std::endl;
 	if (m_universe!=NULL){
 		FSystem * sys = m_universe->selectSystem(event.m_x/md.getScale(dc),event.m_y/md.getScale(dc));
 		FPlayer * player = (m_players[0]->getID()==m_currentPlayer)?m_players[0]:m_players[1];
@@ -957,7 +958,6 @@ int FGame::onLeftUp(wxMouseEvent &event){
 	dc.GetSize(&w, &h);
 	s = ((w > h)?h:w)/20;
 	event.GetPosition(&x,&y);
-
 	// Did they click the end turn button
 	if ( x<4*s && y>2*s && y<3*s ){ // yes
 		if (m_currentPlayer == m_players[0]->getID()){

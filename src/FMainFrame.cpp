@@ -71,6 +71,8 @@ FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& 
 	m_gameConfig = &(FGameConfig::create());
     m_drawingPanel = new wxPanel(this);
     m_drawingPanel->SetName("MapPanel");
+    m_drawingPanel->Bind(wxEVT_LEFT_DCLICK,&FMainFrame::onLeftDClick,this);
+    m_drawingPanel->Bind(wxEVT_LEFT_UP,&FMainFrame::onLeftUp,this);
     wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(m_drawingPanel, 1, wxEXPAND);
     SetSizer(sizer);
