@@ -69,6 +69,13 @@ FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& 
 	SetStatusText( "Welcome to the Frontier!" );
 	m_game=NULL;
 	m_gameConfig = &(FGameConfig::create());
+    m_drawingPanel = new wxPanel(this);
+    m_drawingPanel->SetName("MapPanel");
+    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(m_drawingPanel, 1, wxEXPAND);
+    SetSizer(sizer);
+    SetAutoLayout(true);
+
 
 }
 
@@ -174,7 +181,8 @@ void FMainFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
 }
 
 void FMainFrame::onPaint(wxPaintEvent & event){
-	wxPaintDC dc(this);
+	m_drawingPanel->SetClientSize(this->GetClientSize());
+	wxClientDC dc(m_drawingPanel);
 	if (m_game!=NULL){
 		m_game->draw(dc);
 	}

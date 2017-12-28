@@ -201,21 +201,9 @@ int FGame::initMap(bool gui){
 void FGame::draw(){
 	// draw the base map
 	if (m_parent != NULL){
-		wxClientDC dc(m_parent);
+		wxClientDC dc(m_parent->FindWindow("MapPanel"));
 		draw(dc);
 	}
-//	dc.Clear();
-//	if(m_universe!=NULL){
-//		m_universe->draw(dc/*, m_players[0]->getID()*/);
-//		// draw the fleets for each player
-//		if(m_players[0]){
-//			m_players[0]->drawFleets(dc,m_universe);
-//		}
-//		if(m_players[1]){
-//			m_players[1]->drawFleets(dc,m_universe);
-//		}
-//		drawTurnCounter();
-//	}
 }
 
 void FGame::draw(wxDC &dc){
