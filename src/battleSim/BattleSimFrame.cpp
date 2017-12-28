@@ -14,6 +14,7 @@ BattleSimFrame::BattleSimFrame( const wxString& title, const wxPoint& pos, const
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BACKGROUND ) );
+	this->SetMinSize(wxSize(100,240));
 	
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
