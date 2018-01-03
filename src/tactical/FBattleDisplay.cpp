@@ -64,6 +64,11 @@ void FBattleDisplay::draw(wxDC &dc){
 	m_weaponRegions.clear();
 	m_defenseRegions.clear();
 	dc.SetBackground(wxBrush(black));
+	int w,h;
+	dc.GetSize(&w,&h);
+	dc.SetPen(*wxBLACK);
+	dc.SetBrush(*wxBLACK_BRUSH);
+	dc.DrawRectangle(0,0,w,h);
 	dc.DrawBitmap(wxBitmap(m_zoomImage),0,0);
 	switch (m_parent->getState()){
 	case BS_SetupPlanet:
