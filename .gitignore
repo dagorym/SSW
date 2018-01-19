@@ -25,3 +25,6 @@ SSW
 /x64/Debug/SSW.log
 /x64/Debug/vc141.idb
 /x64/Debug/vc141.pdb
+/Debug/SSW.Build.CppClean.log
+/Debug/SSW.pdb
+/SSW.vcxproj.user

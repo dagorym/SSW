@@ -13,6 +13,8 @@
 #include <unistd.h>
 #else
 #include <Windows.h>
+#include <locale>
+#include <codecvt>
 #endif
 namespace Frontier
 {
@@ -32,19 +34,28 @@ FGameConfig & FGameConfig::getGameConfig(){
 
 FGameConfig::FGameConfig(){
 	// determine the base path to the game's directory structure
-	// setup the buffer
-	int bufsize = 1000;
-	char buf[1000];
 	// read in the path.  They way to do this varies by OS.
+	int bufsize = 1000;
 #ifdef LINUX
+	// setup the buffer
+	char buf[1000];
 	size_t size = readlink("/proc/self/exe", buf, bufsize);
-#else
-	DWORD size = GetModuleFileName(NULL, buf, bufsize);
-#endif
-	buf[size]=0;  // add the null termination
+	buf[size] = 0;  // add the null termination
 	std::string path(buf);
-	path = path.substr(0,path.find_last_of('/'));
-	m_basePath = path.substr(0,(path.find_last_of('/'))+1);
+	path = path.substr(0, path.find_last_of('/'));
+	m_basePath = path.substr(0, (path.find_last_of('/')) + 1);
+#else
+	wchar_t buf[1000];
+	DWORD size = GetModuleFileName(NULL, buf, bufsize);
+	std::wstring wpath(buf);
+	wpath = wpath.substr(0, wpath.find_last_of('/'));
+	using convert_type = std::codecvt_utf8<wchar_t>;
+	std::wstring_convert<convert_type, wchar_t> converter;
+
+	//use converter (.to_bytes: wstr->str, .from_bytes: str->wstr)
+	std::string path = converter.to_bytes(wpath);
+	m_basePath = path.substr(0, (path.find_last_of('/')) + 1);
+#endif
 //	std::cerr << "The path returned was " << m_basePath << std::endl;
 
 }
