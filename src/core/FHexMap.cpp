@@ -7,6 +7,7 @@
 
 #include "Frontier.h"
 #include "core/FHexMap.h"
+#include <algorithm>
 
 namespace Frontier {
 

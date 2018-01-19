@@ -7,6 +7,7 @@
 
 #include "gui/WXMapDisplay.h"
 #include "strategic/FMap.h"
+#include <algorithm>
 
 namespace Frontier
 {
