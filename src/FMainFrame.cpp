@@ -118,7 +118,7 @@ void FMainFrame::onSave(wxCommandEvent& WXUNUSED(event)) {
 	// get the file name to save to
 	wxString fname = d->GetFilename();
 	// open the file for writing
-	std::ofstream os(fname.c_str(),std::ios::binary);
+	std::ofstream os(fname.ToStdString().c_str(),std::ios::binary);
 	if (m_game){
 		m_game->save(os);
 	}
@@ -138,7 +138,7 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 		// get the file name to open
 		wxString fname = d->GetFilename();
 		// open the file for reading
-		std::ifstream is(fname.c_str(),std::ios::binary);
+		std::ifstream is(fname.ToStdString().c_str(),std::ios::binary);
 		// load up the game
 		m_game->load(is);
 		// draw the screen
