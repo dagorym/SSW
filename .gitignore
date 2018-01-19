@@ -10,3 +10,18 @@ SSW
 *.so
 .settings
 
+/.vs/slnx.sqlite
+/.vs/ProjectSettings.json
+/.vs/VSWorkspaceState.json
+*.obj
+/Debug/SSW.log
+*.tlog
+/Debug/vc141.idb
+/Debug/vc141.pdb
+/SSW.sln
+/SSW.vcxproj
+/SSW.vcxproj.filters
+/x64/Debug/SSW.Build.CppClean.log
+/x64/Debug/SSW.log
+/x64/Debug/vc141.idb
+/x64/Debug/vc141.pdb

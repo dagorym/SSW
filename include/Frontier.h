@@ -58,11 +58,11 @@ inline int Ceil2 (int x){
 }
 
 /// round function since it doesn't exist in VC++
-#ifndef LINUX
-inline double round(const double & v){
-	return floor( v + 0.5 );
-}
-#endif
+//#ifndef LINUX
+//inline double round(const double & v){
+//	return floor( v + 0.5 );
+//}
+//#endif
 
 
 #endif //_FRONTIER_H_
