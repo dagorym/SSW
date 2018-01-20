@@ -581,7 +581,7 @@ void FBattleBoard::checkForTurn(wxMouseEvent &event){
 	}
 	if (found) { // yep we're moving the ship.
 		// next pick the list we need to work with
-		PointList * curList;
+		PointList * curList = NULL;
 		switch(turn){
 		case -1:
 			curList=&m_rightHexes;
