@@ -898,7 +898,7 @@ void FGame::createKizkKarMilita(){
 }
 
 void FGame::drawTurnCounter(){
-	wxClientDC dc(m_parent);
+	wxClientDC dc(m_parent->FindWindow("MapPanel"));
 	wxCoord w, h, s;
 	dc.GetSize(&w, &h);
 	s = ((w > h)?h:w)/20;
