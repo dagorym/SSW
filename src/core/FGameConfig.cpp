@@ -48,13 +48,13 @@ FGameConfig::FGameConfig(){
 	wchar_t buf[1000];
 	DWORD size = GetModuleFileName(NULL, buf, bufsize);
 	std::wstring wpath(buf);
-	wpath = wpath.substr(0, wpath.find_last_of('/'));
+	wpath = wpath.substr(0, wpath.find_last_of('\\'));
 	using convert_type = std::codecvt_utf8<wchar_t>;
 	std::wstring_convert<convert_type, wchar_t> converter;
 
 	//use converter (.to_bytes: wstr->str, .from_bytes: str->wstr)
 	std::string path = converter.to_bytes(wpath);
-	m_basePath = path.substr(0, (path.find_last_of('/')) + 1);
+	m_basePath = path.substr(0, (path.find_last_of('\\')) + 1);
 #endif
 //	std::cerr << "The path returned was " << m_basePath << std::endl;
 
