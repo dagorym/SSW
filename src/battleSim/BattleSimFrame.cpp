@@ -12,9 +12,10 @@
 
 BattleSimFrame::BattleSimFrame( const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style )
 {
+	const int MIN_HEIGHT = 240;
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BACKGROUND ) );
-	this->SetMinSize(wxSize(100,240));
+	this->SetMinSize(wxSize(100, MIN_HEIGHT));
 	
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
@@ -32,7 +33,11 @@ BattleSimFrame::BattleSimFrame( const wxString& title, const wxPoint& pos, const
 	
 	this->SetSizer( bSizer1 );
 	this->Layout();
-	
+	int w, h;
+	this->GetSize(&w, &h);
+	if (h < MIN_HEIGHT) {
+		this->SetSize(w, MIN_HEIGHT);
+	}
 	// Connect Events
 //	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( BattleSimFrame::onQuit ), NULL, this );
 	m_localGame->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BattleSimFrame::onPlayLocal ), NULL, this );
