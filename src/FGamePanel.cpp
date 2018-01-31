@@ -5,6 +5,7 @@
 FGamePanel::FGamePanel(wxFrame * parent) : wxPanel(parent)
 {
 	m_parent = parent;
+	m_game = NULL;
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FGamePanel::onPaint));
 
 }

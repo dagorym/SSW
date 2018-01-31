@@ -18,6 +18,7 @@ FMainFrame::~FMainFrame() {
 	if(m_game != NULL){
 		delete m_game;
 	}
+	delete m_drawingPanel;
 	delete m_gameConfig;
 }
 
@@ -89,6 +90,7 @@ void FMainFrame::onQuit(wxCommandEvent& WXUNUSED(event)) {
 void FMainFrame::onNew(wxCommandEvent& event) {
 	if(m_game==NULL){
 		m_game = &(FGame::create(this));
+		m_drawingPanel->setGame(m_game);
 //		wxClientDC dc(this);
 		int result = m_game->init(this);
 		if (result){
@@ -136,6 +138,7 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 		wxFileDialog *d = new wxFileDialog(this,"Select a game file to open","","","*.ssw",wxFD_FILE_MUST_EXIST|wxFD_OPEN|wxFD_CHANGE_DIR);
 		d->ShowModal();
 		m_game = &(FGame::create(this));
+		m_drawingPanel->setGame(m_game);
 		// get the file name to open
 		wxString fname = d->GetFilename();
 		// open the file for reading
@@ -285,6 +288,7 @@ void FMainFrame::onClose(wxCommandEvent &event){
 }
 
 void FMainFrame::resetGame(){
+	m_drawingPanel->clearGame();
 	delete m_game;
 	m_game = NULL;
 	m_novaPlaced = false;

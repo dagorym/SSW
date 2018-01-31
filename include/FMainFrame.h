@@ -12,6 +12,7 @@
 #include <wx/wx.h>
 #include "strategic/FGame.h"
 #include "core/FGameConfig.h"
+#include "FGamePanel.h"
 
 /**
  * @brief Main frame class for the SSW game
@@ -282,7 +283,7 @@ private:
   /// Game configuration object
   Frontier::FGameConfig * m_gameConfig;
   // wxPanel for drawing in
-  wxPanel * m_drawingPanel;
+  FGamePanel * m_drawingPanel;
 
   /**
    * @brief deletes the game and resets the window

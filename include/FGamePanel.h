@@ -43,9 +43,9 @@ public:
 	* @date Last Modified:  Jan 31, 2018
 	*/
 	void onPaint(wxPaintEvent & event);
-	void setGame(FGame * game) {
-		m_game = game;
-	};
+	void setGame(FGame * game) { m_game = game; }
+	void clearGame() { m_game = NULL; }
+
 private:
 	wxWindow * m_parent;
 	FGame * m_game;
