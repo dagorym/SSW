@@ -8,6 +8,7 @@
 #include "FMainFrame.h"
 #include "Frontier.h"
 #include "tactical/FBattleScreen.h"
+#include "FGamePanel.h"
 #include <iostream>
 
 
@@ -24,7 +25,7 @@ FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& 
        : wxFrame((wxFrame *)NULL, -1, title, pos, size) {
 
 	m_novaPlaced = false;
-	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FMainFrame::onPaint));
+//	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FMainFrame::onPaint));
 
 	wxMenu *menuFile = new wxMenu;
 	menuFile->Append( ID_New, "&New" );
@@ -69,10 +70,10 @@ FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& 
 	SetStatusText( "Welcome to the Frontier!" );
 	m_game=NULL;
 	m_gameConfig = &(FGameConfig::create());
-    m_drawingPanel = new wxPanel(this);
-    m_drawingPanel->SetName("MapPanel");
-    m_drawingPanel->Bind(wxEVT_LEFT_DCLICK,&FMainFrame::onLeftDClick,this);
-    m_drawingPanel->Bind(wxEVT_LEFT_UP,&FMainFrame::onLeftUp,this);
+    m_drawingPanel = new FGamePanel(this);
+    //m_drawingPanel->SetName("MapPanel");
+    //m_drawingPanel->Bind(wxEVT_LEFT_DCLICK,&FMainFrame::onLeftDClick,this);
+    //m_drawingPanel->Bind(wxEVT_LEFT_UP,&FMainFrame::onLeftUp,this);
     wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(m_drawingPanel, 1, wxEXPAND);
     SetSizer(sizer);
@@ -184,10 +185,10 @@ void FMainFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
 
 void FMainFrame::onPaint(wxPaintEvent & event){
 	m_drawingPanel->SetClientSize(this->GetClientSize());
-	wxClientDC dc(m_drawingPanel);
-	if (m_game!=NULL){
-		m_game->draw(dc);
-	}
+	//wxClientDC dc(m_drawingPanel);
+	//if (m_game!=NULL){
+	//	m_game->draw(dc);
+	//}
 }
 
 void FMainFrame::onEndUPFTurn(wxCommandEvent& event){
@@ -264,9 +265,10 @@ void FMainFrame::onLeftUp(wxMouseEvent& event){
 }
 
 void FMainFrame::onSize(wxSizeEvent& event){
-	if(m_game != NULL){
+//	m_drawingPanel->SetClientSize(this->GetClientSize());
+//	if(m_game != NULL){
 		Refresh();
-	}
+//	}
 }
 
 void FMainFrame::onClose(wxCommandEvent &event){
