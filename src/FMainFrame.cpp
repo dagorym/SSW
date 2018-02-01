@@ -192,24 +192,26 @@ void FMainFrame::onPaint(wxPaintEvent & event){
 void FMainFrame::onEndUPFTurn(wxCommandEvent& event){
     if(m_game != NULL){
     	m_game->endUPFTurn();
-        m_game->draw();
+//        m_game->draw();
         GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
         GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
         GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
         GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
 		GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
+		Refresh();
     }
 }
 
 void FMainFrame::onEndSatharTurn(wxCommandEvent& event){
     if(m_game != NULL){
     	m_game->endSatharTurn();
-        m_game->draw();
+//        m_game->draw();
         GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
         GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
         GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
         GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
 		GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
+		Refresh();
     }
 }
 

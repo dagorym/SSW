@@ -17,7 +17,11 @@ FGamePanel::~FGamePanel()
 
 void FGamePanel::onPaint(wxPaintEvent & event) {
 	SetClientSize(m_parent->GetClientSize());
+#ifdef LINUX
 	wxClientDC dc(this);
+#else
+	wxPaintDC dc(this);
+#endif
 	if (m_game != NULL) {
 		m_game->draw(dc);
 	}
