@@ -72,9 +72,9 @@ FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& 
 	m_game=NULL;
 	m_gameConfig = &(FGameConfig::create());
     m_drawingPanel = new FGamePanel(this);
-    //m_drawingPanel->SetName("MapPanel");
-    //m_drawingPanel->Bind(wxEVT_LEFT_DCLICK,&FMainFrame::onLeftDClick,this);
-    //m_drawingPanel->Bind(wxEVT_LEFT_UP,&FMainFrame::onLeftUp,this);
+    m_drawingPanel->SetName("MapPanel");
+    m_drawingPanel->Bind(wxEVT_LEFT_DCLICK,&FMainFrame::onLeftDClick,this);
+    m_drawingPanel->Bind(wxEVT_LEFT_UP,&FMainFrame::onLeftUp,this);
     wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(m_drawingPanel, 1, wxEXPAND);
     SetSizer(sizer);
@@ -89,7 +89,7 @@ void FMainFrame::onQuit(wxCommandEvent& WXUNUSED(event)) {
 
 void FMainFrame::onNew(wxCommandEvent& event) {
 	if(m_game==NULL){
-		m_game = &(FGame::create(this));
+		m_game = &(FGame::create(m_drawingPanel));
 		m_drawingPanel->setGame(m_game);
 //		wxClientDC dc(this);
 		int result = m_game->init(this);
@@ -137,7 +137,7 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 	if (m_game == NULL){ // if the user canceled the save game option we will not be null and skip this
 		wxFileDialog *d = new wxFileDialog(this,"Select a game file to open","","","*.ssw",wxFD_FILE_MUST_EXIST|wxFD_OPEN|wxFD_CHANGE_DIR);
 		d->ShowModal();
-		m_game = &(FGame::create(this));
+		m_game = &(FGame::create(m_drawingPanel));
 		m_drawingPanel->setGame(m_game);
 		// get the file name to open
 		wxString fname = d->GetFilename();
@@ -188,10 +188,10 @@ void FMainFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
 
 void FMainFrame::onPaint(wxPaintEvent & event){
 	m_drawingPanel->SetClientSize(this->GetClientSize());
-	//wxClientDC dc(m_drawingPanel);
-	//if (m_game!=NULL){
-	//	m_game->draw(dc);
-	//}
+	wxPaintDC dc(m_drawingPanel);
+	if (m_game!=NULL){
+		m_game->draw(dc);
+	}
 }
 
 void FMainFrame::onEndUPFTurn(wxCommandEvent& event){

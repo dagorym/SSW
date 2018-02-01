@@ -201,7 +201,7 @@ int FGame::initMap(bool gui){
 void FGame::draw(){
 	// draw the base map
 	if (m_parent != NULL){
-		wxClientDC dc(m_parent->FindWindow("MapPanel"));
+		wxClientDC dc(m_parent);
 		draw(dc);
 	}
 }
@@ -898,7 +898,7 @@ void FGame::createKizkKarMilita(){
 }
 
 void FGame::drawTurnCounter(){
-	wxClientDC dc(m_parent->FindWindow("MapPanel"));
+	wxClientDC dc(m_parent);
 	wxCoord w, h, s;
 	dc.GetSize(&w, &h);
 	s = ((w > h)?h:w)/20;
