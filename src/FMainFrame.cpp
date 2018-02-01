@@ -187,11 +187,6 @@ void FMainFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
 }
 
 void FMainFrame::onPaint(wxPaintEvent & event){
-	m_drawingPanel->SetClientSize(this->GetClientSize());
-	wxPaintDC dc(m_drawingPanel);
-	if (m_game!=NULL){
-		m_game->draw(dc);
-	}
 }
 
 void FMainFrame::onEndUPFTurn(wxCommandEvent& event){
