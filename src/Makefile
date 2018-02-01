@@ -28,7 +28,7 @@ BS_LIBS = `wx-config-3.0 --libs` -LbattleSim -lbattleSim -Lstrategic -lstrategic
 
 ############################# Paths #################################
 
-OBJS = FApp.o Frontier.o FMainFrame.o
+OBJS = FApp.o Frontier.o FMainFrame.o FGamePanel.o
 
 OBJ_LIBS = libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libdefenses.a libships.a
 
