@@ -72,10 +72,6 @@ void FWeapon::fire(){
 		}
 //		if (toHitProb<0)std::cerr << m_name << ":  " << "m_baseToHitProb = " << m_baseToHitProb << "  range = " << m_targetRange << std::endl;
 //		if (toHitProb<0)std::cerr << m_name << ":  " << "The chance to hit is " << toHitProb << " and we rolled a " << roll << std::endl;
-		// you always have a 5% chance to hit
-		if (toHitProb < 5){
-			toHitProb = 5;
-		}
 		// reduce to hit probablity for ICMs
 		toHitProb += m_assignedICMCount * m_ICMMod;
 		m_assignedICMCount=0;  // clear out the used ICMs
@@ -83,6 +79,10 @@ void FWeapon::fire(){
 		// reduce to hit probabilty if ship's combat control system is damaged
 		if (m_parent!=NULL && m_parent->isCombatControlDamaged()){
 			toHitProb -= 10;
+		}
+		// you always have a 5% chance to hit
+		if (toHitProb < 5){
+			toHitProb = 5;
 		}
 
 //		std::cerr << m_name << ": toHitProb = "<< toHitProb << "  roll = " << roll << std::endl;
