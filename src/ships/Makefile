@@ -51,14 +51,14 @@ all $(TARGET): $(OBJS)
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	
 objs: $(OBJS)
-	rm *.gcda
-	rm *.gcov
-	rm *.gcno
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
 
 .PHONY:
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS)
+	rm -f $(TARGET)
 
 
 # DO NOT DELETE
@@ -128,8 +128,8 @@ FMinelayer.o: ../../include/defenses/FDefense.h
 FVehicle.o: ../../include/ships/FVehicle.h ../../include/core/FPObject.h
 FVehicle.o: ../../include/core/FObject.h ../../include/core/FGameConfig.h
 FVehicle.o: ../../include/weapons/FWeapon.h ../../include/defenses/FDefense.h
-FVehicle.o: ../../include/ships/ships.h ../../include/ships/FFighter.h
-FVehicle.o: ../../include/ships/FVehicle.h
+FVehicle.o: ../../include/defenses/FNone.h ../../include/ships/ships.h
+FVehicle.o: ../../include/ships/FFighter.h ../../include/ships/FVehicle.h
 FVehicle.o: ../../include/ships/FAssaultScout.h
 FVehicle.o: ../../include/ships/FFrigate.h ../../include/ships/FDestroyer.h
 FVehicle.o: ../../include/ships/FMinelayer.h ../../include/ships/FLtCruiser.h
@@ -137,4 +137,5 @@ FVehicle.o: ../../include/ships/FHvCruiser.h
 FVehicle.o: ../../include/ships/FAssaultCarrier.h
 FVehicle.o: ../../include/ships/FBattleship.h ../../include/ships/FFortress.h
 FVehicle.o: ../../include/ships/FFortifiedStation.h
-FVehicle.o: ../../include/ships/FArmedStation.h
+FVehicle.o: ../../include/ships/FArmedStation.h ../../include/Frontier.h
+FVehicle.o: ../../include/wxWidgets.h

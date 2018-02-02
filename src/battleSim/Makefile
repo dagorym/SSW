@@ -46,14 +46,14 @@ all $(TARGET): $(OBJS)
 
 	
 objs: $(OBJS)
-	rm *.gcda
-	rm *.gcov
-	rm *.gcno
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
 
 .PHONY:
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS)
+	rm -f $(TARGET)
 
 
 # DO NOT DELETE
@@ -63,6 +63,12 @@ BattleSimFrame.o: ../../include/battleSim/LocalGameDialog.h
 LocalGameDialog.o: ../../include/battleSim/LocalGameDialog.h
 LocalGameDialog.o: ../../include/battleSim/ScenarioDialog.h
 LocalGameDialog.o: ../../include/battleSim/ScenarioEditorGUI.h
+LocalGameDialog.o: ../../include/strategic/FFleet.h
+LocalGameDialog.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+LocalGameDialog.o: ../../include/ships/FVehicle.h
+LocalGameDialog.o: ../../include/core/FGameConfig.h
+LocalGameDialog.o: ../../include/weapons/FWeapon.h
+LocalGameDialog.o: ../../include/defenses/FDefense.h
 ScenarioDialog.o: ../../include/battleSim/ScenarioDialog.h
 ScenarioDialog.o: ../../include/tactical/FBattleScreen.h
 ScenarioDialog.o: ../../include/Frontier.h ../../include/wxWidgets.h
@@ -73,6 +79,21 @@ ScenarioDialog.o: ../../include/ships/FVehicle.h
 ScenarioDialog.o: ../../include/core/FGameConfig.h
 ScenarioDialog.o: ../../include/weapons/FWeapon.h
 ScenarioDialog.o: ../../include/defenses/FDefense.h
-ScenarioDialog.o: ../../include/core/FPoint.h
+ScenarioDialog.o: ../../include/core/FPoint.h ../../include/core/FHexPath.h
+ScenarioDialog.o: ../../include/core/FHexMap.h
 ScenarioDialog.o: ../../include/tactical/FBattleDisplay.h
 ScenarioEditorGUI.o: ../../include/battleSim/ScenarioEditorGUI.h
+ScenarioEditorGUI.o: ../../include/strategic/FFleet.h
+ScenarioEditorGUI.o: ../../include/core/FPObject.h
+ScenarioEditorGUI.o: ../../include/core/FObject.h
+ScenarioEditorGUI.o: ../../include/ships/FVehicle.h
+ScenarioEditorGUI.o: ../../include/core/FGameConfig.h
+ScenarioEditorGUI.o: ../../include/weapons/FWeapon.h
+ScenarioEditorGUI.o: ../../include/defenses/FDefense.h
+ScenarioEditorGUI.o: ../../include/tactical/FBattleScreen.h
+ScenarioEditorGUI.o: ../../include/Frontier.h ../../include/wxWidgets.h
+ScenarioEditorGUI.o: ../../include/tactical/FBattleBoard.h
+ScenarioEditorGUI.o: ../../include/core/FPoint.h
+ScenarioEditorGUI.o: ../../include/core/FHexPath.h
+ScenarioEditorGUI.o: ../../include/core/FHexMap.h
+ScenarioEditorGUI.o: ../../include/tactical/FBattleDisplay.h

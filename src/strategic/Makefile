@@ -49,14 +49,14 @@ all $(TARGET): $(OBJS)
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	
 objs: $(OBJS)
-	rm *.gcda
-	rm *.gcov
-	rm *.gcno
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
 
 .PHONY:
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS)
+	rm -f $(TARGET)
 
 
 # DO NOT DELETE

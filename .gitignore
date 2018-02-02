@@ -1,6 +1,7 @@
 *.gcno
 *.gcda
 *.o
+*.bak
 BattleSim
 SSW
 .project

@@ -47,24 +47,30 @@ all $(TARGET): $(OBJS)
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	
 objs: $(OBJS)
-	rm *.gcda
-	rm *.gcov
-	rm *.gcno
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
 
 .PHONY:
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS)
+	rm -f $(TARGET)
 
 
 # DO NOT DELETE
 
 FGameConfig.o: ../../include/core/FGameConfig.h ../../include/core/FPObject.h
-FGameConfig.o: ../../include/core/FObject.h /usr/include/unistd.h
-FGameConfig.o: /usr/include/features.h /usr/include/sys/cdefs.h
-FGameConfig.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
-FGameConfig.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
-FGameConfig.o: /usr/include/bits/confname.h /usr/include/getopt.h
+FGameConfig.o: ../../include/core/FObject.h
+FHexMap.o: ../../include/Frontier.h ../../include/wxWidgets.h
+FHexMap.o: ../../include/core/FHexMap.h ../../include/core/FPObject.h
+FHexMap.o: ../../include/core/FObject.h ../../include/core/FPoint.h
+FHexMap.o: ../../include/ships/FVehicle.h ../../include/core/FGameConfig.h
+FHexMap.o: ../../include/weapons/FWeapon.h ../../include/defenses/FDefense.h
+FHexPath.o: ../../include/core/FHexPath.h ../../include/core/FPObject.h
+FHexPath.o: ../../include/core/FObject.h ../../include/core/FPoint.h
+FHexPath.o: ../../include/core/FHexMap.h ../../include/ships/FVehicle.h
+FHexPath.o: ../../include/core/FGameConfig.h ../../include/weapons/FWeapon.h
+FHexPath.o: ../../include/defenses/FDefense.h
 FObject.o: ../../include/core/FObject.h
 FPObject.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FPoint.o: ../../include/core/FPoint.h

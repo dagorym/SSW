@@ -47,14 +47,14 @@ all $(TARGET): $(OBJS)
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	
 objs: $(OBJS)
-	rm *.gcda
-	rm *.gcov
-	rm *.gcno
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
 
 .PHONY:
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS)
+	rm -f $(TARGET)
 
 
 # DO NOT DELETE
@@ -68,7 +68,10 @@ FBattleBoard.o: ../../include/ships/FVehicle.h
 FBattleBoard.o: ../../include/core/FGameConfig.h
 FBattleBoard.o: ../../include/weapons/FWeapon.h
 FBattleBoard.o: ../../include/defenses/FDefense.h ../../include/core/FPoint.h
+FBattleBoard.o: ../../include/core/FHexPath.h ../../include/core/FHexMap.h
 FBattleBoard.o: ../../include/tactical/FBattleDisplay.h
+FBattleBoard.o: ../../include/gui/ICMSelectionGUI.h
+FBattleBoard.o: ../../include/gui/AssignedICMData.h
 FBattleDisplay.o: ../../include/Frontier.h ../../include/wxWidgets.h
 FBattleDisplay.o: ../../include/tactical/FBattleScreen.h
 FBattleDisplay.o: ../../include/tactical/FBattleBoard.h
@@ -78,7 +81,8 @@ FBattleDisplay.o: ../../include/ships/FVehicle.h
 FBattleDisplay.o: ../../include/core/FGameConfig.h
 FBattleDisplay.o: ../../include/weapons/FWeapon.h
 FBattleDisplay.o: ../../include/defenses/FDefense.h
-FBattleDisplay.o: ../../include/core/FPoint.h
+FBattleDisplay.o: ../../include/core/FPoint.h ../../include/core/FHexPath.h
+FBattleDisplay.o: ../../include/core/FHexMap.h
 FBattleDisplay.o: ../../include/tactical/FBattleDisplay.h
 FBattleScreen.o: ../../include/tactical/FBattleScreen.h
 FBattleScreen.o: ../../include/Frontier.h ../../include/wxWidgets.h
@@ -89,6 +93,8 @@ FBattleScreen.o: ../../include/ships/FVehicle.h
 FBattleScreen.o: ../../include/core/FGameConfig.h
 FBattleScreen.o: ../../include/weapons/FWeapon.h
 FBattleScreen.o: ../../include/defenses/FDefense.h
-FBattleScreen.o: ../../include/core/FPoint.h
+FBattleScreen.o: ../../include/core/FPoint.h ../../include/core/FHexPath.h
+FBattleScreen.o: ../../include/core/FHexMap.h
 FBattleScreen.o: ../../include/tactical/FBattleDisplay.h
 FBattleScreen.o: ../../include/gui/ICMSelectionGUI.h
+FBattleScreen.o: ../../include/gui/AssignedICMData.h

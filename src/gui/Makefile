@@ -53,18 +53,24 @@ all $(TARGET): $(OBJS)
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	
 objs: $(OBJS)
-	rm *.gcda
-	rm *.gcov
-	rm *.gcno
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
 
 .PHONY:
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS)
+	rm -f $(TARGET)
 
 
 # DO NOT DELETE
 
+AssignedICMData.o: ../../include/gui/AssignedICMData.h
+AssignedICMData.o: ../../include/ships/FVehicle.h
+AssignedICMData.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+AssignedICMData.o: ../../include/core/FGameConfig.h
+AssignedICMData.o: ../../include/weapons/FWeapon.h
+AssignedICMData.o: ../../include/defenses/FDefense.h
 BattleResultsGUI.o: ../../include/gui/BattleResultsGUI.h
 BattleResultsGUI.o: ../../include/strategic/FFleet.h
 BattleResultsGUI.o: ../../include/core/FPObject.h
@@ -110,6 +116,7 @@ ICMSelectionGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 ICMSelectionGUI.o: ../../include/core/FGameConfig.h
 ICMSelectionGUI.o: ../../include/weapons/FWeapon.h
 ICMSelectionGUI.o: ../../include/defenses/FDefense.h
+ICMSelectionGUI.o: ../../include/gui/AssignedICMData.h
 SatharFleetsGUI.o: ../../include/gui/SatharFleetsGUI.h
 SatharFleetsGUI.o: ../../include/strategic/FPlayer.h
 SatharFleetsGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
@@ -150,7 +157,8 @@ SelectCombatGUI.o: ../../include/gui/BattleResultsGUI.h
 SelectCombatGUI.o: ../../include/tactical/FBattleScreen.h
 SelectCombatGUI.o: ../../include/Frontier.h ../../include/wxWidgets.h
 SelectCombatGUI.o: ../../include/tactical/FBattleBoard.h
-SelectCombatGUI.o: ../../include/core/FPoint.h
+SelectCombatGUI.o: ../../include/core/FPoint.h ../../include/core/FHexPath.h
+SelectCombatGUI.o: ../../include/core/FHexMap.h
 SelectCombatGUI.o: ../../include/tactical/FBattleDisplay.h
 SelectJumpGUI.o: ../../include/gui/SelectJumpGUI.h
 SelectJumpGUI.o: ../../include/strategic/FMap.h
