@@ -179,8 +179,8 @@ void FMainFrame::onShowPlayers(wxCommandEvent& WXUNUSED(event)) {
 void FMainFrame::onAbout(wxCommandEvent& WXUNUSED(event)) {
 	wxString body = "Star Frontiers Second Sathar War Simulation";
 	body += "\n\nWritten by Tom Stephens";
-	body += "\n\nCopyright 2005-2011 - New Frontier Games";
-	body += "\n\nVersion 0.0.16";
+	body += "\n\nCopyright 2018 - New Frontier Games";
+	body += "\n\nVersion 0.0.17";
 	body += "\n\nStar Frontiers copyright 1982 - Wizards of the Coast";
     wxMessageBox( body, "Star Frontiers Second Sathar War Simulation",
                   wxOK | wxICON_INFORMATION );
