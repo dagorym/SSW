@@ -137,24 +137,30 @@ SystemDialogGUI::~SystemDialogGUI()
 }
 
 void SystemDialogGUI::onSelectFleet( wxMouseEvent& event ){
-	m_fleet = m_system->getFleetList()[m_listBox3->GetSelection()];
-	if (m_fleet->getOwner()==m_player->getID()){
-		if(m_fleet->getInTransit()){
-			m_button5->SetLabel("Change Orders");
-		} else {
-			m_button5->SetLabel("Move Fleet");
+	int choice = m_listBox3->GetSelection();
+	if (wxNOT_FOUND != choice) {
+		m_fleet = m_system->getFleetList()[choice];
+		if (m_fleet->getOwner() == m_player->getID()) {
+			if (m_fleet->getInTransit()) {
+				m_button5->SetLabel("Change Orders");
+			}
+			else {
+				m_button5->SetLabel("Move Fleet");
+			}
+			m_button5->Enable(true);
+			if (m_fleet->isMilitia()) {
+				m_button3->Enable(false);
+			}
+			else {
+				m_button3->Enable(true);
+			}
 		}
-		m_button5->Enable(true);
-		if (m_fleet->isMilitia()){
+		else {
 			m_button3->Enable(false);
-		} else {
-			m_button3->Enable(true);
+			m_button5->Enable(false);
 		}
-	} else {
-		m_button3->Enable(false);
-		m_button5->Enable(false);
+		m_button2->Enable(true);
 	}
-	m_button2->Enable(true);
 	event.Skip();
 }
 
