@@ -89,10 +89,12 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 		const VehicleList sList = (*m_defendList)[i]->getShipList();
 		for (unsigned int j=0; j< sList.size(); j++){
 			sList[j]->setOwner(0);
+			sList[j]->setCurrentDefense(0);
 			m_defendShips->push_back(sList[j]);
 		}
 	}
 	if (station!=NULL){  // the station always belongs to the defender
+		station->setCurrentDefense(0);
 		m_defendShips->push_back(station);
 	}
 	if (m_attackShips) { delete m_attackShips; }
@@ -102,6 +104,7 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 		const VehicleList sList = (*m_attackList)[i]->getShipList();
 		for (unsigned int j=0; j< sList.size(); j++){
 			sList[j]->setOwner(1);
+			sList[j]->setCurrentDefense(0);
 			m_attackShips->push_back(sList[j]);
 		}
 	}
