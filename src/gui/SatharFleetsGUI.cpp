@@ -26,6 +26,7 @@ SatharFleetsGUI::SatharFleetsGUI( wxWindow* parent, FPlayer * player, FMap * map
 	m_window = parent;
 	//@todo  This should be done for the UPF fleet GUI as well
 	m_origMaxFleetID = m_player->getLargestFleetID();
+	m_origSize = 0;
 
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );

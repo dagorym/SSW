@@ -46,6 +46,7 @@ FVehicle::FVehicle(){
 	m_onFire=false;
 	m_powerSystemDamaged = false;
 	m_navError = 0;
+	m_maskingScreenTurnCount = 0;
 }
 
 FVehicle::~FVehicle(){

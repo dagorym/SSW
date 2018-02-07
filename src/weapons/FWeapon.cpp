@@ -36,6 +36,7 @@ FWeapon::FWeapon() {
 	m_baseToHitProb = 0;
 	m_isHeadOn = false;
 	m_assignedICMCount = 0;
+	m_parent = NULL;
 }
 
 FWeapon::~FWeapon() {
