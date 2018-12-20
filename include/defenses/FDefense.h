@@ -138,5 +138,5 @@ typedef std::vector<FDefense *> DefenseList;
 /// object of that type
 FDefense * createDefense (FDefense::Defense type);
 
-};
+}; // end namespace Frontier
 #endif /* FDEFENSE_H_ */
