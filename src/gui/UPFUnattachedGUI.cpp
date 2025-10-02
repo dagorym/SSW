@@ -22,6 +22,7 @@ UPFUnattachedGUI::UPFUnattachedGUI( wxWindow* parent, FPlayer * player, FMap * m
 	m_system = NULL;
 	m_setFleetCount = 3;
 	m_window = parent;
+	m_origSize = 0;
 
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );

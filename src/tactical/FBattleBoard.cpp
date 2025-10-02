@@ -819,7 +819,7 @@ void FBattleBoard::finalizeMove(){
 			isStation=true;
 		}
 		// clear masking screen if the vehicle is not a station and has turned and has a MS as current defense
-		if ((*itr)->getCurrentDefense()->getType()==FDefense::MS && m_turnInfo[id].path.countFlags(MR_TURN)>0 || changedSpeed==true){
+		if ( ((*itr)->getCurrentDefense()->getType()==FDefense::MS && m_turnInfo[id].path.countFlags(MR_TURN)>0) || changedSpeed==true ){
 			if (isStation){
 				std::cerr << "Decrementing MS Turn Count" << std::endl;
 				(*itr)->decrementMSTurnCount();

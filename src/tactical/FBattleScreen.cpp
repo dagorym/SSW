@@ -55,6 +55,15 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_movingPlayer=true;
 	m_curWeapon = NULL;
 	m_curShip = NULL;
+	m_activePlayer = -1;
+	m_attackList = NULL;
+	m_defendList = NULL;
+	m_control = false;
+	m_moveComplete = true;
+	m_planetChoice = -1;
+	m_station = NULL;
+	m_hasPlanet = false;
+	m_done = false;
 
 }
 

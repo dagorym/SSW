@@ -627,10 +627,10 @@ void FBattleDisplay::drawDefenseList(wxDC &dc, int lMargin, int tMargin, int tex
 	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
 	dc.SetTextForeground(white);
 	FVehicle *s = m_parent->getShip();
-	bool active = false;
-	if (m_parent->getActivePlayerID()==s->getOwner()){
-		active = true;
-	}
+//	bool active = false;
+//	if (m_parent->getActivePlayerID()==s->getOwner()){
+//		active = true;
+//	}
 	int x = lMargin;
 	unsigned int dCount = s->getDefenseCount();
 	for (unsigned int i =0; i< dCount; i++){
