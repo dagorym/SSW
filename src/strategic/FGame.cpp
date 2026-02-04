@@ -137,15 +137,15 @@ int FGame::getPlayers(bool gui){
   FPlayer *playerPtr;
 
 //  if (gui){
-//	  name = wxGetTextFromUser( _T("Enter a name for the UPF Player")
-//			  ,_T("Player's Name:"),_T("UPF"));
+//	  name = wxGetTextFromUser( "Enter a name for the UPF Player"
+//			  ,"Player's Name:","UPF");
 	  name = "UPF";
 	  playerPtr = new FPlayer();
 	  playerPtr->setName(name);
 	  playerPtr->setFleetIcon("icons/UPF.png");
 	  m_players.push_back(playerPtr);
-//	  name = wxGetTextFromUser( _T("Enter a name for the Sathar Player")
-//			  ,_T("Player's Name:"),_T("Sathar"));
+//	  name = wxGetTextFromUser( "Enter a name for the Sathar Player"
+//			  ,"Player's Name:","Sathar");
 	  name = "Sathar";
 	  playerPtr = new FPlayer();
 	  m_currentPlayer = playerPtr->getID();
@@ -180,7 +180,7 @@ void FGame::showPlayers() {
     i++;
   }
   if(m_gui){
-	  wxMessageBox(msg, _T("Player List"),wxOK);
+	  wxMessageBox(msg, "Player List",wxOK);
   } else {
 	  std::cout << msg << std::endl;
   }

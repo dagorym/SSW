@@ -35,7 +35,7 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
 	m_map = new FBattleBoard( this );
-	fgSizer1->Add( m_map, 5, wxALIGN_CENTER|wxALL|wxEXPAND, 1 );
+	fgSizer1->Add( m_map, 5, wxEXPAND|wxALL, 1 );
 
 	m_display = new FBattleDisplay( this );
 
@@ -55,7 +55,7 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_movingPlayer=true;
 	m_curWeapon = NULL;
 	m_curShip = NULL;
-	m_activePlayer = -1;
+	m_activePlayer = -1; // TODO: This should probably be set to true as the attacker always starts
 	m_attackList = NULL;
 	m_defendList = NULL;
 	m_control = false;

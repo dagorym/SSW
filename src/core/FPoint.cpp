@@ -15,8 +15,8 @@ FPoint::~FPoint() {
 }
 
 float FPoint::getDistance(const FPoint &p){
-	float dx = m_x-p.getX();
-	float dy = m_y-p.getY();
+	float dx = static_cast<float>(m_x-p.getX());
+	float dy = static_cast<float>(m_y-p.getY());
 	return sqrt(dx*dx+dy*dy);
 
 }

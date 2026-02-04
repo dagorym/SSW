@@ -77,7 +77,7 @@ ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMD
 	}
 
 	// Label Appearance
-	m_grid1->SetLabelFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	m_grid1->SetLabelFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	m_grid1->AutoSizeColumns();
 	
 	// Cell Defaults
@@ -102,7 +102,7 @@ ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMD
 	
 	m_staticText2 = new wxStaticText( m_panel1, wxID_ANY, wxT("Total ICM Count"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	m_staticText2->Wrap( -1 );
-	m_staticText2->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	m_staticText2->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	
 	fgSizer2->Add( m_staticText2, 0, wxALIGN_CENTER_HORIZONTAL|wxALL|wxEXPAND, 5 );
 	
@@ -112,7 +112,7 @@ ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMD
 	
 	m_staticText4 = new wxStaticText( m_panel1, wxID_ANY, wxT("-"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	m_staticText4->Wrap( -1 );
-	m_staticText4->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	m_staticText4->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	
 	fgSizer2->Add( m_staticText4, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
 	
@@ -122,19 +122,19 @@ ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMD
 	
 	m_staticText5 = new wxStaticText( m_panel1, wxID_ANY, wxT("Ship"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText5->Wrap( -1 );
-	m_staticText5->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	m_staticText5->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	
 	gSizer1->Add( m_staticText5, 0, wxALL, 5 );
 	
 	m_staticText6 = new wxStaticText( m_panel1, wxID_ANY, wxT("Total ICM Available"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	m_staticText6->Wrap( -1 );
-	m_staticText6->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	m_staticText6->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	
 	gSizer1->Add( m_staticText6, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
 	
 	m_staticText7 = new wxStaticText( m_panel1, wxID_ANY, wxT("ICMs Applied"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	m_staticText7->Wrap( -1 );
-	m_staticText7->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	m_staticText7->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	
 	gSizer1->Add( m_staticText7, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
 	

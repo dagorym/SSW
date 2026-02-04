@@ -23,7 +23,7 @@ FMainFrame::~FMainFrame() {
 }
 
 FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
-       : wxFrame((wxFrame *)NULL, -1, title, pos, size) {
+       : wxFrame(nullptr, wxID_ANY, title, pos, size) {
 
 	m_novaPlaced = false;
 //	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FMainFrame::onPaint));
@@ -84,7 +84,12 @@ FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& 
 }
 
 void FMainFrame::onQuit(wxCommandEvent& WXUNUSED(event)) {
-    Close( TRUE );
+    Close( true );
+}
+
+void FMainFrame::onCloseWindow(wxCloseEvent& event) {
+    // Clean up and destroy the window
+    Destroy();
 }
 
 void FMainFrame::onNew(wxCommandEvent& event) {
@@ -171,7 +176,7 @@ void FMainFrame::onShowPlayers(wxCommandEvent& WXUNUSED(event)) {
 	if(m_game!=NULL){
 		m_game->showPlayers();
 	} else {
-		wxMessageBox(_T("No Players, game not yet initalized."),_T("Error:  Game not initalized")
+		wxMessageBox("No Players, game not yet initalized.","Error:  Game not initalized"
 				,wxOK);
 	}
 }

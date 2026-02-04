@@ -22,21 +22,21 @@ bool FBattleSimApp::OnInit() {
 	wxInitAllImageHandlers();
 	wxBitmap bitmap;
 	FGameConfig &gc = FGameConfig::create();
-	if (bitmap.LoadFile(gc.getBasePath()+"data/splash.png", wxBITMAP_TYPE_PNG))
+	if (bitmap.LoadFile(gc.getBasePath() + "data/splash.png", wxBITMAP_TYPE_PNG))
 	{
 		wxSplashScreen* splash = new wxSplashScreen(bitmap,
 				wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
 				//          100
 				2000
-				, NULL, -1, wxDefaultPosition, wxDefaultSize,
+				, nullptr, wxID_ANY, wxDefaultPosition, wxDefaultSize,
 				wxSIMPLE_BORDER|wxSTAY_ON_TOP);
 		splash->GetTimeout();  // do something to use the variable to get rid of compiler warning.
 	}
 
 	BattleSimFrame *frame = new BattleSimFrame();
-	frame->Show( TRUE );
+	frame->Show( true );
 	SetTopWindow( frame );
 
 
-	return TRUE;
+	return true;
 }

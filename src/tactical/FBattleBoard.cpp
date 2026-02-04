@@ -100,7 +100,7 @@ void FBattleBoard::drawGrid(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));// white
 	wxColour black(wxT("#000000"));// black
 	dc.SetBackground(wxBrush(black));
-//	dc.Clear();
+	dc.Clear();
 	int w,h;
 	dc.GetSize(&w,&h);
 	dc.SetPen(*wxBLACK);
@@ -996,7 +996,7 @@ void FBattleBoard::drawShadedHex(wxDC& dc, wxColour c, FPoint p){
 	pList[5].x = (int)(-m_d);
 
 	dc.SetPen(wxPen(c));
-	dc.SetBrush(wxBrush(c,wxCROSSDIAG_HATCH));
+	dc.SetBrush(wxBrush(c, wxBRUSHSTYLE_CROSSDIAG_HATCH));
 	wxCoord x,y;
 	CalcScrolledPosition(p.getX(),p.getY(),&x,&y);
 	dc.DrawPolygon(6,pList,x,y);

@@ -55,6 +55,19 @@ public:
   void onQuit(wxCommandEvent& event);
 
   /**
+   * @brief Method to handle window close events
+   *
+   * This is the method called when the window is being closed
+   *
+   * @param event The wxWidget close event that triggered the function call
+   *
+   * @author Tom Stephens
+   * @date Created:  Feb 02, 2026
+   * @date Last Modified:  Feb 02, 2026
+   */
+  void onCloseWindow(wxCloseEvent& event);
+
+  /**
    * @brief Method to handle the Help:About menu option
    *
    * This is the method called when the Help:About menu option is selected

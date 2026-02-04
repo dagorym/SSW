@@ -99,7 +99,7 @@ SystemDialogGUI::SystemDialogGUI( wxWindow* parent, FSystem * sys, FMap * map, F
 	m_button5->Enable(false);
 	fgSizer1->Add( m_button5, 0, wxALIGN_RIGHT|wxALL|wxEXPAND, 5 );
 
-	sbSizer3->Add( fgSizer1, 0, wxALIGN_BOTTOM|wxEXPAND , 5 );
+	sbSizer3->Add( fgSizer1, 0, wxEXPAND, 5 );
 
 	gbSizer1->Add( sbSizer3, wxGBPosition( 0, 1 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );
 

@@ -33,13 +33,13 @@ ScenarioDialog::ScenarioDialog( wxWindow* parent, wxWindowID id, const wxString&
 	
 	m_buttonHeader = new wxStaticText( this, wxID_ANY, wxT("Press Button to Start"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	m_buttonHeader->Wrap( 90 );
-	m_buttonHeader->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	m_buttonHeader->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	
 	fgSizer2->Add( m_buttonHeader, 0, wxALIGN_BOTTOM|wxALL, 5 );
 	
 	m_secenarioHeader = new wxStaticText( this, wxID_ANY, wxT("Scenario Description"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	m_secenarioHeader->Wrap( -1 );
-	m_secenarioHeader->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 92, false, wxEmptyString ) );
+	m_secenarioHeader->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
 	
 	fgSizer2->Add( m_secenarioHeader, 0, wxALIGN_BOTTOM|wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
 	
