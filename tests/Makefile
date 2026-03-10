@@ -1,12 +1,12 @@
 CXXFLAGS = -I../include  -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
 
-LIBS = `wx-config --libs` \
-       -L./strategic -lstrategicTests -L./ships -lshipsTests \
-       -L./weapons -lweaponsTests -L./core -lcoreTests \
-       -lcppunit -L../src/strategic -lstrategic -L../src/ships -lships -L../src/gui -lgui -L../src/tactical -ltactical \
-       -L../src/weapons -lweapons -L../src/defenses -ldefenses \
-       -L../src/core -lcore -L../src/gui -lgui \
-        #-l wxGuiTesting
+LIBS = -L./strategic -lstrategicTests -L./ships -lshipsTests \
+	-L./weapons -lweaponsTests -L./core -lcoreTests \
+	-lcppunit -L../src/strategic -lstrategic -L../src/ships -lships -L../src/gui -lgui -L../src/tactical -ltactical \
+	-L../src/weapons -lweapons -L../src/defenses -ldefenses \
+	-L../src/core -lcore -L../src/gui -lgui \
+	`wx-config --libs`
+	 #-l wxGuiTesting
        
 
 #################### the implicit rules #############################

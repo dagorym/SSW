@@ -1,10 +1,12 @@
 CXXFLAGS = -I../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
 
-LIBS = `wx-config --libs` -Lstrategic -lstrategic -Lships -lships -Ltactical -ltactical \
-       -Lweapons -lweapons -Ldefenses -ldefenses -Lcore -lcore -Lgui -lgui
+LIBS = -Lstrategic -lstrategic -Lships -lships -Ltactical -ltactical \
+	-Lweapons -lweapons -Ldefenses -ldefenses -Lcore -lcore -Lgui -lgui \
+	`wx-config --libs`
 
-BS_LIBS = `wx-config --libs` -LbattleSim -lbattleSim -Lstrategic -lstrategic -Lships -lships -Ltactical -ltactical \
-       -Lweapons -lweapons -Ldefenses -ldefenses -Lcore -lcore -Lgui -lgui
+BS_LIBS = -LbattleSim -lbattleSim -Lstrategic -lstrategic -Lships -lships -Ltactical -ltactical \
+	-Lweapons -lweapons -Ldefenses -ldefenses -Lcore -lcore -Lgui -lgui \
+	`wx-config --libs`
 
 #################### the implicit rules #############################
 
