@@ -2,7 +2,7 @@
 
 ## Overview
 
-SSW is a C++ implementation of the Star Frontiers Frontier Wars space combat game using wxWidgets for the GUI. The repository builds two executables:
+SSW is a C++ implementation of the Star Frontiers Second Sathar War stragegic game along with tactical component allowing users to play any of the Knight Hawks board game scenarios using wxWidgets for the GUI. The repository builds two executables:
 
 - **SSW**: main game
 - **BattleSim**: standalone battle simulator
