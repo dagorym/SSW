@@ -24,6 +24,7 @@
 #include "Frontier.h"
 #include "tactical/FBattleBoard.h"
 #include "tactical/FBattleDisplay.h"
+#include "tactical/FTacticalCombatReport.h"
 
 namespace Frontier {
 
@@ -187,6 +188,13 @@ public:
 	/// list of ICM targets
 	std::vector<ICMData *> m_ICMData;
 
+	void beginTacticalReport(const FTacticalCombatReportContext & context);
+	void appendTacticalAttackReport(const FTacticalAttackReport & attack);
+	void appendTacticalReportEvent(const FTacticalReportEvent & event);
+	FTacticalCombatReportSummary buildCurrentTacticalReportSummary() const;
+	void clearTacticalReport();
+	const FTacticalCombatReport & getCurrentTacticalReport() const { return m_tacticalReport; }
+
 protected:
 	/// The map window
 	FBattleBoard * m_map;
@@ -230,6 +238,8 @@ protected:
 	bool m_movingPlayer;
 	/// pointer to currently selected weapon
 	FWeapon * m_curWeapon;
+	/// current tactical combat report state
+	FTacticalCombatReport m_tacticalReport;
 //	/// window disabler object
 //	wxWindowDisabler *m_wd;
 
