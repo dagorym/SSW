@@ -120,4 +120,4 @@ The build system also includes gcov support for coverage analysis.
 
 ## Agent and Skill profiles
 
-You *must* read ~/repos/agents/AGENT_LOOKUP.md before proceeding.
+You *must* read ~/repos/agents/AGENTS_LOOKUP.md before proceeding.
