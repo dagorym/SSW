@@ -1,0 +1,3 @@
+include/tactical/FTacticalCombatReport.h
+include/tactical/FBattleScreen.h
+src/tactical/FBattleScreen.cpp
