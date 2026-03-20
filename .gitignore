@@ -5,6 +5,7 @@
 BattleSim
 SSW
 tests/SSWTests
+tests/TacticalTests
 .project
 .cproject
 *.ssw
