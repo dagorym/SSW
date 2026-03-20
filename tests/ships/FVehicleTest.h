@@ -11,6 +11,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ships/FVehicle.h"
+#include "tactical/FTacticalCombatReport.h"
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -21,6 +22,9 @@ class FVehicleTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST( testSetters );
 	CPPUNIT_TEST( testSerialize );
 	CPPUNIT_TEST( testBadType );
+	CPPUNIT_TEST( testTakeDamageBasicPopulatesOptionalResolution );
+	CPPUNIT_TEST( testTakeDamageAdvancedPreservesMutationWithOptionalResolution );
+	CPPUNIT_TEST( testDamageHelpersReportExplicitComponentMetadata );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -36,6 +40,9 @@ public:
 	void testSetters();
 	void testSerialize();
 	void testBadType();
+	void testTakeDamageBasicPopulatesOptionalResolution();
+	void testTakeDamageAdvancedPreservesMutationWithOptionalResolution();
+	void testDamageHelpersReportExplicitComponentMetadata();
 };
 
 }

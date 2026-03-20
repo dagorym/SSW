@@ -22,6 +22,7 @@ class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testBattleScreenExposesTacticalReportLifecycleApi );
 	CPPUNIT_TEST( testBattleScreenBuildsShipSummaryFromRawReportData );
 	CPPUNIT_TEST( testBattleScreenOnlyTouchesPhaseFlowThroughFleetSetupReset );
+	CPPUNIT_TEST( testVehicleDamageReportingApiCapturesExplicitEffectTypes );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -38,6 +39,7 @@ public:
 	void testBattleScreenExposesTacticalReportLifecycleApi();
 	void testBattleScreenBuildsShipSummaryFromRawReportData();
 	void testBattleScreenOnlyTouchesPhaseFlowThroughFleetSetupReset();
+	void testVehicleDamageReportingApiCapturesExplicitEffectTypes();
 };
 
 }

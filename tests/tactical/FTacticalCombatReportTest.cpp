@@ -206,4 +206,31 @@ void FTacticalCombatReportTest::testBattleScreenOnlyTouchesPhaseFlowThroughFleet
 	CPPUNIT_ASSERT(applyFireDamageBody.find("appendTactical") == std::string::npos);
 }
 
+void FTacticalCombatReportTest::testVehicleDamageReportingApiCapturesExplicitEffectTypes() {
+	// AC: FVehicle damage reporting exposes optional result output and all planned effect categories.
+	const std::string vehicleHeader = readFile(repoFile("include/ships/FVehicle.h"));
+	const std::string vehicleSource = readFile(repoFile("src/ships/FVehicle.cpp"));
+	const std::string reportHeader = readFile(repoFile("include/tactical/FTacticalCombatReport.h"));
+
+	CPPUNIT_ASSERT(vehicleHeader.find("virtual void takeDamage (int damage, int damageMod = 0, bool basic = false, FTacticalDamageResolution * result = NULL);") != std::string::npos);
+	CPPUNIT_ASSERT(vehicleHeader.find("virtual void advancedDamage(int damage, int damageMod, FTacticalDamageResolution * result = NULL);") != std::string::npos);
+	CPPUNIT_ASSERT(vehicleSource.find("initializeDamageResolution(result, damage, damageMod, !basic);") != std::string::npos);
+	CPPUNIT_ASSERT(vehicleSource.find("appendHullDamageEffect(result, previousHP, getHP(), -1, damage);") != std::string::npos);
+	CPPUNIT_ASSERT(vehicleSource.find("result->damageTableRoll = roll;") != std::string::npos);
+	CPPUNIT_ASSERT(vehicleSource.find("effect.weaponID = (*wItr)->getID();") != std::string::npos);
+	CPPUNIT_ASSERT(vehicleSource.find("effect.weaponName = (*wItr)->getLongName();") != std::string::npos);
+	CPPUNIT_ASSERT(vehicleSource.find("effect.defenseName = (*dItr)->getLongName();") != std::string::npos);
+
+	CPPUNIT_ASSERT(reportHeader.find("TDET_HullDamage") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_ADFLoss") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_MRLoss") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_WeaponDamaged") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_DefenseDamaged") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_PowerSystemDamaged") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_CombatControlDamaged") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_NavigationError") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_ElectricalFire") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("TDET_DCRLoss") != std::string::npos);
+}
+
 }

@@ -1,0 +1,61 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate that `FVehicle` damage resolution can emit an optional `FTacticalDamageResolution` report describing applied hull and advanced-damage effects without changing existing combat mutation behavior.
+
+Implementation context:
+- Implementation branch from the implementer artifact: `tds-st2-implementer-20260320`
+- Implementer commit from `artifacts/tactical-damage-summary_subtask2/implementer_result.json`: `9416a85`
+- Tester branch/worktree: `tds-st2-tester-20260320`
+- Shared artifact directory to reuse: `artifacts/tactical-damage-summary_subtask2`
+
+Acceptance criteria to verify:
+- The implementer inspects the Subtask 1 artifact directory under `artifacts/` to identify the report-model files created there before editing.
+- `FVehicle::takeDamage()` and `advancedDamage()` populate an optional effects/result output parameter with all applied hull and advanced-damage effects needed by higher layers.
+- Existing combat state mutation behavior remains intact.
+- The emitted effect data is explicit enough for higher layers to build tactical reports without reconstructing state changes indirectly.
+
+Files modified by the implementer:
+- `include/ships/FVehicle.h`
+- `src/ships/FVehicle.cpp`
+- `include/tactical/FTacticalCombatReport.h`
+
+Files modified by the tester:
+- `tests/ships/FVehicleTest.h`
+- `tests/ships/FVehicleTest.cpp`
+- `tests/tactical/FTacticalCombatReportTest.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+
+What the tester validated:
+- Added runtime tests in `FVehicleTest` for:
+  - basic `takeDamage(..., basic=true, &result)` hull reporting
+  - advanced `takeDamage(..., basic=false, &result)` mutation parity against the legacy null-result path using a forced double-hull branch
+  - explicit weapon and defense metadata emitted by the damage helper paths
+- Added a source-level tactical test in `FTacticalCombatReportTest` that checks:
+  - the optional `FTacticalDamageResolution * result = NULL` API signatures exist on `takeDamage()` and `advancedDamage()`
+  - `FVehicle.cpp` initializes and populates the resolution object
+  - `FTacticalCombatReport.h` declares the full damage effect taxonomy needed by higher layers
+
+Commands executed by the tester:
+- `make -C tests/ships libshipsTests.a`
+- `make -C tests/tactical all`
+- `./TacticalTests`
+- `make -C src/ships FVehicle.o`
+- `make -C src/tactical FBattleScreen.o`
+- `make`
+- `make -C tests`
+- `./SSWTests`
+- targeted `FVehicleTest` execution through a temporary `/tmp` runner linked against the built libraries
+
+Observed outcomes:
+- `./tests/tactical/TacticalTests` passed: `OK (7 tests)`
+- Targeted `FVehicleTest` runner passed: `OK (7 tests)`
+- Aggregate `./tests/SSWTests` completed with exit code 0 but reported 3 unrelated baseline failures:
+  - `FrontierTests::FGameConfigTest::testConstructor`
+  - `FrontierTests::FWeaponTest::testSetTarget`
+  - `FrontierTests::FWeaponTest::testFireAtTarget`
+
+Remaining verification risks / follow-up:
+- Confirm the targeted tests are sufficient evidence for all advanced-damage effect categories, given that some branches were verified via source inspection rather than deterministic runtime table rolls.
+- Confirm the unrelated baseline failures are outside the scope of this subtask and do not invalidate the handoff.
+- The rebuilt `tests/tactical/TacticalTests` binary was left unstaged intentionally; only the four test source files and artifact files should matter for verification.
