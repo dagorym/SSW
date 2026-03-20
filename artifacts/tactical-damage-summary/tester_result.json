@@ -1,0 +1,70 @@
+{
+  "status": "success",
+  "task_identifier": "tactical-damage-summary",
+  "branch": "tds-st3-tester-20260320",
+  "commit_hash": "8ef0f173707fa3bf296410fd09ecd1b33db65f0c",
+  "test_files_added_or_modified": [
+    "tests/weapons/FWeaponFireResultTest.h",
+    "tests/weapons/FWeaponFireResultTest.cpp",
+    "tests/ships/FTacticalAttackIntegrationTest.h",
+    "tests/ships/FTacticalAttackIntegrationTest.cpp",
+    "tests/tactical/FTacticalAttackResultTest.h",
+    "tests/tactical/FTacticalAttackResultTest.cpp",
+    "tests/weapons/Makefile",
+    "tests/ships/Makefile",
+    "tests/tactical/Makefile",
+    "tests/tactical/TacticalTests.cpp",
+    "tests/SSWTests.cpp"
+  ],
+  "commands_run": [
+    "make -C src/weapons",
+    "make -C src/ships",
+    "make -C src/core",
+    "make -C src/defenses",
+    "make -C src/tactical",
+    "make -C src/strategic",
+    "make -C src/gui",
+    "make -C tests/weapons",
+    "make -C tests/ships",
+    "make -C tests/tactical",
+    "./TacticalTests",
+    "make -C tests",
+    "./SSWTests 2>/dev/null | tail -n 30",
+    "/tmp/tactical_damage_tests"
+  ],
+  "targeted_results": {
+    "targeted_tactical_attack_runner": {
+      "status": "passed",
+      "tests_run": 8,
+      "tests_failed": 0
+    },
+    "tests_tactical_TacticalTests": {
+      "status": "passed",
+      "tests_run": 9,
+      "tests_failed": 0
+    },
+    "tests_SSWTests": {
+      "status": "failed_with_unrelated_legacy_failures",
+      "tests_run": 137,
+      "tests_failed": 3,
+      "unrelated_failures": [
+        "FrontierTests::FGameConfigTest::testConstructor",
+        "FrontierTests::FWeaponTest::testSetTarget",
+        "FrontierTests::FWeaponTest::testFireAtTarget"
+      ]
+    }
+  },
+  "pass_fail_totals": {
+    "passed": 17,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "remaining_risks": [
+    "Full tests/SSWTests still has 3 unrelated legacy failures after the new tactical attack tests pass.",
+    "Generated local files remain in the tester worktree: tests/tactical/TacticalTests, tests/test, tests/test2."
+  ],
+  "artifact_files_written": [
+    "artifacts/tactical-damage-summary/tester_result.json",
+    "artifacts/tactical-damage-summary/verifier_prompt.txt"
+  ]
+}
