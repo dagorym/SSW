@@ -7,6 +7,7 @@ Implementation context:
 - Implementation branch from the implementer artifact: `tds-st2-implementer-20260320`
 - Implementer commit from `artifacts/tactical-damage-summary_subtask2/implementer_result.json`: `9416a85`
 - Tester branch/worktree: `tds-st2-tester-20260320`
+- Tester commit containing the test changes: `9a1fb21`
 - Shared artifact directory to reuse: `artifacts/tactical-damage-summary_subtask2`
 
 Acceptance criteria to verify:

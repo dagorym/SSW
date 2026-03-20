@@ -2,6 +2,7 @@
   "status": "success",
   "subtask_id": "tactical-damage-summary_subtask2",
   "branch_name": "tds-st2-tester-20260320",
+  "commit_hash": "9a1fb21",
   "base_commit_hash": "21d5984",
   "test_files_modified": [
     "tests/ships/FVehicleTest.h",
