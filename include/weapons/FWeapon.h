@@ -9,6 +9,7 @@
 #define FWEAPON_H_
 
 #include "core/FPObject.h"
+#include "tactical/FTacticalAttackResult.h"
 #include <string>
 #include <vector>
 
@@ -128,7 +129,7 @@ public:
 	 * @date Created:  Feb 27, 2009
 	 * @date Last Modified:  Mar 24, 2011
 	 */
-	void fire();
+	FTacticalAttackResult fire();
 
 	/**
 	 * @brief Set the target vessel for this weapon
