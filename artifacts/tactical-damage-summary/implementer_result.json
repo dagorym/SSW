@@ -1,0 +1,21 @@
+{
+  "status": "completed",
+  "task_identifier": "prompt-3-weapon-attack-result",
+  "branch_name": "tds-st3-implementer-20260320",
+  "commit_hash": "b77f2500858f00cc8212cace4d482d458110a059",
+  "changed_files": [
+    "include/tactical/FTacticalAttackResult.h",
+    "include/weapons/FWeapon.h",
+    "src/weapons/FWeapon.cpp"
+  ],
+  "validation_commands_run": [
+    "make -C src/weapons",
+    "make -C src/ships",
+    "make -C tests/weapons"
+  ],
+  "validation_outcome": "passed",
+  "artifact_file_paths_written": [
+    "/home/tstephen/worktrees/tds-st3-implementer-20260320/artifacts/tactical-damage-summary/tester_prompt.txt",
+    "/home/tstephen/worktrees/tds-st3-implementer-20260320/artifacts/tactical-damage-summary/implementer_result.json"
+  ]
+}

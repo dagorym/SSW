@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate that `FWeapon::fire()` now returns a structured attack result while preserving existing weapon-resolution behavior.
+
+Modified files:
+- include/tactical/FTacticalAttackResult.h
+- include/weapons/FWeapon.h
+- src/weapons/FWeapon.cpp
+
+Acceptance criteria to validate (from Planner):
+- `FWeapon::fire()` returns a structured result object suitable for tactical reporting.
+- The returned result distinguishes at least skipped/not-fired, fired-and-missed, and fired-and-hit outcomes.
+- A successful hit records both hull damage and non-hull effects actually applied to the target.
+- Existing weapon-resolution behavior remains intact.
+
+Create test files in:
+- tests/weapons/*
+- tests/ships/*
+- tests/tactical/*
+
+Implementation context for testing:
+- Added `FTacticalAttackResult` and `FTacticalAttackEffect` as a standalone tactical model in `include/tactical/FTacticalAttackResult.h`.
+- `FWeapon::fire()` now returns `FTacticalAttackResult` and reports skipped states for no ammo, damaged weapon, no target, and invalid range without changing the old side effects for those cases.
+- Fired attacks still clear the target and consume ammo exactly as before; misses now return `TAO_Missed`, and hits return `TAO_Hit`.
+- On a hit, `FWeapon::fire()` now passes a local `FTacticalDamageResolution` into `FVehicle::takeDamage()` and copies the actually applied hull and non-hull effects into the returned result.
+- Existing callers that ignore the return value still compile.
+
+Suggested test command(s):
+- make -C src/weapons
+- make -C src/ships
+- make -C tests/weapons
+
+Shared artifact directory:
+- /home/tstephen/worktrees/tds-st3-implementer-20260320/artifacts/tactical-damage-summary
