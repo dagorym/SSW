@@ -10,11 +10,101 @@
 #include "defenses/FDefense.h"
 #include "defenses/FNone.h"
 #include "ships/ships.h"
+#include "tactical/FTacticalCombatReport.h"
 #include "Frontier.h"
 #include <sstream>
 
 namespace Frontier
 {
+namespace {
+
+void initializeDamageResolution(FTacticalDamageResolution *result, int damage, int damageMod, bool usedAdvancedTable) {
+	if (result == NULL) {
+		return;
+	}
+	result->clear();
+	result->usedAdvancedDamageTable = usedAdvancedTable;
+	result->requestedDamage = damage;
+	result->damageTableModifier = damageMod;
+}
+
+void appendHullDamageEffect(FTacticalDamageResolution *result, int previousHP, int currentHP, int rollValue, int requestedDamage) {
+	if (result == NULL) {
+		return;
+	}
+
+	FTacticalDamageEffect effect;
+	effect.effectType = TDET_HullDamage;
+	effect.rollValue = rollValue;
+	effect.previousValue = previousHP;
+	effect.newValue = currentHP;
+	effect.amount = previousHP - currentHP;
+	effect.hullDamageApplied = effect.amount;
+	effect.label = "Hull Damage";
+
+	std::ostringstream detail;
+	detail << effect.amount << " hull damage applied";
+	if (requestedDamage != effect.amount) {
+		detail << " from " << requestedDamage << " requested";
+	}
+	effect.detail = detail.str();
+
+	result->totalHullDamageApplied += effect.hullDamageApplied;
+	result->effects.push_back(effect);
+}
+
+void appendMeterEffect(
+	FTacticalDamageResolution *result,
+	TacticalDamageEffectType effectType,
+	const std::string &label,
+	int previousValue,
+	int currentValue,
+	int rollValue)
+{
+	if (result == NULL) {
+		return;
+	}
+
+	FTacticalDamageEffect effect;
+	effect.effectType = effectType;
+	effect.rollValue = rollValue;
+	effect.previousValue = previousValue;
+	effect.newValue = currentValue;
+	effect.amount = previousValue - currentValue;
+	effect.label = label;
+
+	std::ostringstream detail;
+	detail << effect.amount << " " << label << " lost";
+	effect.detail = detail.str();
+
+	result->effects.push_back(effect);
+}
+
+void appendStatusEffect(
+	FTacticalDamageResolution *result,
+	TacticalDamageEffectType effectType,
+	const std::string &label,
+	bool previousValue,
+	bool currentValue,
+	int rollValue,
+	const std::string &detailText)
+{
+	if (result == NULL) {
+		return;
+	}
+
+	FTacticalDamageEffect effect;
+	effect.effectType = effectType;
+	effect.rollValue = rollValue;
+	effect.previousValue = previousValue ? 1 : 0;
+	effect.newValue = currentValue ? 1 : 0;
+	effect.label = label;
+	effect.detail = detailText;
+	result->effects.push_back(effect);
+}
+
+}
+
 unsigned int FVehicle::m_nextID = 0;
 unsigned int FVehicle::m_classCount = 0;
 
@@ -246,11 +336,14 @@ FVehicle * createShip(std::string type, std::string name){
 	return v;
 }
 
-void FVehicle::takeDamage (int damage, int damageMod, bool basic){
+void FVehicle::takeDamage (int damage, int damageMod, bool basic, FTacticalDamageResolution * result){
+	initializeDamageResolution(result, damage, damageMod, !basic);
 	if (basic){  // if we're just using the basic damage rules all there is is hull damage
+		int previousHP = getHP();
 		takeHullDamage(damage);
+		appendHullDamageEffect(result, previousHP, getHP(), -1, damage);
 	} else {
-		advancedDamage(damage,damageMod);
+		advancedDamage(damage,damageMod,result);
 	}
 }
 
@@ -316,91 +409,157 @@ void FVehicle::takeHullDamage(int damage){
 	}
 }
 
-void FVehicle::advancedDamage(int damage, int damageMod){
+void FVehicle::advancedDamage(int damage, int damageMod, FTacticalDamageResolution * result){
 	int roll = irand(100) + damageMod; // roll on the damage table
+	if (result != NULL) {
+		result->damageTableRoll = roll;
+	}
 	if ( roll <= 10 ) {            // double hull damage
+		int previousHP = getHP();
 		takeHullDamage(damage*2);
+		appendHullDamageEffect(result, previousHP, getHP(), roll, damage * 2);
 	} else if ( roll <= 45 ) {     // normal hull damage
+		int previousHP = getHP();
 		takeHullDamage(damage);
+		appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 	} else if ( roll <= 49 ) {     //  Lose 1 ADF
+		int previousADF = getADF();
 		setADF(getADF()-1);
+		appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
 	} else if ( roll <= 52 ) {     //  Lose 1/2 ADF
 		int adfLost = getMaxADF()/2 + getMaxADF()%2;  // half of original ADF rounded up.
+		int previousADF = getADF();
 		setADF(getADF()-adfLost);
+		appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
 	} else if ( roll == 53 ) {     //  Lose all ADF
+		int previousADF = getADF();
 		setADF(0);
+		appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
 	} else if ( roll <= 58 ) {     //  Lose 1 MR
+		int previousMR = getMR();
 		setMR(getMR()-1);
+		appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
 	} else if ( roll <= 60 ) {     //  Lose all MR
+		int previousMR = getMR();
 		setMR(0);
+		appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
 	} else if ( roll <= 62 ) {     //  Weapon Hit
 		int wList[] = {FWeapon::LC,FWeapon::LB,FWeapon::PB,FWeapon::EB,FWeapon::AR,FWeapon::RB,FWeapon::NONE};
-		if (damageWeapon(wList)==0) { // didn't hit a weapon
+		if (damageWeapon(wList, result)==0) { // didn't hit a weapon
+			int previousHP = getHP();
 			takeHullDamage(damage);
+			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 64 ) {     //  Weapon Hit
 		int wList[] = {FWeapon::PB,FWeapon::EB,FWeapon::LB,FWeapon::RB,FWeapon::T,FWeapon::AR,FWeapon::NONE};
-		if (damageWeapon(wList)==0) { // didn't hit a weapon
+		if (damageWeapon(wList, result)==0) { // didn't hit a weapon
+			int previousHP = getHP();
 			takeHullDamage(damage);
+			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 66 ) {     //  Weapon Hit
 		int wList[] = {FWeapon::DC,FWeapon::LC,FWeapon::AR,FWeapon::T,FWeapon::LB,FWeapon::NONE};
-		if (damageWeapon(wList)==0) { // didn't hit a weapon
+		if (damageWeapon(wList, result)==0) { // didn't hit a weapon
+			int previousHP = getHP();
 			takeHullDamage(damage);
+			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 68 ) {     //  Weapon Hit
 		int wList[] = {FWeapon::T,FWeapon::AR,FWeapon::EB,FWeapon::PB,FWeapon::LB,FWeapon::RB,FWeapon::NONE};
-		if (damageWeapon(wList)==0) { // didn't hit a weapon
+		if (damageWeapon(wList, result)==0) { // didn't hit a weapon
+			int previousHP = getHP();
 			takeHullDamage(damage);
+			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 70 ) {     //  Weapon Hit
 		int wList[] = {FWeapon::LB,FWeapon::RB,FWeapon::T,FWeapon::AR,FWeapon::PB,FWeapon::EB,FWeapon::LC,FWeapon::NONE};
-		if (damageWeapon(wList)==0) { // didn't hit a weapon
+		if (damageWeapon(wList, result)==0) { // didn't hit a weapon
+			int previousHP = getHP();
 			takeHullDamage(damage);
+			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 74 ) {     //  Loose all screens and ICMs
+		bool previousPowerSystemState = m_powerSystemDamaged;
 		m_powerSystemDamaged = true;
+		appendStatusEffect(result, TDET_PowerSystemDamaged, "Power System Hit", previousPowerSystemState, m_powerSystemDamaged, roll, "All screens and ICMs lost");
 	} else if ( roll <= 77 ) {     //  Defense Hit
 		int dList[] = {FDefense::PS,FDefense::ES,FDefense::SS,FDefense::MS,FDefense::ICM,FDefense::UNDEF};
-		if (damageDefense(dList)==0) { // didn't hit a weapon
+		if (damageDefense(dList, result)==0) { // didn't hit a weapon
+			int previousHP = getHP();
 			takeHullDamage(damage);
+			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 80 ) {     //  Defense Hit
 		int dList[] = {FDefense::MS,FDefense::ICM,FDefense::SS,FDefense::PS,FDefense::ES,FDefense::UNDEF};
-		if (damageDefense(dList)==0) { // didn't hit a weapon
+		if (damageDefense(dList, result)==0) { // didn't hit a weapon
+			int previousHP = getHP();
 			takeHullDamage(damage);
+			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 84 ) {     //  Defense Hit
 		int dList[] = {FDefense::ICM,FDefense::SS,FDefense::PS,FDefense::ES,FDefense::MS,FDefense::UNDEF};
-		if (damageDefense(dList)==0) { // didn't hit a weapon
+		if (damageDefense(dList, result)==0) { // didn't hit a weapon
+			int previousHP = getHP();
 			takeHullDamage(damage);
+			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 91 ) {     //  Combat Control System Hit (-10%)
+		bool previousCombatControlState = m_combatControlDamaged;
 		m_combatControlDamaged = true;
+		appendStatusEffect(result, TDET_CombatControlDamaged, "Combat Control Hit", previousCombatControlState, m_combatControlDamaged, roll, "Combat control system damaged");
 	} else if ( roll <= 97 ) {     //  Navigation Hit
+		int previousNavError = m_navError;
 		if (irand(2)==1){
 			m_navError = -1;
 		} else {
 			m_navError = 1;
 		}
+		if (result != NULL) {
+			FTacticalDamageEffect effect;
+			effect.effectType = TDET_NavigationError;
+			effect.rollValue = roll;
+			effect.previousValue = previousNavError;
+			effect.newValue = m_navError;
+			effect.amount = m_navError;
+			effect.navigationError = m_navError;
+			effect.label = "Navigation Hit";
+			effect.detail = (m_navError < 0) ? "Navigation error set to starboard" : "Navigation error set to port";
+			result->effects.push_back(effect);
+		}
 	} else if ( roll <= 105 ) {    //  Electrical Fire
+		bool previousFireState = m_onFire;
 		m_onFire=true;
+		appendStatusEffect(result, TDET_ElectricalFire, "Electrical Fire", previousFireState, m_onFire, roll, "Electrical fire started");
 	} else if ( roll <= 116 ) {    //  Lose 1/2 DCR
 		int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
+		int previousDCR = getDCR();
 		setDCR(getDCR()-dcrLost);
+		appendMeterEffect(result, TDET_DCRLoss, "DCR", previousDCR, getDCR(), roll);
 	} else if ( roll <= 120 ) {    //  Disastrous Fire
+		int previousADF = getADF();
 		setADF(0);
+		appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
+		int previousMR = getMR();
 		setMR(0);
+		appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
 		int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
+		int previousDCR = getDCR();
 		setDCR(getDCR()-dcrLost);
+		appendMeterEffect(result, TDET_DCRLoss, "DCR", previousDCR, getDCR(), roll);
+		bool previousCombatControlState = m_combatControlDamaged;
 		m_combatControlDamaged = true;
+		appendStatusEffect(result, TDET_CombatControlDamaged, "Combat Control Hit", previousCombatControlState, m_combatControlDamaged, roll, "Combat control system damaged");
+		bool previousFireState = m_onFire;
 		m_onFire=true;
+		appendStatusEffect(result, TDET_ElectricalFire, "Electrical Fire", previousFireState, m_onFire, roll, "Disastrous fire started");
 	} else {                       // we should never get here
+		int previousHP = getHP();
 		takeHullDamage(damage);
+		appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 	}
 }
 
-int FVehicle::damageWeapon(int * wList){
+int FVehicle::damageWeapon(int * wList, FTacticalDamageResolution * result){
 	bool wHit = false;
 	// loop over weapon types
 	while ((*wList)!=FWeapon::NONE && wHit == false){  // only check until a weapon has been hit
@@ -409,6 +568,19 @@ int FVehicle::damageWeapon(int * wList){
 			if ((*wItr)->getType() == *wList && ((*wItr)->isDamaged()==false)){  // if this weapon exists and is functional
 				(*wItr)->setDamageStatus(true);  // knock it out
 				wHit=true;
+				if (result != NULL) {
+					FTacticalDamageEffect effect;
+					effect.effectType = TDET_WeaponDamaged;
+					effect.rollValue = result->damageTableRoll;
+					effect.previousValue = 0;
+					effect.newValue = 1;
+					effect.weaponType = (*wItr)->getType();
+					effect.weaponID = (*wItr)->getID();
+					effect.weaponName = (*wItr)->getLongName();
+					effect.label = "Weapon Hit";
+					effect.detail = (*wItr)->getLongName() + " damaged";
+					result->effects.push_back(effect);
+				}
 				return 1;  // stop after first weapon has been hit
 			}
 		}
@@ -417,7 +589,7 @@ int FVehicle::damageWeapon(int * wList){
 	return 0;
 }
 
-int FVehicle::damageDefense(int * dList){
+int FVehicle::damageDefense(int * dList, FTacticalDamageResolution * result){
 	bool dHit = false;
 	// loop over defense types
 	while ((*dList)!=FDefense::UNDEF && dHit == false){  // only check until a defense has been hit
@@ -426,6 +598,18 @@ int FVehicle::damageDefense(int * dList){
 			if ((*dItr)->getType() == *dList && ((*dItr)->isDamaged()==false)){  // if this defense exists and is functional
 				(*dItr)->setDamageStatus(true);  // knock it out
 				dHit=true;
+				if (result != NULL) {
+					FTacticalDamageEffect effect;
+					effect.effectType = TDET_DefenseDamaged;
+					effect.rollValue = result->damageTableRoll;
+					effect.previousValue = 0;
+					effect.newValue = 1;
+					effect.defenseType = (*dItr)->getType();
+					effect.defenseName = (*dItr)->getLongName();
+					effect.label = "Defense Hit";
+					effect.detail = (*dItr)->getLongName() + " damaged";
+					result->effects.push_back(effect);
+				}
 				return 1;  // stop after first defense has been hit
 			}
 		}

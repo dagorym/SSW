@@ -17,6 +17,8 @@
 
 namespace Frontier
 {
+struct FTacticalDamageResolution;
+
 /**
  * @brief Base class for all vehicle objects
  *
@@ -173,7 +175,7 @@ public:
 	 * @date Created:  Apr 28, 2009
 	 * @date Last Modified:  Jan 28, 2011
 	 */
-	virtual void takeDamage (int damage, int damageMod = 0, bool basic = false);
+	virtual void takeDamage (int damage, int damageMod = 0, bool basic = false, FTacticalDamageResolution * result = NULL);
 
 	/**
 	 * @brief Reloads all the ships weapons
@@ -331,7 +333,7 @@ protected:
 	 * @date Created:  Jan 28, 2011
 	 * @date Last Modified:  Jan 28, 2011
 	 */
-	virtual void advancedDamage(int damage, int damageMod);
+	virtual void advancedDamage(int damage, int damageMod, FTacticalDamageResolution * result = NULL);
 
 	/**
 	 * @brief Applies damage to a weapon hit in combat
@@ -348,7 +350,7 @@ protected:
 	 * @date Created:  Jan 28, 2011
 	 * @date Last Modified:  Jan 28, 2011
 	 */
-	int damageWeapon(int * wList);
+	int damageWeapon(int * wList, FTacticalDamageResolution * result = NULL);
 
 	/**
 	 * @brief Applies damage to a weapon hit in combat
@@ -365,7 +367,7 @@ protected:
 	 * @date Created:  Jan 28, 2011
 	 * @date Last Modified:  Jan 28, 2011
 	 */
-	int damageDefense(int * dList);
+	int damageDefense(int * dList, FTacticalDamageResolution * result = NULL);
 };
 
 typedef std::vector<FVehicle *> VehicleList;

@@ -26,6 +26,66 @@ enum TacticalReportEventType {
 	TRET_Note
 };
 
+enum TacticalDamageEffectType {
+	TDET_None = 0,
+	TDET_HullDamage,
+	TDET_ADFLoss,
+	TDET_MRLoss,
+	TDET_WeaponDamaged,
+	TDET_DefenseDamaged,
+	TDET_PowerSystemDamaged,
+	TDET_CombatControlDamaged,
+	TDET_NavigationError,
+	TDET_ElectricalFire,
+	TDET_DCRLoss
+};
+
+struct FTacticalDamageEffect {
+	TacticalDamageEffectType effectType;
+	int rollValue;
+	int previousValue;
+	int newValue;
+	int amount;
+	int hullDamageApplied;
+	int weaponType;
+	unsigned int weaponID;
+	std::string weaponName;
+	int defenseType;
+	std::string defenseName;
+	int navigationError;
+	bool fallbackToHullDamage;
+	std::string label;
+	std::string detail;
+
+	FTacticalDamageEffect()
+		: effectType(TDET_None), rollValue(-1), previousValue(0), newValue(0), amount(0),
+		  hullDamageApplied(0), weaponType(FWeapon::NONE), weaponID(0), weaponName(""),
+		  defenseType(FDefense::UNDEF), defenseName(""), navigationError(0),
+		  fallbackToHullDamage(false), label(""), detail("") {}
+};
+
+struct FTacticalDamageResolution {
+	bool usedAdvancedDamageTable;
+	int requestedDamage;
+	int damageTableModifier;
+	int damageTableRoll;
+	int totalHullDamageApplied;
+	std::vector<FTacticalDamageEffect> effects;
+
+	FTacticalDamageResolution()
+		: usedAdvancedDamageTable(false), requestedDamage(0), damageTableModifier(0),
+		  damageTableRoll(-1), totalHullDamageApplied(0), effects() {}
+
+	void clear() {
+		usedAdvancedDamageTable = false;
+		requestedDamage = 0;
+		damageTableModifier = 0;
+		damageTableRoll = -1;
+		totalHullDamageApplied = 0;
+		effects.clear();
+	}
+};
+
 struct FTacticalShipReference {
 	unsigned int shipID;
 	unsigned int ownerID;

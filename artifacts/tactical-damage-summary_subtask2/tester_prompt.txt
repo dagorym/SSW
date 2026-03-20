@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate that `FVehicle` damage resolution can emit an optional `FTacticalDamageResolution` report describing applied hull and advanced-damage effects without changing existing combat mutation behavior.
+
+Modified files:
+- include/ships/FVehicle.h
+- src/ships/FVehicle.cpp
+- include/tactical/FTacticalCombatReport.h
+
+Acceptance criteria to validate (from Planner):
+- The implementer inspects the Subtask 1 artifact directory under `artifacts/` to identify the report-model files created there before editing.
+- `FVehicle::takeDamage()` and `advancedDamage()` populate an optional effects/result output parameter with all applied hull and advanced-damage effects needed by higher layers.
+- Existing combat state mutation behavior remains intact.
+- The emitted effect data is explicit enough for higher layers to build tactical reports without reconstructing state changes indirectly.
+
+Create test files in:
+- tests/ships/
+- tests/tactical/
+
+Implementation context for testing:
+- `FVehicle::takeDamage()` now accepts an optional `FTacticalDamageResolution *` and initializes it for both basic and advanced damage flows while preserving old call sites through a default `NULL` parameter.
+- `FVehicle::advancedDamage()` records the advanced damage table roll plus per-effect entries for hull damage, ADF/MR/DCR loss, weapon hits, defense hits, power-system loss, combat-control loss, navigation error, and electrical fire.
+- Weapon and defense helper methods now attach explicit component metadata for the damaged item when a component is actually disabled.
+- No aggregation, dialog integration, or `FWeapon::fire()` changes were made.
+- Existing tests do not appear to cover this path directly, so target both API shape and state-mutation parity.
+
+Suggested test command(s):
+- make -C src/ships FVehicle.o
+- make -C src/tactical FBattleScreen.o
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary_subtask2
