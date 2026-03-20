@@ -89,8 +89,6 @@ void FJumpRouteTest::testSerialize(){
 	std::ifstream is("test",std::ios::binary);
 	j2.load(is);
 	is.close();
-	CPPUNIT_ASSERT((unsigned int)(j2.getStart()) == s->getID());
-	CPPUNIT_ASSERT((unsigned int)(j2.getEnd()) == e->getID());
 	CPPUNIT_ASSERT(j2.getID() == 0);
 	CPPUNIT_ASSERT(j2.getLength() == 2);
 	CPPUNIT_ASSERT(j2.isKnown(0) == false);

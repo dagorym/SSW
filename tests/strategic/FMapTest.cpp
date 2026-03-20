@@ -117,6 +117,12 @@ void FMapTest::testSerialize(){
 	m->load(is);
 	is.close();
 	CPPUNIT_ASSERT(m->getSystem("White Light") != NULL);
-}
+	FJumpRoute *j = m->getJumpRoute("Prenglar","Cassidine");
+	CPPUNIT_ASSERT(j != NULL);
+	CPPUNIT_ASSERT(j->getStart() != NULL);
+	CPPUNIT_ASSERT(j->getEnd() != NULL);
+	CPPUNIT_ASSERT(j->getStart()->getName() == "Prenglar");
+	CPPUNIT_ASSERT(j->getEnd()->getName() == "Cassidine");
+	}
 
 }
