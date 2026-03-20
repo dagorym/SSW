@@ -4,6 +4,7 @@
 *.bak
 BattleSim
 SSW
+tests/SSWTests
 .project
 .cproject
 *.ssw
