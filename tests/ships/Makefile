@@ -37,7 +37,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FVehicleTest.o FArmedStationTest.o FAssaultCarrierTest.o \
+OBJS = FVehicleTest.o FTacticalAttackIntegrationTest.o FArmedStationTest.o FAssaultCarrierTest.o \
        FAssaultScoutTest.o FBattleshipTest.o FDestroyerTest.o \
        FFighterTest.o FFortifiedStationTest.o FFortressTest.o \
        FFrigateTest.o FHvCruiserTest.o FLtCruiserTest.o \
@@ -117,3 +117,6 @@ FMinelayerTest.o: ../../include/weapons/FWeapon.h
 FVehicleTest.o: FVehicleTest.h ../../include/ships/FVehicle.h
 FVehicleTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FVehicleTest.o: ../../include/weapons/FWeapon.h
+FTacticalAttackIntegrationTest.o: FTacticalAttackIntegrationTest.h ../../include/weapons/FWeapon.h
+FTacticalAttackIntegrationTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FTacticalAttackIntegrationTest.o: ../../include/ships/FVehicle.h

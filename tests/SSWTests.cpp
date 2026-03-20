@@ -23,7 +23,9 @@
 #include "weapons/FRocketBatteryTest.h"
 #include "weapons/FSeekerMissileLauncherTest.h"
 #include "weapons/FTorpedoTest.h"
+#include "weapons/FWeaponFireResultTest.h"
 #include "ships/FVehicleTest.h"
+#include "ships/FTacticalAttackIntegrationTest.h"
 #include "ships/FAssaultScoutTest.h"
 #include "ships/FArmedStationTest.h"
 #include "ships/FAssaultCarrierTest.h"
@@ -37,6 +39,7 @@
 #include "ships/FLtCruiserTest.h"
 #include "ships/FMinelayerTest.h"
 #include "tactical/FTacticalCombatReportTest.h"
+#include "tactical/FTacticalAttackResultTest.h"
 #include "strategic/FGameTest.h"
 #include "strategic/FPlanetTest.h"
 #include "strategic/FFleetTest.h"
@@ -68,7 +71,9 @@ int main( int argc, char **argv)
   runner.addTest( FRocketBatteryTest::suite() );
   runner.addTest( FSeekerMissileLauncherTest::suite() );
   runner.addTest( FTorpedoTest::suite() );
+  runner.addTest( FWeaponFireResultTest::suite() );
   runner.addTest( FVehicleTest::suite() );
+  runner.addTest( FTacticalAttackIntegrationTest::suite() );
   runner.addTest( FAssaultScoutTest::suite() );
   runner.addTest( FArmedStationTest::suite() );
   runner.addTest( FAssaultCarrierTest::suite() );
@@ -82,6 +87,7 @@ int main( int argc, char **argv)
   runner.addTest( FLtCruiserTest::suite() );
   runner.addTest( FMinelayerTest::suite() );
   runner.addTest( FTacticalCombatReportTest::suite() );
+  runner.addTest( FTacticalAttackResultTest::suite() );
   runner.addTest( FGameTest::suite() );
   runner.addTest( FPlanetTest::suite() );
   runner.addTest( FFleetTest::suite() );

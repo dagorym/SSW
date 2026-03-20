@@ -37,7 +37,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FWeaponTest.o FAssaultRocketTest.o FDisruptorCannonTest.o \
+OBJS = FWeaponTest.o FWeaponFireResultTest.o FAssaultRocketTest.o FDisruptorCannonTest.o \
        FElectronBatteryTest.o FLaserBatteryTest.o FLaserCannonTest.o \
        FMineLauncherTest.o FProtonBatteryTest.o FRocketBatteryTest.o \
        FSeekerMissileLauncherTest.o FTorpedoTest.o #AllWeaponTest.o 
@@ -111,3 +111,6 @@ FTorpedoTest.o: ../../include/core/FObject.h
 FWeaponTest.o: FWeaponTest.h ../../include/weapons/FWeapon.h
 FWeaponTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
 FWeaponTest.o: ../../include/ships/FVehicle.h
+FWeaponFireResultTest.o: FWeaponFireResultTest.h ../../include/weapons/FWeapon.h
+FWeaponFireResultTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+FWeaponFireResultTest.o: ../../include/ships/FVehicle.h
