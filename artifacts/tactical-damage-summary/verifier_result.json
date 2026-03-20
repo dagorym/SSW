@@ -1,0 +1,14 @@
+{
+  "status": "completed",
+  "task_identifier": "prompt-3-weapon-attack-result",
+  "branch_name": "tds-st3-verifier-20260320",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 1,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Implementation matches the stated acceptance criteria on review, and the targeted 8-test tactical runner passed locally. Coverage is strong for structured outcomes and copied hull/non-hull effects, but the new tests do not explicitly assert hit-path ammo consumption and target clearing.",
+  "artifact_file_paths_written": [
+    "artifacts/tactical-damage-summary/verifier_report.md",
+    "artifacts/tactical-damage-summary/verifier_result.json"
+  ]
+}
