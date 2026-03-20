@@ -1,6 +1,7 @@
 CXXFLAGS = -I../include  -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
 
 LIBS = -L./strategic -lstrategicTests -L./ships -lshipsTests \
+	-L./tactical -ltacticalTests \
 	-L./weapons -lweaponsTests -L./core -lcoreTests \
 	-lcppunit -L../src/strategic -lstrategic -L../src/ships -lships -L../src/gui -lgui -L../src/tactical -ltactical \
 	-L../src/weapons -lweapons -L../src/defenses -ldefenses \
@@ -33,7 +34,7 @@ LIBS = -L./strategic -lstrategicTests -L./ships -lshipsTests \
 
 OBJS = SSWTests.o #FApp.o Frontier.o FMainFrameTest.o 
 
-OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a libshipsTests.a #libguiTests.a libtacticalTests.a
+OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a libshipsTests.a libtacticalTests.a #libguiTests.a
 
 TARGET = SSWTests
 
@@ -51,7 +52,7 @@ libshipsTests.a:
 	
 libstrategicTests.a:
 	@ cd strategic; $(MAKE) $@
-	
+
 libtacticalTests.a:
 	@ cd tactical; $(MAKE) $@
 	
@@ -69,7 +70,7 @@ all_clean:
 #	@ cd gui; ${MAKE} clean
 	@ cd ships; ${MAKE} clean
 	@ cd strategic; ${MAKE} clean
-#	@ cd tactical; ${MAKE} clean
+	@ cd tactical; ${MAKE} clean
 	@ cd weapons; ${MAKE} clean
 	rm $(OBJS)
 	rm $(TARGET)
