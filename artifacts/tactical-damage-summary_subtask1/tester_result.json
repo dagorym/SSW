@@ -1,0 +1,39 @@
+{
+  "status": "success",
+  "subtask": "tactical-damage-summary_subtask1",
+  "branch": "tds-st1-tester-20260318",
+  "commit_hash": "2c972fc4a91066b7a565da169c450af5361933e7",
+  "test_files_added_or_modified": [
+    "tests/Makefile",
+    "tests/SSWTests.cpp",
+    "tests/tactical/FTacticalCombatReportTest.h",
+    "tests/tactical/FTacticalCombatReportTest.cpp",
+    "tests/tactical/Makefile",
+    "tests/tactical/TacticalTests.cpp"
+  ],
+  "commands_run": [
+    "make -C src/tactical clean all",
+    "make -C tests/tactical all",
+    "./tests/tactical/TacticalTests"
+  ],
+  "totals": {
+    "tests_written": 6,
+    "tests_run": 6,
+    "passed": 6,
+    "failed": 0
+  },
+  "notes": [
+    "The dedicated tactical CppUnit runner now resolves source paths using an absolute repository-root define rather than process cwd.",
+    "The broader tests/ build remains blocked by an unrelated existing compile error in tests/strategic/FJumpRouteTest.cpp."
+  ],
+  "artifact_files_written": [
+    "artifacts/tactical-damage-summary_subtask1/report_model_files.txt",
+    "artifacts/tactical-damage-summary_subtask1/tester_result.json",
+    "artifacts/tactical-damage-summary_subtask1/verifier_prompt.txt"
+  ],
+  "commit": {
+    "created": true,
+    "hash": "2c972fc4a91066b7a565da169c450af5361933e7",
+    "message": "Add tactical combat report tests"
+  }
+}
