@@ -1,0 +1,51 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate the new tactical combat reporting foundation owned by `FBattleScreen`.
+- Confirm the data model preserves raw attack/event data and can build per-ship display summaries without changing tactical phase behavior.
+
+Implementation files under review:
+- `include/tactical/FBattleScreen.h`
+- `include/tactical/FTacticalCombatReport.h`
+- `src/tactical/FBattleScreen.cpp`
+
+Acceptance criteria to verify:
+- There is a clear data model for individual attack results and aggregated ship results.
+- `FBattleScreen` exposes APIs to begin a report, append raw events, build a display summary, and clear report state.
+- The model is suitable for defensive fire, offensive fire, electrical fire, and mine damage reporting.
+- The model preserves raw per-attack/internal event data while supporting a separate per-ship display rollup.
+- New reporting types live under `include/tactical/` and `src/tactical/` unless there is a specific, justified need to place them elsewhere.
+- No implementation code changes phase behavior beyond setting up this reporting foundation.
+- The shared artifact directory is `artifacts/tactical-damage-summary_subtask1`.
+- Artifact output should identify the exact report-model files created so later subtasks can consume them reliably.
+
+Tester work completed:
+- Added a new tactical CppUnit fixture at `tests/tactical/FTacticalCombatReportTest.h` and `tests/tactical/FTacticalCombatReportTest.cpp`.
+- Added a dedicated tactical runner at `tests/tactical/TacticalTests.cpp`.
+- Added `tests/tactical/Makefile` and wired the tactical tests into `tests/Makefile` and `tests/SSWTests.cpp`.
+- Fixed the tactical fixture to resolve source/header files through an absolute repository-root compile define instead of relying on the runtime working directory.
+
+Commands executed:
+- `make -C src/tactical clean all`
+- `make -C tests/tactical all`
+- `./tests/tactical/TacticalTests`
+
+Final test outcomes:
+- `make -C src/tactical clean all`: passed, with only existing compiler warnings about unused local variables.
+- `./tests/tactical/TacticalTests`: passed with `OK (6 tests)`.
+
+Commit:
+- Branch: `tds-st1-tester-20260318`
+- Commit: `2c972fc4a91066b7a565da169c450af5361933e7`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask1`
+
+Artifacts already written:
+- `artifacts/tactical-damage-summary_subtask1/report_model_files.txt`
+- `artifacts/tactical-damage-summary_subtask1/tester_result.json`
+- `artifacts/tactical-damage-summary_subtask1/verifier_prompt.txt`
+
+Remaining verification risks / follow-up checks:
+- The main `tests/` aggregate build is still blocked by an unrelated legacy compile error in `tests/strategic/FJumpRouteTest.cpp`, so verification should rely on the dedicated tactical runner unless that unrelated issue is addressed separately.
+- The tactical tests validate the reporting foundation by a mix of direct data-structure assertions and source-level contract checks rather than instantiating `FBattleScreen` as a live wx dialog.
