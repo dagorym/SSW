@@ -84,6 +84,23 @@ void FTacticalAttackIntegrationTest::tearDown() {
 	delete m_target;
 }
 
+void FTacticalAttackIntegrationTest::testFireHitPreservesLegacyCleanupSideEffects() {
+	// AC: successful hits still clear the assigned target and consume ammo after firing.
+	srand(123);
+	static_cast<FWeaponFireHarness *>(m_weapon)->assignTargetDirectly(m_target, 3);
+
+	FTacticalAttackResult result = m_weapon->fire();
+
+	CPPUNIT_ASSERT(result.outcome == TAO_Hit);
+	CPPUNIT_ASSERT(result.skipReason == TASR_None);
+	CPPUNIT_ASSERT(result.fired());
+	CPPUNIT_ASSERT(result.hit());
+	CPPUNIT_ASSERT(result.targetID == m_target->getID());
+	CPPUNIT_ASSERT(m_weapon->getAmmo() == 0);
+	CPPUNIT_ASSERT(m_weapon->getTarget() == NULL);
+	CPPUNIT_ASSERT(m_weapon->getTargetRange() == -1);
+}
+
 void FTacticalAttackIntegrationTest::testFireCopiesAppliedHullDamageIntoAttackResult() {
 	// AC: successful hits report the actual hull damage applied by the target damage resolution.
 	srand(123);

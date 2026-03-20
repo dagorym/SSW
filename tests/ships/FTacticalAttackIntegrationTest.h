@@ -15,6 +15,7 @@ using namespace Frontier;
 
 class FTacticalAttackIntegrationTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalAttackIntegrationTest );
+	CPPUNIT_TEST( testFireHitPreservesLegacyCleanupSideEffects );
 	CPPUNIT_TEST( testFireCopiesAppliedHullDamageIntoAttackResult );
 	CPPUNIT_TEST( testFireCopiesAppliedNonHullEffectsIntoAttackResult );
 	CPPUNIT_TEST_SUITE_END();
@@ -28,6 +29,7 @@ public:
 	void setUp();
 	void tearDown();
 
+	void testFireHitPreservesLegacyCleanupSideEffects();
 	void testFireCopiesAppliedHullDamageIntoAttackResult();
 	void testFireCopiesAppliedNonHullEffectsIntoAttackResult();
 };
