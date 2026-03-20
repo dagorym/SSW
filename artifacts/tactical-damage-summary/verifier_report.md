@@ -18,8 +18,9 @@ Convention files considered:
 
 Validation evidence considered:
 - Code review of the implementation and new tests
-- Local run: `/tmp/tactical_damage_tests` -> `OK (8 tests)`
-- Tester-reported outcomes for `tests/tactical/TacticalTests` and full `tests/SSWTests`
+- Local run: `tests/tactical/TacticalTests` -> `OK (9 tests)`
+- Local run: `tests/SSWTests 2>/dev/null | tail -n 120` -> `Run: 138  Failures: 3  Errors: 0`
+- Tester-reported retest summary in `artifacts/tactical-damage-summary/tester_result.json`
 
 Findings
 
@@ -27,17 +28,16 @@ BLOCKING
 - None.
 
 WARNING
-- [tests/weapons/FWeaponFireResultTest.h](/home/tstephen/worktrees/tds-st3-verifier-20260320/tests/weapons/FWeaponFireResultTest.h#L21), [tests/ships/FTacticalAttackIntegrationTest.cpp](/home/tstephen/worktrees/tds-st3-verifier-20260320/tests/ships/FTacticalAttackIntegrationTest.cpp#L87), [tests/ships/FTacticalAttackIntegrationTest.cpp](/home/tstephen/worktrees/tds-st3-verifier-20260320/tests/ships/FTacticalAttackIntegrationTest.cpp#L114) - The new coverage does not explicitly assert that a successful hit still performs the legacy post-fire cleanup side effects, specifically clearing `m_target`/`m_targetRange` and decrementing ammo.
-  This leaves the "existing weapon-resolution behavior remains intact" criterion only partially covered by the new tests. The new weapon test checks those side effects on a miss, and the hit-path integration tests validate copied damage metadata, but no new test verifies the same side effects after a hit. The pre-existing `FWeaponTest::testFireAtTarget` is not a reliable backstop because it is already one of the unrelated legacy failures noted by the tester.
+- None.
 
 NOTE
 - None.
 
 Test sufficiency assessment:
-- The implementation itself matches the acceptance criteria on review. `FWeapon::fire()` now returns `FTacticalAttackResult`, preserves the old early-return/no-side-effect cases for no ammo, damaged weapon, no target, and invalid range, and still clears target state and consumes ammo only after an actual firing attempt in [src/weapons/FWeapon.cpp](/home/tstephen/worktrees/tds-st3-verifier-20260320/src/weapons/FWeapon.cpp#L105).
-- The new tests are strong on the result-model shape and on copied damage-resolution details for both hull and non-hull effects.
-- Coverage is weaker on the hit-path legacy side effects described in the warning above.
-- The tester's three remaining full-suite failures are consistent with unrelated legacy issues and do not point to regressions in the reviewed implementation files.
+- The implementation matches the acceptance criteria on review. `FWeapon::fire()` returns `FTacticalAttackResult`, preserves the old early-return/no-side-effect cases for no ammo, damaged weapon, no target, and invalid range, and still clears target state and consumes ammo only after an actual firing attempt in [src/weapons/FWeapon.cpp](/home/tstephen/worktrees/tds-st3-verifier-20260320/src/weapons/FWeapon.cpp#L105).
+- The previously reported coverage warning is addressed by [tests/ships/FTacticalAttackIntegrationTest.cpp](/home/tstephen/worktrees/tds-st3-verifier-20260320/tests/ships/FTacticalAttackIntegrationTest.cpp#L87), which now asserts hit-path ammo consumption and target cleanup after a successful fire.
+- The test set is sufficient for the stated acceptance criteria: result-model defaults, skipped states, miss state, hit state, copied hull effects, copied non-hull effects, and hit-path legacy cleanup side effects are all covered.
+- Local verification reproduced the long-standing unrelated full-suite failures in `FrontierTests::FGameConfigTest::testConstructor`, `FrontierTests::FWeaponTest::testSetTarget`, and `FrontierTests::FWeaponTest::testFireAtTarget`; they do not indicate a regression in the reviewed changes.
 
 Verdict:
 - PASS
