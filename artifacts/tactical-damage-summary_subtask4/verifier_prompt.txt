@@ -1,0 +1,44 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate the new tactical per-ship damage summary builder that rolls raw recorded attacks/events into concise player-facing ship lines while retaining raw detail internally.
+
+Acceptance criteria:
+- Multiple attacks against one ship aggregate correctly.
+- The resulting summary clearly represents hull damage and other effects per ship.
+- Undamaged ships do not appear in the display summary.
+- Summary generation does not depend on the target ship still existing on the board after report creation.
+- Summary logic is independent of GUI code.
+
+Implementation context:
+- Summary construction moved into the tactical report model as `buildTacticalCombatReportSummary(const FTacticalCombatReport & report)`.
+- `FBattleScreen::buildCurrentTacticalReportSummary()` now delegates directly to the model-layer builder.
+- Ship summaries now retain raw attack/event detail internally via `rawAttacksReceived` and `rawEvents`, but ship/display lines are condensed to one player-facing aggregate line per damaged ship.
+- A ship is included only if it took hull damage or non-hull damage effects captured by report events.
+- Aggregation uses stored `FTacticalShipReference` values, so the target ship does not need to remain on the board after the report is recorded.
+
+Implementation files under test:
+- `include/tactical/FTacticalCombatReport.h`
+- `src/tactical/FBattleScreen.cpp`
+
+Test files added or modified:
+- `tests/tactical/FTacticalCombatReportTest.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+
+Commands executed:
+- `make -C src tactical`
+- `make -C tests/tactical`
+- `./TacticalTests`
+
+Final test outcomes:
+- Tactical test runner passed: `OK (12 tests)`.
+- Added focused behavior coverage for aggregation, effect rollup, undamaged filtering, stored-reference independence, and GUI delegation.
+
+Branch or worktree context:
+- Branch: `tds-st4-tester-20260321`
+- Shared artifact directory: `artifacts/tactical-damage-summary_subtask4`
+- Tester commit hash: recorded in the tester handoff commit that includes this prompt.
+
+Remaining verification risks or follow-up checks:
+- Confirm the new tests are sufficient relative to any higher-level integration expectations outside `tests/tactical/`.
+- Confirm the tester handoff commit records all required artifacts and only test-layer changes.

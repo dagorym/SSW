@@ -16,6 +16,17 @@ std::string repoFile(const std::string & relativePath) {
 	return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
 }
 
+const FTacticalShipReportSummary * findShipSummary(
+	const FTacticalCombatReportSummary & summary,
+	const std::string & shipName) {
+	for (unsigned int i = 0; i < summary.ships.size(); i++) {
+		if (summary.ships[i].ship.shipName == shipName) {
+			return &summary.ships[i];
+		}
+	}
+	return NULL;
+}
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( FTacticalCombatReportTest );
@@ -170,40 +181,140 @@ void FTacticalCombatReportTest::testBattleScreenExposesTacticalReportLifecycleAp
 	CPPUNIT_ASSERT(header.find("FTacticalCombatReport m_tacticalReport;") != std::string::npos);
 }
 
-void FTacticalCombatReportTest::testBattleScreenBuildsShipSummaryFromRawReportData() {
-	// AC: preserve raw data while building a separate per-ship display rollup.
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip() {
+	// AC: multiple attacks against one ship aggregate into one player-facing ship summary.
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport firstAttack;
+	firstAttack.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	firstAttack.target = FTacticalShipReference(2, 2, "Frigate");
+	firstAttack.hit = true;
+	firstAttack.hullDamage = 3;
+
+	FTacticalAttackReport secondAttack = firstAttack;
+	secondAttack.attacker = FTacticalShipReference(3, 1, "Cruiser");
+	secondAttack.hullDamage = 2;
+
+	report.attacks.push_back(firstAttack);
+	report.attacks.push_back(secondAttack);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * shipSummary = findShipSummary(summary, "Frigate");
+
+	CPPUNIT_ASSERT(shipSummary != NULL);
+	CPPUNIT_ASSERT(summary.ships.size() == 1);
+	CPPUNIT_ASSERT(summary.displayLines.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->attacksReceived == 2);
+	CPPUNIT_ASSERT(shipSummary->hitsTaken == 2);
+	CPPUNIT_ASSERT(shipSummary->damagingAttacksReceived == 2);
+	CPPUNIT_ASSERT(shipSummary->hullDamageTaken == 5);
+	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 5 hull damage from 2 attacks") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects() {
+	// AC: summary line carries both hull damage and non-hull effects while raw details remain available.
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	attack.target = FTacticalShipReference(2, 2, "Frigate");
+	attack.hit = true;
+	attack.hullDamage = 4;
+
+	FTacticalReportEvent internalDamage;
+	internalDamage.eventType = TRET_InternalDamage;
+	internalDamage.subject = attack.target;
+	internalDamage.label = "ADF reduced";
+	internalDamage.hullDamage = 0;
+	attack.internalEvents.push_back(internalDamage);
+
+	report.attacks.push_back(attack);
+
+	FTacticalReportEvent fireEvent;
+	fireEvent.eventType = TRET_ElectricalFire;
+	fireEvent.subject = attack.target;
+	fireEvent.label = "Electrical fire";
+	report.events.push_back(fireEvent);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * shipSummary = findShipSummary(summary, "Frigate");
+
+	CPPUNIT_ASSERT(shipSummary != NULL);
+	CPPUNIT_ASSERT(shipSummary->hullDamageTaken == 4);
+	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 2);
+	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 2);
+	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 2);
+	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("4 hull damage") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("ADF reduced") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Electrical fire") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryOmitsUndamagedShips() {
+	// AC: ships without hull damage or damaging effects stay out of the player-facing summary.
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport miss;
+	miss.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	miss.target = FTacticalShipReference(2, 2, "Frigate");
+	miss.hit = false;
+	miss.hullDamage = 0;
+	report.attacks.push_back(miss);
+
+	FTacticalReportEvent note;
+	note.eventType = TRET_Note;
+	note.subject = miss.target;
+	note.label = "Target evaded";
+	report.events.push_back(note);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+
+	CPPUNIT_ASSERT(summary.ships.empty());
+	CPPUNIT_ASSERT(summary.displayLines.empty());
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryUsesStoredShipReferences() {
+	// AC: aggregation uses stored ship references, not board state or live ship objects.
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(10, 1, "Destroyer");
+	attack.target = FTacticalShipReference(77, 2, "Destroyed Frigate");
+	attack.hit = true;
+	attack.hullDamage = 6;
+	report.attacks.push_back(attack);
+
+	FTacticalReportEvent mineDamage;
+	mineDamage.eventType = TRET_MineDamage;
+	mineDamage.subject = attack.target;
+	mineDamage.label = "Mine damage";
+	report.events.push_back(mineDamage);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * shipSummary = findShipSummary(summary, "Destroyed Frigate");
+
+	CPPUNIT_ASSERT(shipSummary != NULL);
+	CPPUNIT_ASSERT(shipSummary->ship.shipID == 77);
+	CPPUNIT_ASSERT(shipSummary->ship.ownerID == 2);
+	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived[0].target.shipID == 77);
+	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->rawEvents[0].subject.shipName == "Destroyed Frigate");
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Destroyed Frigate") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBattleScreenDelegatesSummaryGenerationToModelBuilder() {
+	// AC: summary logic stays in the model; FBattleScreen delegates directly to it.
 	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 	const std::string summaryBody =
 		extractFunctionBody(source, "FTacticalCombatReportSummary FBattleScreen::buildCurrentTacticalReportSummary() const");
 
-	CPPUNIT_ASSERT(summaryBody.find("std::map<TacticalShipSummaryKey, FTacticalShipReportSummary> summaryMap;") != std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("for (unsigned int i = 0; i < m_tacticalReport.attacks.size(); i++)") != std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("const FTacticalAttackReport & attack = m_tacticalReport.attacks[i];") != std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("for (unsigned int j = 0; j < attack.internalEvents.size(); j++)") != std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("for (unsigned int i = 0; i < m_tacticalReport.events.size(); i++)") != std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("summary.ships.push_back(summaryMap[summaryOrder[i]]);") != std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("summary.displayLines.push_back(os.str());") != std::string::npos);
-}
-
-void FTacticalCombatReportTest::testBattleScreenOnlyTouchesPhaseFlowThroughFleetSetupReset() {
-	// AC: no phase behavior changes beyond report-state reset on fleet setup.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string setupBody =
-		extractFunctionBody(source, "int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, FVehicle * station)");
-	const std::string setPhaseBody =
-		extractFunctionBody(source, "void FBattleScreen::setPhase(int p)");
-	const std::string applyFireDamageBody =
-		extractFunctionBody(source, "void FBattleScreen::applyFireDamage()");
-
-	CPPUNIT_ASSERT(setupBody.find("clearTacticalReport();") != std::string::npos);
-	CPPUNIT_ASSERT(setPhaseBody.find("m_tacticalReport") == std::string::npos);
-	CPPUNIT_ASSERT(setPhaseBody.find("beginTacticalReport") == std::string::npos);
-	CPPUNIT_ASSERT(setPhaseBody.find("appendTacticalAttackReport") == std::string::npos);
-	CPPUNIT_ASSERT(setPhaseBody.find("appendTacticalReportEvent") == std::string::npos);
-	CPPUNIT_ASSERT(setPhaseBody.find("buildCurrentTacticalReportSummary") == std::string::npos);
-	CPPUNIT_ASSERT(setPhaseBody.find("clearTacticalReport") == std::string::npos);
-	CPPUNIT_ASSERT(applyFireDamageBody.find("m_tacticalReport") == std::string::npos);
-	CPPUNIT_ASSERT(applyFireDamageBody.find("appendTactical") == std::string::npos);
+	CPPUNIT_ASSERT(summaryBody.find("return buildTacticalCombatReportSummary(m_tacticalReport);") != std::string::npos);
+	CPPUNIT_ASSERT(summaryBody.find("std::map<") == std::string::npos);
+	CPPUNIT_ASSERT(summaryBody.find("rawAttacksReceived") == std::string::npos);
+	CPPUNIT_ASSERT(summaryBody.find("rawEvents") == std::string::npos);
 }
 
 void FTacticalCombatReportTest::testVehicleDamageReportingApiCapturesExplicitEffectTypes() {

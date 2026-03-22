@@ -20,8 +20,11 @@ class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testReportModelDefinesSeparateShipSummaryRollupTypes );
 	CPPUNIT_TEST( testReportModelSupportsAllPlannedReportingModes );
 	CPPUNIT_TEST( testBattleScreenExposesTacticalReportLifecycleApi );
-	CPPUNIT_TEST( testBattleScreenBuildsShipSummaryFromRawReportData );
-	CPPUNIT_TEST( testBattleScreenOnlyTouchesPhaseFlowThroughFleetSetupReset );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryOmitsUndamagedShips );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryUsesStoredShipReferences );
+	CPPUNIT_TEST( testBattleScreenDelegatesSummaryGenerationToModelBuilder );
 	CPPUNIT_TEST( testVehicleDamageReportingApiCapturesExplicitEffectTypes );
 	CPPUNIT_TEST_SUITE_END();
 
@@ -37,8 +40,11 @@ public:
 	void testReportModelDefinesSeparateShipSummaryRollupTypes();
 	void testReportModelSupportsAllPlannedReportingModes();
 	void testBattleScreenExposesTacticalReportLifecycleApi();
-	void testBattleScreenBuildsShipSummaryFromRawReportData();
-	void testBattleScreenOnlyTouchesPhaseFlowThroughFleetSetupReset();
+	void testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip();
+	void testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects();
+	void testBuildTacticalCombatReportSummaryOmitsUndamagedShips();
+	void testBuildTacticalCombatReportSummaryUsesStoredShipReferences();
+	void testBattleScreenDelegatesSummaryGenerationToModelBuilder();
 	void testVehicleDamageReportingApiCapturesExplicitEffectTypes();
 };
 
