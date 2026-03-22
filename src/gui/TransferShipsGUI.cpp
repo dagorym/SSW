@@ -11,6 +11,57 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
+namespace {
+template<typename T>
+bool readValue(std::istream &is, T &value) {
+	is.read(reinterpret_cast<char*>(&value), sizeof(T));
+	return is.good();
+}
+
+bool readSerializedString(std::istream &is, std::string &value) {
+	size_t length = 0;
+	if (!readValue(is, length)) {
+		return false;
+	}
+	value.clear();
+	value.resize(length);
+	if (length > 0) {
+		is.read(&value[0], length);
+		if (!is.good()) {
+			value.clear();
+			return false;
+		}
+	}
+	return true;
+}
+
+// Preserve exact fleet icon metadata without relying on copy construction.
+std::string getSerializedFleetIconFile(const FFleet *fleet) {
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	fleet->save(stream);
+	stream.seekg(0, std::ios::beg);
+
+	unsigned int unsignedValue = 0;
+	int intValue = 0;
+	bool boolValue = false;
+	std::string stringValue;
+
+	if (!readValue(stream, unsignedValue)) return "";
+	if (!readSerializedString(stream, stringValue)) return "";
+	if (!readValue(stream, unsignedValue)) return "";
+	if (!readValue(stream, unsignedValue)) return "";
+	if (!readValue(stream, boolValue)) return "";
+	if (!readValue(stream, unsignedValue)) return "";
+	if (!readValue(stream, intValue)) return "";
+	if (!readValue(stream, unsignedValue)) return "";
+	if (!readValue(stream, unsignedValue)) return "";
+	if (!readValue(stream, intValue)) return "";
+	if (!readSerializedString(stream, stringValue)) return "";
+
+	return stringValue;
+}
+}
+
 TransferShipsGUI::TransferShipsGUI( FPlayer * player, FFleet * fleet, FSystem * sys, wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
@@ -369,7 +420,12 @@ void TransferShipsGUI::onDone( wxCommandEvent& event ){
 //			std::cerr << "New fleet" << std::endl;
 			FFleet *f = new FFleet;
 			f->setOwner(m_fleet->getOwner());
-			f->setIcon(m_player->getFleetIconName());
+			const std::string sourceIconFile = getSerializedFleetIconFile(m_fleet);
+			if (sourceIconFile.size() > 0) {
+				f->setIcon(sourceIconFile);
+			} else {
+				f->setIcon(m_player->getFleetIconName());
+			}
 			f->setLocation(m_fleet->getLocation());
 			f->setMilitia(m_fleet->isMilitia(),m_fleet->getHomeSystem());
 			f->setHolding(m_fleet->isHolding());
