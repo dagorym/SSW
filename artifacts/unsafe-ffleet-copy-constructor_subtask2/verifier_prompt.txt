@@ -13,7 +13,7 @@ Implementation and test branch context:
 - Remediation implementer branch: ffleet-st2r1-implementer-20260322
 - Remediation implementer head commit: 115586b
 - Remediation tester branch: ffleet-st2r1-tester-20260322
-- Remediation tester commit with artifacts: <pending-after-commit>
+- Remediation tester commit with artifacts: a6dabfe2ac1480760a66a50326ec828635f08d58
 - Remediation tester worktree: /tmp/ssw-worktrees/ffleet-st2r1-tester-20260322
 
 Files changed in scope:
