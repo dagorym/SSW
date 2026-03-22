@@ -6,6 +6,7 @@
  */
 
 #include "FWeaponTest.h"
+#include <cstdio>
 #include "ships/FVehicle.h"
 #include "ships/FAssaultScout.h"
 
@@ -86,15 +87,18 @@ void FWeaponTest::testSerialize(){
 	m_w1->setCurrentAmmo(1);
 	m_w1->setDamageStatus(true);
 
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FWeaponTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	m_w1->save(os);
 	os.close();
 	FWeapon w2;
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	unsigned int type;
 	is.read((char*)&type,sizeof(unsigned int));
 	w2.load(is);
 	is.close();
+	std::remove(filename);
 	CPPUNIT_ASSERT( w2.getMaxAmmo() == 4 );
 	CPPUNIT_ASSERT( w2.getAmmo() == 1 );
 	CPPUNIT_ASSERT( w2.isDamaged() == true );

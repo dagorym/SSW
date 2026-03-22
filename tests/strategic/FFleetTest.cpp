@@ -6,6 +6,7 @@
  */
 
 #include "FFleetTest.h"
+#include <cstdio>
 #include "strategic/FSystem.h"
 
 namespace FrontierTests {
@@ -195,14 +196,17 @@ void FFleetTest::testSetJumpRoute(){
 
 void FFleetTest::testSerialize(){
 	m_f1->addShip(createShip("AssaultScout"));
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FFleetTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	m_f1->setIcon("icons/UPF.png");
 	m_f1->save(os);
 	os.close();
 	FFleet f2;
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	f2.load(is);
 	is.close();
+	std::remove(filename);
 	CPPUNIT_ASSERT(f2.getShipCount() == m_f1->getShipCount());
 
 }

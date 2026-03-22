@@ -6,6 +6,7 @@
  */
 
 #include "FGameConfigTest.h"
+#include <cstdio>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -28,14 +29,17 @@ void FGameConfigTest::testConstructor(){
 
 void FGameConfigTest::testSerialize(){
 	m_c1 = &(FGameConfig::getGameConfig());
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FGameConfigTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	m_c1->save(os);
 	os.close();
 	delete m_c1;
 	m_c1 = &(FGameConfig::create());
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	m_c1->load(is);
 	is.close();
+	std::remove(filename);
 //	delete c;
 }
 

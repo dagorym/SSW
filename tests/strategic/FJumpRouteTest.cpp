@@ -6,6 +6,7 @@
  */
 
 #include "FJumpRouteTest.h"
+#include <cstdio>
 #include "strategic/FSystem.h"
 
 namespace FrontierTests {
@@ -82,13 +83,16 @@ void FJumpRouteTest::testSerialize(){
 	std::vector<unsigned int> p;
 	p.push_back(1);
 	FJumpRoute j(s,e,p);
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FJumpRouteTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	j.save(os);
 	os.close();
 	FJumpRoute j2;
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	j2.load(is);
 	is.close();
+	std::remove(filename);
 	CPPUNIT_ASSERT(j2.getID() == 0);
 	CPPUNIT_ASSERT(j2.getLength() == 2);
 	CPPUNIT_ASSERT(j2.isKnown(0) == false);

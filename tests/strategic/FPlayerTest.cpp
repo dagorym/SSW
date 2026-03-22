@@ -6,6 +6,7 @@
  */
 
 #include "FPlayerTest.h"
+#include <cstdio>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -122,13 +123,16 @@ void FPlayerTest::testSerialize(){
 	unsigned int sID2 = s->getID();
 	m_p1->addShip(s);
 
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FPlayerTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	m_p1->save(os);
 	os.close();
 	FPlayer p2;
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	p2.load(is);
 	is.close();
+	std::remove(filename);
 
 	CPPUNIT_ASSERT(p2.getShipList()[0]->getID() == sID2);
 	FleetList fList = p2.getFleetList();

@@ -6,6 +6,7 @@
  */
 
 #include "FAssaultScoutTest.h"
+#include <cstdio>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -53,15 +54,18 @@ void FAssaultScoutTest::testSerialize(){
 	m_v1->setDCR(25);
 	m_v1->setHP(10);
 
-	std::ofstream os("test2",std::ios::binary);
+	const char *filename = "FAssaultScoutTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	m_v1->save(os);
 	os.close();
 	FAssaultScout v2;
-	std::ifstream is("test2",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	std::string type;
 	readString(is,type);
 	v2.load(is);
 	is.close();
+	std::remove(filename);
 
 	CPPUNIT_ASSERT( m_v1->getADF() == 4);
 	CPPUNIT_ASSERT( m_v1->getDCR() == 25);

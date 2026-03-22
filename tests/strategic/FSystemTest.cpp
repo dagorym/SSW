@@ -6,6 +6,7 @@
  */
 
 #include "FSystemTest.h"
+#include <cstdio>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -62,13 +63,16 @@ void FSystemTest::testSerialize(){
 	FFleet *f = new FFleet();
 	s.addFleet(f);
 
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FSystemTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	s.save(os);
 	os.close();
 	FSystem s2;
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	s2.load(is);
 	is.close();
+	std::remove(filename);
 
 	CPPUNIT_ASSERT(s.getID() == s2.getID());
 	CPPUNIT_ASSERT(s.getName() == "Tom's Star");

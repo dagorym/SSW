@@ -6,6 +6,7 @@
  */
 
 #include "FPlanetTest.h"
+#include <cstdio>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -55,23 +56,26 @@ void FPlanetTest::testSerialize(){
 	m_p1 = new FPlanet("Odie");
 	FVehicle *s = createShip("FortifiedStation");
 	m_p1->addStation(s);
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FPlanetTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	m_p1->save(os);
 	os.close();
 	FPlanet p2;
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	p2.load(is);
 	is.close();
 	CPPUNIT_ASSERT( p2.getName() == "Odie" );
 	CPPUNIT_ASSERT( p2.getStation()->getType() == "FortifiedStation");
 	m_p1->destroyStation();
-	std::ofstream os2("test",std::ios::binary);
+	std::ofstream os2(filename,std::ios::binary);
 	m_p1->save(os2);
 	os2.close();
 	FPlanet p3;
-	std::ifstream is2("test",std::ios::binary);
+	std::ifstream is2(filename,std::ios::binary);
 	p3.load(is2);
 	is2.close();
+	std::remove(filename);
 	CPPUNIT_ASSERT( p3.getName() == "Odie" );
 	CPPUNIT_ASSERT( p3.getStation() == NULL );
 

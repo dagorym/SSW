@@ -6,6 +6,7 @@
  */
 
 #include "FMapTest.h"
+#include <cstdio>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -108,14 +109,17 @@ void FMapTest::testSelectSystemFail(){
 
 void FMapTest::testSerialize(){
 	FMap *m = &(FMap::getMap());
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FMapTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	m->save(os);
 	os.close();
 	delete m;
 	m = &(FMap::create());
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	m->load(is);
 	is.close();
+	std::remove(filename);
 	CPPUNIT_ASSERT(m->getSystem("White Light") != NULL);
 	FJumpRoute *j = m->getJumpRoute("Prenglar","Cassidine");
 	CPPUNIT_ASSERT(j != NULL);

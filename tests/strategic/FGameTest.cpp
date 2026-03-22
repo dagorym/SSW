@@ -6,6 +6,7 @@
  */
 
 #include "FGameTest.h"
+#include <cstdio>
 //#include "strategic/FGame.h"
 
 namespace FrontierTests {
@@ -78,14 +79,17 @@ void FGameTest::testGetPlayer(){
 
 void FGameTest::testSerialize(){
 	m_g1->init(NULL);
-	std::ofstream os("test",std::ios::binary);
+	const char *filename = "FGameTest.tmp";
+	std::remove(filename);
+	std::ofstream os(filename,std::ios::binary);
 	m_g1->save(os);
 	os.close();
 	delete m_g1;
 	m_g1 = &(FGame::create());
-	std::ifstream is("test",std::ios::binary);
+	std::ifstream is(filename,std::ios::binary);
 	m_g1->load(is);
 	is.close();
+	std::remove(filename);
 	CPPUNIT_ASSERT(m_g1->getPlayer(2)->getName() == "Sathar");
 
 }
