@@ -131,6 +131,8 @@ This should be read-only and focused on quick review, not manual editing.
 
 It should include context such as “Defensive Fire Results,” “Offensive Fire Results,” “Electrical Fire Damage,” or “Mine Damage,” and list ship-by-ship outcomes. The first version should display only the per-ship damage rollup, not the internal per-attack detail.
 
+This subtask is intentionally limited to creating the reusable dialog and its build wiring. It does not need to connect the dialog into the existing defensive-fire or offensive-fire phase handlers yet; that fire-phase integration happens in Subtask 8 so Subtasks 5 through 7 are not blocked on missing end-of-phase hookup.
+
 Acceptance criteria:
 - A single modal dialog class can be opened from the tactical battle flow for both immediate-damage and end-of-phase reports.
 - The dialog title and content clearly identify which report type is being shown.
@@ -147,6 +149,8 @@ This work should:
 - build the damaged-ships-only summary
 - show the shared tactical report dialog before movement selection begins
 - defer destroyed-ship cleanup until after dialog acknowledgement
+
+This subtask only covers the immediate electrical-fire path before movement. It should not wait on or attempt the existing defensive/offensive fire-phase hookup, which is deferred to Subtask 8.
 
 Acceptance criteria:
 - Electrical fire damage shows a summary before movement starts.
@@ -166,6 +170,8 @@ This work should:
 - show the shared tactical report dialog immediately after mine damage is applied
 - defer destroyed-ship cleanup until after dialog acknowledgement
 
+This subtask only covers the immediate mine-damage path after movement-triggered mine resolution. It should not wait on or attempt the existing defensive/offensive fire-phase hookup, which is deferred to Subtask 8.
+
 Acceptance criteria:
 - Mine damage shows a summary immediately after mine damage is applied.
 - The shared tactical summary dialog is used for the report.
@@ -178,6 +184,8 @@ Acceptance criteria:
 Update the tactical fire-phase handlers so the shared summary dialog is shown after defensive fire and offensive fire resolution, with destroyed-ship cleanup deferred until after acknowledgement.
 
 This is the main sequencing risk in the fire-phase portion of the feature. Right now `fireAllWeapons()` immediately calls `clearDestroyedShips()`, and the phase handlers then advance to the next phase. The implementation should defer `clearDestroyedShips()` until after dialog acknowledgement so destroyed ships remain visible on the board while the player reviews the report.
+
+This is the first subtask that should connect the new reporting flow into the existing defensive-fire and offensive-fire phase handlers. Earlier subtasks may prepare the dialog, data capture, and immediate-report paths, but they should not be treated as blocked on the end-of-phase integration work.
 
 Acceptance criteria:
 - After defensive fire resolves, the defensive-fire summary dialog is shown before the UI transitions to the next relevant step.
@@ -248,6 +256,21 @@ Allowed files:
 Task:
 Define the tactical combat reporting data structures with `FBattleScreen` as the owner of current tactical report state. The result must support per-attack recording, immediate reports for electrical fire and mines, and per-ship summaries for tactical fire phases.
 
+Relevant existing validation commands:
+- `make -C src tactical`
+- `make -C tests tactical`
+
+Tester should create or extend tests in:
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask1`
+
+Required handoff outputs:
+- Write `artifacts/tactical-damage-summary_subtask1/tester_prompt.txt` with the complete Tester handoff body.
+- Write `artifacts/tactical-damage-summary_subtask1/implementer_result.json` with status, changed files, validation commands run, validation outcome, and artifact paths written.
+- Commit the implementation changes together with those required artifact files after validations pass.
+
 Acceptance criteria:
 - There is a clear data model for individual attack results and aggregated ship results.
 - `FBattleScreen` exposes APIs to begin a report, append raw events, build a display summary, and clear report state.
@@ -275,6 +298,23 @@ Out of scope for this task:
 - Adding aggregation logic
 - Adding dialog or timing integration
 
+Relevant existing validation commands:
+- `make -C src ships`
+- `make -C tests ships`
+
+Tester should create or extend tests in:
+- `tests/ships/`
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask2`
+
+Required handoff outputs:
+- Inspect `artifacts/tactical-damage-summary_subtask1/` before editing to identify the report-model files created by Prompt 1.
+- Write `artifacts/tactical-damage-summary_subtask2/tester_prompt.txt` with the complete Tester handoff body.
+- Write `artifacts/tactical-damage-summary_subtask2/implementer_result.json` with status, changed files, validation commands run, validation outcome, artifact paths written, and the Prompt 1 report-model files consumed.
+- Commit the implementation changes together with those required artifact files after validations pass.
+
 Acceptance criteria:
 - The implementer inspects the Subtask 1 artifact directory under `artifacts/` to identify the report-model files created there before editing.
 - `FVehicle::takeDamage()` and `advancedDamage()` populate an optional effects/result output parameter with all applied hull and advanced-damage effects needed by higher layers.
@@ -300,6 +340,23 @@ Out of scope for this task:
 - Adding summary aggregation
 - Integrating electrical-fire or mine reporting timing
 
+Relevant existing validation commands:
+- `make -C src weapons`
+- `make -C tests weapons`
+
+Tester should create or extend tests in:
+- `tests/weapons/`
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask3`
+
+Required handoff outputs:
+- Reuse the Prompt 1 report-model files rather than redefining them.
+- Write `artifacts/tactical-damage-summary_subtask3/tester_prompt.txt` with the complete Tester handoff body.
+- Write `artifacts/tactical-damage-summary_subtask3/implementer_result.json` with status, changed files, validation commands run, validation outcome, and artifact paths written.
+- Commit the implementation changes together with those required artifact files after validations pass.
+
 Acceptance criteria:
 - `FWeapon::fire()` returns a structured result object suitable for tactical reporting.
 - The returned result distinguishes at least skipped/not-fired, fired-and-missed, and fired-and-hit outcomes.
@@ -317,6 +374,21 @@ Allowed files:
 
 Task:
 Implement the transformation from recorded tactical events into a per-ship summary for any report window supported by this feature. The summary should be suitable for a player-facing dialog, include only ships that actually sustained damage, and retain any raw per-event detail internally rather than displaying it.
+
+Relevant existing validation commands:
+- `make -C src tactical`
+- `make -C tests tactical`
+
+Tester should create or extend tests in:
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask4`
+
+Required handoff outputs:
+- Write `artifacts/tactical-damage-summary_subtask4/tester_prompt.txt` with the complete Tester handoff body.
+- Write `artifacts/tactical-damage-summary_subtask4/implementer_result.json` with status, changed files, validation commands run, validation outcome, and artifact paths written.
+- Commit the implementation changes together with those required artifact files after validations pass.
 
 Acceptance criteria:
 - Multiple attacks against one ship aggregate correctly.
@@ -345,6 +417,21 @@ Out of scope for this task:
 - Defining raw report-model event structures
 - Integrating timing into fire, mine, or electrical-fire flow
 
+Relevant existing validation commands:
+- `make -C src gui`
+- `make -C src tactical`
+
+Tester should create or extend tests in:
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask5`
+
+Required handoff outputs:
+- Write `artifacts/tactical-damage-summary_subtask5/tester_prompt.txt` with the complete Tester handoff body.
+- Write `artifacts/tactical-damage-summary_subtask5/implementer_result.json` with status, changed files, validation commands run, validation outcome, and artifact paths written.
+- Commit the implementation changes together with those required artifact files after validations pass.
+
 Acceptance criteria:
 - The single dialog class can render defensive-fire, offensive-fire, electrical-fire, and mine-damage summaries.
 - The dialog displays only the per-ship rollup for damaged ships and does not expose internal per-attack detail.
@@ -370,6 +457,21 @@ Out of scope for this task:
 - Integrating mine-damage reporting
 - Integrating defensive/offensive fire reporting
 - Redefining the shared dialog or summary-generation format
+
+Relevant existing validation commands:
+- `make -C src tactical`
+- `make -C tests tactical`
+
+Tester should create or extend tests in:
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask6`
+
+Required handoff outputs:
+- Write `artifacts/tactical-damage-summary_subtask6/tester_prompt.txt` with the complete Tester handoff body.
+- Write `artifacts/tactical-damage-summary_subtask6/implementer_result.json` with status, changed files, validation commands run, validation outcome, and artifact paths written.
+- Commit the implementation changes together with those required artifact files after validations pass.
 
 Acceptance criteria:
 - Electrical fire shows a summary before movement begins.
@@ -399,6 +501,21 @@ Out of scope for this task:
 - Modifying defensive/offensive fire handlers
 - Redefining the shared dialog or summary-generation format
 
+Relevant existing validation commands:
+- `make -C src tactical`
+- `make -C tests tactical`
+
+Tester should create or extend tests in:
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask7`
+
+Required handoff outputs:
+- Write `artifacts/tactical-damage-summary_subtask7/tester_prompt.txt` with the complete Tester handoff body.
+- Write `artifacts/tactical-damage-summary_subtask7/implementer_result.json` with status, changed files, validation commands run, validation outcome, and artifact paths written.
+- Commit the implementation changes together with those required artifact files after validations pass.
+
 Acceptance criteria:
 - Mine damage shows a summary immediately after mine damage is applied.
 - The shared tactical summary dialog is used for the report.
@@ -427,6 +544,21 @@ Out of scope for this task:
 - Redefining aggregation logic
 - Creating a second dialog variant
 
+Relevant existing validation commands:
+- `make -C src tactical`
+- `make -C tests tactical`
+
+Tester should create or extend tests in:
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask8`
+
+Required handoff outputs:
+- Write `artifacts/tactical-damage-summary_subtask8/tester_prompt.txt` with the complete Tester handoff body.
+- Write `artifacts/tactical-damage-summary_subtask8/implementer_result.json` with status, changed files, validation commands run, validation outcome, and artifact paths written.
+- Commit the implementation changes together with those required artifact files after validations pass.
+
 Acceptance criteria:
 - Defensive fire shows a summary before transitioning to offensive fire.
 - Offensive fire shows a summary before transitioning back to movement or switching the moving player.
@@ -450,6 +582,23 @@ Allowed files:
 
 Task:
 Add automated coverage for the tactical damage reporting and summary behavior introduced by this feature. Favor deterministic tests around result capture and aggregation over fragile GUI automation.
+
+Relevant existing validation commands:
+- `make -C tests`
+- `cd tests && ./SSWTests`
+
+Tester should create or extend tests in:
+- `tests/ships/`
+- `tests/weapons/`
+- `tests/tactical/`
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary_subtask9`
+
+Required handoff outputs:
+- Write `artifacts/tactical-damage-summary_subtask9/tester_prompt.txt` with the complete Tester handoff body for validating the new automated coverage and full test results.
+- Write `artifacts/tactical-damage-summary_subtask9/implementer_result.json` with status, changed files, validation commands run, validation outcome, and artifact paths written.
+- Commit the test changes together with those required artifact files after validations pass.
 
 Acceptance criteria:
 - Tests cover result capture for at least one successful hit and one non-hull advanced damage effect.
