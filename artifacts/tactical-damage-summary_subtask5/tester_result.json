@@ -1,0 +1,31 @@
+{
+  "status": "success",
+  "task_id": "tactical-damage-summary_subtask5",
+  "branch": "tds-st5-tester-20260322",
+  "commit_hash": "83abd46",
+  "test_files": [
+    "tests/tactical/FTacticalDamageSummaryGUITest.h",
+    "tests/tactical/FTacticalDamageSummaryGUITest.cpp",
+    "tests/tactical/TacticalTests.cpp",
+    "tests/tactical/Makefile"
+  ],
+  "commands_run": [
+    "make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src gui",
+    "make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src tactical",
+    "make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libdefenses.a libships.a",
+    "make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/tests/tactical",
+    "/tmp/ssw-worktrees/tds-st5-tester-20260322/tests/tactical/TacticalTests"
+  ],
+  "totals": {
+    "tests_written": 3,
+    "passed": 3,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_paths_written": [
+    "/tmp/ssw-worktrees/tds-st5-tester-20260322/artifacts/tactical-damage-summary_subtask5/tester_report.md",
+    "/tmp/ssw-worktrees/tds-st5-tester-20260322/artifacts/tactical-damage-summary_subtask5/tester_result.json",
+    "/tmp/ssw-worktrees/tds-st5-tester-20260322/artifacts/tactical-damage-summary_subtask5/verifier_prompt.txt"
+  ],
+  "cleanup_status": "No tracked temporary byproducts remain; build outputs were left untracked and the worktree is ready for handoff."
+}

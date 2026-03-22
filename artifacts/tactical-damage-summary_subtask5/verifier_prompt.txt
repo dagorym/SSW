@@ -1,0 +1,38 @@
+You are the Verifier Agent.
+
+Task summary:
+- Add a reusable modal tactical damage summary dialog that shows only per-ship rollup lines and a safe empty-state message, plus a battle-screen entry point for opening it later.
+
+Acceptance criteria validated:
+- A single modal dialog class can be opened from the tactical battle flow for both immediate-damage and end-of-phase reports.
+- The dialog title and content clearly identify which report type is being shown.
+- The dialog displays only ships that actually sustained damage, in a readable ship-by-ship rollup format.
+- The dialog can open with an empty summary without crashing and presents a clear no-damage message.
+- The dialog is wired into the existing GUI build.
+
+Implementation / worktree context:
+- Branch: `tds-st5-tester-20260322`
+- Worktree: `/tmp/ssw-worktrees/tds-st5-tester-20260322`
+- Reference commit for validated test run: `83abd46`
+- Shared artifact directory to reuse: `artifacts/tactical-damage-summary_subtask5`
+
+Test files added or modified:
+- `tests/tactical/FTacticalDamageSummaryGUITest.h`
+- `tests/tactical/FTacticalDamageSummaryGUITest.cpp`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/tactical/Makefile`
+
+Commands executed:
+- `make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src gui`
+- `make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src tactical`
+- `make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libdefenses.a libships.a`
+- `make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/tests/tactical`
+- `/tmp/ssw-worktrees/tds-st5-tester-20260322/tests/tactical/TacticalTests`
+
+Final test outcome:
+- Tactical tests passed: `OK (15 tests)`
+- No acceptance criteria failures were observed in the test run.
+
+Remaining verification notes:
+- The new coverage is source-level and build-level validation of the dialog wiring and report text behavior.
+- GUI runtime interaction was not manually exercised beyond the existing tactical test binary.
