@@ -10,6 +10,7 @@
 #include "FTacticalDamageSummaryGUITest.h"
 #include "FTacticalBattleScreenReportContextTest.h"
 #include "FTacticalBattleScreenElectricalFireTest.h"
+#include "FTacticalMineDamageReportSummaryTest.h"
 #include "FTacticalMineDamageFlowTest.h"
 #include "FTacticalBattleDisplayFireFlowTest.h"
 
@@ -22,6 +23,7 @@ int main(int argc, char **argv) {
 	runner.addTest(FTacticalDamageSummaryGUITest::suite());
 	runner.addTest(FTacticalBattleScreenReportContextTest::suite());
 	runner.addTest(FTacticalBattleScreenElectricalFireTest::suite());
+	runner.addTest(FTacticalMineDamageReportSummaryTest::suite());
 	runner.addTest(FTacticalMineDamageFlowTest::suite());
 	runner.addTest(FTacticalBattleDisplayFireFlowTest::suite());
 	bool wasSuccessful = runner.run("", false);
