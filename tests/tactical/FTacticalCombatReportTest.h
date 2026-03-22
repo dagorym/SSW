@@ -22,6 +22,9 @@ class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testReportModelSupportsAllPlannedReportingModes );
 	CPPUNIT_TEST( testBattleScreenExposesTacticalReportLifecycleApi );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryDoesNotDoubleCountNestedHullDamageForAttackTarget );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryCountsStandaloneReportLevelHullDamageEvents );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryRetainsNonHullNestedEffectsWhenSuppressingDuplicateHullDamage );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryOmitsUndamagedShips );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryUsesStoredShipReferences );
@@ -43,6 +46,9 @@ public:
 	void testReportModelSupportsAllPlannedReportingModes();
 	void testBattleScreenExposesTacticalReportLifecycleApi();
 	void testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip();
+	void testBuildTacticalCombatReportSummaryDoesNotDoubleCountNestedHullDamageForAttackTarget();
+	void testBuildTacticalCombatReportSummaryCountsStandaloneReportLevelHullDamageEvents();
+	void testBuildTacticalCombatReportSummaryRetainsNonHullNestedEffectsWhenSuppressingDuplicateHullDamage();
 	void testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects();
 	void testBuildTacticalCombatReportSummaryOmitsUndamagedShips();
 	void testBuildTacticalCombatReportSummaryUsesStoredShipReferences();

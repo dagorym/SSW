@@ -1,39 +1,34 @@
 {
   "status": "success",
   "subtask": "tactical-damage-summary_subtask1",
-  "branch": "tds-st1-tester-20260318",
-  "commit_hash": "2c972fc4a91066b7a565da169c450af5361933e7",
-  "test_files_added_or_modified": [
-    "tests/Makefile",
-    "tests/SSWTests.cpp",
+  "branch_name": "tds-st1-tester-20260322",
+  "source_commit_hash": "5bc618740843a2c21b3431290db0658def2cacc1",
+  "commit_hash": null,
+  "commit_hash_note": "Tester artifacts were generated before the tester commit was created.",
+  "test_files": [
     "tests/tactical/FTacticalCombatReportTest.h",
-    "tests/tactical/FTacticalCombatReportTest.cpp",
-    "tests/tactical/Makefile",
-    "tests/tactical/TacticalTests.cpp"
+    "tests/tactical/FTacticalCombatReportTest.cpp"
   ],
   "commands_run": [
-    "make -C src/tactical clean all",
-    "make -C tests/tactical all",
-    "./tests/tactical/TacticalTests"
+    "pwd",
+    "git branch --show-current",
+    "git rev-parse HEAD",
+    "make -C tests/tactical FTacticalCombatReportTest.o",
+    "make -C tests/tactical",
+    "./TacticalTests",
+    "make -C tests/tactical clean"
   ],
   "totals": {
-    "tests_written": 6,
-    "tests_run": 6,
-    "passed": 6,
+    "attempt": 1,
+    "attempt_limit": 3,
+    "total_tests": 31,
+    "passed": 31,
     "failed": 0
   },
-  "notes": [
-    "The dedicated tactical CppUnit runner now resolves source paths using an absolute repository-root define rather than process cwd.",
-    "The broader tests/ build remains blocked by an unrelated existing compile error in tests/strategic/FJumpRouteTest.cpp."
-  ],
-  "artifact_files_written": [
-    "artifacts/tactical-damage-summary_subtask1/report_model_files.txt",
+  "unmet_acceptance_criteria": [],
+  "artifact_files": [
+    "artifacts/tactical-damage-summary_subtask1/tester_report.md",
     "artifacts/tactical-damage-summary_subtask1/tester_result.json",
     "artifacts/tactical-damage-summary_subtask1/verifier_prompt.txt"
-  ],
-  "commit": {
-    "created": true,
-    "hash": "2c972fc4a91066b7a565da169c450af5361933e7",
-    "message": "Add tactical combat report tests"
-  }
+  ]
 }

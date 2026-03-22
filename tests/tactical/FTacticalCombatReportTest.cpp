@@ -263,6 +263,101 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAggregatesMu
 	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 5 hull damage from 2 attacks") != std::string::npos);
 }
 
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryDoesNotDoubleCountNestedHullDamageForAttackTarget() {
+	// AC: attack-level hull damage is counted once when matching nested hull-damage events target the same ship.
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	attack.target = FTacticalShipReference(2, 2, "Frigate");
+	attack.hit = true;
+	attack.hullDamage = 4;
+
+	FTacticalReportEvent internalDamage;
+	internalDamage.eventType = TRET_InternalDamage;
+	internalDamage.subject = attack.target;
+	internalDamage.hullDamage = 4;
+	internalDamage.label = "Hull breach";
+	attack.internalEvents.push_back(internalDamage);
+
+	report.attacks.push_back(attack);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * shipSummary = findShipSummary(summary, "Frigate");
+
+	CPPUNIT_ASSERT(shipSummary != NULL);
+	CPPUNIT_ASSERT(shipSummary->hullDamageTaken == 4);
+	CPPUNIT_ASSERT(shipSummary->damagingAttacksReceived == 1);
+	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 1);
+	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 0);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 4 hull damage from 1 attack") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Hull breach") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsStandaloneReportLevelHullDamageEvents() {
+	// AC: standalone report-level hull damage events still contribute to player-facing hull totals.
+	FTacticalCombatReport report;
+
+	FTacticalReportEvent mineDamage;
+	mineDamage.eventType = TRET_MineDamage;
+	mineDamage.subject = FTacticalShipReference(2, 2, "Frigate");
+	mineDamage.hullDamage = 3;
+	mineDamage.label = "Mine strike";
+	report.events.push_back(mineDamage);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * shipSummary = findShipSummary(summary, "Frigate");
+
+	CPPUNIT_ASSERT(shipSummary != NULL);
+	CPPUNIT_ASSERT(shipSummary->hullDamageTaken == 3);
+	CPPUNIT_ASSERT(shipSummary->damagingAttacksReceived == 0);
+	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 1);
+	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.empty());
+	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 1);
+	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 0);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 3 hull damage") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryRetainsNonHullNestedEffectsWhenSuppressingDuplicateHullDamage() {
+	// AC: non-hull nested effects still roll up even when nested hull damage is suppressed for the attack target.
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	attack.target = FTacticalShipReference(2, 2, "Frigate");
+	attack.hit = true;
+	attack.hullDamage = 5;
+
+	FTacticalReportEvent duplicateHullDamage;
+	duplicateHullDamage.eventType = TRET_InternalDamage;
+	duplicateHullDamage.subject = attack.target;
+	duplicateHullDamage.hullDamage = 5;
+	duplicateHullDamage.label = "Hull breach";
+	attack.internalEvents.push_back(duplicateHullDamage);
+
+	FTacticalReportEvent defenseEffect;
+	defenseEffect.eventType = TRET_DefenseEffect;
+	defenseEffect.subject = attack.target;
+	defenseEffect.hullDamage = 0;
+	defenseEffect.label = "Defense damaged";
+	attack.internalEvents.push_back(defenseEffect);
+
+	report.attacks.push_back(attack);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * shipSummary = findShipSummary(summary, "Frigate");
+
+	CPPUNIT_ASSERT(shipSummary != NULL);
+	CPPUNIT_ASSERT(shipSummary->hullDamageTaken == 5);
+	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 2);
+	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 1);
+	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 2);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Defense damaged") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Hull breach") != std::string::npos);
+}
+
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects() {
 	// AC: summary line carries both hull damage and non-hull effects while raw details remain available.
 	FTacticalCombatReport report;
