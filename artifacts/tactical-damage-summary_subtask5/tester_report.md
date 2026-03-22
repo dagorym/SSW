@@ -1,34 +1,40 @@
-### Test Execution Report
+# Tester Report
 
-**Attempt:** 1/3  
-**Total Tests:** 3  
-**Passed:** 3  
+**Attempt:** 1/1
+**Status:** success
+**Tests Written:** 2
+**Suite Total:** 17
+**Passed:** 17
 **Failed:** 0
 
-### Acceptance Criteria Coverage
+## Validation Summary
 
-All requested tactical damage summary criteria were validated by the new tactical test file:
+The tactical report context regression is covered by source-level tests that verify:
 
-- Report type labels and dialog title mapping
-- Ship-only rollup rendering plus empty-state handling
-- Battle-screen entry point and GUI build wiring
+- `FBattleScreen::appendTacticalAttackReport()` lazily seeds report context with `context.immediate = attack.immediate;`
+- `FBattleScreen::appendTacticalReportEvent()` continues to seed report context with `context.immediate = event.immediate;`
+- The existing tactical damage summary dialog/context tests still validate immediate and end-of-phase report labels and dialog titles.
 
-### Commands Run
+## Commands Run
 
-- `make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src gui`
-- `make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src tactical`
-- `make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/src libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libdefenses.a libships.a`
-- `make -C /tmp/ssw-worktrees/tds-st5-tester-20260322/tests/tactical`
-- `/tmp/ssw-worktrees/tds-st5-tester-20260322/tests/tactical/TacticalTests`
+- `make -C src tactical`
+- `make -C tests/tactical`
+- `./tests/tactical/TacticalTests`
+- `make -C tests/tactical clean`
 
-### Outcome
+## Test Files Changed
 
-The tactical test binary passed with `OK (15 tests)`.
+- `tests/tactical/FTacticalBattleScreenReportContextTest.h`
+- `tests/tactical/FTacticalBattleScreenReportContextTest.cpp`
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
 
-### Cleanup Status
+## Cleanup Status
 
-No temporary test byproducts are currently tracked by git. Build outputs were generated during validation, but the worktree remains limited to the intended test source changes and artifact outputs.
+Temporary build byproducts were removed with `make -C tests/tactical clean`.
 
-### Artifact Paths
+## Artifact Paths
 
-- `/tmp/ssw-worktrees/tds-st5-tester-20260322/artifacts/tactical-damage-summary_subtask5/tester_report.md`
+- `artifacts/tactical-damage-summary_subtask5/tester_report.md`
+- `artifacts/tactical-damage-summary_subtask5/tester_result.json`
+- `artifacts/tactical-damage-summary_subtask5/verifier_prompt.txt`
