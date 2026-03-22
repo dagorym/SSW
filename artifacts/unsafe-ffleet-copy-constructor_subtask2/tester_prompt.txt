@@ -1,7 +1,7 @@
 You are the Tester Agent.
 
 Task summary:
-- Remediation for Subtask 2: fixed new-fleet icon metadata initialization in TransferShipsGUI so explicit fleet creation does not leave getIcon() null.
+- Second remediation for Subtask 2: preserve the source fleet's actual icon metadata in TransferShipsGUI while keeping explicit non-copy fleet creation.
 
 Modified files:
 - src/gui/TransferShipsGUI.cpp
@@ -16,9 +16,9 @@ Create test files in:
 - tests/strategic/FFleetTest.cpp
 
 Implementation context for testing:
-- TransferShipsGUI::onDone already used explicit fleet construction (`new FFleet`) and now also sets `f->setIcon(m_player->getFleetIconName())` when creating a new fleet.
-- The explicit non-copying flow remains intact; this remediation only addresses the icon metadata regression reported by the verifier.
-- This prevents newly created fleets from having a null icon pointer in GUI rendering paths.
+- TransferShipsGUI::onDone keeps explicit `new FFleet` construction and now reads the source fleet icon path from serialized fleet data, then applies that exact icon path to the new fleet.
+- The prior player-default icon fallback remains only for unexpected parse failure; normal flow preserves the source fleet's real icon metadata (including custom militia icons).
+- Ownership-transfer behavior from Subtask 2 is unchanged.
 
 Suggested test command(s):
 - make -C tests/strategic libstrategicTests.a
