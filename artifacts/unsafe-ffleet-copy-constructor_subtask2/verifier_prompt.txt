@@ -1,7 +1,7 @@
 You are the Verifier Agent.
 
 Task summary:
-- Validate Subtask 2 for the unsafe FFleet copy-constructor plan: TransferShipsGUI no longer copy-constructs fleets and relies on explicit fleet creation with explicit membership transfer behavior.
+- Validate Subtask 2 remediation for the unsafe FFleet copy-constructor plan: TransferShipsGUI keeps explicit non-copy fleet creation and now preserves icon metadata for newly created fleets.
 
 Acceptance criteria to verify:
 - src/gui/TransferShipsGUI.cpp no longer uses new FFleet(*m_fleet).
@@ -10,26 +10,26 @@ Acceptance criteria to verify:
 - tests/strategic/FFleetTest.cpp covers the updated ownership contract or the explicit transfer workflow.
 
 Implementation and test branch context:
-- Implementer branch: ffleet-st2-implementer-20260322
-- Implementer head commit: 7ddd3a3
-- Tester branch: ffleet-st2-tester-20260322
-- Tester worktree: /tmp/ssw-worktrees/ffleet-st2-tester-20260322
+- Remediation implementer branch: ffleet-st2r1-implementer-20260322
+- Remediation implementer head commit: 115586b
+- Remediation tester branch: ffleet-st2r1-tester-20260322
+- Remediation tester commit with artifacts: <pending-after-commit>
+- Remediation tester worktree: /tmp/ssw-worktrees/ffleet-st2r1-tester-20260322
 
 Files changed in scope:
 - src/gui/TransferShipsGUI.cpp
-- tests/strategic/FFleetTest.cpp
 
 Commands executed:
 - make -C tests/strategic libstrategicTests.a
 
 Final test outcomes:
 - Strategic test library build passed.
-- Source inspection confirms the old copy path was removed and replaced with explicit fleet construction and metadata initialization before updateFleet-based membership updates.
-- Source inspection confirms FFleetTest includes explicit removeShip/addShip transfer coverage in testAddRemoveShip.
+- Source inspection confirms the old copy path remains removed and explicit fleet construction is still in place.
+- Source inspection confirms new-fleet icon metadata is now initialized via `f->setIcon(m_player->getFleetIconName())`.
 
 Remaining verification risks / follow-up checks:
-- Confirm no remaining call sites rely on FFleet copy construction in active fleet-transfer flows.
-- Confirm metadata propagated in TransferShipsGUI remains sufficient for all UI paths and militia behavior.
+- Confirm newly created fleets in transfer flow no longer present null icon pointers to display paths.
+- Confirm remediation does not regress prior Subtask 2 ownership-transfer behavior.
 
 Shared artifact directory:
 - artifacts/unsafe-ffleet-copy-constructor_subtask2
