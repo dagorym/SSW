@@ -1,0 +1,30 @@
+You are the Tester Agent.
+
+Task summary:
+- Strengthen Subtask 7 coverage so the mine-damage flow warning is resolved.
+
+Modified files:
+- None required from implementer stage; this remediation is expected to be test-focused unless stronger testing reveals an implementation defect.
+
+Acceptance criteria to validate (from remediation scope):
+- The Subtask 7 mine-damage coverage should go beyond simple source-order string checks where feasible in this repo’s test framework.
+- The tester should improve confidence in runtime-relevant behavior for `FBattleBoard::applyMineDamage()` without modifying implementation code.
+- If full runtime GUI automation is still impractical, the remaining gap should be documented precisely for the verifier.
+
+Create test files in:
+- tests/tactical/
+
+Implementation context for testing:
+- Subtask 7 is already merged on `tds`.
+- Existing coverage lives in `tests/tactical/FTacticalMineDamageFlowTest.cpp` and currently relies on source-order assertions, which the verifier accepted with a warning.
+- The implementation under test is `src/tactical/FBattleBoard.cpp`, especially `applyMineDamage()`.
+- Focus on reducing the warning by executing more of the mine-damage path or by materially improving the proof of behavior within the existing tactical test framework.
+
+Suggested test command(s):
+- make -C tests/tactical
+- ./tests/tactical/TacticalTests
+- make -C src tactical
+- make -C src gui
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary_subtask7-remediation
