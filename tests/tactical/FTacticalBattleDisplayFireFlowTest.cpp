@@ -127,6 +127,17 @@ void FTacticalBattleDisplayFireFlowTest::testBuildTacticalAttackReportPreservesS
 	assertContains(eventBody, "event.detail = effect.detail;");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testBuildTacticalAttackReportLeavesNestedWeaponFireEventsUnattachedForBattleScreenNormalization() {
+	// AC: weapon-fire report builders leave nested events unattached until FBattleScreen assigns the stored parent attack index.
+	const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+	const std::string eventBody = extractFunctionBody(source, "FTacticalReportEvent buildTacticalAttackEvent(");
+	const std::string reportBody = extractFunctionBody(source, "FTacticalAttackReport buildTacticalAttackReport(const FTacticalAttackResult & result)");
+
+	assertContains(eventBody, "event.attackIndex = -1;");
+	assertContains(eventBody, "event.immediate = report.immediate;");
+	assertContains(reportBody, "report.internalEvents.push_back(buildTacticalAttackEvent(report, *itr));");
+}
+
 void FTacticalBattleDisplayFireFlowTest::testDefensiveFireDoneWaitsForSummaryAcknowledgementBeforeAdvancingToOffensiveFire() {
 	// AC: after the defensive-fire summary dialog is acknowledged, the battle advances to offensive fire.
 	const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));

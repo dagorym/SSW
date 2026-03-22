@@ -110,4 +110,18 @@ void FTacticalMineDamageFlowTest::testFinalizeMoveAppliesMineDamageExactlyOncePe
 	assertBefore(body, "applyMineDamage();", "m_drawRoute = false;");
 }
 
+void FTacticalMineDamageFlowTest::testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem() {
+	// AC: mine-damage report construction preserves raw nested detail as unattached until FBattleScreen normalizes the copied attack.
+	const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+	const std::string eventBody = extractFunctionBody(source, "FTacticalReportEvent buildMineDamageEvent(");
+	const std::string reportBody = extractFunctionBody(source, "FTacticalAttackReport buildMineDamageAttackReport(");
+
+	assertContains(eventBody, "reportEvent.eventType = TRET_MineDamage;");
+	assertContains(eventBody, "reportEvent.target = target;");
+	assertContains(eventBody, "reportEvent.hullDamage = effect.hullDamageApplied;");
+	assertContains(eventBody, "reportEvent.attackIndex = -1;");
+	assertContains(eventBody, "reportEvent.immediate = true;");
+	assertContains(reportBody, "report.internalEvents.push_back(buildMineDamageEvent(report.target, *itr));");
+}
+
 }

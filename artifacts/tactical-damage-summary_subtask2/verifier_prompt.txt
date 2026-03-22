@@ -1,62 +1,56 @@
 You are the Verifier Agent.
 
 Task summary:
-- Validate that `FVehicle` damage resolution can emit an optional `FTacticalDamageResolution` report describing applied hull and advanced-damage effects without changing existing combat mutation behavior.
+- Validate the tactical report-construction alignment for subtask 2 so nested attack detail stays preserved without letting player-facing hull totals double count weapon-fire or mine-damage hits.
 
-Implementation context:
-- Implementation branch from the implementer artifact: `tds-st2-implementer-20260320`
-- Implementer commit from `artifacts/tactical-damage-summary_subtask2/implementer_result.json`: `9416a85`
-- Tester branch/worktree: `tds-st2-tester-20260320`
-- Tester commit containing the test changes: `9a1fb21`
-- Shared artifact directory to reuse: `artifacts/tactical-damage-summary_subtask2`
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FBattleScreen.cpp
 
-Acceptance criteria to verify:
-- The implementer inspects the Subtask 1 artifact directory under `artifacts/` to identify the report-model files created there before editing.
-- `FVehicle::takeDamage()` and `advancedDamage()` populate an optional effects/result output parameter with all applied hull and advanced-damage effects needed by higher layers.
-- Existing combat state mutation behavior remains intact.
-- The emitted effect data is explicit enough for higher layers to build tactical reports without reconstructing state changes indirectly.
+Acceptance criteria to validate (from Planner):
+- Weapon-fire and mine-damage report builders emit data consistent with the no-double-count summary rule.
+- Raw internal event detail is still preserved.
+- Non-hull effect reporting remains intact.
 
-Files modified by the implementer:
-- `include/ships/FVehicle.h`
-- `src/ships/FVehicle.cpp`
-- `include/tactical/FTacticalCombatReport.h`
+Tester worktree context:
+- Worktree: /tmp/ssw-worktrees/tds-st2-tester-20260322
+- Branch: tds-st2-tester-20260322
+- Source head before tester commit: 289092f2129f6116aaf6ee6c43e2d024d2cdd5ff
+- Use git rev-parse HEAD in the worktree as the source of truth for the final tester commit identity.
 
-Files modified by the tester:
-- `tests/ships/FVehicleTest.h`
-- `tests/ships/FVehicleTest.cpp`
-- `tests/tactical/FTacticalCombatReportTest.h`
-- `tests/tactical/FTacticalCombatReportTest.cpp`
+Test files added or modified:
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalMineDamageReportSummaryTest.h
+- tests/tactical/FTacticalMineDamageReportSummaryTest.cpp
+- tests/tactical/FTacticalMineDamageFlowTest.h
+- tests/tactical/FTacticalMineDamageFlowTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
 
 What the tester validated:
-- Added runtime tests in `FVehicleTest` for:
-  - basic `takeDamage(..., basic=true, &result)` hull reporting
-  - advanced `takeDamage(..., basic=false, &result)` mutation parity against the legacy null-result path using a forced double-hull branch
-  - explicit weapon and defense metadata emitted by the damage helper paths
-- Added a source-level tactical test in `FTacticalCombatReportTest` that checks:
-  - the optional `FTacticalDamageResolution * result = NULL` API signatures exist on `takeDamage()` and `advancedDamage()`
-  - `FVehicle.cpp` initializes and populates the resolution object
-  - `FTacticalCombatReport.h` declares the full damage effect taxonomy needed by higher layers
+- Source-inspection coverage that weapon-fire and mine-damage builders leave nested events with `attackIndex = -1` until `FBattleScreen::appendTacticalAttackReport()` normalizes them onto the stored parent attack index.
+- Source-inspection coverage that `appendTacticalReportEvent()` keeps standalone immediate events detached with `attackIndex = -1` and preserves the exact commented push-back lines relied on by existing source-based tests.
+- Source-inspection coverage that immediate electrical-fire style damage-resolution events populate `subject`, `source`, and `target` from the affected ship.
+- Model-level coverage that canonical attack-level hull damage is counted once for the target ship while nested raw detail is preserved and nested hull damage for a different ship still contributes to summaries.
+- Model-level coverage that mine-damage summaries preserve nested raw event detail without double counting target hull damage.
 
-Commands executed by the tester:
-- `make -C tests/ships libshipsTests.a`
-- `make -C tests/tactical all`
-- `./TacticalTests`
-- `make -C src/ships FVehicle.o`
-- `make -C src/tactical FBattleScreen.o`
-- `make`
-- `make -C tests`
-- `./SSWTests`
-- targeted `FVehicleTest` execution through a temporary `/tmp` runner linked against the built libraries
+Commands executed:
+- make -C src/tactical
+- make -C tests/tactical TacticalTests
+- ./tests/tactical/TacticalTests
 
-Observed outcomes:
-- `./tests/tactical/TacticalTests` passed: `OK (7 tests)`
-- Targeted `FVehicleTest` runner passed: `OK (7 tests)`
-- Aggregate `./tests/SSWTests` completed with exit code 0 but reported 3 unrelated baseline failures:
-  - `FrontierTests::FGameConfigTest::testConstructor`
-  - `FrontierTests::FWeaponTest::testSetTarget`
-  - `FrontierTests::FWeaponTest::testFireAtTarget`
+Final test outcomes:
+- Attempt: 1/3
+- Total tests: 39
+- Passed: 39
+- Failed: 0
 
-Remaining verification risks / follow-up:
-- Confirm the targeted tests are sufficient evidence for all advanced-damage effect categories, given that some branches were verified via source inspection rather than deterministic runtime table rolls.
-- Confirm the unrelated baseline failures are outside the scope of this subtask and do not invalidate the handoff.
-- The rebuilt `tests/tactical/TacticalTests` binary was left unstaged intentionally; only the four test source files and artifact files should matter for verification.
+Shared artifact directory:
+- artifacts/tactical-damage-summary_subtask2
+
+Verification risks / follow-up checks:
+- Confirm the committed HEAD in this worktree matches the intended tester handoff commit, since artifact files were written before the commit hash was available.
+- Re-run the tactical tests from the committed HEAD and confirm the new source-inspection expectations still match the implementation exactly.
