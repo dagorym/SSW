@@ -2,7 +2,7 @@
   "status": "success",
   "subtask_id": "unsafe-ffleet-copy-constructor_subtask1",
   "branch": "ffleet-st1-tester-20260322",
-  "commit_hash": "pending",
+  "commit_hash": "b932f395c62485c8da1b7d1ebcaba062ca959643",
   "test_files": [
     "tests/strategic/FFleetTest.cpp"
   ],

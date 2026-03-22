@@ -12,6 +12,7 @@ Implementation and test branch context:
 - Implementer branch: ffleet-st1-implementer-20260322
 - Implementer head commit: d781ab5
 - Tester branch: ffleet-st1-tester-20260322
+- Tester commit with tests and artifacts: b932f395c62485c8da1b7d1ebcaba062ca959643
 - Tester worktree: /tmp/ssw-worktrees/ffleet-st1-tester-20260322
 
 Files changed in scope:
