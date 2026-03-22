@@ -2,7 +2,7 @@
   "status": "completed",
   "subtask_id": "subtask1",
   "branch_name": "tds-st1-implementer-20260322",
-  "commit_hash": null,
+  "commit_hash": "751068c3e732c3896abf3335aaaf57d1c1c0a37f",
   "changed_files": [
     "include/tactical/FTacticalCombatReport.h"
   ],
