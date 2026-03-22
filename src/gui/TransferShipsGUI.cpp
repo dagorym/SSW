@@ -369,6 +369,7 @@ void TransferShipsGUI::onDone( wxCommandEvent& event ){
 //			std::cerr << "New fleet" << std::endl;
 			FFleet *f = new FFleet;
 			f->setOwner(m_fleet->getOwner());
+			f->setIcon(m_player->getFleetIconName());
 			f->setLocation(m_fleet->getLocation());
 			f->setMilitia(m_fleet->isMilitia(),m_fleet->getHomeSystem());
 			f->setHolding(m_fleet->isHolding());
