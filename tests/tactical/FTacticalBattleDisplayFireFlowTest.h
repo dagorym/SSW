@@ -14,6 +14,7 @@ namespace FrontierTests {
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
 	CPPUNIT_TEST( testBuildTacticalAttackReportPreservesStructuredAttackAndEffectDetailData );
+	CPPUNIT_TEST( testBuildTacticalAttackReportLeavesNestedWeaponFireEventsUnattachedForBattleScreenNormalization );
 	CPPUNIT_TEST( testFireAllWeaponsShowsSharedSummaryBeforeDestroyedShipCleanup );
 	CPPUNIT_TEST( testDefensiveFireDoneWaitsForSummaryAcknowledgementBeforeAdvancingToOffensiveFire );
 	CPPUNIT_TEST( testOffensiveFireDoneWaitsForSummaryAcknowledgementBeforeReturningToMovement );
@@ -31,6 +32,7 @@ public:
 	void tearDown();
 
 	void testBuildTacticalAttackReportPreservesStructuredAttackAndEffectDetailData();
+	void testBuildTacticalAttackReportLeavesNestedWeaponFireEventsUnattachedForBattleScreenNormalization();
 	void testFireAllWeaponsShowsSharedSummaryBeforeDestroyedShipCleanup();
 	void testDefensiveFireDoneWaitsForSummaryAcknowledgementBeforeAdvancingToOffensiveFire();
 	void testOffensiveFireDoneWaitsForSummaryAcknowledgementBeforeReturningToMovement();

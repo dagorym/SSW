@@ -1,39 +1,31 @@
 {
   "status": "success",
   "subtask_id": "tactical-damage-summary_subtask2",
-  "branch_name": "tds-st2-verifier-20260320",
+  "branch_name": "tds-st2-verifier-20260322",
+  "reviewed_head": "57bbc7d33d440c34159d4cc3f3c7023615ddad88",
   "verdict": "PASS",
   "blocking_finding_count": 0,
   "warning_finding_count": 0,
   "note_finding_count": 0,
-  "test_sufficiency_summary": "Sufficient for this subtask. Rebuilt TacticalTests passed, and rebuilt SSWTests reproduced the same three unrelated baseline failures reported by the tester.",
-  "artifact_file_paths": {
-    "report": "artifacts/tactical-damage-summary_subtask2/verifier_report.md",
-    "result": "artifacts/tactical-damage-summary_subtask2/verifier_result.json"
-  },
-  "review_scope": {
-    "implementer_branch": "tds-st2-implementer-20260320",
-    "implementer_commit": "9416a85",
-    "tester_branch": "tds-st2-tester-20260320",
-    "tester_commit": "9a1fb21"
-  },
+  "test_sufficiency_summary": "Sufficient for this subtask. Tactical builder-normalization source checks and model-level no-double-count summary checks passed, and TacticalTests reran cleanly with 39/39 passing.",
+  "artifact_file_paths": [
+    "artifacts/tactical-damage-summary_subtask2/verifier_report.md",
+    "artifacts/tactical-damage-summary_subtask2/verifier_result.json"
+  ],
+  "plan_reference": "plans/tactical-damage-summary-double-count-follow-on-plan.md",
   "commands_run": [
-    "make -C src/ships FVehicle.o",
-    "make -C tests/tactical all",
-    "./tests/tactical/TacticalTests",
-    "make",
-    "make -C tests all",
-    "./tests/SSWTests"
+    "pwd",
+    "git branch --show-current",
+    "git rev-parse HEAD",
+    "git diff --stat HEAD~1..HEAD",
+    "git diff 3873b3b..HEAD -- include/tactical/FTacticalCombatReport.h src/tactical/FBattleDisplay.cpp src/tactical/FBattleBoard.cpp src/tactical/FBattleScreen.cpp tests/tactical/FTacticalCombatReportTest.h tests/tactical/FTacticalCombatReportTest.cpp tests/tactical/FTacticalMineDamageReportSummaryTest.h tests/tactical/FTacticalMineDamageReportSummaryTest.cpp tests/tactical/FTacticalMineDamageFlowTest.h tests/tactical/FTacticalMineDamageFlowTest.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.h tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "make -C src/tactical",
+    "make -C tests/tactical TacticalTests",
+    "./tests/tactical/TacticalTests"
   ],
   "acceptance_criteria_status": {
-    "implementer_inspected_subtask1_artifacts": "met",
-    "takeDamage_and_advancedDamage_emit_optional_resolution": "met",
-    "existing_combat_state_mutation_behavior_remains_intact": "met",
-    "effect_data_is_explicit_for_higher_layers": "met"
-  },
-  "baseline_failures_reproduced": [
-    "FrontierTests::FGameConfigTest::testConstructor",
-    "FrontierTests::FWeaponTest::testSetTarget",
-    "FrontierTests::FWeaponTest::testFireAtTarget"
-  ]
+    "weapon_fire_and_mine_damage_builders_align_with_no_double_count_rule": "met",
+    "raw_internal_event_detail_preserved": "met",
+    "non_hull_effect_reporting_remains_intact": "met"
+  }
 }

@@ -13,6 +13,7 @@ namespace FrontierTests {
 class FTacticalMineDamageReportSummaryTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalMineDamageReportSummaryTest );
 	CPPUNIT_TEST( testMineDamageReportSummaryPreservesImmediateEventAndVisibleShipRollup );
+	CPPUNIT_TEST( testMineDamageSummaryKeepsNestedRawDetailWithoutDoubleCountingTargetHullDamage );
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -20,6 +21,7 @@ public:
 	void tearDown();
 
 	void testMineDamageReportSummaryPreservesImmediateEventAndVisibleShipRollup();
+	void testMineDamageSummaryKeepsNestedRawDetailWithoutDoubleCountingTargetHullDamage();
 };
 
 }
