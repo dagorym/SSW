@@ -1,0 +1,103 @@
+/**
+ * @file FTacticalDamageSummaryGUITest.cpp
+ * @brief Implementation file for the FTacticalDamageSummaryGUITest class
+ */
+
+#include "FTacticalDamageSummaryGUITest.h"
+
+#include <fstream>
+#include <iterator>
+
+#include "tactical/FTacticalCombatReport.h"
+
+namespace FrontierTests {
+using namespace Frontier;
+
+namespace {
+
+std::string repoFile(const std::string & relativePath) {
+	return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
+}
+
+void assertContains(const std::string & haystack, const std::string & needle) {
+	CPPUNIT_ASSERT_MESSAGE(
+		std::string("Expected to find '") + needle + "' in inspected source",
+		haystack.find(needle) != std::string::npos);
+}
+
+}
+
+CPPUNIT_TEST_SUITE_REGISTRATION( FTacticalDamageSummaryGUITest );
+
+void FTacticalDamageSummaryGUITest::setUp() {
+}
+
+void FTacticalDamageSummaryGUITest::tearDown() {
+}
+
+std::string FTacticalDamageSummaryGUITest::readFile(const std::string & path) {
+	std::ifstream file(path.c_str());
+	CPPUNIT_ASSERT_MESSAGE(path, file.is_open());
+	return std::string((std::istreambuf_iterator<char>(file)),
+		std::istreambuf_iterator<char>());
+}
+
+void FTacticalDamageSummaryGUITest::testReportTypeLabelsAndDialogTitleMapToReportContext() {
+	// AC: the dialog title and context text clearly identify immediate and end-of-phase report types.
+	CPPUNIT_ASSERT_EQUAL(std::string("Defensive Fire Results"), tacticalCombatReportTypeLabel(TRT_DefensiveFire));
+	CPPUNIT_ASSERT_EQUAL(std::string("Offensive Fire Results"), tacticalCombatReportTypeLabel(TRT_OffensiveFire));
+	CPPUNIT_ASSERT_EQUAL(std::string("Electrical Fire Damage"), tacticalCombatReportTypeLabel(TRT_ElectricalFire));
+	CPPUNIT_ASSERT_EQUAL(std::string("Mine Damage"), tacticalCombatReportTypeLabel(TRT_MineDamage));
+
+	FTacticalCombatReportContext defaultContext;
+	CPPUNIT_ASSERT_EQUAL(std::string("Tactical Damage Summary"), tacticalCombatReportDialogTitle(defaultContext));
+	CPPUNIT_ASSERT_EQUAL(std::string("End-of-phase report"), tacticalCombatReportContextModeLabel(defaultContext));
+
+	FTacticalCombatReportContext immediateContext;
+	immediateContext.reportType = TRT_OffensiveFire;
+	immediateContext.immediate = true;
+	CPPUNIT_ASSERT_EQUAL(std::string("Immediate report"), tacticalCombatReportContextModeLabel(immediateContext));
+	CPPUNIT_ASSERT_EQUAL(
+		std::string("Tactical Damage Summary - Offensive Fire Results"),
+		tacticalCombatReportDialogTitle(immediateContext));
+
+	FTacticalCombatReportContext phaseContext;
+	phaseContext.reportType = TRT_DefensiveFire;
+	phaseContext.immediate = false;
+	phaseContext.title = "Round 3";
+	CPPUNIT_ASSERT_EQUAL(
+		std::string("Tactical Damage Summary - Round 3"),
+		tacticalCombatReportDialogTitle(phaseContext));
+}
+
+void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupOnlyAndEmptyStateText() {
+	// AC: the modal summary dialog renders only ship rollups and shows a safe empty-state message.
+	const std::string source = readFile(repoFile("src/gui/TacticalDamageSummaryGUI.cpp"));
+
+	assertContains(source, "toWxString(tacticalCombatReportDialogTitle(summary.context))");
+	assertContains(source, "m_summary.ships.empty()");
+	assertContains(source, "No ships sustained damage in this report.");
+	assertContains(source, "shipSummary.displayLines.empty()");
+	assertContains(source, "shipSummary.displayLines[j]");
+	assertContains(source, "shipSummary.ship.shipName");
+	assertContains(source, "m_summary.ships[i]");
+
+	CPPUNIT_ASSERT(source.find("rawAttacksReceived") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("rawEvents") == std::string::npos);
+}
+
+void FTacticalDamageSummaryGUITest::testBattleScreenEntryPointAndGuiBuildWiringArePresent() {
+	// AC: FBattleScreen exposes a modal entry point and the GUI build links the dialog implementation.
+	const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
+	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+	const std::string guiMakefile = readFile(repoFile("src/gui/Makefile"));
+
+	assertContains(header, "int showTacticalDamageSummaryDialog(const FTacticalCombatReportSummary & summary);");
+	assertContains(source, "TacticalDamageSummaryGUI dialog(this, summary);");
+	assertContains(source, "return dialog.ShowModal();");
+	assertContains(guiMakefile, "TacticalDamageSummaryGUI.o \\");
+	assertContains(guiMakefile, "TacticalDamageSummaryGUI.o: ../../include/gui/TacticalDamageSummaryGUI.h");
+	assertContains(guiMakefile, "TacticalDamageSummaryGUI.o: ../../include/tactical/FTacticalCombatReport.h");
+}
+
+}

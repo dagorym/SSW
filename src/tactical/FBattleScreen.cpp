@@ -218,6 +218,7 @@ void FBattleScreen::appendTacticalAttackReport(const FTacticalAttackReport & att
 		FTacticalCombatReportContext context;
 		context.phase = m_phase;
 		context.actingPlayerID = getActivePlayerID();
+		context.immediate = attack.immediate;
 		beginTacticalReport(context);
 	}
 	m_tacticalReport.attacks.push_back(attack);
