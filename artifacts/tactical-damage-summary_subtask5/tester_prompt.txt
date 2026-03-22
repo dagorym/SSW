@@ -1,38 +1,28 @@
 You are the Tester Agent.
 
 Task summary:
-- Add a reusable modal tactical damage summary dialog that shows only per-ship rollup lines and a safe empty-state message, plus a battle-screen entry point for opening it later.
+- Verify the tactical report context preserves the `immediate` flag when `FBattleScreen` lazily seeds a report from an attack, so immediate-damage reports are not mislabeled as end-of-phase reports.
 
 Modified files:
-- include/gui/TacticalDamageSummaryGUI.h
-- src/gui/TacticalDamageSummaryGUI.cpp
-- src/gui/Makefile
-- include/tactical/FTacticalCombatReport.h
-- include/tactical/FBattleScreen.h
 - src/tactical/FBattleScreen.cpp
 
 Acceptance criteria to validate (from Planner):
-- A single modal dialog class can be opened from the tactical battle flow for both immediate-damage and end-of-phase reports.
-- The dialog title and content clearly identify which report type is being shown.
-- The dialog displays only ships that actually sustained damage, in a readable ship-by-ship rollup format.
-- The dialog can open with an empty summary without crashing and presents a clear no-damage message.
-- The dialog is wired into the existing GUI build.
+- The Subtask 5 dialog/report context still supports immediate and end-of-phase report types.
+- A context seeded from an attack report preserves whether it is immediate.
+- The fix is minimal and does not regress the existing dialog or build wiring.
 
 Create test files in:
 - tests/tactical/
 
 Implementation context for testing:
-- The dialog is reusable and does not yet hook into electrical fire, mine damage, or phase-end flows.
-- It renders `FTacticalCombatReportSummary::ships` only, not raw attack events.
-- `FBattleScreen::showTacticalDamageSummaryDialog(const FTacticalCombatReportSummary &)` is the entry point for future tactical flow wiring.
-- Context/title helpers in `FTacticalCombatReport.h` map report types to Defensive Fire Results, Offensive Fire Results, Electrical Fire Damage, and Mine Damage.
-- Empty summaries should show a clear no-damage message.
+- `FBattleScreen::appendTacticalAttackReport()` now copies `FTacticalAttackReport::immediate` into the lazily created `FTacticalCombatReportContext`.
+- `FBattleScreen::appendTacticalReportEvent()` already preserves `event.immediate`; no dialog or build wiring changes were made.
+- The existing tactical damage summary dialog and its build integration remain unchanged from Subtask 5.
 
 Suggested test command(s):
-- make -C src gui
 - make -C src tactical
-- make -C tests
-- ./SSWTests
+- make -C tests/tactical
+- ./tests/tactical/TacticalTests
 
 Shared artifact directory:
 - artifacts/tactical-damage-summary_subtask5
