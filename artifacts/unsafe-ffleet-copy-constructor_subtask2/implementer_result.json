@@ -1,19 +1,18 @@
 {
   "status": "success",
   "subtask_id": "unsafe-ffleet-copy-constructor_subtask2",
-  "branch": "ffleet-st2-implementer-20260322",
-  "implementation_commit_hash": "2c747b019446b78a378fbfd28229a21b051c191c",
+  "branch": "ffleet-st2r1-implementer-20260322",
+  "implementation_commit_hash": "4dbad558ae58bba7939471c7e3a63e3a544f67c4",
   "artifact_commit_hash": "",
   "changed_files": [
-    "src/gui/TransferShipsGUI.cpp",
-    "tests/strategic/FFleetTest.cpp"
+    "src/gui/TransferShipsGUI.cpp"
   ],
   "validation_commands": [
     "make -C tests/strategic libstrategicTests.a"
   ],
   "validation_outcome": {
     "status": "passed",
-    "summary": "Strategic test library builds successfully with explicit fleet creation and transfer-regression updates."
+    "summary": "Strategic test library builds successfully after icon metadata initialization fix for newly created fleets."
   },
   "artifact_files": [
     "artifacts/unsafe-ffleet-copy-constructor_subtask2/tester_prompt.txt",

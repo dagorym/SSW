@@ -1,12 +1,10 @@
 You are the Tester Agent.
 
 Task summary:
-- Replaced fleet copy construction in TransferShipsGUI with explicit fleet creation and metadata initialization that preserves exclusive ship ownership.
-- Added regression coverage for explicit ship transfer using removeShip/addShip flow.
+- Remediation for Subtask 2: fixed new-fleet icon metadata initialization in TransferShipsGUI so explicit fleet creation does not leave getIcon() null.
 
 Modified files:
 - src/gui/TransferShipsGUI.cpp
-- tests/strategic/FFleetTest.cpp
 
 Acceptance criteria to validate (from Planner):
 - src/gui/TransferShipsGUI.cpp no longer uses new FFleet(*m_fleet).
@@ -18,9 +16,9 @@ Create test files in:
 - tests/strategic/FFleetTest.cpp
 
 Implementation context for testing:
-- TransferShipsGUI::onDone now creates new fleets with new FFleet and explicitly sets owner, location, militia/home-system state, and holding flag before updateFleet applies the selected ship list.
-- updateFleet continues to move membership through remove/add operations against fleet ship lists.
-- FFleetTest::testAddRemoveShip now verifies explicit transfer of a ship pointer from one fleet to another using removeShip and addShip, then checks source/target ship counts and presence.
+- TransferShipsGUI::onDone already used explicit fleet construction (`new FFleet`) and now also sets `f->setIcon(m_player->getFleetIconName())` when creating a new fleet.
+- The explicit non-copying flow remains intact; this remediation only addresses the icon metadata regression reported by the verifier.
+- This prevents newly created fleets from having a null icon pointer in GUI rendering paths.
 
 Suggested test command(s):
 - make -C tests/strategic libstrategicTests.a
