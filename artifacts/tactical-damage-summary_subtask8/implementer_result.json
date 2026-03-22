@@ -1,0 +1,18 @@
+{
+  "status": "implemented",
+  "subtask": "Subtask 8",
+  "branch": "tds-st8-implementer-20260322",
+  "commitHash": null,
+  "changedFiles": [
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "validationCommands": [
+    "make -C src tactical",
+    "make -C src gui"
+  ],
+  "validationOutcome": "passed",
+  "artifactPaths": [
+    "artifacts/tactical-damage-summary_subtask8/tester_prompt.txt",
+    "artifacts/tactical-damage-summary_subtask8/implementer_result.json"
+  ]
+}

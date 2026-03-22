@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Task summary:
+- Verify that defensive-fire and offensive-fire resolution both show the shared tactical damage summary dialog before phase transitions, keep destroyed ships visible until acknowledgement, and clear tactical report state after the dialog closes.
+
+Modified files:
+- /tmp/ssw-worktrees/tds-st8-implementer-20260322/src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- After defensive fire resolves, the defensive-fire summary dialog is shown before the UI transitions to the next relevant step.
+- After offensive fire resolves, the offensive-fire summary dialog is shown before the UI transitions back to movement or toggles the moving player.
+- Destroyed ships remain on the board and are still shown in the summary for the report in which they were destroyed.
+- `clearDestroyedShips()` runs only after the relevant dialog is acknowledged.
+- The summary state is cleared after the dialog is acknowledged so one phase's results do not leak into the next.
+- After defensive-fire acknowledgement, the battle advances to offensive fire.
+- After offensive-fire acknowledgement, the battle returns to movement and toggles the moving player exactly once.
+
+Create test files in:
+- /tmp/ssw-worktrees/tds-st8-implementer-20260322/tests/tactical/FTacticalBattleScreenFirePhaseFlowTest.h
+- /tmp/ssw-worktrees/tds-st8-implementer-20260322/tests/tactical/FTacticalBattleScreenFirePhaseFlowTest.cpp
+
+Implementation context for testing:
+- `FBattleDisplay::fireAllWeapons()` now starts a tactical combat report for the active fire phase, appends structured `FWeapon::fire()` results, shows the shared summary dialog, clears the tactical report, and only then clears destroyed ships.
+- `onDefensiveFireDone()` should still advance into offensive fire after the dialog closes.
+- `onOffensiveFireDone()` should still toggle the moving player exactly once and return to movement after the dialog closes.
+- The structured attack report should preserve attacker, target, weapon, hit, damage, and per-effect detail data from `FTacticalAttackResult`.
+- Focus regressions on dialog ordering, summary visibility for destroyed ships, and report leakage between defensive and offensive fire.
+
+Suggested test command(s):
+- make -C tests
+- ./tests/SSWTests
+- make -C src tactical
+- make -C src gui
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary_subtask8
