@@ -1,7 +1,7 @@
 You are the Verifier Agent.
 
 Task summary:
-- Validate Subtask 2 remediation for the unsafe FFleet copy-constructor plan: TransferShipsGUI keeps explicit non-copy fleet creation and now preserves icon metadata for newly created fleets.
+- Validate Subtask 2 second remediation for the unsafe FFleet copy-constructor plan: TransferShipsGUI keeps explicit non-copy fleet creation and now preserves the source fleet icon metadata for newly created fleets.
 
 Acceptance criteria to verify:
 - src/gui/TransferShipsGUI.cpp no longer uses new FFleet(*m_fleet).
@@ -10,11 +10,10 @@ Acceptance criteria to verify:
 - tests/strategic/FFleetTest.cpp covers the updated ownership contract or the explicit transfer workflow.
 
 Implementation and test branch context:
-- Remediation implementer branch: ffleet-st2r1-implementer-20260322
-- Remediation implementer head commit: 115586b
-- Remediation tester branch: ffleet-st2r1-tester-20260322
-- Remediation tester commit with artifacts: a6dabfe2ac1480760a66a50326ec828635f08d58
-- Remediation tester worktree: /tmp/ssw-worktrees/ffleet-st2r1-tester-20260322
+- Second remediation implementer branch: ffleet-st2r2-implementer-20260322
+- Second remediation implementer head commit: fdf1c36
+- Second remediation tester branch: ffleet-st2r2-tester-20260322
+- Second remediation tester worktree: /tmp/ssw-worktrees/ffleet-st2r2-tester-20260322
 
 Files changed in scope:
 - src/gui/TransferShipsGUI.cpp
@@ -24,12 +23,16 @@ Commands executed:
 
 Final test outcomes:
 - Strategic test library build passed.
-- Source inspection confirms the old copy path remains removed and explicit fleet construction is still in place.
-- Source inspection confirms new-fleet icon metadata is now initialized via `f->setIcon(m_player->getFleetIconName())`.
+- Source inspection confirms old copy construction path remains removed (`new FFleet(*m_fleet)` absent).
+- Source inspection confirms explicit new-fleet creation remains in place and membership is applied through `updateFleet(...)`.
+- Source inspection confirms source icon metadata preservation path:
+  - extracts icon path from source fleet data (`getSerializedFleetIconFile(m_fleet)`)
+  - applies exact source icon when available (`f->setIcon(sourceIconFile)`)
+  - falls back to player icon only when extraction fails.
 
 Remaining verification risks / follow-up checks:
-- Confirm newly created fleets in transfer flow no longer present null icon pointers to display paths.
-- Confirm remediation does not regress prior Subtask 2 ownership-transfer behavior.
+- Confirm icon extraction helper consistently returns the source icon path for custom-icon fleets (including militia fleets) in active transfer flows.
+- Confirm fallback behavior is only used for parse failure paths and does not regress existing scenarios.
 
 Shared artifact directory:
 - artifacts/unsafe-ffleet-copy-constructor_subtask2
