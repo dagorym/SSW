@@ -35,17 +35,6 @@ public:
 	FFleet();
   /// Default destructor
 	virtual ~FFleet();
-	/**
-	 * @brief Copy Constructor
-	 *
-	 * This method implements the copy constructor for the FFleet class
-	 * to make sure that the pointers are copied correctly
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Apr 07, 2008
-	 * @date Last Modified:  Apr 07, 2008
-	 */
-	FFleet(const FFleet & f);
 
   /**
    * @brief Set the location of the fleet
@@ -346,6 +335,10 @@ public:
   int getRJChance();
 
 private:
+  // Fleets exclusively own ships in m_ships, so copying would alias ownership.
+  FFleet(const FFleet &);
+  FFleet & operator=(const FFleet &);
+
   /// ID value of the fleet
   unsigned int m_ID;
   /// ID of the system, planet or jump the fleet is currently at

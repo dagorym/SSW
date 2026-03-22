@@ -40,33 +40,6 @@ FFleet::FFleet() {
 
 }
 
-FFleet::FFleet(const FFleet & f){
-	FGameConfig &gc = FGameConfig::create();
-	m_ID = m_nextID++;
-	m_classCount++;
-	m_location = f.m_location;
-	m_destination = f.m_destination;
-	m_inTransit = f.m_inTransit;
-	m_isMilitia = f.m_isMilitia;
-	m_iconFile = f.m_iconFile;
-	m_icon = new wxImage(gc.getBasePath()+m_iconFile);
-	m_isHolding = f.m_isHolding;
-	m_speed = f.m_speed;
-	m_transitTime = f.m_transitTime;
-	m_pos[0]=f.m_pos[0];
-	m_pos[1]=f.m_pos[1];
-	m_owner = f.m_owner;
-	m_ships = f.m_ships;
-	m_jumpLength = f.m_jumpLength;
-	m_name = "Copy of " + f.m_name;
-	m_speed = f.m_speed;
-	m_jumpRouteID = f.m_jumpRouteID;
-	m_home = f.m_home;
-	m_dx = f.m_dx;
-	m_dy = f.m_dy;
-
-}
-
 FFleet::~FFleet() {
 	delete m_icon;
 //	std::cerr << "In fleet " << m_name << ", there are " << m_ships.size() << " ships" << std::endl;
