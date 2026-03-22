@@ -94,7 +94,14 @@ void FFleetTest::testAddRemoveShip(){
 	CPPUNIT_ASSERT(m_f1->getShipCount() == 1);
 	unsigned int sid = v->getID();
 	CPPUNIT_ASSERT(m_f1->getShip(sid)->getType() == "AssaultScout");
-	m_f1->removeShip(sid);
+	FFleet f2;
+	FVehicle *transferredShip = m_f1->removeShip(sid);
+	CPPUNIT_ASSERT(transferredShip != NULL);
+	f2.addShip(transferredShip);
+	CPPUNIT_ASSERT(m_f1->getShipCount() == 0);
+	CPPUNIT_ASSERT(f2.getShipCount() == 1);
+	CPPUNIT_ASSERT(f2.getShip(sid) != NULL);
+	f2.removeShip(sid);
 	CPPUNIT_ASSERT(m_f1->getShipCount() == 0);
 	FVehicle *v2 = m_f1->getShip(sid+1);
 	CPPUNIT_ASSERT( v2 == NULL);

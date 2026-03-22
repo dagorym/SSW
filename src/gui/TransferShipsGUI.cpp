@@ -367,7 +367,11 @@ void TransferShipsGUI::onDone( wxCommandEvent& event ){
 			updateFleet(f,m_shipLists[i]);
 		} else {  // if fleet doesn't exist create it
 //			std::cerr << "New fleet" << std::endl;
-			FFleet *f = new FFleet(*m_fleet);
+			FFleet *f = new FFleet;
+			f->setOwner(m_fleet->getOwner());
+			f->setLocation(m_fleet->getLocation());
+			f->setMilitia(m_fleet->isMilitia(),m_fleet->getHomeSystem());
+			f->setHolding(m_fleet->isHolding());
 			f->setName(m_nameList[i]);
 			updateFleet(f,m_shipLists[i]);
 			// add it to the player's list
