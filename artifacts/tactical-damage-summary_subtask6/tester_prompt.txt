@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate immediate electrical-fire tactical damage reporting before movement begins.
+
+Modified files:
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate (from Planner):
+- Electrical fire damage shows a summary before movement starts.
+- The shared tactical summary dialog is used for the report.
+- Destroyed ships remain on the board and are still shown in the summary for the report in which they were destroyed.
+- `clearDestroyedShips()` runs only after the relevant dialog is acknowledged.
+- Movement does not begin until the report dialog is closed.
+- After the electrical-fire dialog is dismissed, control returns to the same moving player and the movement phase begins normally.
+
+Create test files in:
+- tests/tactical/
+
+Implementation context for testing:
+- `FBattleScreen::applyFireDamage()` now starts an immediate `TRT_ElectricalFire` report window before applying electrical-fire damage.
+- Damage resolutions are converted into tactical report events so the existing shared damage summary dialog can render the affected ships.
+- Destroyed-ship cleanup is deferred until after the summary dialog returns, and the active-player toggles around `clearDestroyedShips()` preserve cleanup of the actually damaged side.
+- The report state is cleared before returning control to the normal movement flow.
+
+Suggested test command(s):
+- make -C src tactical
+- make -C src gui
+- make -C tests/tactical
+- ./tests/tactical/TacticalTests
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary_subtask6

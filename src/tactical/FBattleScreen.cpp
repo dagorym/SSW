@@ -15,6 +15,51 @@
 
 namespace Frontier {
 
+namespace {
+
+TacticalReportEventType tacticalReportEventTypeForDamageEffect(TacticalDamageEffectType effectType) {
+	switch (effectType) {
+	case TDET_DefenseDamaged:
+		return TRET_DefenseEffect;
+	case TDET_ElectricalFire:
+		return TRET_ElectricalFire;
+	case TDET_HullDamage:
+	case TDET_ADFLoss:
+	case TDET_MRLoss:
+	case TDET_WeaponDamaged:
+	case TDET_PowerSystemDamaged:
+	case TDET_CombatControlDamaged:
+	case TDET_NavigationError:
+	case TDET_DCRLoss:
+	default:
+		return TRET_InternalDamage;
+	}
+}
+
+void appendTacticalDamageResolutionEvents(
+	FTacticalCombatReport & report,
+	FVehicle * ship,
+	const FTacticalDamageResolution & resolution) {
+	if (ship == NULL) {
+		return;
+	}
+
+	for (std::vector<FTacticalDamageEffect>::const_iterator itr = resolution.effects.begin();
+		 itr != resolution.effects.end(); ++itr) {
+		FTacticalReportEvent event;
+		event.eventType = tacticalReportEventTypeForDamageEffect(itr->effectType);
+		event.subject = FTacticalShipReference(ship->getID(), ship->getOwner(), ship->getName());
+		event.rollValue = itr->rollValue;
+		event.hullDamage = itr->hullDamageApplied;
+		event.immediate = true;
+		event.label = itr->label;
+		event.detail = itr->detail;
+		report.events.push_back(event);
+	}
+}
+
+}
+
 FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( (wxDialog *)NULL, -1, title, pos, size, style )
 //FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style )
 {
@@ -181,6 +226,7 @@ void FBattleScreen::setScale(double factor) {
 void FBattleScreen::setPhase(int p){
 	m_phase = p;
 	if (p==PH_MOVE) { // we just ended a turn
+		applyFireDamage();
 		if (!m_activePlayer) {  // defender just ended
 			///@todo update turn counters
 			///@todo check for repair turn
@@ -199,7 +245,6 @@ void FBattleScreen::setPhase(int p){
 	} else if (p==PH_DEFENSE_FIRE){
 		toggleActivePlayer();
 	} else if (p==PH_ATTACK_FIRE){
-		applyFireDamage();
 		toggleActivePlayer();
 	} else {
 	}
@@ -345,13 +390,38 @@ void FBattleScreen::fireICM() {
 }
 
 void FBattleScreen::applyFireDamage(){
-	VehicleList sList = getShipList(getActivePlayerID());
+	clearTacticalReport();
+
+	FTacticalCombatReportContext context;
+	context.reportType = TRT_ElectricalFire;
+	context.phase = m_phase;
+	context.actingPlayerID = getMovingPlayerID();
+	context.immediate = true;
+	beginTacticalReport(context);
+
+	VehicleList sList = getShipList(getMovingPlayerID());
+	bool damagedShip = false;
 	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
 		if ((*itr)->isOnFire()){
+			FTacticalDamageResolution resolution;
 			int roll = irand(10);
-			(*itr)->takeDamage(roll,20);
+			(*itr)->takeDamage(roll,20,false,&resolution);
+			appendTacticalDamageResolutionEvents(m_tacticalReport, *itr, resolution);
+			damagedShip = true;
 		}
 	}
+
+	if (damagedShip){
+		FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();
+		if (summary.ships.size() > 0){
+			showTacticalDamageSummaryDialog(summary);
+			toggleActivePlayer();
+			clearDestroyedShips();
+			toggleActivePlayer();
+		}
+	}
+
+	clearTacticalReport();
 }
 
 }

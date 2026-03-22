@@ -9,6 +9,7 @@
 #include "FTacticalAttackResultTest.h"
 #include "FTacticalDamageSummaryGUITest.h"
 #include "FTacticalBattleScreenReportContextTest.h"
+#include "FTacticalBattleScreenElectricalFireTest.h"
 
 using namespace FrontierTests;
 
@@ -18,6 +19,7 @@ int main(int argc, char **argv) {
 	runner.addTest(FTacticalAttackResultTest::suite());
 	runner.addTest(FTacticalDamageSummaryGUITest::suite());
 	runner.addTest(FTacticalBattleScreenReportContextTest::suite());
+	runner.addTest(FTacticalBattleScreenElectricalFireTest::suite());
 	bool wasSuccessful = runner.run("", false);
 	return wasSuccessful ? 0 : 1;
 }
