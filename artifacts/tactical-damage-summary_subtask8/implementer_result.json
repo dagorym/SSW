@@ -2,7 +2,7 @@
   "status": "implemented",
   "subtask": "Subtask 8",
   "branch": "tds-st8-implementer-20260322",
-  "commitHash": null,
+  "commitHash": "8131b76d1993b27cb103b3af2cf207858d7183c2",
   "changedFiles": [
     "src/tactical/FBattleDisplay.cpp"
   ],
