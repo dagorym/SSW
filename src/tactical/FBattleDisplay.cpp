@@ -21,6 +21,69 @@ const int leftOffset=2*BORDER+ZOOM_SIZE;
 
 namespace Frontier {
 
+namespace {
+
+TacticalReportEventType tacticalReportEventTypeForDamageEffect(TacticalDamageEffectType effectType) {
+	switch (effectType) {
+	case TDET_DefenseDamaged:
+		return TRET_DefenseEffect;
+	case TDET_ElectricalFire:
+		return TRET_ElectricalFire;
+	case TDET_HullDamage:
+	case TDET_ADFLoss:
+	case TDET_MRLoss:
+	case TDET_WeaponDamaged:
+	case TDET_PowerSystemDamaged:
+	case TDET_CombatControlDamaged:
+	case TDET_NavigationError:
+	case TDET_DCRLoss:
+	default:
+		return TRET_InternalDamage;
+	}
+}
+
+FTacticalReportEvent buildTacticalAttackEvent(
+	const FTacticalAttackReport & report,
+	const FTacticalAttackEffect & effect)
+{
+	FTacticalReportEvent event;
+	event.eventType = tacticalReportEventTypeForDamageEffect(static_cast<TacticalDamageEffectType>(effect.effectType));
+	event.subject = report.target;
+	event.source = report.attacker;
+	event.target = report.target;
+	event.rollValue = effect.rollValue;
+	event.hullDamage = effect.hullDamageApplied;
+	event.immediate = report.immediate;
+	event.label = effect.label;
+	event.detail = effect.detail;
+	return event;
+}
+
+FTacticalAttackReport buildTacticalAttackReport(const FTacticalAttackResult & result) {
+	FTacticalAttackReport report;
+	report.attacker = FTacticalShipReference(result.attackerID, result.attackerOwnerID, result.attackerName);
+	report.target = FTacticalShipReference(result.targetID, result.targetOwnerID, result.targetName);
+	report.weapon = FTacticalWeaponReference(result.weaponID, result.weaponName);
+	report.hitRoll = result.hitRoll;
+	report.attackRollModifier = 0;
+	report.targetRange = result.targetRange;
+	report.hullDamage = result.totalHullDamageApplied;
+	report.damageTableModifier = result.damageTableModifier;
+	report.hit = result.hit();
+	report.intercepted = false;
+	report.immediate = false;
+	report.note = result.note;
+
+	for (std::vector<FTacticalAttackEffect>::const_iterator itr = result.effects.begin();
+		 itr != result.effects.end(); ++itr) {
+		report.internalEvents.push_back(buildTacticalAttackEvent(report, *itr));
+	}
+
+	return report;
+}
+
+}
+
 FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)
 		: wxPanel( parent, id, pos, size, style, name ) {
 
@@ -547,6 +610,20 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 }
 
 void FBattleDisplay::fireAllWeapons(){
+	TacticalReportType reportType = TRT_None;
+	if (m_parent->getPhase() == PH_DEFENSE_FIRE){
+		reportType = TRT_DefensiveFire;
+	} else if (m_parent->getPhase() == PH_ATTACK_FIRE){
+		reportType = TRT_OffensiveFire;
+	}
+
+	FTacticalCombatReportContext context;
+	context.reportType = reportType;
+	context.phase = m_parent->getPhase();
+	context.actingPlayerID = m_parent->getActivePlayerID();
+	context.immediate = false;
+	m_parent->beginTacticalReport(context);
+
 	VehicleList sList = m_parent->getShipList(m_parent->getActivePlayerID());
 	m_parent->fireICM();
 	// loop over the list of ships and fire all weapons
@@ -557,10 +634,17 @@ void FBattleDisplay::fireAllWeapons(){
 			int nWeps = (*itr)->getWeaponCount();
 			for (int i = 0; i < nWeps; i++){
 //				std::cerr << "Calling the " << (*itr)->getWeapon(i)->getLongName() << "'s fire() method." << std::endl;
-				(*itr)->getWeapon(i)->fire();
+				FTacticalAttackResult result = (*itr)->getWeapon(i)->fire();
+				if (!result.fired()) {
+					continue;
+				}
+				m_parent->appendTacticalAttackReport(buildTacticalAttackReport(result));
 			}
 		}
 	}
+	FTacticalCombatReportSummary summary = m_parent->buildCurrentTacticalReportSummary();
+	m_parent->showTacticalDamageSummaryDialog(summary);
+	m_parent->clearTacticalReport();
 	m_parent->clearDestroyedShips();
 }
 
