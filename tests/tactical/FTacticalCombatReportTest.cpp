@@ -131,6 +131,57 @@ void FTacticalCombatReportTest::testReportModelPreservesRawAttackAndImmediateEve
 	CPPUNIT_ASSERT(report.context.reportType == TRT_None);
 }
 
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCapturesImmediateElectricalFireAndMineDamageEvents() {
+	// AC: immediate electrical-fire and mine-damage reports preserve their event types and keep non-hull-damage ships visible in the summary.
+	FTacticalCombatReport report;
+	report.context.reportType = TRT_ElectricalFire;
+	report.context.phase = 17;
+	report.context.actingPlayerID = 4;
+	report.context.immediate = true;
+	report.context.title = "Immediate damage";
+
+	FTacticalReportEvent electricalFire;
+	electricalFire.eventType = TRET_ElectricalFire;
+	electricalFire.subject = FTacticalShipReference(21, 2, "Electrical Target");
+	electricalFire.rollValue = 9;
+	electricalFire.hullDamage = 0;
+	electricalFire.immediate = true;
+	electricalFire.label = "Electrical fire";
+
+	FTacticalReportEvent mineDamage;
+	mineDamage.eventType = TRET_MineDamage;
+	mineDamage.subject = FTacticalShipReference(22, 3, "Mine Target");
+	mineDamage.rollValue = 5;
+	mineDamage.hullDamage = 0;
+	mineDamage.immediate = true;
+	mineDamage.label = "Mine damage";
+
+	report.events.push_back(electricalFire);
+	report.events.push_back(mineDamage);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * electricalSummary = findShipSummary(summary, "Electrical Target");
+	const FTacticalShipReportSummary * mineSummary = findShipSummary(summary, "Mine Target");
+
+	CPPUNIT_ASSERT(summary.context.immediate);
+	CPPUNIT_ASSERT(summary.context.reportType == TRT_ElectricalFire);
+	CPPUNIT_ASSERT(summary.context.phase == 17);
+	CPPUNIT_ASSERT(summary.ships.size() == 2);
+	CPPUNIT_ASSERT(summary.displayLines.size() == 2);
+	CPPUNIT_ASSERT(electricalSummary != NULL);
+	CPPUNIT_ASSERT(mineSummary != NULL);
+	CPPUNIT_ASSERT(electricalSummary->hullDamageTaken == 0);
+	CPPUNIT_ASSERT(electricalSummary->nonHullEffectsTaken == 1);
+	CPPUNIT_ASSERT(electricalSummary->rawEvents.size() == 1);
+	CPPUNIT_ASSERT(electricalSummary->rawEvents[0].eventType == TRET_ElectricalFire);
+	CPPUNIT_ASSERT(electricalSummary->displayLines[0].find("Electrical fire") != std::string::npos);
+	CPPUNIT_ASSERT(mineSummary->hullDamageTaken == 0);
+	CPPUNIT_ASSERT(mineSummary->nonHullEffectsTaken == 1);
+	CPPUNIT_ASSERT(mineSummary->rawEvents.size() == 1);
+	CPPUNIT_ASSERT(mineSummary->rawEvents[0].eventType == TRET_MineDamage);
+	CPPUNIT_ASSERT(mineSummary->displayLines[0].find("Mine damage") != std::string::npos);
+}
+
 void FTacticalCombatReportTest::testReportModelDefinesSeparateShipSummaryRollupTypes() {
 	// AC: summary rollup is distinct from raw report storage.
 	FTacticalCombatReport report;

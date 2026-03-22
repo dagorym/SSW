@@ -17,6 +17,7 @@ using namespace Frontier;
 class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalCombatReportTest );
 	CPPUNIT_TEST( testReportModelPreservesRawAttackAndImmediateEventData );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryCapturesImmediateElectricalFireAndMineDamageEvents );
 	CPPUNIT_TEST( testReportModelDefinesSeparateShipSummaryRollupTypes );
 	CPPUNIT_TEST( testReportModelSupportsAllPlannedReportingModes );
 	CPPUNIT_TEST( testBattleScreenExposesTacticalReportLifecycleApi );
@@ -37,6 +38,7 @@ public:
 	void tearDown();
 
 	void testReportModelPreservesRawAttackAndImmediateEventData();
+	void testBuildTacticalCombatReportSummaryCapturesImmediateElectricalFireAndMineDamageEvents();
 	void testReportModelDefinesSeparateShipSummaryRollupTypes();
 	void testReportModelSupportsAllPlannedReportingModes();
 	void testBattleScreenExposesTacticalReportLifecycleApi();
