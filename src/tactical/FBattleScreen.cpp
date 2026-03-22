@@ -9,6 +9,7 @@
 #include "tactical/FBattleScreen.h"
 #include "Frontier.h"
 #include "core/FGameConfig.h"
+#include "gui/TacticalDamageSummaryGUI.h"
 #include "gui/ICMSelectionGUI.h"
 #include <wx/wx.h>
 
@@ -235,6 +236,11 @@ void FBattleScreen::appendTacticalReportEvent(const FTacticalReportEvent & event
 
 FTacticalCombatReportSummary FBattleScreen::buildCurrentTacticalReportSummary() const {
 	return buildTacticalCombatReportSummary(m_tacticalReport);
+}
+
+int FBattleScreen::showTacticalDamageSummaryDialog(const FTacticalCombatReportSummary & summary) {
+	TacticalDamageSummaryGUI dialog(this, summary);
+	return dialog.ShowModal();
 }
 
 void FBattleScreen::clearTacticalReport() {

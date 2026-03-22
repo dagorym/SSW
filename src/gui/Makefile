@@ -42,6 +42,7 @@ OBJS = SystemDialogGUI.o SelectJumpGUI.o ViewFleetGUI.o \
        TransferShipsGUI.o  SatharRetreatGUI.o \
        SelectCombatGUI.o TwoPlanetsGUI.o CombatLocationGUI.o \
        CombatFleetsGUI.o SelectResolutionGUI.o BattleResultsGUI.o \
+       TacticalDamageSummaryGUI.o \
        WXMapDisplay.o WXPlayerDisplay.o WXGameDisplay.o \
        ICMSelectionGUI.o AssignedICMData.o
 
@@ -89,6 +90,8 @@ BattleResultsGUI.o: ../../include/strategic/FJumpRoute.h
 BattleResultsGUI.o: ../../include/strategic/FMap.h
 BattleResultsGUI.o: ../../include/strategic/FGame.h
 BattleResultsGUI.o: ../../include/strategic/FPlayer.h
+TacticalDamageSummaryGUI.o: ../../include/gui/TacticalDamageSummaryGUI.h
+TacticalDamageSummaryGUI.o: ../../include/tactical/FTacticalCombatReport.h
 CombatFleetsGUI.o: ../../include/gui/CombatFleetsGUI.h
 CombatFleetsGUI.o: ../../include/strategic/FSystem.h
 CombatFleetsGUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
