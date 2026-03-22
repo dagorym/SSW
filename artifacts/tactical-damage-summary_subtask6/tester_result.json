@@ -1,0 +1,30 @@
+{
+  "status": "success",
+  "task_id": "tds-st6",
+  "branch": "tds-st6-tester-20260322",
+  "commit_hash": null,
+  "tests_written": 3,
+  "suite_tests_run": 20,
+  "passed": 20,
+  "failed": 0,
+  "test_files_changed": [
+    "tests/tactical/FTacticalBattleScreenElectricalFireTest.h",
+    "tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp",
+    "tests/tactical/Makefile",
+    "tests/tactical/TacticalTests.cpp"
+  ],
+  "commands_run": [
+    "make -C src tactical",
+    "make -C src gui",
+    "make -C tests/tactical",
+    "./tests/tactical/TacticalTests",
+    "make -C tests/tactical clean"
+  ],
+  "unmet_acceptance_criteria": [],
+  "cleanup_status": "temporary tactical build outputs removed",
+  "artifact_paths_written": [
+    "artifacts/tactical-damage-summary_subtask6/tester_report.md",
+    "artifacts/tactical-damage-summary_subtask6/tester_result.json",
+    "artifacts/tactical-damage-summary_subtask6/verifier_prompt.txt"
+  ]
+}
