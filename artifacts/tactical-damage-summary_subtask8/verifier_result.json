@@ -1,0 +1,14 @@
+{
+  "status": "complete",
+  "subtask": "8",
+  "branch": "tds-st8-verifier-20260322",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Tactical-only verification passed; the new fire-flow regression test and existing modal summary implementation cover the requested behavior.",
+  "artifact_paths": [
+    "artifacts/tactical-damage-summary_subtask8/verifier_report.md",
+    "artifacts/tactical-damage-summary_subtask8/verifier_result.json"
+  ]
+}
