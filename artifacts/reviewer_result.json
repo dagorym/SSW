@@ -1,0 +1,58 @@
+{
+  "status": "completed",
+  "reviewer_agent": "reviewer",
+  "feature_plan": "plans/tactical-damage-summary-plan.md",
+  "artifact_directory": "artifacts",
+  "commit_scope": {
+    "start_inclusive": "37459eb5cf3238925b4efef9cf5847d9a68e4cc8",
+    "end_inclusive": "1b45f171d9b5a45ec7b288ccde2b830e22ed15a9"
+  },
+  "inputs_reviewed": [
+    "artifacts/tactical-damage-summary_subtask1",
+    "artifacts/tactical-damage-summary_subtask2",
+    "artifacts/tactical-damage-summary_subtask3",
+    "artifacts/tactical-damage-summary_subtask4",
+    "artifacts/tactical-damage-summary_subtask5",
+    "artifacts/tactical-damage-summary_subtask6",
+    "artifacts/tactical-damage-summary_subtask7",
+    "artifacts/tactical-damage-summary_subtask7-remediation",
+    "artifacts/tactical-damage-summary_subtask8",
+    "artifacts/tactical-damage-summary_subtask9"
+  ],
+  "overall_outcome": "FAIL",
+  "feature_completeness": "Substantially implemented, but not safe to treat as complete because attack-driven damage summaries can overstate applied hull damage.",
+  "findings": [
+    {
+      "severity": "BLOCKING",
+      "summary": "Attack-driven tactical summaries can double-count hull damage.",
+      "why_it_matters": "The player-visible dialog can report more hull damage than combat actually applied, which breaks the feature's primary reporting requirement.",
+      "references": [
+        "include/tactical/FTacticalCombatReport.h#L397",
+        "include/tactical/FTacticalCombatReport.h#L416",
+        "src/tactical/FBattleDisplay.cpp#L70",
+        "src/tactical/FBattleDisplay.cpp#L79",
+        "src/tactical/FBattleBoard.cpp#L49",
+        "src/tactical/FBattleBoard.cpp#L56"
+      ]
+    },
+    {
+      "severity": "WARNING",
+      "summary": "Automated tactical coverage missed the duplicate-count path.",
+      "why_it_matters": "The current tests do not exercise summaries built from attack records that contain both aggregate hull damage and hull-damage internal events, so the core rollup bug was not detected.",
+      "references": [
+        "tests/tactical/FTacticalCombatReportTest.cpp#L235",
+        "tests/tactical/FTacticalCombatReportTest.cpp#L266"
+      ]
+    },
+    {
+      "severity": "NOTE",
+      "summary": "Most subtask deliverables and artifact verdicts align with the plan after the mine-flow remediation.",
+      "why_it_matters": "The remaining risk is concentrated in final aggregation correctness rather than broad integration coverage."
+    }
+  ],
+  "follow_up_feature_requests": [
+    "Update tactical combat summary aggregation so attack-level hull damage and per-effect event data cannot double-count the same applied hull damage in player-facing ship rollups for weapon fire and mine damage.",
+    "Add deterministic tactical tests that build summaries from real attack-result shaped data, including hull-damage effects inside internalEvents, and assert the displayed hull totals remain equal to the actual applied damage."
+  ],
+  "report_path": "artifacts/reviewer_report.md"
+}
