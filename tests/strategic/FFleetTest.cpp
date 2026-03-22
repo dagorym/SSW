@@ -7,6 +7,7 @@
 
 #include "FFleetTest.h"
 #include <cstdio>
+#include <type_traits>
 #include "strategic/FSystem.h"
 
 namespace FrontierTests {
@@ -212,15 +213,8 @@ void FFleetTest::testSerialize(){
 }
 
 void FFleetTest::TestCopyConstructor(){
-	m_f1->addShip(createShip("AssaultScout"));
-	m_f1->setName("Test Fleet");
-	m_f1->setIcon("icons/UPF.png");
-	FFleet *f2 = new FFleet(*m_f1);
-	CPPUNIT_ASSERT(f2->getShipCount() == m_f1->getShipCount());
-	VehicleList l1 = m_f1->getShipList();
-	VehicleList l2 = f2->getShipList();
-	CPPUNIT_ASSERT(l2[0]->getID() == l1[0]->getID());
-	CPPUNIT_ASSERT(f2->getName() == "Copy of " + m_f1->getName());
+	CPPUNIT_ASSERT(std::is_copy_constructible<FFleet>::value == false);
+	CPPUNIT_ASSERT(std::is_copy_assignable<FFleet>::value == false);
 }
 
 }

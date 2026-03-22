@@ -1,0 +1,34 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate Subtask 1 for the unsafe FFleet copy-constructor plan: FFleet is intentionally non-copyable and regression coverage reflects that ownership contract.
+
+Acceptance criteria to verify:
+- Copy construction and assignment are disabled or otherwise rejected by the type system.
+- The code no longer admits the unsafe shallow-copy ownership model.
+- The change is documented in a short ownership comment.
+
+Implementation and test branch context:
+- Implementer branch: ffleet-st1-implementer-20260322
+- Implementer head commit: d781ab5
+- Tester branch: ffleet-st1-tester-20260322
+- Tester worktree: /tmp/ssw-worktrees/ffleet-st1-tester-20260322
+
+Files changed in scope:
+- include/strategic/FFleet.h
+- src/strategic/FFleet.cpp
+- tests/strategic/FFleetTest.cpp
+
+Commands executed:
+- make -C tests/strategic libstrategicTests.a
+
+Final test outcomes:
+- Strategic test library build passed after replacing the legacy copy-constructor test with explicit non-copyability checks using std::is_copy_constructible and std::is_copy_assignable.
+
+Remaining verification risks / follow-up checks:
+- Confirm FFleet copy constructor and assignment are both inaccessible/deleted at the type-system level and no other call sites rely on copying.
+- Confirm ownership comment is present and accurately reflects exclusive ship ownership semantics.
+- Confirm updated test coverage is sufficient for the non-copyable contract change.
+
+Shared artifact directory:
+- artifacts/unsafe-ffleet-copy-constructor_subtask1
