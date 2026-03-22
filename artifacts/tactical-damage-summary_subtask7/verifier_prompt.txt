@@ -1,0 +1,44 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate the tester’s regression coverage for immediate mine-damage reporting after mine application.
+
+Acceptance criteria:
+- Mine damage shows a summary immediately after mine damage is applied.
+- The shared tactical summary dialog is used for the report.
+- Destroyed ships remain on the board and are still shown in the summary for the report in which they were destroyed.
+- `clearDestroyedShips()` runs only after the relevant dialog is acknowledged.
+- Mine damage is applied exactly once per triggering movement event, and the dialog appears only after mine-damage resolution completes.
+
+Implementation context:
+- The tested implementation path is `src/tactical/FBattleBoard.cpp`.
+- `FBattleBoard::applyMineDamage()` now builds tactical mine-damage attack reports, appends them to the shared tactical report, shows the shared `TacticalDamageSummaryGUI` modal dialog, and only then clears destroyed ships.
+- The tactical report is marked immediate for mine damage, so the summary should behave as a post-resolution modal step rather than an end-of-phase combat summary.
+
+Worktree context:
+- Branch: `tds-st7-tester-20260322`
+- Worktree: `/tmp/ssw-worktrees/tds-st7-tester-20260322`
+- Shared artifact directory: `artifacts/tactical-damage-summary_subtask7`
+
+Test files added or modified:
+- `tests/tactical/FTacticalMineDamageFlowTest.h`
+- `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
+
+Commands executed:
+- `make -C src tactical`
+- `make -C src gui`
+- `make -C tests`
+- `make -C src all`
+- `make -C tests`
+- `make -C tests/tactical`
+- `./tests/tactical/TacticalTests`
+- `./tests/SSWTests`
+
+Final outcome:
+- Tactical-only validation passed: `./tests/tactical/TacticalTests` reported `OK (19 tests)`.
+- Full-suite context is non-blocking: `./tests/SSWTests` failed on unrelated existing assertions in `FGameConfigTest::testConstructor`, `FWeaponTest::testSetTarget`, and `FWeaponTest::testFireAtTarget`.
+
+Remaining verification notes:
+- The new coverage is source-order regression testing, not GUI automation. Verify the implementation behavior manually only if you need runtime confirmation beyond the tactical suite.

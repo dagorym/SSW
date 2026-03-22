@@ -8,6 +8,7 @@
 
 #include "Frontier.h"
 #include "tactical/FBattleScreen.h"
+#include "tactical/FTacticalAttackResult.h"
 #include "core/FHexMap.h"
 #include "gui/ICMSelectionGUI.h"
 #include <wx/wx.h>
@@ -16,6 +17,49 @@
 #include <sstream>
 
 namespace Frontier {
+
+namespace {
+
+FTacticalReportEvent buildMineDamageEvent(
+	const FTacticalShipReference & target,
+	const FTacticalAttackEffect & effect)
+{
+	FTacticalReportEvent reportEvent;
+	reportEvent.eventType = TRET_MineDamage;
+	reportEvent.subject = target;
+	reportEvent.target = target;
+	reportEvent.rollValue = effect.rollValue;
+	reportEvent.hullDamage = effect.hullDamageApplied;
+	reportEvent.immediate = true;
+	reportEvent.label = effect.label;
+	reportEvent.detail = effect.detail;
+	return reportEvent;
+}
+
+FTacticalAttackReport buildMineDamageAttackReport(
+	const FWeapon * weapon,
+	const FTacticalAttackResult & result)
+{
+	FTacticalAttackReport report;
+	report.target = FTacticalShipReference(result.targetID, result.targetOwnerID, result.targetName);
+	report.weapon = createTacticalWeaponReference(weapon);
+	report.hitRoll = result.hitRoll;
+	report.damageTableModifier = result.damageTableModifier;
+	report.targetRange = result.targetRange;
+	report.hullDamage = result.totalHullDamageApplied;
+	report.hit = result.hit();
+	report.immediate = true;
+	report.note = result.note;
+
+	for (std::vector<FTacticalAttackEffect>::const_iterator itr = result.effects.begin();
+		 itr != result.effects.end(); ++itr) {
+		report.internalEvents.push_back(buildMineDamageEvent(report.target, *itr));
+	}
+
+	return report;
+}
+
+}
 
 FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)
 		: wxScrolledWindow( parent, id, pos, size, style, name ) {
@@ -1321,13 +1365,31 @@ void FBattleBoard::applyMineDamage(){
 	}
 	// then we need to
 	if (mines.size()>0){
+		FTacticalCombatReportContext context;
+		context.reportType = TRT_MineDamage;
+		context.phase = m_parent->getPhase();
+		context.actingPlayerID = m_parent->getMovingPlayerID();
+		context.immediate = true;
+		m_parent->beginTacticalReport(context);
+
 		// 4) Call the ICMSelection GUI
 		ICMSelectionGUI *gui = new ICMSelectionGUI(m_parent,&icmData);
 		gui->ShowModal();
+
 		// 5) Call fire() on each of the weapons from step 1
 		for (WeaponList::iterator itr = mines.begin(); itr < mines.end(); itr++){
-			(*itr)->fire();
+			FTacticalAttackResult result = (*itr)->fire();
+			if (!result.fired()) {
+				continue;
+			}
+			m_parent->appendTacticalAttackReport(buildMineDamageAttackReport(*itr, result));
 		}
+
+		if (m_parent->getCurrentTacticalReport().attacks.size() > 0) {
+			FTacticalCombatReportSummary summary = m_parent->buildCurrentTacticalReportSummary();
+			m_parent->showTacticalDamageSummaryDialog(summary);
+		}
+		m_parent->clearTacticalReport();
 	}
 	// 6) cleanup the objects created.
 	// delete ICMData structures

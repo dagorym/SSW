@@ -1,7 +1,7 @@
 You are the Tester Agent.
 
 Task summary:
-- Verify immediate mine-damage reporting after movement-triggered mine resolution using the shared tactical damage summary dialog.
+- Integrate immediate mine-damage reporting after mine application.
 
 Modified files:
 - src/tactical/FBattleBoard.cpp
@@ -17,14 +17,15 @@ Create test files in:
 - tests/tactical/
 
 Implementation context for testing:
-- `FBattleBoard::applyMineDamage()` now records tactical mine-damage results, builds a damaged-ships-only summary from the shared report data, and shows `TacticalDamageSummaryGUI` before destroyed-ships cleanup runs.
-- Defensive fire and offensive fire reporting are intentionally untouched in this subtask.
-- Destroyed ships should still be visible on the board until the mine-damage dialog is closed.
-- Focus on the movement-triggered mine path only; do not broaden coverage into other tactical fire phases.
+- `FBattleBoard::applyMineDamage()` now builds tactical mine-damage attack reports, appends them to the shared tactical report, and shows the shared `TacticalDamageSummaryGUI` modal dialog before destroyed ships are cleared from the board.
+- The tactical report is marked immediate for mine damage, so the summary should appear as a post-resolution modal step rather than at the end of a broader combat phase.
+- Destroyed ships should still be visible in the mine-damage summary because `clearDestroyedShips()` is deferred until after the dialog closes.
+- Target regression checks should confirm mine-trigger handling occurs once per movement event and that the summary is not shown before mine resolution completes.
 
 Suggested test command(s):
-- `make -C src tactical`
-- `make -C src gui`
+- make -C src tactical
+- make -C src gui
+- make -C tests
 
 Shared artifact directory:
 - artifacts/tactical-damage-summary_subtask7
