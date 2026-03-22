@@ -2,7 +2,6 @@
   "status": "completed",
   "subtask_id": "subtask5",
   "branch_name": "tds-st5r1-verifier-20260322",
-  "commit_hash": "8b68820",
   "verdict": "PASS",
   "blocking_finding_count": 0,
   "warning_finding_count": 0,
