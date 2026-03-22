@@ -1,0 +1,25 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate that the top-level CppUnit runner now returns a conventional process exit code derived from `runner.run("", false)`.
+
+Modified files:
+- tests/SSWTests.cpp
+
+Acceptance criteria to validate (from Planner):
+- tests/SSWTests.cpp returns 0 when runner.run() succeeds.
+- tests/SSWTests.cpp returns 1 when runner.run() fails.
+- Test registration order and suite composition remain unchanged.
+
+Create test files in:
+- tests/ (assumption based on existing project test layout; no new tests were added by the implementer)
+
+Implementation context for testing:
+- The only code change is the final return in `main()` from returning the raw `bool` to returning `0` on success and `1` on failure.
+- All `runner.addTest(...)` registrations remain in their original order with no suite additions or removals.
+
+Suggested test command(s):
+- make -C tests SSWTests.o
+
+Shared artifact directory:
+- artifacts/test-runner-exit-code_subtask1
