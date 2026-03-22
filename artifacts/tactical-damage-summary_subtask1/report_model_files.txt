@@ -1,6 +1,0 @@
-Tactical report model files created for this subtask:
-- include/tactical/FTacticalCombatReport.h
-
-FBattleScreen ownership and API integration:
-- include/tactical/FBattleScreen.h
-- src/tactical/FBattleScreen.cpp
