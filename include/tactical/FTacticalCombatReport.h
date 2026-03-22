@@ -295,6 +295,30 @@ inline bool eventRepresentsDamageEffect(const FTacticalReportEvent & event) {
 		|| event.eventType == TRET_DefenseEffect;
 }
 
+inline bool eventMatchesShipReference(
+	const FTacticalShipReference & left,
+	const FTacticalShipReference & right) {
+	return left.shipID == right.shipID && left.ownerID == right.ownerID;
+}
+
+inline bool shouldCountInternalEventHullDamage(
+	const FTacticalAttackReport & attack,
+	const FTacticalReportEvent & event) {
+	if (event.hullDamage <= 0) {
+		return false;
+	}
+
+	// Attack-level hull damage is the canonical player-facing total for the target ship.
+	// Nested hull-damage events remain available as raw detail, but do not add the same
+	// applied hull damage a second time when they describe the attacked ship.
+	if (attack.hullDamage > 0 && attack.target.isValid()
+		&& eventMatchesShipReference(event.subject, attack.target)) {
+		return false;
+	}
+
+	return true;
+}
+
 inline std::string summarizeEventEffect(const FTacticalReportEvent & event) {
 	if (event.label.size() > 0) {
 		return event.label;
@@ -413,7 +437,7 @@ inline FTacticalCombatReportSummary buildTacticalCombatReportSummary(const FTact
 					TacticalCombatReportDetail::ensureShipSummary(summaryMap, summaryOrder, event.subject);
 				eventSummary.internalEventsTriggered++;
 				eventSummary.rawEvents.push_back(event);
-				if (event.hullDamage > 0) {
+				if (TacticalCombatReportDetail::shouldCountInternalEventHullDamage(attack, event)) {
 					eventSummary.hullDamageTaken += event.hullDamage;
 				}
 				TacticalCombatReportDetail::appendEffectSummary(

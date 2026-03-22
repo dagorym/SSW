@@ -1,35 +1,29 @@
 You are the Tester Agent.
 
 Task summary:
-- Validate the new tactical combat reporting foundation owned by `FBattleScreen`.
-- Confirm the data model preserves raw attack/event data and can build per-ship display summaries without changing tactical phase behavior.
+- Validate the tactical combat summary aggregation change that prevents player-facing hull totals from double counting nested attack hull-damage events already represented by `attack.hullDamage`.
 
 Modified files:
-- include/tactical/FBattleScreen.h
 - include/tactical/FTacticalCombatReport.h
-- src/tactical/FBattleScreen.cpp
 
 Acceptance criteria to validate (from Planner):
-- There is a clear data model for individual attack results and aggregated ship results.
-- `FBattleScreen` exposes APIs to begin a report, append raw events, build a display summary, and clear report state.
-- The model is suitable for defensive fire, offensive fire, electrical fire, and mine damage reporting.
-- The model preserves raw per-attack/internal event data while supporting a separate per-ship display rollup.
-- New reporting types live under `include/tactical/` and `src/tactical/` unless there is a specific, justified need to place them elsewhere.
-- No implementation code changes phase behavior beyond setting up this reporting foundation.
-- The subtask output is written into an appropriately labeled directory under `artifacts/`, with a name in the style of `tactical-damage-summary_subtask1`.
-- The artifact output identifies the exact report-model files created so later subtasks can consume them reliably.
+- A hit represented by both attack-level hull damage and matching nested hull-damage events contributes to `hullDamageTaken` exactly once.
+- Standalone report-level events in `report.events` still contribute their hull damage to summaries.
+- Non-hull nested effects still contribute to effect rollups.
 
 Create test files in:
-- `tests/tactical/` (inferred; the repository currently has no tactical test directory)
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/Makefile
 
 Implementation context for testing:
-- `FBattleScreen` now owns `m_tacticalReport` and exposes begin/append/build/clear accessors for the current tactical report state.
-- The new report model is header-only in `include/tactical/FTacticalCombatReport.h` to avoid build-system changes outside the allowed file set.
-- Raw data is split between per-attack records (`attacks`, with nested internal events) and report-level immediate events (`events`), with summary rollup built separately by `buildCurrentTacticalReportSummary()`.
-- Existing phase transitions and electrical fire damage behavior were not changed beyond report-state reset on fleet setup.
+- `buildTacticalCombatReportSummary()` now treats `attack.hullDamage` as the canonical player-facing hull total for the attacked ship when nested `internalEvents` with hull damage target that same ship.
+- Nested attack events are still preserved in `rawEvents` and still contribute to effect rollups; only duplicate hull accounting is suppressed.
+- Standalone `report.events` hull damage logic was left unchanged and should still increment `hullDamageTaken`.
 
 Suggested test command(s):
-- `make -C src/tactical clean all`
+- make -C tests/tactical FTacticalCombatReportTest.o
+- make -C tests/tactical
 
 Shared artifact directory:
-- `artifacts/tactical-damage-summary_subtask1`
+- artifacts/tactical-damage-summary_subtask1
