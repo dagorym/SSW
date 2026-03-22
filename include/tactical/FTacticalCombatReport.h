@@ -310,7 +310,9 @@ inline bool shouldCountInternalEventHullDamage(
 
 	// Attack-level hull damage is the canonical player-facing total for the target ship.
 	// Nested hull-damage events remain available as raw detail, but do not add the same
-	// applied hull damage a second time when they describe the attacked ship.
+	// applied hull damage a second time when they describe the attacked ship. attackIndex
+	// is used as the explicit link for normalized attack detail, while the ship-reference
+	// fallback keeps older report fixtures compatible.
 	if (attack.hullDamage > 0 && attack.target.isValid()
 		&& eventMatchesShipReference(event.subject, attack.target)) {
 		return false;

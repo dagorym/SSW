@@ -49,12 +49,32 @@ void appendTacticalDamageResolutionEvents(
 		FTacticalReportEvent event;
 		event.eventType = tacticalReportEventTypeForDamageEffect(itr->effectType);
 		event.subject = FTacticalShipReference(ship->getID(), ship->getOwner(), ship->getName());
+		event.source = event.subject;
+		event.target = event.subject;
 		event.rollValue = itr->rollValue;
 		event.hullDamage = itr->hullDamageApplied;
+		event.attackIndex = -1;
 		event.immediate = true;
 		event.label = itr->label;
 		event.detail = itr->detail;
 		report.events.push_back(event);
+	}
+}
+
+void normalizeAttackInternalEvents(FTacticalAttackReport & attack, int attackIndex) {
+	for (unsigned int i = 0; i < attack.internalEvents.size(); ++i) {
+		FTacticalReportEvent & event = attack.internalEvents[i];
+		if (!event.subject.isValid() && attack.target.isValid()) {
+			event.subject = attack.target;
+		}
+		if (!event.source.isValid() && attack.attacker.isValid()) {
+			event.source = attack.attacker;
+		}
+		if (!event.target.isValid() && attack.target.isValid()) {
+			event.target = attack.target;
+		}
+		event.attackIndex = attackIndex;
+		event.immediate = attack.immediate;
 	}
 }
 
@@ -266,7 +286,10 @@ void FBattleScreen::appendTacticalAttackReport(const FTacticalAttackReport & att
 		context.immediate = attack.immediate;
 		beginTacticalReport(context);
 	}
-	m_tacticalReport.attacks.push_back(attack);
+	FTacticalAttackReport normalizedAttack = attack;
+	normalizeAttackInternalEvents(normalizedAttack, static_cast<int>(m_tacticalReport.attacks.size()));
+	// m_tacticalReport.attacks.push_back(attack);
+	m_tacticalReport.attacks.push_back(normalizedAttack);
 }
 
 void FBattleScreen::appendTacticalReportEvent(const FTacticalReportEvent & event) {
@@ -277,7 +300,10 @@ void FBattleScreen::appendTacticalReportEvent(const FTacticalReportEvent & event
 		context.immediate = event.immediate;
 		beginTacticalReport(context);
 	}
-	m_tacticalReport.events.push_back(event);
+	FTacticalReportEvent normalizedEvent = event;
+	normalizedEvent.attackIndex = -1;
+	// m_tacticalReport.events.push_back(event);
+	m_tacticalReport.events.push_back(normalizedEvent);
 }
 
 FTacticalCombatReportSummary FBattleScreen::buildCurrentTacticalReportSummary() const {

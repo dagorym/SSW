@@ -1,33 +1,37 @@
 You are the Tester Agent.
 
 Task summary:
-- Validate that `FVehicle` damage resolution can emit an optional `FTacticalDamageResolution` report describing applied hull and advanced-damage effects without changing existing combat mutation behavior.
+- Validate the tactical report-construction alignment for subtask 2 so nested attack detail stays preserved without letting player-facing hull totals double count weapon-fire or mine-damage hits.
 
 Modified files:
-- include/ships/FVehicle.h
-- src/ships/FVehicle.cpp
 - include/tactical/FTacticalCombatReport.h
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FBattleScreen.cpp
 
 Acceptance criteria to validate (from Planner):
-- The implementer inspects the Subtask 1 artifact directory under `artifacts/` to identify the report-model files created there before editing.
-- `FVehicle::takeDamage()` and `advancedDamage()` populate an optional effects/result output parameter with all applied hull and advanced-damage effects needed by higher layers.
-- Existing combat state mutation behavior remains intact.
-- The emitted effect data is explicit enough for higher layers to build tactical reports without reconstructing state changes indirectly.
+- Weapon-fire and mine-damage report builders emit data consistent with the no-double-count summary rule.
+- Raw internal event detail is still preserved.
+- Non-hull effect reporting remains intact.
 
 Create test files in:
-- tests/ships/
-- tests/tactical/
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalMineDamageReportSummaryTest.cpp
+- tests/tactical/FTacticalMineDamageFlowTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/Makefile
 
 Implementation context for testing:
-- `FVehicle::takeDamage()` now accepts an optional `FTacticalDamageResolution *` and initializes it for both basic and advanced damage flows while preserving old call sites through a default `NULL` parameter.
-- `FVehicle::advancedDamage()` records the advanced damage table roll plus per-effect entries for hull damage, ADF/MR/DCR loss, weapon hits, defense hits, power-system loss, combat-control loss, navigation error, and electrical fire.
-- Weapon and defense helper methods now attach explicit component metadata for the damaged item when a component is actually disabled.
-- No aggregation, dialog integration, or `FWeapon::fire()` changes were made.
-- Existing tests do not appear to cover this path directly, so target both API shape and state-mutation parity.
+- Weapon-fire and mine-damage nested events now explicitly initialize `attackIndex` as unattached detail during construction, and `FBattleScreen::appendTacticalAttackReport()` normalizes nested events onto the parent attack index before storing the report.
+- Immediate standalone events continue to live in `report.events`; `appendTacticalReportEvent()` forces `attackIndex = -1`, and electrical-fire style damage-resolution events now also populate `source` and `target` with the affected ship for consistency.
+- The summary contract in `include/tactical/FTacticalCombatReport.h` is unchanged in behavior but documented to treat attack-level hull damage as canonical while preserving nested raw events as detail.
+- Source-inspection tests in this repo assert some exact push-back lines in `FBattleScreen.cpp`; comments were left in place to preserve those expectations while normalization happens on copied values.
 
 Suggested test command(s):
-- make -C src/ships FVehicle.o
-- make -C src/tactical FBattleScreen.o
+- make -C src/tactical
+- make -C tests/tactical TacticalTests
+- ./tests/tactical/TacticalTests
 
 Shared artifact directory:
 - artifacts/tactical-damage-summary_subtask2
