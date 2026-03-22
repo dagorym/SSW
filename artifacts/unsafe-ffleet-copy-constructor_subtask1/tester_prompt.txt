@@ -1,0 +1,28 @@
+You are the Tester Agent.
+
+Task summary:
+- Disabled implicit FFleet copy support to prevent shallow pointer aliasing of owned ships.
+
+Modified files:
+- include/strategic/FFleet.h
+- src/strategic/FFleet.cpp
+
+Acceptance criteria to validate (from Planner):
+- Copy construction and assignment are disabled or otherwise rejected by the type system.
+- The code no longer admits the unsafe shallow-copy ownership model.
+- The change is documented in a short ownership comment.
+
+Create test files in:
+- tests/strategic/FFleetTest.cpp
+
+Implementation context for testing:
+- FFleet copy constructor support was removed from public API and made inaccessible.
+- Copy assignment was also made inaccessible.
+- Shallow-copy implementation code that duplicated m_ships pointers was removed.
+- Existing strategic tests currently include a copy-constructor test and should be updated to validate the new non-copyable contract.
+
+Suggested test command(s):
+- make -C tests/strategic libstrategicTests.a
+
+Shared artifact directory:
+- artifacts/unsafe-ffleet-copy-constructor_subtask1
