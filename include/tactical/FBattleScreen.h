@@ -192,6 +192,7 @@ public:
 	void appendTacticalAttackReport(const FTacticalAttackReport & attack);
 	void appendTacticalReportEvent(const FTacticalReportEvent & event);
 	FTacticalCombatReportSummary buildCurrentTacticalReportSummary() const;
+	int showTacticalDamageSummaryDialog(const FTacticalCombatReportSummary & summary);
 	void clearTacticalReport();
 	const FTacticalCombatReport & getCurrentTacticalReport() const { return m_tacticalReport; }
 

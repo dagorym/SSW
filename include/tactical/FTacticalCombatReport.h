@@ -157,6 +157,43 @@ struct FTacticalCombatReportContext {
 		: reportType(TRT_None), phase(0), actingPlayerID(0), immediate(false), title("") {}
 };
 
+inline std::string tacticalCombatReportTypeLabel(TacticalReportType reportType) {
+	switch (reportType) {
+	case TRT_DefensiveFire:
+		return "Defensive Fire Results";
+	case TRT_OffensiveFire:
+		return "Offensive Fire Results";
+	case TRT_ElectricalFire:
+		return "Electrical Fire Damage";
+	case TRT_MineDamage:
+		return "Mine Damage";
+	default:
+		return "Tactical Damage Summary";
+	}
+}
+
+inline std::string tacticalCombatReportContextLabel(const FTacticalCombatReportContext & context) {
+	if (context.title.size() > 0) {
+		return context.title;
+	}
+	return tacticalCombatReportTypeLabel(context.reportType);
+}
+
+inline std::string tacticalCombatReportContextModeLabel(const FTacticalCombatReportContext & context) {
+	if (context.immediate) {
+		return "Immediate report";
+	}
+	return "End-of-phase report";
+}
+
+inline std::string tacticalCombatReportDialogTitle(const FTacticalCombatReportContext & context) {
+	const std::string contextLabel = tacticalCombatReportContextLabel(context);
+	if (contextLabel.size() == 0 || contextLabel == "Tactical Damage Summary") {
+		return "Tactical Damage Summary";
+	}
+	return std::string("Tactical Damage Summary - ") + contextLabel;
+}
+
 struct FTacticalShipReportSummary {
 	FTacticalShipReference ship;
 	int attacksMade;
