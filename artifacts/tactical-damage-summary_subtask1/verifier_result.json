@@ -1,40 +1,23 @@
 {
   "status": "success",
   "subtask": "tactical-damage-summary_subtask1",
-  "branch": "tds-st1-verifier-20260320",
-  "commit_hash": "2c972fc4a91066b7a565da169c450af5361933e7",
-  "verified_report_model_files": [
-    "include/tactical/FTacticalCombatReport.h",
-    "include/tactical/FBattleScreen.h",
-    "src/tactical/FBattleScreen.cpp"
-  ],
+  "branch": "tds-st1-verifier-20260322",
+  "reviewed_commit": "a4bc7632bb0985157e6aad440669f812374c695b",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency_summary": "Sufficient for the stated acceptance criteria. The verifier reran `make -C tests/tactical` and `./tests/tactical/TacticalTests`, which passed with `OK (31 tests)`. New coverage directly exercises duplicate same-target nested hull suppression, standalone report-level hull events, and non-hull nested effect rollups.",
   "commands_run": [
-    "make -C src/tactical clean all",
-    "make -C tests/tactical all",
+    "pwd",
+    "git branch --show-current",
+    "git rev-parse HEAD",
+    "git diff 817d108..HEAD -- include/tactical/FTacticalCombatReport.h tests/tactical/FTacticalCombatReportTest.h tests/tactical/FTacticalCombatReportTest.cpp",
+    "make -C tests/tactical",
     "./tests/tactical/TacticalTests"
   ],
-  "acceptance_criteria": {
-    "clear_raw_and_aggregated_model": true,
-    "battle_screen_report_lifecycle_api": true,
-    "supports_defensive_offensive_electrical_and_mine_reporting": true,
-    "preserves_raw_data_with_separate_ship_rollup": true,
-    "reporting_types_live_under_tactical": true,
-    "no_phase_behavior_change_beyond_foundation_setup": true,
-    "artifact_identifies_exact_report_model_files": true
-  },
-  "test_results": {
-    "tactical_runner_passed": true,
-    "tests_run": 6,
-    "passed": 6,
-    "failed": 0
-  },
-  "notes": [
-    "Verified directly against commit 2c972fc4a91066b7a565da169c450af5361933e7 on branch tds-st1-verifier-20260320.",
-    "The dedicated tactical test runner passed locally with OK (6 tests).",
-    "The tactical library build produced only pre-existing compiler warnings about unused local variables."
-  ],
-  "residual_risks": [
-    "Verification still relies on the dedicated tactical runner and source-level contract checks rather than live wx dialog instantiation.",
-    "The broader tests aggregate remains out of scope because of the unrelated strategic test compile issue already documented by the tester."
+  "artifact_files": [
+    "artifacts/tactical-damage-summary_subtask1/verifier_report.md",
+    "artifacts/tactical-damage-summary_subtask1/verifier_result.json"
   ]
 }
