@@ -30,6 +30,7 @@ FTacticalReportEvent buildMineDamageEvent(
 	reportEvent.target = target;
 	reportEvent.rollValue = effect.rollValue;
 	reportEvent.hullDamage = effect.hullDamageApplied;
+	reportEvent.attackIndex = -1;
 	reportEvent.immediate = true;
 	reportEvent.label = effect.label;
 	reportEvent.detail = effect.detail;

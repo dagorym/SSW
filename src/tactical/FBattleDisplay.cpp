@@ -53,6 +53,7 @@ FTacticalReportEvent buildTacticalAttackEvent(
 	event.target = report.target;
 	event.rollValue = effect.rollValue;
 	event.hullDamage = effect.hullDamageApplied;
+	event.attackIndex = -1;
 	event.immediate = report.immediate;
 	event.label = effect.label;
 	event.detail = effect.detail;
