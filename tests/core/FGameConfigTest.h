@@ -19,6 +19,9 @@ class FGameConfigTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST_SUITE( FGameConfigTest );
 	CPPUNIT_TEST( testConstructor );
 	CPPUNIT_TEST( testSerialize );
+	CPPUNIT_TEST( testGetGameConfigLazyCreatesSingleton );
+	CPPUNIT_TEST( testResetRecreatesSingletonAndMaintainsContract );
+	CPPUNIT_TEST( testBasePathConsistentForProductionCallers );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -30,6 +33,9 @@ public:
 
 	void testConstructor();
 	void testSerialize();
+	void testGetGameConfigLazyCreatesSingleton();
+	void testResetRecreatesSingletonAndMaintainsContract();
+	void testBasePathConsistentForProductionCallers();
 };
 
 }
