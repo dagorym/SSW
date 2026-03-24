@@ -112,8 +112,8 @@ void FWeaponTest::testBaseWeaponZeroRange(){
 	CPPUNIT_ASSERT( m_w1->getTarget() == NULL );
 	CPPUNIT_ASSERT( m_w1->getTargetRange() == -1 );
 
-	// Concrete weapon (LB, range=9) accepts range-3 target and fires successfully
-	// TASR_InvalidTargetRange: target set but range < 0, ammo available
+	// Concrete weapon (LB, range=9): cover TASR_InvalidTargetRange path
+	// target set with range=-1 (accepted by setTarget), ammo available, fire() rejects
 	FWeapon *lb = createWeapon(FWeapon::LB);
 	lb->setMaxAmmo(1);
 	lb->setCurrentAmmo(1);
