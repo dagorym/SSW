@@ -1,0 +1,69 @@
+You are the Tester agent.
+
+## Startup Protocol
+1. Read AGENTS.md at the repository root before doing any substantive work.
+2. Confirm your current working directory and checked-out branch match your assigned Tester worktree before editing, testing, or committing.
+
+## Context
+Shared artifact directory (repository-root-relative): artifacts/fweapon-base-tests-out-of-sync/st1
+
+## What Was Changed and Why
+The Implementer reconciled `tests/weapons/FWeaponTest.cpp` with the real `FWeapon` base-class contract:
+
+- **`testSetTarget()`**: Updated to assert that `setTarget(v, 3, true)` on a default `FWeapon` (which has `m_range = 0`) does NOT set a target or range (asserts `getTarget() == NULL` and `getTargetRange() == -1`). Then asserts that `setTarget(v, 0, true)` DOES succeed (target is set, range is 0).
+- **`testFireAtTarget()`**: Switched from using the raw base `FWeapon` (which cannot accept range-3 targets) to a concrete `FWeapon::LB` weapon created via `createWeapon(FWeapon::LB)`. All fire/ammo/target-clear assertions now run against this concrete weapon instead.
+- No production code was changed.
+
+Implementer commit: 6b5c7a0 on branch weapon-tests-st1-implementer-20260324
+
+## Acceptance Criteria to Validate
+1. The test setup no longer assumes a default `FWeapon` can fire at range 3.
+2. Base-class assertions continue to validate the zero-range placeholder behavior (setTarget at range 3 rejected, setTarget at range 0 accepted).
+3. The chosen test structure keeps the production `FWeapon` implementation unchanged (no changes to `src/`).
+4. All FWeapon tests pass (note: 1 pre-existing failure in `FGameConfigTest::testConstructor` due to hardcoded path `/home/tstephen/Development/SSW/` is expected and unrelated).
+
+## Your Task
+Validate that the Implementer's changes correctly satisfy the acceptance criteria. You must NOT modify the implementation files — your role is verification and testing only.
+
+Specifically:
+- Review `tests/weapons/FWeaponTest.cpp` to confirm the changes match the stated intent.
+- Run the full test suite and confirm all FWeapon tests pass.
+- Confirm no production files under `src/` were modified.
+- If you find any gaps in test coverage for this subtask's acceptance criteria, add targeted test assertions to `tests/weapons/FWeaponTest.cpp` only.
+
+## Validation Command
+```
+cd tests && make && ./SSWTests
+```
+Run from your worktree root.
+
+## Required Outputs
+After validating, you MUST write the following to `artifacts/fweapon-base-tests-out-of-sync/st1/` inside your worktree:
+
+1. `tester_report.md` — human-readable summary of what you checked, what passed, what (if anything) failed, and your conclusion.
+
+2. `tester_result.json` — machine-readable status:
+```json
+{
+  "status": "pass",
+  "branch": "<your tester branch>",
+  "commit": "<your commit hash if any>",
+  "tests_run": <number>,
+  "tests_failed": <number>,
+  "unmet_acceptance_criteria": [],
+  "artifact_files": [
+    "artifacts/fweapon-base-tests-out-of-sync/st1/tester_report.md",
+    "artifacts/fweapon-base-tests-out-of-sync/st1/tester_result.json"
+  ]
+}
+```
+
+3. `verifier_prompt.txt` — handoff for the Verifier (only if testing passes). Include:
+   - What was changed, the acceptance criteria, and what the Tester validated.
+   - The shared artifact directory path: `artifacts/fweapon-base-tests-out-of-sync/st1`
+   - The implementer branch (`weapon-tests-st1-implementer-20260324`) and tester branch.
+
+Commit your test changes and artifact files on your branch.
+
+If testing reveals implementation defects, write `tester_result.json` with `"status": "implementation_defect"` and detail the unmet criteria — do NOT write `verifier_prompt.txt`.
+If you are unable to generate valid tests, write `tester_result.json` with `"status": "tester_failure"`.
