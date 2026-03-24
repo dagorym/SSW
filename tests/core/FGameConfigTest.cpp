@@ -87,4 +87,43 @@ void FGameConfigTest::testBasePathConsistentForProductionCallers(){
 	CPPUNIT_ASSERT(createPath == getPath);
 }
 
+void FGameConfigTest::testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls(){
+	// Regression: repeated create()/getGameConfig() calls must not replace singleton.
+	FGameConfig::reset();
+
+	FGameConfig &initialCreate = FGameConfig::create();
+	FGameConfig &secondCreate = FGameConfig::create();
+	FGameConfig &firstGet = FGameConfig::getGameConfig();
+	FGameConfig &secondGet = FGameConfig::getGameConfig();
+
+	CPPUNIT_ASSERT(&initialCreate == &secondCreate);
+	CPPUNIT_ASSERT(&initialCreate == &firstGet);
+	CPPUNIT_ASSERT(&firstGet == &secondGet);
+}
+
+void FGameConfigTest::testMultipleResetAndRecreateCyclesRemainFunctional(){
+	// Regression: repeated reset -> getGameConfig() cycles remain deterministic.
+	FGameConfig::reset();
+
+	std::string expectedPath;
+	const int cycleCount = 5;
+	for (int i = 0; i < cycleCount; i++){
+		FGameConfig &config = FGameConfig::getGameConfig();
+		const std::string currentPath = config.getBasePath();
+
+		CPPUNIT_ASSERT(!currentPath.empty());
+		if (i == 0){
+			expectedPath = currentPath;
+		}else{
+			CPPUNIT_ASSERT(expectedPath == currentPath);
+		}
+
+		// Ensure create() in same cycle returns exact existing singleton.
+		FGameConfig &created = FGameConfig::create();
+		CPPUNIT_ASSERT(&config == &created);
+
+		FGameConfig::reset();
+	}
+}
+
 }
