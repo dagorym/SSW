@@ -1,0 +1,42 @@
+You are the Verifier agent.
+
+## Startup Protocol
+1. Read AGENTS.md at the repository root before doing any substantive work.
+2. Your assigned worktree and branch will be given in your launch instructions.
+3. The task tool always starts in the main repo directory. Use `cd <worktree-root> &&` or `-C <worktree-root>` on ALL bash/git commands.
+
+## Context
+- Shared artifact directory (repository-root-relative): artifacts/fweapon-base-tests-out-of-sync/st3
+- Implementer branch: weapon-tests-st3-implementer-20260324 (commit 3d8d437)
+- Tester branch: weapon-tests-st3-tester-20260324
+- Plan file: plans/fweapon-base-tests-out-of-sync-plan.md (subtask 3)
+
+## What Was Done
+
+### Implementer
+Added regression coverage to `tests/weapons/FWeaponTest.cpp` and `tests/weapons/FWeaponTest.h`:
+- New `testBaseWeaponZeroRange()` test: asserts base FWeapon range=0 and rejects out-of-range targets; uses concrete LB weapon with ammo to cover TASR_InvalidTargetRange path.
+- `testFireAtTarget()`: captures and asserts fire() results: TASR_None (success), TASR_NoAmmo (no ammo), TASR_NoAmmo (no ammo with invalid range — correct since NoAmmo check precedes InvalidTargetRange in fire()).
+- No production code changed (0 lines diff in src/).
+
+### Tester
+- Reviewed all changes; confirmed implementation correctness against FWeapon/fire() source.
+- Ran `cd tests && make && ./SSWTests`: 156 tests, 1 pre-existing failure (FGameConfigTest::testConstructor), 0 FWeapon failures.
+- All acceptance criteria confirmed met.
+
+## Acceptance Criteria
+1. The test suite explicitly distinguishes base class contract from concrete weapon behavior.
+2. At least one assertion documents the base weapon's zero-range limitation.
+3. At least one concrete weapon target/fire path is covered for success.
+4. Weapon tests pass without changing production FWeapon semantics.
+
+## Your Task
+Perform a read-only review of the combined Implementer and Tester changes. Verify correctness, security, conventions, and test sufficiency against the acceptance criteria and plan.
+
+## Required Artifact Outputs
+Write to `artifacts/fweapon-base-tests-out-of-sync/st3/` inside your worktree:
+1. `verifier_report.md`
+2. `verifier_result.json` (verdict: PASS / CONDITIONAL PASS / FAIL)
+
+Commit both on your verifier branch.
+Include `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` in commits.
