@@ -1,0 +1,44 @@
+You are the Verifier Agent.
+
+## Implementation Summary (Subtask 2)
+
+Branch: weapon-tests-s2-tester-20260324 (includes weapon-tests-s2-implementer-20260324)
+
+### Changes (weapon-tests-s2-implementer-20260324)
+File changed: `tests/core/FGameConfigTest.cpp`
+
+`testConstructor()` updated:
+- **Removed:** `CPPUNIT_ASSERT(basePath == "/home/tstephen/Development/SSW/")`
+- **Added:** `CPPUNIT_ASSERT(!basePath.empty())` and `CPPUNIT_ASSERT(basePath[basePath.size()-1] == '/')`
+
+Rationale: `getBasePath()` is derived from `readlink("/proc/self/exe")` at runtime — the path reflects the executable location and is not portable across machines or worktrees.
+
+`testSerialize()` unchanged — still uses `FGameConfig::reset()` lifecycle correctly.
+
+## Acceptance Criteria to Verify
+
+1. `testConstructor()` contains no machine-specific hardcoded path.
+2. The portable assertions (non-empty, trailing `/`) are correct and meaningful.
+3. `testSerialize()` still validates save/load behavior correctly.
+4. Fixture lifecycle uses `FGameConfig::reset()` — no raw delete.
+5. Full test suite passes with 0 unexpected failures (all 159 tests pass).
+
+## Validation Commands
+
+```bash
+cd <worktree> && make 2>&1 | tail -10
+cd <worktree>/tests && make 2>&1 | tail -10 && ./SSWTests 2>&1 | tail -8
+```
+
+## Shared Artifact Directory
+
+`artifacts/fgameconfig-singleton/subtask-2`
+Absolute: `/home/tstephen/repos/SSW/artifacts/fgameconfig-singleton/subtask-2`
+
+## Required Output Artifacts
+
+Write to `/home/tstephen/repos/SSW/artifacts/fgameconfig-singleton/subtask-2/`:
+- `verifier_report.md` — verdict, AC evidence, findings, test sufficiency
+- `verifier_result.json` — `verdict`, `blocking_findings`, `non_blocking_findings`, `test_sufficiency`, `artifact_files`
+
+Commit both files on your verifier branch.
