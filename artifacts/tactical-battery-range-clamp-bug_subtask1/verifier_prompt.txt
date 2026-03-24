@@ -1,0 +1,53 @@
+You are the Verifier Agent.
+
+Task summary:
+- Subtask 1 of tactical-battery-range-clamp-bug: Fixed FBattleBoard::computeBatteryRange so upper bounds clamp to m_nCol-1/m_nRow-1. Added rigorous source-inspection regression suite (5 tests) covering center, edge, corner, all-clamps-before-loop ordering, and inclusive loop boundary invariants. This is a remediation cycle — prior tests were rejected for insufficient rigor; these tests add negative assertions, ordering proofs, and Doxygen compliance.
+
+Implementer branch: clamp_bug-implementer-20260323
+Implementation commit: 05009e4b8c0d995e6a71258cc18b7bb91008d598
+
+Tester branch: clamp_bug-tester-20260324
+Tester commit: e61cc327959b42310ab612bd0832ebdf886d5867
+
+Files changed by Implementer:
+- src/tactical/FBattleBoard.cpp
+
+Files changed by Tester:
+- tests/tactical/FTacticalBatteryRangeClampTest.h (new)
+- tests/tactical/FTacticalBatteryRangeClampTest.cpp (new)
+- tests/tactical/Makefile (updated)
+- tests/tactical/TacticalTests.cpp (updated)
+- tests/SSWTests.cpp (updated)
+
+Key improvements in remediation:
+- Negative assertions: buggy patterns (xMax = m_nCol, if (xMax < m_nCol)) explicitly asserted ABSENT
+- Ordering invariants: all four clamps proven to precede the loop by index comparison
+- Doxygen @author and @date tags added
+
+Acceptance criteria to verify (from Planner):
+Subtask 1 (implementation):
+- The computed scan window never extends past the last valid column or row.
+- Edge and corner positions no longer produce off-map points in the range set.
+- The method still returns the same in-bounds results for positions fully inside the board.
+
+Subtask 2 (tests):
+- Regression test explicitly covers edge and corner cases.
+- Test harness builds cleanly with new coverage registered.
+- Regression test asserts no off-map coordinates can appear (proven via ordering + absence-of-bug assertions).
+- Tests pass with the corrected implementation.
+
+Test results: 155 total, 3 pre-existing failures, 0 new failures.
+
+Note on test approach: FBattleBoard is a wxScrolledWindow subclass. No wxApp is initialized in the test runner. Direct instantiation is not possible. Source-code inspection is the established project pattern for FBattleBoard tests (see FTacticalCombatReportTest). Verify whether this approach satisfactorily meets the acceptance criteria given the architectural constraint.
+
+Validation command (from worktree root, modules already built):
+  cd tests && make && ./SSWTests 2>&1 | tail -20
+
+Shared artifact directory:
+- artifacts/tactical-battery-range-clamp-bug_subtask1
+
+Required output artifacts (commit to your verifier branch):
+- artifacts/tactical-battery-range-clamp-bug_subtask1/verifier_report.md
+- artifacts/tactical-battery-range-clamp-bug_subtask1/verifier_result.json
+
+verifier_result.json must include: verdict (PASS/CONDITIONAL PASS/FAIL), finding_counts, blocking_findings, non_blocking_findings, test_sufficiency_summary, artifact_file_paths, verifier_commit_hash.
