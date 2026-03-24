@@ -27,7 +27,11 @@ void FGameConfigTest::tearDown(){
 
 void FGameConfigTest::testConstructor(){
 	std::string basePath = m_c1->getBasePath();
-	CPPUNIT_ASSERT (basePath == "/home/tstephen/Development/SSW/");
+	// Verify the base path is non-empty and has a trailing separator.
+	// The exact path is runtime-derived from the executable location and
+	// is not predictable across machines or worktrees.
+	CPPUNIT_ASSERT(!basePath.empty());
+	CPPUNIT_ASSERT(basePath[basePath.size() - 1] == '/');
 }
 
 void FGameConfigTest::testSerialize(){
