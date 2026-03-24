@@ -1,0 +1,65 @@
+You are the Verifier agent.
+
+## Startup Protocol
+1. Read AGENTS.md at the repository root before doing any substantive work. It is at `AGENTS.md` in your worktree root.
+2. Your assigned worktree and branch will be provided in your launch instructions. Confirm both before reviewing or committing.
+3. The task tool always starts you in the main repo directory — use `cd <worktree-root>` or `-C <worktree-root>` in all bash/git commands.
+
+## Context
+- Shared artifact directory (repository-root-relative): `artifacts/fweapon-base-tests-out-of-sync/st1`
+- Implementer branch: `weapon-tests-st1-implementer-20260324`
+- Tester branch: `weapon-tests-st1-tester-20260324`
+- Plan file: `plans/fweapon-base-tests-out-of-sync-plan.md`
+
+## What Was Done
+
+### Implementer (commit 6b5c7a0, then artifacts at d6066fe)
+Updated `tests/weapons/FWeaponTest.cpp` to reconcile the FWeapon test fixture with the zero-range base contract:
+- `testSetTarget()`: asserts base FWeapon (range=0) rejects range-3 target and accepts range-0 target.
+- `testFireAtTarget()`: replaced raw base FWeapon with `createWeapon(FWeapon::LB)` for range-3 fire/ammo assertions.
+- No production code changed.
+
+### Tester
+- Reviewed all changed files.
+- Confirmed 0 lines diff in `src/` (no production changes).
+- Ran `cd tests && make && ./SSWTests`: 155 tests, 1 pre-existing failure (`FGameConfigTest::testConstructor` — hardcoded path, unrelated), 0 FWeapon failures.
+- All acceptance criteria met.
+
+## Acceptance Criteria for This Subtask
+1. The test setup no longer assumes a default `FWeapon` can fire at range 3.
+2. Base-class assertions validate the zero-range placeholder behavior (setTarget at range 3 rejected; setTarget at range 0 accepted).
+3. The production `FWeapon` implementation is unchanged (no `src/` changes).
+4. All FWeapon tests pass.
+
+## Your Task
+Perform a read-only review of the combined Implementer and Tester changes. Verify:
+- The changes satisfy all acceptance criteria.
+- No production files were modified.
+- Test coverage is sufficient for the subtask scope.
+- No security, correctness, or logic issues introduced.
+
+You may run `cd <worktree-root>/tests && make && ./SSWTests` to independently verify test results.
+
+## Required Artifact Outputs
+Write to `artifacts/fweapon-base-tests-out-of-sync/st1/` inside your worktree:
+
+1. `verifier_report.md` — structured findings: what you reviewed, verdict, any issues.
+2. `verifier_result.json`:
+```json
+{
+  "status": "PASS",
+  "verdict": "PASS",
+  "branch": "<your verifier branch>",
+  "commit": "<your commit hash>",
+  "blocking_findings": 0,
+  "non_blocking_findings": 0,
+  "test_sufficiency": "sufficient",
+  "artifact_files": [
+    "artifacts/fweapon-base-tests-out-of-sync/st1/verifier_report.md",
+    "artifacts/fweapon-base-tests-out-of-sync/st1/verifier_result.json"
+  ]
+}
+```
+Possible verdicts: `PASS`, `CONDITIONAL PASS`, `FAIL`.
+
+Commit both artifact files on your Verifier branch. Use `-C <worktree-root>` for all git commands.

@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "branch": "weapon-tests-st1-tester-20260324",
+  "commit": "d6066fe",
+  "tests_run": 155,
+  "tests_failed": 0,
+  "notes": "1 pre-existing failure excluded: FGameConfigTest::testConstructor (hardcoded path unrelated to FWeapon changes). All FWeapon tests pass.",
+  "unmet_acceptance_criteria": [],
+  "artifact_files": [
+    "artifacts/fweapon-base-tests-out-of-sync/st1/tester_report.md",
+    "artifacts/fweapon-base-tests-out-of-sync/st1/tester_result.json",
+    "artifacts/fweapon-base-tests-out-of-sync/st1/verifier_prompt.txt"
+  ]
+}
