@@ -22,6 +22,8 @@ class FGameConfigTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testGetGameConfigLazyCreatesSingleton );
 	CPPUNIT_TEST( testResetRecreatesSingletonAndMaintainsContract );
 	CPPUNIT_TEST( testBasePathConsistentForProductionCallers );
+	CPPUNIT_TEST( testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls );
+	CPPUNIT_TEST( testMultipleResetAndRecreateCyclesRemainFunctional );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -36,6 +38,8 @@ public:
 	void testGetGameConfigLazyCreatesSingleton();
 	void testResetRecreatesSingletonAndMaintainsContract();
 	void testBasePathConsistentForProductionCallers();
+	void testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls();
+	void testMultipleResetAndRecreateCyclesRemainFunctional();
 };
 
 }
