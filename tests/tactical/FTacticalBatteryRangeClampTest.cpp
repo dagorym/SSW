@@ -99,6 +99,7 @@ void FTacticalBatteryRangeClampTest::testUpperBoundClampingUsesCorrectGuardAndAs
 	CPPUNIT_ASSERT(body.find("xMax = m_nCol;") == std::string::npos);
 	CPPUNIT_ASSERT(body.find("yMax = m_nRow;") == std::string::npos);
 	CPPUNIT_ASSERT(body.find("if (xMax < m_nCol)") == std::string::npos);
+	CPPUNIT_ASSERT(body.find("if (yMax < m_nRow)") == std::string::npos);
 	assertContainsAndGetIndex(body, "if (xMax > m_nCol - 1)");
 }
 
