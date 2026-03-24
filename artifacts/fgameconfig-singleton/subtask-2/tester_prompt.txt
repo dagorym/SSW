@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+## What changed and why
+
+Subtask 2 replaced the brittle hardcoded-path assertion in `testConstructor()`:
+
+- **Before:** `CPPUNIT_ASSERT(basePath == "/home/tstephen/Development/SSW/")`
+- **After:** two portable assertions — non-empty and ends with `/`
+
+The "SSW" substring check was also considered but rejected because `getBasePath()` is derived from `readlink("/proc/self/exe")` at runtime, so the path reflects the executable location (e.g. worktree path), not a fixed project name.
+
+`testSerialize()` was reviewed and is unchanged.
+
+## Acceptance Criteria to Verify
+
+1. `testConstructor()` no longer contains any machine-specific hardcoded path.
+2. The two portable assertions (non-empty, trailing `/`) are correct and meaningful.
+3. `testSerialize()` still validates save/load behavior correctly.
+4. The fixture lifecycle continues to use `FGameConfig::reset()` (no raw delete).
+5. Full test suite passes with 0 unexpected failures.
+
+## Test file locations
+
+- `tests/core/FGameConfigTest.cpp`
+- `tests/core/FGameConfigTest.h`
+
+## Validation commands
+
+```bash
+cd /home/tstephen/worktrees/weapon-tests-s2-tester-<DATE>/tests && make 2>&1 | tail -10
+./SSWTests 2>&1 | tail -12
+```
+
+## Shared artifact directory
+
+`artifacts/fgameconfig-singleton/subtask-2`
+Absolute: `/home/tstephen/repos/SSW/artifacts/fgameconfig-singleton/subtask-2`
+
+Write: `tester_report.md`, `tester_result.json`, and `verifier_prompt.txt` (if passing).

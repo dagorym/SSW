@@ -1,0 +1,38 @@
+You are the Tester Agent.
+
+## What changed and why
+
+Subtask 3 adds two focused regression tests for `FGameConfig` singleton access safety:
+
+1. **`testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls`** — verifies that repeated `create()` and `getGameConfig()` calls all return the same instance address (no duplicate allocation).
+
+2. **`testMultipleResetAndRecreateCyclesRemainFunctional`** — runs 5 sequential `reset()` → `getGameConfig()` cycles and asserts each produces a functional singleton with a consistent, non-empty base path; also verifies `create()` returns the existing instance within each cycle.
+
+These do not duplicate the S1 tests (`testGetGameConfigLazyCreatesSingleton`, `testResetRecreatesSingletonAndMaintainsContract`, `testBasePathConsistentForProductionCallers`).
+
+## Acceptance Criteria to Verify
+
+1. `testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls` correctly tests that repeated create/get calls return the same singleton.
+2. `testMultipleResetAndRecreateCyclesRemainFunctional` correctly tests deterministic multi-cycle behavior.
+3. All reset/teardown uses `FGameConfig::reset()` — no raw pointer deletion.
+4. No pre-existing tests are regressed (1 pre-existing failure in `testConstructor` is expected — it is addressed by Subtask 2, not Subtask 3).
+5. Tests are deterministic and do not depend on test-order state.
+
+## Test file locations
+
+- `tests/core/FGameConfigTest.cpp`
+- `tests/core/FGameConfigTest.h`
+
+## Validation commands
+
+```bash
+cd <worktree>/tests && make 2>&1 | tail -10
+./SSWTests 2>&1 | tail -12
+```
+
+## Shared artifact directory
+
+`artifacts/fgameconfig-singleton/subtask-3`
+Absolute: `/home/tstephen/repos/SSW/artifacts/fgameconfig-singleton/subtask-3`
+
+Write: `tester_report.md`, `tester_result.json`, and `verifier_prompt.txt` (if passing).
