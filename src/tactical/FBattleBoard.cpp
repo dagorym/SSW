@@ -1008,11 +1008,11 @@ void FBattleBoard::computeBatteryRange(FPoint &pos, PointSet &tList){
 	int xMin = pos.getX() - range;
 	if (xMin < 0) { xMin = 0; }
 	int xMax = pos.getX() + range;
-	if (xMax < m_nCol) { xMax = m_nCol; }
+	if (xMax > m_nCol - 1) { xMax = m_nCol - 1; }
 	int yMin = pos.getY() - range;
 	if (yMin < 0) { yMin = 0; }
 	int yMax = pos.getY() + range;
-	if (yMax < m_nRow) { yMax = m_nRow; }
+	if (yMax > m_nRow - 1) { yMax = m_nRow - 1; }
 
 	for (int i=xMin;i<=xMax;i++){
 		for (int j=yMin;j<=yMax;j++){
