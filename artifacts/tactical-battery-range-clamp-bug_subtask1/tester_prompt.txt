@@ -1,0 +1,38 @@
+You are the Tester Agent.
+
+Task summary:
+- Fixed FBattleBoard::computeBatteryRange in src/tactical/FBattleBoard.cpp so the scan window upper bounds clamp to the last valid inclusive board coordinate (m_nCol-1, m_nRow-1) instead of expanding toward the map size.
+
+Modified files:
+- src/tactical/FBattleBoard.cpp
+
+Acceptance criteria to validate (from Planner):
+- The tactical test suite fails before the fix and passes after the fix for the boundary scenarios.
+- The regression test explicitly covers edge and corner cases, not just a center-board case.
+- The test harness builds cleanly with the new coverage registered.
+- The regression test asserts that no off-map coordinates appear in the computed battery range.
+
+Create test files in:
+- tests/tactical/FTacticalBatteryRangeClampTest.h
+- tests/tactical/FTacticalBatteryRangeClampTest.cpp
+- Update tests/tactical/Makefile to include the new test object
+- Update tests/tactical/TacticalTests.cpp to register the new suite
+
+Implementation context for testing:
+- FBattleBoard::computeBatteryRange(FPoint &pos, PointSet &tList) computes hex positions within battery range of pos.
+- It builds a bounding box [xMin..xMax] x [yMin..yMax] then filters by hex distance.
+- xMin = max(0, pos.x - range); xMax = min(m_nCol-1, pos.x + range)
+- yMin = max(0, pos.y - range); yMax = min(m_nRow-1, pos.y + range)
+- Map is zero-based; valid columns are 0..m_nCol-1, valid rows are 0..m_nRow-1.
+- Edge case: position at column m_nCol-1 with range > 0 should not produce x >= m_nCol.
+- Corner case: position at (0,0) or (m_nCol-1, m_nRow-1) should not produce negative or out-of-bounds coords.
+- Center case: position fully inside the board should produce the same results as before.
+- PointSet is a std::set or similar container of FPoint; all points in tList after the call must satisfy 0 <= x < m_nCol and 0 <= y < m_nRow.
+- FBattleBoard can be constructed with a specific column/row size for testing. Review include/tactical/FBattleBoard.h for the constructor signature.
+
+Suggested test command(s):
+- cd tests/tactical && make
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/tactical-battery-range-clamp-bug_subtask1
