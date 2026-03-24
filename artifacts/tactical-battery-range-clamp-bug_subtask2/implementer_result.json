@@ -3,7 +3,7 @@
   "subtask": "tactical-battery-range-clamp-bug_subtask2",
   "branch": "clamp_bug-implementer-20260324",
   "implementation_commit_hash": "ebdbaf793f40cf0a9501071fa61e261560fcc7af",
-  "artifact_commit_hash": null,
+  "artifact_commit_hash": "3204b58e0ac0e144b75bc94b96efbfe6f0077db1",
   "changed_files": [],
   "validation_commands": [
     "cd tests && make && ./SSWTests 2>&1 | tail -10"
