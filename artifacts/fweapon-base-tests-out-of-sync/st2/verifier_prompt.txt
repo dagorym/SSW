@@ -1,0 +1,61 @@
+You are the Verifier agent.
+
+## Startup Protocol
+1. Read AGENTS.md at the repository root before doing any substantive work.
+2. Your assigned worktree and branch will be given in your launch instructions.
+3. The task tool always starts in the main repo directory. Prefix ALL bash/git commands with `cd <worktree-root> &&` or use `-C <worktree-root>`.
+
+## Context
+- Shared artifact directory (repository-root-relative): artifacts/fweapon-base-tests-out-of-sync/st2
+- Implementer branch: weapon-tests-st2-implementer-20260324 (commit ef2fed8)
+- Tester branch: weapon-tests-st2-tester-20260324 (commit 8a95bb0)
+- Plan file: plans/fweapon-base-tests-out-of-sync-plan.md (subtask 2)
+
+## What Was Done
+
+### Implementer
+Strengthened `tests/weapons/FWeaponTest.cpp` assertions for ST2:
+- `testSetTarget()`: added null-target-at-range-0 check (`setTarget(NULL, 0, false)`) to document cleared-target state.
+- `testFireAtTarget()`: added `getTarget() == NULL` assertion after third fire; added `setTarget(v, -1, true)` + fire in no-ammo state to cover invalid-range handling.
+- No production code changed (0 lines diff in src/).
+
+### Tester
+- Reviewed all changes; confirmed implementation correctness against FWeapon source.
+- Ran `cd tests && make && ./SSWTests`: 155 tests, 1 pre-existing failure (FGameConfigTest::testConstructor), 0 FWeapon failures.
+- All acceptance criteria confirmed met.
+
+## Acceptance Criteria
+1. `testSetTarget()` and `testFireAtTarget()` pass against the real implementation.
+2. Ammo depletion, target clearing, and invalid-target handling are asserted where applicable.
+3. Constructor and serialization assertions remain consistent with base-class defaults.
+4. No production src/ changes.
+
+## Your Task
+Perform a read-only review of the combined Implementer and Tester changes against the above criteria. Verify correctness, security, conventions, and test sufficiency.
+
+You may run `cd <worktree-root>/tests && make && ./SSWTests` to independently verify.
+
+## Required Artifact Outputs
+Write to `artifacts/fweapon-base-tests-out-of-sync/st2/` inside your worktree:
+
+1. `verifier_report.md` — structured findings and verdict.
+2. `verifier_result.json`:
+```json
+{
+  "status": "PASS",
+  "verdict": "PASS",
+  "branch": "<your verifier branch>",
+  "commit": "<your commit hash>",
+  "blocking_findings": 0,
+  "non_blocking_findings": 0,
+  "test_sufficiency": "sufficient",
+  "artifact_files": [
+    "artifacts/fweapon-base-tests-out-of-sync/st2/verifier_report.md",
+    "artifacts/fweapon-base-tests-out-of-sync/st2/verifier_result.json"
+  ]
+}
+```
+Possible verdicts: PASS, CONDITIONAL PASS, FAIL.
+
+Commit both files on your verifier branch using `-C <worktree-root>` for all git commands.
+Include trailer `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` in commits.
