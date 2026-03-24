@@ -2,7 +2,7 @@
   "status": "PASS",
   "verdict": "PASS",
   "branch": "weapon-tests-st1-verifier-20260324",
-  "commit": "pending",
+  "commit": "a7cf178",
   "blocking_findings": 0,
   "non_blocking_findings": 0,
   "test_sufficiency": "sufficient",
