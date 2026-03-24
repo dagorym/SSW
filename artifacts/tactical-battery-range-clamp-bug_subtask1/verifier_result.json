@@ -12,5 +12,5 @@
     "artifacts/tactical-battery-range-clamp-bug_subtask1/verifier_report.md",
     "artifacts/tactical-battery-range-clamp-bug_subtask1/verifier_result.json"
   ],
-  "verifier_commit_hash": null
+  "verifier_commit_hash": "13fd5237df29ea6647ac168020b3dcf1d6f5bfba"
 }
