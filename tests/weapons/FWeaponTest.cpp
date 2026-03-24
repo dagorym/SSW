@@ -112,6 +112,9 @@ void FWeaponTest::testSetTarget(){
 	m_w1->setTarget(v,0,true);
 	CPPUNIT_ASSERT( m_w1->getTarget() == v );
 	CPPUNIT_ASSERT( m_w1->getTargetRange() == 0 );
+	m_w1->setTarget(NULL,0,false);
+	CPPUNIT_ASSERT( m_w1->getTarget() == NULL );
+	CPPUNIT_ASSERT( m_w1->getTargetRange() == 0 );
 	delete v;
 }
 
@@ -144,11 +147,17 @@ void FWeaponTest::testFireAtTarget(){
 	w->fire();
 	CPPUNIT_ASSERT( w->getAmmo() == 0);
 	CPPUNIT_ASSERT( w->getTargetRange() == -1);
+	CPPUNIT_ASSERT( w->getTarget() == NULL);
 	w->setTarget(v,3,true);
 	w->fire();
 	CPPUNIT_ASSERT( w->getAmmo() == 0);
 	CPPUNIT_ASSERT( w->getTarget() == v);
 	CPPUNIT_ASSERT( w->getTargetRange() == 3);
+	w->setTarget(v,-1,true);
+	w->fire();
+	CPPUNIT_ASSERT( w->getAmmo() == 0);
+	CPPUNIT_ASSERT( w->getTarget() == v);
+	CPPUNIT_ASSERT( w->getTargetRange() == -1);
 	delete w;
 	delete v;
 }
