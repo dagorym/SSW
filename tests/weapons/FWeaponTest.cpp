@@ -107,8 +107,11 @@ void FWeaponTest::testSerialize(){
 void FWeaponTest::testSetTarget(){
 	FVehicle *v = new FVehicle;
 	m_w1->setTarget(v,3,true);
+	CPPUNIT_ASSERT( m_w1->getTarget() == NULL );
+	CPPUNIT_ASSERT( m_w1->getTargetRange() == -1 );
+	m_w1->setTarget(v,0,true);
 	CPPUNIT_ASSERT( m_w1->getTarget() == v );
-	CPPUNIT_ASSERT( m_w1->getTargetRange() == 3);
+	CPPUNIT_ASSERT( m_w1->getTargetRange() == 0 );
 	delete v;
 }
 
@@ -123,28 +126,30 @@ void FWeaponTest::testFireNoTarget(){
 
 void FWeaponTest::testFireAtTarget(){
 	FVehicle *v = new FAssaultScout;
-	m_w1->setParent(v);
-	m_w1->setTarget(v,3,true);
-	m_w1->setMaxAmmo(3);
-	m_w1->setCurrentAmmo(3);
-	m_w1->fire();
-	CPPUNIT_ASSERT( m_w1->getMaxAmmo() == 3);
-	CPPUNIT_ASSERT( m_w1->getAmmo() == 2);
-	CPPUNIT_ASSERT( m_w1->getTarget() == NULL);
-	CPPUNIT_ASSERT( m_w1->getTargetRange() == -1);
-	m_w1->setTarget(v,3,true);
-	m_w1->fire();
-	CPPUNIT_ASSERT( m_w1->getAmmo() == 1);
-	CPPUNIT_ASSERT( m_w1->getTargetRange() == -1);
-	m_w1->setTarget(v,3,true);
-	m_w1->fire();
-	CPPUNIT_ASSERT( m_w1->getAmmo() == 0);
-	CPPUNIT_ASSERT( m_w1->getTargetRange() == -1);
-	m_w1->setTarget(v,3,true);
-	m_w1->fire();
-	CPPUNIT_ASSERT( m_w1->getAmmo() == 0);
-	CPPUNIT_ASSERT( m_w1->getTarget() == v);
-	CPPUNIT_ASSERT( m_w1->getTargetRange() == 3);
+	FWeapon *w = createWeapon(FWeapon::LB);
+	w->setParent(v);
+	w->setTarget(v,3,true);
+	w->setMaxAmmo(3);
+	w->setCurrentAmmo(3);
+	w->fire();
+	CPPUNIT_ASSERT( w->getMaxAmmo() == 3);
+	CPPUNIT_ASSERT( w->getAmmo() == 2);
+	CPPUNIT_ASSERT( w->getTarget() == NULL);
+	CPPUNIT_ASSERT( w->getTargetRange() == -1);
+	w->setTarget(v,3,true);
+	w->fire();
+	CPPUNIT_ASSERT( w->getAmmo() == 1);
+	CPPUNIT_ASSERT( w->getTargetRange() == -1);
+	w->setTarget(v,3,true);
+	w->fire();
+	CPPUNIT_ASSERT( w->getAmmo() == 0);
+	CPPUNIT_ASSERT( w->getTargetRange() == -1);
+	w->setTarget(v,3,true);
+	w->fire();
+	CPPUNIT_ASSERT( w->getAmmo() == 0);
+	CPPUNIT_ASSERT( w->getTarget() == v);
+	CPPUNIT_ASSERT( w->getTargetRange() == 3);
+	delete w;
 	delete v;
 }
 
