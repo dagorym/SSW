@@ -1,0 +1,43 @@
+You are the Verifier Agent.
+
+## Implementation Summary (Subtask 3)
+
+Branch: weapon-tests-s3-tester-20260324 (includes weapon-tests-s3-implementer-20260324)
+
+### Implementation changes (weapon-tests-s3-implementer-20260324)
+Files changed: `tests/core/FGameConfigTest.cpp`, `tests/core/FGameConfigTest.h`
+
+Two new regression tests added:
+
+1. **`testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls`** — verifies repeated `create()` and `getGameConfig()` calls return the same singleton instance.
+2. **`testMultipleResetAndRecreateCyclesRemainFunctional`** — 5 sequential `reset()` → `getGameConfig()` cycles all produce functional singletons with deterministic base paths.
+
+No production code was modified.
+
+## Acceptance Criteria to Verify
+
+1. `testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls` correctly verifies same-instance return across repeated create/get calls.
+2. `testMultipleResetAndRecreateCyclesRemainFunctional` correctly verifies deterministic multi-cycle behavior.
+3. All reset/teardown uses `FGameConfig::reset()` — no raw pointer deletion in test file.
+4. Only the pre-existing brittle `testConstructor` failure (hardcoded path) is present — addressed by Subtask 2, not in scope here.
+5. Tests are deterministic and do not depend on test-order state.
+
+## Validation Commands
+
+```bash
+cd <worktree> && make 2>&1 | tail -10
+cd <worktree>/tests && make 2>&1 | tail -10 && ./SSWTests 2>&1 | tail -12
+```
+
+## Shared Artifact Directory
+
+`artifacts/fgameconfig-singleton/subtask-3`
+Absolute: `/home/tstephen/repos/SSW/artifacts/fgameconfig-singleton/subtask-3`
+
+## Required Output Artifacts
+
+Write to `/home/tstephen/repos/SSW/artifacts/fgameconfig-singleton/subtask-3/`:
+- `verifier_report.md` — verdict, AC evidence, findings, test sufficiency
+- `verifier_result.json` — `verdict`, `blocking_findings`, `non_blocking_findings`, `test_sufficiency`, `artifact_files`
+
+Commit both files on your verifier branch.
