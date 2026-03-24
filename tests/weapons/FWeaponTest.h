@@ -24,6 +24,7 @@ class FWeaponTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( reloadTest );
 	CPPUNIT_TEST( setDamageStatus );
 	CPPUNIT_TEST( testSerialize );
+	CPPUNIT_TEST( testBaseWeaponZeroRange );
 	CPPUNIT_TEST( testSetTarget );
 	CPPUNIT_TEST( testFireWhenEmpty );
 	CPPUNIT_TEST( testFireNoTarget );
@@ -45,6 +46,7 @@ public:
 	void reloadTest();
 	void setDamageStatus();
 	void testSerialize();
+	void testBaseWeaponZeroRange();
 	void testSetTarget();
 	void testFireWhenEmpty();
 	void testFireNoTarget();

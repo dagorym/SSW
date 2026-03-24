@@ -104,6 +104,26 @@ void FWeaponTest::testSerialize(){
 	CPPUNIT_ASSERT( w2.isDamaged() == true );
 }
 
+void FWeaponTest::testBaseWeaponZeroRange(){
+	// Base FWeapon has range=0: out-of-range target assignment is rejected
+	FVehicle *v = new FVehicle;
+	m_w1->setTarget(v,3,true);
+	CPPUNIT_ASSERT( m_w1->getRange() == 0 );
+	CPPUNIT_ASSERT( m_w1->getTarget() == NULL );
+	CPPUNIT_ASSERT( m_w1->getTargetRange() == -1 );
+
+	// Concrete weapon (LB, range=9) accepts range-3 target and fires successfully
+	// TASR_InvalidTargetRange: target set but range < 0, ammo available
+	FWeapon *lb = createWeapon(FWeapon::LB);
+	lb->setMaxAmmo(1);
+	lb->setCurrentAmmo(1);
+	lb->setTarget(v, -1, true);  // range -1 satisfies setTarget guard (-1 <= 9) but is invalid for fire
+	FTacticalAttackResult invalidResult = lb->fire();
+	CPPUNIT_ASSERT( invalidResult.skipReason == TASR_InvalidTargetRange );
+	delete lb;
+	delete v;
+}
+
 void FWeaponTest::testSetTarget(){
 	FVehicle *v = new FVehicle;
 	m_w1->setTarget(v,3,true);
@@ -134,7 +154,9 @@ void FWeaponTest::testFireAtTarget(){
 	w->setTarget(v,3,true);
 	w->setMaxAmmo(3);
 	w->setCurrentAmmo(3);
-	w->fire();
+	FTacticalAttackResult firstFireResult = w->fire();
+	CPPUNIT_ASSERT( firstFireResult.skipReason == TASR_None );
+	CPPUNIT_ASSERT( firstFireResult.fired() == true );
 	CPPUNIT_ASSERT( w->getMaxAmmo() == 3);
 	CPPUNIT_ASSERT( w->getAmmo() == 2);
 	CPPUNIT_ASSERT( w->getTarget() == NULL);
@@ -149,12 +171,15 @@ void FWeaponTest::testFireAtTarget(){
 	CPPUNIT_ASSERT( w->getTargetRange() == -1);
 	CPPUNIT_ASSERT( w->getTarget() == NULL);
 	w->setTarget(v,3,true);
-	w->fire();
+	FTacticalAttackResult noAmmoResult = w->fire();
+	CPPUNIT_ASSERT( noAmmoResult.skipReason == TASR_NoAmmo );
 	CPPUNIT_ASSERT( w->getAmmo() == 0);
 	CPPUNIT_ASSERT( w->getTarget() == v);
 	CPPUNIT_ASSERT( w->getTargetRange() == 3);
 	w->setTarget(v,-1,true);
-	w->fire();
+	FTacticalAttackResult invalidRangeResult = w->fire();
+	// ammo=0 check comes before targetRange check in fire(), so NoAmmo is returned
+	CPPUNIT_ASSERT( invalidRangeResult.skipReason == TASR_NoAmmo );
 	CPPUNIT_ASSERT( w->getAmmo() == 0);
 	CPPUNIT_ASSERT( w->getTarget() == v);
 	CPPUNIT_ASSERT( w->getTargetRange() == -1);
