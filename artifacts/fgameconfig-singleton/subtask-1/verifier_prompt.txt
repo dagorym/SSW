@@ -1,0 +1,61 @@
+You are the Verifier Agent.
+
+## Implementation Summary (Subtask 1)
+
+Branch: weapon-tests-tester-20260324 (includes weapon-tests-implementer-20260324)
+
+### Implementation changes (weapon-tests-implementer-20260324)
+Files changed: `include/core/FGameConfig.h`, `src/core/FGameConfig.cpp`
+
+- `getGameConfig()` now delegates to `create()` (lazy init) instead of dereferencing potentially null `m_config`.
+- New public static `reset()` method added for controlled singleton teardown, documented as intended for test use only.
+
+### Test changes (weapon-tests-tester-20260324)
+Files changed: `tests/core/FGameConfigTest.cpp`, `tests/core/FGameConfigTest.h`
+
+- `setUp()`/`tearDown()` use `FGameConfig::reset()` instead of raw delete.
+- `testSerialize()` uses `reset()` instead of manual mid-test delete.
+- New: `testGetGameConfigLazyCreatesSingleton` (AC1)
+- New: `testResetRecreatesSingletonAndMaintainsContract` (AC2/AC3)
+- New: `testBasePathConsistentForProductionCallers` (AC4)
+
+## Acceptance Criteria to Verify
+
+1. `getGameConfig()` has well-defined behavior when the singleton has not been created (lazy init via `create()`).
+2. The singleton lifecycle is internally consistent and does not rely on manual deletion outside class contract.
+3. A public static `reset()` method exists and is documented as intended for tests.
+4. Existing production callers still observe the same base-path behavior.
+5. Test suite regression: only the pre-existing brittle `testConstructor` failure (hardcoded path `/home/tstephen/Development/SSW/`) should be present — that failure is out of scope for Subtask 1 and is addressed by Subtask 2.
+
+## Validation Commands
+
+Run from your assigned worktree directory:
+```bash
+cd tests && make 2>&1 | tail -10
+./tests/SSWTests 2>&1 | tail -15
+```
+
+## Shared Artifact Directory
+
+`artifacts/fgameconfig-singleton/subtask-1`
+Absolute: `/home/tstephen/repos/SSW/artifacts/fgameconfig-singleton/subtask-1`
+
+## Required Output Artifacts
+
+Write to `/home/tstephen/repos/SSW/artifacts/fgameconfig-singleton/subtask-1/`:
+
+1. **`verifier_report.md`** — structured review covering:
+   - Verdict (PASS / CONDITIONAL PASS / FAIL)
+   - Each acceptance criterion checked
+   - Code quality and correctness findings
+   - Test sufficiency summary
+   - Any blocking or non-blocking findings
+
+2. **`verifier_result.json`** — machine-readable record:
+   - `verdict`: "PASS", "CONDITIONAL PASS", or "FAIL"
+   - `blocking_findings`: count
+   - `non_blocking_findings`: count
+   - `test_sufficiency`: summary string
+   - `artifact_files`: paths written
+
+Commit both artifact files on your verifier branch before reporting completion.

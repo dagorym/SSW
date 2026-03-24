@@ -1,0 +1,45 @@
+You are the Tester Agent.
+
+## What changed and why
+
+Subtask 1 hardened the `FGameConfig` singleton lifecycle in two files:
+- `include/core/FGameConfig.h`
+- `src/core/FGameConfig.cpp`
+
+Changes:
+1. `getGameConfig()` now delegates to `create()` (lazy init) instead of blindly dereferencing `m_config`, eliminating undefined behaviour when called before initialization.
+2. A new public static `reset()` method was added for controlled singleton teardown, documented as intended for test use only. It safely nulls the pointer before deleting the old instance.
+
+## Acceptance criteria to verify
+
+1. `getGameConfig()` has well-defined behavior when the singleton has not been created (lazy init via `create()`).
+2. The singleton lifecycle is internally consistent and does not rely on manual deletion outside class contract.
+3. A public static `reset()` method exists and is documented as intended for tests.
+4. Existing production callers still observe the same base-path behavior.
+
+## Your task
+
+Write or update tests in:
+- `tests/core/FGameConfigTest.cpp`
+- `tests/core/FGameConfigTest.h`
+
+Verify the four acceptance criteria above. You must NOT modify `include/core/FGameConfig.h` or `src/core/FGameConfig.cpp`.
+
+Note: `testConstructor()` currently hard-codes `/home/tstephen/Development/SSW/` — this is a pre-existing brittle failure that is NOT in scope for this subtask (it is addressed by Subtask 2). Do not fix it here; just note it in your report.
+
+## Validation commands
+
+Run from your assigned worktree directory:
+```
+cd tests/core && make
+cd tests && make && ./SSWTests 2>&1 | tail -40
+```
+
+## Shared artifact directory
+
+`artifacts/fgameconfig-singleton/subtask-1`
+
+Write your required output artifacts there:
+- `tester_report.md`
+- `tester_result.json`
+- `verifier_prompt.txt` (only if tests pass)
