@@ -1,0 +1,42 @@
+You are the Verifier agent for subtask 2 of the tactical-battery-range-clamp-bug plan.
+
+## Context
+
+This subtask covers regression tests for `FBattleBoard::computeBatteryRange`. The Implementer for S2
+confirmed that S1 tests fully satisfy S2 acceptance criteria. The Tester confirmed this with a PASS.
+
+Your job is to independently verify all acceptance criteria are met and produce a final verdict.
+
+## IMPORTANT: You have no shell/bash tools
+
+You can only read and edit files. All file access must use your file-reading tools.
+
+## Acceptance Criteria
+
+1. A CppUnit test class `FTacticalBatteryRangeClampTest` exists under `tests/tactical/`
+2. Tests verify the upper-bound clamp logic uses correct guard conditions (`xMax > m_nCol - 1`)
+3. Tests verify the clamp assignments are correct (`xMax = m_nCol - 1`, `yMax = m_nRow - 1`)
+4. Tests verify no old incorrect guard patterns (`xMax < m_nCol`, `yMax < m_nRow`) remain in source
+5. Tests verify clamp statements execute before the loop body
+6. All new tests pass; pre-existing failures remain at 3 (FGameConfigTest, FWeaponTest x2)
+
+## Files to Review (worktree: /home/tstephen/worktrees/clamp_bug-tester-20260324)
+
+- `tests/tactical/FTacticalBatteryRangeClampTest.h`
+- `tests/tactical/FTacticalBatteryRangeClampTest.cpp`
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/SSWTests.cpp`
+- `src/tactical/FBattleBoard.cpp` (the fixed source — verify fix is present)
+
+## Tester Results (from artifacts)
+
+- 155 tests run, 3 pre-existing failures, 0 errors
+- Tester verdict: PASS
+
+## Output
+
+Provide a PASS or FAIL verdict with brief justification for each acceptance criterion.
+Note any blocking findings (bugs, security issues, missing coverage) but do NOT flag style issues.
+
+Do NOT write files — the orchestrator will write verifier artifacts from your response.

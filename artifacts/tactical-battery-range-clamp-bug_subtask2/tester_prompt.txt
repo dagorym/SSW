@@ -1,0 +1,31 @@
+You are the Tester agent for subtask 2 of the tactical-battery-range-clamp-bug plan.
+
+## Subtask 2: Add Regression Tests for computeBatteryRange
+
+The Implementer for subtask 2 confirmed that the regression tests added in subtask 1 fully satisfy all
+acceptance criteria for subtask 2. No new implementation work was needed.
+
+### Your Task
+Validate that the tests written in subtask 1 meet the acceptance criteria listed below. Confirm test
+counts and failure counts match expectations.
+
+### Acceptance Criteria
+1. A CppUnit test class `FTacticalBatteryRangeClampTest` exists under `tests/tactical/`
+2. Tests verify the upper-bound clamp logic uses correct guard conditions (`xMax > m_nCol - 1`)
+3. Tests verify the clamp assignments are correct (`xMax = m_nCol - 1`, `yMax = m_nRow - 1`)
+4. Tests verify no old incorrect guard patterns (`xMax < m_nCol`, `yMax < m_nRow`) remain
+5. Tests verify clamp statements execute before the loop body
+6. All new tests pass; pre-existing failures remain at 3 (FGameConfigTest, FWeaponTest x2)
+
+### Build and Test
+```
+cd /home/tstephen/worktrees/clamp_bug-tester-20260324/tests
+make && ./SSWTests 2>&1 | grep -A3 "^Test Results:"
+```
+Expected: Run: 155  Failures: 3  Errors: 0
+
+### Files to Review
+- tests/tactical/FTacticalBatteryRangeClampTest.h
+- tests/tactical/FTacticalBatteryRangeClampTest.cpp
+- tests/tactical/Makefile
+- tests/SSWTests.cpp
