@@ -13,6 +13,7 @@
 #include "FTacticalMineDamageReportSummaryTest.h"
 #include "FTacticalMineDamageFlowTest.h"
 #include "FTacticalBattleDisplayFireFlowTest.h"
+#include "FTacticalBatteryRangeClampTest.h"
 
 using namespace FrontierTests;
 
@@ -26,6 +27,7 @@ int main(int argc, char **argv) {
 	runner.addTest(FTacticalMineDamageReportSummaryTest::suite());
 	runner.addTest(FTacticalMineDamageFlowTest::suite());
 	runner.addTest(FTacticalBattleDisplayFireFlowTest::suite());
+	runner.addTest(FTacticalBatteryRangeClampTest::suite());
 	bool wasSuccessful = runner.run("", false);
 	return wasSuccessful ? 0 : 1;
 }

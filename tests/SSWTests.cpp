@@ -40,6 +40,7 @@
 #include "ships/FMinelayerTest.h"
 #include "tactical/FTacticalCombatReportTest.h"
 #include "tactical/FTacticalAttackResultTest.h"
+#include "tactical/FTacticalBatteryRangeClampTest.h"
 #include "strategic/FGameTest.h"
 #include "strategic/FPlanetTest.h"
 #include "strategic/FFleetTest.h"
@@ -88,6 +89,7 @@ int main( int argc, char **argv)
   runner.addTest( FMinelayerTest::suite() );
   runner.addTest( FTacticalCombatReportTest::suite() );
   runner.addTest( FTacticalAttackResultTest::suite() );
+  runner.addTest( FTacticalBatteryRangeClampTest::suite() );
   runner.addTest( FGameTest::suite() );
   runner.addTest( FPlanetTest::suite() );
   runner.addTest( FFleetTest::suite() );

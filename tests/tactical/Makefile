@@ -18,15 +18,15 @@ PICFLAGS = -fPIC -DPIC
 .rsrc.r:
 	$(DEREZ) $^ Carbon.r -useDF > $@
 
-OBJS = FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o TacticalTests.o
+OBJS = FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o TacticalTests.o
 
 TARGET = libtacticalTests.a
 RUNNER = TacticalTests
 
 all: $(TARGET) $(RUNNER)
 
-$(TARGET): FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o
-	ar rcsu $(TARGET) FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o
+$(TARGET): FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o
+	ar rcsu $(TARGET) FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o
 
 $(RUNNER): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(RUNNER) $(OBJS) -lcppunit $(LIBS)
