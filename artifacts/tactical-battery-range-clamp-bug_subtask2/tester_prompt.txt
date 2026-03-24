@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Subtask 2 of tactical-battery-range-clamp-bug: Verify that existing FTacticalBatteryRangeClampTest suite fully satisfies regression coverage acceptance criteria. No new test code was added — the 5-test suite from Subtask 1 already covers all required cases.
+
+Modified files:
+- None (no code changes; existing tests satisfy all acceptance criteria)
+
+Acceptance criteria to validate (from Planner):
+- At least one center-board case, one edge case, and one corner case are covered.
+- The test verifies that off-map coordinates cannot appear in the result.
+- The tactical test suite builds and runs cleanly with new tests registered.
+- The test suite demonstrates boundary correctness with the fixed implementation.
+
+Existing tests that satisfy these criteria (in tests/tactical/FTacticalBatteryRangeClampTest.cpp):
+1. testCenterBoardUsesSymmetricWindowAndDistanceFilter — center-board case
+2. testUpperBoundClampingUsesCorrectGuardAndAssignments — edge case (upper bounds), with negative assertions for buggy patterns
+3. testLowerBoundClampingAppearsBeforeLoopTraversal — corner case (lower bounds, ordering)
+4. testAllClampStatementsExecuteBeforeLoopHeader — structural proof all clamps precede loops
+5. testLoopBoundariesUseInclusiveClampedInvariants — inclusive loop bounds with prior clamping proven
+
+Test registration confirmed in:
+- tests/tactical/Makefile
+- tests/tactical/TacticalTests.cpp
+- tests/SSWTests.cpp
+
+Suggested test command(s):
+- cd tests && make && ./SSWTests 2>&1 | tail -10
+
+Expected result: 155 run, 3 pre-existing failures (FGameConfigTest::testConstructor, FWeaponTest::testSetTarget, FWeaponTest::testFireAtTarget), 0 new failures.
+
+Shared artifact directory:
+- artifacts/tactical-battery-range-clamp-bug_subtask2
