@@ -47,14 +47,21 @@ public:
 	/**
 	 * @brief Get a reference to the config object
 	 *
-	 * This method just returns a reference to the config object if it
-	 * exists if it doesn't exist, it returns a null reference.
+	 * This method returns a reference to the config object and lazily creates
+	 * it if needed by delegating to create().
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  May 30, 2008
 	 * @date Last Modified:  May 30, 2008
 	 */
 	static FGameConfig & getGameConfig();
+
+	/**
+	 * @brief Reset the singleton instance.
+	 *
+	 * Intended for tests only to ensure clean singleton state between runs.
+	 */
+	static void reset();
 
 	/**
 	 * @brief Method to save the config data

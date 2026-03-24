@@ -29,7 +29,15 @@ FGameConfig & FGameConfig::create(){
 }
 
 FGameConfig & FGameConfig::getGameConfig(){
-	return *m_config;
+	return create();
+}
+
+void FGameConfig::reset(){
+	if (m_config) {
+		FGameConfig * oldConfig = m_config;
+		m_config = NULL;
+		delete oldConfig;
+	}
 }
 
 FGameConfig::FGameConfig(){
