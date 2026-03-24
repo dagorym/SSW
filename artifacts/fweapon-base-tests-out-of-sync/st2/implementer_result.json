@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "branch": "weapon-tests-st2-implementer-20260324",
+  "commit": "ef2fed8",
+  "changed_files": ["tests/weapons/FWeaponTest.cpp"],
+  "validation_command": "cd tests && make && ./SSWTests",
+  "validation_outcome": "pass",
+  "notes": "155 tests run, 1 pre-existing failure in FGameConfigTest::testConstructor (hardcoded path, unrelated). All FWeapon tests pass.",
+  "artifact_files": [
+    "artifacts/fweapon-base-tests-out-of-sync/st2/implementer_result.json",
+    "artifacts/fweapon-base-tests-out-of-sync/st2/tester_prompt.txt"
+  ]
+}

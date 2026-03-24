@@ -1,0 +1,68 @@
+You are the Tester agent.
+
+## Startup Protocol
+1. Read AGENTS.md at the repository root before doing any substantive work.
+2. Your assigned worktree and branch will be given in your launch instructions.
+3. The task tool always starts in the main repo directory. Use `cd <worktree-root> &&` or `-C <worktree-root>` on ALL bash/git commands.
+
+## Context
+- Shared artifact directory (repository-root-relative): artifacts/fweapon-base-tests-out-of-sync/st2
+- Implementer branch: weapon-tests-st2-implementer-20260324
+- Implementer commit: ef2fed8
+
+## What Was Changed and Why
+The Implementer strengthened `tests/weapons/FWeaponTest.cpp` assertions to fully cover the documented `setTarget()` and `fire()` behavior (ST2 of the fweapon-base-tests-out-of-sync plan):
+
+**testSetTarget() additions:**
+- After verifying range-0 target acceptance, adds `setTarget(NULL, 0, false)` then asserts `getTarget() == NULL` and `getTargetRange() == 0`. This documents the cleared-target state when a null pointer is passed at an in-range value.
+
+**testFireAtTarget() additions:**
+- After the third fire (ammo→0), adds `CPPUNIT_ASSERT(w->getTarget() == NULL)` to confirm target is cleared by fire().
+- After the no-ammo re-target check, adds `setTarget(v, -1, true)` (range -1 satisfies -1 <= m_range=9 for LB) then `fire()` (refused due to ammo=0), asserting ammo stays 0, target stays v, range stays -1. This covers invalid-target-range handling in the no-ammo state.
+
+No production files were changed.
+
+## Acceptance Criteria
+1. `testSetTarget()` and `testFireAtTarget()` pass against the real implementation.
+2. Ammo depletion, target clearing, and invalid-target handling are asserted where applicable.
+3. Constructor and serialization assertions remain consistent with base-class defaults (m_range=0, m_target=NULL, m_targetRange=-1).
+4. No changes to production files (src/).
+
+## Your Task
+Validate the Implementer's changes satisfy all acceptance criteria. Do NOT modify production files.
+- Review tests/weapons/FWeaponTest.cpp for correctness.
+- Run the full test suite from your worktree root.
+- If you find gaps in coverage for this subtask's acceptance criteria, add targeted assertions to tests/weapons/FWeaponTest.cpp only.
+
+## Validation Command
+```bash
+cd <your-worktree-root>/tests && make && ./SSWTests
+```
+Source libraries are already built. Expected: 155 tests, 1 pre-existing failure in FGameConfigTest::testConstructor (hardcoded path /home/tstephen/Development/SSW/, unrelated). All FWeapon tests should pass.
+
+## Required Artifact Outputs
+Write to `artifacts/fweapon-base-tests-out-of-sync/st2/` inside your worktree:
+
+1. `tester_report.md` — what you checked, pass/fail summary, conclusion.
+2. `tester_result.json`:
+```json
+{
+  "status": "pass",
+  "branch": "<your tester branch>",
+  "commit": "<your commit hash>",
+  "tests_run": <number>,
+  "tests_failed": <number excluding pre-existing>,
+  "unmet_acceptance_criteria": [],
+  "artifact_files": [
+    "artifacts/fweapon-base-tests-out-of-sync/st2/tester_report.md",
+    "artifacts/fweapon-base-tests-out-of-sync/st2/tester_result.json",
+    "artifacts/fweapon-base-tests-out-of-sync/st2/verifier_prompt.txt"
+  ]
+}
+```
+3. `verifier_prompt.txt` — Verifier handoff (only if pass). Include: what changed, acceptance criteria, what Tester validated, shared artifact dir path, both branch names.
+
+Commit all changes and artifacts on your tester branch using `-C <worktree-root>` for all git commands.
+Include trailer `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` in all commits.
+
+If testing reveals implementation defects, write tester_result.json with "status": "implementation_defect" — do NOT write verifier_prompt.txt.
