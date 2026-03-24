@@ -3,7 +3,7 @@
   "subtask": "tactical-battery-range-clamp-bug_subtask1",
   "branch": "clamp_bug-implementer-20260323",
   "implementation_commit_hash": "05009e4b8c0d995e6a71258cc18b7bb91008d598",
-  "artifact_commit_hash": null,
+  "artifact_commit_hash": "394cc55ed2dea669e3587c943f2587832826369b",
   "changed_files": [
     "src/tactical/FBattleBoard.cpp"
   ],
