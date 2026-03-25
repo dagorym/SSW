@@ -1,0 +1,41 @@
+You are the Tester Agent.
+
+Shared artifact directory: artifacts/ffleet-destination-sentinel-mismatch/subtask-3/
+
+Status context:
+- Implementation edits are complete, but this environment could not run shell validation commands or git commands.
+- Please run validations and complete commit verification from your execution environment.
+
+Modified files:
+- tests/strategic/FFleetTest.cpp
+
+Implementation commit hash:
+- Not available in this environment (git commit not executable here).
+
+Acceptance criteria to verify:
+1. The two currently-failing tests now pass.
+2. All getJumpRoute() and getDestination() comparisons in FFleetTest.cpp use FFleet::NO_DESTINATION / FFleet::NO_ROUTE, not raw -1 or 0.
+3. No signed/unsigned comparison warnings for the sentinel comparisons in the test file.
+4. Test coverage spans: construction, transit, arrival, and cancel-jump state.
+5. The full test suite passes with 0 new failures.
+
+What changed:
+- Updated stale constructor assertions:
+  - getDestination() now asserts FFleet::NO_DESTINATION.
+  - getJumpRoute() now asserts FFleet::NO_ROUTE.
+- Updated stale sentinel assertions in testSetLocation and testDecTransitTime:
+  - replaced raw -1/0 sentinel checks with FFleet::NO_DESTINATION and FFleet::NO_ROUTE.
+- Extended transit coverage in testSetLocationLong:
+  - added explicit checks that destination and route are valid IDs (not sentinels) in transit.
+- Extended cancel-jump coverage in testCancelJump:
+  - added pre-cancel transit-state checks for non-sentinel destination/route.
+  - after cancelJump, forced completion via decTransitTime() and asserted arrival reset to sentinels.
+  - covered immediate-cancel path similarly and asserted sentinels after completion.
+
+Validation commands to run:
+1) cd /home/tstephen/repos/SSW/tests/strategic && make && ./StrategicTests
+2) cd /home/tstephen/repos/SSW/tests && make && ./SSWTests
+
+Suggested focus:
+- Confirm no remaining raw sentinel comparisons (-1 or 0) against getDestination()/getJumpRoute() in tests/strategic/FFleetTest.cpp.
+- Confirm strategic test output no longer emits signed/unsigned comparison warnings tied to this file.
