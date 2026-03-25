@@ -485,6 +485,38 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsNested
 	CPPUNIT_ASSERT(escortSummary->displayLines[0].find("Escort: 2 hull damage") != std::string::npos);
 }
 
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsNestedHullDamageWhenOwnerDiffersFromAttackTarget() {
+	// AC: matching requires shipID+ownerID; same shipID with different owner is a different ship and must be counted.
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(40, 1, "Destroyer");
+	attack.target = FTacticalShipReference(41, 2, "Frigate");
+	attack.hit = true;
+	attack.hullDamage = 3;
+
+	FTacticalReportEvent crossOwnerDamage;
+	crossOwnerDamage.eventType = TRET_InternalDamage;
+	crossOwnerDamage.subject = FTacticalShipReference(41, 3, "Captured Frigate");
+	crossOwnerDamage.hullDamage = 2;
+	crossOwnerDamage.attackIndex = 0;
+	crossOwnerDamage.label = "Collateral breach";
+	attack.internalEvents.push_back(crossOwnerDamage);
+
+	report.attacks.push_back(attack);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * primarySummary = findShipSummary(summary, "Frigate");
+	const FTacticalShipReportSummary * capturedSummary = findShipSummary(summary, "Captured Frigate");
+
+	CPPUNIT_ASSERT(primarySummary != NULL);
+	CPPUNIT_ASSERT(capturedSummary != NULL);
+	CPPUNIT_ASSERT_EQUAL(3, primarySummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(2, capturedSummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(1, capturedSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), capturedSummary->rawEvents.size());
+}
+
 void FTacticalCombatReportTest::testBattleScreenDelegatesSummaryGenerationToModelBuilder() {
 	// AC: summary logic stays in the model; FBattleScreen delegates directly to it.
 	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));

@@ -29,6 +29,7 @@ class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryOmitsUndamagedShips );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryUsesStoredShipReferences );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryCountsNestedHullDamageForOtherShips );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryCountsNestedHullDamageWhenOwnerDiffersFromAttackTarget );
 	CPPUNIT_TEST( testBattleScreenDelegatesSummaryGenerationToModelBuilder );
 	CPPUNIT_TEST( testTacticalCombatReportSummaryDocumentsCanonicalAttackHullDamageRule );
 	CPPUNIT_TEST( testBattleScreenNormalizesNestedAttackEventsOntoStoredAttackIndex );
@@ -58,6 +59,7 @@ public:
 	void testBuildTacticalCombatReportSummaryOmitsUndamagedShips();
 	void testBuildTacticalCombatReportSummaryUsesStoredShipReferences();
 	void testBuildTacticalCombatReportSummaryCountsNestedHullDamageForOtherShips();
+	void testBuildTacticalCombatReportSummaryCountsNestedHullDamageWhenOwnerDiffersFromAttackTarget();
 	void testBattleScreenDelegatesSummaryGenerationToModelBuilder();
 	void testTacticalCombatReportSummaryDocumentsCanonicalAttackHullDamageRule();
 	void testBattleScreenNormalizesNestedAttackEventsOntoStoredAttackIndex();
