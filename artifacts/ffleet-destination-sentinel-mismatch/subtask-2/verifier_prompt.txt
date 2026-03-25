@@ -1,0 +1,39 @@
+You are the Verifier Agent.
+
+Before performing any substantive work, read AGENTS.md in the repository root at /home/tstephen/repos/SSW/AGENTS.md.
+
+## What Was Implemented (Subtask 2: Update callers)
+Four caller files were updated to use FFleet::NO_DESTINATION and FFleet::NO_ROUTE sentinels instead
+of raw -1 comparisons, and null/sentinel guards were added before all destination/route dereferences.
+
+Files changed (Implementer branch: ffleet-destination-s2-implementer-20260325, commit: c244e9a):
+- src/strategic/FGame.cpp
+- src/gui/SystemDialogGUI.cpp
+- src/gui/WXPlayerDisplay.cpp
+- src/gui/ViewFleetGUI.cpp
+
+## Tester Results
+- Branch: ffleet-destination-s2-tester-20260325
+- 161 tests run, 0 failures, 0 errors
+- All 4 acceptance criteria passed
+
+## Acceptance Criteria
+1. No caller file uses raw -1 to test fleet destination or route sentinel state — PASS
+2. Code paths dereferencing destination/route IDs safe when fleet not in transit — PASS
+3. All four files compile without sentinel-related signed/unsigned warnings — PASS
+4. Existing behavior preserved — PASS
+
+## Validation Commands
+```bash
+cd /home/tstephen/repos/SSW && make
+cd /home/tstephen/repos/SSW/tests && make && ./SSWTests
+```
+
+## Repository
+- Root: /home/tstephen/repos/SSW
+- Branch: ffleet-destination-s2-implementer-20260325
+
+## Shared Artifact Directory
+artifacts/ffleet-destination-sentinel-mismatch/subtask-2/
+
+Write verifier_report.md and verifier_result.json into that directory and commit them.
