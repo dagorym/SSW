@@ -1,8 +1,13 @@
 {
   "verdict": "PASS",
   "branch": "build-warning-reviewer-20260325",
-  "commit_hash": "PENDING",
-  "subtasks_reviewed": ["S1", "S2", "S3", "S4"],
+  "commit_hash": "295b4d66f5bdbf4765ef0ea074574116688cbdf7",
+  "subtasks_reviewed": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+  ],
   "plan_objectives_met": [
     "Replaced obsolete ar rcsu usage with ar rcs in all 13 affected Makefiles",
     "Gated coverage instrumentation behind COVERAGE=1 for default-build hygiene while preserving intentional coverage builds",
