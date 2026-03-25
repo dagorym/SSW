@@ -1,0 +1,28 @@
+## S3 Tester Handoff — Remove unused wxColour locals in tactical
+
+### What was changed and why
+Three tactical source files had `wxColour` local variables that were declared but never used, causing `-Wall` unused-variable warnings:
+- `src/tactical/FBattleBoard.cpp`: removed unused `red` and `blue` locals in `computeFFRange`, and unused `blue` in `computeBatteryRange`
+- `src/tactical/FBattleScreen.cpp`: removed unused `white` local
+- `src/tactical/FBattleDisplay.cpp`: removed unused `yellow` local in `drawDefenseList`
+
+No rendering behavior was changed. No dead-code placeholders were introduced.
+
+### Acceptance criteria
+- The tactical build no longer emits unused-local-variable warnings from the identified files.
+- Tactical rendering behavior is unchanged.
+- The source is readable without dead-code placeholders.
+
+### Validation commands
+```bash
+make -C src/tactical 2>&1 | grep -i "unused"   # must return no output
+make -C src/tactical 2>&1 | grep -i "error"    # must return no output
+```
+
+### Shared artifact directory
+`artifacts/build-warning-cleanup-s3/`
+
+Reuse this directory. Write `tester_report.md`, `tester_result.json`, and (on pass) `verifier_prompt.txt` there.
+
+### Implementer branch
+`build-warning-s3-implementer-20260325` (commit bf7dce6)
