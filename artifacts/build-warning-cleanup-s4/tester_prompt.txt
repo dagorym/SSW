@@ -1,0 +1,31 @@
+## S4 Tester Handoff — wx image handler initialization in test bootstrap
+
+### What was changed and why
+The test bootstrap `tests/SSWTests.cpp` did not initialize wx image handlers, while the production apps (FApp.cpp, FBattleSimApp.cpp) do call `wxInitAllImageHandlers()` at startup. This caused avoidable PNG load warnings when tests exercise code paths that load image assets.
+
+Added to `tests/SSWTests.cpp`:
+- `#include <wx/image.h>`
+- `wxInitAllImageHandlers();` at the start of `main()` before the test runner setup
+
+### Acceptance criteria
+- Test harness initializes image handlers so PNG load warnings are eliminated.
+- Existing test suite (161 tests) continues to pass with no regressions.
+- No PNG/image handler warnings during normal test run.
+
+### Validation commands
+```bash
+cd tests && make && ./SSWTests 2>&1 | grep -i "png\|handler\|libpng" | head   # expect no output
+cd tests && ./SSWTests 2>&1 | tail -5                                           # expect OK (161 tests)
+```
+
+### Test results from implementer
+- All 161 tests passed
+- No PNG warnings observed
+
+### Shared artifact directory
+`artifacts/build-warning-cleanup-s4/`
+
+Reuse this directory. Write `tester_report.md`, `tester_result.json`, and (on pass) `verifier_prompt.txt` there.
+
+### Implementer branch
+`build-warning-s4-implementer-20260325`
