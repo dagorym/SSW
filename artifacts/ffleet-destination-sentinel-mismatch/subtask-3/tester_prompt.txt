@@ -1,0 +1,40 @@
+You are the Tester Agent.
+
+## Implementation summary (Subtask 3: Repair and extend FFleet tests)
+The Implementer repaired stale sentinel assertions in FFleetTest.cpp and extended coverage.
+
+Changes made:
+- testConstructor: assert getDestination()==FFleet::NO_DESTINATION, getJumpRoute()==FFleet::NO_ROUTE
+- testSetLocation: same for non-transit setLocation call
+- testSetLocationLong: assert destination/route are NOT sentinel during transit
+- testDecTransitTime: assert both fields reset to NO_DESTINATION/NO_ROUTE on arrival
+- testCancelJump: assert non-sentinel during transit, sentinel after completion of each cancel path
+
+## Changed files
+- tests/strategic/FFleetTest.cpp
+
+## Branch / Commit
+- Branch: ffleet-destination-s3-implementer-20260325
+- Commit: 8b56cfd (artifact update); 3c0800c (test fix)
+
+## Acceptance criteria
+1. The two previously-failing tests (testConstructor, testDecTransitTime) now pass.
+2. All getJumpRoute()/getDestination() comparisons use FFleet::NO_DESTINATION/NO_ROUTE, not raw -1/0.
+3. No signed/unsigned warnings for sentinel comparisons in the test file.
+4. Coverage spans: construction, transit, arrival, cancel-jump state.
+5. Full test suite passes with 0 new failures.
+
+## Validation commands
+```bash
+cd /home/tstephen/repos/SSW/tests/strategic && make && ./StrategicTests
+cd /home/tstephen/repos/SSW/tests && make && ./SSWTests
+```
+
+## Repository
+- Root: /home/tstephen/repos/SSW
+- Branch to test from: ffleet-destination-s3-implementer-20260325
+
+## Shared artifact directory
+artifacts/ffleet-destination-sentinel-mismatch/subtask-3/
+
+Write tester_report.md, tester_result.json, and (if passing) verifier_prompt.txt into that directory.

@@ -1,0 +1,42 @@
+You are the Verifier Agent.
+
+Before performing any substantive work, read AGENTS.md in the repository root at /home/tstephen/repos/SSW/AGENTS.md.
+
+## What Was Implemented (Subtask 3: Repair and extend FFleet tests)
+FFleetTest.cpp was repaired to use the new sentinel constants and extended with additional
+state-transition coverage.
+
+Files changed (branch: ffleet-destination-s3-implementer-20260325, commit: fa1d4af):
+- tests/strategic/FFleetTest.cpp
+
+Key changes:
+- testConstructor: assert destination==NO_DESTINATION, route==NO_ROUTE
+- testSetLocation: same for non-transit call  
+- testSetLocationLong: assert destination/route are NOT sentinel during transit
+- testDecTransitTime: assert both fields reset to sentinels on arrival
+- testCancelJump: assert non-sentinel during transit, sentinel after completion
+
+## Tester Results
+- 161 tests run, 0 failures (was 2 before this fix), 0 errors
+- All 5 acceptance criteria passed
+
+## Acceptance Criteria
+1. testConstructor and testDecTransitTime now pass — PASS
+2. All comparisons use FFleet::NO_DESTINATION/NO_ROUTE — PASS
+3. No signed/unsigned sentinel warnings in test file — PASS
+4. Coverage spans construction, transit, arrival, cancel-jump — PASS
+5. Full suite passes with 0 new failures — PASS
+
+## Validation Commands
+```bash
+cd /home/tstephen/repos/SSW/tests && make && ./SSWTests
+```
+
+## Repository
+- Root: /home/tstephen/repos/SSW
+- Branch: ffleet-destination-s3-implementer-20260325
+
+## Shared Artifact Directory
+artifacts/ffleet-destination-sentinel-mismatch/subtask-3/
+
+Write verifier_report.md and verifier_result.json into that directory and commit them.
