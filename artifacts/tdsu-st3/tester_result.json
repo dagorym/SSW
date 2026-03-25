@@ -1,0 +1,36 @@
+{
+  "status": "success",
+  "task": "tdsu-st3",
+  "branch": "tdsu-tester-20260325",
+  "tested_commit_hash": "da7fa03c512d8fdbfc751c255ba253f728d7713a",
+  "tester_commit_hash": "6579359ef6de262cc5f6d88884840db402ecb08a",
+  "test_files_added_or_modified": [
+    "tests/tactical/FTacticalCombatReportTest.h",
+    "tests/tactical/FTacticalCombatReportTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests && make && ./SSWTests",
+    "cd /home/tstephen/worktrees/tdsu-tester-20260325 && make",
+    "cd tests && make && ./SSWTests"
+  ],
+  "attempts": 1,
+  "pass_fail_totals": {
+    "tactical_suite": {
+      "total": 48,
+      "passed": 48,
+      "failed": 0
+    },
+    "full_suite": {
+      "total": 165,
+      "passed": 165,
+      "failed": 0
+    }
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_paths": [
+    "artifacts/tdsu-st3/tester_report.md",
+    "artifacts/tdsu-st3/tester_result.json",
+    "artifacts/tdsu-st3/verifier_prompt.txt"
+  ]
+}
