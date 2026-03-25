@@ -42,7 +42,7 @@ OBJS = FObject.o FPObject.o FPoint.o FGameConfig.o FHexMap.o FHexPath.o
 TARGET = libcore.a
 
 all $(TARGET): $(OBJS)
-	ar rcsu $(TARGET) $(OBJS)
+	ar rcs $(TARGET) $(OBJS)
 
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	

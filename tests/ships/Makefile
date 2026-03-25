@@ -46,7 +46,7 @@ OBJS = FVehicleTest.o FTacticalAttackIntegrationTest.o FArmedStationTest.o FAssa
 TARGET = libshipsTests.a
 
 all $(TARGET): $(OBJS)
-	ar rcsu $(TARGET) $(OBJS)
+	ar rcs $(TARGET) $(OBJS)
 
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	

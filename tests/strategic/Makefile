@@ -44,7 +44,7 @@ OBJS = FGameTest.o FPlanetTest.o FFleetTest.o FJumpRouteTest.o \
 TARGET = libstrategicTests.a
 
 all $(TARGET): $(OBJS)
-	ar rcsu $(TARGET) $(OBJS)
+	ar rcs $(TARGET) $(OBJS)
 
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	

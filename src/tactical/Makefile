@@ -42,7 +42,7 @@ OBJS = FBattleBoard.o FBattleScreen.o FBattleDisplay.o
 TARGET = libtactical.a
 
 all $(TARGET): $(OBJS)
-	ar rcsu $(TARGET) $(OBJS)
+	ar rcs $(TARGET) $(OBJS)
 
 #	$(CXX) $(CXXFLAGS) -shared -o $(TARGET) $(OBJS)# $(LIBS)
 	

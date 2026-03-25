@@ -45,7 +45,7 @@ OBJS = FWeaponTest.o FWeaponFireResultTest.o FAssaultRocketTest.o FDisruptorCann
 TARGET = libweaponsTests.a
 
 all $(TARGET): $(OBJS)
-	ar rcsu $(TARGET) $(OBJS)
+	ar rcs $(TARGET) $(OBJS)
 
 objs: $(OBJS)
 	rm *.gcda

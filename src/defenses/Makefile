@@ -43,7 +43,7 @@ OBJS = FDefense.o FNone.o FReflectiveHull.o FMaskingScreen.o FICM.o \
 TARGET = libdefenses.a
 
 all $(TARGET): $(OBJS)
-	ar rcsu $(TARGET) $(OBJS)
+	ar rcs $(TARGET) $(OBJS)
 
 objs: $(OBJS)
 	rm -f *.gcda

@@ -42,7 +42,7 @@ OBJS = BattleSimFrame.o LocalGameDialog.o ScenarioDialog.o ScenarioEditorGUI.o
 TARGET = libbattleSim.a
 
 all $(TARGET): $(OBJS)
-	ar rcsu $(TARGET) $(OBJS)
+	ar rcs $(TARGET) $(OBJS)
 
 	
 objs: $(OBJS)
