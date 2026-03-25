@@ -1,11 +1,11 @@
 {
   "verdict": "PASS",
   "branch": "build-warning-s3-verifier-20260325",
-  "commit_hash": "PENDING",
+  "commit_hash": "11b8e19",
   "findings_count": 1,
   "blocking_findings": [],
   "non_blocking_findings": [
-    "src/tactical/FBattleBoard.cpp:1019 — FPoint tmp(i,j) declared but unused in computeBatteryRange; pre-existing, out of S3 scope"
+    "src/tactical/FBattleBoard.cpp:1019 \u2014 FPoint tmp(i,j) declared but unused in computeBatteryRange; pre-existing, out of S3 scope"
   ],
   "test_sufficiency": "Adequate: clean rebuild of tactical module independently confirms no unused-variable warnings on recompilation.",
   "artifact_files": [
