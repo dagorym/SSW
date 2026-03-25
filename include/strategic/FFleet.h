@@ -31,6 +31,9 @@ class FSystem;
  */
 class FFleet : public Frontier::FPObject {
 public:
+  static constexpr unsigned int NO_DESTINATION = static_cast<unsigned int>(-1);
+  static constexpr unsigned int NO_ROUTE = static_cast<unsigned int>(-1);
+
   /// Default constructor
 	FFleet();
   /// Default destructor
@@ -65,7 +68,7 @@ public:
    * @date Created:  Jan 14, 2004
    * @date Last Modified:  Mar 14, 2008
    */
-  int setLocation( FSystem * loc, bool transit, int time = 0, unsigned int dest = -1 , int speed = 0, unsigned int route = -1);
+  int setLocation( FSystem * loc, bool transit, int time = 0, unsigned int dest = NO_DESTINATION , int speed = 0, unsigned int route = NO_ROUTE);
 
   /**
    * @brief Add a ship to the fleet
@@ -282,7 +285,7 @@ public:
   /// set the jump route the fleet is on
   void setJumpRoute(int i, const FSystem * s, const FSystem * e, unsigned int length);
   /// get pointer to the jump route the fleet is on
-  const int getJumpRoute() const { return m_jumpRouteID; }
+  unsigned int getJumpRoute() const { return m_jumpRouteID; }
   /// get the time left in the transit
   const int getTransitTime() const { return m_transitTime; }
   /// set the fleet's location
