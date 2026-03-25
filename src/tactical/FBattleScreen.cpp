@@ -87,7 +87,6 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 //	this->MakeModal(true);
 	wxColour black(wxT("#000000"));// black
-	wxColour white(wxT("#FFFFFF"));// white
 
 //	CreateStatusBar();
 //	SetStatusText( "Welcome to the BattleScreen!" );
