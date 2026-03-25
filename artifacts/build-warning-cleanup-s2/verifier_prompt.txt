@@ -1,0 +1,40 @@
+## S2 Verifier Handoff — Gate coverage flags behind COVERAGE=1
+
+### What S2 implemented
+Coverage instrumentation flags (-fprofile-arcs, -ftest-coverage) were unconditionally included in CXXFLAGS across 15 Makefiles. Each now gates these flags via:
+
+```makefile
+ifeq ($(COVERAGE),1)
+COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+else
+COVERAGE_FLAGS =
+endif
+```
+
+CXXFLAGS uses `$(COVERAGE_FLAGS)`. No -lgcov linker flags were found in the affected files.
+
+Changed files (15):
+src/Makefile, src/battleSim/Makefile, src/core/Makefile, src/defenses/Makefile,
+src/gui/Makefile, src/ships/Makefile, src/strategic/Makefile, src/tactical/Makefile,
+src/weapons/Makefile, tests/Makefile, tests/core/Makefile, tests/ships/Makefile,
+tests/strategic/Makefile, tests/tactical/Makefile, tests/weapons/Makefile
+
+### What the Tester validated
+- Clean default build: `grep -E "fprofile-arcs|ftest-coverage"` → no output (PASS)
+- `make COVERAGE=1`: `grep "fprofile-arcs"` → flags present in compile lines (PASS)
+- `make COVERAGE=1`: `grep -i "error"` → no output (PASS)
+
+### Acceptance criteria (all met)
+- Default builds have no coverage instrumentation — VERIFIED (clean build)
+- COVERAGE=1 produces instrumented build — VERIFIED
+- Change consistent across all 15 Makefiles — VERIFIED by inspection
+- No other build logic changed — VERIFIED
+
+### Branches
+- Implementer: `build-warning-s2-implementer-20260325`
+- Tester: `build-warning-s2-tester-20260325`
+
+### Shared artifact directory
+`artifacts/build-warning-cleanup-s2/`
+
+Review the combined implementer + tester changes. Write `verifier_report.md` and `verifier_result.json` to the shared artifact directory and commit them on your branch.
