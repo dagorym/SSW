@@ -1,0 +1,40 @@
+## S1 Tester Handoff — Replace ar rcsu with ar rcs
+
+### What was changed and why
+GNU ar emits a warning when the 'u' modifier is used because deterministic ('D') mode is now the default and 'u' is ignored. All 13 Makefiles under src/ and tests/ that used `ar rcsu` were updated to use `ar rcs` instead. No other build logic was changed.
+
+Changed files:
+- src/battleSim/Makefile
+- src/core/Makefile
+- src/defenses/Makefile
+- src/gui/Makefile
+- src/ships/Makefile
+- src/strategic/Makefile
+- src/tactical/Makefile
+- src/weapons/Makefile
+- tests/core/Makefile
+- tests/ships/Makefile
+- tests/strategic/Makefile
+- tests/tactical/Makefile
+- tests/weapons/Makefile
+
+### Acceptance criteria
+- No affected Makefile uses `ar rcsu` anymore.
+- Archive targets still build successfully.
+- The change is mechanical and does not alter any unrelated build logic.
+- Build no longer emits `ar: 'u' modifier ignored since 'D' is the default`.
+
+### Validation commands
+```bash
+grep -r "ar rcsu" src/ tests/                         # must return no output
+make -C src/ 2>&1 | grep -i "modifier" | head         # must return no output
+make -C src/ 2>&1 | grep -i "error" | head            # must return no output
+```
+
+### Shared artifact directory
+`artifacts/build-warning-cleanup-s1/`
+
+Reuse this directory. Write `tester_report.md`, `tester_result.json`, and (on pass) `verifier_prompt.txt` there.
+
+### Implementer branch
+`build-warning-implementer-20260325` (commit ba13fda)
