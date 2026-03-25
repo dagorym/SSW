@@ -1,0 +1,44 @@
+You are the Tester Agent.
+
+## Sentinel contract chosen by Implementer
+- Storage type: `unsigned int` (retained)
+- Named sentinels introduced in `FFleet`:
+  - `static constexpr unsigned int NO_DESTINATION = static_cast<unsigned int>(-1);`  (UINT_MAX)
+  - `static constexpr unsigned int NO_ROUTE = static_cast<unsigned int>(-1);`  (UINT_MAX)
+- `setLocation()` default parameters updated from raw `-1` to named constants
+- Constructor now initialises `m_destination = NO_DESTINATION` and `m_jumpRouteID = NO_ROUTE` (previously `0`)
+- `decTransitTime()` arrival resets to `NO_DESTINATION` / `NO_ROUTE` (previously `-1` / `0`)
+
+## Changed files (Implementer branch: ffleet-destination-s1-implementer-20260325, commit: f910750bf34fcf23c64b2d70367fc8ae6a289176)
+- include/strategic/FFleet.h
+- src/strategic/FFleet.cpp
+
+## Known test state
+161 tests run; 2 FFleetTest assertions fail with the current test file because they still compare
+against old values (`0` and `-1`) rather than `NO_DESTINATION`/`NO_ROUTE`. These failures are
+intentional scope for subtask 3 (test repair) and are NOT implementation defects. Do not treat
+them as blocking this subtask.
+
+## Acceptance criteria to verify
+1. `FFleet.h` declares `NO_DESTINATION` and `NO_ROUTE` as `static constexpr unsigned int` equal to `UINT_MAX`.
+2. `setLocation()` default parameters use those named constants, not raw `-1`.
+3. Constructor sets `m_destination = NO_DESTINATION` and `m_jumpRouteID = NO_ROUTE`.
+4. `decTransitTime()` arrival path sets `m_destination = NO_DESTINATION` and `m_jumpRouteID = NO_ROUTE`.
+5. The strategic module compiles without signed/unsigned warnings for the sentinel fields.
+6. No regressions outside the 2 known FFleetTest failures already scoped to subtask 3.
+
+## Validation commands
+```
+cd /home/tstephen/repos/SSW/src/strategic && make
+cd /home/tstephen/repos/SSW/tests && make && ./SSWTests
+```
+
+## Repository context
+- Base branch: ffleet-destination
+- Implementer branch: ffleet-destination-s1-implementer-20260325
+- Working directory: /home/tstephen/repos/SSW
+
+## Shared artifact directory path
+artifacts/ffleet-destination-sentinel-mismatch/subtask-1/
+
+Write tester_report.md, tester_result.json, and (if passing) verifier_prompt.txt into that directory.
