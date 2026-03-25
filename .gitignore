@@ -32,3 +32,4 @@ tests/tactical/TacticalTests
 *.exe
 *.ilk
 *.pdb
+.idea
