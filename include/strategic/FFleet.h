@@ -31,6 +31,9 @@ class FSystem;
  */
 class FFleet : public Frontier::FPObject {
 public:
+  static constexpr unsigned int NO_DESTINATION = static_cast<unsigned int>(-1);
+  static constexpr unsigned int NO_ROUTE = static_cast<unsigned int>(-1);
+
   /// Default constructor
 	FFleet();
   /// Default destructor
@@ -65,7 +68,7 @@ public:
    * @date Created:  Jan 14, 2004
    * @date Last Modified:  Mar 14, 2008
    */
-  int setLocation( FSystem * loc, bool transit, int time = 0, unsigned int dest = -1 , int speed = 0, unsigned int route = -1);
+  int setLocation( FSystem * loc, bool transit, int time = 0, unsigned int dest = NO_DESTINATION , int speed = 0, unsigned int route = NO_ROUTE);
 
   /**
    * @brief Add a ship to the fleet
