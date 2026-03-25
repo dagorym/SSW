@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Reviewed tactical report builders for weapon-fire, mine-damage, and immediate damage events to align with Subtask 1 aggregation contract.
+- Verified required fields are already populated correctly; no source code changes were necessary.
+
+Modified files:
+- None (no source changes required)
+
+Acceptance criteria to validate (from Planner):
+- Weapon-fire attack reports built from FTacticalAttackResult have attack.target set to the defending ship and internalEvent.subject set to the affected ship for each event.
+- Mine-damage attack reports have the same correct field population.
+- Non-hull effect entries in internalEvents still appear in per-ship effect summaries.
+- Raw internal event detail is still preserved.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/ships/FTacticalAttackIntegrationTest.cpp (if needed)
+
+Implementation context for testing:
+- src/tactical/FBattleDisplay.cpp: buildTacticalAttackReport sets report.target from result target; buildTacticalAttackEvent sets event.subject/event.target to report.target and source to report.attacker.
+- src/tactical/FBattleBoard.cpp: buildMineDamageAttackReport sets report.target and hullDamage; buildMineDamageEvent sets subject/target to mine-damaged ship.
+- src/tactical/FBattleScreen.cpp: appendTacticalDamageResolutionEvents (immediate effects) sets event.subject/source/target to affected ship; normalizeAttackInternalEvents backfills missing subject/target/source from attack target/attacker.
+- No behavior changes were introduced in this subtask.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- cd tests && make && ./SSWTests
+- (fallback if needed) make && cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/tdsu-st2
