@@ -6,7 +6,13 @@
 #       -lwx_gtk2_qa-2.8 -lwx_gtk2_html-2.8 -lwx_gtk2_adv-2.8 -lwx_gtk2_core-2.8 \
 #       -lwx_base_xml-2.8 -lwx_base_net-2.8 -lwx_base-2.8
 
-CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX 
+ifeq ($(COVERAGE),1)
+COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+else
+COVERAGE_FLAGS =
+endif
+
+CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) 
 
 LIBS = `wx-config --libs`
 

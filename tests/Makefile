@@ -1,4 +1,10 @@
-CXXFLAGS = -I../include  -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage
+ifeq ($(COVERAGE),1)
+COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+else
+COVERAGE_FLAGS =
+endif
+
+CXXFLAGS = -I../include  -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
 
 LIBS = -L./strategic -lstrategicTests -L./ships -lshipsTests \
 	-L./tactical -ltacticalTests \
