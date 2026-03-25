@@ -1,7 +1,7 @@
 {
   "verdict": "PASS",
   "branch": "build-warning-s4-verifier-20260325",
-  "commit_hash": "PENDING",
+  "commit_hash": "b86ba1b",
   "findings_count": 1,
   "blocking_findings": [],
   "non_blocking_findings": [
