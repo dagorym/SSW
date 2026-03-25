@@ -1,0 +1,51 @@
+You are the Verifier Agent.
+
+Original task summary:
+- Reviewed tactical report builders for weapon-fire, mine-damage, and immediate damage events against Subtask 1 aggregation contract.
+- Implementer concluded no production code changes were required.
+
+Acceptance criteria to verify:
+1. Weapon-fire attack reports built from FTacticalAttackResult set `attack.target` to defending ship and nested `internalEvent.subject` to affected ship.
+2. Mine-damage attack reports populate the same fields correctly.
+3. Non-hull effect internal events still appear in per-ship effect summaries.
+4. Raw internal event detail remains preserved.
+
+Implementation context under test:
+- `src/tactical/FBattleDisplay.cpp`
+  - `buildTacticalAttackReport` sets report target from result target.
+  - `buildTacticalAttackEvent` sets `event.subject`/`event.target` to `report.target`, source to attacker.
+- `src/tactical/FBattleBoard.cpp`
+  - `buildMineDamageAttackReport` sets report target/hull damage.
+  - `buildMineDamageEvent` sets subject/target to mine-damaged ship.
+- `src/tactical/FBattleScreen.cpp`
+  - immediate damage-resolution events set subject/source/target to affected ship.
+  - normalization backfills missing subject/target/source from attack target/attacker.
+
+Tester worktree context:
+- Worktree: `/home/tstephen/worktrees/tdsu-tester-20260325`
+- Branch: `tdsu-tester-20260325`
+- Shared artifact directory (repo-root-relative): `artifacts/tdsu-st2`
+
+Test changes made:
+- Modified: `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+  - In `testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem`, added explicit assertions for:
+    - `reportEvent.subject = target;`
+    - `report.target = FTacticalShipReference(result.targetID, result.targetOwnerID, result.targetName);`
+- No implementation files modified.
+
+Validation commands executed:
+1. `cd tests/tactical && make && ./TacticalTests` -> PASS (`OK (45 tests)`)
+2. `cd tests && make && ./SSWTests` -> initial linker failure (missing built src libs in fresh worktree)
+3. `make && cd tests && make && ./SSWTests` -> PASS (`OK (162 tests)`)
+
+Final test outcome:
+- All relevant and full-suite tests passed after standard fallback build.
+- Acceptance criteria are covered by a combination of existing and strengthened tests.
+
+Tester commit:
+- Commit hash: 644f3f9a91c73dc763a6ef8113104210242bf8ae
+
+Verifier follow-up checks:
+1. Confirm tester commit only changes intended test/artifact files.
+2. Re-run at least tactical tests (`tests/tactical`) and optionally full `tests/SSWTests` from this branch.
+3. Confirm the added mine-damage assertions align with actual source logic in `FBattleBoard.cpp`.

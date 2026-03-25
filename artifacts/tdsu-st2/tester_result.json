@@ -1,0 +1,40 @@
+{
+  "status": "success",
+  "task": "tdsu-st2",
+  "branch": "tdsu-tester-20260325",
+  "test_commit_hash": "644f3f9a91c73dc763a6ef8113104210242bf8ae",
+  "attempt": 1,
+  "test_files_added": [],
+  "test_files_modified": [
+    "tests/tactical/FTacticalMineDamageFlowTest.cpp"
+  ],
+  "commands_run": [
+    {
+      "command": "cd tests/tactical && make && ./TacticalTests",
+      "result": "pass",
+      "output": "OK (45 tests)"
+    },
+    {
+      "command": "cd tests && make && ./SSWTests",
+      "result": "infra_fail",
+      "output": "linker could not find src static libs before root build"
+    },
+    {
+      "command": "make && cd tests && make && ./SSWTests",
+      "result": "pass",
+      "output": "OK (162 tests)"
+    }
+  ],
+  "pass_fail_totals": {
+    "tactical_tests_passed": 45,
+    "tactical_tests_failed": 0,
+    "full_suite_passed": 162,
+    "full_suite_failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_paths": [
+    "artifacts/tdsu-st2/tester_report.md",
+    "artifacts/tdsu-st2/tester_result.json",
+    "artifacts/tdsu-st2/verifier_prompt.txt"
+  ]
+}
