@@ -1,0 +1,12 @@
+{
+  "status": "CONDITIONAL PASS",
+  "branch": "ffleet-destination-s1-tester-20260325",
+  "commit": "",
+  "blocking_findings": 1,
+  "non_blocking_findings": 2,
+  "test_sufficiency": "insufficient",
+  "artifact_files": [
+    "artifacts/ffleet-destination-sentinel-mismatch/subtask-1/verifier_report.md",
+    "artifacts/ffleet-destination-sentinel-mismatch/subtask-1/verifier_result.json"
+  ]
+}
