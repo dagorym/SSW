@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Task summary:
+- Added deterministic tactical summary regression tests using real attack-result shaped data for weapon fire and mine damage to prevent hull-damage double counting while preserving non-hull effect rollups.
+
+Modified files:
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- There is a deterministic test for a weapon-fire report where `attack.hullDamage` and a `internalEvent.hullDamage` describe the same applied hit, and the summary total matches the actual applied damage once.
+- There is a deterministic test for a mine-damage report with the same shape and the same no-double-count invariant.
+- At least one test verifies non-hull internal effects still surface in the summary.
+- Tests are derived from real attack-result shaped data structures (FTacticalAttackReport, FTacticalCombatEvent) used by the tactical reporting flow.
+- Tests are wired into the tactical test build.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalCombatReportTest.h
+
+Implementation context for testing:
+- Added three new FTacticalCombatReportTest methods covering:
+  - Weapon-fire attack shape: attack.hullDamage + matching internal hull event should count once.
+  - Mine-damage attack shape: same invariant with TRT_MineDamage style data.
+  - Mixed internal events: matching internal hull event plus non-hull internal effect; hull total not doubled and non-hull label appears in effect rollup/display lines.
+- All tests build data via FTacticalAttackReport and FTacticalReportEvent using source/target/attackIndex fields to mimic real tactical reporting flow.
+- Existing Subtask 1 tests were preserved; these are additive regression tests.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/tdsu-st3

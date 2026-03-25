@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "subtask": "Subtask 3 - deterministic regression tests with attack-result shaped data",
+  "branch": "tdsu-implementer-20260325",
+  "implementation_commit_hash": "6519dc30a5b0567e8b97ea3ba282cd09925a2f49",
+  "artifact_commit_hash": "81756fc1c860e1c93713c134464983dd3ea8a327",
+  "changed_files": [
+    "tests/tactical/FTacticalCombatReportTest.h",
+    "tests/tactical/FTacticalCombatReportTest.cpp"
+  ],
+  "validation_commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests && make && ./SSWTests",
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd /home/tstephen/worktrees/tdsu-implementer-20260325 && make && cd tests && make && ./SSWTests"
+  ],
+  "validation_outcome": "pass",
+  "artifact_file_paths_written": [
+    "artifacts/tdsu-st3/tester_prompt.txt",
+    "artifacts/tdsu-st3/implementer_result.json"
+  ]
+}
