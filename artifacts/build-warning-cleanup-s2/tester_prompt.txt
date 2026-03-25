@@ -1,0 +1,42 @@
+## S2 Tester Handoff — Gate coverage flags behind COVERAGE=1
+
+### What was changed and why
+Coverage instrumentation flags (-fprofile-arcs, -ftest-coverage) were unconditionally included in CXXFLAGS across 15 Makefiles under src/ and tests/. This added gcov overhead and noise to every normal build. The change gates these flags behind an explicit COVERAGE=1 variable.
+
+Pattern applied to all 15 Makefiles:
+```makefile
+ifeq ($(COVERAGE),1)
+COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+else
+COVERAGE_FLAGS =
+endif
+```
+CXXFLAGS now uses $(COVERAGE_FLAGS) instead of the hard-coded flags.
+
+Changed files:
+src/Makefile, src/battleSim/Makefile, src/core/Makefile, src/defenses/Makefile,
+src/gui/Makefile, src/ships/Makefile, src/strategic/Makefile, src/tactical/Makefile,
+src/weapons/Makefile, tests/Makefile, tests/core/Makefile, tests/ships/Makefile,
+tests/strategic/Makefile, tests/tactical/Makefile, tests/weapons/Makefile
+
+### Acceptance criteria
+- Default builds (make) do not include -fprofile-arcs, -ftest-coverage, or -lgcov.
+- make COVERAGE=1 still produces a coverage-instrumented build.
+- The change applies consistently across all 15 affected Makefiles.
+- No other build logic is changed.
+
+### Validation commands
+```bash
+make -C src/ 2>&1 | grep -E "fprofile-arcs|ftest-coverage" | head     # expect no output
+make COVERAGE=1 -C src/ 2>&1 | grep "fprofile-arcs" | head             # expect output (flags present)
+make COVERAGE=1 -C src/ 2>&1 | grep -i "error" | head                  # expect no output
+grep -R "fprofile-arcs\|ftest-coverage" src tests --include="Makefile" # should only show COVERAGE_FLAGS block
+```
+
+### Shared artifact directory
+`artifacts/build-warning-cleanup-s2/`
+
+Reuse this directory. Write `tester_report.md`, `tester_result.json`, and (on pass) `verifier_prompt.txt` there.
+
+### Implementer branch
+`build-warning-s2-implementer-20260325`
