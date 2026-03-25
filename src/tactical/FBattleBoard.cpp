@@ -955,8 +955,6 @@ void FBattleBoard::computeWeaponRange(){
 }
 
 void FBattleBoard::computeFFRange(FPoint &pos, PointSet &tList, PointSet &hList, int heading){
-	wxColour red(wxT("#FF0000"));
-	wxColour blue(wxT("#0000FF"));
 	FVehicle *s = m_parent->getShip();
 	unsigned int range = m_parent->getWeapon()->getRange();
 	if (heading == -1){
@@ -1003,7 +1001,6 @@ void FBattleBoard::computeFFRange(FPoint &pos, PointSet &tList, PointSet &hList,
 }
 
 void FBattleBoard::computeBatteryRange(FPoint &pos, PointSet &tList){
-	wxColour blue(wxT("#0000FF"));
 	unsigned int range = m_parent->getWeapon()->getRange();
 	int xMin = pos.getX() - range;
 	if (xMin < 0) { xMin = 0; }

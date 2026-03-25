@@ -707,7 +707,6 @@ void FBattleDisplay::drawDefenseList(wxDC &dc, int lMargin, int tMargin, int tex
 	wxColour white(wxT("#FFFFFF"));
 	wxColour red(wxT("#FF0000"));
 	wxColour green(wxT("#00FF00"));
-	wxColour yellow(wxT("#FFFF00"));
 	wxColour orange(wxT("#FFA000"));
 	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
 	dc.SetTextForeground(white);
