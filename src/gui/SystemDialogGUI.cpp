@@ -222,7 +222,11 @@ void SystemDialogGUI::onMoveFleet( wxCommandEvent& event ){
 }
 
 void SystemDialogGUI::onViewShips( wxCommandEvent& event ){
-	ViewFleetGUI * d = new ViewFleetGUI(m_parent,m_fleet,m_system,m_map->getSystem(m_fleet->getDestination()));
+	FSystem * destination = NULL;
+	if (m_fleet->getDestination() != FFleet::NO_DESTINATION) {
+		destination = m_map->getSystem(m_fleet->getDestination());
+	}
+	ViewFleetGUI * d = new ViewFleetGUI(m_parent,m_fleet,m_system,destination);
 	d->ShowModal();
 	event.Skip();
 }
@@ -235,7 +239,16 @@ std::string SystemDialogGUI::getMovementText(FFleet * f){
 			name += "Holding ";
 		}
 		name += "in Transit to ";
-		name += m_map->getSystem(f->getDestination())->getName();
+		if (f->getDestination() != FFleet::NO_DESTINATION) {
+			FSystem * destination = m_map->getSystem(f->getDestination());
+			if (destination != NULL) {
+				name += destination->getName();
+			} else {
+				name += "unknown";
+			}
+		} else {
+			name += "unknown";
+		}
 		if (f->getSpeed()==2){
 			name += " - RJ2";
 		} else if (f->getSpeed()==3){

@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Implementation status: BLOCKED (validation and commit steps could not be executed in this environment due to missing shell command tool access).
+
+Shared artifact directory (reuse this exact path):
+artifacts/ffleet-destination-sentinel-mismatch/subtask-2/
+
+Modified files:
+- src/strategic/FGame.cpp
+- src/gui/SystemDialogGUI.cpp
+- src/gui/WXPlayerDisplay.cpp
+- src/gui/ViewFleetGUI.cpp
+
+Commit hash:
+- Not available (implementation commit was not created)
+
+Planner acceptance criteria to verify:
+1. No caller file uses raw `-1` to test fleet destination or route sentinel state.
+2. Code paths that dereference destination or route IDs are safe when a fleet is not in transit.
+3. All four touched files compile without sentinel-related signed/unsigned warnings.
+4. Existing behavior is preserved (no logic changes beyond the sentinel representation fix).
+
+Validation commands to run:
+- cd /home/tstephen/repos/SSW && make
+- cd /home/tstephen/repos/SSW/tests && make && ./SSWTests
+
+Test file location(s) for new tests:
+- tests/ (project convention assumption; implementer did not add tests)
+
+Implementation context:
+- Replaced/guarded destination and route usage in callers against FFleet sentinel constants.
+- Added checks for `FFleet::NO_DESTINATION` and `FFleet::NO_ROUTE` before route/system dereferences.
+- Added null guards around route/system lookups used for fleet movement text and map rendering.
+- Ensured ViewFleet dialog handles null destination safely when fleet is not in transit.
+
+Key behavior expectations:
+- No crashes/null dereferences when viewing or drawing fleets not in transit.
+- In-transit UI text still shows destination when available; otherwise safe fallback text appears.
+- Fleet movement and rendering logic should remain functionally equivalent when destination/route are valid.

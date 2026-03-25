@@ -31,7 +31,7 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 	txt = "Current Destination:  ";
 	std::ostringstream os;
 	os << "    Time until arrival:  ";
-	if (fleet->getInTransit()){
+	if (fleet->getInTransit() && dest != NULL && fleet->getDestination() != FFleet::NO_DESTINATION){
 		txt += dest->getName();
 		os << (int)floor(fleet->getTransitTime()/fleet->getSpeed()+0.5) << " days";
 	} else {
