@@ -1,0 +1,14 @@
+{
+  "status": "completed",
+  "task_id": "tdsu-st3",
+  "branch": "tdsu-verifier-20260325",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency_summary": "Sufficient: deterministic attack-shaped regression tests cover weapon fire, mine damage, and retention of non-hull internal effects; TacticalTests and full SSWTests both passed.",
+  "artifact_file_paths": [
+    "artifacts/tdsu-st3/verifier_report.md",
+    "artifacts/tdsu-st3/verifier_result.json"
+  ]
+}
