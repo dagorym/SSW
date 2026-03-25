@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Task summary:
+- Added a focused regression test in FTacticalCombatReportTest ensuring mixed report inputs are handled correctly: standalone top-level hull-damage events are counted, while matching nested internal hull-damage events under an attack are not double-counted.
+
+Modified files:
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- A standalone report.events hull-damage event still increments hullDamageTaken.
+- A nested attack internalEvent hull-damage entry that matches the parent attack's target does NOT increment hullDamageTaken a second time.
+- The test clearly documents the intended difference between the two cases.
+- All existing tests still pass.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalCombatReportTest.h
+
+Implementation context for testing:
+- New test method: testBuildTacticalCombatReportSummaryCountsStandaloneHullDamageWhileSuppressingMatchingNestedAttackEvent.
+- It constructs one attack with hullDamage=X against ship A and a nested internalEvent for ship A with hullDamage=X (duplicate detail expected to be suppressed).
+- It also adds one standalone report.events entry for ship A with hullDamage=Y.
+- Expected rollup assertion: hullDamageTaken == X + Y, proving nested duplicate suppression and standalone-event inclusion in the same report.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/tdsu-st4

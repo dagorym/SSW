@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "subtask": "Subtask 4 — Add guardrail coverage for standalone immediate events versus nested attack effects",
+  "branch": "tdsu-implementer-20260325",
+  "implementation_commit_hash": "231d91f5765431f458f610b3c09f6b3663d78482",
+  "artifact_commit_hash": "1abf7c765b378ac69922de6865ea655542e8a5c9",
+  "changed_files": [
+    "tests/tactical/FTacticalCombatReportTest.h",
+    "tests/tactical/FTacticalCombatReportTest.cpp"
+  ],
+  "validation_commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests && make && ./SSWTests"
+  ],
+  "validation_outcome": "pass",
+  "artifact_files_written": [
+    "artifacts/tdsu-st4/tester_prompt.txt",
+    "artifacts/tdsu-st4/implementer_result.json"
+  ]
+}
