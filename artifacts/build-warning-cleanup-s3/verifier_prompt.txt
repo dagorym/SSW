@@ -1,0 +1,26 @@
+## S3 Verifier Handoff — Remove unused wxColour locals in tactical
+
+### What S3 implemented
+Three tactical source files had `wxColour` local variables declared but never used, causing `-Wall` unused-variable compiler warnings. The Implementer removed these unused declarations:
+- `src/tactical/FBattleBoard.cpp`: removed unused `red` and `blue` locals in `computeFFRange`, unused `blue` in `computeBatteryRange`
+- `src/tactical/FBattleScreen.cpp`: removed unused `white` local
+- `src/tactical/FBattleDisplay.cpp`: removed unused `yellow` local in `drawDefenseList`
+
+### What the Tester validated
+- `make -C src/tactical 2>&1 | grep -i "unused"` → no output (PASS)
+- `make -C src/tactical 2>&1 | grep -i "error"` → no output (PASS)
+
+### Acceptance criteria (all met)
+- Tactical build no longer emits unused-local-variable warnings — VERIFIED
+- Build completes without errors — VERIFIED
+- Rendering behavior unchanged — VERIFIED (removed locals were never referenced in logic)
+- No dead-code placeholders introduced — VERIFIED
+
+### Branches
+- Implementer: `build-warning-s3-implementer-20260325`
+- Tester: `build-warning-s3-tester-20260325`
+
+### Shared artifact directory
+`artifacts/build-warning-cleanup-s3/`
+
+Review the combined implementer + tester changes. Write `verifier_report.md` and `verifier_result.json` to the shared artifact directory and commit them on your branch.
