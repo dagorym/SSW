@@ -1,14 +1,15 @@
 You are the Tester Agent.
 
 Task summary:
-- Updated tactical combat summary aggregation to prevent double counting hull damage when an attack includes both attack-level hullDamage and nested internal-event hull-damage entries.
+- Remediated Subtask 1 hull-damage aggregation so nested internal-event hull damage is suppressed only when it targets the same ship already represented by attack.hullDamage.
 
 Modified files:
 - include/tactical/FTacticalCombatReport.h
 
 Acceptance criteria to validate (from Planner):
-- A hit represented by both attack-level hull damage and matching nested hull-damage events contributes to hullDamageTaken exactly once.
-- Standalone report-level events in report.events still contribute their hull damage to summaries.
+- A hit represented by both `attack.hullDamage > 0` (for ship A) and a matching hull-damage `internalEvent` for ship A contributes to ship A's `hullDamageTaken` exactly once.
+- A hull-damage `internalEvent` for ship B nested inside an attack that already has `hullDamage > 0` for ship A still increments ship B's `hullDamageTaken`.
+- Standalone report-level events in `report.events` still contribute their hull damage to summaries.
 - Non-hull nested effects still contribute to effect rollups.
 
 Create test files in:
@@ -16,10 +17,11 @@ Create test files in:
 - tests/tactical/FTacticalCombatReportTest.h
 
 Implementation context for testing:
-- In TacticalCombatReportDetail::shouldCountInternalEventHullDamage(), nested event hull damage is now excluded whenever parent attack.hullDamage > 0.
-- Attack-level hullDamage remains the canonical player-facing hull total for attack outcomes.
-- Nested internalEvents are still preserved in rawEvents/rawAttacksReceived for diagnostics/UI and still contribute to effect summaries through appendEffectSummary().
-- Standalone report.events aggregation path was not changed; report-level hull-damage events still add to hullDamageTaken.
+- Changed `TacticalCombatReportDetail::shouldCountInternalEventHullDamage()` in `include/tactical/FTacticalCombatReport.h`.
+- Logic now suppresses nested `event.hullDamage` only when all are true: parent `attack.hullDamage > 0`, `attack.target` is valid, and `event.subject` matches `attack.target` by shipID+ownerID.
+- Nested hull-damage events for other ships are now counted toward those ships.
+- Raw event retention and non-hull effect rollups were not removed.
+- Existing cross-ship regression in tactical tests currently expects escort damage to be counted; verify this remains true.
 
 Suggested test command(s):
 - cd tests/tactical && make && ./TacticalTests
