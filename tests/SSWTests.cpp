@@ -7,6 +7,7 @@
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
+#include <wx/image.h>
 
 #include "core/FPointTest.h"
 #include "core/FObjectTest.h"
@@ -54,6 +55,7 @@ using namespace FrontierTests;
 
 int main( int argc, char **argv)
 {
+  wxInitAllImageHandlers();
 
 	CppUnit::TextUi::TestRunner runner;
 //	CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
