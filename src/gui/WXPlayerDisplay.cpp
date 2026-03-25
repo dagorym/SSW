@@ -30,7 +30,19 @@ void WXPlayerDisplay::drawFleets(wxDC &dc, FPlayer *player){
 		for (FleetList::iterator itr = fleetList.begin(); itr < fleetList.end(); itr++){
 			wxBitmap b((*itr)->getIcon()->Scale((int)scale,(int)scale));
 			if((*itr)->getInTransit()){  // it's in a jump
+				if ((*itr)->getDestination() == FFleet::NO_DESTINATION || (*itr)->getJumpRoute() == FFleet::NO_ROUTE) {
+					wxCoord x = (wxCoord)(((*itr)->getCoord(0)-0.5) * scale);
+					wxCoord y = (wxCoord)(((*itr)->getCoord(1)-0.5) * scale);
+					dc.DrawBitmap(b,x,y);
+					continue;
+				}
 				FJumpRoute *j = map->getJumpRoute((*itr)->getJumpRoute());
+				if (j == NULL) {
+					wxCoord x = (wxCoord)(((*itr)->getCoord(0)-0.5) * scale);
+					wxCoord y = (wxCoord)(((*itr)->getCoord(1)-0.5) * scale);
+					dc.DrawBitmap(b,x,y);
+					continue;
+				}
 				unsigned int start,end;
 				if(j->getStart()->getID()==(*itr)->getDestination()){
 					start = j->getEnd()->getID();

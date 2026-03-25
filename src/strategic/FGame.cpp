@@ -474,7 +474,11 @@ void FGame::onLeftDClick(wxMouseEvent& event) {
 		for (unsigned int i = 0; i < m_players.size(); i++){
 			f = m_players[i]->getFleet(event.m_x/md.getScale(dc),event.m_y/md.getScale(dc));
 			if (f!=NULL){
-				ViewFleetGUI *d = new ViewFleetGUI(m_parent,f,m_universe->getSystem(f->getLocation()),m_universe->getSystem(f->getDestination()));
+				FSystem * destination = NULL;
+				if (f->getDestination() != FFleet::NO_DESTINATION) {
+					destination = m_universe->getSystem(f->getDestination());
+				}
+				ViewFleetGUI *d = new ViewFleetGUI(m_parent,f,m_universe->getSystem(f->getLocation()),destination);
 				d->ShowModal();
 				return;
 			}
@@ -575,7 +579,13 @@ void FGame::moveFleets(FPlayer * p){
 				continue;// and skip over the rest of the code this time through the loop
 			}
 //			std::cerr << "New transit time is " << fleets[i]->getTransitTime() << std::endl;
+			if (fleets[i]->getJumpRoute() == FFleet::NO_ROUTE || fleets[i]->getDestination() == FFleet::NO_DESTINATION) {
+				continue;
+			}
 			FJumpRoute *j = m_universe->getJumpRoute(fleets[i]->getJumpRoute());
+			if (j == NULL) {
+				continue;
+			}
 			if (time <= j->getLength()/2 && time > 0){  // we've actually made the jump but we're not there yet.
 				if(fleets[i]->getLocation()!=fleets[i]->getDestination()){
 					// move it into the other system

@@ -1,0 +1,45 @@
+You are the Tester Agent.
+
+## Implementation summary (Subtask 2: Update callers)
+The Implementer updated destination and jump-route call sites in four files to use the explicit
+FFleet sentinel contract established in subtask 1 (NO_DESTINATION = NO_ROUTE = UINT_MAX).
+
+Changes made:
+- FGame.cpp: guarded NO_ROUTE/NO_DESTINATION before jump route/system dereferences in moveFleets;
+  null guard for jump route pointer; guarded destination arg in onLeftDClick ViewFleetGUI call
+- SystemDialogGUI.cpp: guard destination lookup in onViewShips (pass NULL when NO_DESTINATION);
+  guard getName() dereference in getMovementText
+- WXPlayerDisplay.cpp: guard NO_DESTINATION/NO_ROUTE before transit rendering in drawFleets;
+  null guard for jump route pointer
+- ViewFleetGUI.cpp: guard destination display requiring inTransit && dest != NULL && != NO_DESTINATION
+
+## Changed files
+- src/strategic/FGame.cpp
+- src/gui/SystemDialogGUI.cpp
+- src/gui/WXPlayerDisplay.cpp
+- src/gui/ViewFleetGUI.cpp
+
+## Branch / Commit
+- Branch: ffleet-destination-s2-implementer-20260325
+- Commit: c244e9a
+
+## Acceptance criteria
+1. No caller file uses raw -1 to test fleet destination or route sentinel state.
+2. Code paths that dereference destination or route IDs are safe when a fleet is not in transit.
+3. All four touched files compile without sentinel-related signed/unsigned warnings.
+4. Existing behavior is preserved.
+
+## Validation commands
+```bash
+cd /home/tstephen/repos/SSW && make
+cd /home/tstephen/repos/SSW/tests && make && ./SSWTests
+```
+
+## Repository
+- Root: /home/tstephen/repos/SSW
+- Branch to test from: ffleet-destination-s2-implementer-20260325
+
+## Shared artifact directory
+artifacts/ffleet-destination-sentinel-mismatch/subtask-2/
+
+Write tester_report.md, tester_result.json, and (if passing) verifier_prompt.txt into that directory.
