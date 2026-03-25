@@ -1,0 +1,22 @@
+## S4 Verifier Handoff — wx image handler initialization in test bootstrap
+
+### What S4 implemented
+`tests/SSWTests.cpp` lacked wx image handler initialization, causing avoidable PNG load warnings when tests exercise image-loading paths. The change adds `#include <wx/image.h>` and `wxInitAllImageHandlers()` at the start of `main()`, matching the production startup pattern in FApp.cpp and FBattleSimApp.cpp.
+
+### What the Tester validated
+- `cd tests && ./SSWTests 2>&1 | grep -i "png|handler|libpng" | head` → no output (PASS)
+- `cd tests && ./SSWTests 2>&1 | tail -3` → OK (161 tests) (PASS)
+
+### Acceptance criteria (all met)
+- Test harness initializes image handlers — VERIFIED
+- No PNG/image handler warnings during test run — VERIFIED
+- All 161 tests pass with no regressions — VERIFIED
+
+### Branches
+- Implementer: `build-warning-s4-implementer-20260325`
+- Tester: `build-warning-s4-tester-20260325`
+
+### Shared artifact directory
+`artifacts/build-warning-cleanup-s4/`
+
+Review the combined implementer + tester changes. Write `verifier_report.md` and `verifier_result.json` to the shared artifact directory and commit them on your branch.
