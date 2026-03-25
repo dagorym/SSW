@@ -1,0 +1,15 @@
+{
+  "plan_identifier": "ffleet-destination-sentinel-mismatch",
+  "status": "CONDITIONAL PASS",
+  "commit": "",
+  "subtasks_complete": 3,
+  "missed_functionality": [],
+  "follow_up_items": [
+    "Add FFleet serialization sentinel regression coverage: verify NO_DESTINATION/NO_ROUTE round-trip through save()/load() and legacy m_jumpRouteID==0 normalization on load.",
+    "Remove RNG dependence from FFleetTest::testDecTransitTime() so arrival-state sentinel assertions are deterministic."
+  ],
+  "artifact_files": [
+    "artifacts/ffleet-destination-sentinel-mismatch_review/ffleet-destination-sentinel-mismatch_reviewer_report.md",
+    "artifacts/ffleet-destination-sentinel-mismatch_review/ffleet-destination-sentinel-mismatch_reviewer_result.json"
+  ]
+}
