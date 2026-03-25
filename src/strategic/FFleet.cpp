@@ -158,6 +158,8 @@ int FFleet::load(std::istream &is){
 	read(is,m_jumpLength);
 	read(is,m_speed);
 	read(is,m_jumpRouteID);
+	// Normalize legacy saves that encoded "no route" as 0 to the current sentinel.
+	if (m_jumpRouteID == 0) m_jumpRouteID = NO_ROUTE;
 	readString(is,m_iconFile);
 	m_icon = new wxImage(gc.getBasePath()+m_iconFile);
 	read(is,m_isMilitia);

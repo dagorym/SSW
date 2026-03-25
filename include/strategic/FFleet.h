@@ -285,7 +285,7 @@ public:
   /// set the jump route the fleet is on
   void setJumpRoute(int i, const FSystem * s, const FSystem * e, unsigned int length);
   /// get pointer to the jump route the fleet is on
-  const int getJumpRoute() const { return m_jumpRouteID; }
+  unsigned int getJumpRoute() const { return m_jumpRouteID; }
   /// get the time left in the transit
   const int getTransitTime() const { return m_transitTime; }
   /// set the fleet's location
