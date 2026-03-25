@@ -59,12 +59,21 @@ make              # Builds SSWTests executable and all test libraries
 ./SSWTests        # Run all tests
 ```
 
+To run a **single module's tests**, each module under `tests/` also has its own standalone runner:
+```bash
+cd tests/tactical && make && ./TacticalTests   # tactical module only
+cd tests/weapons  && make && ./WeaponsTests    # weapons module only
+# pattern: tests/<module>/ produces a standalone <Module>Tests executable
+```
+
 Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis.
 
 ### Adding New Tests
-1. Create `<Module>/<Class>Test.h` and `.cpp` in `tests/` directory
-2. Update `tests/<module>/Makefile` to include test object
-3. Add `#include` and `runner.addTest()` call in [tests/SSWTests.cpp](../tests/SSWTests.cpp)
+1. Copy `tests/test_template.h` and `tests/test_template.cpp` as starting points
+2. Create `tests/<module>/<Class>Test.h` and `.cpp`, replacing `XXX` with the class name
+3. Update `tests/<module>/Makefile` to include the new test object
+4. Add `#include` and `runner.addTest()` call in [tests/SSWTests.cpp](../tests/SSWTests.cpp)
+5. Test include guards use `#ifndef CLASSNAME_H_` (no leading underscore, unlike production headers)
 
 ## Critical Conventions
 
@@ -124,3 +133,5 @@ Doxygen config: [doc/Doxyfile](../doc/Doxyfile). All classes/methods should have
 - [WARP.md](../WARP.md) - Detailed architecture guide
 - [WXWIDGETS_UPGRADE_CHANGES.md](../WXWIDGETS_UPGRADE_CHANGES.md) - wxWidgets migration notes
 - [VS_PROJECT_CHANGES.md](../VS_PROJECT_CHANGES.md) - Visual Studio configuration
+
+Read ~/repos/agents/AGENT_LOOKUP.md for your agent definitions.
