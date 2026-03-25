@@ -309,9 +309,11 @@ inline bool shouldCountInternalEventHullDamage(
 	}
 
 	// Attack-level hull damage is the canonical player-facing total for the target ship.
-	// Nested hull-damage events remain available as raw detail, but never add additional
-	// player-facing hull damage when the parent attack already carries hullDamage.
-	if (attack.hullDamage > 0) {
+	// Nested hull-damage events remain available as raw detail, but only suppress
+	// player-facing hull damage when they target that same ship.
+	if (attack.hullDamage > 0
+		&& attack.target.isValid()
+		&& eventMatchesShipReference(event.subject, attack.target)) {
 		return false;
 	}
 
