@@ -439,6 +439,51 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsStanda
 	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 3 hull damage") != std::string::npos);
 }
 
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsStandaloneHullDamageWhileSuppressingMatchingNestedAttackEvent() {
+	// AC: standalone report events add hull damage while matching nested attack events do not double count.
+	FTacticalCombatReport report;
+
+	const int attackHullDamage = 4;
+	const int standaloneHullDamage = 3;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	attack.target = FTacticalShipReference(2, 2, "Frigate");
+	attack.hit = true;
+	attack.hullDamage = attackHullDamage;
+
+	FTacticalReportEvent nestedDuplicateHull;
+	nestedDuplicateHull.eventType = TRET_InternalDamage;
+	nestedDuplicateHull.subject = attack.target;
+	nestedDuplicateHull.source = attack.attacker;
+	nestedDuplicateHull.target = attack.target;
+	nestedDuplicateHull.attackIndex = 0;
+	nestedDuplicateHull.hullDamage = attackHullDamage;
+	nestedDuplicateHull.label = "Nested duplicate hull damage";
+	attack.internalEvents.push_back(nestedDuplicateHull);
+
+	report.attacks.push_back(attack);
+
+	FTacticalReportEvent standaloneHull;
+	standaloneHull.eventType = TRET_MineDamage;
+	standaloneHull.subject = attack.target;
+	standaloneHull.source = FTacticalShipReference(9, 9, "Minefield");
+	standaloneHull.target = attack.target;
+	standaloneHull.hullDamage = standaloneHullDamage;
+	standaloneHull.label = "Standalone hull damage";
+	report.events.push_back(standaloneHull);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * shipSummary = findShipSummary(summary, "Frigate");
+
+	CPPUNIT_ASSERT(shipSummary != NULL);
+	CPPUNIT_ASSERT_EQUAL(attackHullDamage + standaloneHullDamage, shipSummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(1, shipSummary->damagingAttacksReceived);
+	CPPUNIT_ASSERT_EQUAL(2, shipSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), shipSummary->rawAttacksReceived.size());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), shipSummary->rawEvents.size());
+}
+
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryRetainsNonHullNestedEffectsWhenSuppressingDuplicateHullDamage() {
 	// AC: non-hull nested effects still roll up even when nested hull damage is suppressed for the attack target.
 	FTacticalCombatReport report;
