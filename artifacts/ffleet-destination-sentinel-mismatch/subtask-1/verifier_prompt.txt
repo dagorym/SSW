@@ -1,0 +1,55 @@
+You are the Verifier Agent.
+
+Before performing any substantive work, read AGENTS.md in the repository root at /home/tstephen/repos/SSW/AGENTS.md.
+
+## What Was Implemented (Subtask 1: Normalize FFleet Sentinel Contract)
+
+The Implementer introduced named unsigned sentinels in `FFleet` to replace inconsistent raw `-1`
+assignments to unsigned fields:
+
+- `static constexpr unsigned int NO_DESTINATION = static_cast<unsigned int>(-1);` (UINT_MAX)
+- `static constexpr unsigned int NO_ROUTE = static_cast<unsigned int>(-1);` (UINT_MAX)
+
+Applied throughout:
+- `setLocation()` default parameters: `dest = NO_DESTINATION`, `route = NO_ROUTE`
+- Constructor: `m_destination = NO_DESTINATION`, `m_jumpRouteID = NO_ROUTE` (previously `0`)
+- `decTransitTime()` arrival path: `m_destination = NO_DESTINATION`, `m_jumpRouteID = NO_ROUTE`
+
+## Branch / Commit Chain
+- Base branch: `ffleet-destination`
+- Implementer branch: `ffleet-destination-s1-implementer-20260325`
+  - Commit: `f910750bf34fcf23c64b2d70367fc8ae6a289176`
+  - Changed files: `include/strategic/FFleet.h`, `src/strategic/FFleet.cpp`
+- Tester branch: `ffleet-destination-s1-tester-20260325` (based on Implementer branch)
+
+## Acceptance Criteria (all verified by Tester)
+1. `NO_DESTINATION` and `NO_ROUTE` declared as `static constexpr unsigned int` = UINT_MAX — PASS
+2. `setLocation()` defaults use named constants — PASS
+3. Constructor initialises both fields to named sentinels — PASS
+4. `decTransitTime()` arrival resets both fields to named sentinels — PASS
+5. Strategic module compiles without signed/unsigned sentinel warnings — PASS
+6. No regressions outside 2 known FFleetTest failures scoped to subtask 3 — PASS
+
+## Test Evidence
+- 161 tests run; 159 passed; 2 known failures
+- Known failures: `FFleetTest::testConstructor` and `FFleetTest::testDecTransitTime`
+  — both assert old pre-sentinel values; repair is scoped to subtask 3, not an implementation defect
+
+## Your Task
+Review the combined Implementer and Tester changes for correctness, security, and conventions.
+Produce a structured verdict: PASS, CONDITIONAL PASS, or FAIL.
+
+## Validation Commands
+```bash
+cd /home/tstephen/repos/SSW/src/strategic && make
+cd /home/tstephen/repos/SSW/tests && make && ./SSWTests
+```
+
+## Repository
+- Root: /home/tstephen/repos/SSW
+- Working directory: /home/tstephen/repos/SSW
+
+## Shared Artifact Directory
+artifacts/ffleet-destination-sentinel-mismatch/subtask-1/
+
+Write verifier_report.md and verifier_result.json into that directory and commit them.

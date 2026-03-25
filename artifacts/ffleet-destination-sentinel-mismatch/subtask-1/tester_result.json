@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "branch": "ffleet-destination-s1-tester-20260325",
+  "commit": "",
+  "tests_run": 161,
+  "tests_passed": 159,
+  "tests_failed": 2,
+  "known_failures": [
+    "FFleetTest::testConstructor (line 39) — old assertion expects getDestination()==0; scoped to subtask 3",
+    "FFleetTest::testDecTransitTime (line 164) — old assertion expects getJumpRoute()==0; scoped to subtask 3"
+  ],
+  "unmet_acceptance_criteria": [],
+  "artifact_files": [
+    "artifacts/ffleet-destination-sentinel-mismatch/subtask-1/tester_report.md",
+    "artifacts/ffleet-destination-sentinel-mismatch/subtask-1/tester_result.json",
+    "artifacts/ffleet-destination-sentinel-mismatch/subtask-1/verifier_prompt.txt"
+  ]
+}
