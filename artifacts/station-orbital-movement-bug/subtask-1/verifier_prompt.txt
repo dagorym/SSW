@@ -1,0 +1,37 @@
+You are the Verifier Agent.
+
+Verify branch: `master-tester-20260326`
+Shared artifact directory: `artifacts/station-orbital-movement-bug/subtask-1/`
+Worktree path: `<TO BE FILLED BY ORCHESTRATOR>`
+
+Context from implementer acceptance criteria sets:
+
+Set 1 (Station heading fix):
+- In `FBattleBoard::finalizeMove()`, stations (`ArmedStation`, `FortifiedStation`, `Fortress`) must set heading from `m_turnInfo[id].finalHeading` (not `curHeading`).
+
+Set 2 (Station speed fix):
+- In `FBattleBoard::finalizeMove()`, stations must not call `setSpeed(nMoved)` and must preserve speed at `0` (with station movement change not treated as a speed change path).
+
+Regression criterion validated by tester:
+- Non-station ships must continue using `m_turnInfo[id].curHeading` in `finalizeMove()`.
+
+Tester-added test methods and outcomes:
+- `FTacticalStationOrbitalMovementTest::testStationHeadingUpdatedAfterOrbit` — PASS
+- `FTacticalStationOrbitalMovementTest::testStationSpeedPreservedAfterOrbit` — PASS
+- `FTacticalStationOrbitalMovementTest::testNonStationHeadingUnchangedByFix` — PASS
+
+Files added/updated by tester:
+- `tests/tactical/FTacticalStationOrbitalMovementTest.h`
+- `tests/tactical/FTacticalStationOrbitalMovementTest.cpp`
+- `tests/tactical/Makefile`
+- `tests/SSWTests.cpp`
+- `artifacts/station-orbital-movement-bug/subtask-1/tester_report.md`
+- `artifacts/station-orbital-movement-bug/subtask-1/tester_result.json`
+- `artifacts/station-orbital-movement-bug/subtask-1/verifier_prompt.txt`
+
+Commands executed:
+- `make` (repo root)
+- `cd tests && make && ./SSWTests`
+
+Observed test result:
+- Full suite passed: `OK (169 tests)`.
