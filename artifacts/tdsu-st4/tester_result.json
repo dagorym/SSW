@@ -2,7 +2,7 @@
   "status": "success",
   "task": "tdsu-st4",
   "branch": "tdsu-tester-20260325",
-  "commit_hash": "6462db44107f175624b8172c7aeb57889d027c8e",
+  "commit_hash": "c9eb7572d1de3147749c19cce157fce8de3fc54c",
   "base_tested_commit": "94d2ea0d0b4f54cd9325dcf3f3fd4ad2ad8e6e67",
   "test_files_modified": [
     "tests/tactical/FTacticalCombatReportTest.h",
