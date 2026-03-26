@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Branch to test from:
+- master-implementer-20260326
+
+Task summary:
+- Validate the finalizeMove() station orbital movement fix in src/tactical/FBattleBoard.cpp.
+- The implementation now uses finalHeading for station heading updates and preserves station speed=0 by skipping station setSpeed/changedSpeed movement-speed logic.
+
+Acceptance criteria to validate:
+1) Heading fix
+- For station vehicle types (ArmedStation, FortifiedStation, Fortress), finalizeMove() applies m_turnInfo[id].finalHeading when setting heading.
+- Station heading no longer incorrectly reuses m_turnInfo[id].curHeading after orbital movement.
+
+2) Speed fix
+- For station vehicle types (ArmedStation, FortifiedStation, Fortress), finalizeMove() does not call setSpeed(m_turnInfo[id].nMoved).
+- changedSpeed remains false for stations, preventing erroneous masking-screen decrement behavior caused by synthetic station nMoved values.
+
+3) Non-station regression guard
+- Non-station vehicles still use m_turnInfo[id].curHeading and existing speed-change behavior.
+
+Write tests with these exact methods:
+- testStationHeadingUpdatedAfterOrbit
+- testStationSpeedPreservedAfterOrbit
+- testNonStationHeadingUnchangedByFix
+
+Create test files:
+- tests/tactical/FTacticalStationOrbitalMovementTest.h
+- tests/tactical/FTacticalStationOrbitalMovementTest.cpp
+
+Shared artifact directory:
+- artifacts/station-orbital-movement-bug/subtask-1
+
+Worktree path:
+- <TO BE FILLED BY ORCHESTRATOR>
+
+Suggested validation commands:
+- cd tests && make
+- cd tests && ./SSWTests
