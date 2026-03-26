@@ -1,0 +1,14 @@
+{
+  "plan_identifier": "station-orbital-movement-bug",
+  "verdict": "PASS",
+  "branch_reviewed": "master-reviewer-20260326",
+  "commit": "3c09b073a9182d69d1d25da260d436dae9af1549",
+  "plan_completeness": "complete",
+  "blocking_findings": 0,
+  "non_blocking_findings": 0,
+  "subtasks_reviewed": 4,
+  "artifact_files": [
+    "artifacts/station-orbital-movement-bug_review/station-orbital-movement-bug_reviewer_report.md",
+    "artifacts/station-orbital-movement-bug_review/station-orbital-movement-bug_reviewer_result.json"
+  ]
+}
