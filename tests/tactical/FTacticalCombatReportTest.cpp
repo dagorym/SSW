@@ -263,6 +263,125 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAggregatesMu
 	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 5 hull damage from 2 attacks") != std::string::npos);
 }
 
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryWeaponFireAttackShapeDoesNotDoubleCountTargetHullDamage() {
+	// AC: weapon-fire attack report shape keeps attack hull damage canonical for the target.
+	FTacticalCombatReport report;
+	report.context.reportType = TRT_OffensiveFire;
+
+	FTacticalAttackReport weaponFire;
+	weaponFire.attacker = FTacticalShipReference(100, 1, "UPF Destroyer");
+	weaponFire.target = FTacticalShipReference(200, 2, "Sathar Frigate");
+	weaponFire.weapon = FTacticalWeaponReference(501, "Laser Battery");
+	weaponFire.hitRoll = 4;
+	weaponFire.targetRange = 3;
+	weaponFire.hit = true;
+	weaponFire.hullDamage = 6;
+
+	FTacticalReportEvent appliedHull;
+	appliedHull.eventType = TRET_InternalDamage;
+	appliedHull.subject = weaponFire.target;
+	appliedHull.source = weaponFire.attacker;
+	appliedHull.target = weaponFire.target;
+	appliedHull.attackIndex = 0;
+	appliedHull.hullDamage = 6;
+	appliedHull.label = "Hull breach";
+	weaponFire.internalEvents.push_back(appliedHull);
+
+	report.attacks.push_back(weaponFire);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * frigateSummary = findShipSummary(summary, "Sathar Frigate");
+
+	CPPUNIT_ASSERT(frigateSummary != NULL);
+	CPPUNIT_ASSERT_EQUAL(6, frigateSummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(1, frigateSummary->damagingAttacksReceived);
+	CPPUNIT_ASSERT_EQUAL(1, frigateSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), frigateSummary->rawAttacksReceived.size());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), frigateSummary->rawEvents.size());
+	CPPUNIT_ASSERT(frigateSummary->displayLines[0].find("Sathar Frigate: 6 hull damage from 1 attack") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryMineDamageAttackShapeDoesNotDoubleCountTargetHullDamage() {
+	// AC: mine-damage attack result shape follows the same no-double-count rule for target hull damage.
+	FTacticalCombatReport report;
+	report.context.reportType = TRT_MineDamage;
+
+	FTacticalAttackReport mineImpact;
+	mineImpact.attacker = FTacticalShipReference(300, 9, "Drifting Minefield");
+	mineImpact.target = FTacticalShipReference(201, 2, "Sathar Destroyer");
+	mineImpact.weapon = FTacticalWeaponReference(990, "Mine");
+	mineImpact.hit = true;
+	mineImpact.immediate = true;
+	mineImpact.hullDamage = 4;
+	mineImpact.note = "Mine detonation";
+
+	FTacticalReportEvent mineHullEvent;
+	mineHullEvent.eventType = TRET_MineDamage;
+	mineHullEvent.subject = mineImpact.target;
+	mineHullEvent.source = mineImpact.attacker;
+	mineHullEvent.target = mineImpact.target;
+	mineHullEvent.attackIndex = 0;
+	mineHullEvent.hullDamage = 4;
+	mineHullEvent.immediate = true;
+	mineHullEvent.label = "Mine impact";
+	mineImpact.internalEvents.push_back(mineHullEvent);
+
+	report.attacks.push_back(mineImpact);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * destroyerSummary = findShipSummary(summary, "Sathar Destroyer");
+
+	CPPUNIT_ASSERT(destroyerSummary != NULL);
+	CPPUNIT_ASSERT_EQUAL(4, destroyerSummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(1, destroyerSummary->damagingAttacksReceived);
+	CPPUNIT_ASSERT_EQUAL(1, destroyerSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), destroyerSummary->rawAttacksReceived.size());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), destroyerSummary->rawEvents.size());
+	CPPUNIT_ASSERT(destroyerSummary->displayLines[0].find("Sathar Destroyer: 4 hull damage from 1 attack") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeRetainsNonHullInternalEffects() {
+	// AC: non-hull internal effects still appear in rollups while duplicate hull detail is suppressed.
+	FTacticalCombatReport report;
+	report.context.reportType = TRT_OffensiveFire;
+
+	FTacticalAttackReport weaponFire;
+	weaponFire.attacker = FTacticalShipReference(101, 1, "UPF Frigate");
+	weaponFire.target = FTacticalShipReference(202, 2, "Sathar Light Cruiser");
+	weaponFire.weapon = FTacticalWeaponReference(777, "Proton Battery");
+	weaponFire.hit = true;
+	weaponFire.hullDamage = 5;
+
+	FTacticalReportEvent hullEffect;
+	hullEffect.eventType = TRET_InternalDamage;
+	hullEffect.subject = weaponFire.target;
+	hullEffect.hullDamage = 5;
+	hullEffect.label = "Internal hull hit";
+	hullEffect.attackIndex = 0;
+	weaponFire.internalEvents.push_back(hullEffect);
+
+	FTacticalReportEvent weaponDestroyed;
+	weaponDestroyed.eventType = TRET_InternalDamage;
+	weaponDestroyed.subject = weaponFire.target;
+	weaponDestroyed.hullDamage = 0;
+	weaponDestroyed.label = "Rocket battery destroyed";
+	weaponDestroyed.attackIndex = 0;
+	weaponFire.internalEvents.push_back(weaponDestroyed);
+
+	report.attacks.push_back(weaponFire);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * cruiserSummary = findShipSummary(summary, "Sathar Light Cruiser");
+
+	CPPUNIT_ASSERT(cruiserSummary != NULL);
+	CPPUNIT_ASSERT_EQUAL(5, cruiserSummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(1, cruiserSummary->nonHullEffectsTaken);
+	CPPUNIT_ASSERT_EQUAL(2, cruiserSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), cruiserSummary->rawEvents.size());
+	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Rocket battery destroyed") != std::string::npos);
+	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Internal hull hit") != std::string::npos);
+}
+
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryDoesNotDoubleCountNestedHullDamageForAttackTarget() {
 	// AC: attack-level hull damage is counted once when matching nested hull-damage events target the same ship.
 	FTacticalCombatReport report;
@@ -318,6 +437,51 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsStanda
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 1);
 	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 0);
 	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 3 hull damage") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsStandaloneHullDamageWhileSuppressingMatchingNestedAttackEvent() {
+	// AC: standalone report events add hull damage while matching nested attack events do not double count.
+	FTacticalCombatReport report;
+
+	const int attackHullDamage = 4;
+	const int standaloneHullDamage = 3;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	attack.target = FTacticalShipReference(2, 2, "Frigate");
+	attack.hit = true;
+	attack.hullDamage = attackHullDamage;
+
+	FTacticalReportEvent nestedDuplicateHull;
+	nestedDuplicateHull.eventType = TRET_InternalDamage;
+	nestedDuplicateHull.subject = attack.target;
+	nestedDuplicateHull.source = attack.attacker;
+	nestedDuplicateHull.target = attack.target;
+	nestedDuplicateHull.attackIndex = 0;
+	nestedDuplicateHull.hullDamage = attackHullDamage;
+	nestedDuplicateHull.label = "Nested duplicate hull damage";
+	attack.internalEvents.push_back(nestedDuplicateHull);
+
+	report.attacks.push_back(attack);
+
+	FTacticalReportEvent standaloneHull;
+	standaloneHull.eventType = TRET_MineDamage;
+	standaloneHull.subject = attack.target;
+	standaloneHull.source = FTacticalShipReference(9, 9, "Minefield");
+	standaloneHull.target = attack.target;
+	standaloneHull.hullDamage = standaloneHullDamage;
+	standaloneHull.label = "Standalone hull damage";
+	report.events.push_back(standaloneHull);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * shipSummary = findShipSummary(summary, "Frigate");
+
+	CPPUNIT_ASSERT(shipSummary != NULL);
+	CPPUNIT_ASSERT_EQUAL(attackHullDamage + standaloneHullDamage, shipSummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(1, shipSummary->damagingAttacksReceived);
+	CPPUNIT_ASSERT_EQUAL(2, shipSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), shipSummary->rawAttacksReceived.size());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), shipSummary->rawEvents.size());
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryRetainsNonHullNestedEffectsWhenSuppressingDuplicateHullDamage() {
@@ -483,6 +647,38 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsNested
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), escortSummary->rawEvents.size());
 	CPPUNIT_ASSERT_EQUAL(0, escortSummary->rawEvents[0].attackIndex);
 	CPPUNIT_ASSERT(escortSummary->displayLines[0].find("Escort: 2 hull damage") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsNestedHullDamageWhenOwnerDiffersFromAttackTarget() {
+	// AC: matching requires shipID+ownerID; same shipID with different owner is a different ship and must be counted.
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(40, 1, "Destroyer");
+	attack.target = FTacticalShipReference(41, 2, "Frigate");
+	attack.hit = true;
+	attack.hullDamage = 3;
+
+	FTacticalReportEvent crossOwnerDamage;
+	crossOwnerDamage.eventType = TRET_InternalDamage;
+	crossOwnerDamage.subject = FTacticalShipReference(41, 3, "Captured Frigate");
+	crossOwnerDamage.hullDamage = 2;
+	crossOwnerDamage.attackIndex = 0;
+	crossOwnerDamage.label = "Collateral breach";
+	attack.internalEvents.push_back(crossOwnerDamage);
+
+	report.attacks.push_back(attack);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	const FTacticalShipReportSummary * primarySummary = findShipSummary(summary, "Frigate");
+	const FTacticalShipReportSummary * capturedSummary = findShipSummary(summary, "Captured Frigate");
+
+	CPPUNIT_ASSERT(primarySummary != NULL);
+	CPPUNIT_ASSERT(capturedSummary != NULL);
+	CPPUNIT_ASSERT_EQUAL(3, primarySummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(2, capturedSummary->hullDamageTaken);
+	CPPUNIT_ASSERT_EQUAL(1, capturedSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), capturedSummary->rawEvents.size());
 }
 
 void FTacticalCombatReportTest::testBattleScreenDelegatesSummaryGenerationToModelBuilder() {

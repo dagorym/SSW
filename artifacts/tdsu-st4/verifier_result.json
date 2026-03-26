@@ -1,0 +1,14 @@
+{
+  "status": "completed",
+  "task_id": "tdsu-st4",
+  "branch": "tdsu-verifier-20260325",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency": "Sufficient: the new mixed-input regression test covers standalone report-level hull damage plus suppression of matching nested attack hull damage, and both tactical and full suites passed.",
+  "artifact_paths": [
+    "artifacts/tdsu-st4/verifier_report.md",
+    "artifacts/tdsu-st4/verifier_result.json"
+  ]
+}

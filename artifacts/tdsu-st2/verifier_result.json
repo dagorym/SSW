@@ -1,0 +1,21 @@
+{
+  "status": "completed",
+  "task_id": "tdsu-st2",
+  "branch": "tdsu-verifier-20260325",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency": "Sufficient: mine-damage field population is covered by the updated flow test, weapon-fire field population is covered by existing flow tests, and existing summary tests cover non-hull rollup plus raw event preservation.",
+  "tests_run": [
+    {
+      "command": "cd tests/tactical && make && ./TacticalTests",
+      "result": "passed",
+      "details": "OK (45 tests)"
+    }
+  ],
+  "artifacts": {
+    "report": "artifacts/tdsu-st2/verifier_report.md",
+    "result": "artifacts/tdsu-st2/verifier_result.json"
+  }
+}

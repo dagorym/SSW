@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Task summary:
+- Remediated Subtask 1 hull-damage aggregation so nested internal-event hull damage is suppressed only when it targets the same ship already represented by attack.hullDamage.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+
+Acceptance criteria to validate (from Planner):
+- A hit represented by both `attack.hullDamage > 0` (for ship A) and a matching hull-damage `internalEvent` for ship A contributes to ship A's `hullDamageTaken` exactly once.
+- A hull-damage `internalEvent` for ship B nested inside an attack that already has `hullDamage > 0` for ship A still increments ship B's `hullDamageTaken`.
+- Standalone report-level events in `report.events` still contribute their hull damage to summaries.
+- Non-hull nested effects still contribute to effect rollups.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalCombatReportTest.h
+
+Implementation context for testing:
+- Changed `TacticalCombatReportDetail::shouldCountInternalEventHullDamage()` in `include/tactical/FTacticalCombatReport.h`.
+- Logic now suppresses nested `event.hullDamage` only when all are true: parent `attack.hullDamage > 0`, `attack.target` is valid, and `event.subject` matches `attack.target` by shipID+ownerID.
+- Nested hull-damage events for other ships are now counted toward those ships.
+- Raw event retention and non-hull effect rollups were not removed.
+- Existing cross-ship regression in tactical tests currently expects escort damage to be counted; verify this remains true.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/tdsu-st1

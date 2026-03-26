@@ -1,0 +1,47 @@
+You are the Verifier Agent.
+
+Task summary:
+- Remediation for Subtask 1 updated tactical hull-damage aggregation so nested internal-event hull damage is suppressed only when it targets the same ship represented by `attack.hullDamage`.
+- Changed implementation file: `include/tactical/FTacticalCombatReport.h` (`TacticalCombatReportDetail::shouldCountInternalEventHullDamage`).
+
+Acceptance criteria to verify:
+1. A hit represented by both `attack.hullDamage > 0` (ship A) and matching nested hull-damage `internalEvent` for ship A contributes once to ship A `hullDamageTaken`.
+2. A hull-damage nested `internalEvent` for ship B inside an attack with `attack.hullDamage > 0` for ship A still increments ship B `hullDamageTaken`.
+3. Standalone report-level events in `report.events` still contribute hull damage to summaries.
+4. Non-hull nested effects still contribute to effect rollups.
+
+Worktree context:
+- Repository: `/home/tstephen/worktrees/tdsu-implementer-tester-r1-20260325`
+- Branch: `tdsu-implementer-tester-r1-20260325`
+- Shared artifact directory (repo-relative): `artifacts/tdsu-st1`
+
+Tester-added/updated tests:
+- `tests/tactical/FTacticalCombatReportTest.h`
+  - Added registration for new test:
+    - `testBuildTacticalCombatReportSummaryCountsNestedHullDamageWhenOwnerDiffersFromAttackTarget`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+  - Added test:
+    - `testBuildTacticalCombatReportSummaryCountsNestedHullDamageWhenOwnerDiffersFromAttackTarget`
+  - Existing key tests retained and passing:
+    - `testBuildTacticalCombatReportSummaryDoesNotDoubleCountNestedHullDamageForAttackTarget`
+    - `testBuildTacticalCombatReportSummaryCountsNestedHullDamageForOtherShips`
+    - `testBuildTacticalCombatReportSummaryCountsStandaloneReportLevelHullDamageEvents`
+    - `testBuildTacticalCombatReportSummaryRetainsNonHullNestedEffectsWhenSuppressingDuplicateHullDamage`
+
+Commands executed and outcomes:
+1. `cd tests/tactical && make && ./TacticalTests`
+   - Final: `OK (45 tests)`
+2. `cd tests && make && ./SSWTests`
+   - Final: `OK (161 tests)`
+3. `make` (repo root)
+   - Used to build required main libs when initial full-suite link failed in fresh worktree.
+
+Final tester outcome:
+- PASS: all acceptance criteria covered by passing tests.
+- No implementation-file modifications were made by tester.
+
+Verification focus/risk checks:
+- Confirm suppression condition truly requires both valid `attack.target` and ship identity match (`shipID + ownerID`).
+- Confirm cross-ship and cross-owner nested hull damage are not accidentally suppressed.
+- Confirm report-level `events` aggregation unchanged for hull damage.
+- Confirm non-hull nested event rollups still increment summary effect counters/display lines.

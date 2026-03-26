@@ -117,10 +117,12 @@ void FTacticalMineDamageFlowTest::testMineDamageAttackReportBuilderLeavesNestedE
 	const std::string reportBody = extractFunctionBody(source, "FTacticalAttackReport buildMineDamageAttackReport(");
 
 	assertContains(eventBody, "reportEvent.eventType = TRET_MineDamage;");
+	assertContains(eventBody, "reportEvent.subject = target;");
 	assertContains(eventBody, "reportEvent.target = target;");
 	assertContains(eventBody, "reportEvent.hullDamage = effect.hullDamageApplied;");
 	assertContains(eventBody, "reportEvent.attackIndex = -1;");
 	assertContains(eventBody, "reportEvent.immediate = true;");
+	assertContains(reportBody, "report.target = FTacticalShipReference(result.targetID, result.targetOwnerID, result.targetName);");
 	assertContains(reportBody, "report.internalEvents.push_back(buildMineDamageEvent(report.target, *itr));");
 }
 

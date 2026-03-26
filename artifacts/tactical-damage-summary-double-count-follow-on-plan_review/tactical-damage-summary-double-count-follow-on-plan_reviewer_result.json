@@ -1,0 +1,41 @@
+{
+  "feature_plan": "plans/tactical-damage-summary-double-count-follow-on-plan.md",
+  "artifact_directory": "artifacts/tactical-damage-summary-double-count-follow-on-plan_review",
+  "verdict": "PASS",
+  "finding_counts": {
+    "blocking": 0,
+    "warning": 0,
+    "note": 1
+  },
+  "tests": [
+    {
+      "command": "cd tests/tactical && make && ./TacticalTests",
+      "result": "OK (49 tests)"
+    }
+  ],
+  "reviewed_artifacts": [
+    "artifacts/tdsu-st1/tester_report.md",
+    "artifacts/tdsu-st1/verifier_report.md",
+    "artifacts/tdsu-st2/tester_report.md",
+    "artifacts/tdsu-st2/verifier_report.md",
+    "artifacts/tdsu-st3/tester_report.md",
+    "artifacts/tdsu-st3/verifier_report.md",
+    "artifacts/tdsu-st4/tester_report.md",
+    "artifacts/tdsu-st4/verifier_report.md"
+  ],
+  "reviewed_files": [
+    "include/tactical/FTacticalCombatReport.h",
+    "src/tactical/FBattleDisplay.cpp",
+    "src/tactical/FBattleBoard.cpp",
+    "src/tactical/FBattleScreen.cpp",
+    "tests/tactical/FTacticalCombatReportTest.h",
+    "tests/tactical/FTacticalCombatReportTest.cpp",
+    "tests/tactical/FTacticalMineDamageFlowTest.cpp",
+    "tests/tactical/TacticalTests.cpp",
+    "tests/tactical/Makefile"
+  ],
+  "artifact_files": {
+    "report": "artifacts/tactical-damage-summary-double-count-follow-on-plan_review/tactical-damage-summary-double-count-follow-on-plan_reviewer_report.md",
+    "result": "artifacts/tactical-damage-summary-double-count-follow-on-plan_review/tactical-damage-summary-double-count-follow-on-plan_reviewer_result.json"
+  }
+}

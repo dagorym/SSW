@@ -1,0 +1,54 @@
+You are the Verifier Agent.
+
+Task summary:
+- Added deterministic tactical summary regression tests using real attack-result shaped data for weapon fire and mine damage to prevent hull-damage double counting while preserving non-hull effect rollups.
+
+Modified files (implementation handoff scope):
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to verify:
+- Deterministic weapon-fire test where `attack.hullDamage` and matching `internalEvent.hullDamage` describe same applied hit; summary counts hull once.
+- Deterministic mine-damage test with same no-double-count invariant.
+- At least one test confirming non-hull internal effects still surface in summary.
+- Tests use real tactical reporting shapes (`FTacticalAttackReport`, `FTacticalReportEvent`).
+- Tests wired into tactical test build.
+
+Worktree context:
+- Working directory: `/home/tstephen/worktrees/tdsu-tester-20260325`
+- Branch: `tdsu-tester-20260325`
+- Tester validated files:
+  - `tests/tactical/FTacticalCombatReportTest.h`
+  - `tests/tactical/FTacticalCombatReportTest.cpp`
+
+What tester validated:
+1. `testBuildTacticalCombatReportSummaryWeaponFireAttackShapeDoesNotDoubleCountTargetHullDamage` uses `FTacticalAttackReport` + matching internal hull event (`attackIndex=0`) and asserts hull total remains canonical (`6`, not doubled).
+2. `testBuildTacticalCombatReportSummaryMineDamageAttackShapeDoesNotDoubleCountTargetHullDamage` does same for `TRT_MineDamage` shape (`4`, not doubled).
+3. `testBuildTacticalCombatReportSummaryAttackShapeRetainsNonHullInternalEffects` verifies mixed events preserve non-hull label (e.g., `Rocket battery destroyed`) while hull remains single-counted.
+4. Tests are registered in `CPPUNIT_TEST_SUITE` and tactical test build wiring remains intact (`tests/tactical/Makefile`, `tests/tactical/TacticalTests.cpp`).
+
+Commands executed by tester:
+- `cd tests/tactical && make && ./TacticalTests` → `OK (48 tests)`
+- `cd tests && make && ./SSWTests` → initial link failure (missing built libs)
+- `cd /home/tstephen/worktrees/tdsu-tester-20260325 && make` → built project libs
+- `cd tests && make && ./SSWTests` → `OK (165 tests)`
+
+Final outcome:
+- Tactical suite: 48 passed, 0 failed.
+- Full suite: 165 passed, 0 failed.
+- Acceptance criteria status: all met in tester validation.
+
+Commit to verify:
+- u79359ef6de262cc5f6d88884840db402ecb08a
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/tdsu-st3`
+
+Artifacts written:
+- `artifacts/tdsu-st3/tester_report.md`
+- `artifacts/tdsu-st3/tester_result.json`
+- `artifacts/tdsu-st3/verifier_prompt.txt`
+
+Remaining verification risks/checks:
+- Confirm verifier agrees the specific assertions in the three added tests map one-to-one to acceptance criteria.
+- Confirm no hidden dependency on prebuilt libs for reproducible full-suite execution.
