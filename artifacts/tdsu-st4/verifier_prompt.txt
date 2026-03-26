@@ -1,0 +1,46 @@
+You are the Verifier Agent.
+
+Task summary:
+- Added a focused regression test in FTacticalCombatReportTest ensuring mixed report inputs are handled correctly: standalone top-level hull-damage events are counted, while matching nested internal hull-damage events under an attack are not double-counted.
+
+Acceptance criteria to verify:
+- A standalone report.events hull-damage event still increments hullDamageTaken.
+- A nested attack internalEvent hull-damage entry that matches the parent attack's target does NOT increment hullDamageTaken a second time.
+- The test clearly documents the intended difference between the two cases.
+- All existing tests still pass.
+
+Worktree context:
+- Working directory: `/home/tstephen/worktrees/tdsu-tester-20260325`
+- Branch: `tdsu-tester-20260325`
+
+Test files under validation:
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+What tester validated:
+- New test method present: `testBuildTacticalCombatReportSummaryCountsStandaloneHullDamageWhileSuppressingMatchingNestedAttackEvent`.
+- Test composes one attack with hullDamage X against ship A, one nested duplicate internalEvent for same ship A with hullDamage X, and one standalone report-level event with hullDamage Y.
+- Assertion checks `hullDamageTaken == X + Y` (no duplicate nested count).
+- Test is registered in `CPPUNIT_TEST_SUITE`.
+
+Commands executed by tester:
+- `cd tests/tactical && make && ./TacticalTests` → OK (49 tests)
+- `cd tests && make && ./SSWTests` → initial link failure before root build (missing src libs)
+- `make` (repo root)
+- `cd tests && make && ./SSWTests` → OK (166 tests)
+
+Final test outcome:
+- Targeted tactical suite passed.
+- Full suite passed.
+
+Shared artifact directory to reuse (repo-root-relative):
+- `artifacts/tdsu-st4`
+
+Artifacts produced:
+- `artifacts/tdsu-st4/tester_report.md`
+- `artifacts/tdsu-st4/tester_result.json`
+- `artifacts/tdsu-st4/verifier_prompt.txt`
+
+Verifier follow-up checks:
+- Confirm no implementation files were modified by tester.
+- Confirm the final commit includes tester artifacts and reflects passing test state.
