@@ -832,14 +832,17 @@ void FBattleBoard::finalizeMove(){
 		checkForMines(*itr);
 
 		unsigned int id = (*itr)->getID();
+		bool isStation = ((*itr)->getType()=="ArmedStation" || (*itr)->getType()=="FortifiedStation" || (*itr)->getType()=="Fortress");
 		FPoint start = m_turnInfo[id].path.startPoint();
 		FPoint finish = m_turnInfo[id].path.endPoint();
 		bool changedSpeed = false; // flag for whether or not the ship changed speed
-		if (m_turnInfo[id].nMoved != (*itr)->getSpeed()){
-			changedSpeed = true;
+		if (!isStation){
+			if (m_turnInfo[id].nMoved != (*itr)->getSpeed()){
+				changedSpeed = true;
+			}
+			(*itr)->setSpeed(m_turnInfo[id].nMoved);
 		}
-		(*itr)->setSpeed(m_turnInfo[id].nMoved);
-		(*itr)->setHeading(m_turnInfo[id].curHeading);
+		(*itr)->setHeading(isStation ? m_turnInfo[id].finalHeading : m_turnInfo[id].curHeading);
 
 		FPoint next = FHexMap::findNextHex(finish,m_turnInfo[id].curHeading);
 		if (next.getX()>=0 && next.getX()<m_nCol && next.getY()>=0 && next.getY()<m_nRow && next != m_planetPosition){
@@ -857,11 +860,9 @@ void FBattleBoard::finalizeMove(){
 				break;
 			}
 		}
-		bool isStation=false;
 		// update station position
-		if ((*itr)->getType()=="ArmedStation" || (*itr)->getType()=="FortifiedStation" || (*itr)->getType()=="Fortress"){
+		if (isStation){
 			m_parent->setStationPosition(finish);
-			isStation=true;
 		}
 		// clear masking screen if the vehicle is not a station and has turned and has a MS as current defense
 		if ( ((*itr)->getCurrentDefense()->getType()==FDefense::MS && m_turnInfo[id].path.countFlags(MR_TURN)>0) || changedSpeed==true ){
