@@ -10,7 +10,7 @@
 #include "strategic/FJumpRoute.h"
 #include "ships/FVehicle.h"
 #include "core/FGameConfig.h"
-#include "gui/WXMapDisplay.h"
+#include <cmath>
 #include <iostream>
 
 namespace Frontier
@@ -137,7 +137,6 @@ int FPlayer::load(std::istream &is){
 }
 
 FFleet * FPlayer::getFleet (double x, double y) const {
-	WXMapDisplay mapDisplay;
 	for (unsigned int i=0; i < m_fleets.size(); i++){
 		double x2 = m_fleets[i]->getCoord(0);
 		double y2 = m_fleets[i]->getCoord(1);
