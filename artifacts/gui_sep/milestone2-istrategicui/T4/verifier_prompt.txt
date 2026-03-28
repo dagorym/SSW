@@ -1,0 +1,75 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate milestone2-istrategicui T4 as a verification-only subtask. No implementation code changes were introduced; this subtask re-ran compile and boundary checks and confirmed milestone handoff integrity.
+
+Acceptance criteria validated by prior stages:
+1. The strategic module compiles successfully after the header updates.
+2. Any compile/include-cycle issue discovered is fixed in allowed scope or recorded as a Milestone 3 follow-up.
+3. `src/strategic/FGame.cpp` behavior remains unchanged at the end of this milestone.
+4. Verification notes are written under `artifacts/gui_sep/milestone2-istrategicui/T4`.
+
+Implementation branch/worktree context:
+- Documenter worktree: `/tmp/ssw-worktrees/milestone2-istrategicui-t4-documenter-20260328`
+- Documenter branch: `milestone2-istrategicui-t4-documenter-20260328`
+- Tester worktree: `/tmp/ssw-worktrees/milestone2-istrategicui-t4-tester-20260328`
+- Tester branch: `milestone2-istrategicui-t4-tester-20260328`
+- Base implementation branch provided: `milestone2-istrategicui-t4-implementer-20260328`
+- Base branch for comparison: `gui_sep`
+- Tester validation commit present in this branch before documenter changes: `fce285c8af139e410731f8f15433a6cc2c510038`
+
+Test files added or modified:
+- None.
+
+Documentation files added or modified:
+- None under `doc/`.
+
+Artifact files added or modified:
+- `artifacts/gui_sep/milestone2-istrategicui/T4/documenter_report.md`
+- `artifacts/gui_sep/milestone2-istrategicui/T4/documenter_result.json`
+- `artifacts/gui_sep/milestone2-istrategicui/T4/verifier_prompt.txt`
+
+Commands executed:
+1. `sed -n '1,220p' /home/tstephen/repos/agents/AGENTS_LOOKUP.md`
+2. `sed -n '1,260p' /home/tstephen/repos/SSW/AGENTS.md`
+3. `sed -n '1,260p' /home/tstephen/repos/agents/agents/documenter.md`
+4. `rg --files -g 'documenter.md' -g 'AGENTS.md' -g '*agent*' .`
+5. `find /tmp/ssw-worktrees/milestone2-istrategicui-t4-documenter-20260328 -maxdepth 3 -type f \( -iname '*documenter*' -o -path '*/agents/*' \) | sort`
+6. `git status --short`
+7. `git log --oneline --decorate -5`
+8. `find artifacts/gui_sep/milestone2-istrategicui/T4 -maxdepth 2 -type f | sort`
+9. `sed -n '180,260p' plans/milestone2-istrategicui-plan.md`
+10. `sed -n '1,260p' artifacts/gui_sep/milestone2-istrategicui/T4/tester_prompt.txt`
+11. `sed -n '1,260p' artifacts/gui_sep/milestone2-istrategicui/T4/tester_report.md`
+12. `git --no-pager diff --stat gui_sep..HEAD`
+13. `git --no-pager diff --name-only gui_sep..HEAD`
+14. `sed -n '1,220p' artifacts/gui_sep/milestone2-istrategicui/T4/documenter_prompt.txt`
+15. `sed -n '1,220p' artifacts/gui_sep/milestone2-istrategicui/T2/documenter_report.md`
+16. `sed -n '1,220p' artifacts/gui_sep/milestone2-istrategicui/T2/verifier_prompt.txt`
+17. `rg -n "IStrategicUI|StrategicTypes|ui model|strategic UI|wx/UI" doc plans include/strategic -g '*.md' -g '*.h' -g '*.txt'`
+18. `rg --files doc docs | sort`
+19. `sed -n '1,220p' doc/DesignNotes.md`
+20. `sed -n '1,220p' doc/UsersGuide.md`
+21. `cat artifacts/gui_sep/milestone2-istrategicui/T4/tester_result.json`
+22. `sed -n '1,240p' artifacts/gui_sep/milestone2-istrategicui/T4/implementer_report.md`
+23. `cat artifacts/gui_sep/milestone2-istrategicui/T4/implementer_result.json`
+24. `git rev-parse HEAD`
+25. `git rev-parse gui_sep`
+
+Final test outcomes:
+- Tester validation status: PASS.
+- `cd /tmp/ssw-worktrees/milestone2-istrategicui-t4-tester-20260328/src/strategic && make` passed.
+- `cd /tmp/ssw-worktrees/milestone2-istrategicui-t4-tester-20260328/tests/strategic && make` passed.
+- `git diff -- src/strategic/FGame.cpp` returned no differences.
+- `artifacts/gui_sep/milestone2-istrategicui/T4/milestone3_followups.md` records that no new Milestone 3 include-cycle follow-up was required and notes the existing out-of-scope `FJumpRoute.cpp` warning.
+- Documenter review determined no `doc/` update is warranted because T4 changes only milestone verification artifacts and not documented product behavior.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/gui_sep/milestone2-istrategicui/T4`
+
+Verification requirements:
+- Verify the T4 verification-only scope against `plans/milestone2-istrategicui-plan.md`.
+- Verify the tester validation outcome and artifact consistency.
+- Verify the documenter conclusion that no `doc/` file update is warranted for this subtask.
+- Verify the artifact outputs listed above and include them in review scope together with the implementation and tests.
+- Verification must include the updated documentation files and documenter artifacts along with the implementation and tester outputs.
