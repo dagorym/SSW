@@ -1,0 +1,45 @@
+## Tester Handoff: T5 — Create GuiTypes.h and clean Frontier.h
+
+### Shared artifact directory
+artifacts/milestone1-wximage-removal/T5
+
+### Implementer branch
+gui_sep-t5-implementer-20260327
+
+### What was implemented
+- Created `include/gui/GuiTypes.h` defining `ImageList` typedef (std::vector<wxImage>) with wx/wx.h include and include guards
+- Updated `include/Frontier.h`: removed #include "wxWidgets.h" and ImageList typedef; added comment pointing to GuiTypes.h
+- Updated `include/tactical/FBattleBoard.h`: added `#include "gui/GuiTypes.h"`
+- Updated `include/tactical/FBattleDisplay.h`: added `#include "gui/GuiTypes.h"`
+- `src/tactical/FBattleScreen.cpp` was not modified (inherits via headers)
+
+### Acceptance criteria to verify
+1. `include/gui/GuiTypes.h` exists and defines `ImageList`.
+2. `Frontier.h` no longer includes wxWidgets headers and no longer defines `ImageList`.
+3. All files that previously used `ImageList` compile without errors.
+4. No file outside gui or tactical display headers introduces a new wx include as a side-effect.
+
+### Validation commands to run (from the tester worktree)
+```bash
+# Verify GuiTypes.h exists with ImageList
+cat include/gui/GuiTypes.h
+
+# Verify Frontier.h no longer has wxWidgets or ImageList
+grep -n "wxWidgets\|ImageList" include/Frontier.h
+
+# Verify tactical headers got GuiTypes.h include
+grep -n "GuiTypes" include/tactical/FBattleBoard.h include/tactical/FBattleDisplay.h
+
+# Build tactical module
+cd src/tactical && make 2>&1; cd ../..
+
+# Confirm no new wx includes in ships/strategic headers
+grep -r "wx/wx.h\|wxWidgets.h" include/ships/ include/strategic/ && echo "FOUND_WX" || echo "NO_WX_IN_MODEL_HEADERS"
+```
+
+### What the tester should verify
+- GuiTypes.h exists with correct content and include guard
+- Frontier.h has neither the wxWidgets include nor the ImageList typedef
+- Tactical module builds cleanly
+- No wx includes leaked into ships or strategic headers
+- Write tester_report.md, tester_result.json, and (on pass) documenter_prompt.txt to artifacts/milestone1-wximage-removal/T5/
