@@ -1,64 +1,56 @@
-# Verifier Report
+# Verifier Report — Milestone 3 WXStrategicUI T1 Remediation
 
-## Review Scope Summary
-- Agent definition: `/home/tstephen/repos/agents/agents/verifier.yaml` (shared definition won; no repository-local verifier definition was provided).
-- Worktree/branch confirmed: `/home/tstephen/worktrees/SSW/gui_sep-t1-verifier-20260328` on `gui_sep-t1-verifier-20260328`.
-- Reviewed against plan: `plans/milestone3-wxstrategicui-plan.md` (T1 acceptance criteria).
-- Files reviewed: `include/gui/WXStrategicUI.h`, `src/gui/WXStrategicUI.cpp`, and shared T1 artifacts in `artifacts/gui_sep/milestone3-wxstrategicui/T1`.
-- Convention files considered: `AGENTS.md`, `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`, `/home/tstephen/repos/agents/agents/verifier.yaml`.
+## Review scope summary
+- Reviewed the combined remediation state on `gui_sep-t1-remed-verifier-20260328` against base branch `gui_sep`.
+- Focused scope: `src/gui/WXStrategicUI.cpp`, focused core tests for `WXStrategicUI`, and the refreshed Documenter artifacts under `artifacts/gui_sep/milestone3-wxstrategicui/T1`.
+- Verified the assigned worktree and branch before substantive review: `/home/tstephen/worktrees/SSW/gui_sep-t1-remed-verifier-20260328`, branch `gui_sep-t1-remed-verifier-20260328`.
 
-## Validation Performed
-- Confirmed branch ancestry includes the implementer commit `6160ac7e74bea3b5f6673b07d01bae34838b3fea` and the completed documenter branch.
-- Reviewed the scoped diff from `gui_sep...HEAD`.
-- Built the adapter directly with `cd src/gui && make WXStrategicUI.o` (pass).
-- Verified the no-doc-update decision by searching `doc/` and project markdown content for `WXStrategicUI` / `IStrategicUI`; only planning docs mention them.
+## Acceptance criteria / plan reference used
+- Plan: `plans/milestone3-wxstrategicui-plan.md` (T1 adapter scope)
+- Remediation acceptance criteria from verifier handoff:
+  - every `IStrategicUI` method in `WXStrategicUI` still compiles and preserves behavior;
+  - success/cancel methods return non-zero when no UI/dialog is available or required inputs are missing;
+  - `requestRedraw()` remains null-safe;
+  - changes remain localized to the T1 adapter surface.
+
+## Convention files considered
+- `/home/tstephen/repos/agents/agents/verifier.yaml`
+- `/home/tstephen/repos/SSW/AGENTS.md`
+- `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`
+
+## Evidence reviewed
+- `src/gui/WXStrategicUI.cpp:64-121` returns `1` from dialog-style methods when required UI/context is absent, preserving non-success semantics for guarded paths.
+- `src/gui/WXStrategicUI.cpp:124-127` keeps `requestRedraw()` null-safe.
+- `tests/core/WXStrategicUITest.cpp:21-38` adds focused coverage for non-zero guarded returns and null-safe redraw.
+- `tests/core/WXStrategicUIUnderTest.cpp:1-6`, `tests/core/Makefile:46-51`, and `tests/SSWTests.cpp:17-18,70-71` integrate the new test surface into the existing suite.
+- `artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_report.md:8-13` and `artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_result.json:18-19` accurately record the no-repo-doc-update decision for this internal remediation.
 
 ## Findings
-
 ### BLOCKING
-1. **Dialog-selection methods report success when no UI is available.**  
-   - Evidence: `include/strategic/IStrategicUI.h:31-38,49-53`, `src/gui/WXStrategicUI.cpp:64-75`, `src/gui/WXStrategicUI.cpp:83-85`, `src/gui/WXStrategicUI.cpp:117-121`.
-   - `IStrategicUI` documents these methods as returning `0` on success and non-zero on cancel/error, but `WXStrategicUI` returns `0` when `m_parent` is null (and also when required pointers are null). That treats an unavailable dialog path as a successful user interaction.
-   - This creates incorrect control-flow risk for the upcoming `FGame` refactor because strategic code could continue as though the player completed retreat selection, setup, or combat selection even when no dialog was shown.
+- None.
 
 ### WARNING
-1. **Documenter metadata points at a stale commit hash.**  
-   - Evidence: `artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_report.md:22`, `artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_result.json:6`.
-   - Both artifacts record commit `6db8a1f4224f438f66638d148b974752d445b57e`, but the reviewed documenter/verifier branch head is `4b212ce5093b403d0685508cc1aa51117f159f76`.
-   - The documenter verdict itself is reasonable, but the stale hash makes the archival metadata inaccurate for this worktree state.
-
-2. **Compile-only validation was not sufficient for the new control-flow contract.**  
-   - Evidence: `artifacts/gui_sep/milestone3-wxstrategicui/T1/verifier_prompt.txt:57-63`, `src/gui/WXStrategicUI.cpp:64-121`.
-   - The tester handoff reports only two build/compile checks and explicitly no unit/integration tests. That was enough to confirm the file compiles, but not enough to catch the incorrect success return codes on null/invalid dialog paths.
-   - Because this adapter introduces decision-bearing return values, some focused behavioral coverage or a mock-based contract test would have reduced delivery risk.
+- None.
 
 ### NOTE
-- No additional repository documentation update is required for this T1 slice. The change is an internal adapter addition, existing product docs do not describe `WXStrategicUI`, and the new header/source already contain the bridge comments requested by the plan.
+- None.
 
-## Acceptance Criteria Assessment
-- `WXStrategicUI` exists in the gui module and declares/defines every `IStrategicUI` method: **met**.
-- wx/dialog includes are confined to the gui adapter files under review: **met**.
-- `WXStrategicUI.h` uses minimal headers plus a forward declaration for `wxWindow`: **met**.
-- `requestRedraw()` safely refreshes the parent when present: **met**.
-- The adapter is **not fully correct yet** because several result-returning methods violate the interface success/cancel contract when no dialog can be shown: **not met**.
+## Test sufficiency
+- Sufficient for the remediation scope.
+- The new tests directly exercise the previously incorrect guard-path contract for `selectRetreatCondition()`, `runUPFUnattachedSetup()`, `runSatharFleetSetup()`, and `selectCombat()` when no usable UI/context exists (`tests/core/WXStrategicUITest.cpp:21-32`).
+- The suite also explicitly covers the null-safe redraw expectation (`tests/core/WXStrategicUITest.cpp:34-38`).
+- Verification rerun: `make -s && cd tests && make -s && ./SSWTests` completed successfully with `OK (177 tests)`.
 
-## Test Sufficiency Summary
-- Existing validation proved buildability of the adapter but did not exercise behavioral outcomes.
-- That is insufficient for the new selection/setup methods because their return codes drive caller control flow, and the current compile-only coverage missed a real contract defect.
+## Documentation accuracy
+- Accurate and sufficient for this remediation.
+- No repository documentation files required updates because the change is an internal adapter-contract fix confined to `WXStrategicUI`; existing file/class comments already describe the adapter role (`include/gui/WXStrategicUI.h:17-19`).
+- The refreshed Documenter artifacts correctly reflect that decision and do not contradict the implemented or tested behavior.
 
-## Documentation Accuracy Summary
-- The no-doc-update decision is reasonable for this internal adapter-only slice.
-- The documenter narrative is directionally correct, but the recorded commit hash is stale and should be corrected for artifact accuracy.
+## Verdict
+**PASS**
 
-## Final Verdict
-- **FAIL**
-- Blocking findings: 1
-- Warning findings: 2
-- Note findings: 1
-
-## Artifact Paths Written
-- `artifacts/gui_sep/milestone3-wxstrategicui/T1/verifier_report.md`
-- `artifacts/gui_sep/milestone3-wxstrategicui/T1/verifier_result.json`
-
-## Commit Status
-- Committed in branch history; final commit hash is reported in the verifier CLI summary.
+## Summary
+- The remediation is localized to the `WXStrategicUI` adapter surface and its focused tests.
+- Guarded dialog-style methods now satisfy the documented non-zero-on-cancel/unavailable contract.
+- `requestRedraw()` remains null-safe.
+- No findings were identified.
