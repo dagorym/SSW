@@ -2,7 +2,7 @@
   "status": "pass",
   "task_id": "T2",
   "branch": "warning-fixes-T2-doc",
-  "documenter_commit_hash": "c88e8f51c03261e00c8d3326606b0a4c93f36863",
+  "documenter_commit_hash": "10e91ca1a81cef2aad228eee3e63595b7921cb5b",
   "files_changed": [
     "artifacts/gui_sep/milestone1-warning-fixes/T2/documenter_report.md",
     "artifacts/gui_sep/milestone1-warning-fixes/T2/documenter_result.json",
