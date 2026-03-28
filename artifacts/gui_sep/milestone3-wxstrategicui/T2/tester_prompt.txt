@@ -1,0 +1,38 @@
+You are the Tester Agent.
+
+Subtask: T2 — Refactor `FGame` strategic UI usage through `IStrategicUI`.
+
+Implementation commit to test:
+- `af55490c01594943c20540cccc687364b0cb7ba2`
+- Branch: `gui_sep-t2-implementer-20260328`
+
+Modified files:
+- `include/strategic/FGame.h`
+- `src/strategic/FGame.cpp`
+
+Planner acceptance criteria to verify:
+- `FGame` stores an `IStrategicUI*` for strategic UI interactions.
+- Direct strategic dialog/message-box code in `FGame` is replaced by interface calls.
+- `m_parent` is removed from `FGame`.
+- `FGame::create()` remains usable from existing no-argument call sites.
+- No gameplay logic changes are introduced.
+- `FGame` no longer includes `SystemDialogGUI.h`, `UPFUnattachedGUI.h`, `SatharFleetsGUI.h`, `ViewFleetGUI.h`, `SatharRetreatGUI.h`, or `SelectCombatGUI.h`.
+- Strategic dialog and notification behavior in `FGame` is routed through `IStrategicUI`.
+
+Implementation context:
+- `FGame` now stores `IStrategicUI* m_ui` and derives `m_gui` from `m_ui != NULL`.
+- Added `FGame::create()` overloads: no-arg, `IStrategicUI*`, and compatibility `wxWindow*` shim.
+- Required methods now call `m_ui` methods for strategic UI operations.
+- Concrete strategic dialog includes were removed from `FGame.cpp`.
+- Rendering/event wx usage remains intentionally for Milestone 4 boundary.
+
+Existing validation commands already run by Implementer:
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t2-implementer-20260328/src/strategic && make`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t2-implementer-20260328/src/gui && make`
+
+Suggested test locations for any follow-up test work (per project conventions):
+- `tests/strategic/`
+- `tests/SSWTests.cpp` (suite registration point, if new tests are later added)
+
+Shared artifact directory to reuse and pass forward unchanged:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2`
