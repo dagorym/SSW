@@ -1,0 +1,49 @@
+You are the Documenter Agent.
+
+Original task summary:
+- Subtask T2 validated: refactor `FGame` strategic UI usage through `IStrategicUI`.
+- Implementation under test commit: `af55490c01594943c20540cccc687364b0cb7ba2` on branch `gui_sep-t2-implementer-20260328`.
+- Tester worktree/branch context: `/home/tstephen/worktrees/SSW/gui_sep-t2-tester-20260328`, branch `gui_sep-t2-tester-20260328`.
+
+Acceptance criteria validated as met:
+1. `FGame` stores `IStrategicUI*` for strategic UI interactions.
+2. Direct strategic dialog/message-box code in `FGame` replaced with interface calls.
+3. `m_parent` removed from `FGame`.
+4. Existing no-argument `FGame::create()` call sites remain usable.
+5. No gameplay logic regressions observed.
+6. `FGame.cpp` no longer includes:
+   - `SystemDialogGUI.h`
+   - `UPFUnattachedGUI.h`
+   - `SatharFleetsGUI.h`
+   - `ViewFleetGUI.h`
+   - `SatharRetreatGUI.h`
+   - `SelectCombatGUI.h`
+7. Strategic dialog/notification behavior in `FGame` routed through `IStrategicUI`.
+
+Tester-authored test changes:
+- `tests/strategic/FGameHeaderDependencyTest.h`
+- `tests/strategic/FGameHeaderDependencyTest.cpp`
+- Added/updated structural assertions for new `FGame::create` overloads, `IStrategicUI` member adoption, removed `m_parent`, strategic include removal, and interface-based UI call routing.
+
+Commands executed during validation:
+- `cd src/strategic && make`
+- `cd src/gui && make`
+- `cd tests/strategic && make`
+- `cd tests && make && ./SSWTests`
+
+Final test outcome:
+- `SSWTests`: **OK (180 tests)**
+- Run: 180, Failures: 0, Errors: 0
+
+Artifacts produced in shared directory (reuse unchanged):
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/tester_report.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/tester_result.json`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/documenter_prompt.txt`
+
+Test commit hash:
+- Use `git log -1 --format=%H` on branch `gui_sep-t2-tester-20260328` to capture the tester commit that includes these changes and artifacts.
+
+Likely documentation impact to assess:
+- `FGame` strategic UI boundary now explicitly depends on `IStrategicUI`.
+- `FGame::create()` overload set changed (no-arg + `IStrategicUI*` + compatibility `wxWindow*` shim).
+- `FGame` strategic UI flow now interface-routed for dialogs/notifications.
