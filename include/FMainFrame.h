@@ -10,6 +10,7 @@
 #define _FMAINFRAME_H_
 
 #include <wx/wx.h>
+#include "wxWidgets.h"
 #include "strategic/FGame.h"
 #include "core/FGameConfig.h"
 #include "FGamePanel.h"
