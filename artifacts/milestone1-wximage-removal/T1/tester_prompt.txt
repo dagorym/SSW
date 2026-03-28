@@ -1,0 +1,40 @@
+## Tester Handoff: T1 — Add getIconName() public accessors to FVehicle and FFleet
+
+### Shared artifact directory
+artifacts/milestone1-wximage-removal/T1
+
+### Implementer branch
+gui_sep-t1-implementer-20260327
+
+### What was implemented
+- Added `const std::string & getIconName() const { return m_iconName; }` as a public inline method to `include/ships/FVehicle.h`
+- Uncommented `const std::string & getIconName() const { return m_iconFile; }` in `include/strategic/FFleet.h`
+
+### Acceptance criteria to verify
+1. FVehicle::getIconName() is declared public and returns m_iconName by const reference.
+2. FFleet::getIconName() is declared public and returns m_iconFile by const reference.
+3. No other files were changed in this subtask.
+4. The codebase compiles without errors or new warnings from these changes.
+
+### Validation commands to run (from the tester worktree)
+```bash
+# Verify accessor declarations in headers
+grep -n "getIconName" include/ships/FVehicle.h
+grep -n "getIconName" include/strategic/FFleet.h
+
+# Verify only expected files were changed vs base branch
+git diff gui_sep --name-only | grep -v "^artifacts/"
+
+# Build ships module
+cd src/ships && make 2>&1; cd ../..
+
+# Build strategic module
+cd src/strategic && make 2>&1; cd ../..
+```
+
+### What the tester should verify
+- `getIconName()` exists and is public in both headers
+- Return types are `const std::string &`
+- No files other than the two headers (and artifact files) were modified
+- Both modules build with zero errors and no new warnings related to T1 changes
+- Write tester_report.md, tester_result.json, and (on pass) documenter_prompt.txt to artifacts/milestone1-wximage-removal/T1/
