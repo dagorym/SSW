@@ -3,7 +3,7 @@
   "subtask": "T2 — Refactor FGame strategic UI usage through IStrategicUI",
   "implementation_commit_tested": "af55490c01594943c20540cccc687364b0cb7ba2",
   "branch": "gui_sep-t2-tester-20260328",
-  "test_commit_hash": "f4dd404969f3292891ce319faec332c653c84643",
+  "test_commit_hash": "46345af9b31af7b90bfbf92a20e4940eb129306b",
   "test_files_modified": [
     "tests/strategic/FGameHeaderDependencyTest.h",
     "tests/strategic/FGameHeaderDependencyTest.cpp"
