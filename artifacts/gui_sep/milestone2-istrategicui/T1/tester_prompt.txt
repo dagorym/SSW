@@ -1,0 +1,28 @@
+You are the Tester Agent.
+
+Task summary:
+- Added a new lightweight shared strategic forward/types header for Milestone 2.
+
+Modified files:
+- include/strategic/StrategicTypes.h
+
+Acceptance criteria to validate (from Planner):
+- The new header lives under `include/strategic/`.
+- It defines `FleetList` and `PlayerList` using forward-declared `FFleet` and `FPlayer` pointer types.
+- It includes only the minimal standard headers required.
+- It introduces no runtime behavior changes.
+- Add brief file/class comments so Doxygen output explains why this header exists.
+
+Create test files in:
+- No new test file is expected for this header-only subtask; if tester coverage is needed, validate via strategic module compilation from existing build locations, with `tests/strategic/` as the conventional test area.
+
+Implementation context for testing:
+- New header adds forward declarations for `FPlayer`, `FFleet`, `FMap`, and `FSystem` in namespace `Frontier`.
+- `FleetList` and `PlayerList` are defined as pointer-vector typedef aliases and no wx/model headers are included.
+- Change is header-only with no `.cpp` or runtime logic modifications.
+
+Suggested test command(s):
+- sed -n '1,200p' include/strategic/StrategicTypes.h
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone2-istrategicui/T1
