@@ -31,7 +31,7 @@ void FDestroyerTest::testConstructor(){
 	CPPUNIT_ASSERT( m_v1->getMaxHP() == 50);
 	CPPUNIT_ASSERT( m_v1->getHP() == 50);
 	CPPUNIT_ASSERT( m_v1->getHeading() == 0);
-	CPPUNIT_ASSERT( m_v1->getIcon() != NULL);
+	CPPUNIT_ASSERT( !m_v1->getIconName().empty());
 	unsigned int id = m_v1->getID();
 	CPPUNIT_ASSERT( id >= 0);
 	std::ostringstream os;
