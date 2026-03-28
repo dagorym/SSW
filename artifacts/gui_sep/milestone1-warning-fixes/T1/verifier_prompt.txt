@@ -1,0 +1,70 @@
+You are the Verifier Agent.
+
+Task summary:
+- Subtask: T1 — remove the dead `WXMapDisplay` dependency from `src/strategic/FPlayer.cpp`
+- Implemented change: removed `#include "gui/WXMapDisplay.h"` from `src/strategic/FPlayer.cpp`, removed the unused local `WXMapDisplay mapDisplay;` from `FPlayer::getFleet(double, double)`, and added `#include <cmath>` so the existing `sqrt` call remains declared.
+- Documentation review outcome: no project documentation files were changed because the implementation is a behavior-preserving warning cleanup and no existing user or architecture document required correction for this incidental dependency.
+
+Acceptance criteria to verify:
+1. `src/strategic/FPlayer.cpp` no longer includes `gui/WXMapDisplay.h`.
+2. `FPlayer::getFleet(double, double)` no longer declares `WXMapDisplay mapDisplay`.
+3. `getFleet(double, double)` behavior is unchanged; the coordinate comparison logic remains the same.
+4. Full test suite passes via `cd tests && make && ./SSWTests`.
+5. Both executables link successfully via `make` from the repository root.
+
+Implementation and branch/worktree context:
+- Base branch: `gui_sep`
+- Implementer branch: `warning-fixes-T1-impl`
+- Implementer commit: `7a8b20b7479a42c453aa8d9308bf2632b45e8bc8`
+- Tester branch: `warning-fixes-T1-test`
+- Tester branch commit before documenter changes: `7e9b781d2c8ba825f721653dabab12cf1bcc2f9d`
+- Documenter branch: `warning-fixes-T1-doc`
+- Documenter worktree: `/home/tstephen/repos/SSW-T1-doc`
+- Shared artifact directory: `artifacts/gui_sep/milestone1-warning-fixes/T1`
+
+Implementation files modified:
+- `src/strategic/FPlayer.cpp`
+
+Test files added or modified:
+- None
+
+Documentation files added or modified:
+- None
+
+Documenter artifacts written:
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/documenter_report.md`
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/documenter_result.json`
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/verifier_prompt.txt`
+
+Tester artifacts to review:
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/tester_report.md`
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/tester_result.json`
+
+Commands executed during the documenter pass:
+- `git -C /home/tstephen/repos/SSW-T1-doc --no-pager status --short --branch && printf '\n---BRANCHES---\n' && git -C /home/tstephen/repos/SSW-T1-doc --no-pager branch -vv`
+- `cd /home/tstephen/repos/SSW-T1-doc && echo '---PLAN CANDIDATES---' && find plans -maxdepth 4 -type f | sort | grep -Ei 'warning|milestone|T1|gui_sep' || true`
+- `cd /home/tstephen/repos/SSW-T1-doc && echo '---MERGE BASE---' && git merge-base warning-fixes-T1-doc gui_sep && echo '---DIFF STAT---' && git --no-pager diff --stat gui_sep..warning-fixes-T1-doc && echo '---CHANGED FILES---' && git --no-pager diff --name-only gui_sep..warning-fixes-T1-doc`
+- `cd /home/tstephen/repos/SSW-T1-doc && echo '---SEARCH DOC REFERENCES---' && grep -RIn 'FPlayer\\|WXMapDisplay' doc src . --exclude-dir=.git --exclude='*.o' --exclude='*.a' --exclude='*.png' | head -200`
+- `cd /home/tstephen/repos/SSW-T1-doc && git --no-pager diff gui_sep..warning-fixes-T1-doc -- src/strategic/FPlayer.cpp`
+- `cd /home/tstephen/repos/SSW-T1-doc && echo '---ARTIFACTS---' && find artifacts/gui_sep/milestone1-warning-fixes/T1 -maxdepth 1 -type f | sort`
+- `cd /home/tstephen/repos/SSW-T1-doc && git rev-parse warning-fixes-T1-test && git rev-parse warning-fixes-T1-doc && git merge-base --is-ancestor warning-fixes-T1-test warning-fixes-T1-doc; echo $?`
+
+Files read during the documenter pass:
+- `plans/milestone1-warning-fixes-plan.md`
+- `src/strategic/FPlayer.cpp`
+- `include/strategic/FPlayer.h`
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/documenter_prompt.txt`
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/implementer_result.json`
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/tester_result.json`
+- `doc/DesignNotes.md`
+- `doc/UsersGuide.md`
+
+Final test outcomes available from prior stages:
+- Implementer result reports final validation passed after adding `<cmath>` for `sqrt`.
+- Tester result reports `status: success`.
+- Tester result reports `OK (169 tests)` and both repository-root `make` and `cd tests && make && ./SSWTests` passed.
+
+Documentation summary:
+- No project documentation files were changed.
+- Verification must include the documentation decision itself: confirm that no project documentation update was warranted for this behavior-preserving cleanup.
+- Include the updated documentation artifacts in scope along with the implementation and tests.
