@@ -28,11 +28,19 @@ public:
     /**
      * @brief Retrieve (and cache) the image for the given filename.
      *
-     * If the image has not been loaded yet, loads it from disk.
-     * If loading fails, logs a warning and returns a default-constructed
-     * (empty) wxImage rather than crashing.
+     * If the image has not been loaded yet, resolves it relative to the
+     * executable base path returned by FGameConfig::getBasePath() and loads
+     * it from disk.
      *
-     * @param filename Path to the image file.
+     * The cache key remains the original filename argument, so repeated calls
+     * with the same relative icon name reuse the same cached wxImage even
+     * though loading uses the resolved full path.
+     *
+     * If loading fails, logs a warning and returns a default-constructed
+     * (empty) wxImage rather than crashing; the warning includes the resolved
+     * full path that failed to load.
+     *
+     * @param filename Icon path relative to the executable base path.
      * @return const reference to the cached wxImage.
      */
     const wxImage & get(const std::string & filename);

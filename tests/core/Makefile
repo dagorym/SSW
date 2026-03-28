@@ -12,7 +12,7 @@ else
 COVERAGE_FLAGS =
 endif
 
-CXXFLAGS = -I../../include -I../../../src/include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+CXXFLAGS = -I../../include -I../../../src/include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) -DCORE_TEST_REPO_ROOT=\"$(CURDIR)/../..\"
 
 LIBS = `wx-config --libs` -lcppunit 
 
@@ -43,7 +43,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FPointTest.o FObjectTest.o FGameConfigTest.o FHexPathTest.o #FPObject.o 
+OBJS = FPointTest.o FObjectTest.o FGameConfigTest.o FHexPathTest.o WXIconCacheTest.o #FPObject.o 
 
 TARGET = libcoreTests.a
 
