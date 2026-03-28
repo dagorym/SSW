@@ -2,36 +2,37 @@
 
 ## Overview
 
-SSW is a C++ implementation of the Star Frontiers Second Sathar War stragegic game along with tactical component allowing users to play any of the Knight Hawks board game scenarios using wxWidgets for the GUI. The repository builds two executables:
+SSW is a C++ implementation of the Star Frontiers Second Sathar War strategic game along with a tactical component allowing users to play any of the Knight Hawks board game scenarios using wxWidgets 3.3.1 for the GUI. The repository builds two executables:
 
 - **SSW**: main game
 - **BattleSim**: standalone battle simulator
 
+Cross-platform: Linux via Makefiles, Windows via Visual Studio 2022.
+
 ## Project Structure
 
-The codebase is organized into distinct modules, each with its own Makefile and static library that is linked into the final executables.
+The codebase is organized into distinct modules, each with its own Makefile and static library that is linked into the final executables:
 
-- **core**: base types and persistence (`FObject`, `FPObject`, `FPoint`, `FHexMap`)
-- **strategic**: game state and turn logic (`FGame`, `FPlayer`, `FFleet`, `FMap`, `FSystem`)
-- **ships**: `FVehicle` and concrete ship types
-- **weapons**: weapon systems (`FWeapon` and variants)
-- **defenses**: defensive systems (shields, screens, hull types)
-- **tactical**: battle mechanics and combat resolution
-- **gui**: wxWidgets UI
-- **battleSim**: battle simulator UI and flow
+- **core**: Base types and persistence (`FObject`, `FPObject`, `FPoint`, `FHexMap`) - foundation for all game objects
+- **strategic**: Game state and turn logic (`FGame`, `FPlayer`, `FFleet`, `FMap`, `FSystem`) - turn-based gameplay layer
+- **ships**: Vehicle implementations (`FVehicle` base, concrete ship types like `FAssaultScout`, `FBattleship`)
+- **weapons**: Weapon systems (all inherit from `FWeapon` - see `FLaserCannon`, `FTorpedo`, etc.)
+- **defenses**: Defensive systems (shields, screens, hull types)
+- **tactical**: Combat resolution and battle mechanics
+- **gui**: wxWidgets UI components
+- **battleSim**: Battle simulator specific UI/logic
 
 Headers live under `include/` and source code under `src/`, generally mirroring module boundaries. Icons and game assets live in `icons/` and `data/`.
 
 ## Architecture
 
-### Key design patterns
+### Key Design Patterns
+- **Singleton**: `FGame` manages the game instance via `FGame::create(wxWindow*)` - never use `new FGame()`
+- **Single-rooted hierarchy**: All game classes inherit from `FObject` (base) or `FPObject` (persistent objects)
+- **Serialization**: Persistent objects implement pure virtual `save(std::ostream&)` and `load(std::istream&)`
+- **Component composition**: Ships contain `std::vector<FWeapon*>` and defense components
 
-- **Singleton**: `FGame` is managed as a singleton game controller via static instance management.
-- **Inheritance hierarchy**: game objects derive from `FObject` or `FPObject`.
-- **Composition / component system**: ships contain `std::vector` collections of weapons and defenses as components.
-- **Serialization**: persistent objects implement `save()` and `load()`-style APIs.
-
-### Core class structure
+### Core Class Structure
 
 - `FGame`: central game controller managing players, maps, and game state
 - `FVehicle`: base class for ships and stations, including HP, weapons, and defenses
@@ -41,31 +42,38 @@ Headers live under `include/` and source code under `src/`, generally mirroring 
 - `FTacticalAttackResult`: structured result from a weapon attack (outcome, damage, and hit details)
 - `FTacticalCombatReport`: per-ship and per-weapon combat reporting for a battle round
 
-### Data flow
+### Data Flow
 
 1. Game initialization creates the singleton `FGame` instance.
 2. `FGame` manages `FPlayer` objects and the strategic `FMap`.
 3. Combat transitions to the tactical system with `FBattleBoard`.
 4. Vehicle damage and other state changes persist through the serialization system.
 
-## Build System
+### Namespace Convention
+All game code lives in `namespace Frontier`. GUI classes (inheriting from wxWidgets) use `using namespace Frontier;` at file scope. Core/strategic/ships/weapons modules declare `namespace Frontier` and fully qualify external namespaces.
 
-The project uses a hierarchical Makefile system. Run commands from the repository root unless noted otherwise.
+## Build System
 
 ### Linux / Make
 
-- Build all: `make` or `make all`
-- Clean build artifacts: `make clean`
-- Deep clean all modules: `make all_clean`
-- Build documentation: `make docs`
+From repo root:
+```bash
+make              # Build both SSW and BattleSim
+make clean        # Remove executables
+make all_clean    # Deep clean all modules
+make docs         # Generate Doxygen documentation
+```
 
 Individual modules can also be built by navigating to their source directories and running `make`. Each module produces a static library (`.a` file) that is linked into the final executables.
 
-wxWidgets must be available via `wx-config`. See `WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
+Dependencies: wxWidgets 3.3.1 via `wx-config`, CppUnit for testing. See `WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
 
-### Windows / Visual Studio
+### Windows / Visual Studio 2022
 
-Open `SSW.sln` after building wxWidgets 3.3.1. Additional project details are in `VS_PROJECT_CHANGES.md`.
+Open `SSW.sln`. Requires wxWidgets 3.3.1 built locally at `C:\Users\steph26\repos\wxWidgets-3.3.1\`. Library names use `wxmsw33u*` (release) or `wxmsw33ud*` (debug). See `VS_PROJECT_CHANGES.md` for configuration details.
+
+### Module Dependencies
+Executables link in this order: `-lgui -ltactical -lweapons -ldefenses -lships -lstrategic -lcore`. Changes to core require rebuilding all dependent modules. Each `src/*/Makefile` produces its module's static library independently.
 
 ## Development Environment
 
@@ -75,7 +83,7 @@ Open `SSW.sln` after building wxWidgets 3.3.1. Additional project details are in
 - **CppUnit**: unit testing framework
 - **gcov**: coverage analysis support (opt-in; enable with `make COVERAGE=1`)
 
-### Platform support
+### Platform Support
 
 - Primary target: Linux (compiled with `-DLINUX` flag)
 - Cross-platform GUI through wxWidgets
@@ -91,11 +99,18 @@ Unit tests use **CppUnit** and are organized under `tests/` by module:
 - Ships tests: `tests/ships/*` (covers all vehicle types, including `FTacticalAttackIntegrationTest`)
 - Tactical tests: `tests/tactical/*` (covers `FTacticalCombatReport`, `FTacticalAttackResult`, battery range clamping, station orbital movement, etc.)
 - Strategic tests: `tests/strategic/*` (covers `FGame`, `FPlayer`, `FFleet`, etc.)
+- Test classes named `<Class>Test` (e.g., `FPointTest` for `FPoint`)
+- Use `CPPUNIT_TEST_SUITE` macros (see `tests/core/FPointTest.h`)
+- Each test explicitly registered in `tests/SSWTests.cpp` via `runner.addTest()`
+
+### Running Tests
 
 From `tests/`:
 
-- Build tests: `make`
-- Run tests: `./SSWTests`
+```bash
+make              # Builds SSWTests executable and all test libraries
+./SSWTests        # Run all tests
+```
 
 Main test runner: `tests/SSWTests.cpp`
 
@@ -106,21 +121,70 @@ cd tests/weapons  && make && ./WeaponsTests    # weapons module only
 # pattern: tests/<module> && make && ./<Module>Tests
 ```
 
-The build system supports gcov coverage analysis; enable it with `make COVERAGE=1`.
+Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis. Enable coverage reporting with `make COVERAGE=1`.
+
+### Adding New Tests
+1. Copy `tests/test_template.h` and `tests/test_template.cpp` as starting points
+2. Create `tests/<module>/<Class>Test.h` and `.cpp`, replacing `XXX` with the class name
+3. Update `tests/<module>/Makefile` to include the new test object
+4. Add `#include` and `runner.addTest()` call in `tests/SSWTests.cpp`
+5. Test include guards use `#ifndef CLASSNAME_H_` (no leading underscore, unlike production headers)
+
+## Critical Conventions
+
+### File Organization
+- Headers: `include/<module>/<Class>.h`
+- Source: `src/<module>/<Class>.cpp`
+- Always use `#include "<module>/<Class>.h"` (module-qualified paths)
+
+### Class Naming
+- Prefix all classes with `F` (e.g., `FGame`, `FWeapon`, `FVehicle`)
+- Test classes: `<ClassName>Test` in `namespace FrontierTests`
+
+### Include Guards
+Use `#ifndef _<FILENAME>_H_` pattern (e.g., `#ifndef _FGAME_H_`). Doxygen-style file headers mandatory:
+```cpp
+/**
+ * @file ClassName.h
+ * @brief Brief description
+ * @author Name
+ * @date Created: MMM DD, YYYY
+ */
+```
+
+### Memory Management
+- Raw pointers common (`FVehicle*`, `FWeapon*`) - no smart pointers in legacy code
+- `FGame` destructor responsible for cleaning up `FPlayer` and `FMap` objects
+- Component ownership follows composition hierarchy (ship owns weapons/defenses)
+
+## wxWidgets Integration
+
+### Recent Upgrade (3.0.3 → 3.3.1)
+- `wxInitAllImageHandlers()` removed (automatic in 3.1+)
+- Virtual methods now use `wxOVERRIDE` macro instead of raw `override`
+- See `WXWIDGETS_UPGRADE_CHANGES.md` for complete migration details
+
+### Common Patterns
+- Main app classes inherit from `wxApp` (`FApp`, `FBattleSimApp`)
+- UI panels inherit from generated GUI base classes in `include/gui/`
+- Use `wx-config --cxxflags` and `wx-config --libs` for compiler/linker flags
+
+## Debugging & Development
+
+### Compilation Flags
+All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ftest-coverage -g`
+
+### Common Issues
+- Missing `FGame::create()` call causes singleton access failures
+- Forgetting to update `tests/SSWTests.cpp` when adding tests = test won't run
+- Cross-module changes require `make all_clean` from root to rebuild libraries properly
+- Windows builds need exact wxWidgets path in `.vcxproj` (not portable across machines)
 
 ## Key Entry Points
 
 - Main game app: `src/FApp.cpp`
 - Battle simulator app: `src/FBattleSimApp.cpp`
 - Battle simulator main flow: `src/BattleSim.cpp`
-
-## Documentation
-
-- Doxygen configuration: `doc/Doxyfile`
-- Generated documentation: `doc/`
-- AI agent information : `AGENTS.md` (this file)
-- Design documentation: `doc/DesignNotes.odt`
-- User Guide: `doc/UsersGuide.odt`
 
 ## Contributor Notes
 
@@ -130,6 +194,20 @@ The build system supports gcov coverage analysis; enable it with `make COVERAGE=
 - Maintain cross-platform compatibility across Linux Make builds and Visual Studio builds.
 - Update or add tests alongside functional changes.
 
-## Agent and Skill profiles
+## Documentation
+
+- Doxygen configuration: `doc/Doxyfile`
+- Generated documentation: `doc/`
+- AI agent information: `AGENTS.md` (this file)
+- Design documentation: `doc/DesignNotes.odt`
+- User Guide: `doc/UsersGuide.odt`
+
+Related documentation:
+- `COPILOT.md` - General overview
+- `WARP.md` - Detailed architecture guide
+- `WXWIDGETS_UPGRADE_CHANGES.md` - wxWidgets migration notes
+- `VS_PROJECT_CHANGES.md` - Visual Studio configuration
+
+## Agent and Skill Profiles
 
 You *must* read ~/repos/agents/AGENTS_LOOKUP.md before proceeding.
