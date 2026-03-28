@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Task summary:
+- Removed dead WXMapDisplay dependency from `src/strategic/FPlayer.cpp` by deleting the unused GUI include and removing the unused local `WXMapDisplay mapDisplay;` in `FPlayer::getFleet(double, double)`.
+- Added `<cmath>` include to keep `sqrt` declaration explicit after removing the transitive GUI include.
+
+Modified files:
+- src/strategic/FPlayer.cpp
+
+Acceptance criteria to validate (from Planner):
+- `src/strategic/FPlayer.cpp` no longer includes `gui/WXMapDisplay.h`.
+- `FPlayer::getFleet(double, double)` no longer declares a `WXMapDisplay mapDisplay` local variable.
+- `getFleet(double, double)` behaves identically (coordinate comparison logic unchanged).
+- Full test suite (`cd tests && make && ./SSWTests`) passes with no regressions.
+- Both executables (`SSW`, `BattleSim`) link successfully (`make` from repo root).
+
+Create test files in:
+- tests/strategic/ (assumption based on project test layout; no new tests were added by Implementer)
+
+Implementation context for testing:
+- Only `FPlayer.cpp` changed.
+- `getFleet(double, double)` loop and distance threshold comparison (`sqrt((x-x2)^2 + (y-y2)^2) < 0.5`) were not modified.
+- This task is dependency cleanup only; no behavior-intended changes.
+
+Suggested test command(s):
+- cd src/strategic && make
+- make
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone1-warning-fixes/T1
