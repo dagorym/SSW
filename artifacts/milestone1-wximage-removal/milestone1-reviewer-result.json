@@ -1,0 +1,24 @@
+{
+  "feature": "milestone1-wximage-removal",
+  "feature_plan": "plans/milestone1-wximage-removal-plan.md",
+  "branch": "gui_sep",
+  "status": "conditional_pass",
+  "acceptance_criteria_fully_met": false,
+  "findings": {
+    "blocking": 0,
+    "warning": 4,
+    "note": 3
+  },
+  "warnings": [
+    "Strategic-layer wx boundary remains incomplete: FGame.h still exposes wxWindow*; FPlayer.cpp still includes gui/WXMapDisplay.h",
+    "WXIconCache may have changed icon path resolution semantics relative to prior FGameConfig::getBasePath() usage",
+    "Migrated setter tests assert only non-empty icon name rather than exact stored filename",
+    "Artifact evidence chain incomplete for T1-T6 and T9 (missing tester/documenter/verifier reports)"
+  ],
+  "follow_up_requests": [
+    "Complete strategic-layer decoupling: remove wxWindow from FGame.h public API; remove WXMapDisplay dependency from FPlayer.cpp",
+    "Fix WXIconCache path resolution to preserve getBasePath() semantics, or document and validate new contract",
+    "Strengthen setter tests to assert exact stored filenames after setIcon() calls",
+    "Backfill missing artifacts for T1-T6 and T9"
+  ]
+}
