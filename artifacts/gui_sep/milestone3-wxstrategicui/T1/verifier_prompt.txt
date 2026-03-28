@@ -1,72 +1,60 @@
 You are the Verifier Agent.
 
-Please verify Milestone 3, subtask T1 (`WXStrategicUI`) using branch/worktree context below.
+Original task summary
+- Validate T1 remediation for WXStrategicUI return-value contract where no UI/dialog context exists.
+- Implementation branch: gui_sep-t1-remed-implementer-20260328
+- Implementation commit under test: 28a3698c2fcf7c7440e97cb087b9458be82fc1a7
+- Shared artifact directory to reuse (repo-relative): artifacts/gui_sep/milestone3-wxstrategicui/T1
 
-Original task summary:
-- Validate implementer subtask T1 for a concrete `WXStrategicUI` implementation of `Frontier::IStrategicUI` in the gui module, bridging strategic logic to wx dialogs/message boxes.
+Implementation and branch context
+- Base branch for comparison: gui_sep
+- Tester branch: gui_sep-t1-remed-tester-20260328
+- Tester commit: 37bfa437fd8238259e898e2dc5380b66ec20d6f3
+- Documenter branch: gui_sep-t1-remed-documenter-20260328
+- Documenter scope decision: no repository documentation files required updates for this internal remediation; required Documenter artifacts were refreshed for the remediation branch.
 
-Acceptance criteria validated so far:
-- `WXStrategicUI` fully implements `IStrategicUI`.
-- Implementation wraps strategic dialogs/notifications used by `FGame`.
-- `requestRedraw()` refreshes parent window safely.
-- No strategic source file needs concrete dialog headers from this subtask.
-- Class/file comments identify `WXStrategicUI` as the strategic-to-wx bridge.
+Acceptance criteria to verify
+- Every IStrategicUI method in WXStrategicUI still compiles and preserves behavior.
+- Success/cancel methods now return non-zero when no dialog/UI is available or required inputs are missing.
+- requestRedraw() remains null-safe.
+- Changes remain localized to the T1 adapter surface.
 
-Implementation branch/worktree context:
-- Verifier worktree: `/home/tstephen/worktrees/SSW/gui_sep-t1-documenter-20260328`
-- Verifier branch: `gui_sep-t1-documenter-20260328`
-- Tester worktree: `/home/tstephen/worktrees/SSW/gui_sep-t1-tester-20260328`
-- Tester branch: `gui_sep-t1-tester-20260328`
-- Implementer branch basis: `gui_sep-t1-implementer-20260328`
-- Implementer code commit under test: `6160ac7e74bea3b5f6673b07d01bae34838b3fea`
-- Documenter base branch for comparison: `gui_sep`
+Implementation files changed
+- src/gui/WXStrategicUI.cpp
 
-Files under validation:
-- `include/gui/WXStrategicUI.h`
-- `src/gui/WXStrategicUI.cpp`
+Test files added or modified
+- tests/core/WXStrategicUITest.h
+- tests/core/WXStrategicUITest.cpp
+- tests/core/WXStrategicUIUnderTest.cpp
+- tests/core/Makefile
+- tests/SSWTests.cpp
 
-Test files added/modified:
-- None.
+Documentation files added or modified
+- none
 
-Documentation files added/modified:
-- None.
-- Documenter conclusion: no repository documentation update was warranted for this validation-only internal adapter slice.
+Documenter artifacts written
+- artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_report.md
+- artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_result.json
+- artifacts/gui_sep/milestone3-wxstrategicui/T1/verifier_prompt.txt
 
-Artifact files added/modified:
-- `artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_report.md`
-- `artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_result.json`
-- `artifacts/gui_sep/milestone3-wxstrategicui/T1/verifier_prompt.txt`
+Commands executed and outcomes
+1) cd tests && make -s && ./SSWTests
+   - Baseline pre-change run: OK (175 tests)
+2) cd tests && make -s && ./SSWTests
+   - First run after new tests: linker failure (missing WXStrategicUI symbols in test link)
+3) Added test-local compile unit for WXStrategicUI implementation and updated tests/core/Makefile
+4) cd tests && make -s && ./SSWTests
+   - Final run: OK (177 tests)
 
-Commands executed:
-- Tester:
-  - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-tester-20260328 && pwd && git --no-pager branch --show-current && git --no-pager status --short`
-  - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-tester-20260328 && git --no-pager diff -- include/gui/WXStrategicUI.h src/gui/WXStrategicUI.cpp | cat`
-  - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-tester-20260328/src/gui && make`
-  - strategic include scan for concrete dialog headers in `src/strategic`
-  - direct compile of `src/gui/WXStrategicUI.cpp`
-  - interface/implementation symbol-count checks using ripgrep
-- Documenter:
-  - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-documenter-20260328 && pwd && git --no-pager branch --show-current && git --no-pager status --short && git --no-pager log --oneline --decorate -3 && git --no-pager merge-base --is-ancestor gui_sep-t1-tester-20260328 HEAD`
-  - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-documenter-20260328 && git --no-pager diff --stat gui_sep...HEAD`
-  - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-documenter-20260328 && git --no-pager diff --unified=40 gui_sep...HEAD -- include/gui/WXStrategicUI.h src/gui/WXStrategicUI.cpp artifacts/gui_sep/milestone3-wxstrategicui/T1/tester_report.md artifacts/gui_sep/milestone3-wxstrategicui/T1/tester_result.json artifacts/gui_sep/milestone3-wxstrategicui/T1/documenter_prompt.txt | cat`
-  - repository doc search for `WXStrategicUI` / `IStrategicUI` in `doc/` and markdown files
-  - reviewed `/home/tstephen/repos/SSW/plans/milestone3-wxstrategicui-plan.md`
-  - reviewed `/home/tstephen/worktrees/SSW/gui_sep-t1-documenter-20260328/AGENTS.md`
-  - reviewed `/home/tstephen/repos/agents/agents/documenter.yaml`
+Final test outcomes
+- Pass: 177
+- Fail: 0
+- Attempts after adding tests: 2
+- Explicitly covered behaviors now include null-parent and missing-required-input guard paths returning non-zero for dialog-style methods, plus null-safe requestRedraw().
 
-Final outcomes:
-- Tester status: PASS
-- Tester attempts: 1
-- Build/compile checks: 2 passed, 0 failed
-- Unit/integration test totals: not applicable for this scoped adapter-only validation; no new tests required.
-- Documenter status: PASS
-- Documentation outcome: no documentation file changes required; required Documenter artifacts added.
-
-Shared artifact directory to reuse (repository-root-relative):
-- `artifacts/gui_sep/milestone3-wxstrategicui/T1`
-
-Verification requirements:
-- Verify the implementation files listed above against the acceptance criteria.
-- Verify the no-doc-update decision is reasonable for this internal validation-only change.
-- Verify the Documenter artifacts in the shared artifact directory are accurate and complete.
-- Verification must include the updated documentation/artifact files along with the implementation and tests in scope.
+Verification expectations
+- Review the implementation diff, focused test additions, and the updated Documenter artifacts together.
+- Confirm the remediation remains localized to WXStrategicUI adapter behavior and its focused test surface.
+- Confirm the Documenter decision that no additional repository documentation files were warranted.
+- Verification must include the updated documentation files/artifacts along with the implementation and tests.
+- Reuse the shared artifact directory exactly as: artifacts/gui_sep/milestone3-wxstrategicui/T1
