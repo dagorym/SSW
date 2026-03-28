@@ -1,0 +1,58 @@
+{
+  "feature_plan": "plans/milestone1-warning-fixes-plan.md",
+  "artifact_directory": "artifacts/gui_sep/milestone1-warning-fixes",
+  "reviewed_subtasks": [
+    {
+      "id": "T1",
+      "branch": "warning-fixes-T1-verify",
+      "worktree": "/home/tstephen/repos/SSW-T1-verify"
+    },
+    {
+      "id": "T2",
+      "branch": "warning-fixes-T2-verify",
+      "worktree": "/home/tstephen/repos/SSW-T2-verify"
+    },
+    {
+      "id": "T3",
+      "branch": "warning-fixes-T3-verify",
+      "worktree": "/home/tstephen/repos/SSW-T3-verify"
+    },
+    {
+      "id": "T4",
+      "branch": "warning-fixes-T4-verify",
+      "worktree": "/home/tstephen/repos/SSW-T4-verify"
+    }
+  ],
+  "overall_completeness": "partial",
+  "findings": [
+    {
+      "severity": "BLOCKING",
+      "title": "T2 and T3 use incompatible base-path contracts for turn-counter icon loading",
+      "evidence": [
+        "warning-fixes-T2-verify src/strategic/FGame.cpp:944-948",
+        "warning-fixes-T3-verify src/gui/WXIconCache.cpp:23-25",
+        "warning-fixes-T2-verify tests/strategic/FGameHeaderDependencyTest.cpp:55-63"
+      ]
+    },
+    {
+      "severity": "WARNING",
+      "title": "T2 automated regression does not enforce the wx-free compile contract",
+      "evidence": [
+        "artifacts/gui_sep/milestone1-warning-fixes/T2/verifier_report.md:64-77",
+        "warning-fixes-T2-verify tests/strategic/FGameHeaderDependencyTest.cpp:25-53"
+      ]
+    },
+    {
+      "severity": "NOTE",
+      "title": "Feature-level evidence came from per-subtask verify worktrees rather than a final merged run"
+    }
+  ],
+  "follow_up_feature_requests": [
+    "Update FGame::drawTurnCounter() to pass short relative icon names into WXIconCache and update the T2 regression test to validate that contract.",
+    "Add an automated regression that fails if turn-counter image loading becomes double-prefixed after T2 and T3 are merged.",
+    "Replace the T2 text-inspection header regression with a compile-based automated check for including strategic/FGame.h in a non-wx translation unit.",
+    "After integrating T1 through T4, run and record one feature-level merged build plus tests/SSWTests pass."
+  ],
+  "outcome": "FAIL",
+  "artifact_commit_status": "committed; see final response for commit hash"
+}
