@@ -43,7 +43,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FPointTest.o FObjectTest.o FGameConfigTest.o FHexPathTest.o WXIconCacheTest.o #FPObject.o 
+OBJS = FPointTest.o FObjectTest.o FGameConfigTest.o FHexPathTest.o WXIconCacheTest.o WXStrategicUIUnderTest.o WXStrategicUITest.o #FPObject.o 
 
 TARGET = libcoreTests.a
 

@@ -14,6 +14,7 @@
 #include "core/FGameConfigTest.h"
 #include "core/FHexPathTest.h"
 #include "core/WXIconCacheTest.h"
+#include "core/WXStrategicUITest.h"
 #include "weapons/FWeaponTest.h"
 #include "weapons/FAssaultRocketTest.h"
 #include "weapons/FDisruptorCannonTest.h"
@@ -67,6 +68,7 @@ int main( int argc, char **argv)
   runner.addTest( FHexPathTest::suite() );
   runner.addTest( FGameConfigTest::suite() );
   runner.addTest( WXIconCacheTest::suite() );
+  runner.addTest( WXStrategicUITest::suite() );
   runner.addTest( FWeaponTest::suite() );
   runner.addTest( FAssaultRocketTest::suite() );
   runner.addTest( FDisruptorCannonTest::suite() );
