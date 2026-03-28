@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "criteria": {
+    "no_getIcon_calls": "pass",
+    "WXIconCache_used": "pass",
+    "WXIconCache_h_included": "pass",
+    "SelectJumpGUI_wx_included": "pass",
+    "AGENTS_note_accurate": "pass"
+  },
+  "warnings": [
+    "tester_report.md still reports FAIL for SelectJumpGUI include order, but tester_result.json and src/gui/SelectJumpGUI.cpp show the fix is present (stale artifact)."
+  ],
+  "notes": "PASS. All 5 acceptance criteria met. Unnecessary const_cast in FBattleBoard.cpp removed (icon is const wxImage*, no cast needed). AGENTS.md contributor note accurately reflects the WXIconCache boundary."
+}

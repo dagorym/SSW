@@ -379,7 +379,7 @@ void FBattleBoard::drawShips(){
 				for (unsigned int k = 0; k<m_hexData[i][j].ships.size(); k++){
 					const wxImage *icon;
 					if (m_hexData[i][j].ships[k]->getCurrentDefense()->getType()!=FDefense::MS){
-						icon = const_cast<wxImage*>(&WXIconCache::instance().get(m_hexData[i][j].ships[k]->getIconName()));
+						icon = &WXIconCache::instance().get(m_hexData[i][j].ships[k]->getIconName());
 					} else {
 						icon = m_maskingScreenIcon;
 					}
