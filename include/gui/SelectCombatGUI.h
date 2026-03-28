@@ -8,6 +8,7 @@
 #ifndef __SelectCombatGUI__
 #define __SelectCombatGUI__
 
+#include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/stattext.h>
 #include <wx/gdicmn.h>

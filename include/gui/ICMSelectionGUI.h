@@ -11,6 +11,7 @@
 
 #include <wx/colour.h>
 #include <wx/settings.h>
+#include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/font.h>
 #include <wx/grid.h>

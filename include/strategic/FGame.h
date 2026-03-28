@@ -12,6 +12,7 @@
 #include "core/FPObject.h"
 #include "FPlayer.h"
 #include "FMap.h"
+#include <wx/wx.h>
 #include <vector>
 
 namespace Frontier

@@ -8,6 +8,7 @@
 #ifndef __ViewFleetGUI__
 #define __ViewFleetGUI__
 
+#include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/stattext.h>
 #include <wx/gdicmn.h>

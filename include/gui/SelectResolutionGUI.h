@@ -8,6 +8,7 @@
 #ifndef __SelectResolutionGUI__
 #define __SelectResolutionGUI__
 
+#include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/stattext.h>
 #include <wx/gdicmn.h>

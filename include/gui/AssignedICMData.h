@@ -9,6 +9,7 @@
 #ifndef ASSIGNEDICMDATA_H_
 #define ASSIGNEDICMDATA_H_
 
+#include <wx/wx.h>
 #include "ships/FVehicle.h"
 #include <map>
 
