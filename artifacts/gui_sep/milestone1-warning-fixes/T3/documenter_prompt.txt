@@ -1,0 +1,45 @@
+You are the Documenter Agent.
+Prepare documentation updates for task T3 on branch `warning-fixes-T3-test` in worktree `/home/tstephen/repos/SSW-T3-test`.
+
+Task summary:
+- Updated WXIconCache image loading to resolve image paths using FGameConfig base path before constructing wxImage, while preserving cache keys by original filename.
+- Implementation file changed by implementer: `src/gui/WXIconCache.cpp`.
+
+Acceptance criteria validated:
+1. `WXIconCache::get()` prepends `FGameConfig::getBasePath()` to filename before `wxImage(...)`.
+2. Cache key remains the original short filename.
+3. Build succeeds (`make` from repo root).
+4. All tests pass (`cd tests && make && ./SSWTests`).
+
+Tester validation work completed:
+- Inspected `src/gui/WXIconCache.cpp` and confirmed:
+  - `FGameConfig & gc = FGameConfig::getGameConfig();`
+  - `std::string fullPath = gc.getBasePath() + filename;`
+  - `wxImage img(fullPath);`
+  - cache uses `m_cache[filename]` (short filename key unchanged).
+- Added/updated tests:
+  - `tests/core/WXIconCacheTest.h` (new)
+  - `tests/core/WXIconCacheTest.cpp` (new)
+  - `tests/core/Makefile` (registers `WXIconCacheTest.o` and defines `CORE_TEST_REPO_ROOT`)
+  - `tests/SSWTests.cpp` (registers `WXIconCacheTest::suite()`)
+
+Commands executed and outcomes:
+- `make` → success
+- `cd tests && make && ./SSWTests` → success, `OK (171 tests)`
+
+Documentation impact to cover:
+- Explain WXIconCache now resolves icon file paths relative to `FGameConfig` base path.
+- Clarify that cache identity/key semantics remain based on original filename argument.
+- Note that warning logs now include resolved full path for failed image loads.
+- Mention new regression tests for WXIconCache path resolution and cache-key behavior.
+
+Commit context:
+- Include test and artifact commit produced by tester for this task (see latest commit on `warning-fixes-T3-test`).
+
+Shared artifact directory to reuse (repo-relative):
+- `artifacts/gui_sep/milestone1-warning-fixes/T3`
+
+Tester artifacts produced:
+- `artifacts/gui_sep/milestone1-warning-fixes/T3/tester_report.md`
+- `artifacts/gui_sep/milestone1-warning-fixes/T3/tester_result.json`
+- `artifacts/gui_sep/milestone1-warning-fixes/T3/documenter_prompt.txt`
