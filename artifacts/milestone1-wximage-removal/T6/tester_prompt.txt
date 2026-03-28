@@ -1,0 +1,28 @@
+## Tester Handoff: T6 — Create WXIconCache singleton
+
+### Shared artifact directory
+artifacts/milestone1-wximage-removal/T6
+
+### Implementer branch
+gui_sep-t6-implementer-20260327
+
+### What was implemented
+- Created include/gui/WXIconCache.h: singleton WXIconCache in namespace Frontier with instance() and get(filename) methods; std::map<string,wxImage> cache; copy/assign deleted
+- Created src/gui/WXIconCache.cpp: instance() returns function-static singleton; get() returns cached image on hit, loads on miss, caches empty wxImage with warning on failure
+- Updated src/gui/Makefile: added WXIconCache.o to OBJS
+
+### Acceptance criteria
+1. include/gui/WXIconCache.h exists with instance() and get() declarations
+2. src/gui/WXIconCache.cpp implements them correctly (cache hit returns cached; miss loads from disk; failure returns empty wxImage not crash)
+3. WXIconCache.o in src/gui/Makefile
+4. gui module builds cleanly: cd src/gui && make
+
+### Validation commands
+```bash
+cat include/gui/WXIconCache.h
+grep -n "WXIconCache" src/gui/Makefile
+cd src/gui && make 2>&1 | tail -5
+```
+
+### Required artifacts in artifacts/milestone1-wximage-removal/T6/
+- tester_report.md, tester_result.json, documenter_prompt.txt (if pass)
