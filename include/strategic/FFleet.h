@@ -306,8 +306,6 @@ public:
 
   /// Set the fleet icon
   void setIcon(std::string icon);
-  /// get the fleet icon
-  const wxImage * getIcon() const { return m_icon; }
   /// get the fleet icon name
   const std::string & getIconName() const { return m_iconFile; }
 
@@ -366,8 +364,6 @@ private:
   unsigned int m_jumpRouteID;
   /// counter for next fleet id
   static int m_nextID;
-  /// pointer to icon to display on map
-  wxImage * m_icon;
   /// name of icon file
   std::string m_iconFile;
   /// flag for whether the fleet is a militia fleet or not

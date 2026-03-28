@@ -23,7 +23,6 @@ FFleet::FFleet() {
 	m_location = 0;
 	m_inTransit = false;
 	m_isMilitia = false;
-	m_icon = NULL;
 	m_isHolding = false;
 	m_speed = 0;
 	m_transitTime = 0;
@@ -41,7 +40,6 @@ FFleet::FFleet() {
 }
 
 FFleet::~FFleet() {
-	delete m_icon;
 //	std::cerr << "In fleet " << m_name << ", there are " << m_ships.size() << " ships" << std::endl;
 	for (unsigned int i = 0; i < m_ships.size(); i++){
 		delete m_ships[i];
@@ -146,7 +144,6 @@ const int FFleet::save(std::ostream &os) const {
 }
 
 int FFleet::load(std::istream &is){
-	FGameConfig &gc = FGameConfig::create();
 //	std::cerr << "Entering FFleet::load" << std::endl;
 	read(is,m_ID);
 	readString(is, m_name);
@@ -161,7 +158,6 @@ int FFleet::load(std::istream &is){
 	// Normalize legacy saves that encoded "no route" as 0 to the current sentinel.
 	if (m_jumpRouteID == 0) m_jumpRouteID = NO_ROUTE;
 	readString(is,m_iconFile);
-	m_icon = new wxImage(gc.getBasePath()+m_iconFile);
 	read(is,m_isMilitia);
 	readString(is,m_home);
 	read(is,m_isHolding);
@@ -184,12 +180,7 @@ int FFleet::load(std::istream &is){
 }
 
 void FFleet::setIcon(std::string icon){
-	FGameConfig &gc = FGameConfig::create();
-	if(m_icon != NULL){
-		delete m_icon;
-	}
 	m_iconFile = icon;
-	m_icon = new wxImage(gc.getBasePath()+m_iconFile);
 }
 
 void FFleet::setSpeed(unsigned int s ) {
