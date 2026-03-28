@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Please validate Implementer subtask T1 in worktree branch `gui_sep-t1-implementer-20260328`.
+
+Scope and intent
+- Subtask goal: add concrete `WXStrategicUI` implementation of `Frontier::IStrategicUI` in gui module, bridging strategic game logic to wx dialogs/message boxes.
+- Shared artifact directory to reuse and pass forward: `artifacts/gui_sep/milestone3-wxstrategicui/T1`
+- Approved plan reference: `/home/tstephen/repos/SSW/plans/milestone3-wxstrategicui-plan.md`
+
+Modified files
+- `include/gui/WXStrategicUI.h`
+- `src/gui/WXStrategicUI.cpp`
+
+Planner acceptance criteria to verify
+- `WXStrategicUI` fully implements `IStrategicUI`.
+- Implementation wraps current strategic dialogs/notifications used by `FGame`.
+- `requestRedraw()` refreshes parent window safely.
+- No strategic source file needs concrete dialog headers from this subtask.
+- Class/file comments briefly state `WXStrategicUI` is the concrete bridge from strategic logic to wx dialogs.
+
+Validation already run by Implementer
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t1-implementer-20260328/src/gui && make` (passed)
+
+Testing guidance
+- Do not add new tests unless absolutely required by project conventions.
+- Prefer existing build/test surfaces and inspect strategic/gui integration points.
+- If tests are required later, follow conventions under `tests/strategic` or `tests/gui` if present.
+
+Implementation context
+- `WXStrategicUI` constructor stores `wxWindow* parent`.
+- Methods implemented for message display, failed jump, victory notifications, retreat selection, UPF/Sathar setup dialogs, system/fleet dialogs, retreat message, combat selection, and redraw.
+- `requestRedraw()` is null-safe (`if (m_parent != NULL) m_parent->Refresh();`).
+
+Please write tester artifacts/results into the same shared artifact directory.
