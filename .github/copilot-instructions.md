@@ -48,6 +48,11 @@ Executables link in this order: `-lgui -ltactical -lweapons -ldefenses -lships -
 
 ### CppUnit Framework
 Tests mirror module structure under `tests/`:
+- Core tests: `tests/core/*` (covers `FPoint`, `FObject`, `FGameConfig`, etc.)
+- Weapons tests: `tests/weapons/*` (covers all weapon types, including `FWeaponFireResultTest`)
+- Ships tests: `tests/ships/*` (covers all vehicle types, including `FTacticalAttackIntegrationTest`)
+- Tactical tests: `tests/tactical/*` (covers `FTacticalCombatReport`, `FTacticalAttackResult`, battery range clamping, station orbital movement, etc.)
+- Strategic tests: `tests/strategic/*` (covers `FGame`, `FPlayer`, `FFleet`, etc.)
 - Test classes named `<Class>Test` (e.g., `FPointTest` for `FPoint`)
 - Use `CPPUNIT_TEST_SUITE` macros (see [tests/core/FPointTest.h](../tests/core/FPointTest.h))
 - Each test explicitly registered in [tests/SSWTests.cpp](../tests/SSWTests.cpp) via `runner.addTest()`
@@ -59,6 +64,8 @@ make              # Builds SSWTests executable and all test libraries
 ./SSWTests        # Run all tests
 ```
 
+Main test runner: `tests/SSWTests.cpp`
+
 To run a **single module's tests**, each module under `tests/` also has its own standalone runner:
 ```bash
 cd tests/tactical && make && ./TacticalTests   # tactical module only
@@ -66,7 +73,7 @@ cd tests/weapons  && make && ./WeaponsTests    # weapons module only
 # pattern: tests/<module>/ produces a standalone <Module>Tests executable
 ```
 
-Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis.
+Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis. Enable coverage reporting with `make COVERAGE=1`.
 
 ### Adding New Tests
 1. Copy `tests/test_template.h` and `tests/test_template.cpp` as starting points
@@ -125,8 +132,25 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 - Cross-module changes require `make all_clean` from root to rebuild libraries properly
 - Windows builds need exact wxWidgets path in `.vcxproj` (not portable across machines)
 
+## Key Entry Points
+
+- Main game app: `src/FApp.cpp`
+- Battle simulator app: `src/FBattleSimApp.cpp`
+- Battle simulator main flow: `src/BattleSim.cpp`
+
+## Contributor Notes
+
+- Keep module boundaries intact; new features should go in the appropriate module directory.
+- Prefer existing core and strategic abstractions before introducing new ones, especially `FObject`, `FGame`, `FMap`, `FVehicle`, and `FWeapon`.
+- Keep icon filenames in model objects and resolve ship or fleet `wxImage` assets in GUI render paths through `WXIconCache`, including tactical displays that draw ships.
+- Maintain cross-platform compatibility across Linux Make builds and Visual Studio builds.
+- Update or add tests alongside functional changes.
+
 ## Documentation
 Doxygen config: [doc/Doxyfile](../doc/Doxyfile). All classes/methods should have `@brief`, `@author`, `@date` tags. Generated HTML lives in `doc/html/`.
+
+- Design documentation: `doc/DesignNotes.odt`
+- User Guide: `doc/UsersGuide.odt`
 
 ## Related Documentation
 - [COPILOT.md](../COPILOT.md) - General overview
@@ -134,4 +158,4 @@ Doxygen config: [doc/Doxyfile](../doc/Doxyfile). All classes/methods should have
 - [WXWIDGETS_UPGRADE_CHANGES.md](../WXWIDGETS_UPGRADE_CHANGES.md) - wxWidgets migration notes
 - [VS_PROJECT_CHANGES.md](../VS_PROJECT_CHANGES.md) - Visual Studio configuration
 
-Read ~/repos/agents/AGENT_LOOKUP.md for your agent definitions.
+Read ~/repos/agents/AGENTS_LOOKUP.md for your agent definitions.
