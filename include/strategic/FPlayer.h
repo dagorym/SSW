@@ -107,21 +107,17 @@ public:
   FFleet * getFleet (double x, double y) const;
 
   /**
-   * @brief Set the image for the fleet icon
+   * @brief Set the fleet icon file name
    *
-   * This message loads the specified filed into the wxImage object and stores it to
-   * be used whenever drawing the fleet icons on the map.
+   * This method stores the file name for the fleet icon.
    *
-   * @param file The file name of the icon to load
+   * @param file The file name of the icon to use
    *
    * @author Tom Stephens
    * @date Created:  Feb 10, 2008
    * @date Last Modified:  Feb 10, 2008
    */
   void setFleetIcon(std::string file);
-
-//  // return a pointer to the fleet icon
-//  wxImage * getFleetIcon() { return &m_fleetIcon; }
 
   // return a pointer to the fleet icon
   const std::string & getFleetIconName() const { return m_iconName; }
@@ -288,8 +284,6 @@ private:
   FleetList m_fleets;
   /// Incremented player ID counter
   static unsigned int m_nextID;
-  /// icon for fleets
-  wxImage m_fleetIcon;
   /// Name of icon image file
   std::string m_iconName;
   /// list of unattached ships

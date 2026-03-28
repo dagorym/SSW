@@ -64,9 +64,7 @@ FFleet * FPlayer::getFleet(std::string name) const {
 }
 
 void FPlayer::setFleetIcon(std::string file){
-	FGameConfig &gc = FGameConfig::create();
 	m_iconName = file;
-	m_fleetIcon.LoadFile(gc.getBasePath()+m_iconName);
 }
 
 int FPlayer::addShip( FVehicle * ship ){
@@ -116,12 +114,10 @@ const int FPlayer::save(std::ostream &os) const{
 }
 
 int FPlayer::load(std::istream &is){
-	FGameConfig &gc = FGameConfig::create();
 //	std::cerr << "Entering FPlayer::load" << std::endl;
 	read(is,m_ID);
 	readString(is,m_name);
 	readString(is,m_iconName);
-	m_fleetIcon.LoadFile(gc.getBasePath()+m_iconName);
 	size_t uSize, fSize;
 	read(is,uSize);
 	for(unsigned int i = 0; i < uSize; i++){
