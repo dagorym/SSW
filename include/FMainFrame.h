@@ -15,6 +15,10 @@
 #include "core/FGameConfig.h"
 #include "FGamePanel.h"
 
+namespace Frontier {
+class WXStrategicUI;
+}
+
 /**
  * @brief Main frame class for the SSW game
  *
@@ -298,6 +302,8 @@ private:
   Frontier::FGameConfig * m_gameConfig;
   // wxPanel for drawing in
   FGamePanel * m_drawingPanel;
+  /// strategic UI adapter owned by the frame
+  Frontier::WXStrategicUI * m_strategicUI;
 
   /**
    * @brief deletes the game and resets the window

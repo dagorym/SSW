@@ -49,7 +49,7 @@ OBJS = SystemDialogGUI.o SelectJumpGUI.o ViewFleetGUI.o \
        SelectCombatGUI.o TwoPlanetsGUI.o CombatLocationGUI.o \
        CombatFleetsGUI.o SelectResolutionGUI.o BattleResultsGUI.o \
        TacticalDamageSummaryGUI.o \
-       WXMapDisplay.o WXPlayerDisplay.o WXGameDisplay.o \
+       WXMapDisplay.o WXPlayerDisplay.o WXGameDisplay.o WXStrategicUI.o \
        ICMSelectionGUI.o AssignedICMData.o WXIconCache.o
 
 TARGET = libgui.a
