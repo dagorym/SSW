@@ -43,7 +43,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FGameTest.o FPlanetTest.o FFleetTest.o FJumpRouteTest.o \
+OBJS = FGameTest.o FGameHeaderDependencyTest.o FPlanetTest.o FFleetTest.o FJumpRouteTest.o \
        FSystemTest.o FMapTest.o FPlayerTest.o \
        #FGame.o FAstroBodyTest.o 
 

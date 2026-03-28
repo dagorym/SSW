@@ -1,0 +1,72 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify T2 of `milestone1-warning-fixes` on branch `warning-fixes-T2-doc`.
+- Base branch: `gui_sep`
+- Worktree: `/home/tstephen/repos/SSW-T2-doc`
+- Shared artifact directory to reuse (repo-root-relative): `artifacts/gui_sep/milestone1-warning-fixes/T2`
+
+Implemented and tested behavior to verify:
+- `include/strategic/FGame.h` no longer includes any `wx` header.
+- `include/strategic/FGame.h` now forward-declares `wxWindow`, `wxDC`, and `wxMouseEvent`.
+- `include/strategic/FGame.h` no longer declares `m_tenday` or `m_day`.
+- `src/strategic/FGame.cpp` no longer constructs or deletes day/tenday `wxImage` members in the constructor or destructor.
+- `src/strategic/FGame.cpp::drawTurnCounter()` now loads the day and tenday images through `WXIconCache::instance().get(gc.getBasePath()+"icons/...")`.
+- Regression coverage was added to verify the header boundary and icon-cache usage.
+
+Files changed since `gui_sep` that are in verification scope:
+- Implementation:
+  - `include/strategic/FGame.h`
+  - `src/strategic/FGame.cpp`
+- Tests:
+  - `tests/strategic/FGameHeaderDependencyTest.h`
+  - `tests/strategic/FGameHeaderDependencyTest.cpp`
+  - `tests/strategic/Makefile`
+  - `tests/SSWTests.cpp`
+  - `tests/Makefile`
+- Documentation source files:
+  - None changed by the Documenter. Verification must include confirming that no documentation source update was required.
+- Documenter artifacts:
+  - `artifacts/gui_sep/milestone1-warning-fixes/T2/documenter_report.md`
+  - `artifacts/gui_sep/milestone1-warning-fixes/T2/documenter_result.json`
+  - `artifacts/gui_sep/milestone1-warning-fixes/T2/verifier_prompt.txt`
+
+Documentation review findings to verify:
+- The Doxygen file header in `include/strategic/FGame.h` does not mention wx header includes or `wxImage` member ownership, so it did not need a documentation edit.
+- No `WARP.md` file exists in this repository, so there was no WARP documentation to update.
+- Existing documentation reviewed for conflicts:
+  - `AGENTS.md`
+  - `doc/DesignNotes.md`
+  - `doc/UsersGuide.md`
+- `AGENTS.md` already states that icon assets should be resolved in GUI render paths through `WXIconCache`; this remains accurate after T2.
+
+Acceptance criteria:
+1. `include/strategic/FGame.h` contains no `#include <wx/wx.h>` or other `#include <wx/...>`.
+2. `include/strategic/FGame.h` can be included by a translation unit that does not include wxWidgets.
+3. `wxWindow*` remains in `FGame::create()` and `FGame::init()` while being satisfied only by forward declarations in the header.
+4. `m_tenday` and `m_day` are absent from `include/strategic/FGame.h`.
+5. `drawTurnCounter()` loads tenday/day images via `WXIconCache::instance().get(...)`.
+6. Full test suite passes with no regressions.
+7. Repo-root `make` links both executables successfully.
+8. The documenter decision is correct: no repository documentation source files needed updating for this implemented change.
+
+Suggested commands to run:
+- `git --no-pager diff gui_sep..HEAD -- include/strategic/FGame.h`
+- `git --no-pager diff gui_sep..HEAD -- include/strategic/FGame.h src/strategic/FGame.cpp tests/strategic/FGameHeaderDependencyTest.h tests/strategic/FGameHeaderDependencyTest.cpp tests/strategic/Makefile tests/SSWTests.cpp tests/Makefile`
+- `cd tests/strategic && make`
+- `printf '#include "strategic/FGame.h"\nint main(){return 0;}\n' | g++ -Iinclude -x c++ -c -o /dev/null -`
+- `cd tests && make && ./SSWTests`
+- `make`
+- `find . -maxdepth 2 -name 'WARP.md' -o -name 'warp.md'`
+
+Tester evidence already available in artifacts:
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/tester_report.md`
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/tester_result.json`
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/documenter_prompt.txt`
+
+Documenter artifacts produced:
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/documenter_report.md`
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/documenter_result.json`
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/verifier_prompt.txt`
+
+Please verify both the implementation/test changes and the documenter determination that no documentation source file changes were necessary.

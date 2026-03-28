@@ -20,6 +20,7 @@
 #include "gui/WXGameDisplay.h"
 #include "gui/WXMapDisplay.h"
 #include "gui/WXPlayerDisplay.h"
+#include "gui/WXIconCache.h"
 #include <wx/wx.h>
 #include <wx/numdlg.h>
 #include <iostream>
@@ -39,7 +40,6 @@ FGame & FGame::create(wxWindow * win){
 }
 
 FGame::FGame(wxWindow * win){
-	FGameConfig &gc = FGameConfig::create();
 	m_parent = win;
 	m_universe = NULL;
 	m_round = 0;
@@ -49,8 +49,6 @@ FGame::FGame(wxWindow * win){
 		m_gui=true;
 	}
 	m_currentPlayer = -1;
-	m_tenday = new wxImage(gc.getBasePath()+"icons/tenday.png");
-	m_day = new wxImage(gc.getBasePath()+"icons/day.png");
 	srand(time(NULL));  // intialize random number generator
 	m_lostHC = 0;
 	m_lostAC = 0;
@@ -72,8 +70,6 @@ FGame::~FGame(){
 			delete m_players[i];
 		}
 	}
-	delete m_day;
-	delete m_tenday;
 	m_game = 0;
 }
 
@@ -944,10 +940,12 @@ void FGame::drawTurnCounter(){
 	int row,col;
 	row = tenday/5;
 	col = tenday%5;
-	dc.DrawBitmap(wxBitmap(m_tenday->Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.1*s),(wxCoord)(row*s+0.1*s));
+	const wxImage &tendayImage = WXIconCache::instance().get("icons/tenday.png");
+	dc.DrawBitmap(wxBitmap(tendayImage.Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.1*s),(wxCoord)(row*s+0.1*s));
 	row = day/5;
 	col = day%5;
-	dc.DrawBitmap(wxBitmap(m_day->Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.2*s),(wxCoord)(row*s+0.2*s));
+	const wxImage &dayImage = WXIconCache::instance().get("icons/day.png");
+	dc.DrawBitmap(wxBitmap(dayImage.Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.2*s),(wxCoord)(row*s+0.2*s));
 
 	// draw the end turn button
 	dc.SetFont(wxFont((int)(s/3.),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));

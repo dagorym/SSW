@@ -1,0 +1,59 @@
+You are the Documenter Agent.
+
+Task context:
+- Task/Subtask: T2 (milestone1-warning-fixes)
+- Worktree: /home/tstephen/repos/SSW-T2-test
+- Branch: warning-fixes-T2-test
+- Shared artifact directory to reuse (repo-root-relative): artifacts/gui_sep/milestone1-warning-fixes/T2
+
+Original implementation summary from handoff:
+- Forward-declared `wxWindow` in strategic `FGame` header, removed wx include from header.
+- Moved turn counter day/tenday image loading to `WXIconCache` in `FGame.cpp`.
+- Modified implementation files:
+  - `include/strategic/FGame.h`
+  - `src/strategic/FGame.cpp`
+
+Acceptance criteria validated:
+1. `include/strategic/FGame.h` does not contain `#include <wx/wx.h>` or any `#include <wx/...>`.
+2. `include/strategic/FGame.h` compiles when included by a translation unit that does not include wxWidgets.
+3. `wxWindow*` parameter in `FGame::create()` and `FGame::init()` is retained and uses only a forward declaration in the header.
+4. `m_tenday` and `m_day` are no longer declared in `FGame.h`.
+5. `drawTurnCounter()` loads tenday and day images via `WXIconCache::instance().get(...)`.
+6. Full test suite (`cd tests && make && ./SSWTests`) passes with no regressions.
+7. Both executables link successfully (`make` from repo root).
+
+Tester-added test files and harness wiring:
+- Added:
+  - `tests/strategic/FGameHeaderDependencyTest.h`
+  - `tests/strategic/FGameHeaderDependencyTest.cpp`
+- Updated:
+  - `tests/strategic/Makefile` (include new test object)
+  - `tests/SSWTests.cpp` (register new suite)
+  - `tests/Makefile` (dependency include line for new test header)
+
+Commands executed for validation:
+- `cd tests/strategic && make`
+- `printf '#include "strategic/FGame.h"\nint main(){return 0;}\n' | g++ -Iinclude -x c++ -c -o /dev/null -`
+- `cd tests && make && ./SSWTests`
+- `make` (repo root)
+
+Final outcomes:
+- Strategic tests build: pass
+- Header-only include compile without wx flags: pass
+- Full test suite: pass (`OK (173 tests)`)
+- Root build linking executables: pass (`SSW` and `BattleSim`)
+- All acceptance criteria: met
+
+Artifacts written by tester:
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/tester_report.md`
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/tester_result.json`
+- `artifacts/gui_sep/milestone1-warning-fixes/T2/documenter_prompt.txt`
+
+Commit:
+- The tester commit on this branch includes the added tests and artifacts; use `git log -1 --oneline` for exact hash in your documentation update metadata.
+
+Likely documentation impact to cover:
+- Strategic module header dependency boundary change (`FGame.h` no longer directly includes wx headers).
+- Clarify forward-declaration pattern for wx types in headers.
+- Note turn counter icon loading behavior now using `WXIconCache` for day/tenday images.
+- Mention regression coverage additions under strategic tests.

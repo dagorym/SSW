@@ -12,8 +12,11 @@
 #include "core/FPObject.h"
 #include "FPlayer.h"
 #include "FMap.h"
-#include <wx/wx.h>
 #include <vector>
+
+class wxWindow;
+class wxDC;
+class wxMouseEvent;
 
 namespace Frontier
 {
@@ -275,10 +278,6 @@ private:
   unsigned int m_currentPlayer;
   /// pointer to main window
   wxWindow * m_parent;
-  /// icon for tenday marker
-  wxImage * m_tenday;
-  /// icon for day marker
-  wxImage * m_day;
   /// Sathar retreat condition
   int m_satharRetreat;
   /// number of Heavy Curisers the Sathar have lost
