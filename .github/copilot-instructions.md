@@ -152,10 +152,4 @@ Doxygen config: [doc/Doxyfile](../doc/Doxyfile). All classes/methods should have
 - Design documentation: `doc/DesignNotes.odt`
 - User Guide: `doc/UsersGuide.odt`
 
-## Related Documentation
-- [COPILOT.md](../COPILOT.md) - General overview
-- [WARP.md](../WARP.md) - Detailed architecture guide
-- [WXWIDGETS_UPGRADE_CHANGES.md](../WXWIDGETS_UPGRADE_CHANGES.md) - wxWidgets migration notes
-- [VS_PROJECT_CHANGES.md](../VS_PROJECT_CHANGES.md) - Visual Studio configuration
-
 Read ~/repos/agents/AGENTS_LOOKUP.md for your agent definitions.

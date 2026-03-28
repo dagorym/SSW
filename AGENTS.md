@@ -202,12 +202,6 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 - Design documentation: `doc/DesignNotes.odt`
 - User Guide: `doc/UsersGuide.odt`
 
-Related documentation:
-- `COPILOT.md` - General overview
-- `WARP.md` - Detailed architecture guide
-- `WXWIDGETS_UPGRADE_CHANGES.md` - wxWidgets migration notes
-- `VS_PROJECT_CHANGES.md` - Visual Studio configuration
-
 ## Agent and Skill Profiles
 
 You *must* read ~/repos/agents/AGENTS_LOOKUP.md before proceeding.
