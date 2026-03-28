@@ -54,9 +54,9 @@ void FFleetTest::testBasicSetters(){
 	m_f1->setDestination(12);
 	CPPUNIT_ASSERT( m_f1->getDestination() == 12 );
 	m_f1->setIcon("icons/UPF.png");
-	CPPUNIT_ASSERT( !m_f1->getIconName().empty() );
+	CPPUNIT_ASSERT_EQUAL(std::string("icons/UPF.png"), m_f1->getIconName());
 	m_f1->setIcon("icons/Sathar.png");
-	CPPUNIT_ASSERT( !m_f1->getIconName().empty() );
+	CPPUNIT_ASSERT_EQUAL(std::string("icons/Sathar.png"), m_f1->getIconName());
 	m_f1->setMilitia(true,"Prenglar");
 	CPPUNIT_ASSERT( m_f1->isMilitia() == true );
 	CPPUNIT_ASSERT( m_f1->getHomeSystem() == "Prenglar" );

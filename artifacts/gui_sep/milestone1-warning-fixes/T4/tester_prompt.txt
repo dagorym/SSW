@@ -1,0 +1,32 @@
+You are the Tester Agent.
+
+Task summary:
+- Strengthened four icon assertions to validate exact stored icon filenames in FVehicle and FFleet tests.
+
+Modified files:
+- tests/ships/FVehicleTest.cpp
+- tests/strategic/FFleetTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- All four `!empty()` assertions are replaced with exact-string `CPPUNIT_ASSERT_EQUAL` checks.
+- Tests still pass (confirms `setIcon` stores the filename verbatim without modification).
+- No other test logic is changed.
+- Full test suite (`cd tests && make && ./SSWTests`) passes with no regressions.
+
+Create test files in:
+- tests/ships/
+- tests/strategic/
+
+Implementation context for testing:
+- `FVehicleTest::testSetters` now asserts `getIconName()` equals `icons/UPFDestroyer.png` after `setIcon`.
+- `FVehicleTest::testSerialize` now asserts `getIconName()` equals `icons/UPFFrigate.png` after `setIcon`.
+- `FFleetTest::testBasicSetters` now asserts exact icon names for `icons/UPF.png` and `icons/Sathar.png`.
+- No production code changed; only assertion strictness was increased.
+
+Suggested test command(s):
+- cd tests/ships && make
+- cd tests/strategic && make
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone1-warning-fixes/T4

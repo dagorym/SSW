@@ -1,0 +1,52 @@
+You are the Documenter Agent.
+
+Please document the completed T4 warning-fixes validation outcome for this repository state.
+
+Context:
+- Task/Subtask: T4
+- Worktree: /home/tstephen/repos/SSW-T4-test
+- Branch: warning-fixes-T4-test
+- Shared artifact directory (repo-relative, reuse this exact path): artifacts/gui_sep/milestone1-warning-fixes/T4
+
+Original task summary:
+- Strengthen four icon assertions so they validate exact stored icon filenames in FVehicle and FFleet tests.
+
+Acceptance criteria validated:
+1. All four !empty() assertions are replaced with exact-string CPPUNIT_ASSERT_EQUAL checks.
+2. Tests pass, confirming setIcon stores filenames verbatim.
+3. No other test logic is changed.
+4. Full test suite (cd tests && make && ./SSWTests) passes with no regressions.
+
+Implementation/test files under validation:
+- tests/ships/FVehicleTest.cpp
+  - testSetters now asserts getIconName() == "icons/UPFDestroyer.png"
+  - testSerialize now asserts getIconName() == "icons/UPFFrigate.png"
+- tests/strategic/FFleetTest.cpp
+  - testBasicSetters now asserts getIconName() == "icons/UPF.png"
+  - testBasicSetters now asserts getIconName() == "icons/Sathar.png"
+
+Commands executed by tester:
+- cd /home/tstephen/repos/SSW-T4-test && make
+- cd /home/tstephen/repos/SSW-T4-test/tests/ships && make && ./ShipsTests
+- cd /home/tstephen/repos/SSW-T4-test/tests/strategic && make && ./StrategicTests
+- cd /home/tstephen/repos/SSW-T4-test/tests && make && ./SSWTests
+
+Important command-context note:
+- The repository’s current test Makefiles do not emit standalone ships/strategic binaries named ShipsTests or StrategicTests.
+- Directory-level make in tests/ships and tests/strategic builds libshipsTests.a and libstrategicTests.a archives.
+- Executable regression validation is performed via tests/SSWTests.
+
+Final test outcome:
+- Full suite command passed: OK (169 tests), exit code 0.
+- No regressions observed.
+- Acceptance criteria status: all met.
+
+Tester artifacts produced:
+- artifacts/gui_sep/milestone1-warning-fixes/T4/tester_report.md
+- artifacts/gui_sep/milestone1-warning-fixes/T4/tester_result.json
+- artifacts/gui_sep/milestone1-warning-fixes/T4/documenter_prompt.txt
+
+Latest known branch commit before tester artifact commit:
+- 42fe548 (artifacts: add T4 implementer handoff outputs)
+
+Please generate concise release/documentation updates describing that icon-name assertions were tightened to exact-value checks in the two test suites and that the full regression suite passed.
