@@ -8,6 +8,7 @@
 #include "Frontier.h"
 #include "core/FHexMap.h"
 #include <algorithm>
+#include <cmath>
 
 namespace Frontier {
 
