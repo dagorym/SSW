@@ -126,6 +126,7 @@ The build system supports gcov coverage analysis; enable it with `make COVERAGE=
 
 - Keep module boundaries intact; new features should go in the appropriate module directory.
 - Prefer existing core and strategic abstractions before introducing new ones, especially `FObject`, `FGame`, `FMap`, `FVehicle`, and `FWeapon`.
+- Keep icon filenames in model objects and resolve ship or fleet `wxImage` assets in GUI render paths through `WXIconCache`, including tactical displays that draw ships.
 - Maintain cross-platform compatibility across Linux Make builds and Visual Studio builds.
 - Update or add tests alongside functional changes.
 
