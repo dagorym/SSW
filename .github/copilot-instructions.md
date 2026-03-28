@@ -17,7 +17,7 @@ Each module builds a static library (`.a` file) before linking executables:
 - **battleSim**: Battle simulator specific UI/logic
 
 ### Key Design Patterns
-- **Singleton**: `FGame` manages the game instance via `FGame::create(wxWindow*)` - never use `new FGame()`
+- **Singleton**: `FGame` manages the game instance via `FGame::create()` or `FGame::create(IStrategicUI*)`; `FGame::create(wxWindow*)` remains only as a compatibility shim - never use `new FGame()`
 - **Single-rooted hierarchy**: All game classes inherit from `FObject` (base) or `FPObject` (persistent objects)
 - **Serialization**: Persistent objects implement pure virtual `save(std::ostream&)` and `load(std::istream&)` 
 - **Component composition**: Ships contain `std::vector<FWeapon*>` and defense components
@@ -142,6 +142,7 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 
 - Keep module boundaries intact; new features should go in the appropriate module directory.
 - Prefer existing core and strategic abstractions before introducing new ones, especially `FObject`, `FGame`, `FMap`, `FVehicle`, and `FWeapon`.
+- Route strategic-layer dialogs, prompts, and notifications from `FGame` through `IStrategicUI`; keep wx dialog implementations in the gui module (for example `WXStrategicUI`) instead of reintroducing direct gui dependencies in strategic code.
 - Keep icon filenames in model objects and resolve ship or fleet `wxImage` assets in GUI render paths through `WXIconCache`, including tactical displays that draw ships.
 - Maintain cross-platform compatibility across Linux Make builds and Visual Studio builds.
 - Update or add tests alongside functional changes.

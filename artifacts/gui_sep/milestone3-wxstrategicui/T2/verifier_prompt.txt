@@ -1,0 +1,55 @@
+You are the Verifier Agent.
+
+Original task summary:
+- Subtask T2 validated: refactor `FGame` strategic UI usage through `IStrategicUI`.
+- Implementation under review commit: `af55490c01594943c20540cccc687364b0cb7ba2` on branch `gui_sep-t2-implementer-20260328`.
+- Tester context: `/home/tstephen/worktrees/SSW/gui_sep-t2-tester-20260328`, branch `gui_sep-t2-tester-20260328`, tester commit `8bd1ef85dd9984f861673de390606e9db34f8105`.
+- Documenter context: `/home/tstephen/worktrees/SSW/gui_sep-t2-documenter-20260328`, branch `gui_sep-t2-documenter-20260328`.
+
+Acceptance criteria validated as met:
+1. `FGame` stores `IStrategicUI*` for strategic UI interactions.
+2. Direct strategic dialog/message-box code in `FGame` was replaced with interface calls.
+3. `m_parent` was removed from `FGame`.
+4. Existing no-argument `FGame::create()` call sites remain usable.
+5. No gameplay logic regressions were observed.
+6. `FGame.cpp` no longer includes `SystemDialogGUI.h`, `UPFUnattachedGUI.h`, `SatharFleetsGUI.h`, `ViewFleetGUI.h`, `SatharRetreatGUI.h`, or `SelectCombatGUI.h`.
+7. Strategic dialog/notification behavior in `FGame` is routed through `IStrategicUI`.
+
+Implementation files changed:
+- `include/strategic/FGame.h`
+- `src/strategic/FGame.cpp`
+
+Tester-authored test files changed:
+- `tests/strategic/FGameHeaderDependencyTest.h`
+- `tests/strategic/FGameHeaderDependencyTest.cpp`
+
+Documenter-authored documentation files changed:
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+
+Commands executed during validation:
+- `cd src/strategic && make`
+- `cd src/gui && make`
+- `cd tests/strategic && make`
+- `cd tests && make && ./SSWTests`
+
+Final test outcome:
+- `SSWTests`: **OK (180 tests)**
+- Run: 180, Failures: 0, Errors: 0
+
+Documentation review outcome:
+- Repository guidance was updated because `AGENTS.md` and `.github/copilot-instructions.md` still described the old `FGame::create(wxWindow*)` entry point and did not reflect the new `IStrategicUI` boundary.
+- Both files now document `FGame::create()` / `FGame::create(IStrategicUI*)`, note `create(wxWindow*)` as a compatibility shim, and direct future strategic UI work through `IStrategicUI` with gui adapters such as `WXStrategicUI`.
+
+Shared artifact directory to reuse exactly:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2`
+
+Artifacts present in that directory:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/tester_report.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/tester_result.json`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/documenter_prompt.txt`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/documenter_report.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/documenter_result.json`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T2/verifier_prompt.txt`
+
+Verification must include the updated documentation files along with the implementation and tests.

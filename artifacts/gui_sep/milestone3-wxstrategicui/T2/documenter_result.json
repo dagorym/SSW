@@ -1,0 +1,24 @@
+{
+  "status": "success",
+  "task_id": "T2",
+  "subtask": "Refactor FGame strategic UI usage through IStrategicUI",
+  "branch": "gui_sep-t2-documenter-20260328",
+  "base_branch": "gui_sep",
+  "plan_document": "plans/milestone3-wxstrategicui-plan.md",
+  "implementation_branch": "gui_sep-t2-implementer-20260328",
+  "implementation_commit": "af55490c01594943c20540cccc687364b0cb7ba2",
+  "tester_branch": "gui_sep-t2-tester-20260328",
+  "tester_commit": "8bd1ef85dd9984f861673de390606e9db34f8105",
+  "commit_hash": null,
+  "documentation_files_added_or_modified": [
+    "AGENTS.md",
+    ".github/copilot-instructions.md"
+  ],
+  "artifact_files_written": [
+    "artifacts/gui_sep/milestone3-wxstrategicui/T2/documenter_report.md",
+    "artifacts/gui_sep/milestone3-wxstrategicui/T2/documenter_result.json",
+    "artifacts/gui_sep/milestone3-wxstrategicui/T2/verifier_prompt.txt"
+  ],
+  "summary": "Updated repository guidance files to reflect FGame's IStrategicUI-based strategic UI boundary and current create() overload set.",
+  "documentation_decision": "repository_guidance_updated"
+}
