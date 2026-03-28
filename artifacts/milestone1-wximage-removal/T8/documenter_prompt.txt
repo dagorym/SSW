@@ -1,0 +1,44 @@
+You are the Documenter Agent.
+
+Task context:
+- Milestone: wxImage removal
+- Subtask: T8 — Tests updated to remove getIcon() references
+- Worktree/branch validated: gui_sep-t8-implementer-20260328
+- Shared artifact directory (repo-relative): artifacts/milestone1-wximage-removal/T8
+
+What was verified by tester (static inspection):
+1) No `getIcon()` calls remain in `tests/` (excluding `getIconName`) — PASS
+2) No bare `m_icon` assignments (not `m_iconName`) remain in `tests/` — PASS
+3) Replacements use `getIconName().empty()` or `!getIconName().empty()` semantics — PASS
+4) `tests/strategic/FFleetTest.cpp` includes the missed update and now uses icon-name empty/non-empty checks — PASS
+5) `src/core/FHexMap.cpp` includes `<cmath>` — PASS
+
+Key files relevant to documentation impact:
+- tests/ships/FArmedStationTest.cpp
+- tests/ships/FAssaultCarrierTest.cpp
+- tests/ships/FAssaultScoutTest.cpp
+- tests/ships/FBattleshipTest.cpp
+- tests/ships/FDestroyerTest.cpp
+- tests/ships/FFighterTest.cpp
+- tests/ships/FFortifiedStationTest.cpp
+- tests/ships/FFortressTest.cpp
+- tests/ships/FFrigateTest.cpp
+- tests/ships/FHvCruiserTest.cpp
+- tests/ships/FLtCruiserTest.cpp
+- tests/ships/FMinelayerTest.cpp
+- tests/ships/FVehicleTest.cpp
+- tests/ships/FTacticalAttackIntegrationTest.cpp
+- tests/strategic/FFleetTest.cpp
+- src/core/FHexMap.cpp
+
+Testing outcome context:
+- This tester task was constrained to static inspection only (no runtime execution in this pass).
+- Implementer artifact reports 169/169 tests passing.
+
+Tester artifacts written:
+- artifacts/milestone1-wximage-removal/T8/tester_report.md
+- artifacts/milestone1-wximage-removal/T8/tester_result.json
+- artifacts/milestone1-wximage-removal/T8/documenter_prompt.txt
+
+Commit context for documenter:
+- Tester artifact commit will include only tester output artifacts.

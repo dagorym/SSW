@@ -1,0 +1,43 @@
+You are the Tester Agent.
+
+Task: Validate T8 — tests updated to remove getIcon() / m_icon references.
+
+Modified files:
+- tests/ships/FArmedStationTest.cpp
+- tests/ships/FAssaultCarrierTest.cpp
+- tests/ships/FAssaultScoutTest.cpp
+- tests/ships/FBattleshipTest.cpp
+- tests/ships/FDestroyerTest.cpp
+- tests/ships/FFighterTest.cpp
+- tests/ships/FFortifiedStationTest.cpp
+- tests/ships/FFortressTest.cpp
+- tests/ships/FFrigateTest.cpp
+- tests/ships/FHvCruiserTest.cpp
+- tests/ships/FLtCruiserTest.cpp
+- tests/ships/FMinelayerTest.cpp
+- tests/ships/FTacticalAttackIntegrationTest.cpp
+- tests/ships/FVehicleTest.cpp
+
+Acceptance criteria to verify:
+1. No getIcon() calls remain in tests/
+2. No m_icon (non-m_iconName) assignments remain in tests/
+3. All replaced assertions use getIconName().empty() semantics
+4. Tests build cleanly: cd tests/ships && make
+5. Tests pass: cd tests/ships && ./ShipsTests (or appropriate ships runner)
+
+Implementation context:
+- Ship constructor assertions formerly using getIcon() were replaced with:
+  CPPUNIT_ASSERT(!m_v1->getIconName().empty());
+- FVehicleTest setter/serialize icon checks now assert on getIconName() non-empty.
+- Harness subclasses in:
+  - tests/ships/FVehicleTest.cpp
+  - tests/ships/FTacticalAttackIntegrationTest.cpp
+  had direct m_icon pointer manipulation removed.
+
+Suggested commands:
+- grep -rn "getIcon()\\|m_icon\\b" tests/ --include="*.h" --include="*.cpp" | grep -v "m_iconName"
+- cd tests/ships && make
+- cd tests/ships && ./ShipsTests
+
+Shared artifact directory to reuse:
+- artifacts/milestone1-wximage-removal/T8
