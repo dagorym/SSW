@@ -1,0 +1,37 @@
+You are the Tester Agent.
+
+Task summary:
+- Canonicalized strategic pointer-list aliases so `FleetList` and `PlayerList` are owned only by `include/strategic/StrategicTypes.h`, and removed duplicate typedef declarations from strategic headers.
+
+Modified files:
+- include/strategic/FFleet.h
+- include/strategic/FPlayer.h
+- include/strategic/FSystem.h
+- include/strategic/FGame.h
+
+Acceptance criteria to validate (from Planner):
+- `FleetList` and `PlayerList` are defined in one canonical location.
+- The affected strategic headers include the new shared header as needed.
+- Existing class APIs and behavior remain unchanged.
+- No duplicate typedef definitions remain.
+
+Create test files in:
+- tests/strategic/
+
+Implementation context for testing:
+- `FFleet.h` now includes `StrategicTypes.h` and no longer defines `FleetList`.
+- `FPlayer.h` now includes `StrategicTypes.h` and no longer defines `PlayerList`.
+- `FSystem.h` and `FGame.h` now include `StrategicTypes.h` directly where `FleetList`/`PlayerList` are referenced.
+- No method signatures or runtime logic were changed; this is header alias ownership cleanup only.
+
+Suggested test command(s):
+- rg -n "FleetList|PlayerList" include/strategic/FFleet.h include/strategic/FPlayer.h include/strategic/FSystem.h include/strategic/FGame.h include/strategic/StrategicTypes.h
+- sed -n '1,220p' include/strategic/FFleet.h
+- sed -n '1,340p' include/strategic/FPlayer.h
+- sed -n '1,260p' include/strategic/FSystem.h
+- sed -n '1,320p' include/strategic/FGame.h
+- cd src/strategic && make
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone2-istrategicui/T3
