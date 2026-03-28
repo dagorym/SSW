@@ -1,0 +1,69 @@
+You are the Verifier Agent.
+
+Task summary:
+- Canonicalized strategic pointer-list aliases so `FleetList` and `PlayerList` are owned only by `include/strategic/StrategicTypes.h`, and removed duplicate typedef declarations from strategic headers.
+- Documenter review confirmed this is header alias cleanup only, so no `doc/` changes were warranted for T3.
+
+Acceptance criteria to verify:
+- `FleetList` and `PlayerList` are defined in one canonical location.
+- `include/strategic/FFleet.h`, `include/strategic/FPlayer.h`, `include/strategic/FSystem.h`, and `include/strategic/FGame.h` include the shared strategic header as needed.
+- Existing class APIs and behavior remain unchanged.
+- No duplicate typedef definitions remain.
+- Documentation verification must confirm that leaving `doc/` untouched is correct for this internal, behavior-preserving cleanup.
+
+Implementation branch/worktree context:
+- Base branch: `gui_sep`
+- Implementer branch context: `milestone2-istrategicui-t3-documenter-20260328` contains the tester-validated implementation from `milestone2-istrategicui-t3-tester-20260328`
+- Current worktree: `/tmp/ssw-worktrees/milestone2-istrategicui-t3-documenter-20260328`
+
+Implementation files in scope:
+- `include/strategic/StrategicTypes.h`
+- `include/strategic/FFleet.h`
+- `include/strategic/FPlayer.h`
+- `include/strategic/FSystem.h`
+- `include/strategic/FGame.h`
+
+Test files added or modified:
+- None
+
+Documentation files added or modified:
+- None under `doc/`
+- Artifact files added:
+  - `artifacts/gui_sep/milestone2-istrategicui/T3/documenter_report.md`
+  - `artifacts/gui_sep/milestone2-istrategicui/T3/documenter_result.json`
+  - `artifacts/gui_sep/milestone2-istrategicui/T3/verifier_prompt.txt`
+
+Commands executed across implementation, testing, and documentation review:
+- `rg -n "FleetList|PlayerList" include/strategic/FFleet.h include/strategic/FPlayer.h include/strategic/FSystem.h include/strategic/FGame.h include/strategic/StrategicTypes.h`
+- `sed -n '1,220p' include/strategic/FFleet.h`
+- `sed -n '1,340p' include/strategic/FPlayer.h`
+- `sed -n '1,260p' include/strategic/FSystem.h`
+- `sed -n '1,320p' include/strategic/FGame.h`
+- `sed -n '1,220p' include/strategic/StrategicTypes.h`
+- `rg -n "typedef\\s+std::vector<\\s*FFleet\\s*\\*>\\s*FleetList|typedef\\s+std::vector<\\s*FPlayer\\s*\\*>\\s*PlayerList|using\\s+FleetList|using\\s+PlayerList" include src tests`
+- `cd src/strategic && make`
+- `cd tests && make && ./SSWTests`
+- `cd /tmp/ssw-worktrees/milestone2-istrategicui-t3-tester-20260328 && make`
+- `cd tests && make && ./SSWTests`
+- `git diff --stat gui_sep...HEAD`
+- `git diff --unified=40 gui_sep...HEAD -- include/strategic/StrategicTypes.h include/strategic/FFleet.h include/strategic/FPlayer.h include/strategic/FSystem.h include/strategic/FGame.h`
+- `rg -n "FleetList|PlayerList|StrategicTypes|IStrategicUI|strategic UI|typedef" doc include/strategic src/strategic artifacts/gui_sep/milestone2-istrategicui/planning-context.md plans/ui-model-separation-design.md`
+- `rg -n "strategic|FleetList|PlayerList|IStrategicUI|typedef|header|wxWidgets|UI" doc/DesignNotes.md doc/UsersGuide.md`
+
+Final test outcomes:
+- Tester validated all acceptance criteria.
+- Full test suite result: `OK (175 tests)`.
+- No new tests were added because this subtask is header alias ownership cleanup only.
+
+Documentation review outcome:
+- No `doc/` updates were made.
+- Reason: the implemented change only centralizes alias ownership and include dependencies; it does not alter end-user behavior, public workflows, or documented architecture beyond the Doxygen comments already present in `include/strategic/StrategicTypes.h`.
+
+Shared artifact directory to reuse:
+- `artifacts/gui_sep/milestone2-istrategicui/T3`
+
+Verification requirements:
+- Verify the implementation and tester evidence against the acceptance criteria.
+- Verify that no duplicate `FleetList`/`PlayerList` typedefs remain outside `include/strategic/StrategicTypes.h`.
+- Verify that the decision to leave `doc/` untouched is appropriate for this internal cleanup.
+- Include the updated documenter artifact files in review scope along with the implementation and tester artifacts.
