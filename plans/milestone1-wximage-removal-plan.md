@@ -103,6 +103,19 @@ prompt are noted explicitly.
 
 ---
 
+## Overall Documentation Impact
+
+- Review architecture and developer-facing docs that describe module boundaries, because
+  this milestone moves icon ownership fully into the `gui` module and removes wxWidgets
+  image state from `ships` and `strategic`.
+- Review any documentation that describes icon loading or model object responsibilities,
+  especially if it currently implies `FVehicle`, `FFleet`, or `FPlayer` own live
+  `wxImage` instances.
+- No user guide update is expected unless a manual smoke test reveals user-visible icon
+  behavior changes or new operational constraints for image lookup paths.
+
+---
+
 ## Subtasks
 
 ### T1 — Add `getIconName()` public accessors to FVehicle and FFleet
@@ -121,6 +134,11 @@ prompt are noted explicitly.
 - `FFleet::getIconName()` is declared public and returns `m_iconFile` by const reference.
 - No other files are changed in this subtask.
 - The codebase compiles without errors or new warnings after this change.
+
+**Documentation impact:**
+- No documentation update expected from this subtask alone.
+- This accessor exists to support the GUI-side icon cache migration and may be mentioned
+  later in architecture documentation if the final implementation lands as planned.
 
 ---
 
@@ -152,6 +170,11 @@ prompt are noted explicitly.
 - `setIcon(std::string)` stores only `m_iconName`; it does not touch any image object.
 - The `ships` module builds cleanly (run `make` in `src/ships/`).
 
+**Documentation impact:**
+- Architecture/developer docs may need an update if they describe `FVehicle` as owning or
+  loading icon image data directly.
+- No end-user documentation update is expected from this subtask alone.
+
 ---
 
 ### T3 — Remove wxImage from FFleet
@@ -176,6 +199,11 @@ prompt are noted explicitly.
 - `FFleet.cpp` performs no `wxImage` allocation or loading.
 - `setIcon(std::string)` stores only `m_iconFile`; it does not touch any image object.
 - The `strategic` module builds cleanly (run `make` in `src/strategic/`).
+
+**Documentation impact:**
+- Architecture/developer docs may need an update if they describe `FFleet` as storing
+  or loading display image state.
+- No end-user documentation update is expected from this subtask alone.
 
 ---
 
@@ -202,6 +230,11 @@ independently and will compile once T2 is done)
 - `FPlayer.cpp` performs no `wxImage` allocation or loading.
 - `setFleetIcon(std::string)` stores only `m_iconName`.
 - The `strategic` module builds cleanly (run `make` in `src/strategic/`).
+
+**Documentation impact:**
+- Review developer-facing docs for any statement that `FPlayer` owns a fleet icon image
+  object rather than an icon name/path.
+- No standalone documentation edit is expected unless final docs already cover this class.
 
 ---
 
@@ -240,6 +273,11 @@ independently and will compile once T2 is done)
 - No file outside the `gui` or `tactical` display headers introduces a new wx include
   as a side-effect of this change.
 
+**Documentation impact:**
+- Architecture/developer docs may need to note that GUI-specific shared types now live
+  under `include/gui/` instead of `Frontier.h`.
+- No user-facing documentation update is expected.
+
 ---
 
 ### T6 — Create `WXIconCache` singleton
@@ -268,6 +306,12 @@ independently and will compile once T2 is done)
 - A second call for the same filename returns the same cached object (no second disk read).
 - An invalid path returns a valid (possibly empty) wxImage rather than a null pointer or crash.
 - The gui module builds cleanly after adding the new source file.
+
+**Documentation impact:**
+- Likely architecture documentation update: `WXIconCache` becomes the single GUI-side
+  icon-loading owner for ship and fleet imagery.
+- If any developer docs describe icon loading flow, they should be updated after this
+  subtask is implemented and tested.
 
 ---
 
@@ -316,6 +360,11 @@ independently and will compile once T2 is done)
 - At runtime, the strategic map and tactical battle board display ship/fleet icons
   correctly (manual smoke test).
 
+**Documentation impact:**
+- If architecture docs describe display call sites fetching icons from model objects,
+  update them to reference GUI-side cache lookup by icon name instead.
+- No user guide update is expected unless visible icon rendering behavior changes.
+
 ---
 
 ### T8 — Update tests that reference `getIcon()` or protected `m_icon`
@@ -345,6 +394,9 @@ independently and will compile once T2 is done)
 - All replaced assertions test a meaningful model property (icon name is set and correct).
 - The `tests/ships/` module builds cleanly (`make` in `tests/ships/` or `tests/`).
 
+**Documentation impact:**
+- No documentation update expected; this subtask is test-only.
+
 ---
 
 ### T9 — Build and run tests to confirm no regressions
@@ -365,6 +417,11 @@ independently and will compile once T2 is done)
 - The ships module, strategic module, and gui module each show no wx-related includes
   outside the gui module (verified with `grep -r "wx/wx.h" include/ships include/strategic`
   returning empty).
+
+**Documentation impact:**
+- Final documentation review should use the actual merged implementation and test results
+  to decide whether architecture docs need updates.
+- This subtask supplies the evidence the downstream Documenter agent should rely on.
 
 ---
 
@@ -391,6 +448,54 @@ T9 (build + test) ← depends on all of T2–T8
 - T6 can begin as soon as T5 is done, independent of T2–T4.
 - T7 requires T1 + T2 + T3 + T6 before it will compile cleanly.
 - T8 can be worked alongside T2 (same author, same PR is fine).
+
+---
+
+## Agent Workflow And Handoffs
+
+Each implementation subtask should now move through the full downstream workflow rather
+than stopping at test validation.
+
+1. `Planner`
+   - Produces this plan, acceptance criteria, dependency ordering, and per-subtask
+     Implementer prompts.
+   - Identifies overall and per-subtask `Documentation Impact` so downstream
+     documentation work starts with good discovery hints.
+
+2. `Implementer`
+   - Executes one subtask at a time within the allowed file scope for that prompt.
+   - Hands the completed implementation branch/worktree to the Tester agent.
+
+3. `Tester`
+   - Validates the implementation against the subtask acceptance criteria without
+     modifying implementation code.
+   - Writes testing artifacts in the shared task artifact directory.
+   - On success, writes `documenter_prompt.txt` for the Documenter agent.
+
+4. `Documenter`
+   - Works from the Tester-derived branch/worktree after tests pass.
+   - Uses this plan's `Documentation Impact` sections only as hints, then verifies the
+     real implementation and test diff before changing docs.
+   - Updates documentation only when the implemented change materially affects existing
+     developer or architecture docs.
+   - Writes `documenter_report.md`, `documenter_result.json`, and `verifier_prompt.txt`
+     in the shared artifact directory, then hands off to Verifier.
+
+5. `Verifier`
+   - Reviews the combined Implementer, Tester, and Documenter outputs against the plan.
+   - Verification scope now explicitly includes documentation changes when any were made.
+
+6. `Reviewer`
+   - Performs final feature-level review across plan, implementation, tests,
+     documentation, and verifier outputs if the broader workflow calls for it.
+
+**Shared artifact expectation:**
+- Each subtask should reuse one repository-root-relative artifact directory so tester,
+  documenter, and verifier outputs stay grouped together.
+- The expected handoff chain is:
+  `implementer -> tester -> documenter -> verifier`
+- The tester no longer hands directly to the verifier when testing succeeds; successful
+  subtasks pass through the Documenter stage first.
 
 ---
 
