@@ -9,12 +9,11 @@
 #ifndef _FRONTIER_H_
 #define _FRONTIER_H_
 
-#include "wxWidgets.h"
 #include <string>
 #include <cstdlib>
 #include <vector>
 
-typedef std::vector<wxImage> ImageList;
+// ImageList is now defined in include/gui/GuiTypes.h
 
 enum {
 	BS_Unknown = 0,
