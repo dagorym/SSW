@@ -1,0 +1,38 @@
+You are the Documenter Agent.
+
+Task summary:
+Validate milestone2-istrategicui T4 as a verification-only subtask. No implementation code changes were introduced; this subtask re-ran compile and boundary checks and confirmed milestone handoff integrity.
+
+Acceptance criteria validated:
+1. The strategic module compiles successfully after the header updates.
+2. Any compile/include-cycle issue discovered is fixed in allowed scope or recorded as a Milestone 3 follow-up.
+3. `src/strategic/FGame.cpp` behavior remains unchanged at the end of this milestone.
+4. Verification notes are written under `artifacts/gui_sep/milestone2-istrategicui/T4`.
+
+Implementation/worktree context:
+- Tester worktree: `/tmp/ssw-worktrees/milestone2-istrategicui-t4-tester-20260328`
+- Tester branch: `milestone2-istrategicui-t4-tester-20260328`
+- Implementer branch context: `milestone2-istrategicui-t4-implementer-20260328`
+- Implementer code commit hash: `90df336899820aed6632d4c8a99522aaed2e5eb9`
+- Shared artifact directory (repo-root-relative): `artifacts/gui_sep/milestone2-istrategicui/T4`
+
+Files added/modified by tester:
+- `artifacts/gui_sep/milestone2-istrategicui/T4/tester_report.md`
+- `artifacts/gui_sep/milestone2-istrategicui/T4/tester_result.json`
+- `artifacts/gui_sep/milestone2-istrategicui/T4/documenter_prompt.txt`
+
+Commands executed and outcomes:
+1. `cd /tmp/ssw-worktrees/milestone2-istrategicui-t4-tester-20260328/src/strategic && make` -> pass
+2. `cd /tmp/ssw-worktrees/milestone2-istrategicui-t4-tester-20260328/tests/strategic && make` -> pass
+3. `cd /tmp/ssw-worktrees/milestone2-istrategicui-t4-tester-20260328 && git diff -- src/strategic/FGame.cpp` -> no diff
+4. `cat artifacts/gui_sep/milestone2-istrategicui/T4/milestone3_followups.md` -> present; records no new Milestone 3 include-cycle follow-up and documents existing out-of-scope `FJumpRoute.cpp` warning.
+
+Final validation outcome:
+- Attempt: 1/3
+- Tests written: 0 (no new tests expected for this validation-only subtask)
+- Checks passed: 4
+- Checks failed: 0
+- Unmet acceptance criteria: none
+
+Commit information:
+- Tester artifact commit hash: generated after this prompt is written; use branch HEAD for documentation traceability.
