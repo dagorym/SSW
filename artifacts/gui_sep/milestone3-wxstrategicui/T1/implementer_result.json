@@ -1,14 +1,32 @@
 {
   "status": "success",
-  "subtask_id": "T1",
-  "branch": "gui_sep-t1-implementer-20260328",
-  "implementation_commit": "6160ac7",
+  "subtask": "T1 remediation",
+  "branch": "gui_sep-t1-remed-implementer-20260328",
+  "implementation_commit": "28a3698c2fcf7c7440e97cb087b9458be82fc1a7",
   "changed_files": [
-    "include/gui/WXStrategicUI.h",
     "src/gui/WXStrategicUI.cpp"
   ],
   "validation_commands": [
-    "cd /home/tstephen/worktrees/SSW/gui_sep-t1-implementer-20260328/src/gui && make"
+    {
+      "command": "cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328/src/gui && make",
+      "phase": "baseline",
+      "outcome": "pass"
+    },
+    {
+      "command": "cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328 && g++ -c -Iinclude -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread -Wall -Woverloaded-virtual -DLINUX -fPIC -DPIC -o artifacts/gui_sep/milestone3-wxstrategicui/T1/WXStrategicUI.remed.o src/gui/WXStrategicUI.cpp",
+      "phase": "baseline",
+      "outcome": "pass"
+    },
+    {
+      "command": "cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328/src/gui && make",
+      "phase": "post-change",
+      "outcome": "pass"
+    },
+    {
+      "command": "cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328 && g++ -c -Iinclude -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread -Wall -Woverloaded-virtual -DLINUX -fPIC -DPIC -o artifacts/gui_sep/milestone3-wxstrategicui/T1/WXStrategicUI.remed.o src/gui/WXStrategicUI.cpp",
+      "phase": "post-change",
+      "outcome": "pass"
+    }
   ],
   "validation_outcome": "pass",
   "artifact_paths": [

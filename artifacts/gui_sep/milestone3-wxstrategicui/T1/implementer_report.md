@@ -1,33 +1,35 @@
-Subtask: T1
-Branch: gui_sep-t1-implementer-20260328
-Implementation commit: 6160ac7
+# Implementer Report — T1 remediation
 
-Summary
-- Added concrete `Frontier::WXStrategicUI` implementing `Frontier::IStrategicUI`.
-- Added bridge comments in header/source stating this class bridges strategic logic to wx dialogs.
-- Kept wx/dialog includes in gui layer (`include/gui/WXStrategicUI.h`, `src/gui/WXStrategicUI.cpp`).
-- Implemented wrappers for:
-  - generic message display
-  - failed jump notification
-  - victory notification
-  - retreat-condition selection
-  - UPF unattached setup
-  - Sathar fleet setup
-  - system dialog
-  - fleet dialog
-  - retreat-condition display
-  - combat selection
-  - redraw request
-- Made `requestRedraw()` null-safe.
+## Summary
+Implemented a localized remediation in `WXStrategicUI` to align result-returning methods with `IStrategicUI`'s success/cancel-or-error contract.
 
-Files changed
-- include/gui/WXStrategicUI.h
-- src/gui/WXStrategicUI.cpp
+### Completed remediation
+- Updated failure/invalid-input paths to return non-zero (`1`) instead of success (`0`) when UI cannot be shown or required pointers are missing.
+- Kept `requestRedraw()` unchanged and null-safe.
+- Limited code changes to the approved adapter implementation file.
 
-Validation
-- Command: `cd /home/tstephen/worktrees/SSW/gui_sep-t1-implementer-20260328/src/gui && make`
-- Result: PASS
+## Files changed
+- `src/gui/WXStrategicUI.cpp`
 
-Notes for Tester
-- No new tests were added (per instructions).
-- Validate gui module build and inspect integration surface expectations for strategic/ui boundary.
+## Validation commands run
+1. Baseline build before changes:
+   - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328/src/gui && make`
+   - **Result:** pass
+2. Baseline targeted compile before changes (artifact output redirected to allowed artifact path):
+   - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328 && g++ -c -Iinclude -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread -Wall -Woverloaded-virtual -DLINUX -fPIC -DPIC -o artifacts/gui_sep/milestone3-wxstrategicui/T1/WXStrategicUI.remed.o src/gui/WXStrategicUI.cpp`
+   - **Result:** pass
+3. Post-change build:
+   - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328/src/gui && make`
+   - **Result:** pass
+4. Post-change targeted compile:
+   - `cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328 && g++ -c -Iinclude -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread -Wall -Woverloaded-virtual -DLINUX -fPIC -DPIC -o artifacts/gui_sep/milestone3-wxstrategicui/T1/WXStrategicUI.remed.o src/gui/WXStrategicUI.cpp`
+   - **Result:** pass
+
+## Acceptance criteria check
+- `IStrategicUI` methods in `WXStrategicUI` still compile and preserve behavior: **met**.
+- Success/cancel methods now return non-zero when no UI or required input is missing: **met**.
+- `requestRedraw()` remains null-safe: **met**.
+- Changes localized to T1 adapter files: **met** (single allowed implementation file edited).
+
+## Commits
+- Implementation/code commit: `28a3698c2fcf7c7440e97cb087b9458be82fc1a7`

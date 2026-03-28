@@ -1,34 +1,41 @@
 You are the Tester Agent.
 
-Please validate Implementer subtask T1 in worktree branch `gui_sep-t1-implementer-20260328`.
+Subtask: T1 remediation
+Implementation branch: `gui_sep-t1-remed-implementer-20260328`
+Implementation commit: `28a3698c2fcf7c7440e97cb087b9458be82fc1a7`
+Shared artifact directory (reuse exactly): `artifacts/gui_sep/milestone3-wxstrategicui/T1`
 
-Scope and intent
-- Subtask goal: add concrete `WXStrategicUI` implementation of `Frontier::IStrategicUI` in gui module, bridging strategic game logic to wx dialogs/message boxes.
-- Shared artifact directory to reuse and pass forward: `artifacts/gui_sep/milestone3-wxstrategicui/T1`
-- Approved plan reference: `/home/tstephen/repos/SSW/plans/milestone3-wxstrategicui-plan.md`
+Scope and context:
+- This remediation addresses verifier findings that `WXStrategicUI` returned success (`0`) when no dialog/UI could be shown.
+- Only localized adapter code was changed.
 
-Modified files
-- `include/gui/WXStrategicUI.h`
+Modified files:
 - `src/gui/WXStrategicUI.cpp`
 
-Planner acceptance criteria to verify
-- `WXStrategicUI` fully implements `IStrategicUI`.
-- Implementation wraps current strategic dialogs/notifications used by `FGame`.
-- `requestRedraw()` refreshes parent window safely.
-- No strategic source file needs concrete dialog headers from this subtask.
-- Class/file comments briefly state `WXStrategicUI` is the concrete bridge from strategic logic to wx dialogs.
+Planner/verifier acceptance criteria to validate:
+- Every `IStrategicUI` method in `WXStrategicUI` still compiles and preserves intended behavior.
+- Methods with success/cancel return values now return non-zero when no dialog/UI is available or required inputs are missing.
+- `requestRedraw()` remains null-safe.
+- Changes stay localized to the T1 adapter files.
 
-Validation already run by Implementer
-- `cd /home/tstephen/worktrees/SSW/gui_sep-t1-implementer-20260328/src/gui && make` (passed)
+What changed:
+- In `WXStrategicUI.cpp`, these guard/failure paths now return `1` instead of `0`:
+  - `selectRetreatCondition()` when `m_parent == NULL`
+  - `runUPFUnattachedSetup(...)` when `m_parent == NULL || player == NULL || map == NULL`
+  - `runSatharFleetSetup(...)` when `m_parent == NULL || player == NULL || map == NULL`
+  - `selectCombat(...)` when `m_parent == NULL || sys == NULL || players == NULL`
+- `requestRedraw()` unchanged (still guarded by `m_parent != NULL`).
 
-Testing guidance
-- Do not add new tests unless absolutely required by project conventions.
-- Prefer existing build/test surfaces and inspect strategic/gui integration points.
-- If tests are required later, follow conventions under `tests/strategic` or `tests/gui` if present.
+Validation already run by implementer:
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328/src/gui && make` (pass)
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t1-remed-implementer-20260328 && g++ -c -Iinclude -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread -Wall -Woverloaded-virtual -DLINUX -fPIC -DPIC -o artifacts/gui_sep/milestone3-wxstrategicui/T1/WXStrategicUI.remed.o src/gui/WXStrategicUI.cpp` (pass)
 
-Implementation context
-- `WXStrategicUI` constructor stores `wxWindow* parent`.
-- Methods implemented for message display, failed jump, victory notifications, retreat selection, UPF/Sathar setup dialogs, system/fleet dialogs, retreat message, combat selection, and redraw.
-- `requestRedraw()` is null-safe (`if (m_parent != NULL) m_parent->Refresh();`).
+Tester guidance from verifier:
+- Compile-only validation was previously deemed insufficient.
+- Add or run focused behavioral coverage for the return-value contract if existing test surfaces permit without modifying implementation code.
 
-Please write tester artifacts/results into the same shared artifact directory.
+Test file locations (project convention assumption):
+- Primary strategic/tactical test surfaces under `tests/strategic/` and `tests/gui/` equivalent patterns if available.
+- Main aggregate runner: `tests/SSWTests.cpp` with per-module runners under `tests/<module>/`.
+
+Please write tester outputs into the same shared artifact directory and pass it forward unchanged.
