@@ -1,0 +1,52 @@
+{
+  "status": "success",
+  "task_id": "T1",
+  "branch": "warning-fixes-T1-test",
+  "tested_commit_hash": "87689ca",
+  "tester_commit_hash": "84086c4",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd /home/tstephen/repos/SSW-T1-test && grep -n \"WXMapDisplay\" src/strategic/FPlayer.cpp || true",
+    "cd /home/tstephen/repos/SSW-T1-test && grep -n \"#include \\\"gui/WXMapDisplay.h\\\"\" src/strategic/FPlayer.cpp || true",
+    "cd /home/tstephen/repos/SSW-T1-test && make",
+    "cd /home/tstephen/repos/SSW-T1-test/tests && make && ./SSWTests"
+  ],
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "src/strategic/FPlayer.cpp does NOT contain #include \"gui/WXMapDisplay.h\"",
+      "status": "pass"
+    },
+    {
+      "id": 2,
+      "description": "FPlayer::getFleet(double, double) does NOT declare WXMapDisplay mapDisplay",
+      "status": "pass"
+    },
+    {
+      "id": 3,
+      "description": "getFleet() coordinate comparison logic is unchanged",
+      "status": "pass"
+    },
+    {
+      "id": 4,
+      "description": "Full test suite passes: cd tests && make && ./SSWTests",
+      "status": "pass"
+    },
+    {
+      "id": 5,
+      "description": "Both executables link: make from repo root",
+      "status": "pass"
+    }
+  ],
+  "test_totals": {
+    "total": 169,
+    "passed": 169,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/gui_sep/milestone1-warning-fixes/T1/tester_report.md",
+    "artifacts/gui_sep/milestone1-warning-fixes/T1/tester_result.json",
+    "artifacts/gui_sep/milestone1-warning-fixes/T1/documenter_prompt.txt"
+  ]
+}

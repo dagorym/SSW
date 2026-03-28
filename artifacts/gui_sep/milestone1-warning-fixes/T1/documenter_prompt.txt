@@ -1,0 +1,38 @@
+You are the Documenter Agent.
+Task summary:
+- Validate T1 warning-fix structural cleanup in `src/strategic/FPlayer.cpp` and produce tester artifacts.
+- Implementer changes under validation:
+  - Removed `#include "gui/WXMapDisplay.h"` from `src/strategic/FPlayer.cpp`
+  - Removed unused `WXMapDisplay mapDisplay;` from `FPlayer::getFleet(double, double)`
+  - Added `#include <cmath>` to preserve `sqrt` declaration
+
+Acceptance criteria verified:
+1. `src/strategic/FPlayer.cpp` does not include `gui/WXMapDisplay.h` (confirmed by grep and file inspection).
+2. `FPlayer::getFleet(double, double)` does not declare `WXMapDisplay mapDisplay` (confirmed by grep and file inspection).
+3. `getFleet()` coordinate comparison logic is unchanged (distance comparison remains `sqrt((double)(x-x2)*(x-x2)+(y-y2)*(y-y2))<0.5`).
+4. Full test suite passes via `cd tests && make && ./SSWTests` (result: `OK (169 tests)`).
+5. Repo-root build links both executables via `make` (SSW and BattleSim linked successfully).
+
+Execution context:
+- Repository: `/home/tstephen/repos/SSW-T1-test`
+- Branch: `warning-fixes-T1-test`
+- Tested commit before tester artifact commit: `87689ca`
+
+Commands executed:
+- `cd /home/tstephen/repos/SSW-T1-test && grep -n "WXMapDisplay" src/strategic/FPlayer.cpp || true`
+- `cd /home/tstephen/repos/SSW-T1-test && grep -n "#include \"gui/WXMapDisplay.h\"" src/strategic/FPlayer.cpp || true`
+- `cd /home/tstephen/repos/SSW-T1-test && make`
+- `cd /home/tstephen/repos/SSW-T1-test/tests && make && ./SSWTests`
+
+Files added by tester:
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/tester_report.md`
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/tester_result.json`
+- `artifacts/gui_sep/milestone1-warning-fixes/T1/documenter_prompt.txt`
+
+Final outcome:
+- All acceptance criteria passed.
+- No new tests were added (structural verification task).
+- Please update documentation/changelog/release notes as appropriate for removal of unused GUI dependency from strategic player logic and warning-cleanup scope.
+
+Shared artifact directory to reuse (repo-relative):
+- `artifacts/gui_sep/milestone1-warning-fixes/T1`
