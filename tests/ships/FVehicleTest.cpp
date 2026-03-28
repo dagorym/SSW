@@ -16,15 +16,11 @@ namespace {
 class FVehicleDamageHarness : public FVehicle {
 public:
 	FVehicleDamageHarness() {
-		delete m_icon;
-		m_icon = NULL;
 		m_name = "Damage Harness";
 		m_type = "DamageHarness";
 	}
 
-	~FVehicleDamageHarness() {
-		m_icon = NULL;
-	}
+	~FVehicleDamageHarness() {}
 
 	void configureStats(int hp, int adf, unsigned int mr, unsigned int dcr) {
 		m_maxHP = hp;
@@ -78,7 +74,7 @@ void FVehicleTest::testConstructor(){
 	CPPUNIT_ASSERT( m_v1->getDCR() == 0);
 	CPPUNIT_ASSERT( m_v1->getHeading() == 0);
 	CPPUNIT_ASSERT( m_v1->getHP() == 0);
-	CPPUNIT_ASSERT( m_v1->getIcon() != NULL);
+	CPPUNIT_ASSERT( !m_v1->getIconName().empty());
 	unsigned int id = m_v1->getID();
 	CPPUNIT_ASSERT( id >= 0);
 	CPPUNIT_ASSERT( m_v1->getMaxADF() == 0);
@@ -130,7 +126,7 @@ void FVehicleTest::testSetters(){
 	m_v1->setHP(0);
 	CPPUNIT_ASSERT(m_v1->getHP() == 0);
 	m_v1->setIcon("icons/UPFDestroyer.png");
-	CPPUNIT_ASSERT(m_v1->getIcon() != NULL);
+	CPPUNIT_ASSERT(!m_v1->getIconName().empty());
 }
 
 void FVehicleTest::testSerialize(){
@@ -161,7 +157,7 @@ void FVehicleTest::testSerialize(){
 	CPPUNIT_ASSERT( m_v1->getDCR() == 0);
 	CPPUNIT_ASSERT( m_v1->getHeading() == 3);
 	CPPUNIT_ASSERT( m_v1->getHP() == 0);
-	CPPUNIT_ASSERT( m_v1->getIcon() != NULL);
+	CPPUNIT_ASSERT( !m_v1->getIconName().empty());
 	unsigned int id = m_v1->getID();
 	CPPUNIT_ASSERT( id >= 0);
 	CPPUNIT_ASSERT( m_v1->getMaxADF() == 0);

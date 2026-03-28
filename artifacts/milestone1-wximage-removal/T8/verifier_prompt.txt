@@ -1,0 +1,66 @@
+You are the Verifier Agent.
+
+Task summary:
+- Milestone: wxImage removal
+- Subtask: T8 — Tests updated to remove `getIcon()` references
+- Worktree: `/home/tstephen/worktrees/gui_sep-t8-implementer-20260328`
+- Branch: `gui_sep-t8-implementer-20260328`
+- Shared artifact directory: `artifacts/milestone1-wximage-removal/T8`
+
+Acceptance criteria to verify:
+1. No `getIcon()` calls remain in `tests/` other than `getIconName()`.
+2. No bare `m_icon` manipulation remains in the affected test harnesses.
+3. Replacements use `getIconName().empty()` / `!getIconName().empty()` semantics.
+4. `tests/strategic/FFleetTest.cpp` is updated to the icon-name assertions.
+5. `src/core/FHexMap.cpp` includes `<cmath>`.
+
+Implementation and test context:
+- Implementer artifact commit context: `74a9eea6fdc7e7a1d50467342d1d32a3cfb75435`
+- Implementer-reported result: 169/169 tests passing
+- Tester validation mode: static inspection only for this pass
+- Tester result: PASS
+
+Test files modified:
+- `tests/ships/FArmedStationTest.cpp`
+- `tests/ships/FAssaultCarrierTest.cpp`
+- `tests/ships/FAssaultScoutTest.cpp`
+- `tests/ships/FBattleshipTest.cpp`
+- `tests/ships/FDestroyerTest.cpp`
+- `tests/ships/FFighterTest.cpp`
+- `tests/ships/FFortifiedStationTest.cpp`
+- `tests/ships/FFortressTest.cpp`
+- `tests/ships/FFrigateTest.cpp`
+- `tests/ships/FHvCruiserTest.cpp`
+- `tests/ships/FLtCruiserTest.cpp`
+- `tests/ships/FMinelayerTest.cpp`
+- `tests/ships/FVehicleTest.cpp`
+- `tests/ships/FTacticalAttackIntegrationTest.cpp`
+- `tests/strategic/FFleetTest.cpp`
+
+Implementation file modified:
+- `src/core/FHexMap.cpp`
+
+Documentation files modified:
+- None
+
+Documenter artifacts written:
+- `artifacts/milestone1-wximage-removal/T8/documenter_report.md`
+- `artifacts/milestone1-wximage-removal/T8/documenter_result.json`
+- `artifacts/milestone1-wximage-removal/T8/verifier_prompt.txt`
+
+Commands executed:
+- No shell commands were executed during the documenter pass in this tool-constrained session.
+- Documentation review was completed by reading the plan, existing docs, tester artifacts, and affected source/test files.
+
+Final outcomes available:
+- Implementer artifact reports 169/169 tests passing.
+- Tester artifact confirms all T8 acceptance criteria by static inspection.
+- Documenter determined that no project documentation update was warranted for this test-only story.
+
+Verification scope:
+- Verify the T8 implementation and test files listed above.
+- Verify the tester artifacts in `artifacts/milestone1-wximage-removal/T8/`.
+- Verify the documentation decision itself: no project documentation files were modified, and that omission should be confirmed as appropriate for this story.
+- Include the documenter artifacts in scope, especially:
+  - `artifacts/milestone1-wximage-removal/T8/documenter_report.md`
+  - `artifacts/milestone1-wximage-removal/T8/documenter_result.json`

@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "branch": "gui_sep-t8-implementer-20260328",
+  "commit": "74a9eea6fdc7e7a1d50467342d1d32a3cfb75435",
+  "files_changed": [
+    "tests/ships/FVehicleTest.cpp",
+    "tests/ships/FTacticalAttackIntegrationTest.cpp",
+    "tests/ships/FArmedStationTest.cpp",
+    "tests/ships/FAssaultCarrierTest.cpp",
+    "tests/ships/FAssaultScoutTest.cpp",
+    "tests/ships/FBattleshipTest.cpp",
+    "tests/ships/FDestroyerTest.cpp",
+    "tests/ships/FFighterTest.cpp",
+    "tests/ships/FFortifiedStationTest.cpp",
+    "tests/ships/FFortressTest.cpp",
+    "tests/ships/FFrigateTest.cpp",
+    "tests/ships/FHvCruiserTest.cpp",
+    "tests/ships/FLtCruiserTest.cpp",
+    "tests/ships/FMinelayerTest.cpp",
+    "tests/strategic/FFleetTest.cpp",
+    "src/core/FHexMap.cpp"
+  ],
+  "notes": "All getIcon() calls replaced with getIconName().empty() semantics. FFleetTest.cpp missed by T8 implementer, added by orchestrator. FHexMap.cpp <cmath> fix applied. 169/169 tests pass."
+}

@@ -27,7 +27,7 @@ void FAssaultScoutTest::testConstructor(){
 	CPPUNIT_ASSERT( m_v1->getDCR() == 50);
 	CPPUNIT_ASSERT( m_v1->getHeading() == 0);
 	CPPUNIT_ASSERT( m_v1->getHP() == 15);
-	CPPUNIT_ASSERT( m_v1->getIcon() != NULL);
+	CPPUNIT_ASSERT( !m_v1->getIconName().empty());
 	unsigned int id = m_v1->getID();
 	CPPUNIT_ASSERT( id >= 0);
 	CPPUNIT_ASSERT( m_v1->getMaxADF() == 5);

@@ -29,7 +29,7 @@ void FFleetTest::testConstructor(){
 	CPPUNIT_ASSERT( m_f1->getLocation() == 0 );
 	CPPUNIT_ASSERT( m_f1->getInTransit() == false );
 	CPPUNIT_ASSERT( m_f1->isMilitia() == false );
-	CPPUNIT_ASSERT( m_f1->getIcon() == NULL );
+	CPPUNIT_ASSERT( m_f1->getIconName().empty() );
 	CPPUNIT_ASSERT( m_f1->isHolding() == false );
 	CPPUNIT_ASSERT( m_f1->getSpeed() == 0 );
 	CPPUNIT_ASSERT( m_f1->getTransitTime() == 0 );
@@ -54,9 +54,9 @@ void FFleetTest::testBasicSetters(){
 	m_f1->setDestination(12);
 	CPPUNIT_ASSERT( m_f1->getDestination() == 12 );
 	m_f1->setIcon("icons/UPF.png");
-	CPPUNIT_ASSERT( m_f1->getIcon() != NULL );
+	CPPUNIT_ASSERT( !m_f1->getIconName().empty() );
 	m_f1->setIcon("icons/Sathar.png");
-	CPPUNIT_ASSERT( m_f1->getIcon() != NULL );
+	CPPUNIT_ASSERT( !m_f1->getIconName().empty() );
 	m_f1->setMilitia(true,"Prenglar");
 	CPPUNIT_ASSERT( m_f1->isMilitia() == true );
 	CPPUNIT_ASSERT( m_f1->getHomeSystem() == "Prenglar" );

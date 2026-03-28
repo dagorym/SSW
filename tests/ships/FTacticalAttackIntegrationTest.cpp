@@ -37,15 +37,11 @@ public:
 class FCombatVehicleHarness : public FVehicle {
 public:
 	FCombatVehicleHarness() {
-		delete m_icon;
-		m_icon = NULL;
 		m_name = "Combat Harness";
 		m_type = "CombatHarness";
 	}
 
-	~FCombatVehicleHarness() {
-		m_icon = NULL;
-	}
+	~FCombatVehicleHarness() {}
 
 	void configureStats(int hp, int adf, unsigned int mr, unsigned int dcr) {
 		m_maxHP = hp;
