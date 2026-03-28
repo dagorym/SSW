@@ -63,7 +63,7 @@ void WXStrategicUI::notifyVictory(int result) {
 
 int WXStrategicUI::selectRetreatCondition() {
   if (m_parent == NULL) {
-    return 0;
+    return 1;
   }
   SatharRetreatGUI dialog(m_parent);
   return dialog.ShowModal();
@@ -71,7 +71,7 @@ int WXStrategicUI::selectRetreatCondition() {
 
 int WXStrategicUI::runUPFUnattachedSetup(FPlayer* player, FMap* map) {
   if (m_parent == NULL || player == NULL || map == NULL) {
-    return 0;
+    return 1;
   }
   UPFUnattachedGUI dialog(m_parent, player, map);
   return dialog.ShowModal();
@@ -81,7 +81,7 @@ int WXStrategicUI::runSatharFleetSetup(FPlayer* player,
                                        FMap* map,
                                        bool isInitialSetup) {
   if (m_parent == NULL || player == NULL || map == NULL) {
-    return 0;
+    return 1;
   }
   SatharFleetsGUI dialog(m_parent, player, map, isInitialSetup);
   return dialog.ShowModal();
@@ -115,7 +115,7 @@ int WXStrategicUI::selectCombat(FSystem* sys,
                                 FleetList attackers,
                                 PlayerList* players) {
   if (m_parent == NULL || sys == NULL || players == NULL) {
-    return 0;
+    return 1;
   }
   SelectCombatGUI dialog(m_parent, sys, defenders, attackers, players);
   return dialog.ShowModal();
