@@ -1,0 +1,62 @@
+You are the Verifier Agent.
+
+Task summary:
+Verify T7 — GUI callers migrated to WXIconCache.
+
+Acceptance criteria:
+1. No `getIcon()` calls remain in `src/gui/` or `src/tactical/`.
+2. `WXIconCache::instance().get(...)` is used in place of each removed call.
+3. The updated caller files include `gui/WXIconCache.h`.
+4. `src/gui/SelectJumpGUI.cpp` includes `<wx/wx.h>` before `#include "gui/SelectJumpGUI.h"`.
+5. `src/gui` builds cleanly.
+6. `src/tactical` builds cleanly.
+
+Implementation branch/worktree context:
+- Branch: `gui_sep-t7-implementer-20260328`
+- Worktree: `/home/tstephen/worktrees/gui_sep-t7-implementer-20260328`
+- Shared artifact directory: `artifacts/milestone1-wximage-removal/T7`
+- Implementer result commit: `e77443c97e0d30d38ece72c14047ad17b6417787`
+
+Implementation files modified:
+- `src/gui/WXPlayerDisplay.cpp`
+- `src/gui/SelectJumpGUI.cpp`
+- `src/tactical/FBattleDisplay.cpp`
+- `src/tactical/FBattleBoard.cpp`
+
+Test files added or modified:
+- None for T7.
+
+Documentation files added or modified:
+- `AGENTS.md`
+
+Documenter artifacts written:
+- `artifacts/milestone1-wximage-removal/T7/documenter_report.md`
+- `artifacts/milestone1-wximage-removal/T7/documenter_result.json`
+- `artifacts/milestone1-wximage-removal/T7/verifier_prompt.txt`
+
+Tester artifacts to review:
+- `artifacts/milestone1-wximage-removal/T7/tester_report.md`
+- `artifacts/milestone1-wximage-removal/T7/tester_result.json`
+
+Commands executed:
+- No shell commands were executed during the Documenter stage.
+- Documentation scope was determined by reading:
+  - `plans/milestone1-wximage-removal-plan.md`
+  - `AGENTS.md`
+  - `doc/DesignNotes.md`
+  - `doc/UsersGuide.md`
+  - relevant implementation files under `src/gui/`, `src/tactical/`, `include/gui/`, `include/ships/`, and `include/strategic/`
+  - tester and implementer artifacts in `artifacts/milestone1-wximage-removal/T7/`
+
+Final test outcomes available from prior stage:
+- `tester_result.json` reports `status: pass`.
+- Notes indicate all four acceptance criteria from the tester stage passed after the include-order fix in `src/gui/SelectJumpGUI.cpp`.
+- Tester notes also state both `src/gui` and `src/tactical` build clean.
+
+Documentation summary:
+- Added a single contributor note to `AGENTS.md` documenting the now-implemented boundary that model objects store icon filenames and GUI/tactical render paths load images via `WXIconCache`.
+
+Verification requirements:
+- Verify the implementation against the T7 acceptance criteria using the actual changed code and tester artifacts.
+- Verify that the documentation change in `AGENTS.md` accurately reflects the implemented behavior and does not duplicate conflicting guidance elsewhere.
+- Include the updated documentation files in verification scope alongside implementation and tests.

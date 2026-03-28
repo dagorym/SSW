@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "branch": "gui_sep-t7-implementer-20260328",
+  "commit": "e77443c97e0d30d38ece72c14047ad17b6417787",
+  "files_changed": [
+    "src/gui/WXPlayerDisplay.cpp",
+    "src/gui/SelectJumpGUI.cpp",
+    "src/tactical/FBattleDisplay.cpp",
+    "src/tactical/FBattleBoard.cpp"
+  ],
+  "notes": "All getIcon() calls replaced with WXIconCache::instance().get(getIconName()). SelectJumpGUI.cpp needed <wx/wx.h> added (pre-existing issue masked by stale .o). Both src/gui and src/tactical build clean."
+}

@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "criteria": {
+    "no_getIcon_calls": "pass",
+    "WXIconCache_used": "pass",
+    "WXIconCache_h_included": "pass",
+    "SelectJumpGUI_wx_included": "pass"
+  },
+  "notes": "Initial tester found <wx/wx.h> after #include 'gui/SelectJumpGUI.h'. Orchestrator fixed include order (wx/wx.h now first). All 4 criteria pass. src/gui and src/tactical build clean."
+}

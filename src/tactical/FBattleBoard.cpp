@@ -11,6 +11,7 @@
 #include "tactical/FTacticalAttackResult.h"
 #include "core/FHexMap.h"
 #include "gui/ICMSelectionGUI.h"
+#include "gui/WXIconCache.h"
 #include <wx/wx.h>
 #include <cmath>
 #include <algorithm>
@@ -378,7 +379,7 @@ void FBattleBoard::drawShips(){
 				for (unsigned int k = 0; k<m_hexData[i][j].ships.size(); k++){
 					const wxImage *icon;
 					if (m_hexData[i][j].ships[k]->getCurrentDefense()->getType()!=FDefense::MS){
-						icon = m_hexData[i][j].ships[k]->getIcon();
+						icon = &WXIconCache::instance().get(m_hexData[i][j].ships[k]->getIconName());
 					} else {
 						icon = m_maskingScreenIcon;
 					}

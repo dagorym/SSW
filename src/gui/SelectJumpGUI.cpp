@@ -5,6 +5,7 @@
 // PLEASE DO "NOT" EDIT THIS FILE!
 ///////////////////////////////////////////////////////////////////////////
 
+#include <wx/wx.h>
 #include "gui/SelectJumpGUI.h"
 #include <sstream>
 

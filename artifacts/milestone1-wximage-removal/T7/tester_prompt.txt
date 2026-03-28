@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Shared artifact directory to reuse and pass forward: artifacts/milestone1-wximage-removal/T7
+
+Modified files:
+- src/gui/WXPlayerDisplay.cpp
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FBattleBoard.cpp
+
+Implementation summary:
+- Replaced FFleet/FVehicle getIcon() wxImage* call sites with WXIconCache lookups via getIconName().
+- Added #include "gui/WXIconCache.h" in each modified file.
+- Exact replacements:
+  - WXPlayerDisplay.cpp: wxBitmap now built from WXIconCache::instance().get((*itr)->getIconName()).
+  - FBattleDisplay.cpp: iptr now points to &WXIconCache::instance().get(m_vList[i]->getIconName()).
+  - FBattleBoard.cpp: icon now assigned using const_cast<wxImage*>(&WXIconCache::instance().get(...getIconName())) for existing non-const pointer flow.
+
+Acceptance criteria to verify:
+1. No getIcon() calls remain in src/gui/ or src/tactical/.
+2. WXIconCache::instance().get(...) is used in place of each removed getIcon() call.
+3. WXIconCache.h is included in each modified file.
+4. src/gui module builds cleanly: cd src/gui && make
+5. src/tactical module builds cleanly: cd src/tactical && make
+
+Test file locations for any new tester-authored tests (if needed by your workflow):
+- tests/gui/ (assumed by module convention)
+- tests/tactical/ (assumed by module convention)
+
+Suggested verification commands:
+- grep -R --line-number "getIcon()" src/gui src/tactical
+- grep -R --line-number "WXIconCache::instance().get" src/gui src/tactical
+- cd src/gui && make
+- cd src/tactical && make
