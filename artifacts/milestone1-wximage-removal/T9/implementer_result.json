@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "branch": "gui_sep-t9-implementer-20260328",
+  "commit": "fb798b414f8e837145c5a476b1a2db5e7a7a62d8",
+  "build": {
+    "SSW": "pass",
+    "BattleSim": "pass",
+    "all_modules": "pass"
+  },
+  "tests": {
+    "total": 169,
+    "passed": 169,
+    "failed": 0
+  },
+  "fixes_applied": [
+    "include/FMainFrame.h: added #include 'wxWidgets.h' for ID_Quit/About/New/Open/Save/Close enum (pre-existing issue masked by stale .o, exposed by T5 removing wxWidgets.h from Frontier.h)"
+  ],
+  "notes": "Full build and 169/169 tests pass. Both SSW and BattleSim executables link successfully."
+}
