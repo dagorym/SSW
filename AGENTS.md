@@ -118,6 +118,9 @@ The build system supports gcov coverage analysis; enable it with `make COVERAGE=
 
 - Doxygen configuration: `doc/Doxyfile`
 - Generated documentation: `doc/`
+- AI agent information : `AGENTS.md` (this file)
+- Design documentation: `doc/DesignNotes.odt`
+- User Guide: `doc/UsersGuide.odt`
 
 ## Contributor Notes
 
