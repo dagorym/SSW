@@ -14,6 +14,7 @@
 
 #include <vector>
 
+#include "gui/GuiTypes.h"
 #include "Frontier.h"
 
 namespace Frontier {

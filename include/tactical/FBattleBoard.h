@@ -19,6 +19,7 @@
 #include <wx/sizer.h>
 #include <wx/frame.h>
 
+#include "gui/GuiTypes.h"
 #include "Frontier.h"
 #include "strategic/FFleet.h"
 #include "core/FPoint.h"
