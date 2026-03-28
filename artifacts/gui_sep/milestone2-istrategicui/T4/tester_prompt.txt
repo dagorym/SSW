@@ -1,0 +1,37 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified Milestone 2 strategic header-boundary work compiles cleanly; no header code changes were required.
+
+Modified files:
+- None in source/include scope.
+- Artifact outputs only under `artifacts/gui_sep/milestone2-istrategicui/T4/`.
+
+Acceptance criteria to validate (from Planner):
+- The strategic module compiles successfully after the header updates.
+- Any compile or include-cycle issue discovered during verification is either fixed within the allowed header scope or recorded as a Milestone 3 follow-up.
+- `FGame.cpp` behavior remains unchanged at the end of this milestone.
+- Verification notes are written under `artifacts/gui_sep/milestone2-istrategicui/T4`.
+
+Create test files in:
+- No new tests requested for this subtask.
+- If validation expansion is needed, use `tests/strategic/` conventions only.
+
+Implementation context for testing:
+- Validation-only subtask; no changes made to:
+  - `include/strategic/IStrategicUI.h`
+  - `include/strategic/StrategicTypes.h`
+  - `include/strategic/FFleet.h`
+  - `include/strategic/FPlayer.h`
+  - `include/strategic/FSystem.h`
+  - `include/strategic/FGame.h`
+- `git diff -- src/strategic/FGame.cpp` returned no differences.
+- Existing warning in `src/strategic/FJumpRoute.cpp` is out of this subtask scope and documented as non-blocking follow-up context.
+
+Suggested test command(s):
+- `cd src/strategic && make`
+- `cd tests/strategic && make`
+- `git diff -- src/strategic/FGame.cpp`
+
+Shared artifact directory:
+- `artifacts/gui_sep/milestone2-istrategicui/T4`
