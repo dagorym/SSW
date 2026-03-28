@@ -109,7 +109,6 @@ unsigned int FVehicle::m_nextID = 0;
 unsigned int FVehicle::m_classCount = 0;
 
 FVehicle::FVehicle(){
-	FGameConfig &gc = FGameConfig::create();
 	m_ID = m_nextID++;
 	m_maxMR = 0;
 	m_maxADF = 0;
@@ -122,7 +121,6 @@ FVehicle::FVehicle(){
 	m_name = os.str();
 	m_type = "none";
 	m_iconName = "icons/ufo.png";
-	m_icon = new wxImage(gc.getBasePath()+m_iconName);
 	m_classCount++;
 	m_speed = 0;
 	m_heading = 0;
@@ -141,7 +139,6 @@ FVehicle::FVehicle(){
 
 FVehicle::~FVehicle(){
 //	std::cerr << "Deleting " << m_name << std::endl;
-	delete m_icon;
 	for (unsigned int i=0; i< m_weapons.size(); i++){  // delete weapons
 		delete m_weapons[i];
 	}
@@ -183,19 +180,14 @@ const int FVehicle::save(std::ostream &os) const {
 }
 
 void FVehicle::setIcon(std::string icon) {
-	FGameConfig &gc = FGameConfig::create();
 	m_iconName = icon;
-	m_icon->LoadFile(gc.getBasePath()+icon);
 }
 
 int FVehicle::load(std::istream &is) {
-	FGameConfig &gc = FGameConfig::create();
 //	std::cerr << "Entering FVehicle::load" << std::endl;
 	read(is,m_ID);
 	readString(is,m_name);
 	readString(is,m_iconName);
-	delete m_icon;
-	m_icon = new wxImage(gc.getBasePath()+m_iconName);
 	read(is,m_currentMR);
 	read(is,m_currentADF);
 	read(is,m_currentHP);

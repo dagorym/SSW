@@ -12,7 +12,6 @@
 #include "core/FGameConfig.h"
 #include "weapons/FWeapon.h"
 #include "defenses/FDefense.h"
-#include "wx/wx.h"
 #include <vector>
 
 namespace Frontier
@@ -60,8 +59,6 @@ public:
 	void setName(std::string n) { m_name = n; }
 	/// get the vehicle's name
 	const std::string & getName() { return m_name; }
-	/// get the vehicle's icon
-	const wxImage * getIcon() const { return m_icon; }
 	/// get the vehicle's icon name
 	const std::string & getIconName() const { return m_iconName; }
 	/// set the vehicles icon
@@ -270,8 +267,6 @@ protected:
 	int m_currentADF;
 	/// vehicle's Hull points
 	int m_currentHP;
-	/// pointer to the vehicle's icon
-	wxImage * m_icon;
 	/// icon file name
 	std::string m_iconName;
 	/// Vehicle's name

@@ -12,7 +12,6 @@ namespace Frontier
 {
 
 FMinelayer::FMinelayer() {
-	FGameConfig &gc = FGameConfig::create();
 	m_maxMR = 2;
 	m_maxADF = 1;
 	m_maxHP = 50;
@@ -23,7 +22,6 @@ FMinelayer::FMinelayer() {
 	os << "Minelayer " << m_ID;
 	m_name = os.str();
 	m_iconName = "icons/UPFMinelayer.png";
-	m_icon = new wxImage(gc.getBasePath()+m_iconName);
 	m_type = "Minelayer";
 	m_maxDCR=75;
 	m_currentDCR=m_maxDCR;
