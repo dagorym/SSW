@@ -1,0 +1,40 @@
+You are the Documenter Agent.
+
+Task summary:
+- Added `include/strategic/IStrategicUI.h` as a pure abstract strategic UI boundary with the Milestone 2 method set and no wx/gui includes.
+
+Acceptance criteria validated by tester:
+- `include/strategic/IStrategicUI.h` declares a pure abstract `Frontier::IStrategicUI`.
+- The interface uses no wx types and includes no GUI headers.
+- The method set matches the Milestone 2 design section closely, including redraw, setup, dialog, and combat-selection hooks.
+- The header remains free of wx includes and GUI includes.
+- The header includes only `"strategic/StrategicTypes.h"` and `<string>`.
+- API comments describe intent and non-obvious return-code conventions (`0` success, non-zero cancel; victory codes `1=UPF`, `2=Sathar`, `3=Draw`).
+- No `.cpp` implementation file was added.
+
+Implementation/worktree context:
+- Tester branch: `milestone2-istrategicui-t2-tester-20260328`
+- Base implementation branch: `milestone2-istrategicui-t2-implementer-20260328`
+- Shared artifact directory (repo-root-relative): `artifacts/gui_sep/milestone2-istrategicui/T2`
+
+Files inspected during validation:
+- `include/strategic/IStrategicUI.h`
+- `include/strategic/StrategicTypes.h`
+
+Test files added or modified:
+- None (header-only subtask; no new runtime/unit test file was justified).
+
+Commands executed by tester:
+- `sed -n '1,240p' include/strategic/IStrategicUI.h`
+- `sed -n '1,220p' include/strategic/StrategicTypes.h`
+- `make` (workdir: `tests/strategic`) -> success
+- `rg -n "wx|#include \"gui/|#include <wx" include/strategic/IStrategicUI.h` -> no matches
+- `rg --files include/strategic | rg 'IStrategicUI\.cpp$'` -> no matches
+
+Final test outcome:
+- Validation status: PASS
+- Runtime test count: none added
+- Compile-oriented strategic test target build: passed
+
+Commit hash:
+- To be read from tester commit in this branch.
