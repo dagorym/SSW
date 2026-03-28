@@ -58,8 +58,8 @@ void FGameHeaderDependencyTest::testDrawTurnCounterUsesWXIconCacheForDayAndTenda
 		"../src/strategic/FGame.cpp"
 	});
 
-	CPPUNIT_ASSERT(source.find("const wxImage &tendayImage = WXIconCache::instance().get(gc.getBasePath()+\"icons/tenday.png\")") != std::string::npos);
-	CPPUNIT_ASSERT(source.find("const wxImage &dayImage = WXIconCache::instance().get(gc.getBasePath()+\"icons/day.png\")") != std::string::npos);
+	CPPUNIT_ASSERT(source.find("const wxImage &tendayImage = WXIconCache::instance().get(\"icons/tenday.png\")") != std::string::npos);
+	CPPUNIT_ASSERT(source.find("const wxImage &dayImage = WXIconCache::instance().get(\"icons/day.png\")") != std::string::npos);
 }
 
 }

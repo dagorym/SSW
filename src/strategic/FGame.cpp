@@ -904,7 +904,6 @@ void FGame::createKizkKarMilita(){
 }
 
 void FGame::drawTurnCounter(){
-	FGameConfig &gc = FGameConfig::create();
 	wxClientDC dc(m_parent);
 	wxCoord w, h, s;
 	dc.GetSize(&w, &h);
@@ -941,11 +940,11 @@ void FGame::drawTurnCounter(){
 	int row,col;
 	row = tenday/5;
 	col = tenday%5;
-	const wxImage &tendayImage = WXIconCache::instance().get(gc.getBasePath()+"icons/tenday.png");
+	const wxImage &tendayImage = WXIconCache::instance().get("icons/tenday.png");
 	dc.DrawBitmap(wxBitmap(tendayImage.Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.1*s),(wxCoord)(row*s+0.1*s));
 	row = day/5;
 	col = day%5;
-	const wxImage &dayImage = WXIconCache::instance().get(gc.getBasePath()+"icons/day.png");
+	const wxImage &dayImage = WXIconCache::instance().get("icons/day.png");
 	dc.DrawBitmap(wxBitmap(dayImage.Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.2*s),(wxCoord)(row*s+0.2*s));
 
 	// draw the end turn button
