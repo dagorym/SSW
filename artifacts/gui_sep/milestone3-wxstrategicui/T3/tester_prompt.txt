@@ -1,0 +1,43 @@
+You are the Tester Agent.
+
+Validate subtask T3 in branch `gui_sep-t3-implementer-20260328`.
+
+Scope validated by implementation:
+- `include/FMainFrame.h`
+- `src/FMainFrame.cpp`
+- `src/gui/Makefile`
+
+Planner acceptance criteria to verify:
+1. `FMainFrame` owns a `WXStrategicUI` instance with safe lifetime management.
+2. Both new-game and open-game flows inject that adapter into `FGame`.
+3. `src/gui/Makefile` builds `WXStrategicUI.o`.
+4. Existing `FGame::create()` call sites still compile after the change.
+5. No ownership leak or double-delete is introduced for the strategic UI adapter.
+
+Implementation context:
+- `FMainFrame` now has a `Frontier::WXStrategicUI * m_strategicUI` member.
+- Adapter is constructed in `FMainFrame` constructor after `m_drawingPanel` allocation: `new WXStrategicUI(m_drawingPanel)`.
+- Adapter is passed to `FGame::create(...)` in both `onNew()` and `onOpen()`.
+- Adapter is deleted in `FMainFrame` destructor.
+- `src/gui/Makefile` `OBJS` now includes `WXStrategicUI.o`.
+- `src/gui/BattleResultsGUI.cpp` was intentionally unchanged.
+
+Existing validation commands already run by implementer:
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t3-implementer-20260328/src/gui && make` (pass)
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t3-implementer-20260328 && make` (pass)
+
+Suggested tester checks:
+- Re-run both commands above.
+- Inspect `src/FMainFrame.cpp` for both `FGame::create(m_strategicUI)` call sites.
+- Confirm `src/gui/Makefile` archives `WXStrategicUI.o`.
+- Confirm no compile regressions at no-arg `FGame::create()` call sites (e.g., `src/gui/BattleResultsGUI.cpp`).
+
+Test file location guidance for any follow-on test additions (if requested by planner later):
+- Project convention: `tests/` module structure (`tests/strategic`, `tests/gui` if present); register in `tests/SSWTests.cpp`.
+- For this subtask, no new tests were added per implementer constraints.
+
+Shared artifact directory to reuse and pass forward:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T3`
+
+Implementation commit to validate:
+- `43fba6c3248be6544c160758c17f93fc14a0d231`
