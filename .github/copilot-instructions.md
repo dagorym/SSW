@@ -39,7 +39,7 @@ make docs         # Generate Doxygen documentation
 Dependencies: wxWidgets 3.3.1 via `wx-config`, CppUnit for testing.
 
 ### Windows (Visual Studio 2022)
-Open `SSW.sln`. Requires wxWidgets 3.3.1 built locally at `C:\Users\steph26\repos\wxWidgets-3.3.1\`. Library names use `wxmsw33u*` (release) or `wxmsw33ud*` (debug). See [VS_PROJECT_CHANGES.md](../VS_PROJECT_CHANGES.md) for configuration details.
+Open `SSW.sln`. Requires wxWidgets 3.3.1 built locally at `C:\Users\steph26\repos\wxWidgets-3.3.1\`. Library names use `wxmsw33u*` (release) or `wxmsw33ud*` (debug). See [VS_PROJECT_CHANGES.md](../artifacts/VS_PROJECT_CHANGES.md) for configuration details.
 
 ### Module Dependencies
 Executables link in this order: `-lgui -ltactical -lweapons -ldefenses -lships -lstrategic -lcore`. Changes to core require rebuilding all dependent modules. Each `src/*/Makefile` produces its module's static library independently.
@@ -114,7 +114,7 @@ Use `#ifndef _<FILENAME>_H_` pattern (e.g., `#ifndef _FGAME_H_`). Doxygen-style 
 ### Recent Upgrade (3.0.3 → 3.3.1)
 - `wxInitAllImageHandlers()` removed (automatic in 3.1+) 
 - Virtual methods now use `wxOVERRIDE` macro instead of raw `override`
-- See [WXWIDGETS_UPGRADE_CHANGES.md](../WXWIDGETS_UPGRADE_CHANGES.md) for complete migration details
+- See [WXWIDGETS_UPGRADE_CHANGES.md](../artifacts/WXWIDGETS_UPGRADE_CHANGES.md) for complete migration details
 
 ### Common Patterns
 - Main app classes inherit from `wxApp` (`FApp`, `FBattleSimApp`)
