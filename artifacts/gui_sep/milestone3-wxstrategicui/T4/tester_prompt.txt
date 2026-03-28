@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Subtask: T4 (Milestone 3 WXStrategicUI verification)
+Repository/worktree: `/home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328`
+Branch: `gui_sep-t4-implementer-20260328`
+Shared artifact directory (repo-relative): `artifacts/gui_sep/milestone3-wxstrategicui/T4`
+Implementation/code commit to validate: `d4a4a3d7489c87cac2be1535f499c7b677cd7a6e`
+
+What changed:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/verification_notes.md` (verification summary only)
+
+Acceptance criteria to validate:
+1. gui and strategic modules build successfully.
+2. `FGame` compiles without concrete strategic dialog header dependencies.
+3. Remaining `FGame` wx coupling is explicitly limited to rendering/event paths deferred to Milestone 4.
+4. Deferred issues are documented explicitly in milestone artifacts.
+
+Validation commands to run:
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328/src/gui && make`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328/src/strategic && make`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328 && rg '#include\\s+"gui/(SystemDialogGUI|UPFUnattachedGUI|SatharFleetsGUI|ViewFleetGUI|SatharRetreatGUI|SelectCombatGUI)\\.h"' src/strategic/FGame.cpp`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328 && rg 'wx[A-Za-z0-9_]*' include/strategic/FGame.h src/strategic/FGame.cpp`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328 && rg 'm_ui->' src/strategic/FGame.cpp`
+
+Test file location guidance:
+- No new tests are required for this verification-only subtask.
+- If you need convention reference points, strategic tests are under `tests/strategic/`.
+
+Expected artifacts to review:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/verification_notes.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/implementer_report.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/implementer_result.json`
+
+Please reuse and pass forward the same shared artifact directory path:
+`artifacts/gui_sep/milestone3-wxstrategicui/T4`
