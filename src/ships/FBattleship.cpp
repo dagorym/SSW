@@ -12,7 +12,6 @@ namespace Frontier
 {
 
 FBattleship::FBattleship() {
-	FGameConfig &gc = FGameConfig::create();
 	m_maxMR = 2;
 	m_maxADF = 2;
 	m_maxHP = 120;
@@ -23,7 +22,6 @@ FBattleship::FBattleship() {
 	os << "Battleship " << m_ID;
 	m_name = os.str();
 	m_iconName = "icons/UPFBattleship.png";
-	m_icon = new wxImage(gc.getBasePath()+m_iconName);
 	m_type = "Battleship";
 	m_maxDCR=200;
 	m_currentDCR=m_maxDCR;

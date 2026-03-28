@@ -1,0 +1,30 @@
+## Tester Handoff: T2 — Remove wxImage from FVehicle
+
+### Shared artifact directory
+artifacts/milestone1-wximage-removal/T2
+
+### Implementer branch
+gui_sep-t2-implementer-20260327
+
+### What was implemented
+- Removed #include "wx/wx.h", wxImage* m_icon, and getIcon() from include/ships/FVehicle.h
+- Removed all wxImage allocation/loading from src/ships/FVehicle.cpp (constructor, destructor, setIcon, load)
+- Removed m_icon = new wxImage(...) and associated FGameConfig locals from 6 subclass constructors: FArmedStation, FBattleship, FMinelayer, FFortress, FAssaultScout, FFortifiedStation
+- setIcon(string) now stores only m_iconName
+
+### Acceptance criteria
+1. FVehicle.h has no #include "wx/wx.h" and no wxImage symbol
+2. FVehicle.cpp performs no wxImage allocation or loading
+3. setIcon(string) stores only m_iconName
+4. ships module builds cleanly: cd src/ships && make
+5. No ship subclass .cpp file retains m_icon or wxImage references
+
+### Validation commands
+```bash
+grep -rn "wxImage\|wx/wx.h\|m_icon\b" include/ships/FVehicle.h
+grep -rn "wxImage\|m_icon\b\|new wxImage" src/ships/ --include="*.cpp" | grep -v "m_iconName"
+cd src/ships && make 2>&1 | tail -5
+```
+
+### Required artifacts in artifacts/milestone1-wximage-removal/T2/
+- tester_report.md, tester_result.json, documenter_prompt.txt (if pass)
