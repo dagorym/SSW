@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Task summary:
+- Added `include/strategic/IStrategicUI.h` as a pure abstract strategic UI boundary with the Milestone 2 method set and no wx/gui includes.
+
+Modified files:
+- include/strategic/IStrategicUI.h
+
+Acceptance criteria to validate (from Planner):
+- `include/strategic/IStrategicUI.h` declares a pure abstract `Frontier::IStrategicUI`.
+- The interface uses no wx types and includes no GUI headers.
+- The method set matches the Milestone 2 design section closely, including redraw, setup, dialog, and combat-selection hooks.
+- Keep the header free of wx includes and GUI includes.
+- Include only the new shared strategic types header and any standard headers required by the interface, such as `<string>`.
+- Add succinct API comments describing the intent of the interface and any non-obvious return-code conventions.
+- No `.cpp` implementation file is added.
+
+Create test files in:
+- No new test file expected for this subtask; if coverage is needed, use existing strategic build/test locations with `tests/strategic/` as the conventional test area.
+
+Implementation context for testing:
+- `IStrategicUI` includes only `<string>` and `"strategic/StrategicTypes.h"`.
+- Dialog/setup methods use `FPlayer*`, `FMap*`, `FSystem*`, `FFleet*`, `FleetList`, and `PlayerList*` signatures as designed.
+- Comments document victory result values and setup dialog return-code convention (`0` success, non-zero cancel).
+
+Suggested test command(s):
+- sed -n '1,240p' include/strategic/IStrategicUI.h
+- sed -n '1,220p' include/strategic/StrategicTypes.h
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone2-istrategicui/T2
