@@ -120,6 +120,7 @@ SSWTests.o: ../include/ships/FFrigate.h ships/FHvCruiserTest.h
 SSWTests.o: ../include/ships/FHvCruiser.h ships/FLtCruiserTest.h
 SSWTests.o: ../include/ships/FLtCruiser.h ships/FMinelayerTest.h
 SSWTests.o: ../include/ships/FMinelayer.h strategic/FGameTest.h
+SSWTests.o: strategic/FGameHeaderDependencyTest.h
 SSWTests.o: ../include/strategic/FGame.h ../include/strategic/FPlayer.h
 SSWTests.o: ../include/strategic/FFleet.h ../include/strategic/FMap.h
 SSWTests.o: ../include/strategic/FSystem.h ../include/strategic/FPlanet.h
