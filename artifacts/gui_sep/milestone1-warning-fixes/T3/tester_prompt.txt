@@ -1,0 +1,29 @@
+You are the Tester Agent.
+
+Task summary:
+- Updated WXIconCache image loading to resolve image paths using FGameConfig base path before constructing wxImage, while preserving cache keys by original filename.
+
+Modified files:
+- src/gui/WXIconCache.cpp
+
+Acceptance criteria to validate (from Planner):
+- WXIconCache::get() prepends FGameConfig::getBasePath() to filename before wxImage(...).
+- Cache key remains the original short filename.
+- Build succeeds.
+- All tests pass.
+
+Create test files in:
+- tests/ (use existing suite structure such as tests/core, tests/strategic, tests/tactical, tests/ships, tests/weapons as appropriate)
+
+Implementation context for testing:
+- Added include of core/FGameConfig.h in WXIconCache.cpp.
+- In WXIconCache::get(), file load path is now `gc.getBasePath() + filename` via `FGameConfig::getGameConfig()`.
+- Warning log now reports the resolved full path.
+- Cache map access and storage key remain `filename` (`m_cache[filename]` unchanged).
+
+Suggested test command(s):
+- make
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone1-warning-fixes/T3
