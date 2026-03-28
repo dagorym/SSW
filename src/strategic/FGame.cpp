@@ -8,14 +8,8 @@
 
 #include "strategic/FGame.h"
 #include "strategic/FFleet.h"
-#include "gui/SystemDialogGUI.h"
 #include "Frontier.h"
-#include "gui/UPFUnattachedGUI.h"
-#include "gui/SatharFleetsGUI.h"
 #include "ships/FVehicle.h"
-#include "gui/ViewFleetGUI.h"
-#include "gui/SatharRetreatGUI.h"
-#include "gui/SelectCombatGUI.h"
 #include "core/FGameConfig.h"
 #include "gui/WXGameDisplay.h"
 #include "gui/WXMapDisplay.h"
@@ -29,25 +23,33 @@
 
 namespace Frontier
 {
+namespace {
+wxWindow *g_strategicWindow = NULL;
+}
 
 FGame * FGame::m_game = 0;
 
-FGame & FGame::create(wxWindow * win){
+FGame & FGame::create(){
+	return create((IStrategicUI *)NULL);
+}
+
+FGame & FGame::create(IStrategicUI * ui){
 	if (!m_game) {
-		m_game = new FGame(win);
+		m_game = new FGame(ui);
 	}
 	return *m_game;
 }
 
-FGame::FGame(wxWindow * win){
-	m_parent = win;
+FGame & FGame::create(wxWindow * win){
+	g_strategicWindow = win;
+	return create();
+}
+
+FGame::FGame(IStrategicUI * ui){
+	m_ui = ui;
 	m_universe = NULL;
 	m_round = 0;
-	if (win == NULL){
-		m_gui = false;
-	} else {
-		m_gui=true;
-	}
+	m_gui = (ui != NULL);
 	m_currentPlayer = -1;
 	srand(time(NULL));  // intialize random number generator
 	m_lostHC = 0;
@@ -74,16 +76,15 @@ FGame::~FGame(){
 }
 
 int FGame::init(wxWindow *w){
-	if (w == NULL){
-		m_gui = false;
-//		std::cerr << "m_gui = " << m_gui << std::endl;
-	}
-  wxString errorMsg;
+	(void)w;
+	m_gui = (m_ui != NULL);
+  std::string errorMsg;
   if(getPlayers(m_gui)){
-    if (m_gui) {
-      errorMsg = "Error initalizing players.  Exiting.";
-      wxMessageBox( errorMsg, "SSW Error", wxOK | wxICON_INFORMATION );
+    errorMsg = "Error initalizing players.  Exiting.";
+    if (m_ui != NULL) {
+      m_ui->showMessage("SSW Error", errorMsg);
     } else {
+      errorMsg = "Error initalizing players.  Exiting.";
       std::cout << errorMsg << std::endl;
     }
     return 1;
@@ -91,16 +92,16 @@ int FGame::init(wxWindow *w){
 
   if(initMap(m_gui)) {
     errorMsg = "Error initalizing map.  Exiting";
-    if (m_gui) {
-      wxMessageBox( errorMsg, "SSW Error", wxOK | wxICON_INFORMATION );
+    if (m_ui != NULL) {
+      m_ui->showMessage("SSW Error", errorMsg);
     } else {
       std::cout << errorMsg << std::endl;
     }
     return 1;
   }
   draw();
-  if (w!=NULL){
-	  w->Refresh();
+  if (m_ui != NULL){
+	  m_ui->requestRedraw();
   }
 
   int result = initFleets();
@@ -111,8 +112,8 @@ int FGame::init(wxWindow *w){
 		  break;
 	  default:
 		  errorMsg = "Error initalizing fleets.  Exiting";
-		  if (m_gui) {
-		    wxMessageBox( errorMsg, "SSW Error", wxOK | wxICON_INFORMATION );
+		  if (m_ui != NULL) {
+		    m_ui->showMessage("SSW Error", errorMsg);
 		  } else {
 		    std::cout << errorMsg << std::endl;
 		  }
@@ -120,9 +121,8 @@ int FGame::init(wxWindow *w){
 		  break;
 	  }
   }
-  if (m_gui){
-	  SatharRetreatGUI *d = new SatharRetreatGUI(m_parent);
-	  m_satharRetreat = d->ShowModal();
+  if (m_ui != NULL){
+	  m_satharRetreat = m_ui->selectRetreatCondition();
   }
   return 0;
 }
@@ -167,18 +167,16 @@ int FGame::getPlayers(bool gui){
 }
 
 void FGame::showPlayers() {
-  wxString msg = "";
+  std::ostringstream msg;
   int i=1;
   for (PlayerList::iterator pItr=m_players.begin(); pItr<m_players.end(); pItr++){
-    wxString tmp;
-    tmp.Printf("Player %d:  %s\n",i,(*pItr)->getName().c_str());
-    msg += tmp;
+    msg << "Player " << i << ":  " << (*pItr)->getName() << "\n";
     i++;
   }
-  if(m_gui){
-	  wxMessageBox(msg, "Player List",wxOK);
+  if(m_ui != NULL){
+	  m_ui->showMessage("Player List", msg.str());
   } else {
-	  std::cout << msg << std::endl;
+	  std::cout << msg.str() << std::endl;
   }
 }
 
@@ -196,8 +194,8 @@ int FGame::initMap(bool gui){
 
 void FGame::draw(){
 	// draw the base map
-	if (m_parent != NULL){
-		wxClientDC dc(m_parent);
+	if (g_strategicWindow != NULL){
+		wxClientDC dc(g_strategicWindow);
 		draw(dc);
 	}
 }
@@ -216,7 +214,7 @@ void FGame::draw(wxDC &dc){
 		if(m_players[1]){
 			pd.drawFleets(dc,m_players[1]);
 		}
-		drawTurnCounter();
+		drawTurnCounter(dc);
 	}
 }
 
@@ -275,10 +273,8 @@ int FGame::addSatharShips(){
 	}
 
 	int result;
-	if (m_gui){
-		SatharFleetsGUI * d = new SatharFleetsGUI(m_parent,m_players[1],m_universe,true);
-		result = d->ShowModal();
-//	std::cerr << "Made it out of the dialog box okay." << std::endl;
+	if (m_ui != NULL){
+		result = m_ui->runSatharFleetSetup(m_players[1],m_universe,true);
 	} else {
 		result = 0;
 	}
@@ -312,11 +308,8 @@ int FGame::addUPFUnattached(){
 	m_players[0]->addShip(sPtr);
 
 	int result;
-	if (m_gui){
-		UPFUnattachedGUI * d = new UPFUnattachedGUI(m_parent,m_players[0],m_universe);
-		result = d->ShowModal();
-//	std::cout << "UPF has " << m_players[0]->getShipList().size() << " unattached ships left" << std::endl;
-//	std::cout << "UPF has " << m_players[0]->getFleetList().size() << " fleets" << std::endl;
+	if (m_ui != NULL){
+		result = m_ui->runUPFUnattachedSetup(m_players[0],m_universe);
 	} else {
 		result = 0;
 	}
@@ -451,17 +444,20 @@ void FGame::createSFNova(){
 }
 
 void FGame::onLeftDClick(wxMouseEvent& event) {
-	wxClientDC dc(m_parent);
+	if (g_strategicWindow == NULL){
+		return;
+	}
+	wxClientDC dc(g_strategicWindow);
 	WXMapDisplay md;
 	std::cout << "m_x = " << event.m_x << ", m_y = " << event.m_y << std::endl;
 	if (m_universe!=NULL){
 		FSystem * sys = m_universe->selectSystem(event.m_x/md.getScale(dc),event.m_y/md.getScale(dc));
 		FPlayer * player = (m_players[0]->getID()==m_currentPlayer)?m_players[0]:m_players[1];
 		if (sys!=NULL){
-			std::string title = sys->getName() + " System Information";
-			SystemDialogGUI *d = new SystemDialogGUI(m_parent,sys,m_universe,player,title);
-			d->ShowModal();
-			m_parent->Refresh();
+			if (m_ui != NULL){
+				m_ui->showSystemDialog(sys,m_universe,player);
+				m_ui->requestRedraw();
+			}
 			return;
 		}
 	}
@@ -474,8 +470,9 @@ void FGame::onLeftDClick(wxMouseEvent& event) {
 				if (f->getDestination() != FFleet::NO_DESTINATION) {
 					destination = m_universe->getSystem(f->getDestination());
 				}
-				ViewFleetGUI *d = new ViewFleetGUI(m_parent,f,m_universe->getSystem(f->getLocation()),destination);
-				d->ShowModal();
+				if (m_ui != NULL){
+					m_ui->showFleetDialog(f,m_universe->getSystem(f->getLocation()),destination);
+				}
 				return;
 			}
 		}
@@ -562,9 +559,8 @@ void FGame::moveFleets(FPlayer * p){
 			if (time == -1){  // we failed the jump
 				std::string msg = "The fleet " + fleets[i]->getName()
 						+ " has failed it's risk jump and has been lost";
-				if (m_gui){
-					wxMessageDialog d(m_parent, msg,	"Failed Risk Jump",wxOK);
-					d.ShowModal();
+				if (m_ui != NULL){
+					m_ui->notifyFailedJump(fleets[i]->getName());
 				} else {
 					std::cout << msg << std::endl;
 				}
@@ -903,8 +899,7 @@ void FGame::createKizkKarMilita(){
 	m_universe->getSystem("Kizk-Kar")->addFleet(fPtr);
 }
 
-void FGame::drawTurnCounter(){
-	wxClientDC dc(m_parent);
+void FGame::drawTurnCounter(wxDC &dc){
 	wxCoord w, h, s;
 	dc.GetSize(&w, &h);
 	s = ((w > h)?h:w)/20;
@@ -961,7 +956,10 @@ void FGame::drawTurnCounter(){
 }
 
 int FGame::onLeftUp(wxMouseEvent &event){
-	wxClientDC dc(m_parent);
+	if (g_strategicWindow == NULL){
+		return 0;
+	}
+	wxClientDC dc(g_strategicWindow);
 	wxCoord w, h, s, x, y;
 	dc.GetSize(&w, &h);
 	s = ((w > h)?h:w)/20;
@@ -975,7 +973,9 @@ int FGame::onLeftUp(wxMouseEvent &event){
 			endSatharTurn();
 			return 2;
 		}
-		m_parent->Refresh();
+		if (m_ui != NULL){
+			m_ui->requestRedraw();
+		}
 	}
 	return 0;
 }
@@ -1057,9 +1057,9 @@ bool FGame::isUPFTurn(){
 
 void FGame::onAddSatharShips(){
 	if(m_currentPlayer == m_players[1]->getID()){  // make sure it is the Sathar player's turn
-		SatharFleetsGUI * d = new SatharFleetsGUI(m_parent,m_players[1],m_universe,false);
-		/*int result = */d->ShowModal();
-
+		if (m_ui != NULL){
+			/*int result = */m_ui->runSatharFleetSetup(m_players[1],m_universe,false);
+		}
 	}
 }
 
@@ -1101,9 +1101,8 @@ void FGame::showRetreatConditions(){
 		msg << "Error:  No retreat condition selected";
 		break;
 	}
-	if (m_gui){
-		wxMessageDialog d(m_parent,msg.str(),"Sathar Retreat Conditions",wxOK);
-		d.ShowModal();
+	if (m_ui != NULL){
+		m_ui->showRetreatConditions(msg.str());
 	} else {
 		std::cout << msg.str() << std::endl;
 	}
@@ -1176,28 +1175,28 @@ int FGame::checkForVictory(){
 	// status is.
 	if (UPFVictory){  // the UPF have conditions for victory
 		if(SatharVictory){ // but so do the Sathar
-			wxMessageDialog d(m_parent,"Both the UPF and Sathar satisfied their victory\nconditions this round.\n\nThe game is a draw",
-					"It's a Draw!", wxOK);
-			d.ShowModal();
+			if (m_ui != NULL){
+				m_ui->showMessage("It's a Draw!","Both the UPF and Sathar satisfied their victory\nconditions this round.\n\nThe game is a draw");
+			}
 			return 3;  // it's a draw
 		}
 		if(fortressCount == 1){ // but there is only 1 Fortress left
-			wxMessageDialog d(m_parent,"The Sathar have been forced to retreat but there\nis only one remaining UPF Fortress.\n\nThe game is a draw",
-					"It's a Draw!", wxOK);
-			d.ShowModal();
+			if (m_ui != NULL){
+				m_ui->showMessage("It's a Draw!","The Sathar have been forced to retreat but there\nis only one remaining UPF Fortress.\n\nThe game is a draw");
+			}
 			return 3;  // it's a draw
 		}
 		if (fortressCount >= 2){ // Sathar didn't kill enough fortresses
-			wxMessageDialog d(m_parent,"The Sathar have been forced to retreat and there\nare at least two UPF Fortress still intact.\n\nThe UPF win!",
-					"UPF Victory!", wxOK);
-			d.ShowModal();
+			if (m_ui != NULL){
+				m_ui->notifyVictory(1);
+			}
 			return 1; // it's a UPF victory
 		}
 	} else {  // UPF don't have victory conditions
 		if (SatharVictory){  // but the Sathar do
-			wxMessageDialog d(m_parent,"The Sathar have destroyed twelve stations including\nall four Fortresses.\n\nThe Sathar win!",
-					"UPF Victory!", wxOK);
-			d.ShowModal();
+			if (m_ui != NULL){
+				m_ui->notifyVictory(2);
+			}
 			return 2;  // it's a Sathar Victory
 		}
 	}
@@ -1260,8 +1259,9 @@ void FGame::resolveCombat(std::string sysName){
 		}
 	}
 	// okay now pop up a dialog showing the fleets and giving the Sathar the option to attack.
-	SelectCombatGUI d(m_parent,sys,upfList,satharList,&m_players);
-	d.ShowModal();
+	if (m_ui != NULL){
+		m_ui->selectCombat(sys,upfList,satharList,&m_players);
+	}
 }
 
 FPlayer * FGame::getPlayer(unsigned int id) const{

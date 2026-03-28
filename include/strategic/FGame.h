@@ -13,6 +13,7 @@
 #include "StrategicTypes.h"
 #include "FPlayer.h"
 #include "FMap.h"
+#include "strategic/IStrategicUI.h"
 #include <vector>
 
 class wxWindow;
@@ -45,7 +46,7 @@ private:
 
 protected:
 	/// Default Constructor
-	FGame(wxWindow * win);
+	FGame(IStrategicUI * ui);
 
 public:
 	/**
@@ -60,7 +61,9 @@ public:
 	 * @date Created:  May 30, 2008
 	 * @date Last Modified:  May 30, 2008
 	 */
-	static FGame & create(wxWindow * win = NULL);
+	static FGame & create();
+	static FGame & create(IStrategicUI * ui);
+	static FGame & create(wxWindow * win);
 
   /// Default Destructor
 	virtual ~FGame();
@@ -277,8 +280,8 @@ private:
   bool m_gui;
   /// current player ID
   unsigned int m_currentPlayer;
-  /// pointer to main window
-  wxWindow * m_parent;
+  /// pointer to strategic UI adapter
+  IStrategicUI * m_ui;
   /// Sathar retreat condition
   int m_satharRetreat;
   /// number of Heavy Curisers the Sathar have lost
@@ -393,7 +396,7 @@ private:
    * @date Created:  Mar 10, 2008
    * @date Last Modified:  Mar 11, 2008
    */
-  void drawTurnCounter();
+  void drawTurnCounter(wxDC &dc);
 
   /**
    * @brief Check to see of someone  has won the game
