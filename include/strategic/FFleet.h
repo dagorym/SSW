@@ -10,6 +10,7 @@
 #define _FFLEET_H_
 
 #include "core/FPObject.h"
+#include "StrategicTypes.h"
 #include "ships/FVehicle.h"
 #include <string>
 #include <vector>
@@ -382,9 +383,6 @@ private:
   float m_dy;
 
 };
-
-typedef std::vector<FFleet *> FleetList;
-
 };
 
 #endif //_FFLEET_H_

@@ -10,6 +10,7 @@
 #define _FGAME_H_
 
 #include "core/FPObject.h"
+#include "StrategicTypes.h"
 #include "FPlayer.h"
 #include "FMap.h"
 #include <vector>

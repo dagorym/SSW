@@ -10,6 +10,7 @@
 #define _FPLAYER_H_
 
 #include "core/FPObject.h"
+#include "StrategicTypes.h"
 #include "FFleet.h"
 #include "FMap.h"
 #include <string>
@@ -293,9 +294,6 @@ private:
   /// counter for number of instances of this class
   static unsigned int m_classCount;
 };
-
-// PlayerList typedef
-typedef std::vector<FPlayer *> PlayerList;
 
 };
 

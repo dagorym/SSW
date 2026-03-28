@@ -10,6 +10,7 @@
 #define _FSYSTEM_H_
 
 #include "core/FPObject.h"
+#include "StrategicTypes.h"
 #include "FPlanet.h"
 #include "FFleet.h"
 #include <vector>
