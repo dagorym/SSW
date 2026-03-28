@@ -13,6 +13,7 @@ tests/tactical/TacticalTests
 *.a
 *.so
 .settings
+plans/notes.txt
 
 /.vs/slnx.sqlite
 /.vs/ProjectSettings.json
