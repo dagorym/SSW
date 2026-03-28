@@ -14,8 +14,8 @@ The codebase is organized into distinct modules, each with its own Makefile and 
 - **core**: base types and persistence (`FObject`, `FPObject`, `FPoint`, `FHexMap`)
 - **strategic**: game state and turn logic (`FGame`, `FPlayer`, `FFleet`, `FMap`, `FSystem`)
 - **ships**: `FVehicle` and concrete ship types
-- **weapons**: weapon systems and combat mechanics
-- **defenses**: defensive systems
+- **weapons**: weapon systems (`FWeapon` and variants)
+- **defenses**: defensive systems (shields, screens, hull types)
 - **tactical**: battle mechanics and combat resolution
 - **gui**: wxWidgets UI
 - **battleSim**: battle simulator UI and flow
@@ -26,9 +26,9 @@ Headers live under `include/` and source code under `src/`, generally mirroring 
 
 ### Key design patterns
 
-- **Singleton**: `FGame` is managed as a singleton game controller.
+- **Singleton**: `FGame` is managed as a singleton game controller via static instance management.
 - **Inheritance hierarchy**: game objects derive from `FObject` or `FPObject`.
-- **Composition / component system**: ships contain collections of weapons and defenses.
+- **Composition / component system**: ships contain `std::vector` collections of weapons and defenses as components.
 - **Serialization**: persistent objects implement `save()` and `load()`-style APIs.
 
 ### Core class structure
@@ -36,8 +36,10 @@ Headers live under `include/` and source code under `src/`, generally mirroring 
 - `FGame`: central game controller managing players, maps, and game state
 - `FVehicle`: base class for ships and stations, including HP, weapons, and defenses
 - `FPlayer`: game participants, including UPF and Sathar factions
-- `FFleet`: collections of vehicles belonging to players
+- `FFleet`: non-copyable collection of vehicles belonging to a player; uses `NO_DESTINATION`/`NO_ROUTE` sentinel constants for unset navigation state
 - `FMap`: strategic-level game board and system management
+- `FTacticalAttackResult`: structured result from a weapon attack (outcome, damage, and hit details)
+- `FTacticalCombatReport`: per-ship and per-weapon combat reporting for a battle round
 
 ### Data flow
 
@@ -57,7 +59,7 @@ The project uses a hierarchical Makefile system. Run commands from the repositor
 - Deep clean all modules: `make all_clean`
 - Build documentation: `make docs`
 
-Individual modules can also be built by navigating to their source directories and running `make`.
+Individual modules can also be built by navigating to their source directories and running `make`. Each module produces a static library (`.a` file) that is linked into the final executables.
 
 wxWidgets must be available via `wx-config`. See `WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
 
@@ -69,15 +71,13 @@ Open `SSW.sln` after building wxWidgets 3.3.1. Additional project details are in
 
 ### Dependencies
 
-- **wxWidgets**: GUI framework
+- **wxWidgets**: GUI framework (configured via `wx-config`)
 - **CppUnit**: unit testing framework
-- **gcov**: coverage analysis support
-
-WARP notes reference `wx-config-3.0`, while repository upgrade notes reference newer wxWidgets work. Follow the repo’s current build configuration in the Makefiles and upgrade notes when making environment changes.
+- **gcov**: coverage analysis support (opt-in; enable with `make COVERAGE=1`)
 
 ### Platform support
 
-- Primary target: Linux
+- Primary target: Linux (compiled with `-DLINUX` flag)
 - Cross-platform GUI through wxWidgets
 - Cross-platform support also includes Visual Studio on Windows
 - Uses standard C++ with STL containers
@@ -86,10 +86,11 @@ WARP notes reference `wx-config-3.0`, while repository upgrade notes reference n
 
 Unit tests use **CppUnit** and are organized under `tests/` by module:
 
-- Core tests: `tests/core/*`
-- Weapons tests: `tests/weapons/*`
-- Ships tests: `tests/ships/*`
-- Strategic tests: `tests/strategic/*`
+- Core tests: `tests/core/*` (covers `FPoint`, `FObject`, `FGameConfig`, etc.)
+- Weapons tests: `tests/weapons/*` (covers all weapon types, including `FWeaponFireResultTest`)
+- Ships tests: `tests/ships/*` (covers all vehicle types, including `FTacticalAttackIntegrationTest`)
+- Tactical tests: `tests/tactical/*` (covers `FTacticalCombatReport`, `FTacticalAttackResult`, battery range clamping, station orbital movement, etc.)
+- Strategic tests: `tests/strategic/*` (covers `FGame`, `FPlayer`, `FFleet`, etc.)
 
 From `tests/`:
 
@@ -98,7 +99,14 @@ From `tests/`:
 
 Main test runner: `tests/SSWTests.cpp`
 
-The build system also includes gcov support for coverage analysis.
+To run a **single module's tests**, each module under `tests/` also has its own standalone runner:
+```bash
+cd tests/tactical && make && ./TacticalTests   # tactical module only
+cd tests/weapons  && make && ./WeaponsTests    # weapons module only
+# pattern: tests/<module> && make && ./<Module>Tests
+```
+
+The build system supports gcov coverage analysis; enable it with `make COVERAGE=1`.
 
 ## Key Entry Points
 
