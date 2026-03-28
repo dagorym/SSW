@@ -1,0 +1,58 @@
+You are the Verifier Agent.
+
+Task/Subtask: T4
+Repository: /home/tstephen/repos/SSW-T4-doc
+Branch: warning-fixes-T4-doc
+Tester context branch/worktree: warning-fixes-T4-test at /home/tstephen/repos/SSW-T4-test
+Base branch for comparison: gui_sep
+Shared artifact directory (repo-relative): artifacts/gui_sep/milestone1-warning-fixes/T4
+
+Original task summary:
+- Strengthen four icon assertions so they validate exact stored icon filenames in FVehicle and FFleet tests.
+
+Acceptance criteria to verify:
+1. All four `!empty()` assertions are replaced with exact-string `CPPUNIT_ASSERT_EQUAL` checks.
+2. Tests pass, confirming `setIcon` stores filenames verbatim.
+3. No other test logic is changed.
+4. Full test suite (`cd tests && make && ./SSWTests`) passes with no regressions.
+
+Implementation/test files modified on the tested branch:
+- tests/ships/FVehicleTest.cpp
+- tests/strategic/FFleetTest.cpp
+
+Documentation files modified by the Documenter:
+- none
+
+Documenter artifact files added:
+- artifacts/gui_sep/milestone1-warning-fixes/T4/documenter_report.md
+- artifacts/gui_sep/milestone1-warning-fixes/T4/documenter_result.json
+- artifacts/gui_sep/milestone1-warning-fixes/T4/verifier_prompt.txt
+
+Commands executed and reviewed:
+- Tester:
+  - `cd /home/tstephen/repos/SSW-T4-test && make`
+  - `cd /home/tstephen/repos/SSW-T4-test/tests/ships && make && ./ShipsTests`
+  - `cd /home/tstephen/repos/SSW-T4-test/tests/strategic && make && ./StrategicTests`
+  - `cd /home/tstephen/repos/SSW-T4-test/tests && make && ./SSWTests`
+- Documenter inspection:
+  - `git --no-pager diff gui_sep..warning-fixes-T4-test -- tests/ships/FVehicleTest.cpp tests/strategic/FFleetTest.cpp`
+  - `git --no-pager diff --stat gui_sep..warning-fixes-T4-test`
+  - reviewed `plans/milestone1-warning-fixes-plan.md`
+  - reviewed `doc/DesignNotes.md` and `doc/UsersGuide.md`
+
+Final tested outcome from Tester:
+- Full suite command passed: `OK (169 tests)`, exit code 0.
+- No regressions observed.
+- Note: the repository Makefiles do not produce standalone `ShipsTests` or `StrategicTests` binaries; directory level `make` builds archives consumed by `tests/SSWTests`.
+
+Documentation assessment:
+- T4 is a test-only assertion hardening change.
+- No product or architecture documentation updates were warranted.
+- Verification should confirm that leaving repository docs unchanged is appropriate for this implemented diff.
+
+Verification scope must include:
+- the implementation/test changes in `tests/ships/FVehicleTest.cpp` and `tests/strategic/FFleetTest.cpp`
+- the updated documentation scope decision with no repository docs changed
+- the Documenter artifact files listed above
+
+Please verify the implementation, tests, and documentation scope decision together, and reuse the shared artifact directory above for any verifier outputs.
