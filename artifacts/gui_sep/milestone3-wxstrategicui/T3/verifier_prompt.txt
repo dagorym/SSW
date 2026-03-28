@@ -1,0 +1,54 @@
+You are the Verifier Agent.
+
+Original task summary:
+- Validate and document wiring of `WXStrategicUI` through `FMainFrame` into `FGame` for new/open game flows, plus GUI module build integration.
+- Implementation under review commit: `43fba6c3248be6544c160758c17f93fc14a0d231`.
+- Tester context: `/home/tstephen/worktrees/SSW/gui_sep-t3-tester-20260328`, branch `gui_sep-t3-tester-20260328`, tester commit `32abf0adf625e0e50b550c8c7b617c00e5985a76`.
+- Documenter context: `/home/tstephen/worktrees/SSW/gui_sep-t3-documenter-20260328`, branch `gui_sep-t3-documenter-20260328`.
+
+Acceptance criteria validated by tester:
+1. `FMainFrame` owns a `WXStrategicUI` instance with safe lifetime management.
+2. Both new-game and open-game flows inject that adapter into `FGame`.
+3. `src/gui/Makefile` builds `WXStrategicUI.o`.
+4. Existing `FGame::create()` call sites still compile after the change.
+5. No ownership leak or double-delete is introduced for the strategic UI adapter.
+
+Implementation files changed:
+- `include/FMainFrame.h`
+- `src/FMainFrame.cpp`
+- `src/gui/Makefile`
+
+Test files added or modified:
+- None.
+
+Documentation files added or modified:
+- None. The documenter reviewed existing guidance and determined no repository documentation update was warranted for this internal wiring change.
+
+Commands executed by tester:
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t3-tester-20260328/src/gui && make`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t3-tester-20260328 && make`
+- `rg "FGame::create\\s*\\(" /home/tstephen/worktrees/SSW/gui_sep-t3-tester-20260328/src`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t3-tester-20260328 && make clean`
+
+Final test outcomes:
+- Overall status: PASS
+- Acceptance criteria: 5/5 passed, 0 failed
+- Build validation: 2/2 successful build commands
+- No unmet criteria
+
+Documentation review outcome:
+- Existing repository guidance already covers the `IStrategicUI`/`WXStrategicUI` strategic UI boundary introduced earlier in the milestone.
+- T3 only wires ownership and injection through `FMainFrame` and adds `WXStrategicUI.o` to the gui module build, so no additional repository documentation change was warranted.
+- Verification should confirm that leaving repository documentation unchanged was the correct decision for the shipped diff.
+
+Shared artifact directory to reuse exactly:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T3`
+
+Artifacts expected in that directory:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T3/tester_report.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T3/tester_result.json`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T3/documenter_report.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T3/documenter_result.json`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T3/verifier_prompt.txt`
+
+Verification must include the updated documentation files along with the implementation and tests. For T3 there are no repository documentation file edits, so verify that this no-doc-change decision is correct and that the documenter artifacts accurately record it.
