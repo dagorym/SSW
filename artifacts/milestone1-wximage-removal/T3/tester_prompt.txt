@@ -1,0 +1,28 @@
+## Tester Handoff: T3 — Remove wxImage from FFleet
+
+### Shared artifact directory
+artifacts/milestone1-wximage-removal/T3
+
+### Implementer branch
+gui_sep-t3-implementer-20260327
+
+### What was implemented
+- Removed wxImage* m_icon and getIcon() from include/strategic/FFleet.h
+- Removed m_icon init, delete, and new wxImage from src/strategic/FFleet.cpp (constructor, destructor, setIcon, load)
+- setIcon(string) now stores only m_iconFile
+
+### Acceptance criteria
+1. FFleet.h has no wxImage symbol
+2. FFleet.cpp performs no wxImage allocation or loading
+3. setIcon(string) stores only m_iconFile
+4. strategic module builds cleanly: cd src/strategic && make
+
+### Validation commands
+```bash
+grep -n "wxImage\|getIcon()\|m_icon\b" include/strategic/FFleet.h
+grep -n "wxImage\|m_icon\b\|new wxImage" src/strategic/FFleet.cpp
+cd src/strategic && make 2>&1 | tail -5
+```
+
+### Required artifacts in artifacts/milestone1-wximage-removal/T3/
+- tester_report.md, tester_result.json, documenter_prompt.txt (if pass)
