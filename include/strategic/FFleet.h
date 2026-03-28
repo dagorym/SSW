@@ -308,8 +308,8 @@ public:
   void setIcon(std::string icon);
   /// get the fleet icon
   const wxImage * getIcon() const { return m_icon; }
-//  /// get the fleet icon name
-//  const std::string & getIconName() const { return m_iconFile; }
+  /// get the fleet icon name
+  const std::string & getIconName() const { return m_iconFile; }
 
   /// set the milita flag
   void setMilitia(bool flag, std::string home) { m_isMilitia = flag; m_home = home;}

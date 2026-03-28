@@ -62,6 +62,8 @@ public:
 	const std::string & getName() { return m_name; }
 	/// get the vehicle's icon
 	const wxImage * getIcon() const { return m_icon; }
+	/// get the vehicle's icon name
+	const std::string & getIconName() const { return m_iconName; }
 	/// set the vehicles icon
 	void setIcon(std::string icon);
 	/// get the vehicle's type
