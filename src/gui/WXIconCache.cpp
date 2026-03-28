@@ -5,6 +5,7 @@
  * @date Created: Mar 28, 2026
  */
 #include "gui/WXIconCache.h"
+#include "core/FGameConfig.h"
 #include <wx/log.h>
 
 namespace Frontier {
@@ -19,9 +20,11 @@ const wxImage & WXIconCache::get(const std::string & filename) {
     if (it != m_cache.end()) {
         return it->second;
     }
-    wxImage img(filename);
+    FGameConfig & gc = FGameConfig::getGameConfig();
+    std::string fullPath = gc.getBasePath() + filename;
+    wxImage img(fullPath);
     if (!img.IsOk()) {
-        wxLogWarning("WXIconCache: failed to load image '%s'", filename.c_str());
+        wxLogWarning("WXIconCache: failed to load image '%s'", fullPath.c_str());
         m_cache[filename] = wxImage();
     } else {
         m_cache[filename] = img;
