@@ -1,6 +1,6 @@
 # UPF Second Sathar War Simulator User's Guide
 
-**United Planetary Federation's Second Sathar War Simulator v0.0.10**
+**United Planetary Federation's Second Sathar War Simulator v0.0.17**
 
 *Catalog No. Classification 1A — 583B00218S1*
 
@@ -48,6 +48,7 @@
     - [Setting up a fleet](#setting-up-a-fleet)
   - [Moving your ships](#moving-your-ships)
   - [Selecting weapons](#selecting-weapons)
+  - [Selecting defenses](#selecting-defenses)
   - [Selecting targets](#selecting-targets)
   - [Taking the shot](#taking-the-shot)
   - [Final tactical notes](#final-tactical-notes)
@@ -87,7 +88,7 @@ The Show Menu has three available options:
 
 - Players – Selecting this option brings up a dialog box showing the player names.  Not very exciting at the moment.  In the future it may contain statistics on the player (number of ships, number of ships lost, number of systems controlled, etc).
 - Sathar Retreat Conditions – This option is only available to the Sathar player.  It is always grayed out for the UPF player.  If selected, it shows a dialog box listing what the Sathar player's selected retreat condition is.
-- Show Battle Board – This option launches the tactical battle map with a mini combat scenario.  Currently the scenario pits a UPF Frigate and 3 Assault Scouts against a Sathar Destroyer and Light Cruiser.  It is mainly intended as a test bed as the tactical system is developed but may remain in the game for tutorial purposes.  How to interact with the tactical map is described in the Tactical Combat section of this document.
+- Show Battle Board – This option launches the tactical battle map with a mini combat scenario.  Currently the scenario pits a UPF Frigate, 3 Assault Scouts and an Armed Station against a Sathar Destroyer and Light Cruiser.  It is mainly intended as a test bed as the tactical system is developed but may remain in the game for tutorial purposes.  How to interact with the tactical map is described in the Tactical Combat section of this document.
 
 ## Turn Menu
 The turn Menu has four choices that activate various functionality that may be available during your turn:
@@ -313,13 +314,13 @@ Your second option is to play out the combat on a tabletop board or otherwise re
 If you choose to use the tactical combat system, the game immediately opens up the battle board which allows you to set up and play out the tactical combat for this battle.  Once done, it returns you to the main battle board to either continue the strategic portion of the game or set up combat in another system if there are more combat opportunities for the current round.  The setup and play of tactical combat system is described in detail in the Tactical Combat section below.
 
 #### Entering results by hand
-If you chose to enter the combat results by hand, you are presented with the Combat Results dialog as shown in figure ??.  This dialog will be described in detail in a future version of this guide.
+If you chose to enter the combat results by hand, you are presented with the Battle Results dialog.  This dialog lists all of the fleets involved in the battle.  Select a fleet and choose the outcome for that fleet from the result selector, then click the button to record it.  Repeat for each fleet involved in the battle and click Done when all results have been entered.
 
 # Tactical Combat
 ![Frame3](images/figure1.png)
 *Figure 15: Sample initial tactical combat screen.  The upper panel is the battle field map and the lower panel is the data display area.*
 
-You get to the tactical combat map either by selecting Show Battle Board from the Show Menu on the main screen or during a combat encounter in the strategic game (coming in release v.0.1.0).  In either case you are presented with a screen similar to the one shown in figure 15.
+You get to the tactical combat map either by selecting Show Battle Board from the Show Menu on the main screen or during a combat encounter in the strategic game by clicking "To the Battle Board!" in the Combat Resolution Method dialog.  In either case you are presented with a screen similar to the one shown in figure 15.
 The screen is divided into two sections.  The upper section is the battlefield.  This portion of the screen is a large scrollable canvas that holds the hex grid map the combat is played out on.  It will show all of the ships involved in the combat the planet and station if present and the movement of each ship each turn.  In addition it displays the effective range of the currently selected weapon on the currently selected ship during the combat phases of the game.
 The bottom window is the data display window.  The contents displayed here change throughout the course of the tactical game setup and play depending on the current phase of the game.  This display shows the ships to be placed during setup, controls for setting their initial speed, ship status displays for the selected ships and controls for ending the various phases of the tactical combat game.
 A permanent feature of the data display panel is the zoom control.  This control is always visible and active and allows you to zoom in or out on the battlefield.  Clicking on the red “+” arrow zooms in on the hex grid and selecting the blue “-” arrow zooms out.
@@ -383,10 +384,9 @@ You do not need to move all of the necessary hexes before moving on to a new shi
 *Figure 25: Activated 'Movement Done' button after moving all your ships the minimum distance required by their speed and ADF.*
 
 However, you must eventually get all of your ships into the orange hex zones to move on.  Once you have moved all of your ships into their hex areas marked with orange hexes, the Movement Done button in the data display area illuminates (figure 25).  Once you are satisfied with your movement orders, select this button.  Your ships will be moved to the ends of the movement lines and it is now time for defensive fire.  The movement lines will stay on the board so that the opposing player can see where you traveled during the last turn.
-Note:  There are currently several issues with movement:
+Note:  There is currently one known issue with movement:
 
-- Movement off the map is not supported.  If your ships tries to head off the map, it will crash the game.  Try to avoid ending your turn with a ship in a position that there is no way for it to move and turn to stay on the map
-- Ships can't stop.  If you try to not move a ship or have a ship with speed zero, the game may crash.  This was discovered by BD_Cerridwen during play-testing and is something I didn't even think to check.
+- Ships can't stop.  If you try to not move a ship or have a ship with speed zero, the game may behave unexpectedly.  This was discovered by BD_Cerridwen during play-testing.
 
 ## Selecting weapons
 To select a weapon, you start by selecting the ship that wants to fire.  As always, the information about the selected ship is displayed in the data display area.  During your combat phases, the weapon names are color coded and active.  The color's have the following meanings:
@@ -403,6 +403,17 @@ If you are the moving player, the field of fire is determined based on the weapo
 ![Frame11](images/figure12.png)
 *Figure 27: Selecting a moving ship's weapon.  In this case the Sathar Light Cruiser's DC has been selected and all the hexes that were available as targets as it moved are highlighted.  The hexes that qualify for the 'head on shot' bonus are highlighted in blue.  Again the selected target is displayed in the upper left and the weapon's name has turned green indicating that it has a selected target.*
 
+## Selecting defenses
+
+During your movement turn you can change your active defense.  The defense list is shown in the data display area below the weapon list.  Defense names are color coded:
+
+- green — currently active defense
+- white — available, inactive
+- orange — unavailable (power system damaged)
+- red — damaged, cannot be used
+
+To change your active defense, simply click on the defense you want.  Clicking on an already active defense will deactivate it, reverting to no defense.  Masking Screens have limited charges (2 per battle); each activation costs one charge.  A Masking Screen that is active will replace the ship's icon on the battle map with the Masking Screen icon.  ICMs are never activated from this list — the game automatically prompts you to allocate ICMs when an incoming weapon that can be intercepted is fired at your ship.
+
 ## Selecting targets
 Once you've picked your weapon, it's time to pick your target.  To select a target simply click on the ship you want to shoot at.  If it is not a valid target it will not be selected.  If it is, the target vessel's name will be displayed in the target box in the upper left corner and the weapon's color will change to green if it was yellow (see figures 26 & 27).  If you want a different target, simply click on a different ship.  If there are more than one ship in the selected hex, clicking on the hex multiple times will cycle the target selection through all the ships in that hex.
 The criteria for a ship being a valid target is different depending on whether you are the non-moving player or the moving player for that combat phase
@@ -414,7 +425,7 @@ You don't have to worry about keeping track of “head on” shots for the forwa
 ## Taking the shot
 You can continue to cycle through all of your ships and weapons selecting and changing targets until you are satisfied with your weapon allocations.  Once you are happy with your selections, click on the “Defensive Fire Done” or “Offensive Fire Done” button depending on which phase of the battle you are in.  Once you do, hit probabilities are rolled, damage is calculated and applied and any destroyed ships are removed from the game.
 The “Offensive Fire Done” and “Defensive Fire Done” buttons are always active when they are displayed.  It is perfectly acceptable to end your combat turn without firing all of your weapons so be careful not to click them before you are ready as there is no going back.
-Note:  Right now the combat system is very basic, implementing the basic rules damage system sans masking screens and ICMs.  All the weapons have the basic chance to hit based on firing against a reflective hull on the Advanced Combat Table and all damage is hull damage.
+Note:  The combat system implements the full Advanced Combat damage table from the Knight Hawks Tactical Operations Manual, including ADF/MR loss, weapon and defense critical hits, power system damage, navigation errors, electrical fires and more.  Defenses are fully active — Reflective Hulls, Masking Screens, Proton, Electron and Stasis Screens all modify to-hit rolls, and ICMs can be allocated to intercept incoming torpedoes and rocket batteries.
 
 ## Final tactical notes
 ![Frame29](images/figure10.png)
