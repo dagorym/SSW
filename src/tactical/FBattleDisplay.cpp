@@ -11,6 +11,7 @@
 #include "tactical/FBattleScreen.h"
 #include "core/FGameConfig.h"
 #include "core/FHexMap.h"
+#include "gui/WXIconCache.h"
 #include <wx/wx.h>
 #include <sstream>
 
@@ -312,7 +313,7 @@ void FBattleDisplay::drawShipChoices (wxDC &dc){
 	}
 	for (unsigned int i=0; i< m_vList.size(); i++){
 		if (m_vList[i]!=NULL){
-			const wxImage *iptr = m_vList[i]->getIcon();
+			const wxImage *iptr = &WXIconCache::instance().get(m_vList[i]->getIconName());
 			wxImage im = iptr->Scale(ICON_SIZE,ICON_SIZE);
 			wxBitmap b(im);
 			dc.DrawBitmap(b,leftOffset+i*ICON_SIZE,BORDER);
