@@ -71,4 +71,5 @@
   - `artifacts/gui_sep/milestone1-warning-fixes/T4/documenter_prompt.txt`
 
 ## Commit
-- **Status:** Pending at report generation time (see `tester_result.json` for final hash after commit).
+- **Status:** Committed
+- **Commit hash:** `f7f6ff4`

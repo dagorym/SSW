@@ -2,7 +2,7 @@
   "status": "success",
   "task_id": "T4",
   "branch": "warning-fixes-T4-test",
-  "commit_hash": "42fe548",
+  "commit_hash": "f7f6ff4",
   "test_files": [
     "tests/ships/FVehicleTest.cpp",
     "tests/strategic/FFleetTest.cpp"
