@@ -1,0 +1,29 @@
+## Tester Handoff: T4 — Remove wxImage from FPlayer
+
+### Shared artifact directory
+artifacts/milestone1-wximage-removal/T4
+
+### Implementer branch
+gui_sep-t4-implementer-20260327
+
+### What was implemented
+- Removed wxImage m_fleetIcon from include/strategic/FPlayer.h (private section)
+- Removed dead commented getFleetIcon() block from FPlayer.h
+- Removed m_fleetIcon.LoadFile(...) from setFleetIcon() and load() in FPlayer.cpp
+- setFleetIcon(string) now stores only m_iconName
+
+### Acceptance criteria
+1. FPlayer.h has no wxImage symbol
+2. FPlayer.cpp performs no wxImage allocation or loading
+3. setFleetIcon(string) stores only m_iconName
+4. strategic module builds cleanly: cd src/strategic && make
+
+### Validation commands
+```bash
+grep -n "wxImage\|m_fleetIcon" include/strategic/FPlayer.h
+grep -n "wxImage\|m_fleetIcon\|LoadFile" src/strategic/FPlayer.cpp
+cd src/strategic && make 2>&1 | tail -5
+```
+
+### Required artifacts in artifacts/milestone1-wximage-removal/T4/
+- tester_report.md, tester_result.json, documenter_prompt.txt (if pass)
