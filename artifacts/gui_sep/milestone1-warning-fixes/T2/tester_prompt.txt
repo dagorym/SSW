@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Task summary:
+- Forward-declared wxWindow in strategic FGame header, removed wx include from header, and moved turn counter day/tenday image loading to WXIconCache in FGame.cpp.
+
+Modified files:
+- include/strategic/FGame.h
+- src/strategic/FGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- include/strategic/FGame.h does not contain #include <wx/wx.h> or any #include <wx/...>.
+- include/strategic/FGame.h compiles when included by a translation unit that does not include wxWidgets (verify by building the strategic tests: cd tests/strategic && make).
+- wxWindow* parameter in FGame::create() and FGame::init() is retained and uses only a forward declaration in the header.
+- m_tenday and m_day are no longer declared in FGame.h.
+- drawTurnCounter() loads tenday and day images via WXIconCache::instance().get(...).
+- Full test suite (cd tests && make && ./SSWTests) passes with no regressions.
+- Both executables link successfully (make from repo root).
+
+Create test files in:
+- tests/strategic/
+
+Implementation context for testing:
+- FGame.h no longer includes wx headers; it now forward-declares wxWindow, wxDC, and wxMouseEvent.
+- Removed private wxImage* members m_tenday and m_day from FGame.
+- FGame constructor/destructor no longer allocate/free day/tenday images.
+- drawTurnCounter() now fetches tenday/day images on-demand from WXIconCache using gc.getBasePath()+"icons/tenday.png" and gc.getBasePath()+"icons/day.png".
+- FGame.cpp still includes wx headers and now includes gui/WXIconCache.h.
+
+Suggested test command(s):
+- cd tests/strategic && make
+- make
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone1-warning-fixes/T2
