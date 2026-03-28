@@ -1,0 +1,61 @@
+You are the Verifier Agent.
+
+Original task summary:
+- Subtask: T4 (Milestone 3 WXStrategicUI verification)
+- Base branch for comparison: `gui_sep`
+- Shared artifact directory (repo-relative): `artifacts/gui_sep/milestone3-wxstrategicui/T4`
+
+Implementation context:
+- Implementation worktree validated by tester: `/home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328`
+- Implementation branch validated by tester: `gui_sep-t4-implementer-20260328`
+- Implementation commit validated by tester: `d4a4a3d7489c87cac2be1535f499c7b677cd7a6e`
+- Documenter worktree: `/home/tstephen/worktrees/SSW/gui_sep-t4-documenter-20260328`
+- Documenter branch: `gui_sep-t4-documenter-20260328`
+- Tester/documenter branch point confirmed at tester HEAD: `b93b74d0f50e02dbc6878b3882f1bf0693ff08e5`
+
+Implemented/tested change scope:
+- Verification artifact update: `artifacts/gui_sep/milestone3-wxstrategicui/T4/verification_notes.md`
+
+Acceptance criteria validated in tester handoff:
+1. gui and strategic modules build successfully.
+2. `FGame` compiles without concrete strategic dialog header dependencies.
+3. Remaining `FGame` wx coupling is explicitly limited to rendering/event paths deferred to Milestone 4.
+4. Deferred issues are documented explicitly in milestone artifacts.
+
+Commands executed during testing:
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328/src/gui && make`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-t4-implementer-20260328/src/strategic && make`
+- `rg '#include\s+"gui/(SystemDialogGUI|UPFUnattachedGUI|SatharFleetsGUI|ViewFleetGUI|SatharRetreatGUI|SelectCombatGUI)\.h"' src/strategic/FGame.cpp`
+- `rg 'wx[A-Za-z0-9_]*' include/strategic/FGame.h src/strategic/FGame.cpp`
+- `rg 'm_ui->' src/strategic/FGame.cpp`
+- Additional evidence: `rg '#include\s+"gui/.*"' src/strategic/FGame.cpp`
+
+Final test outcomes from tester handoff:
+- Result: PASS (4/4 acceptance criteria)
+- gui build: pass
+- strategic build: pass
+- No concrete strategic dialog header includes remain in `FGame.cpp`
+- `m_ui->...` strategic UI routing present
+- Residual wx coupling present only in rendering/event + compatibility paths (Milestone 4 boundary), with deferred items explicitly documented in `verification_notes.md`
+
+Documentation review outcome:
+- Reviewed the approved plan at `/home/tstephen/repos/SSW/plans/milestone3-wxstrategicui-plan.md` and the delivered diff `gui_sep..gui_sep-t4-tester-20260328`.
+- No additional documentation file edits were warranted because this subtask shipped only milestone verification artifacts and `verification_notes.md` already captures the deferred Milestone 4 boundary.
+- Tester handoff referenced `tester_report.md` and `tester_result.json`, but those files were not present in this worktree; rely on the tester handoff content above plus the committed artifact set.
+
+Test files added or modified:
+- none
+
+Documentation files added or modified:
+- none
+
+Documenter artifact files added:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/documenter_report.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/documenter_result.json`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/verifier_prompt.txt`
+
+Verification must include the updated documentation/artifact files along with the implementation and tests. In particular, review:
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/verification_notes.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/documenter_report.md`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/documenter_result.json`
+- `artifacts/gui_sep/milestone3-wxstrategicui/T4/verifier_prompt.txt`
