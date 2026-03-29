@@ -1,0 +1,40 @@
+{
+  "status": "pass",
+  "subtask": "Milestone 4 Subtask 1",
+  "worktree": "/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s1-tester-20260328",
+  "branch": "gui_sep-m4s1-tester-20260328",
+  "validated_commit": "7b8a0ca",
+  "acceptance_criteria": {
+    "wxgamedisplay_draws_map_fleets_turn_counter": "pass",
+    "turn_counter_removed_from_fgame": "pass",
+    "fgamepanel_onpaint_not_calling_m_game_draw": "pass",
+    "strategic_rendering_uses_wxmapdisplay_wxplayerdisplay": "pass",
+    "day_tenday_markers_use_gui_icon_cache": "pass",
+    "fgame_h_no_strategic_rendering_declarations": "pass"
+  },
+  "checks": [
+    {
+      "command": "make -C src/gui WXGameDisplay.o",
+      "result": "pass"
+    },
+    {
+      "command": "make -C src FGamePanel.o",
+      "result": "pass"
+    },
+    {
+      "command": "make -C src/gui libgui.a && make -C src FGamePanel.o",
+      "result": "pass"
+    },
+    {
+      "command": "make -j4",
+      "result": "fail",
+      "notes": "Out-of-scope integration failure in src/FMainFrame.cpp using removed FGame APIs (draw/onLeftDClick/onLeftUp)."
+    }
+  ],
+  "defects": [],
+  "notes": [
+    "Subtask 1 scoped validation passes.",
+    "Full build remains blocked by later milestone API migration in FMainFrame."
+  ],
+  "documenter_prompt": "artifacts/gui_sep/milestone4_plan/subtask1/documenter_prompt.txt"
+}

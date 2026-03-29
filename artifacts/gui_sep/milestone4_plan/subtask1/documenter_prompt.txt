@@ -1,0 +1,32 @@
+You are the documenter agent for Milestone 4 Subtask 1.
+
+Context:
+- Tester validated implementer commit `7b8a0ca` for Subtask 1 in worktree branch `gui_sep-m4s1-tester-20260328`.
+- Scope: GUI-side strategic rendering extraction into `WXGameDisplay` and `FGamePanel` paint-path update.
+
+What passed:
+1. `WXGameDisplay::draw(wxDC&, FGame&)` orchestrates strategic rendering:
+   - Calls `WXMapDisplay::draw(dc)`.
+   - Iterates over `FGame::getPlayers()` and calls `WXPlayerDisplay::drawFleets(dc, *player)`.
+   - Calls private `drawTurnCounter(wxDC&, const FGame&)`.
+2. Turn-counter rendering moved to GUI layer:
+   - `drawTurnCounter` implemented in `src/gui/WXGameDisplay.cpp`.
+   - Uses `FGame::getRound()`, `FGame::getCurrentPlayerID()`, `FGame::getPlayers()`.
+   - Uses `WXIconCache` with `icons/day.png` and `icons/tenday.png`.
+3. `FGamePanel::onPaint()` now renders via `m_gameDisplay.draw(dc, *m_game)`.
+4. `include/strategic/FGame.h` is free of strategic rendering declarations (`draw(wxDC&)`, `drawTurnCounter(...)`).
+
+Checks executed:
+- `make -C src/gui WXGameDisplay.o` (pass)
+- `make -C src FGamePanel.o` (pass)
+- `make -C src/gui libgui.a && make -C src FGamePanel.o` (pass)
+- Optional baseline: `make -j4` (fails, out-of-scope integration gap in `FMainFrame.cpp` still calling removed `FGame` APIs).
+
+Out-of-scope integration note:
+- Full root build currently fails due `FMainFrame` references to removed `FGame` methods (`draw`, `onLeftDClick`, `onLeftUp`), which belongs to later Milestone 4 subtasks.
+
+Artifacts to reference:
+- `artifacts/gui_sep/milestone4_plan/subtask1/tester_report.md`
+- `artifacts/gui_sep/milestone4_plan/subtask1/tester_result.json`
+
+Please produce the milestone documentation/handoff summary noting Subtask 1 is validated PASS while root build remains blocked by expected later-subtask integration work.
