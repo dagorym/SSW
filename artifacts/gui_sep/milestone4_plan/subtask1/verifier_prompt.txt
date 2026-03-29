@@ -1,0 +1,75 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify Milestone 4 Subtask 1 documentation handoff for the strategic rendering extraction now routed through `WXGameDisplay` and `FGamePanel`.
+- Confirm the scoped result is PASS and that the remaining root-build failure is the expected later-subtask `FMainFrame` integration gap, not a Subtask 1 defect.
+
+Acceptance criteria validated by prior stages:
+1. `WXGameDisplay::draw(wxDC&, FGame&)` orchestrates strategic rendering by calling `WXMapDisplay::draw(dc)`, iterating `FGame::getPlayers()`, and calling `WXPlayerDisplay::drawFleets(dc, *player)`.
+2. Turn-counter rendering moved to GUI code via private `drawTurnCounter(wxDC&, const FGame&)`, using `FGame::getRound()`, `FGame::getCurrentPlayerID()`, `FGame::getPlayers()`, and `WXIconCache` for `icons/day.png` / `icons/tenday.png`.
+3. `FGamePanel::onPaint()` now renders through `m_gameDisplay.draw(dc, *m_game)`.
+4. `include/strategic/FGame.h` remains free of strategic rendering declarations.
+5. Focused Subtask 1 checks passed; full `make -j4` remains blocked by expected later-subtask `FMainFrame` references to removed `FGame` APIs.
+
+Implementation branch/worktree context:
+- Documenter worktree: `/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s1-documenter-20260328`
+- Documenter branch: `gui_sep-m4s1-documenter-20260328`
+- Tester worktree: `/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s1-tester-20260328`
+- Tester branch: `gui_sep-m4s1-tester-20260328`
+- Implementer branch: `gui_sep-m4s1-implementer-20260328`
+- Base branch for comparison: `gui_sep`
+- Implementer commit validated by tester: `7b8a0ca`
+- Tester validation commit present before documenter changes: `e4af6a3`
+
+Implementation files added or modified:
+- `include/FGamePanel.h`
+- `include/gui/WXGameDisplay.h`
+- `src/FGamePanel.cpp`
+- `src/gui/WXGameDisplay.cpp`
+
+Test files added or modified:
+- None.
+
+Documentation files added or modified:
+- None under `doc/` or `docs/`.
+
+Artifact files added or modified:
+- `artifacts/gui_sep/milestone4_plan/subtask1/documenter_report.md`
+- `artifacts/gui_sep/milestone4_plan/subtask1/documenter_result.json`
+- `artifacts/gui_sep/milestone4_plan/subtask1/verifier_prompt.txt`
+
+Commands executed:
+1. `cd /home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s1-documenter-20260328 && pwd && git --no-pager branch --show-current && git --no-pager status --short`
+2. `git --no-pager log --oneline --decorate -8`
+3. `git --no-pager diff --name-only gui_sep..HEAD`
+4. `git --no-pager diff --stat gui_sep..HEAD`
+5. `cat artifacts/gui_sep/milestone4_plan/subtask1/tester_result.json`
+6. `cat artifacts/gui_sep/milestone4_plan/subtask1/documenter_prompt.txt`
+7. `cat artifacts/gui_sep/milestone4_plan/subtask1/tester_report.md`
+8. `cat plans/milestone4-fgame-rendering-extraction-plan.md`
+9. `cat include/gui/WXGameDisplay.h`
+10. `cat src/gui/WXGameDisplay.cpp`
+11. `cat include/FGamePanel.h`
+12. `cat src/FGamePanel.cpp`
+13. `cat include/strategic/FGame.h`
+14. `cat AGENTS.md`
+15. `cat .github/copilot-instructions.md`
+16. `cat /home/tstephen/repos/agents/agents/documenter.md`
+
+Final test outcomes:
+- Tester validation status: PASS.
+- `make -C src/gui WXGameDisplay.o` passed.
+- `make -C src FGamePanel.o` passed.
+- `make -C src/gui libgui.a && make -C src FGamePanel.o` passed.
+- `make -j4` fails in `src/FMainFrame.cpp` because later milestone work has not yet migrated removed `FGame` calls (`draw`, `onLeftDClick`, `onLeftUp`).
+- Documenter review concluded no additional repository documentation update is warranted for Subtask 1 beyond these handoff artifacts.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/gui_sep/milestone4_plan/subtask1`
+
+Verification requirements:
+- Verify the scoped diff against `plans/milestone4-fgame-rendering-extraction-plan.md` Subtask 1.
+- Verify the PASS tester outcome and the documented out-of-scope `FMainFrame` integration blocker.
+- Verify the documenter conclusion that no `doc/` or `docs/` file update is warranted for this subtask.
+- Verify the artifact outputs listed above and include them in review scope together with the implementation and tester outputs.
+- Verification must include the updated documentation files and documenter artifacts along with the implementation and tester outputs.
