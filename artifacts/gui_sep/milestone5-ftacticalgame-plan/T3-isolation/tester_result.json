@@ -1,0 +1,26 @@
+{
+  "status": "success",
+  "subtask_id": "milestone5-isolation",
+  "branch": "gui_sep_ms5-t3-isolation-tester-20260329",
+  "test_commit_hash": "c4c9d23823c3175696ef2c3f619aa78427b8b791",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd src/tactical && make objs",
+    "cd tests/tactical && make && ./TacticalTests",
+    "rg '#include\\s*[<\"\\](wx|gui/|FBattleBoard)' include/tactical/FTacticalGame.h",
+    "rg 'Compatibility note|FTacticalGame equivalents|additive FTacticalGame|FTacticalHexData|FTacticalTurnData' include/tactical/FBattleBoard.h"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "tests_executed": 63,
+    "passed": 63,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_files_written": [
+    "artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/tester_report.md",
+    "artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/tester_result.json",
+    "artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/documenter_prompt.txt"
+  ],
+  "notes": "Validation-only tester pass; no new test files were necessary."
+}

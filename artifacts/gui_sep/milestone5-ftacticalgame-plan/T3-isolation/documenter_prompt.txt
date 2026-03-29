@@ -1,0 +1,39 @@
+You are the Documenter Agent.
+
+Task summary:
+- Added explicit compatibility-boundary comments documenting Milestone 5 tactical model duplication/isolation between FTacticalGame and legacy wx tactical owners, with no behavior changes.
+
+Acceptance criteria validated by tester:
+- FTacticalGame.h is self-sufficient for tactical model types.
+- No wx tactical header becomes a required dependency to include FTacticalGame.
+- Legacy tactical classes still compile and retain their current state definitions/behavior for the active runtime path.
+- Any temporary duplication or relocation is explicit and maintainable for later cleanup.
+
+Implementation context:
+- Worktree: `/home/tstephen/.copilot/session-state/812cd0b9-4a00-44c7-a654-c0b202141385/files/worktrees/gui_sep_ms5-t3-isolation-tester-20260329`
+- Branch: `gui_sep_ms5-t3-isolation-tester-20260329`
+- Modified implementation files under test:
+  - `include/tactical/FTacticalGame.h`
+  - `include/tactical/FBattleBoard.h`
+
+Tester execution summary:
+- Validation-first approach used; no new test files were required.
+- Commands executed:
+  - `cd src/tactical && make objs`
+  - `cd tests/tactical && make && ./TacticalTests`
+- Result: tactical build succeeded and `TacticalTests` passed (`OK (63 tests)`).
+- Existing coverage used: `tests/tactical/FTacticalGameHeaderTest.cpp` and `tests/tactical/FTacticalGameMechanicsTest.cpp` plus tactical runtime-path compilation/tests.
+
+Test files added or modified by tester:
+- None.
+
+Shared artifact directory (repository-root-relative):
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation`
+
+Artifacts written by tester:
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/tester_report.md`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/tester_result.json`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/documenter_prompt.txt`
+
+Commit hash:
+- Recorded in `tester_result.json` and tester handoff summary.
