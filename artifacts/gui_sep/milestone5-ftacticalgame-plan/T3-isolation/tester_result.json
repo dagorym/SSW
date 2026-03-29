@@ -2,7 +2,7 @@
   "status": "success",
   "subtask_id": "milestone5-isolation",
   "branch": "gui_sep_ms5-t3-isolation-tester-20260329",
-  "test_commit_hash": "c4c9d23823c3175696ef2c3f619aa78427b8b791",
+  "test_commit_hash": "a849052e97c86799aae1b3aca6268fa97888a205",
   "test_files_added_or_modified": [],
   "commands_run": [
     "cd src/tactical && make objs",
