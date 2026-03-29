@@ -1,0 +1,30 @@
+You are the Tester Agent.
+
+Task summary:
+- Added explicit compatibility-boundary comments documenting Milestone 5 tactical model duplication/isolation between FTacticalGame and legacy wx tactical owners, with no behavior changes.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- include/tactical/FBattleBoard.h
+
+Acceptance criteria to validate (from Planner):
+- FTacticalGame.h is self-sufficient for tactical model types.
+- No wx tactical header becomes a required dependency to include FTacticalGame.
+- Legacy tactical classes still compile and retain their current state definitions/behavior for the active runtime path.
+- Any temporary duplication or relocation is explicit and maintainable for later cleanup.
+
+Create test files in:
+- tests/tactical/
+
+Implementation context for testing:
+- No runtime logic changes were made.
+- Added comments in FTacticalGame.h mapping FTacticalHexData/FTacticalTurnData to legacy FBattleBoard hexData/turnData.
+- Added comments in FBattleBoard.h indicating additive FTacticalGame equivalents exist for model-only consumers.
+- Added member comment in FTacticalGame.h clarifying legacy fire-flow owners (FBattleScreen + FBattleDisplay).
+
+Suggested test command(s):
+- cd src/tactical && make objs
+- cd tests/tactical && make && ./TacticalTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation
