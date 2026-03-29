@@ -30,15 +30,15 @@ void FGameHeaderDependencyTest::testHeaderDoesNotIncludeWxHeaders() {
 	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("#include <wx/"));
 }
 
-void FGameHeaderDependencyTest::testHeaderUsesForwardDeclarationsForWxTypes() {
+void FGameHeaderDependencyTest::testHeaderDoesNotExposeWxRenderOrMouseTypes() {
 	const std::string header = readFirstAvailableFile(std::vector<std::string>{
 		"../../include/strategic/FGame.h",
 		"../include/strategic/FGame.h"
 	});
 
 	CPPUNIT_ASSERT(header.find("class wxWindow;") != std::string::npos);
-	CPPUNIT_ASSERT(header.find("class wxDC;") != std::string::npos);
-	CPPUNIT_ASSERT(header.find("class wxMouseEvent;") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("class wxDC;"));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("class wxMouseEvent;"));
 	CPPUNIT_ASSERT(header.find("static FGame & create();") != std::string::npos);
 	CPPUNIT_ASSERT(header.find("static FGame & create(IStrategicUI * ui);") != std::string::npos);
 	CPPUNIT_ASSERT(header.find("static FGame & create(wxWindow * win);") != std::string::npos);
@@ -56,23 +56,55 @@ void FGameHeaderDependencyTest::testHeaderUsesStrategicUIAndRemovesParentMember(
 	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("wxWindow * m_parent;"));
 }
 
-void FGameHeaderDependencyTest::testHeaderDoesNotDeclareDayAndTendayImages() {
+void FGameHeaderDependencyTest::testHeaderDoesNotDeclareStrategicDrawOrMouseHandlers() {
 	const std::string header = readFirstAvailableFile(std::vector<std::string>{
 		"../../include/strategic/FGame.h",
 		"../include/strategic/FGame.h"
 	});
+
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("draw("));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("drawTurnCounter("));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("onLeftDClick("));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("onLeftUp("));
 	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("m_tenday"));
 	CPPUNIT_ASSERT_EQUAL(std::string::npos, header.find("m_day"));
 }
 
-void FGameHeaderDependencyTest::testDrawTurnCounterUsesWXIconCacheForDayAndTenday() {
+void FGameHeaderDependencyTest::testSourceDoesNotUseDisplayPaintingHelpers() {
 	const std::string source = readFirstAvailableFile(std::vector<std::string>{
 		"../../src/strategic/FGame.cpp",
 		"../src/strategic/FGame.cpp"
 	});
 
-	CPPUNIT_ASSERT(source.find("const wxImage &tendayImage = WXIconCache::instance().get(\"icons/tenday.png\")") != std::string::npos);
-	CPPUNIT_ASSERT(source.find("const wxImage &dayImage = WXIconCache::instance().get(\"icons/day.png\")") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, source.find("WXMapDisplay"));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, source.find("WXPlayerDisplay"));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, source.find("WXGameDisplay"));
+}
+
+void FGameHeaderDependencyTest::testSourceDoesNotImplementStrategicDrawOrMouseHandlers() {
+	const std::string source = readFirstAvailableFile(std::vector<std::string>{
+		"../../src/strategic/FGame.cpp",
+		"../src/strategic/FGame.cpp"
+	});
+
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, source.find("FGame::draw("));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, source.find("FGame::drawTurnCounter("));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, source.find("FGame::onLeftDClick("));
+	CPPUNIT_ASSERT_EQUAL(std::string::npos, source.find("FGame::onLeftUp("));
+}
+
+void FGameHeaderDependencyTest::testWXGameDisplayOwnsStrategicDrawEntryPoint() {
+	const std::string displayHeader = readFirstAvailableFile(std::vector<std::string>{
+		"../../include/gui/WXGameDisplay.h",
+		"../include/gui/WXGameDisplay.h"
+	});
+	const std::string displaySource = readFirstAvailableFile(std::vector<std::string>{
+		"../../src/gui/WXGameDisplay.cpp",
+		"../src/gui/WXGameDisplay.cpp"
+	});
+
+	CPPUNIT_ASSERT(displayHeader.find("void draw(wxDC &dc, FGame &game);") != std::string::npos);
+	CPPUNIT_ASSERT(displaySource.find("void WXGameDisplay::draw(wxDC &dc, FGame &game)") != std::string::npos);
 }
 
 void FGameHeaderDependencyTest::testSourceRemovesDirectStrategicDialogIncludes() {
