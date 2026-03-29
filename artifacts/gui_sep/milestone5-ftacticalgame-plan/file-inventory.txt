@@ -1,0 +1,11 @@
+include/tactical/FTacticalGame.h
+src/tactical/FTacticalGame.cpp
+src/tactical/Makefile
+include/tactical/FBattleScreen.h
+src/tactical/FBattleScreen.cpp
+include/tactical/FBattleBoard.h
+src/tactical/FBattleBoard.cpp
+include/tactical/FBattleDisplay.h
+src/tactical/FBattleDisplay.cpp
+include/tactical/FTacticalCombatReport.h
+tests/tactical/Makefile
