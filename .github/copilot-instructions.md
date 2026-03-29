@@ -51,7 +51,7 @@ Tests mirror module structure under `tests/`:
 - Core tests: `tests/core/*` (covers `FPoint`, `FObject`, `FGameConfig`, etc.)
 - Weapons tests: `tests/weapons/*` (covers all weapon types, including `FWeaponFireResultTest`)
 - Ships tests: `tests/ships/*` (covers all vehicle types, including `FTacticalAttackIntegrationTest`)
-- Tactical tests: `tests/tactical/*` (covers `FTacticalCombatReport`, `FTacticalAttackResult`, battery range clamping, station orbital movement, etc.)
+- Tactical tests: `tests/tactical/*` (covers `FTacticalGame` header inclusion, `FTacticalCombatReport`, `FTacticalAttackResult`, battery range clamping, station orbital movement, etc.)
 - Strategic tests: `tests/strategic/*` (covers `FGame`, `FPlayer`, `FFleet`, etc.)
 - Test classes named `<Class>Test` (e.g., `FPointTest` for `FPoint`)
 - Use `CPPUNIT_TEST_SUITE` macros (see [tests/core/FPointTest.h](../tests/core/FPointTest.h))
@@ -142,6 +142,8 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 
 - Keep module boundaries intact; new features should go in the appropriate module directory.
 - Prefer existing core and strategic abstractions before introducing new ones, especially `FObject`, `FGame`, `FMap`, `FVehicle`, and `FWeapon`.
+- Treat `include/tactical/FTacticalGame.h` as the additive non-wx tactical model surface for Milestone 5; use it for model-owned tactical mechanics state and ownership bookkeeping types such as `FTacticalHexData` and `FTacticalTurnData`.
+- Keep the active runtime tactical GUI flow on `FBattleScreen`, `FBattleBoard`, and `FBattleDisplay` until later milestones explicitly rewire delegation; Milestone 5 documentation should describe `FTacticalGame` as additive only.
 - Route strategic-layer dialogs, prompts, and notifications from `FGame` through `IStrategicUI`; keep wx dialog implementations in the gui module (for example `WXStrategicUI`) instead of reintroducing direct gui dependencies in strategic code.
 - Keep icon filenames in model objects and resolve ship or fleet `wxImage` assets in GUI render paths through `WXIconCache`, including tactical displays that draw ships.
 - Maintain cross-platform compatibility across Linux Make builds and Visual Studio builds.

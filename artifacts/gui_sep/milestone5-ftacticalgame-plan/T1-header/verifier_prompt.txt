@@ -1,0 +1,49 @@
+You are the Verifier Agent.
+
+Task summary:
+- Implemented additive Milestone 5 tactical model header `include/tactical/FTacticalGame.h` as a pure C++ class with consolidated tactical mechanics state and relocated model state types for hex-map and movement bookkeeping.
+- Documented the additive non-wx header surface and its contributor guidance updates in `AGENTS.md` and `.github/copilot-instructions.md`.
+
+Acceptance criteria validated:
+- `FTacticalGame.h` declares a compilable, non-wx tactical model class.
+- The header covers battle state, movement state, selection state, report state, ICM state, and hex-map mechanics state.
+- The header can be included without including any wx header.
+- The new types needed for tactical model ownership are available from the new header.
+
+Implementation branch/worktree context:
+- Tested implementation worktree: `/home/tstephen/.copilot/session-state/812cd0b9-4a00-44c7-a654-c0b202141385/files/worktrees/gui_sep_ms5-t1-header-tester-20260329`
+- Tester branch: `gui_sep_ms5-t1-header-tester-20260329`
+- Test commit hash from tester handoff: `2efc94489f97c3661b4a02ffa9cf4736a1843bb3`
+- Current documenter worktree: `/home/tstephen/.copilot/session-state/812cd0b9-4a00-44c7-a654-c0b202141385/files/worktrees/gui_sep_ms5-t1-header-documenter-20260329`
+- Current documenter branch: `gui_sep_ms5-t1-header-documenter-20260329`
+
+Test files added or modified:
+- `tests/tactical/FTacticalGameHeaderTest.h`
+- `tests/tactical/FTacticalGameHeaderTest.cpp`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/tactical/Makefile`
+
+Documentation files added or modified:
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+
+Commands executed:
+- `cd src/tactical && make objs`
+- `cd tests/tactical && make && ./TacticalTests`
+- `printf '#include "tactical/FTacticalGame.h"\nint main(){return 0;}\n' | g++ -x c++ - -Iinclude -c -o /dev/null`
+- `cd tests/tactical && make clean && make && ./TacticalTests`
+- `git --no-pager diff gui_sep_ms5...HEAD -- include/tactical/FTacticalGame.h tests/tactical/FTacticalGameHeaderTest.h tests/tactical/FTacticalGameHeaderTest.cpp tests/tactical/TacticalTests.cpp tests/tactical/Makefile`
+- `git --no-pager diff -- AGENTS.md .github/copilot-instructions.md`
+
+Final test outcomes:
+- Tactical suite passes with `OK (55 tests)`.
+- New header-specific suite `FTacticalGameHeaderTest` passes all checks.
+- Documenter stage made documentation-only edits and did not rerun code tests.
+
+Shared artifact directory (repository-root-relative):
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T1-header`
+
+Verification requirements:
+- Verify the implementation diff, the tactical tests, and the updated documentation together.
+- Confirm `AGENTS.md` and `.github/copilot-instructions.md` remain aligned on the new `FTacticalGame` guidance.
+- Confirm documentation accurately describes `FTacticalGame` as additive-only and does not imply the runtime tactical GUI flow has been rewired.
