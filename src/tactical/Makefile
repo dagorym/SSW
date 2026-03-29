@@ -43,7 +43,7 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FBattleBoard.o FBattleScreen.o FBattleDisplay.o
+OBJS = FBattleBoard.o FBattleScreen.o FBattleDisplay.o FTacticalGame.o
 
 TARGET = libtactical.a
 
@@ -104,3 +104,8 @@ FBattleScreen.o: ../../include/core/FHexMap.h
 FBattleScreen.o: ../../include/tactical/FBattleDisplay.h
 FBattleScreen.o: ../../include/gui/ICMSelectionGUI.h
 FBattleScreen.o: ../../include/gui/AssignedICMData.h
+FTacticalGame.o: ../../include/tactical/FTacticalGame.h
+FTacticalGame.o: ../../include/strategic/FFleet.h
+FTacticalGame.o: ../../include/ships/FVehicle.h
+FTacticalGame.o: ../../include/weapons/FWeapon.h
+FTacticalGame.o: ../../include/tactical/FTacticalAttackResult.h
