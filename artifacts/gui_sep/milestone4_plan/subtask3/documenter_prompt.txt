@@ -1,0 +1,39 @@
+You are the Documenter Agent.
+
+Task context
+- Milestone: 4
+- Subtask: 3 (Move screen-to-map and end-turn hit testing into FMainFrame/FGamePanel)
+- Source plan: `plans/milestone4-fgame-rendering-extraction-plan.md`
+- Implementer branch/worktree under test: `gui_sep-m4s3-implementer-20260328`
+- Tester validation branch/worktree: `gui_sep-m4s3-tester-20260328`
+- Shared artifact directory (repository-root-relative): `artifacts/gui_sep/milestone4_plan/subtask3`
+
+Implementation summary validated
+- `FMainFrame::onLeftDClick(wxMouseEvent&)` no longer forwards raw wx events to `FGame`; it creates `wxClientDC` on `m_drawingPanel`, uses `WXMapDisplay::getScale(dc)`, converts pixel coordinates to logical map coordinates, and calls `m_game->handleMapClick(mapX, mapY)`.
+- `FMainFrame::onLeftUp(wxMouseEvent&)` now performs GUI-side end-turn hit testing with existing turn-counter geometry and calls `m_game->processEndTurn()`, preserving menu toggle behavior for return codes 1 and 2.
+- `onNew`, `onOpen`, and `onPlaceNova` use `Refresh()` in frame flow where removed `m_game->draw()` usage would otherwise be stale.
+
+Acceptance criteria outcome
+- Passed subtask-3 behavioral/boundary validation:
+  - no raw wx event forwarding from `FMainFrame` to `FGame`
+  - GUI coordinate conversion uses `WXMapDisplay::getScale()`
+  - end-turn hit-testing resides in GUI and preserves existing menu behavior
+  - strategic dialog paths remain routed via `FGame::handleMapClick(...)`
+  - root build no longer blocked by stale removed-method references
+
+Testing executed
+- `make -j2` from repository root: PASS.
+- `cd tests && make -j2 && ./SSWTests`: FAIL with 2 known unrelated failures in strategic dependency tests (`FGameHeaderDependencyTest`) aligned with pending Subtask 4 expectations.
+- Full suite result from final run: 180 run, 2 failures, 0 errors.
+
+Files touched by tester
+- `artifacts/gui_sep/milestone4_plan/subtask3/tester_report.md`
+- `artifacts/gui_sep/milestone4_plan/subtask3/tester_result.json`
+- `artifacts/gui_sep/milestone4_plan/subtask3/documenter_prompt.txt`
+
+Commit
+- Tester commit hash: f7b19a32c82218e11eabccfca97a6cee4d33caed
+
+Notes for documentation update
+- Document strategic UI boundary shift for Subtask 3: GUI owns screen/pixel coordinate math and end-turn hit testing; model layer receives logical commands (`handleMapClick`, `processEndTurn`).
+- Mention that full-suite failures observed are known dependency-test expectations from separate Subtask 4 scope, not Subtask 3 regression.

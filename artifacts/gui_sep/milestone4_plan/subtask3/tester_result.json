@@ -1,0 +1,38 @@
+{
+  "status": "success",
+  "subtask": "Milestone 4 Subtask 3",
+  "branch": "gui_sep-m4s3-tester-20260328",
+  "test_commit_hash": "f7b19a32c82218e11eabccfca97a6cee4d33caed",
+  "test_files_added_or_modified": [],
+  "artifact_files_written": [
+    "artifacts/gui_sep/milestone4_plan/subtask3/tester_report.md",
+    "artifacts/gui_sep/milestone4_plan/subtask3/tester_result.json",
+    "artifacts/gui_sep/milestone4_plan/subtask3/documenter_prompt.txt"
+  ],
+  "commands_run": [
+    "make -j2",
+    "cd tests && make -j2 && ./SSWTests"
+  ],
+  "suite_results": {
+    "run": 180,
+    "passed": 178,
+    "failed": 2,
+    "errors": 0,
+    "known_unrelated_failures": [
+      "FrontierTests::FGameHeaderDependencyTest::testHeaderUsesForwardDeclarationsForWxTypes",
+      "FrontierTests::FGameHeaderDependencyTest::testDrawTurnCounterUsesWXIconCacheForDayAndTenday"
+    ]
+  },
+  "acceptance_criteria": {
+    "no_raw_wx_events_to_fgame": "pass",
+    "coordinate_conversion_uses_wxmapdisplay_getscale": "pass",
+    "end_turn_behavior_unchanged": "pass",
+    "strategic_dialog_and_refresh_behavior": "pass",
+    "no_active_fmainframe_refs_to_removed_methods": "pass_with_comment_note",
+    "root_build_not_blocked_by_stale_refs": "pass"
+  },
+  "notes": [
+    "Two commented legacy lines in src/FMainFrame.cpp still mention m_game->draw(), but no active references remain.",
+    "No product-code changes were made by tester."
+  ]
+}
