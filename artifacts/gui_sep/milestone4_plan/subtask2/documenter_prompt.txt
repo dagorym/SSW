@@ -1,0 +1,33 @@
+You are the Documenter Agent for Milestone 4 Subtask 2 in SSW.
+
+Context:
+- Subtask 2 refactored strategic `FGame` to remove wx rendering/event dependencies.
+- Tester validated implementation on branch `gui_sep-m4s2-tester-20260328` in worktree `/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s2-tester-20260328`.
+- Code commit under test: `bb1df23368a9a64086ce624ba8d00bac68c37b04`.
+
+Validated outcomes:
+- Removed from `FGame` header/source:
+  - `draw()`
+  - `draw(wxDC&)`
+  - `drawTurnCounter(wxDC&)`
+  - `onLeftDClick(wxMouseEvent&)`
+  - `onLeftUp(wxMouseEvent&)`
+- Added model-safe APIs:
+  - `handleMapClick(double mapX, double mapY)`
+  - `processEndTurn()`
+- Added read-only getters for GUI/model boundary:
+  - `getRound() const`
+  - `getCurrentPlayerID() const`
+  - `getPlayers() const`
+- `FGame.cpp` no longer references `WXGameDisplay`, `WXMapDisplay`, `WXPlayerDisplay`, `wxDC`, or `wxMouseEvent`.
+- Selection and end-turn logic preserved at behavioral level.
+
+Testing notes:
+- `src/strategic` and `tests/strategic` builds passed.
+- Aggregate `SSWTests` run showed 2 expected failures in stale dependency assertions (`FGameHeaderDependencyTest`) that still expect wx forward declarations and old turn-counter logic in `FGame.cpp`; this is aligned with planned Subtask 4 regression-test updates.
+
+Please produce documentation/handoff content describing the completed Subtask 2 boundary extraction, including:
+1. What API surface changed in `FGame`.
+2. Why the new methods are model-safe.
+3. What remains for downstream GUI/event integration subtasks.
+4. Note that regression tests must be updated in Subtask 4 to match the new boundary.
