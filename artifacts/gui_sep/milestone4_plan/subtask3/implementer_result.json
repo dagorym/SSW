@@ -1,0 +1,36 @@
+{
+  "subtask": "Milestone 4 Subtask 3",
+  "branch": "gui_sep-m4s3-implementer-20260328",
+  "worktree": "/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s3-implementer-20260328",
+  "files_changed": [
+    "src/FMainFrame.cpp"
+  ],
+  "summary": [
+    "Replaced stale FGame GUI event API calls in FMainFrame with model-safe API usage.",
+    "Updated onLeftDClick() to convert screen pixel coordinates to logical map coordinates via WXMapDisplay::getScale(wxDC&) and call FGame::handleMapClick(mapX, mapY).",
+    "Updated onLeftUp() to perform GUI-side end-turn button hit testing using the same strategic turn-counter geometry and call FGame::processEndTurn().",
+    "Preserved existing menu state transitions and refresh behavior for both turn transitions.",
+    "Replaced removed m_game->draw() invocations with Refresh() so repaint remains panel-driven through WXGameDisplay."
+  ],
+  "acceptance_criteria": {
+    "no_raw_wx_events_to_fgame": true,
+    "coordinate_conversion_uses_wxmapdisplay_getscale": true,
+    "gui_owns_end_turn_hit_test": true,
+    "menu_refresh_behavior_preserved": true
+  },
+  "validation": {
+    "build": {
+      "command": "make -j2",
+      "status": "passed"
+    },
+    "tests": {
+      "command": "cd tests && make -j2 && ./SSWTests",
+      "status": "failed",
+      "details": [
+        "FrontierTests::FGameHeaderDependencyTest::testHeaderUsesForwardDeclarationsForWxTypes",
+        "FrontierTests::FGameHeaderDependencyTest::testDrawTurnCounterUsesWXIconCacheForDayAndTenday"
+      ],
+      "note": "Failures are outside this subtask's allowed files and align with pre-existing cross-subtask test expectations."
+    }
+  }
+}

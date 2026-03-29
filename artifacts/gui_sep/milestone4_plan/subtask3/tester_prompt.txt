@@ -1,0 +1,33 @@
+Please validate Milestone 4 Subtask 3 on branch gui_sep-m4s3-implementer-20260328.
+
+Scope under test:
+- src/FMainFrame.cpp
+- (no functional edits required in other allowed files)
+
+What changed:
+1) FMainFrame::onLeftDClick(wxMouseEvent&)
+   - No longer forwards raw wxMouseEvent into FGame.
+   - Uses wxClientDC on m_drawingPanel and WXMapDisplay::getScale(dc).
+   - Converts event pixel coordinates to logical map coordinates (x/scale, y/scale).
+   - Calls FGame::handleMapClick(mapX, mapY).
+
+2) FMainFrame::onLeftUp(wxMouseEvent&)
+   - No longer forwards raw wxMouseEvent into FGame.
+   - Performs GUI-side hit test for the end-turn rounded rectangle using existing turn-counter geometry:
+     s = min(panelWidth, panelHeight)/20
+     hit region: x in [0, 4*s], y in [2*s, 3*s]
+   - On hit, calls FGame::processEndTurn() and preserves existing menu toggles for return codes 1 and 2.
+   - Refreshes after successful turn processing.
+
+3) Removed stale rendering calls from frame flow
+   - Replaced removed m_game->draw() calls in onNew/onOpen/onPlaceNova with Refresh() to keep repaint through panel/WXGameDisplay path.
+
+Validation run by implementer:
+- Root build: make -j2 (PASS)
+- Tests: cd tests && make -j2 && ./SSWTests (FAIL: 2 strategic dependency tests unrelated to this file scope)
+
+Please focus your verification on:
+- Double-click system/fleet interaction still opens dialogs.
+- End-turn button click still behaves the same from user perspective.
+- Menu enable/disable transitions still match prior behavior.
+- No FMainFrame references remain to removed FGame methods draw/onLeftDClick/onLeftUp.

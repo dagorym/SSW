@@ -9,6 +9,7 @@
 #include "Frontier.h"
 #include "tactical/FBattleScreen.h"
 #include "FGamePanel.h"
+#include "gui/WXMapDisplay.h"
 #include "gui/WXStrategicUI.h"
 #include <iostream>
 
@@ -113,7 +114,7 @@ void FMainFrame::onNew(wxCommandEvent& event) {
 				break;
 			}
 		}
-		m_game->draw();
+		Refresh();
         GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
 		GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
 		GetMenuBar()->GetMenu(0)->FindItemByPosition(3)->Enable(true);
@@ -154,7 +155,7 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 		// load up the game
 		m_game->load(is);
 		// draw the screen
-		m_game->draw();
+		Refresh();
 		GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
 		GetMenuBar()->GetMenu(0)->FindItemByPosition(3)->Enable(true);
 		if(m_game->isUPFTurn()){
@@ -225,7 +226,14 @@ void FMainFrame::onEndSatharTurn(wxCommandEvent& event){
 
 void FMainFrame::onLeftDClick(wxMouseEvent& event) {
     if(m_game != NULL){
-    	m_game->onLeftDClick(event);
+    	wxClientDC dc(m_drawingPanel);
+    	WXMapDisplay mapDisplay;
+    	const double scale = mapDisplay.getScale(dc);
+    	if (scale > 0.0){
+    		const double mapX = static_cast<double>(event.GetX()) / scale;
+    		const double mapY = static_cast<double>(event.GetY()) / scale;
+    		m_game->handleMapClick(mapX,mapY);
+    	}
     }
 }
 
@@ -239,36 +247,43 @@ void FMainFrame::onPlaceNova(wxCommandEvent& event){
 //    	} else {
 //    		GetMenuBar()->FindItem(id)->Enable(!m_novaPlaced);
 //    	}
-        m_game->draw();
+        Refresh();
     }
 
 }
 
 void FMainFrame::onLeftUp(wxMouseEvent& event){
 	if(m_game != NULL){
-		int result = m_game->onLeftUp(event);
-		wxCommandEvent e;
-		switch (result){
-		case 0:
-			break;
-		case 1:
-	        GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
-	        GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
-	        GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
-	        GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
-			GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
-			break;
-		case 2:
-	        GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
-	        GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
-	        GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
-	        GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
-			GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
-			break;
-		default:
-			break;
+		wxCoord w, h;
+		m_drawingPanel->GetClientSize(&w, &h);
+		const int s = ((w > h) ? h : w) / 20;
+		if (s <= 0){
+			return;
 		}
-		this->Refresh();
+		const int x = event.GetX();
+		const int y = event.GetY();
+		if (x >= 0 && x <= (4 * s) && y >= (2 * s) && y <= (3 * s)){
+			const int result = m_game->processEndTurn();
+			switch (result){
+			case 1:
+		        GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
+		        GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
+		        GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
+		        GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
+				GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
+				break;
+			case 2:
+		        GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
+		        GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
+		        GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
+		        GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
+				GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
+				break;
+			default:
+				break;
+			}
+			this->Refresh();
+		}
 	}
 }
 
