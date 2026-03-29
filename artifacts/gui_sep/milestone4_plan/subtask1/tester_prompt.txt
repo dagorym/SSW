@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate Milestone 4 Subtask 1 strategic rendering extraction: WXGameDisplay now owns strategic draw orchestration and turn-counter rendering; FGamePanel paints via WXGameDisplay.
+
+Modified files:
+- include/gui/WXGameDisplay.h
+- src/gui/WXGameDisplay.cpp
+- include/FGamePanel.h
+- src/FGamePanel.cpp
+
+Acceptance criteria to validate (from Planner):
+- WXGameDisplay draws the map, fleet icons, and turn counter.
+- Turn-counter rendering no longer lives in FGame.
+- FGamePanel::onPaint() no longer calls m_game->draw(dc).
+- Strategic rendering still uses WXMapDisplay and WXPlayerDisplay.
+- Day and tenday markers still render using GUI-side image loading/cache access.
+
+Create test files in:
+- No new tests are requested for this subtask; validate with existing build/test commands.
+
+Implementation context for testing:
+- New API: WXGameDisplay::draw(wxDC&, FGame&) and private drawTurnCounter(wxDC&, const FGame&).
+- WXGameDisplay::draw now calls WXMapDisplay::draw and WXPlayerDisplay::drawFleets for each player from FGame::getPlayers().
+- Turn counter uses FGame::getRound(), FGame::getCurrentPlayerID(), and WXIconCache("icons/day.png", "icons/tenday.png").
+- FGamePanel now owns a WXGameDisplay member and calls m_gameDisplay.draw(dc, *m_game) in onPaint.
+- FGame.h should remain free of strategic rendering declarations (draw/drawTurnCounter).
+
+Suggested test command(s):
+- make -C src/gui WXGameDisplay.o
+- make -C src FGamePanel.o
+- make -C src/gui libgui.a && make -C src FGamePanel.o
+- (Optional full-baseline check) make -j4  # currently fails due existing out-of-scope FMainFrame references to removed FGame APIs
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone4_plan/subtask1
