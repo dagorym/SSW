@@ -41,7 +41,7 @@ Final test outcomes:
   - Self-contained implementation boundaries (no FBattleScreen/FBattleBoard/FBattleDisplay include dependency)
 
 Test commit hash:
-- d3d41f3adfa80905e03b928fe7bea2ee168f0df9
+- eeefcb1f4958e25dd4560fea63781aa4a74a5181
 
 Shared artifact directory (repository-root-relative):
 - `artifacts/gui_sep/milestone5-ftacticalgame-plan/T2-implementation`
