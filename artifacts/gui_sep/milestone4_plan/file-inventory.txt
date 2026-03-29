@@ -1,0 +1,16 @@
+/home/tstephen/repos/SSW/include/strategic/FGame.h
+/home/tstephen/repos/SSW/src/strategic/FGame.cpp
+/home/tstephen/repos/SSW/include/gui/WXGameDisplay.h
+/home/tstephen/repos/SSW/src/gui/WXGameDisplay.cpp
+/home/tstephen/repos/SSW/include/FGamePanel.h
+/home/tstephen/repos/SSW/src/FGamePanel.cpp
+/home/tstephen/repos/SSW/include/FMainFrame.h
+/home/tstephen/repos/SSW/src/FMainFrame.cpp
+/home/tstephen/repos/SSW/include/gui/WXMapDisplay.h
+/home/tstephen/repos/SSW/src/gui/WXMapDisplay.cpp
+/home/tstephen/repos/SSW/include/gui/WXPlayerDisplay.h
+/home/tstephen/repos/SSW/src/gui/WXPlayerDisplay.cpp
+/home/tstephen/repos/SSW/tests/strategic/FGameHeaderDependencyTest.cpp
+/home/tstephen/repos/SSW/tests/strategic/FGameHeaderDependencyTest.h
+/home/tstephen/repos/SSW/tests/strategic/Makefile
+/home/tstephen/repos/SSW/tests/SSWTests.cpp
