@@ -99,7 +99,7 @@ ScenarioDialog::~ScenarioDialog()
 }
 
 void ScenarioDialog::onScenario1( wxCommandEvent& event ){
-	FBattleScreen *bb = new FBattleScreen();
+	FBattleScreen bb;
 	FleetList aList,dList;
 	FVehicle *st = createShip("ArmedStation", "UPFB Doliin Bay");
 	FFleet *f = new FFleet();
@@ -118,17 +118,17 @@ void ScenarioDialog::onScenario1( wxCommandEvent& event ){
 	s->setIcon("icons/SatharDestroyer.png");
 	f->addShip(s);
 	aList.push_back(f);
-	bb->setupFleets(&aList,&dList,true,st);
+	bb.setupFleets(&aList,&dList,true,st);
 
 	Hide();
-	bb->ShowModal();
+	bb.ShowModal();
 	Show();
 
 //	event.Skip();
 }
 
 void ScenarioDialog::onScenario2( wxCommandEvent& event ){
-	FBattleScreen *bb = new FBattleScreen();
+	FBattleScreen bb;
 	FleetList aList,dList;
 
 	// set up the UPF
@@ -191,17 +191,17 @@ void ScenarioDialog::onScenario2( wxCommandEvent& event ){
 	s->setIcon("icons/SatharFrigate.png");
 	f->addShip(s);
 	aList.push_back(f);
-	bb->setupFleets(&aList,&dList,true,st);
+	bb.setupFleets(&aList,&dList,true,st);
 
 	Hide();
-	bb->ShowModal();
+	bb.ShowModal();
 	Show();
 
 //	event.Skip();
 }
 
 void ScenarioDialog::onScenario3( wxCommandEvent& event ){
-	FBattleScreen *bb = new FBattleScreen();
+	FBattleScreen bb;
 	FleetList aList,dList;
 
 	// set up the UPF
@@ -235,17 +235,17 @@ void ScenarioDialog::onScenario3( wxCommandEvent& event ){
 	s->setIcon("icons/SatharDestroyer.png");
 	f->addShip(s);
 	aList.push_back(f);
-	bb->setupFleets(&aList,&dList,false,NULL);
+	bb.setupFleets(&aList,&dList,false,NULL);
 
 	Hide();
-	bb->ShowModal();
+	bb.ShowModal();
 	Show();
 
 //	event.Skip();
 }
 
 void ScenarioDialog::onScenario4( wxCommandEvent& event ){
-	FBattleScreen *bb = new FBattleScreen();
+	FBattleScreen bb;
 	FleetList aList,dList;
 
 	// set up the UPF
@@ -317,10 +317,10 @@ void ScenarioDialog::onScenario4( wxCommandEvent& event ){
 	s->setIcon("icons/SatharDestroyer.png");
 	f->addShip(s);
 	aList.push_back(f);
-	bb->setupFleets(&aList,&dList,true,st);
+	bb.setupFleets(&aList,&dList,true,st);
 
 	Hide();
-	bb->ShowModal();
+	bb.ShowModal();
 	Show();
 
 //	event.Skip();

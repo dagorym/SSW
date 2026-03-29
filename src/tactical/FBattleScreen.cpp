@@ -130,6 +130,9 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_hasPlanet = false;
 	m_done = false;
 	m_tacticalReport.clear();
+	m_closeInProgress = false;
+
+	Bind(wxEVT_CLOSE_WINDOW, &FBattleScreen::onClose, this);
 
 }
 
@@ -367,8 +370,32 @@ void FBattleScreen::declareWinner(){
 	std::string msg = "The winner of the battle is \nPlayer ";
 	msg+= (getActivePlayer())?"Sathar":"UPF";
 	wxMessageBox( msg, "Enemy Defeated!", wxOK | wxICON_INFORMATION );
+	closeBattleScreen(0);
+}
+
+void FBattleScreen::closeBattleScreen(int returnCode) {
+	if (m_closeInProgress) {
+		return;
+	}
+
+	m_closeInProgress = true;
+
+	if (IsModal()) {
+		EndModal(returnCode);
+		return;
+	}
+
+	SetReturnCode(returnCode);
 	Destroy();
-	EndModal(0);
+}
+
+void FBattleScreen::onClose(wxCloseEvent & event) {
+	if (m_closeInProgress) {
+		event.Skip();
+		return;
+	}
+
+	closeBattleScreen(GetReturnCode());
 }
 
 void FBattleScreen::fireICM() {

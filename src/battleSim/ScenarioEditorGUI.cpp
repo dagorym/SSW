@@ -413,10 +413,10 @@ void ScenarioEditorGUI::onStartBattle( wxCommandEvent& event ){
 	FFleet *defendFleet = createFleet(defenders,m_defenderTeam->GetStringSelection().ToStdString(),defenderID);
 	dList.push_back(defendFleet);
 	// start the battle
-	FBattleScreen *bb = new FBattleScreen();
-	bb->setupFleets(&aList,&dList,hasPlanet,station);
+	FBattleScreen bb;
+	bb.setupFleets(&aList,&dList,hasPlanet,station);
 	Hide();
-	bb->ShowModal();
+	bb.ShowModal();
 	///@todo clean up ships and fleets
 //	VehicleList vList = attackFleet->getShipList();
 //	for (VehicleList::iterator itr=vList.begin(); itr< vList.end(); itr++){

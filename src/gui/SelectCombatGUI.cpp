@@ -254,15 +254,15 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 		}
 	} else {
 		///@todo implement boardgame
-		FBattleScreen *bb = new FBattleScreen();
-//		bb->MakeModal(true);
+		FBattleScreen bb;
+//		bb.MakeModal(true);
 		if (m_satharAttacking){
-			bb->setupFleets(&aList,&dList,!((bool)combatLocation),station);
+			bb.setupFleets(&aList,&dList,!((bool)combatLocation),station);
 		} else {
-			bb->setupFleets(&dList,&aList,!((bool)combatLocation),station);
+			bb.setupFleets(&dList,&aList,!((bool)combatLocation),station);
 		}
-//		bb->Show(true);
-		bb->ShowModal();
+//		bb.Show(true);
+		bb.ShowModal();
 		///@todo clean up ships
 	}
 

@@ -19,6 +19,7 @@
 #include <wx/sizer.h>
 #include <wx/frame.h>
 #include <wx/dialog.h>
+#include <wx/event.h>
 #include <wx/utils.h>
 
 #include "Frontier.h"
@@ -241,11 +242,15 @@ protected:
 	FWeapon * m_curWeapon;
 	/// current tactical combat report state
 	FTacticalCombatReport m_tacticalReport;
+	/// guard to keep teardown on a single close path
+	bool m_closeInProgress;
 //	/// window disabler object
 //	wxWindowDisabler *m_wd;
 
 	// Print a dialog declaring the  winner and exit the window
 	void declareWinner();
+	void closeBattleScreen(int returnCode = 0);
+	void onClose(wxCloseEvent & event);
 
 	/**
 	 * @brief applies damage to ships from electrical fires
