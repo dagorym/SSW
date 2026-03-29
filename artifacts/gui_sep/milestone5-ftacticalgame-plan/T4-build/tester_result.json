@@ -3,7 +3,7 @@
   "task_id": "milestone5-build",
   "subtask": "Milestone 5 Subtask 4",
   "branch": "gui_sep_ms5-t4-build-tester-20260329",
-  "test_commit_hash": "959e9241ad344103f074fc2685d51b8fffe5a788",
+  "test_commit_hash": "bd84e4313875d8162c8bf7454a43a5f287e06611",
   "test_files_added_or_modified": [],
   "commands_run": [
     "grep -n \"FTacticalGame\\.o\" src/tactical/Makefile",

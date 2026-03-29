@@ -29,7 +29,7 @@ Final test outcomes:
 - Tactical test suite: PASS (63/63)
 
 Test commit hash:
-- 959e9241ad344103f074fc2685d51b8fffe5a788
+- bd84e4313875d8162c8bf7454a43a5f287e06611
 
 Shared artifact directory (repository-root-relative):
 - artifacts/gui_sep/milestone5-ftacticalgame-plan/T4-build
