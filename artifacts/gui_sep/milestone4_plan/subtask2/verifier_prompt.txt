@@ -1,0 +1,57 @@
+You are the Verifier Agent.
+
+Verify Milestone 4 Subtask 2 in SSW from worktree `/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s2-documenter-20260328` on branch `gui_sep-m4s2-documenter-20260328`.
+
+Original task summary:
+- Document the completed boundary extraction that removed strategic wx rendering and event handling from `FGame`.
+- Capture what changed in `FGame`, why the replacement API is model-safe, what downstream GUI/event subtasks remain, and that Subtask 4 must update stale regression tests.
+- Commit the documentation artifacts on the assigned branch.
+
+Implementation under review:
+- Base branch for diff review: `gui_sep`
+- Tester branch: `gui_sep-m4s2-tester-20260328`
+- Code commit validated by tester: `bb1df23368a9a64086ce624ba8d00bac68c37b04`
+- Implementation files changed:
+  - `include/strategic/FGame.h`
+  - `src/strategic/FGame.cpp`
+
+Acceptance criteria to verify:
+1. `FGame` no longer declares or defines `draw()`, `draw(wxDC&)`, `drawTurnCounter(wxDC&)`, `onLeftDClick(wxMouseEvent&)`, or `onLeftUp(wxMouseEvent&)`.
+2. `FGame` now exposes model-safe replacements `handleMapClick(double mapX, double mapY)` and `processEndTurn()`.
+3. `FGame` now exposes the minimal read-only getters `getRound() const`, `getCurrentPlayerID() const`, and `getPlayers() const` without leaking wx types.
+4. `FGame.cpp` no longer references `WXGameDisplay`, `WXMapDisplay`, `WXPlayerDisplay`, `wxDC`, or `wxMouseEvent`.
+5. Strategic behavior remains intact for system/fleet selection and end-turn transitions.
+6. Documentation artifacts correctly describe the shipped boundary, the remaining downstream GUI work, and the deferred Subtask 4 regression-test updates.
+
+What changed in the model boundary:
+- Removed from `FGame`: `draw()`, `draw(wxDC&)`, `drawTurnCounter(wxDC&)`, `onLeftDClick(wxMouseEvent&)`, `onLeftUp(wxMouseEvent&)`.
+- Added model-safe command methods: `handleMapClick(double mapX, double mapY)` and `processEndTurn()`.
+- Added read-only GUI-facing getters: `getRound() const`, `getCurrentPlayerID() const`, `getPlayers() const`.
+- `handleMapClick` now accepts logical map coordinates from the GUI layer rather than translating pixel coordinates inside `FGame`.
+- `processEndTurn()` preserves the old integer transition contract (`1` for UPF, `2` for Sathar) so GUI menu-state work in later subtasks can keep using the same outcome signal.
+
+Downstream follow-up to confirm is accurately documented:
+- Subtask 1 owns GUI-side strategic rendering through `WXGameDisplay` and turn-counter drawing.
+- Subtask 3 owns screen-to-map conversion in `FMainFrame`/`FGamePanel` and GUI-side end-turn hit testing.
+- Subtask 4 must update stale dependency assertions in `tests/strategic/FGameHeaderDependencyTest.cpp` that still expect wx forward declarations and old turn-counter rendering in `FGame.cpp`.
+
+Documentation files added or modified in this documenter pass:
+- `artifacts/gui_sep/milestone4_plan/subtask2/documenter_report.md`
+- `artifacts/gui_sep/milestone4_plan/subtask2/documenter_result.json`
+- `artifacts/gui_sep/milestone4_plan/subtask2/verifier_prompt.txt`
+
+Test files added or modified in the implementation/tester work reviewed here:
+- None in Subtask 2.
+- Existing stale regression test noted for later update: `tests/strategic/FGameHeaderDependencyTest.cpp` (follow-up for Subtask 4, not modified here).
+
+Commands executed / outcomes available:
+- `git --no-pager diff --stat gui_sep...HEAD` — used to confirm shipped scope.
+- `cd src/strategic && make` — PASS.
+- `cd tests/strategic && make` — PASS.
+- `cd <repo-root> && make` — expected FAIL in tester pass because later GUI subtasks had not yet been applied.
+- `cd tests && make && ./SSWTests` — FAIL with 2 expected stale dependency-test assertions tied to Subtask 4.
+
+Shared artifact directory to reuse:
+- `artifacts/gui_sep/milestone4_plan/subtask2`
+
+Verification must include the updated documentation files along with the implementation and tests. Confirm the artifacts accurately describe the final Subtask 2 boundary extraction and do not claim any GUI/event integration or regression-test updates that were deferred to later subtasks.
