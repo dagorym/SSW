@@ -1,0 +1,240 @@
+/**
+ * @file FTacticalGameMechanicsTest.cpp
+ * @brief Implementation tests for FTacticalGame additive mechanics container
+ */
+
+#include "FTacticalGameMechanicsTest.h"
+
+#include <cstdlib>
+#include <fstream>
+#include <iterator>
+
+namespace FrontierTests {
+
+namespace {
+
+std::string repoFile(const std::string & relativePath) {
+return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
+}
+
+}
+
+CPPUNIT_TEST_SUITE_REGISTRATION( FTacticalGameMechanicsTest );
+
+void FTacticalGameMechanicsTest::setUp() {
+}
+
+void FTacticalGameMechanicsTest::tearDown() {
+}
+
+std::string FTacticalGameMechanicsTest::readFile(const std::string & path) {
+std::ifstream file(path.c_str());
+CPPUNIT_ASSERT_MESSAGE(path, file.is_open());
+return std::string((std::istreambuf_iterator<char>(file)),
+std::istreambuf_iterator<char>());
+}
+
+std::string FTacticalGameMechanicsTest::extractFunctionBody(const std::string & source, const std::string & signature) {
+std::string::size_type signaturePos = source.find(signature);
+CPPUNIT_ASSERT_MESSAGE(signature, signaturePos != std::string::npos);
+
+std::string::size_type bodyStart = source.find('{', signaturePos);
+CPPUNIT_ASSERT(bodyStart != std::string::npos);
+
+int depth = 1;
+for (std::string::size_type i = bodyStart + 1; i < source.size(); ++i) {
+if (source[i] == '{') {
+depth++;
+} else if (source[i] == '}') {
+depth--;
+if (depth == 0) {
+return source.substr(bodyStart + 1, i - bodyStart - 1);
+}
+}
+}
+
+CPPUNIT_FAIL("Function body not terminated");
+return "";
+}
+
+void FTacticalGameMechanicsTest::assertContains(const std::string & haystack, const std::string & needle) {
+CPPUNIT_ASSERT_MESSAGE(
+std::string("Expected to find '") + needle + "' in inspected source",
+haystack.find(needle) != std::string::npos);
+}
+
+void FTacticalGameMechanicsTest::testFTacticalGameImplementationCompilesStandalone() {
+// AC: src/tactical/FTacticalGame.cpp exists and compiles cleanly.
+const std::string sourcePath = repoFile("src/tactical/FTacticalGame.cpp");
+const std::string includePath = repoFile("include");
+const std::string cmd =
+"g++ -x c++ -I" + includePath + " -c " + sourcePath + " -o /dev/null";
+const int rc = std::system(cmd.c_str());
+CPPUNIT_ASSERT_EQUAL(0, rc);
+}
+
+void FTacticalGameMechanicsTest::testHeaderExposesAdditiveMechanicsApiSurface() {
+// AC: additive mechanics methods exist for setup/state, movement, report lifecycle, fire, and winner helpers.
+const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+
+assertContains(header, "int setupFleets(FleetList * aList, FleetList * dList, bool planet = false, FVehicle * station = NULL);");
+assertContains(header, "void setState(int s);");
+assertContains(header, "void setPhase(int p);");
+assertContains(header, "void resetMovementState();");
+assertContains(header, "void finalizeMovementState();");
+assertContains(header, "void clearMovementHighlights();");
+assertContains(header, "void resetTurnInfoForCurrentMover();");
+assertContains(header, "FTacticalTurnData * findTurnData(unsigned int shipID);");
+assertContains(header, "void beginTacticalReport(const FTacticalCombatReportContext & context);");
+assertContains(header, "void appendTacticalAttackReport(const FTacticalAttackReport & attack);");
+assertContains(header, "void appendTacticalReportEvent(const FTacticalReportEvent & event);");
+assertContains(header, "FTacticalCombatReportSummary buildCurrentTacticalReportSummary() const;");
+assertContains(header, "void clearTacticalReport();");
+assertContains(header, "FTacticalCombatReportSummary fireAllWeapons();");
+assertContains(header, "int clearDestroyedShips();");
+assertContains(header, "bool isCombatOver() const;");
+assertContains(header, "bool hasWinner() const { return m_hasWinner; }");
+assertContains(header, "unsigned int getWinnerID() const { return m_winnerID; }");
+assertContains(header, "void clearWinner();");
+}
+
+void FTacticalGameMechanicsTest::testResetInitializesSafeLegacyCompatibleDefaults() {
+// AC: implementation initializes tactical state to safe defaults equivalent to legacy defaults.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::reset()");
+
+assertContains(body, "m_state = BS_Unknown;");
+assertContains(body, "m_phase = PH_NONE;");
+assertContains(body, "m_activePlayer = false;");
+assertContains(body, "m_movingPlayer = true;");
+assertContains(body, "m_moveComplete = true;");
+assertContains(body, "m_done = false;");
+assertContains(body, "m_closeInProgress = false;");
+assertContains(body, "m_hasWinner = false;");
+assertContains(body, "m_winnerID = 0;");
+assertContains(body, "m_planetChoice = -1;");
+assertContains(body, "m_planetPos.setPoint(-1, -1);");
+assertContains(body, "m_stationPos.setPoint(-1, -1);");
+assertContains(body, "m_station = NULL;");
+assertContains(body, "m_playerID[0] = 0;");
+assertContains(body, "m_playerID[1] = 1;");
+assertContains(body, "m_curShip = NULL;");
+assertContains(body, "m_curWeapon = NULL;");
+assertContains(body, "clearICMVector(m_ICMData);");
+assertContains(body, "m_tacticalReport.clear();");
+assertContains(body, "m_turnInfo.clear();");
+assertContains(body, "m_mineOwner = 99;");
+}
+
+void FTacticalGameMechanicsTest::testTacticalReportLifecycleUsesSharedReportTypes() {
+// AC: reuses FTacticalCombatReport types and lifecycle helpers without duplicate structures.
+const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+
+assertContains(header, "#include \"tactical/FTacticalCombatReport.h\"");
+assertContains(header, "FTacticalCombatReport m_tacticalReport;");
+assertContains(source, "void FTacticalGame::beginTacticalReport(const FTacticalCombatReportContext & context)");
+assertContains(source, "void FTacticalGame::appendTacticalAttackReport(const FTacticalAttackReport & attack)");
+assertContains(source, "void FTacticalGame::appendTacticalReportEvent(const FTacticalReportEvent & event)");
+assertContains(source, "FTacticalCombatReportSummary FTacticalGame::buildCurrentTacticalReportSummary() const");
+assertContains(source, "return buildTacticalCombatReportSummary(m_tacticalReport);");
+assertContains(source, "void FTacticalGame::clearTacticalReport()");
+}
+
+void FTacticalGameMechanicsTest::testFireAllWeaponsOwnsCombatReportLifecycleAndCleanup() {
+// AC: fireAllWeapons owns report context, per-weapon fire aggregation, summary, and cleanup.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "FTacticalCombatReportSummary FTacticalGame::fireAllWeapons()");
+
+assertContains(body, "if (m_phase == PH_DEFENSE_FIRE) {");
+assertContains(body, "reportType = TRT_DefensiveFire;");
+assertContains(body, "} else if (m_phase == PH_ATTACK_FIRE) {");
+assertContains(body, "reportType = TRT_OffensiveFire;");
+assertContains(body, "beginTacticalReport(context);");
+assertContains(body, "fireICM();");
+assertContains(body, "FTacticalAttackResult result = (*itr)->getWeapon(i)->fire();");
+assertContains(body, "if (!result.fired()) {");
+assertContains(body, "appendTacticalAttackReport(buildTacticalAttackReport(result));");
+assertContains(body, "FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();");
+assertContains(body, "clearTacticalReport();");
+assertContains(body, "clearDestroyedShips();");
+assertContains(body, "clearICMVector(m_ICMData);");
+assertContains(body, "return summary;");
+}
+
+void FTacticalGameMechanicsTest::testMovementHelpersResetAndFinalizeTurnData() {
+// AC: movement-state helper methods reset and finalize movement/turn bookkeeping.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string resetMoveBody = extractFunctionBody(source, "void FTacticalGame::resetMovementState()");
+const std::string finalizeBody = extractFunctionBody(source, "void FTacticalGame::finalizeMovementState()");
+const std::string clearBody = extractFunctionBody(source, "void FTacticalGame::clearMovementHighlights()");
+const std::string resetTurnInfoBody = extractFunctionBody(source, "void FTacticalGame::resetTurnInfoForCurrentMover()");
+
+assertContains(resetMoveBody, "clearMovementHighlights();");
+assertContains(resetMoveBody, "m_turnInfo.clear();");
+assertContains(resetMoveBody, "m_gravityTurnFlag = false;");
+assertContains(resetMoveBody, "m_gravityTurns.clear();");
+assertContains(resetMoveBody, "setMoveComplete(false);");
+assertContains(resetMoveBody, "resetTurnInfoForCurrentMover();");
+
+assertContains(clearBody, "m_movementHexes.clear();");
+assertContains(clearBody, "m_leftHexes.clear();");
+assertContains(clearBody, "m_rightHexes.clear();");
+assertContains(clearBody, "m_targetHexes.clear();");
+assertContains(clearBody, "m_headOnHexes.clear();");
+assertContains(clearBody, "m_drawRoute = false;");
+assertContains(clearBody, "m_moved = 0;");
+
+assertContains(finalizeBody, "(*itr)->setSpeed(tItr->second.nMoved);");
+assertContains(finalizeBody, "(*itr)->setHeading(tItr->second.curHeading);");
+assertContains(finalizeBody, "(*itr)->setHeading(tItr->second.finalHeading);");
+assertContains(finalizeBody, "tItr->second.hasMoved = true;");
+assertContains(finalizeBody, "setMoveComplete(true);");
+
+assertContains(resetTurnInfoBody, "d.hasMoved = false;");
+assertContains(resetTurnInfoBody, "d.startHeading = d.curHeading;");
+assertContains(resetTurnInfoBody, "d.finalHeading = d.curHeading;");
+assertContains(resetTurnInfoBody, "d.nMoved = 0;");
+assertContains(resetTurnInfoBody, "m_turnInfo[(*itr)->getID()] = d;");
+}
+
+void FTacticalGameMechanicsTest::testWinnerAndCombatEndHelpersResolveBattleState() {
+// AC: end-of-combat/winner helper support exists for destroyed-ship cleanup and winner state.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string clearDestroyedBody = extractFunctionBody(source, "int FTacticalGame::clearDestroyedShips()");
+const std::string isCombatOverBody = extractFunctionBody(source, "bool FTacticalGame::isCombatOver() const");
+const std::string clearWinnerBody = extractFunctionBody(source, "void FTacticalGame::clearWinner()");
+
+assertContains(clearDestroyedBody, "toggleActivePlayer();");
+assertContains(clearDestroyedBody, "if ((*itr)->getHP() <= 0) {");
+assertContains(clearDestroyedBody, "itr = sList->erase(itr);");
+assertContains(clearDestroyedBody, "if (!liveShips) {");
+assertContains(clearDestroyedBody, "m_hasWinner = true;");
+assertContains(clearDestroyedBody, "m_winnerID = getActivePlayerID();");
+
+assertContains(isCombatOverBody, "if (m_hasWinner) {");
+assertContains(isCombatOverBody, "bool attackersAlive = false;");
+assertContains(isCombatOverBody, "bool defendersAlive = false;");
+assertContains(isCombatOverBody, "return !(attackersAlive && defendersAlive);");
+
+assertContains(clearWinnerBody, "m_hasWinner = false;");
+assertContains(clearWinnerBody, "m_winnerID = 0;");
+}
+
+void FTacticalGameMechanicsTest::testImplementationRemainsSelfContainedWithoutLegacyWxRewire() {
+// AC: implementation remains additive/self-contained and does not require FBattleScreen/Board/Display rewiring.
+const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+
+CPPUNIT_ASSERT(header.find("#include \"tactical/FBattleScreen.h\"") == std::string::npos);
+CPPUNIT_ASSERT(header.find("#include \"tactical/FBattleBoard.h\"") == std::string::npos);
+CPPUNIT_ASSERT(header.find("#include \"tactical/FBattleDisplay.h\"") == std::string::npos);
+CPPUNIT_ASSERT(source.find("#include \"tactical/FBattleScreen.h\"") == std::string::npos);
+CPPUNIT_ASSERT(source.find("#include \"tactical/FBattleBoard.h\"") == std::string::npos);
+CPPUNIT_ASSERT(source.find("#include \"tactical/FBattleDisplay.h\"") == std::string::npos);
+CPPUNIT_ASSERT(source.find("FBattleScreen::") == std::string::npos);
+CPPUNIT_ASSERT(source.find("FBattleBoard::") == std::string::npos);
+CPPUNIT_ASSERT(source.find("FBattleDisplay::") == std::string::npos);
+}
+
+}
