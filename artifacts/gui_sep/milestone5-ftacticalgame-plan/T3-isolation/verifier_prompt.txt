@@ -1,0 +1,59 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify Milestone 5 Subtask 3 for the tactical isolation/compatibility-boundary comments that document the temporary duplication between `FTacticalGame` and the legacy wx tactical owners, plus the follow-on documentation updates describing that decision.
+
+Acceptance criteria validated by tester:
+- `FTacticalGame.h` is self-sufficient for tactical model types.
+- No wx tactical header becomes a required dependency to include `FTacticalGame`.
+- Legacy tactical classes still compile and retain their current state definitions/behavior for the active runtime path.
+- Any temporary duplication or relocation is explicit and maintainable for later cleanup.
+
+Implementation and branch context:
+- Base branch: `gui_sep_ms5`
+- Tester branch/worktree context: `gui_sep_ms5-t3-isolation-tester-20260329`
+- Documentation branch/worktree: `gui_sep_ms5-t3-isolation-documenter-20260329`
+- Implemented files under review:
+  - `include/tactical/FTacticalGame.h`
+  - `include/tactical/FBattleBoard.h`
+
+Test files added or modified:
+- None.
+
+Documentation files added or modified:
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+- `doc/DesignNotes.md`
+
+Commands executed during testing/documentation review:
+- `cd src/tactical && make objs`
+- `cd tests/tactical && make && ./TacticalTests`
+- `rg '#include\\s*[<"\\](wx|gui/|FBattleBoard)' include/tactical/FTacticalGame.h`
+- `rg 'Compatibility note|FTacticalGame equivalents|additive FTacticalGame|FTacticalHexData|FTacticalTurnData' include/tactical/FBattleBoard.h`
+- `git --no-pager diff gui_sep_ms5..HEAD -- include/tactical/FTacticalGame.h include/tactical/FBattleBoard.h`
+
+Final test outcomes:
+- Tactical module build succeeded.
+- `TacticalTests` passed: **OK (63 tests)**.
+- Existing tactical coverage (`FTacticalGameHeaderTest`, `FTacticalGameMechanicsTest`) plus tactical runtime-path compilation validated the isolation acceptance criteria.
+
+Documentation decision summary:
+- A repo documentation update was warranted because Subtask 3 introduced a migration-facing compatibility boundary that future contributors need to preserve until Milestones 7-8.
+- `AGENTS.md` and `.github/copilot-instructions.md` now explicitly state that `FTacticalHexData`/`FTacticalTurnData` intentionally mirror `FBattleBoard`'s `hexData`/`turnData` during Milestone 5.
+- `doc/DesignNotes.md` now records the same temporary duplication as part of the additive `FTacticalGame` migration story.
+
+Shared artifact directory (repository-root-relative):
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation`
+
+Artifacts available:
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/tester_report.md`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/tester_result.json`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/documenter_report.md`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/documenter_result.json`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/verifier_prompt.txt`
+
+Verification scope requirement:
+- Review the implementation comments, tester evidence, and updated documentation files together.
+- Confirm `AGENTS.md` and `.github/copilot-instructions.md` remain aligned where they overlap.
+- Confirm `doc/DesignNotes.md` accurately describes the temporary duplication/compatibility-boundary decision without overstating a runtime behavior change.
+- Confirm the documentation decision itself is correct: this change should be documented as migration guidance, not as an end-user behavior change.

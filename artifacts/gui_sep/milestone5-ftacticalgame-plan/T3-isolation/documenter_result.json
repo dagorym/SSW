@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "subtask_id": "milestone5-isolation",
+  "branch": "gui_sep_ms5-t3-isolation-documenter-20260329",
+  "commit": "recorded in final git history after the documentation/artifact commit; same-commit hash cannot be embedded without changing the committed artifact",
+  "commit_message": "docs: document tactical isolation boundary",
+  "documentation_files": [
+    "AGENTS.md",
+    ".github/copilot-instructions.md",
+    "doc/DesignNotes.md"
+  ],
+  "artifact_files": [
+    "artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/documenter_report.md",
+    "artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/documenter_result.json",
+    "artifacts/gui_sep/milestone5-ftacticalgame-plan/T3-isolation/verifier_prompt.txt"
+  ],
+  "notes": [
+    "Documentation-only changes were made in this stage.",
+    "Verifier must confirm the documentation decision together with the implementation comments and tester validation."
+  ]
+}

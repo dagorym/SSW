@@ -20,7 +20,10 @@ track the ships' paths, locations, number of turns, speed and heading.
 and path-highlighting state in `FBattleScreen`/`FBattleBoard`, while
 Milestone 5 adds `FTacticalGame` as an additive non-wx mechanics container
 for the same battle state, movement bookkeeping (`FTacticalTurnData`), and
-tactical report ownership needed for later delegation.
+tactical report ownership needed for later delegation. Its `FTacticalHexData`
+and `FTacticalTurnData` types intentionally mirror `FBattleBoard`'s legacy
+`hexData`/`turnData` structs so model-only includes stay wx-free until later
+migration cleanup removes the legacy copies.
 
 ## Combat
 
