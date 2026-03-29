@@ -1,0 +1,39 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implemented additive Milestone 5 tactical model header `include/tactical/FTacticalGame.h` as a pure C++ class with consolidated tactical mechanics state and relocated model state types for hex-map and movement bookkeeping.
+
+Acceptance criteria validated:
+- `FTacticalGame.h` declares a compilable, non-wx tactical model class.
+- The header covers battle state, movement state, selection state, report state, ICM state, and hex-map mechanics state.
+- The header can be included without including any wx header.
+- The new types needed for tactical model ownership are available from the new header.
+
+Implementation branch/worktree context:
+- Worktree: `/home/tstephen/.copilot/session-state/812cd0b9-4a00-44c7-a654-c0b202141385/files/worktrees/gui_sep_ms5-t1-header-tester-20260329`
+- Branch: `gui_sep_ms5-t1-header-tester-20260329`
+- Test commit hash: 2efc94489f97c3661b4a02ffa9cf4736a1843bb3
+
+Test files added or modified:
+- `tests/tactical/FTacticalGameHeaderTest.h`
+- `tests/tactical/FTacticalGameHeaderTest.cpp`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/tactical/Makefile`
+
+Commands executed:
+- `cd src/tactical && make objs`
+- `cd tests/tactical && make && ./TacticalTests`
+- `printf '#include "tactical/FTacticalGame.h"\nint main(){return 0;}\n' | g++ -x c++ - -Iinclude -c -o /dev/null`
+- `cd tests/tactical && make clean && make && ./TacticalTests`
+
+Final test outcomes:
+- Tactical suite passes with `OK (55 tests)`.
+- New header-specific suite `FTacticalGameHeaderTest` passes all checks.
+
+Shared artifact directory (repository-root-relative):
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T1-header`
+
+Documentation focus recommendations:
+- Document the additive tactical model header introduction (`FTacticalGame`) and its intended non-wx include surface.
+- Note relocation/exposure of tactical model ownership bookkeeping types (`FTacticalHexData`, `FTacticalTurnData`) from model-consumer perspective.
+- Capture that this milestone stage is additive-only and does not yet rewire runtime tactical GUI flow.
