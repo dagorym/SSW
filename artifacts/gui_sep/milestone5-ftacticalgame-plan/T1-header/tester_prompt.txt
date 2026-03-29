@@ -1,0 +1,29 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented additive Milestone 5 tactical model header include/tactical/FTacticalGame.h as a pure C++ class with consolidated tactical mechanics state and relocated model state types for hex-map and movement bookkeeping.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+
+Acceptance criteria to validate (from Planner):
+- FTacticalGame.h declares a compilable, non-wx tactical model class.
+- The header covers battle state, movement state, selection state, report state, ICM state, and hex-map mechanics state.
+- The header can be included without including any wx header.
+- The new types needed for tactical model ownership are available from the new header.
+
+Create test files in:
+- tests/tactical/
+
+Implementation context for testing:
+- FTacticalGame.h is additive only; no existing tactical wx runtime flow was rewired.
+- Header introduces FTacticalHexData and FTacticalTurnData to avoid model dependence on FBattleBoard.h for tactical state types.
+- Class includes ITacticalUI forward declaration with placeholder member ITacticalUI * m_ui and has no wx base class.
+- Expected edge checks: include-surface should compile in translation units without wx includes; tactical object build should still pass.
+
+Suggested test command(s):
+- cd src/tactical && make objs
+- printf '#include "tactical/FTacticalGame.h"\\nint main(){return 0;}\\n' | g++ -x c++ - -Iinclude -c -o /dev/null
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone5-ftacticalgame-plan/T1-header
