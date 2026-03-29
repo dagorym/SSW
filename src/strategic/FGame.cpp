@@ -11,22 +11,12 @@
 #include "Frontier.h"
 #include "ships/FVehicle.h"
 #include "core/FGameConfig.h"
-#include "gui/WXGameDisplay.h"
-#include "gui/WXMapDisplay.h"
-#include "gui/WXPlayerDisplay.h"
-#include "gui/WXIconCache.h"
-#include <wx/wx.h>
-#include <wx/numdlg.h>
 #include <iostream>
 #include <sstream>
 #include <ctime>
 
 namespace Frontier
 {
-namespace {
-wxWindow *g_strategicWindow = NULL;
-}
-
 FGame * FGame::m_game = 0;
 
 FGame & FGame::create(){
@@ -41,7 +31,7 @@ FGame & FGame::create(IStrategicUI * ui){
 }
 
 FGame & FGame::create(wxWindow * win){
-	g_strategicWindow = win;
+	(void)win;
 	return create();
 }
 
@@ -99,7 +89,6 @@ int FGame::init(wxWindow *w){
     }
     return 1;
   }
-  draw();
   if (m_ui != NULL){
 	  m_ui->requestRedraw();
   }
@@ -192,32 +181,6 @@ int FGame::initMap(bool gui){
 	return 0;
 }
 
-void FGame::draw(){
-	// draw the base map
-	if (g_strategicWindow != NULL){
-		wxClientDC dc(g_strategicWindow);
-		draw(dc);
-	}
-}
-
-void FGame::draw(wxDC &dc){
-	// draw the base map
-	dc.Clear();
-	if(m_universe!=NULL){
-		WXMapDisplay md;
-		md.draw(dc);
-		// draw the fleets for each player
-		WXPlayerDisplay pd;
-		if(m_players[0]){
-			pd.drawFleets(dc,m_players[0]);
-		}
-		if(m_players[1]){
-			pd.drawFleets(dc,m_players[1]);
-		}
-		drawTurnCounter(dc);
-	}
-}
-
 int FGame::initFleets(){
 	createTFPrenglar();
 	createTFCassidine();
@@ -228,12 +191,10 @@ int FGame::initFleets(){
 	}
 	createMilita();
 	addStations();
-	draw();
 	result = addSatharShips();
 	if (result){
 		return result;
 	}
-	draw();
 
 	return 0;
 }
@@ -443,15 +404,9 @@ void FGame::createSFNova(){
 
 }
 
-void FGame::onLeftDClick(wxMouseEvent& event) {
-	if (g_strategicWindow == NULL){
-		return;
-	}
-	wxClientDC dc(g_strategicWindow);
-	WXMapDisplay md;
-	std::cout << "m_x = " << event.m_x << ", m_y = " << event.m_y << std::endl;
+void FGame::handleMapClick(double mapX, double mapY) {
 	if (m_universe!=NULL){
-		FSystem * sys = m_universe->selectSystem(event.m_x/md.getScale(dc),event.m_y/md.getScale(dc));
+		FSystem * sys = m_universe->selectSystem(mapX, mapY);
 		FPlayer * player = (m_players[0]->getID()==m_currentPlayer)?m_players[0]:m_players[1];
 		if (sys!=NULL){
 			if (m_ui != NULL){
@@ -464,7 +419,7 @@ void FGame::onLeftDClick(wxMouseEvent& event) {
 	if(m_players.size()>0){
 		FFleet *f = NULL;
 		for (unsigned int i = 0; i < m_players.size(); i++){
-			f = m_players[i]->getFleet(event.m_x/md.getScale(dc),event.m_y/md.getScale(dc));
+			f = m_players[i]->getFleet(mapX, mapY);
 			if (f!=NULL){
 				FSystem * destination = NULL;
 				if (f->getDestination() != FFleet::NO_DESTINATION) {
@@ -477,6 +432,27 @@ void FGame::onLeftDClick(wxMouseEvent& event) {
 			}
 		}
 	}
+}
+
+int FGame::processEndTurn() {
+	if (m_currentPlayer == m_players[0]->getID()){
+		endUPFTurn();
+		return 1;
+	}
+	endSatharTurn();
+	return 2;
+}
+
+unsigned int FGame::getRound() const {
+	return m_round;
+}
+
+unsigned int FGame::getCurrentPlayerID() const {
+	return m_currentPlayer;
+}
+
+const PlayerList & FGame::getPlayers() const {
+	return m_players;
 }
 
 bool FGame::placeNova(){
@@ -897,87 +873,6 @@ void FGame::createKizkKarMilita(){
 
 	m_players[0]->addFleet(fPtr);
 	m_universe->getSystem("Kizk-Kar")->addFleet(fPtr);
-}
-
-void FGame::drawTurnCounter(wxDC &dc){
-	wxCoord w, h, s;
-	dc.GetSize(&w, &h);
-	s = ((w > h)?h:w)/20;
-
-	wxColour white,blue,red,lgray,black,dblue,dred,lred,lblue;
-	white.Set(wxT("#FFFFFF"));// white
-	blue.Set(wxT("#0000FF"));// blue
-	red.Set(wxT("#FF0000"));// red
-	lgray.Set(wxT("#999999"));// light grey
-	black.Set(wxT("#000000"));// blue
-	dblue.Set(wxT("#000099"));// dark blue
-	dred.Set(wxT("#770000"));// dark red
-	lblue.Set(wxT("#9999FF"));// light blue
-	lred.Set(wxT("#FF9999")); // light red
-
-	// draw the turn boxes
-	dc.SetBrush(wxBrush(white));
-	dc.SetPen(wxPen(black));
-	dc.SetTextForeground(black);
-	dc.SetFont(wxFont((int)s/2,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-	for (int i = 0; i< 5; i++){
-		for (int j=0; j<2; j++){
-			dc.DrawRectangle(i*s,j*s,s,s);
-			std::ostringstream os;
-			os << i+5*j;
-			dc.DrawText(os.str(),(wxCoord)(i*s+0.3*s),(wxCoord)(j*s+0.1*s));
-
-		}
-	}
-	// now place the counters
-	int day = m_round % 10;
-	int tenday = m_round /10;
-	int row,col;
-	row = tenday/5;
-	col = tenday%5;
-	const wxImage &tendayImage = WXIconCache::instance().get("icons/tenday.png");
-	dc.DrawBitmap(wxBitmap(tendayImage.Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.1*s),(wxCoord)(row*s+0.1*s));
-	row = day/5;
-	col = day%5;
-	const wxImage &dayImage = WXIconCache::instance().get("icons/day.png");
-	dc.DrawBitmap(wxBitmap(dayImage.Scale(4*s/5,4*s/5)),(wxCoord)(col*s+0.2*s),(wxCoord)(row*s+0.2*s));
-
-	// draw the end turn button
-	dc.SetFont(wxFont((int)(s/3.),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-	if (m_currentPlayer == m_players[0]->getID()){
-		dc.SetBrush(wxBrush(lblue));
-		dc.DrawRoundedRectangle(0,2*s,4*s,s,s*0.25);
-		dc.DrawText("End UPF Turn",(wxCoord)(0.5*s),(wxCoord)(2.25*s));
-	} else {
-		dc.SetBrush(wxBrush(lred));
-		dc.DrawRoundedRectangle(0,2*s,4*s,s,s*0.25);
-		dc.DrawText("End Sathar Turn",(wxCoord)(0.2*s),(wxCoord)(2.25*s));
-	}
-}
-
-int FGame::onLeftUp(wxMouseEvent &event){
-	if (g_strategicWindow == NULL){
-		return 0;
-	}
-	wxClientDC dc(g_strategicWindow);
-	wxCoord w, h, s, x, y;
-	dc.GetSize(&w, &h);
-	s = ((w > h)?h:w)/20;
-	event.GetPosition(&x,&y);
-	// Did they click the end turn button
-	if ( x<4*s && y>2*s && y<3*s ){ // yes
-		if (m_currentPlayer == m_players[0]->getID()){
-			endUPFTurn();
-			return 1;
-		} else {
-			endSatharTurn();
-			return 2;
-		}
-		if (m_ui != NULL){
-			m_ui->requestRedraw();
-		}
-	}
-	return 0;
 }
 
 void FGame::addStations(){

@@ -17,8 +17,6 @@
 #include <vector>
 
 class wxWindow;
-class wxDC;
-class wxMouseEvent;
 
 namespace Frontier
 {
@@ -82,7 +80,6 @@ public:
    * @date Last Modified:  Mar 09, 2008
    */
 	  int init(wxWindow *w);
-//	  int init(wxDC &dc,wxWindow *w);
 
   /**
    * @brief Method to show a dialog with a list of players
@@ -97,40 +94,15 @@ public:
   void showPlayers();
 
   /**
-   * @brief Redraw the map
+   * @brief Handle map click using logical map coordinates
    *
-   * This method redraws the game board as needed
+   * This method processes selection using model-space map coordinates
+   * supplied by the GUI layer.
    *
-   * @author Tom Stephens
-   * @date Created:  Feb 03, 2008
-   * @date Last Modified:  Mar 11, 2008
+   * @param mapX Logical map X coordinate.
+   * @param mapY Logical map Y coordinate.
    */
-  void draw();
-
-  /**
-   * @brief Redraw the map
-   *
-   * This method take in the DC from the main frame and passes it to the map so that it can
-   * redraw itself.  This one is used when called from an wxPaintEvent
-   *
-   * @author Tom Stephens
-   * @date Created:  Feb 03, 2008
-   * @date Last Modified:  Mar 11, 2008
-   */
-  void draw(wxDC &dc);
-
-  /**
-   * @brief Process double clicking on the window
-   *
-   * This method processes a double click of the left mouse button
-   *
-   * @param event The wxWidget window event that triggered the function call
-   *
-   * @author Tom Stephens
-   * @date Created:  Feb 11, 2008
-   * @date Last Modified:  Mar 11, 2008
-   */
-  void onLeftDClick(wxMouseEvent& event);
+  void handleMapClick(double mapX, double mapY);
 
   /**
    * @brief Creates and places Strike Force Nova
@@ -195,26 +167,30 @@ public:
 	virtual int load(std::istream &is);
 
 	/**
-	 * @brief Process double clicking on the window
+	 * @brief Process end turn for the active player
 	 *
-	 * This method processes the release of the left mouse button.  This method
-	 * checks the various active regions of the screen to see if they were clicked.
-	 * The return value signals what was selected:
+	 * The return value signals what transition occurred:
 	 * <ul>
-	 * <li> 0 = nothing selected
 	 * <li> 1 = Ended UPF turn
 	 * <li> 2 = Ended Sathar turn
 	 * </ul>
-	 *
-	 * Mar 11, 2008 - Added End Turn button code
-	 *
-	 * @param event The wxWidget window event that triggered the function call
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Mar 11, 2008
-	 * @date Last Modified:  Mar 27, 2008
 	 */
-	int onLeftUp(wxMouseEvent& event);
+	int processEndTurn();
+
+	/**
+	 * @brief Returns the current game round.
+	 */
+	unsigned int getRound() const;
+
+	/**
+	 * @brief Returns the active player's id.
+	 */
+	unsigned int getCurrentPlayerID() const;
+
+	/**
+	 * @brief Returns a read-only list of players.
+	 */
+	const PlayerList & getPlayers() const;
 
 	/**
 	 * @brief Determines if it is the UPF turn or not
@@ -384,19 +360,6 @@ private:
   void createKizkKarMilita();
   /// add in all the space stations
   void addStations();
-
-  /**
-   * @brief Draws the turn counter on the map
-   *
-   * This method draws the boxes on the map for the turn counter
-   * and correctly places the day and tenday marker base on the
-   * round number
-   *
-   * @author Tom Stephens
-   * @date Created:  Mar 10, 2008
-   * @date Last Modified:  Mar 11, 2008
-   */
-  void drawTurnCounter(wxDC &dc);
 
   /**
    * @brief Check to see of someone  has won the game
