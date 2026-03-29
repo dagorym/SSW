@@ -16,9 +16,11 @@ At any given point in the control flow, you need to know who the active
 player is. You also need to know which player was the last moving player
 so you can draw the paths of their ships. You need some mechanism to
 track the ships' paths, locations, number of turns, speed and heading.
-— **Done**: `m_activePlayer`, `m_movingPlayer` (booleans mapped to IDs via
-`getActivePlayerID()` / `getMovingPlayerID()`); path tracked in
-`m_movementHexes` et al. in `FBattleBoard`.
+— **Done**: the live wx flow still keeps `m_activePlayer`, `m_movingPlayer`
+and path-highlighting state in `FBattleScreen`/`FBattleBoard`, while
+Milestone 5 adds `FTacticalGame` as an additive non-wx mechanics container
+for the same battle state, movement bookkeeping (`FTacticalTurnData`), and
+tactical report ownership needed for later delegation.
 
 ## Combat
 
@@ -267,3 +269,9 @@ All three combat phases and their supporting mechanics are fully implemented:
   in `FBattleScreen`; masking screen turn count decremented via
   `decrementMSTurnCount()` each movement phase.
 
+Milestone 5 also adds an additive `FTacticalGame` implementation that mirrors
+these mechanics without rewiring the runtime wx flow yet. The new model owns
+safe-default reset/setup helpers, movement reset/finalization helpers,
+tactical report lifecycle built on `FTacticalCombatReport`, `fireAllWeapons()`
+combat report aggregation/cleanup, and winner/combat-end detection so later
+migration milestones can delegate to it incrementally.

@@ -1,0 +1,62 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify Milestone 5 Subtask 2 for the additive `FTacticalGame` mechanics container and the follow-on documentation updates that describe its migration-safe scope.
+
+Acceptance criteria to verify:
+- `src/tactical/FTacticalGame.cpp` exists and compiles cleanly.
+- The implementation initializes all tactical state to safe defaults equivalent to the legacy wx class defaults where applicable.
+- `FTacticalGame` provides additive mechanics methods for major migration targets, including battle setup/state transitions, movement-state reset/finalization helpers, tactical report lifecycle, `fireAllWeapons()` ownership, and end-of-combat detection/winner resolution support.
+- The implementation reuses existing tactical report types from `FTacticalCombatReport.h` instead of introducing duplicate reporting structures.
+- The implementation remains self-contained and does not require modifying `FBattleScreen`, `FBattleBoard`, or `FBattleDisplay` yet.
+- Documentation reflects the implemented Milestone 5 additive scope without claiming the wx tactical runtime has already been rewired.
+
+Implementation and branch context:
+- Base branch: `gui_sep_ms5`
+- Implementation/test branch context: `gui_sep_ms5-t2-implementation-tester-20260329`
+- Documentation branch/worktree: `gui_sep_ms5-t2-implementation-documenter-20260329`
+- Implemented files:
+  - `include/tactical/FTacticalGame.h`
+  - `src/tactical/FTacticalGame.cpp`
+
+Test files added or modified:
+- Added: `tests/tactical/FTacticalGameMechanicsTest.h`
+- Added: `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- Modified: `tests/tactical/Makefile`
+- Modified: `tests/tactical/TacticalTests.cpp`
+
+Documentation files added or modified:
+- Modified: `AGENTS.md`
+- Modified: `.github/copilot-instructions.md`
+- Modified: `doc/DesignNotes.md`
+
+Commands executed during testing:
+- `cd src/tactical && make objs`
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && make && ./TacticalTests` (after adding tests)
+- `cd src/tactical && make objs` (post-change verification)
+
+Final test outcomes:
+- Tactical test suite: **OK (63 tests)**
+- New `FTacticalGame` mechanics tests validate standalone compile, additive API coverage, reset default-state initialization, tactical report lifecycle reuse of `FTacticalCombatReport`, `fireAllWeapons()` report ownership/cleanup, movement helper behavior, winner/combat-end behavior, and self-contained boundaries without `FBattleScreen`/`FBattleBoard`/`FBattleDisplay` dependencies.
+- Test commit hash: `eeefcb1f4958e25dd4560fea63781aa4a74a5181`
+
+Documentation decision summary:
+- `FTacticalGame` is documented as an additive non-wx tactical mechanics container in Milestone 5.
+- Repository guidance now states that `FTacticalGame.cpp` owns additive setup/reset, movement bookkeeping, tactical report lifecycle, `fireAllWeapons()` aggregation, and winner/combat-end helpers while the legacy wx runtime flow remains active.
+- Tactical test inventory now mentions `FTacticalGameMechanicsTest` coverage.
+
+Shared artifact directory (repository-root-relative):
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T2-implementation`
+
+Artifacts available:
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T2-implementation/tester_report.md`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T2-implementation/tester_result.json`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T2-implementation/documenter_report.md`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T2-implementation/documenter_result.json`
+- `artifacts/gui_sep/milestone5-ftacticalgame-plan/T2-implementation/verifier_prompt.txt`
+
+Verification scope requirement:
+- Review the implementation, the tester-added coverage, and the updated documentation files together.
+- Confirm `AGENTS.md` and `.github/copilot-instructions.md` remain aligned where they overlap.
+- Confirm `doc/DesignNotes.md` accurately describes the additive Milestone 5 scope and does not overstate runtime delegation.
