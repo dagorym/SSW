@@ -7,6 +7,7 @@
 #pragma once
 #include <wx/wx.h>
 #include "strategic/FGame.h"
+#include "gui/WXGameDisplay.h"
 #include "core/FGameConfig.h"
 #include "strategic/FGame.h"
 
@@ -49,5 +50,5 @@ public:
 private:
 	wxWindow * m_parent;
 	FGame * m_game;
+	WXGameDisplay m_gameDisplay;
 };
-

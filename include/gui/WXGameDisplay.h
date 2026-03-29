@@ -9,10 +9,11 @@
 #define WXGAMEDISPALY_H_
 
 #include <wx/wx.h>
-//#include "strategic/FGame.h"
 
 namespace Frontier
 {
+
+class FGame;
 
 /**
  * @brief Interface class between the FGame class and wxWidgets
@@ -29,6 +30,19 @@ public:
 	WXGameDisplay();
 	virtual ~WXGameDisplay();
 
+	/**
+	 * @brief Draws the strategic game state
+	 *
+	 * This method draws the strategic map, fleets, and turn counter using
+	 * the GUI-side display helper classes.
+	 *
+	 * @param dc Device context to draw to
+	 * @param game Strategic game state to render
+	 */
+	void draw(wxDC &dc, FGame &game);
+
+private:
+	void drawTurnCounter(wxDC &dc, const FGame &game);
 };
 
 }

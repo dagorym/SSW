@@ -23,7 +23,7 @@ void FGamePanel::onPaint(wxPaintEvent & event) {
 	wxPaintDC dc(this);
 #endif
 	if (m_game != NULL) {
-		m_game->draw(dc);
+		m_gameDisplay.draw(dc, *m_game);
 	}
 	//dc.SetBackground(*wxBLACK);
 	//dc.Clear();
