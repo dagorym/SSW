@@ -1,0 +1,56 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify Milestone 4 Subtask 4 in the SSW repository.
+- Confirm the updated strategic regression coverage enforces the intended GUI/model boundary around `FGame` and `WXGameDisplay`.
+- Confirm the documentation handoff accurately reflects the shipped tests and the final passing test results.
+
+Plan document:
+- `plans/milestone4-fgame-rendering-extraction-plan.md`
+
+Implementation context:
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m4s4-implementer-20260328`
+- Implementer worktree: `/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s4-implementer-20260328`
+- Implementer commit: `0c0d1212ae66e3ae850cbfedb55c0a2da1cfe707`
+- Tester branch: `gui_sep-m4s4-tester-20260328`
+- Tester commit: `c142282f3b130dca6be2aa6bfb09545573e85e09`
+- Documenter branch: `gui_sep-m4s4-documenter-20260328`
+- Documenter worktree: `/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s4-documenter-20260328`
+- Current documenter HEAD matched tester HEAD before the documentation commit.
+
+Acceptance criteria to verify:
+1. `tests/strategic/FGameHeaderDependencyTest` was updated in place to enforce the Milestone 4 boundary.
+2. Strategic tests fail if `FGame.h` reintroduces strategic draw methods, `drawTurnCounter`, wx mouse-event handlers, or direct wx rendering/input API types on strategic draw/input methods.
+3. Strategic tests reject GUI display helper painting references in `src/strategic/FGame.cpp`, including `WXMapDisplay`, `WXPlayerDisplay`, and `WXGameDisplay`.
+4. Strategic tests verify that `WXGameDisplay` owns the strategic draw entry point.
+5. The strategic test target builds and passes.
+6. The full suite passes with `OK (182 tests)`.
+7. Documentation artifacts accurately state the strengthened UI/model boundary coverage and mention the tester's earlier transient non-reproduced `FFleetTest` hiccup without overstating it.
+
+Files changed in implementation/test/documentation scope:
+- Implementation files modified:
+  - `tests/strategic/FGameHeaderDependencyTest.h`
+  - `tests/strategic/FGameHeaderDependencyTest.cpp`
+- Test files added or modified:
+  - `tests/strategic/FGameHeaderDependencyTest.h`
+  - `tests/strategic/FGameHeaderDependencyTest.cpp`
+- Documentation files added or modified:
+  - `artifacts/gui_sep/milestone4_plan/subtask4/documenter_report.md`
+  - `artifacts/gui_sep/milestone4_plan/subtask4/documenter_result.json`
+  - `artifacts/gui_sep/milestone4_plan/subtask4/verifier_prompt.txt`
+
+Tester evidence and commands executed:
+- `cd tests/strategic && make clean && make` — clean target reported missing-file issues, but the strategic target was rebuilt successfully afterward.
+- `cd tests/strategic && make && cd .. && make && ./SSWTests` — earlier run had one transient `FFleetTest` failure that did not reproduce on rerun.
+- `cd tests && ./SSWTests` — PASS: `OK (182 tests)`.
+- `cd tests/strategic && make` — PASS.
+- Final suite result: 182 run, 182 passed, 0 failed, 0 errors.
+
+Documentation expectations:
+- Verification must include the updated documentation files listed above, along with the implementation and tester artifacts.
+- Confirm the documenter artifacts accurately describe the regression-test boundary coverage and do not overstate the transient tester hiccup.
+- Confirm it was reasonable to keep documentation changes confined to the shared artifact directory for this internal test-coverage subtask.
+
+Shared artifact directory to reuse:
+- `artifacts/gui_sep/milestone4_plan/subtask4`
