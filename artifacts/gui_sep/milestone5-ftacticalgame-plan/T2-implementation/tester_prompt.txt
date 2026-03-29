@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented additive FTacticalGame mechanics container for Milestone 5 Subtask 2 with constructors/reset/setup, battle state and phase helpers, movement-state helpers, tactical report lifecycle helpers, fireAllWeapons combat-phase ownership, and end-of-combat/winner helpers.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- src/tactical/FTacticalGame.cpp exists and compiles cleanly.
+- The implementation initializes all tactical state to safe defaults equivalent to the legacy wx class defaults where applicable.
+- FTacticalGame provides additive mechanics methods for major migration targets, including battle setup/state transitions, movement-state reset/finalization helpers, tactical report lifecycle, fireAllWeapons ownership, and end-of-combat detection/winner resolution support.
+- The implementation reuses existing tactical report types from FTacticalCombatReport.h instead of introducing duplicate reporting structures.
+- The implementation remains self-contained and does not require modifying FBattleScreen, FBattleBoard, or FBattleDisplay yet.
+
+Create test files in:
+- tests/tactical/
+
+Implementation context for testing:
+- FTacticalGame now exposes additive methods in include/tactical/FTacticalGame.h and concrete behavior in src/tactical/FTacticalGame.cpp.
+- fireAllWeapons() now exists on FTacticalGame and mirrors report-context + per-weapon fire/report append flow.
+- Tactical report lifecycle methods (begin/append/summary/clear) mirror legacy normalization behavior.
+- Movement helpers include resetMovementState(), finalizeMovementState(), clearMovementHighlights(), resetTurnInfoForCurrentMover(), and turn lookup helpers.
+- Winner/combat-end helpers include clearDestroyedShips(), isCombatOver(), hasWinner(), getWinnerID(), clearWinner().
+- Legacy wx tactical classes were intentionally not rewired.
+
+Suggested test command(s):
+- cd src/tactical && make objs
+- cd tests/tactical && make && ./TacticalTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone5-ftacticalgame-plan/T2-implementation
