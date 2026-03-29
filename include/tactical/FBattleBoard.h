@@ -41,6 +41,8 @@ typedef struct {
 	/// List of ships in hex
 	VehicleList ships;
 } hexData;
+/// Compatibility note (Milestone 5): FTacticalGame.h now defines equivalent
+/// FTacticalHexData for model-only tactical consumers without wx dependencies.
 
 /// data structure to hold information about the movements of a ship during a turn.
 typedef struct {
@@ -71,6 +73,8 @@ typedef struct {
 	/// Ship's path this turn
 	FHexPath path;
 } turnData;
+/// Compatibility note (Milestone 5): FTacticalGame.h now defines equivalent
+/// FTacticalTurnData to support additive model ownership during migration.
 
 /**
  * @brief Class for the Main tactical combat board

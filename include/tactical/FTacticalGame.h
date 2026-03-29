@@ -30,6 +30,10 @@ class ITacticalUI;
 
 /**
  * @brief Tactical hex state for FTacticalGame model ownership.
+ *
+ * Compatibility note (Milestone 5): mirrors legacy Frontier::hexData in
+ * FBattleBoard.h so model-only callers can use FTacticalGame.h without
+ * depending on wx tactical headers.
  */
 typedef struct {
 FPoint pos;
@@ -38,6 +42,9 @@ VehicleList ships;
 
 /**
  * @brief Per-ship movement bookkeeping for FTacticalGame model ownership.
+ *
+ * Compatibility note (Milestone 5): mirrors legacy Frontier::turnData in
+ * FBattleBoard.h until Milestones 7-8 remove duplicated state from wx owners.
  */
 typedef struct {
 bool hasMoved;
@@ -151,7 +158,7 @@ VehicleList * m_attackShips;
 FleetList * m_defendList;
 VehicleList * m_defendShips;
 
-/// ICM and report lifecycle state
+/// ICM and report lifecycle state (legacy fire-flow owners were FBattleScreen + FBattleDisplay)
 std::vector<ICMData *> m_ICMData;
 FTacticalCombatReport m_tacticalReport;
 
