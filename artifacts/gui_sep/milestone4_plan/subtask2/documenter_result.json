@@ -6,7 +6,7 @@
   "base_branch": "gui_sep",
   "tester_branch": "gui_sep-m4s2-tester-20260328",
   "plan_document": "plans/milestone4-fgame-rendering-extraction-plan.md",
-  "commit_sha": null,
+  "commit_sha": "a008a2109d6e049d887de3b79745a2b90948e8b6",
   "docs_changed": [],
   "artifact_files_written": [
     "artifacts/gui_sep/milestone4_plan/subtask2/documenter_report.md",
