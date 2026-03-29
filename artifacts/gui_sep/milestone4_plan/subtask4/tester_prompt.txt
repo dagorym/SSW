@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified Milestone 4 strategic/UI boundary regressions by strengthening FGame dependency tests to prevent reintroduction of rendering and wx mouse-event APIs on FGame, and to assert WXGameDisplay owns the strategic draw entry point.
+
+Modified files:
+- tests/strategic/FGameHeaderDependencyTest.h
+- tests/strategic/FGameHeaderDependencyTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Tests fail if FGame reintroduces strategic draw methods or wx mouse-event handlers.
+- Tests verify that FGame.cpp no longer references GUI display helpers for painting.
+- The updated strategic test target builds and passes.
+- The relevant full test suite path should pass now that the stale assertions are corrected.
+
+Create test files in:
+- No new test files required for this subtask (existing strategic dependency test was updated in place).
+
+Implementation context for testing:
+- Renamed and repurposed header dependency assertions to enforce no wxDC/wxMouseEvent exposure in FGame.h.
+- Added assertions rejecting draw/drawTurnCounter/onLeftDClick/onLeftUp declarations/definitions in FGame header/source.
+- Added assertions that FGame.cpp does not reference WXMapDisplay/WXPlayerDisplay/WXGameDisplay.
+- Added assertions that WXGameDisplay declares and defines draw(wxDC&, FGame&) as strategic draw entry point.
+- Existing strategic UI-interface routing assertions were retained.
+
+Suggested test command(s):
+- cd tests/strategic && make clean && make
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone4_plan/subtask4

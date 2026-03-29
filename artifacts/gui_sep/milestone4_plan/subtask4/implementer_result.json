@@ -1,0 +1,17 @@
+{
+  "status": "completed",
+  "subtask": "Milestone 4 Subtask 4",
+  "branch": "gui_sep-m4s4-implementer-20260328",
+  "worktree": "/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s4-implementer-20260328",
+  "commit_sha": "0c0d1212ae66e3ae850cbfedb55c0a2da1cfe707",
+  "changed_files": [
+    "tests/strategic/FGameHeaderDependencyTest.h",
+    "tests/strategic/FGameHeaderDependencyTest.cpp"
+  ],
+  "summary": "Updated strategic regression dependency tests to enforce Milestone 4 separation: FGame cannot expose strategic draw or wx mouse-event APIs, FGame.cpp cannot reference GUI display painting helpers, and WXGameDisplay must own the draw entry point.",
+  "tests_run": [
+    "cd tests/strategic && make clean && make",
+    "cd tests && make && ./SSWTests"
+  ],
+  "tester_prompt_path": "artifacts/gui_sep/milestone4_plan/subtask4/tester_prompt.txt"
+}
