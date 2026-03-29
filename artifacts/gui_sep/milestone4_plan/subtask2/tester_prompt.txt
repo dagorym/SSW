@@ -1,0 +1,32 @@
+You are the Tester Agent.
+
+Task summary:
+- Subtask 2 refactored strategic FGame APIs to remove wx rendering/event dependencies.
+- Removed FGame draw/onLeft* methods and added model-safe commands/getters.
+
+Modified files:
+- include/strategic/FGame.h
+- src/strategic/FGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- FGame no longer declares or defines draw(), draw(wxDC&), drawTurnCounter(wxDC&), onLeftDClick(wxMouseEvent&), or onLeftUp(wxMouseEvent&).
+- FGame exposes model-safe replacements for strategic interactions and end-turn processing.
+- FGame exposes minimal read-only getters needed by GUI without GUI type leakage.
+- FGame.cpp no longer depends on WXGameDisplay, WXMapDisplay, WXPlayerDisplay, wxDC, or wxMouseEvent.
+- Strategic behavior remains unchanged for system/fleet selection flow and end-turn transitions.
+
+Create test files in:
+- tests/strategic/ (if adding regression tests; follow existing strategic test conventions)
+
+Implementation context for testing:
+- New APIs on FGame: handleMapClick(double,double), processEndTurn(), getRound() const, getCurrentPlayerID() const, getPlayers() const.
+- handleMapClick now accepts logical map coordinates and preserves system/fleet dialog selection behavior via IStrategicUI.
+- processEndTurn preserves prior return contract: 1 for ended UPF turn, 2 for ended Sathar turn.
+- Screen-space conversion and end-turn hit testing were removed from FGame (now intended for GUI layer in later subtask).
+
+Suggested test command(s):
+- cd src/strategic && make
+- cd tests/strategic && make
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone4_plan/subtask2
