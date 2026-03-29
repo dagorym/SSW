@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "subtask": "Milestone 4 Subtask 3",
+  "branch": "gui_sep-m4s3-documenter-20260328",
+  "worktree": "/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s3-documenter-20260328",
+  "base_branch": "gui_sep",
+  "tester_branch": "gui_sep-m4s3-tester-20260328",
+  "plan_document": "plans/milestone4-fgame-rendering-extraction-plan.md",
+  "commit_sha": null,
+  "docs_changed": [],
+  "artifact_files_written": [
+    "artifacts/gui_sep/milestone4_plan/subtask3/documenter_report.md",
+    "artifacts/gui_sep/milestone4_plan/subtask3/documenter_result.json",
+    "artifacts/gui_sep/milestone4_plan/subtask3/verifier_prompt.txt"
+  ],
+  "summary": "Documented the Subtask 3 GUI event-routing boundary: FMainFrame now owns pixel-space conversion and end-turn hit testing, Refresh() covers former draw() refresh sites, and the remaining suite failures belong to Subtask 4 dependency assertions.",
+  "known_test_failures": [
+    "FrontierTests::FGameHeaderDependencyTest::testHeaderUsesForwardDeclarationsForWxTypes",
+    "FrontierTests::FGameHeaderDependencyTest::testDrawTurnCounterUsesWXIconCacheForDayAndTenday"
+  ],
+  "verifier_prompt_path": "artifacts/gui_sep/milestone4_plan/subtask3/verifier_prompt.txt",
+  "commit_sha_note": "Final commit SHA is reported in git history and CLI output; a commit cannot stably embed its own hash."
+}

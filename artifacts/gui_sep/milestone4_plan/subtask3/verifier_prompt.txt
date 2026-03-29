@@ -1,0 +1,51 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify Milestone 4 Subtask 3 in the SSW repository.
+- Confirm the GUI layer now owns strategic screen-to-map coordinate conversion and end-turn hit testing, while `FGame` receives only logical commands.
+- Confirm the documentation/handoff artifacts accurately describe the implemented behavior and clearly separate the known Subtask 4 dependency-test failures from Subtask 3 scope.
+
+Plan document:
+- `plans/milestone4-fgame-rendering-extraction-plan.md`
+
+Implementation context:
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m4s3-implementer-20260328`
+- Tester branch: `gui_sep-m4s3-tester-20260328`
+- Documenter branch: `gui_sep-m4s3-documenter-20260328`
+- Documenter worktree: `/home/tstephen/.copilot/session-state/c2b846c7-28f9-422d-906f-d5ec6b7703da/files/worktrees/gui_sep-m4s3-documenter-20260328`
+- Current documenter HEAD matches tester HEAD before the documentation commit.
+
+Acceptance criteria to verify:
+1. `FMainFrame::onLeftDClick()` no longer forwards raw wx events to `FGame`.
+2. GUI-side pixel-to-map conversion uses `WXMapDisplay::getScale()` and passes logical coordinates to `FGame::handleMapClick(double, double)`.
+3. `FMainFrame::onLeftUp()` performs GUI-side end-turn hit testing and calls `FGame::processEndTurn()`.
+4. Existing menu toggle behavior for process-end-turn return codes `1` and `2` remains intact.
+5. `onNew`, `onOpen`, and `onPlaceNova` refresh the frame so removed `m_game->draw()` calls do not leave stale UI.
+6. Root `make -j2` passes.
+7. `cd tests && make -j2 && ./SSWTests` still fails only on the two known Subtask 4 dependency assertions in `FrontierTests::FGameHeaderDependencyTest`.
+8. Documentation artifacts clearly state that GUI code owns pixel-space math and end-turn hit testing while the model receives logical commands, and they clearly distinguish the Subtask 4 failures as out of scope for Subtask 3.
+
+Files changed in implementation/test/documentation scope:
+- Implementation files modified:
+  - `src/FMainFrame.cpp`
+- Test files added or modified:
+  - None
+- Documentation files added or modified:
+  - `artifacts/gui_sep/milestone4_plan/subtask3/documenter_report.md`
+  - `artifacts/gui_sep/milestone4_plan/subtask3/documenter_result.json`
+  - `artifacts/gui_sep/milestone4_plan/subtask3/verifier_prompt.txt`
+
+Tester evidence and commands executed:
+- `make -j2` — PASS
+- `cd tests && make -j2 && ./SSWTests` — FAIL only on known pending Subtask 4 assertions:
+  - `FrontierTests::FGameHeaderDependencyTest::testHeaderUsesForwardDeclarationsForWxTypes`
+  - `FrontierTests::FGameHeaderDependencyTest::testDrawTurnCounterUsesWXIconCacheForDayAndTenday`
+- Final suite result: 180 run, 178 passed, 2 failed, 0 errors.
+
+Documentation expectations:
+- Verification must include the updated documentation files listed above, along with the implementation and tester artifacts.
+- Confirm the documenter artifacts accurately describe the GUI/model boundary shift and do not overstate Subtask 3 scope.
+
+Shared artifact directory to reuse:
+- `artifacts/gui_sep/milestone4_plan/subtask3`
