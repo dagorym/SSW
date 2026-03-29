@@ -1,0 +1,35 @@
+You are the Documenter Agent.
+
+Task summary:
+- Verified Milestone 5 Subtask 4 build wiring by adding FTacticalGame.o to the tactical static library build inputs.
+
+Acceptance criteria validated:
+- src/tactical/Makefile includes FTacticalGame.o in libtactical.a.
+- A tactical module build succeeds with the new source file present.
+- If a new test is added, it is additive and limited to construction/default-state or compile inclusion of FTacticalGame; it must not require Milestone 6 UI abstractions.
+- Existing tactical runtime behavior is unchanged because no current battle entry point is rewired to use FTacticalGame yet.
+
+Implementation/worktree context:
+- Tester branch: gui_sep_ms5-t4-build-tester-20260329
+- Tester worktree: /home/tstephen/.copilot/session-state/812cd0b9-4a00-44c7-a654-c0b202141385/files/worktrees/gui_sep_ms5-t4-build-tester-20260329
+- Implementation file under validation: src/tactical/Makefile
+
+Test files added/modified:
+- None (no new tests were necessary; existing tactical additive FTacticalGame tests already covered this scope).
+
+Commands executed:
+- grep -n "FTacticalGame\\.o" src/tactical/Makefile
+- cd src/tactical && make clean && make
+- ar -t src/tactical/libtactical.a | grep '^FTacticalGame.o$'
+- cd tests/tactical && make && ./TacticalTests
+
+Final test outcomes:
+- Tactical module build: PASS
+- Static archive membership check for FTacticalGame.o: PASS
+- Tactical test suite: PASS (63/63)
+
+Test commit hash:
+- 959e9241ad344103f074fc2685d51b8fffe5a788
+
+Shared artifact directory (repository-root-relative):
+- artifacts/gui_sep/milestone5-ftacticalgame-plan/T4-build
