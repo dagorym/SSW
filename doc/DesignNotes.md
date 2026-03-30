@@ -317,6 +317,15 @@ stable forwarding surface for existing runtime state while preserving current
 behavior until later subtasks move the active tactical wx path over to that
 model.
 
+Milestone 7 Subtask 2 keeps that migration additive but moves ownership
+responsibility into `FBattleScreen` itself. The dialog now constructs and owns
+its `FTacticalGame*` and `WXTacticalUI*`, installs the wx adapter onto the
+model during setup, detaches it with `installUI(NULL)` during teardown, and
+then deletes both delegated runtime objects safely. Existing guarded close-path
+behavior is preserved through the `m_closeInProgress` gate and the same modal
+`EndModal()` handling, while the tactical `Makefile` change remains limited to
+the new `FBattleScreen` header dependencies needed for that wiring.
+
 ### Validation Completed
 
 Milestone 5 production-fix validation confirmed that the additive
