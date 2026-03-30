@@ -1,0 +1,13 @@
+/home/tstephen/repos/SSW/include/tactical/FBattleScreen.h
+/home/tstephen/repos/SSW/src/tactical/FBattleScreen.cpp
+/home/tstephen/repos/SSW/include/tactical/FTacticalGame.h
+/home/tstephen/repos/SSW/src/tactical/FTacticalGame.cpp
+/home/tstephen/repos/SSW/src/tactical/Makefile
+/home/tstephen/repos/SSW/tests/tactical/FTacticalBattleScreenReportContextTest.h
+/home/tstephen/repos/SSW/tests/tactical/FTacticalBattleScreenReportContextTest.cpp
+/home/tstephen/repos/SSW/tests/tactical/FTacticalBattleScreenElectricalFireTest.h
+/home/tstephen/repos/SSW/tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+/home/tstephen/repos/SSW/tests/tactical/FTacticalBattleScreenDelegationTest.h
+/home/tstephen/repos/SSW/tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+/home/tstephen/repos/SSW/tests/tactical/Makefile
+/home/tstephen/repos/SSW/tests/tactical/TacticalTests.cpp
