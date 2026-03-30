@@ -9,8 +9,11 @@
 #include "tactical/FBattleScreen.h"
 #include "Frontier.h"
 #include "core/FGameConfig.h"
+#include "gui/WX\
+TacticalUI.h"
 #include "gui/TacticalDamageSummaryGUI.h"
 #include "gui/ICMSelectionGUI.h"
+#include "tactical/FTacticalGame.h"
 #include <wx/wx.h>
 
 namespace Frontier {
@@ -130,6 +133,10 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_hasPlanet = false;
 	m_done = false;
 	m_tacticalReport.clear();
+	m_tacticalGame = new FTacticalGame();
+	m_tacticalUI = new WX\
+TacticalUI(this);
+	m_tacticalGame->installUI(m_tacticalUI);
 	m_closeInProgress = false;
 
 	Bind(wxEVT_CLOSE_WINDOW, &FBattleScreen::onClose, this);
@@ -139,6 +146,11 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 FBattleScreen::~FBattleScreen(){
 	if (m_attackShips) { delete m_attackShips; }
 	if (m_defendShips) { delete m_defendShips; }
+	if (m_tacticalGame) {
+		m_tacticalGame->installUI(NULL);
+	}
+	if (m_tacticalUI) { delete m_tacticalUI; }
+	if (m_tacticalGame) { delete m_tacticalGame; }
 //	delete m_wd;
 //	this->MakeModal(false);
 }

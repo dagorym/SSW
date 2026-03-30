@@ -104,6 +104,8 @@ FBattleScreen.o: ../../include/core/FHexMap.h
 FBattleScreen.o: ../../include/tactical/FBattleDisplay.h
 FBattleScreen.o: ../../include/gui/ICMSelectionGUI.h
 FBattleScreen.o: ../../include/gui/AssignedICMData.h
+FBattleScreen.o: ../../include/gui/WXTacticalUI.h
+FBattleScreen.o: ../../include/tactical/FTacticalGame.h
 FTacticalGame.o: ../../include/tactical/FTacticalGame.h
 FTacticalGame.o: ../../include/strategic/FFleet.h
 FTacticalGame.o: ../../include/ships/FVehicle.h

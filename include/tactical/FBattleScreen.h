@@ -29,6 +29,10 @@
 
 namespace Frontier {
 
+class FTacticalGame;
+class WX\
+TacticalUI;
+
 /**
  * @brief Class for the Main tactical combat board
  *
@@ -242,6 +246,11 @@ protected:
 	FWeapon * m_curWeapon;
 	/// current tactical combat report state
 	FTacticalCombatReport m_tacticalReport;
+	/// tactical model owner during delegation migration
+	FTacticalGame * m_tacticalGame;
+	/// wx tactical UI adapter owner during delegation migration
+	WX\
+TacticalUI * m_tacticalUI;
 	/// guard to keep teardown on a single close path
 	bool m_closeInProgress;
 //	/// window disabler object
