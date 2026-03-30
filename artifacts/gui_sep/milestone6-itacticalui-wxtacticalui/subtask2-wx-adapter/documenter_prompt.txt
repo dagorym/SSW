@@ -1,0 +1,42 @@
+You are the Documenter Agent.
+
+Task summary:
+- Milestone 6 Subtask 2 implemented `WXTacticalUI`, an additive wx-backed adapter implementing `ITacticalUI`, without rewiring runtime tactical call sites.
+
+Implementation files in scope:
+- `include/gui/WXTacticalUI.h`
+- `src/gui/WXTacticalUI.cpp`
+
+Acceptance criteria validated by tests:
+- `WXTacticalUI` publicly implements `ITacticalUI`.
+- Constructor takes `wxWindow* parent` and stores it for redraw/modal parenting.
+- `requestRedraw()` calls parent `Refresh()` when parent exists and is null-safe otherwise.
+- `showMessage()` follows repository-consistent informational messaging behavior and null-parent fallback.
+- `showDamageSummary()` wraps `TacticalDamageSummaryGUI` and returns modal result.
+- `runICMSelection()` wraps `ICMSelectionGUI` and returns modal result.
+- `notifyWinner(bool attackerWins)` preserves `FBattleScreen::declareWinner()` winner-message semantics.
+- Tactical runtime caller classes are not rewired to `WXTacticalUI` yet.
+
+Testing work completed:
+- Added `tests/tactical/WXTacticalUIAdapterTest.h`
+- Added `tests/tactical/WXTacticalUIAdapterTest.cpp`
+- Updated `tests/tactical/TacticalTests.cpp` to register the new suite.
+- Updated `tests/tactical/Makefile` to compile/link the new suite.
+
+Commands executed:
+- `make -C tests/tactical`
+- `tests/tactical/TacticalTests`
+
+Final outcomes:
+- Tactical tests passed: `OK (76 tests)`.
+- No unmet acceptance criteria.
+- Test commit hash: `7a17a374c5428a968ad5e5412624f7c048b09bbc`.
+
+Implementation context:
+- Implementer branch/commit in scope: `gui_sep-m6-wx-adapter-implementer-20260330 @ 16cf55c68b25fcdffe43b637293c9db380be76e8`.
+- This subtask is additive infrastructure; GUI Makefile wiring is tracked in Subtask 3 and runtime tactical delegation rewiring is intentionally deferred.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask2-wx-adapter`
+
+Please update project documentation to reflect Subtask 2 completion status accurately: additive adapter introduced and validated, with no runtime rewiring yet.

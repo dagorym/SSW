@@ -1,0 +1,28 @@
+{
+  "status": "success",
+  "subtask": "milestone6-itacticalui-wxtacticalui/subtask2-wx-adapter",
+  "branch": "gui_sep-m6-wx-adapter-tester-20260329",
+  "test_commit_hash": "7a17a374c5428a968ad5e5412624f7c048b09bbc",
+  "test_files": [
+    "tests/tactical/WXTacticalUIAdapterTest.h",
+    "tests/tactical/WXTacticalUIAdapterTest.cpp",
+    "tests/tactical/TacticalTests.cpp",
+    "tests/tactical/Makefile"
+  ],
+  "commands_run": [
+    "make -C tests/tactical",
+    "tests/tactical/TacticalTests"
+  ],
+  "totals": {
+    "tests_added": 7,
+    "total": 76,
+    "passed": 76,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_paths": [
+    "artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask2-wx-adapter/tester_report.md",
+    "artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask2-wx-adapter/tester_result.json",
+    "artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask2-wx-adapter/documenter_prompt.txt"
+  ]
+}
