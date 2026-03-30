@@ -1,3 +1,4 @@
+.RECIPEPREFIX = >
 ifeq ($(COVERAGE),1)
 COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
 else
@@ -13,37 +14,37 @@ PICFLAGS = -fPIC -DPIC
 .SUFFIXES: .o .c .cpp .cxx .rsrc .r
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
+>$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+>$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+>$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
 
 .rsrc.r:
-	$(DEREZ) $^ Carbon.r -useDF > $@
+>$(DEREZ) $^ Carbon.r -useDF > $@
 
-OBJS = FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o WXTacticalUIAdapterTest.o TacticalTests.o
+OBJS = FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o TacticalTests.o
 
 TARGET = libtacticalTests.a
 RUNNER = TacticalTests
 
 all: $(TARGET) $(RUNNER)
 
-$(TARGET): FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o WXTacticalUIAdapterTest.o
-	ar rcs $(TARGET) FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o WXTacticalUIAdapterTest.o
+$(TARGET): FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o
+>ar rcs $(TARGET) FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o
 
 $(RUNNER): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(RUNNER) $(OBJS) -lcppunit $(LIBS)
+>$(CXX) $(CXXFLAGS) -o $(RUNNER) $(OBJS) -lcppunit $(LIBS)
 
 objs: $(OBJS)
-	rm *.gcda
-	rm *.gcov
-	rm *.gcno
+>rm -f *.gcda
+>rm -f *.gcov
+>rm -f *.gcno
 
 .PHONY:
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
-	rm $(RUNNER)
+>rm -f $(OBJS)
+>rm -f $(TARGET)
+>rm -f $(RUNNER)

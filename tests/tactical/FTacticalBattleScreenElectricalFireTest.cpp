@@ -14,13 +14,13 @@ namespace FrontierTests {
 namespace {
 
 std::string repoFile(const std::string & relativePath) {
-	return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
+return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
 }
 
 void assertContains(const std::string & haystack, const std::string & needle) {
-	CPPUNIT_ASSERT_MESSAGE(
-		std::string("Expected to find '") + needle + "' in inspected source",
-		haystack.find(needle) != std::string::npos);
+CPPUNIT_ASSERT_MESSAGE(
+std::string("Expected to find '") + needle + "' in inspected source",
+haystack.find(needle) != std::string::npos);
 }
 
 }
@@ -34,181 +34,126 @@ void FTacticalBattleScreenElectricalFireTest::tearDown() {
 }
 
 std::string FTacticalBattleScreenElectricalFireTest::readFile(const std::string & path) {
-	std::ifstream file(path.c_str());
-	CPPUNIT_ASSERT_MESSAGE(path, file.is_open());
-	return std::string((std::istreambuf_iterator<char>(file)),
-		std::istreambuf_iterator<char>());
+std::ifstream file(path.c_str());
+CPPUNIT_ASSERT_MESSAGE(path, file.is_open());
+return std::string((std::istreambuf_iterator<char>(file)),
+std::istreambuf_iterator<char>());
 }
 
 std::string FTacticalBattleScreenElectricalFireTest::extractFunctionBody(const std::string & source, const std::string & signature) {
-	std::string::size_type signaturePos = source.find(signature);
-	CPPUNIT_ASSERT(signaturePos != std::string::npos);
+std::string::size_type signaturePos = source.find(signature);
+CPPUNIT_ASSERT(signaturePos != std::string::npos);
 
-	std::string::size_type bodyStart = source.find('{', signaturePos);
-	CPPUNIT_ASSERT(bodyStart != std::string::npos);
+std::string::size_type bodyStart = source.find('{', signaturePos);
+CPPUNIT_ASSERT(bodyStart != std::string::npos);
 
-	int depth = 1;
-	for (std::string::size_type i = bodyStart + 1; i < source.size(); i++) {
-		if (source[i] == '{') {
-			depth++;
-		} else if (source[i] == '}') {
-			depth--;
-			if (depth == 0) {
-				return source.substr(bodyStart + 1, i - bodyStart - 1);
-			}
-		}
-	}
+int depth = 1;
+for (std::string::size_type i = bodyStart + 1; i < source.size(); i++) {
+if (source[i] == '{') {
+depth++;
+} else if (source[i] == '}') {
+depth--;
+if (depth == 0) {
+return source.substr(bodyStart + 1, i - bodyStart - 1);
+}
+}
+}
 
-	CPPUNIT_FAIL("Function body not terminated");
-	return "";
+CPPUNIT_FAIL("Function body not terminated");
+return "";
 }
 
 void FTacticalBattleScreenElectricalFireTest::assertAppearsInOrder(const std::string & haystack, const std::vector<std::string> & needles) {
-	std::string::size_type searchFrom = 0;
-	for (std::vector<std::string>::const_iterator itr = needles.begin(); itr != needles.end(); ++itr) {
-		std::string::size_type found = haystack.find(*itr, searchFrom);
-		CPPUNIT_ASSERT_MESSAGE(std::string("Expected to find '") + *itr + "' in the requested source order", found != std::string::npos);
-		searchFrom = found + itr->size();
-	}
+std::string::size_type searchFrom = 0;
+for (std::vector<std::string>::const_iterator itr = needles.begin(); itr != needles.end(); ++itr) {
+std::string::size_type found = haystack.find(*itr, searchFrom);
+CPPUNIT_ASSERT_MESSAGE(std::string("Expected to find '") + *itr + "' in the requested source order", found != std::string::npos);
+searchFrom = found + itr->size();
+}
 }
 
 unsigned int FTacticalBattleScreenElectricalFireTest::countOccurrences(const std::string & haystack, const std::string & needle) {
-	unsigned int count = 0;
-	std::string::size_type searchFrom = 0;
-	while (true) {
-		std::string::size_type found = haystack.find(needle, searchFrom);
-		if (found == std::string::npos) {
-			return count;
-		}
-		count++;
-		searchFrom = found + needle.size();
-	}
+unsigned int count = 0;
+std::string::size_type searchFrom = 0;
+while (true) {
+std::string::size_type found = haystack.find(needle, searchFrom);
+if (found == std::string::npos) {
+return count;
+}
+count++;
+searchFrom = found + needle.size();
+}
 }
 
-void FTacticalBattleScreenElectricalFireTest::testApplyFireDamageStartsImmediateElectricalFireReportBeforeCleanup() {
-	// AC: electrical fire damage starts an immediate tactical report before any destroyed-ship cleanup occurs.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string body = extractFunctionBody(source, "void FBattleScreen::applyFireDamage()");
+void FTacticalBattleScreenElectricalFireTest::testApplyFireDamageDelegatesToTacticalModel() {
+// AC: electrical fire damage resolution is delegated to FTacticalGame.
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleScreen::applyFireDamage()");
 
-	std::vector<std::string> sequence;
-	sequence.push_back("clearTacticalReport();");
-	sequence.push_back("context.reportType = TRT_ElectricalFire;");
-	sequence.push_back("context.phase = m_phase;");
-	sequence.push_back("context.actingPlayerID = getMovingPlayerID();");
-	sequence.push_back("context.immediate = true;");
-	sequence.push_back("beginTacticalReport(context);");
-	sequence.push_back("VehicleList sList = getShipList(getMovingPlayerID());");
-	sequence.push_back("appendTacticalDamageResolutionEvents(m_tacticalReport, *itr, resolution);");
-	sequence.push_back("FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();");
-	sequence.push_back("showTacticalDamageSummaryDialog(summary);");
-	sequence.push_back("toggleActivePlayer();");
-	sequence.push_back("clearDestroyedShips();");
-	sequence.push_back("toggleActivePlayer();");
-	sequence.push_back("clearTacticalReport();");
-	assertAppearsInOrder(body, sequence);
+assertContains(body, "m_tacticalGame->applyFireDamage();");
+CPPUNIT_ASSERT(body.find("beginTacticalReport") == std::string::npos);
+CPPUNIT_ASSERT(body.find("m_tacticalReport") == std::string::npos);
 }
 
-void FTacticalBattleScreenElectricalFireTest::testApplyFireDamageUsesSharedTacticalDamageSummaryDialog() {
-	// AC: the electrical-fire flow uses the shared tactical damage summary dialog for the report.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string applyBody = extractFunctionBody(source, "void FBattleScreen::applyFireDamage()");
-	const std::string dialogBody = extractFunctionBody(source, "int FBattleScreen::showTacticalDamageSummaryDialog(const FTacticalCombatReportSummary & summary)");
+void FTacticalBattleScreenElectricalFireTest::testDeclareWinnerUsesTacticalUIAndGuardedClosePath() {
+// AC: winner declaration notifies through ITacticalUI and exits via guarded close helper.
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleScreen::declareWinner()");
 
-	assertContains(applyBody, "showTacticalDamageSummaryDialog(summary);");
-	assertContains(applyBody, "appendTacticalDamageResolutionEvents(m_tacticalReport, *itr, resolution);");
-	assertContains(dialogBody, "TacticalDamageSummaryGUI dialog(this, summary);");
-	assertContains(dialogBody, "return dialog.ShowModal();");
+assertContains(body, "ITacticalUI * tacticalUI = m_tacticalGame->getUI();");
+assertContains(body, "tacticalUI->notifyWinner(attackerWins);");
+assertContains(body, "closeBattleScreen(0);");
+CPPUNIT_ASSERT(body.find("wxMessageBox") == std::string::npos);
 }
 
-void FTacticalBattleScreenElectricalFireTest::testApplyFireDamageRestoresMovingPlayerAfterDestroyedShipCleanup() {
-	// AC: destroyed ships are cleaned up only after the modal summary closes, and control returns to the moving player.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string body = extractFunctionBody(source, "void FBattleScreen::applyFireDamage()");
+void FTacticalBattleScreenElectricalFireTest::testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath() {
+// AC: close logic stays behind one guarded helper, ending modal sessions before any non-modal Destroy() path.
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string closeBody = extractFunctionBody(source, "void FBattleScreen::closeBattleScreen(int returnCode)");
+const std::string onCloseBody = extractFunctionBody(source, "void FBattleScreen::onClose(wxCloseEvent & event)");
 
-	std::vector<std::string> sequence;
-	sequence.push_back("context.reportType = TRT_ElectricalFire;");
-	sequence.push_back("context.immediate = true;");
-	sequence.push_back("beginTacticalReport(context);");
-	sequence.push_back("VehicleList sList = getShipList(getMovingPlayerID());");
-	sequence.push_back("appendTacticalDamageResolutionEvents(m_tacticalReport, *itr, resolution);");
-	sequence.push_back("FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();");
-	sequence.push_back("showTacticalDamageSummaryDialog(summary);");
-	sequence.push_back("toggleActivePlayer();");
-	sequence.push_back("clearDestroyedShips();");
-	sequence.push_back("toggleActivePlayer();");
-	sequence.push_back("clearTacticalReport();");
-	assertAppearsInOrder(body, sequence);
+std::vector<std::string> closeSequence;
+closeSequence.push_back("if (m_tacticalGame->isCloseInProgress()) {");
+closeSequence.push_back("return;");
+closeSequence.push_back("m_tacticalGame->setCloseInProgress(true);");
+closeSequence.push_back("if (IsModal()) {");
+closeSequence.push_back("EndModal(returnCode);");
+closeSequence.push_back("return;");
+closeSequence.push_back("SetReturnCode(returnCode);");
+closeSequence.push_back("Destroy();");
+assertAppearsInOrder(closeBody, closeSequence);
 
-	CPPUNIT_ASSERT(body.find("setPhase(PH_MOVE)") == std::string::npos);
-}
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "Destroy();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "EndModal(returnCode);"));
 
-void FTacticalBattleScreenElectricalFireTest::testDeclareWinnerDelegatesToGuardedClosePath() {
-	// AC: winner declaration must route through the guarded close helper instead of directly tearing down the dialog.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string body = extractFunctionBody(source, "void FBattleScreen::declareWinner()");
-
-	assertContains(body, "wxMessageBox( msg, \"Enemy Defeated!\", wxOK | wxICON_INFORMATION );");
-	assertContains(body, "closeBattleScreen(0);");
-	CPPUNIT_ASSERT(body.find("Destroy();") == std::string::npos);
-	CPPUNIT_ASSERT(body.find("EndModal(") == std::string::npos);
-}
-
-void FTacticalBattleScreenElectricalFireTest::testCloseBattleScreenUsesSingleGuardedModalFirstPath() {
-	// AC: close logic stays behind one guarded helper, ending modal sessions before any non-modal Destroy() path.
-	const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string ctorBody = extractFunctionBody(source,
-		"FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style )");
-	const std::string closeBody = extractFunctionBody(source, "void FBattleScreen::closeBattleScreen(int returnCode)");
-	const std::string onCloseBody = extractFunctionBody(source, "void FBattleScreen::onClose(wxCloseEvent & event)");
-
-	assertContains(header, "bool m_closeInProgress;");
-	assertContains(header, "void closeBattleScreen(int returnCode = 0);");
-	assertContains(ctorBody, "m_closeInProgress = false;");
-	assertContains(ctorBody, "Bind(wxEVT_CLOSE_WINDOW, &FBattleScreen::onClose, this);");
-
-	std::vector<std::string> closeSequence;
-	closeSequence.push_back("if (m_closeInProgress) {");
-	closeSequence.push_back("return;");
-	closeSequence.push_back("m_closeInProgress = true;");
-	closeSequence.push_back("if (IsModal()) {");
-	closeSequence.push_back("EndModal(returnCode);");
-	closeSequence.push_back("return;");
-	closeSequence.push_back("SetReturnCode(returnCode);");
-	closeSequence.push_back("Destroy();");
-	assertAppearsInOrder(closeBody, closeSequence);
-
-	CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "Destroy();"));
-	CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "EndModal(returnCode);"));
-
-	std::vector<std::string> onCloseSequence;
-	onCloseSequence.push_back("if (m_closeInProgress) {");
-	onCloseSequence.push_back("event.Skip();");
-	onCloseSequence.push_back("return;");
-	onCloseSequence.push_back("closeBattleScreen(GetReturnCode());");
-	assertAppearsInOrder(onCloseBody, onCloseSequence);
+std::vector<std::string> onCloseSequence;
+onCloseSequence.push_back("if (m_tacticalGame->isCloseInProgress()) {");
+onCloseSequence.push_back("event.Skip();");
+onCloseSequence.push_back("return;");
+onCloseSequence.push_back("closeBattleScreen(GetReturnCode());");
+assertAppearsInOrder(onCloseBody, onCloseSequence);
 }
 
 void FTacticalBattleScreenElectricalFireTest::testModalCallerSitesOwnBattleScreenLifetimeAfterShowModal() {
-	// AC: modal caller sites keep ownership outside FBattleScreen by using stack dialogs instead of self-destruction.
-	const std::string selectCombatSource = readFile(repoFile("src/gui/SelectCombatGUI.cpp"));
-	const std::string scenarioDialogSource = readFile(repoFile("src/battleSim/ScenarioDialog.cpp"));
-	const std::string scenarioEditorSource = readFile(repoFile("src/battleSim/ScenarioEditorGUI.cpp"));
+// AC: modal caller sites keep ownership outside FBattleScreen by using stack dialogs instead of self-destruction.
+const std::string selectCombatSource = readFile(repoFile("src/gui/SelectCombatGUI.cpp"));
+const std::string scenarioDialogSource = readFile(repoFile("src/battleSim/ScenarioDialog.cpp"));
+const std::string scenarioEditorSource = readFile(repoFile("src/battleSim/ScenarioEditorGUI.cpp"));
 
-	assertAppearsInOrder(selectCombatSource, std::vector<std::string>(1, "FBattleScreen bb;"));
-	assertAppearsInOrder(selectCombatSource, std::vector<std::string>(1, "bb.ShowModal();"));
-	CPPUNIT_ASSERT(selectCombatSource.find("new FBattleScreen(") == std::string::npos);
-	CPPUNIT_ASSERT(selectCombatSource.find("delete bb;") == std::string::npos);
+assertAppearsInOrder(selectCombatSource, std::vector<std::string>(1, "FBattleScreen bb;"));
+assertAppearsInOrder(selectCombatSource, std::vector<std::string>(1, "bb.ShowModal();"));
+CPPUNIT_ASSERT(selectCombatSource.find("new FBattleScreen(") == std::string::npos);
+CPPUNIT_ASSERT(selectCombatSource.find("delete bb;") == std::string::npos);
 
-	CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "FBattleScreen bb;"));
-	CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "bb.ShowModal();"));
-	CPPUNIT_ASSERT(scenarioDialogSource.find("new FBattleScreen(") == std::string::npos);
-	CPPUNIT_ASSERT(scenarioDialogSource.find("delete bb;") == std::string::npos);
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "FBattleScreen bb;"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "bb.ShowModal();"));
+CPPUNIT_ASSERT(scenarioDialogSource.find("new FBattleScreen(") == std::string::npos);
+CPPUNIT_ASSERT(scenarioDialogSource.find("delete bb;") == std::string::npos);
 
-	assertContains(scenarioEditorSource, "FBattleScreen bb;");
-	assertContains(scenarioEditorSource, "bb.ShowModal();");
-	CPPUNIT_ASSERT(scenarioEditorSource.find("new FBattleScreen(") == std::string::npos);
-	CPPUNIT_ASSERT(scenarioEditorSource.find("delete bb;") == std::string::npos);
+assertContains(scenarioEditorSource, "FBattleScreen bb;");
+assertContains(scenarioEditorSource, "bb.ShowModal();");
+CPPUNIT_ASSERT(scenarioEditorSource.find("new FBattleScreen(") == std::string::npos);
+CPPUNIT_ASSERT(scenarioEditorSource.find("delete bb;") == std::string::npos);
 }
 
 }

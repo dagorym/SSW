@@ -12,21 +12,21 @@
 namespace FrontierTests {
 
 class FTacticalBattleScreenReportContextTest : public CppUnit::TestFixture {
-	CPPUNIT_TEST_SUITE( FTacticalBattleScreenReportContextTest );
-	CPPUNIT_TEST( testAppendTacticalAttackReportPreservesImmediateFlagWhenLazySeedingContext );
-	CPPUNIT_TEST( testAppendTacticalReportEventStillPreservesImmediateFlagWhenLazySeedingContext );
-	CPPUNIT_TEST_SUITE_END();
+CPPUNIT_TEST_SUITE( FTacticalBattleScreenReportContextTest );
+CPPUNIT_TEST( testAppendTacticalAttackReportDelegatesToTacticalModel );
+CPPUNIT_TEST( testAppendTacticalReportEventDelegatesToTacticalModel );
+CPPUNIT_TEST_SUITE_END();
 
 private:
-	std::string readFile(const std::string & path);
-	std::string extractFunctionBody(const std::string & source, const std::string & signature);
+std::string readFile(const std::string & path);
+std::string extractFunctionBody(const std::string & source, const std::string & signature);
 
 public:
-	void setUp();
-	void tearDown();
+void setUp();
+void tearDown();
 
-	void testAppendTacticalAttackReportPreservesImmediateFlagWhenLazySeedingContext();
-	void testAppendTacticalReportEventStillPreservesImmediateFlagWhenLazySeedingContext();
+void testAppendTacticalAttackReportDelegatesToTacticalModel();
+void testAppendTacticalReportEventDelegatesToTacticalModel();
 };
 
 }
