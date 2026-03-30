@@ -1,0 +1,29 @@
+You are the Tester Agent.
+
+Task summary:
+- Milestone 6 Subtask 3 updated GUI module build wiring so `WXTacticalUI.o` is compiled and archived into `libgui.a`, with matching dependency lines in `src/gui/Makefile`.
+
+Modified files:
+- src/gui/Makefile
+
+Acceptance criteria to validate (from Planner):
+- `WXTacticalUI.o` is built into `libgui.a`.
+- The Makefile dependency section includes the new `WXTacticalUI.o` dependency lines needed for reliable rebuilds.
+- No unrelated build wiring changes were introduced.
+
+Create test files in:
+- tests/tactical
+
+Implementation context for testing:
+- `OBJS` now includes `WXTacticalUI.o`.
+- Dependency section now contains explicit `WXTacticalUI.o: ...` include dependencies aligned with existing Makefile style.
+- Validation already run by implementer showed both compile and archive lines include `WXTacticalUI.o`.
+- Focus on confirming build inclusion and ensuring only intended Makefile wiring changed.
+
+Suggested test command(s):
+- cd src/gui && make clean >/dev/null && make
+- ar -t src/gui/libgui.a | grep WXTacticalUI.o
+- git --no-pager diff -- src/gui/Makefile
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask3-gui-build
