@@ -1,0 +1,26 @@
+{
+  "subtask": "m5-prod-fixes",
+  "status": "pass",
+  "validated_commit": "475cd7e057b600cc7e5f396e05b5004c9b380d59",
+  "test_commit": "9f2c0d0",
+  "production_code_modified": false,
+  "tests_added_or_updated": [
+    "tests/tactical/FTacticalGameMechanicsTest.h",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp"
+  ],
+  "commands": [
+    "cd tests/tactical && make -s && ./TacticalTests"
+  ],
+  "results": {
+    "tactical_tests": "OK (65 tests)"
+  },
+  "acceptance_criteria": {
+    "clearDestroyedShips_purges_side_hex_turn_state": true,
+    "winner_bookkeeping_consistent_on_elimination": true,
+    "fireICM_clears_prior_queue": true,
+    "fireICM_scans_hex_occupants": true,
+    "fireICM_only_actionable_interceptions": true,
+    "fireICM_never_queues_null_vehicles": true
+  },
+  "defects_found": []
+}

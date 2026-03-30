@@ -1,0 +1,30 @@
+Document Milestone 5 production-fix validation for subtask `m5-prod-fixes`.
+
+Context:
+- Production fix under test was already implemented in commit `475cd7e057b600cc7e5f396e05b5004c9b380d59`.
+- Tester remediation run added/updated regression coverage only (no production code changes).
+
+Test updates:
+- `tests/tactical/FTacticalGameMechanicsTest.h`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+
+What was validated:
+1. `clearDestroyedShips()` removes destroyed ships from:
+   - side ship list,
+   - `m_hexData` occupancy,
+   - `m_turnInfo` bookkeeping.
+2. Winner state remains consistent when a side is eliminated (`m_hasWinner` and `m_winnerID`).
+3. `fireICM()` behavior:
+   - clears existing `m_ICMData` before collecting,
+   - resolves target occupants by scanning `m_hexData` (`findHexOccupantsForShip`),
+   - only enqueues actionable interceptions (same-side defender in hex with usable ICM: defense exists, ammo > 0, power not damaged, ICM defense not damaged),
+   - enqueued `ICMData` uses non-null `vehicles` pointer.
+
+Execution evidence:
+- Ran `cd tests/tactical && make -s && ./TacticalTests`
+- Result: `OK (65 tests)`
+
+Output requirements:
+- Update milestone/testing documentation with a concise “Validation Completed” section.
+- Explicitly note that runtime tactical wx rewiring was not part of this milestone scope.
+- Record test command and pass result.
