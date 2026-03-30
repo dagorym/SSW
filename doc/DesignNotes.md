@@ -278,3 +278,23 @@ safe-default reset/setup helpers, movement reset/finalization helpers,
 tactical report lifecycle built on `FTacticalCombatReport`, `fireAllWeapons()`
 combat report aggregation/cleanup, and winner/combat-end detection so later
 migration milestones can delegate to it incrementally.
+
+### Validation Completed
+
+Milestone 5 production-fix validation confirmed that the additive
+`FTacticalGame` model now removes destroyed ships from the active side list,
+`m_hexData` occupancy, and `m_turnInfo` bookkeeping while keeping
+`m_hasWinner`/`m_winnerID` consistent when a side is eliminated. The same
+validation also confirmed that `fireICM()` clears any stale `m_ICMData`,
+resolves target occupants by scanning `m_hexData`, and only queues actionable
+interception entries with a non-null `vehicles` pointer for same-side defenders
+that still have usable ICM capability. Runtime tactical wx rewiring remained
+out of scope for this milestone.
+
+Validation command:
+
+```bash
+cd tests/tactical && make -s && ./TacticalTests
+```
+
+Result: `OK (65 tests)`
