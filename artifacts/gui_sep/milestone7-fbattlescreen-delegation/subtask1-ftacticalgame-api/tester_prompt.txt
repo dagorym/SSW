@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Before any substantive work:
+- Read AGENTS.md in your assigned tester worktree.
+- Confirm your cwd and branch match your assigned tester worktree and branch before testing or editing.
+
+Task summary:
+- Validate Milestone 7 Subtask 1 implementation that extends FTacticalGame as canonical tactical state owner API for FBattleScreen delegation.
+
+Implementation commit to validate:
+- 5489c3b
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate:
+- FTacticalGame exposes the state and report APIs FBattleScreen needs to forward.
+- The model has a safe way to receive the active ITacticalUI.
+- No wx headers or wx types are introduced into the tactical model.
+
+Validation scope constraints:
+- Validate only Subtask 1 scope and any touched tests/builds.
+- Reuse the same shared artifact directory path below.
+
+Suggested validation commands:
+- cd tests/tactical && make && ./TacticalTests
+- Optional targeted inspection of FTacticalGame declarations/definitions for new API and wx-free boundary.
+
+Shared artifact directory (repository-root-relative):
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api
+
+Required tester outputs in shared artifact directory:
+- tester_report.md
+- tester_result.json
+- On success, documenter_prompt.txt
+
+Committing expectations:
+- If you make valid test changes, commit them on your tester branch with the required Copilot co-author trailer.
