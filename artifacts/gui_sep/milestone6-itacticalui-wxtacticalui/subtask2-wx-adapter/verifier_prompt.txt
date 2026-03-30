@@ -1,0 +1,52 @@
+You are the Verifier Agent.
+
+Task summary:
+- Milestone 6 Subtask 2 implemented `WXTacticalUI`, an additive wx-backed adapter implementing `ITacticalUI`, without rewiring runtime tactical call sites.
+
+Implementation files in scope:
+- `include/gui/WXTacticalUI.h`
+- `src/gui/WXTacticalUI.cpp`
+
+Acceptance criteria validated by tests:
+- `WXTacticalUI` publicly implements `ITacticalUI`.
+- Constructor takes `wxWindow* parent` and stores it for redraw/modal parenting.
+- `requestRedraw()` calls parent `Refresh()` when parent exists and is null-safe otherwise.
+- `showMessage()` follows repository-consistent informational messaging behavior and null-parent fallback.
+- `showDamageSummary()` wraps `TacticalDamageSummaryGUI` and returns modal result.
+- `runICMSelection()` wraps `ICMSelectionGUI` and returns modal result.
+- `notifyWinner(bool attackerWins)` preserves `FBattleScreen::declareWinner()` winner-message semantics.
+- Tactical runtime caller classes are not rewired to `WXTacticalUI` yet.
+
+Implementation branch/commit context:
+- Implementer branch/commit in scope: `gui_sep-m6-wx-adapter-implementer-20260330 @ 16cf55c68b25fcdffe43b637293c9db380be76e8`.
+- Tester branch/commit in scope: `gui_sep-m6-wx-adapter-tester-20260329 @ 7a17a374c5428a968ad5e5412624f7c048b09bbc`.
+- Documenter branch/doc commit in scope: `gui_sep-m6-wx-adapter-documenter-20260329 @ 7dca417df22d236cb8ba6abc87c5618910458b16`.
+- Base branch for diffing context: `gui_sep`.
+- This subtask is additive infrastructure; GUI Makefile wiring is tracked in Subtask 3 and runtime tactical delegation rewiring is intentionally deferred.
+
+Test files added or modified:
+- `tests/tactical/WXTacticalUIAdapterTest.h`
+- `tests/tactical/WXTacticalUIAdapterTest.cpp`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/tactical/Makefile`
+
+Documentation files added or modified:
+- `doc/DesignNotes.md`
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+
+Commands executed:
+- `make -C tests/tactical`
+- `tests/tactical/TacticalTests`
+
+Final test outcomes:
+- Tactical tests passed: `OK (76 tests)`.
+- No unmet acceptance criteria were reported by the tester.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask2-wx-adapter`
+
+Verification requirements:
+- Verify the implementation and tests still satisfy the additive Milestone 6 Subtask 2 scope.
+- Verify the updated documentation files accurately describe the shipped behavior: `WXTacticalUI` and `ITacticalUI` now exist as additive infrastructure, but runtime tactical wx delegation has not been rewired yet.
+- Do not treat GUI Makefile wiring or Milestone 7 delegation work as completed by this subtask.
