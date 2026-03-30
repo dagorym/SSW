@@ -1,0 +1,16 @@
+/home/tstephen/repos/SSW/include/tactical/FTacticalGame.h
+/home/tstephen/repos/SSW/include/tactical/ITacticalUI.h
+/home/tstephen/repos/SSW/include/gui/WXTacticalUI.h
+/home/tstephen/repos/SSW/src/gui/WXTacticalUI.cpp
+/home/tstephen/repos/SSW/src/gui/Makefile
+/home/tstephen/repos/SSW/src/tactical/FBattleScreen.cpp
+/home/tstephen/repos/SSW/include/gui/TacticalDamageSummaryGUI.h
+/home/tstephen/repos/SSW/include/gui/ICMSelectionGUI.h
+/home/tstephen/repos/SSW/include/gui/WXStrategicUI.h
+/home/tstephen/repos/SSW/src/gui/WXStrategicUI.cpp
+/home/tstephen/repos/SSW/tests/tactical/Makefile
+/home/tstephen/repos/SSW/tests/tactical/TacticalTests.cpp
+/home/tstephen/repos/SSW/tests/tactical/FTacticalUIBoundaryTest.h
+/home/tstephen/repos/SSW/tests/tactical/FTacticalUIBoundaryTest.cpp
+/home/tstephen/repos/SSW/tests/tactical/WXTacticalUITest.h
+/home/tstephen/repos/SSW/tests/tactical/WXTacticalUITest.cpp
