@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Task summary:
+- Milestone 6 Subtask 2 implemented `WXTacticalUI`, an additive wx-backed adapter implementing `ITacticalUI`, without rewiring runtime tactical call sites.
+
+Modified files:
+- include/gui/WXTacticalUI.h
+- src/gui/WXTacticalUI.cpp
+
+Acceptance criteria to validate (from Planner):
+- `WXTacticalUI` publicly implements `ITacticalUI`.
+- Constructor takes `wxWindow* parent` and stores it for redraw and modal parenting.
+- `requestRedraw()` calls parent `Refresh()` when parent exists and is null-safe otherwise.
+- `showMessage()` uses repository-consistent informational messaging behavior.
+- `showDamageSummary()` wraps `TacticalDamageSummaryGUI` and returns modal result.
+- `runICMSelection()` wraps `ICMSelectionGUI` and returns modal result.
+- `notifyWinner(bool attackerWins)` preserves `FBattleScreen::declareWinner()` winner-message semantics.
+- No tactical runtime caller has been rewired to `WXTacticalUI` yet.
+
+Create test files in:
+- tests/tactical
+
+Implementation context for testing:
+- Null-parent guard behavior is a key focus:
+  - `requestRedraw()` should no-op safely with null parent.
+  - `showMessage()` falls back to `wxMessageOutputBest()` when null parent.
+  - guarded modal methods return non-zero (`1`) when no usable UI context/data.
+- Winner messaging semantics mirror FBattleScreen:
+  - title `Enemy Defeated!`
+  - message prefix `The winner of the battle is \nPlayer `
+  - attacker win -> `Sathar`, defender win -> `UPF`.
+- This subtask intentionally does not include GUI library wiring changes in `src/gui/Makefile` (that is Subtask 3), so direct integrated GUI-library build coverage may remain limited here.
+
+Suggested test command(s):
+- make -C tests/tactical
+- tests/tactical/TacticalTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask2-wx-adapter
