@@ -24,15 +24,15 @@ PICFLAGS = -fPIC -DPIC
 .rsrc.r:
 	$(DEREZ) $^ Carbon.r -useDF > $@
 
-OBJS = FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o TacticalTests.o
+OBJS = FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o WXTacticalUIAdapterTest.o TacticalTests.o
 
 TARGET = libtacticalTests.a
 RUNNER = TacticalTests
 
 all: $(TARGET) $(RUNNER)
 
-$(TARGET): FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o
-	ar rcs $(TARGET) FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o
+$(TARGET): FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o WXTacticalUIAdapterTest.o
+	ar rcs $(TARGET) FTacticalCombatReportTest.o FTacticalAttackResultTest.o FTacticalDamageSummaryGUITest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o ITacticalUIBoundaryTest.o WXTacticalUIAdapterTest.o
 
 $(RUNNER): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(RUNNER) $(OBJS) -lcppunit $(LIBS)

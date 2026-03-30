@@ -17,6 +17,7 @@
 #include "FTacticalGameHeaderTest.h"
 #include "FTacticalGameMechanicsTest.h"
 #include "ITacticalUIBoundaryTest.h"
+#include "WXTacticalUIAdapterTest.h"
 
 using namespace FrontierTests;
 
@@ -34,6 +35,7 @@ int main(int argc, char **argv) {
 	runner.addTest(FTacticalGameHeaderTest::suite());
 	runner.addTest(FTacticalGameMechanicsTest::suite());
 	runner.addTest(ITacticalUIBoundaryTest::suite());
+	runner.addTest(WXTacticalUIAdapterTest::suite());
 	bool wasSuccessful = runner.run("", false);
 	return wasSuccessful ? 0 : 1;
 }
