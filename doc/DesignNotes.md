@@ -279,6 +279,14 @@ tactical report lifecycle built on `FTacticalCombatReport`, `fireAllWeapons()`
 combat report aggregation/cleanup, and winner/combat-end detection so later
 migration milestones can delegate to it incrementally.
 
+Milestone 6 adds the tactical UI boundary alongside that model-only work:
+`ITacticalUI` now defines the non-wx tactical callback surface and
+`WXTacticalUI` provides the wx-backed adapter for redraw requests,
+informational messaging, the tactical damage summary dialog, ICM selection,
+and winner notification semantics. This remains additive infrastructure only;
+the live tactical wx runtime still flows through `FBattleScreen`,
+`FBattleBoard`, and `FBattleDisplay` until Milestone 7 rewires delegation.
+
 ### Validation Completed
 
 Milestone 5 production-fix validation confirmed that the additive
