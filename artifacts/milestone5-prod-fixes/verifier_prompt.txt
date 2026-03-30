@@ -1,0 +1,54 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate Milestone 5 production-fix documentation for subtask `m5-prod-fixes`.
+- Production fix under test was implemented in commit `475cd7e057b600cc7e5f396e05b5004c9b380d59`.
+- Tester remediation added regression coverage only; no production code changes were made during tester/documenter stages.
+- Documentation was updated to record the validated `FTacticalGame` cleanup and `fireICM()` behavior without expanding milestone scope.
+
+Acceptance criteria and validated behavior:
+- `clearDestroyedShips()` removes destroyed ships from the side ship list, `m_hexData` occupancy, and `m_turnInfo` bookkeeping.
+- Winner bookkeeping remains consistent when a side is eliminated (`m_hasWinner` and `m_winnerID`).
+- `fireICM()` clears stale `m_ICMData` before collecting new entries.
+- `fireICM()` resolves target occupants by scanning `m_hexData` via `findHexOccupantsForShip`.
+- `fireICM()` only enqueues actionable interceptions when a same-side defender in the target hex has usable ICM capability (defense exists, ammo > 0, power not damaged, ICM defense not damaged).
+- Enqueued `ICMData` entries carry a non-null `vehicles` pointer.
+- Runtime tactical wx rewiring was not part of Milestone 5 scope.
+
+Implementation/worktree context:
+- Base branch: `gui_sep_ms5`
+- Tester branch: `gui_sep_ms5-tester-20260329`
+- Documenter branch: `gui_sep_ms5-documenter-20260329`
+- Documenter worktree: `/home/tstephen/worktrees/gui_sep_ms5-documenter-20260329`
+- Shared model config reference: `/home/tstephen/repos/agents/config/subagent-models.yaml`
+- Plan document: `/home/tstephen/repos/SSW/plans/milestone5-tweak-plan.md`
+
+Implementation files changed in scope:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+
+Test files changed in scope:
+- `tests/tactical/FTacticalGameMechanicsTest.h`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+
+Documentation files changed:
+- `doc/DesignNotes.md`
+
+Commands executed:
+- `cd tests/tactical && make -s && ./TacticalTests`
+
+Results:
+- `OK (65 tests)`
+
+Documentation commit hash:
+- `40a5951f4bd8d58b4e369bf25c717d62f5766212`
+
+Shared artifact directory (repository-root-relative):
+- `artifacts/milestone5-prod-fixes`
+
+Verification requirements:
+- Verify the implementation behavior against the accepted production-fix scope above.
+- Verify the tactical regression coverage in `tests/tactical/FTacticalGameMechanicsTest.h` and `.cpp` matches the implemented behavior.
+- Verify `doc/DesignNotes.md` accurately records only the implemented/tested Milestone 5 behavior, including the validation command/result and the explicit no-runtime-wx-rewiring scope note.
+- Verify the documenter artifacts in `artifacts/milestone5-prod-fixes` accurately capture the documentation commit and handoff details.
+- Verification must explicitly include the updated documentation file together with the implementation and tests.
