@@ -1,0 +1,37 @@
+You are the Tester Agent for SSW Milestone 7 Subtask 2.
+
+Before any substantive work:
+- Read AGENTS.md in your assigned tester worktree.
+- Confirm your cwd and branch match your assigned tester worktree/branch.
+
+Task summary:
+- Validate Subtask 2 ownership/lifecycle wiring in FBattleScreen only.
+- Confirm FBattleScreen now owns FTacticalGame and WXTacticalUI lifecycle safely.
+- Confirm existing guarded close-path behavior remains intact.
+
+Modified files:
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- src/tactical/Makefile
+
+Acceptance criteria to validate:
+- FBattleScreen owns and initializes FTacticalGame* and WXTacticalUI*.
+- Delegated runtime objects are cleaned up safely.
+- Existing modal close behavior remains guarded in FBattleScreen.
+- Any Makefile change is limited to dependency maintenance for the new includes.
+
+Validation scope constraints:
+- Validate only Subtask 2 scope and any touched builds/tests.
+- Primary commands:
+  - cd src/tactical && make clean >/dev/null && make
+  - cd tests/tactical && make && ./TacticalTests
+
+Shared artifact directory (reuse exactly):
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership
+
+Required tester outputs in that shared directory:
+- tester_report.md
+- tester_result.json
+- documenter_prompt.txt (only if validation succeeds)
+
+If you make valid test-related changes, commit them on your tester branch with the required co-author trailer.
