@@ -1,0 +1,65 @@
+You are the Verifier Agent.
+
+Context:
+- Milestone: 7
+- Subtask: 2 (FBattleScreen ownership/lifecycle wiring)
+- Base branch: gui_sep
+- Implementation branch: gui_sep-ms7-subtask2-implementer-20260330
+- Tester branch: gui_sep-ms7-subtask2-tester-20260330
+- Documenter branch: gui_sep-ms7-subtask2-documenter-20260330
+- Implementation/test/documentation worktree: /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask2-documenter-20260330
+- Shared artifact directory (repository-root-relative): artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership
+
+Original task summary:
+- Validate Subtask 2 ownership/lifecycle wiring in FBattleScreen only.
+- Confirm FBattleScreen now owns FTacticalGame and WXTacticalUI lifecycle safely.
+- Confirm existing guarded close-path behavior remains intact.
+
+Implementation files in scope:
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- src/tactical/Makefile
+
+Acceptance criteria validated so far:
+1. FBattleScreen owns and initializes FTacticalGame* and WXTacticalUI*.
+2. Delegated runtime objects are cleaned up safely.
+3. Existing modal close behavior remains guarded in FBattleScreen.
+4. Any Makefile change is limited to dependency maintenance for the new includes.
+
+Documentation files added/modified:
+- doc/DesignNotes.md
+- AGENTS.md
+
+Test files added/modified:
+- None.
+
+Commands executed:
+1. cd src/tactical && make clean >/dev/null && make
+2. cd tests/tactical && make && ./TacticalTests
+
+Final validation outcomes available:
+- Tactical build: PASS
+- Tactical tests: PASS
+- TacticalTests summary: OK (76 tests)
+- Acceptance criteria: all PASS
+
+Documentation outcome:
+- `doc/DesignNotes.md` now records that Milestone 7 Subtask 2 keeps delegation additive while moving `FTacticalGame*` and `WXTacticalUI*` ownership, install, detach, and safe teardown into `FBattleScreen`, and that guarded modal close behavior plus the limited Makefile dependency update are preserved.
+- `AGENTS.md` now reflects that `FBattleScreen` owns the additive delegation objects' lifecycle during setup/teardown, while the live tactical wx runtime still remains on the legacy path until later delegation milestones.
+- Documentation commit hash: f4f5314f4613d82ca73b561047dd525244719fbb
+
+Artifacts already present:
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership/implementer_report.md
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership/implementer_result.json
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership/tester_report.md
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership/tester_result.json
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership/documenter_report.md
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership/documenter_result.json
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask2-fbattlescreen-ownership/verifier_prompt.txt
+
+Verification requirements:
+- Review the implementation diff against `gui_sep` for the Subtask 2 scope files.
+- Confirm the tester-reported build/test results remain consistent with the branch state.
+- Verify the updated documentation files (`doc/DesignNotes.md`, `AGENTS.md`) accurately describe the implemented behavior and do not overstate runtime delegation status.
+- Verify documentation, implementation, and tests stay within Subtask 2 scope.
+- Reuse the shared artifact directory above for verifier outputs.
