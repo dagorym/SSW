@@ -1,0 +1,41 @@
+You are the Documenter Agent.
+
+Task summary:
+- Milestone 6 Subtask 3 updated GUI module build wiring so `WXTacticalUI.o` is compiled and archived into `libgui.a`, with matching dependency lines in `src/gui/Makefile`.
+
+Acceptance criteria validated by tester:
+- `WXTacticalUI.o` is built into `libgui.a`.
+- The Makefile dependency section includes the new `WXTacticalUI.o` dependency lines needed for reliable rebuilds.
+- No unrelated build wiring changes were introduced.
+
+Implementation context:
+- Implementer branch/commit in scope: `gui_sep-m6-gui-build-implementer-20260330 @ e30f31d794790f324b4d100094a01f0996edcbbe`
+- Modified implementation file: `src/gui/Makefile`
+- Tester branch: `gui_sep-m6-gui-build-tester-20260329`
+
+Test files added/modified:
+- None (no changes under `tests/tactical`; acceptance fully validated via build and archive verification commands).
+- Test commit hash: `No Changes Made`
+
+Commands executed by tester:
+- `cd src/gui && make clean >/dev/null && make`
+- `ar -t src/gui/libgui.a | grep WXTacticalUI.o`
+- `git --no-pager show e30f31d794790f324b4d100094a01f0996edcbbe -- src/gui/Makefile`
+- `git --no-pager show --stat --oneline e30f31d794790f324b4d100094a01f0996edcbbe`
+- `git --no-pager diff -- src/gui/Makefile`
+
+Final testing outcome:
+- PASS (Attempt 1/3)
+- Acceptance checks passed: 3
+- Acceptance checks failed: 0
+- Unmet acceptance criteria: none
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask3-gui-build`
+
+Tester artifacts written:
+- `artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask3-gui-build/tester_report.md`
+- `artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask3-gui-build/tester_result.json`
+- `artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask3-gui-build/documenter_prompt.txt`
+
+Please document Milestone 6 Subtask 3 as a GUI build wiring update in `src/gui/Makefile` that adds `WXTacticalUI.o` to `OBJS` and dependency entries, and note tester validation evidence (compile line, archive entry, and constrained diff scope).
