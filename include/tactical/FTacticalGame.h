@@ -128,6 +128,13 @@ protected:
 /// Placeholder for future UI abstraction (Milestone 6)
 ITacticalUI * m_ui;
 
+VehicleList * findHexOccupantsForShip(unsigned int shipID);
+const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
+void removeShipFromHexOccupancy(unsigned int shipID);
+void removeShipFromTurnInfo(unsigned int shipID);
+void removeShipFromModelState(unsigned int shipID);
+bool hasUsableICMDefenderInHex(const VehicleList & vehicles, unsigned int defendingSideID) const;
+
 /// Legacy FBattleScreen battle state
 int m_state;
 int m_phase;

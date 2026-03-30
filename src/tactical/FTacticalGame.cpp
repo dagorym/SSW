@@ -372,9 +372,16 @@ void FTacticalGame::fireICM() {
 			if (w->getTarget() == NULL || w->getICMMod() == 0) {
 				continue;
 			}
+			VehicleList * targetHexShips = findHexOccupantsForShip(w->getTarget()->getID());
+			if (targetHexShips == NULL) {
+				continue;
+			}
+			if (!hasUsableICMDefenderInHex(*targetHexShips, w->getTarget()->getOwner())) {
+				continue;
+			}
 			ICMData * d = new ICMData;
 			d->weapon = w;
-			d->vehicles = NULL;
+			d->vehicles = targetHexShips;
 			m_ICMData.push_back(d);
 		}
 	}
@@ -429,6 +436,7 @@ int FTacticalGame::clearDestroyedShips() {
 	VehicleList::iterator itr = sList->begin();
 	while (itr < sList->end()) {
 		if ((*itr)->getHP() <= 0) {
+			removeShipFromModelState((*itr)->getID());
 			itr = sList->erase(itr);
 		} else {
 			liveShips++;
@@ -441,6 +449,82 @@ int FTacticalGame::clearDestroyedShips() {
 		m_winnerID = getActivePlayerID();
 	}
 	return liveShips;
+}
+
+VehicleList * FTacticalGame::findHexOccupantsForShip(unsigned int shipID) {
+	for (int i = 0; i < 100; ++i) {
+		for (int j = 0; j < 100; ++j) {
+			VehicleList & ships = m_hexData[i][j].ships;
+			for (VehicleList::iterator itr = ships.begin(); itr != ships.end(); ++itr) {
+				if ((*itr)->getID() == shipID) {
+					return &ships;
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
+const VehicleList * FTacticalGame::findHexOccupantsForShip(unsigned int shipID) const {
+	for (int i = 0; i < 100; ++i) {
+		for (int j = 0; j < 100; ++j) {
+			const VehicleList & ships = m_hexData[i][j].ships;
+			for (VehicleList::const_iterator itr = ships.begin(); itr != ships.end(); ++itr) {
+				if ((*itr)->getID() == shipID) {
+					return &ships;
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
+void FTacticalGame::removeShipFromHexOccupancy(unsigned int shipID) {
+	for (int i = 0; i < 100; ++i) {
+		for (int j = 0; j < 100; ++j) {
+			VehicleList & ships = m_hexData[i][j].ships;
+			VehicleList::iterator itr = ships.begin();
+			while (itr != ships.end()) {
+				if ((*itr)->getID() == shipID) {
+					itr = ships.erase(itr);
+				} else {
+					++itr;
+				}
+			}
+		}
+	}
+}
+
+void FTacticalGame::removeShipFromTurnInfo(unsigned int shipID) {
+	m_turnInfo.erase(shipID);
+}
+
+void FTacticalGame::removeShipFromModelState(unsigned int shipID) {
+	removeShipFromHexOccupancy(shipID);
+	removeShipFromTurnInfo(shipID);
+}
+
+bool FTacticalGame::hasUsableICMDefenderInHex(const VehicleList & vehicles, unsigned int defendingSideID) const {
+	for (VehicleList::const_iterator itr = vehicles.begin(); itr != vehicles.end(); ++itr) {
+		FVehicle * candidate = *itr;
+		if (candidate->getOwner() != defendingSideID) {
+			continue;
+		}
+		unsigned int index = candidate->hasDefense(FDefense::ICM);
+		if (index == 0) {
+			continue;
+		}
+		FDefense * defense = candidate->getDefense(index);
+		if (defense == NULL) {
+			continue;
+		}
+		if (defense->getAmmo()
+			&& !candidate->isPowerSystemDamaged()
+			&& !defense->isDamaged()) {
+			return true;
+		}
+	}
+	return false;
 }
 
 bool FTacticalGame::isCombatOver() const {
