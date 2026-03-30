@@ -1,0 +1,53 @@
+You are the Verifier Agent.
+
+Task summary:
+- Milestone 6 Subtask 1 added a new additive tactical UI boundary header `include/tactical/ITacticalUI.h` with the required pure-virtual method surface only.
+
+Acceptance criteria validated:
+- `include/tactical/ITacticalUI.h` exists and declares `Frontier::ITacticalUI`.
+- Interface includes these callbacks:
+  - `requestRedraw()`
+  - `showMessage(const std::string& title, const std::string& body)`
+  - `showDamageSummary(const FTacticalCombatReportSummary& summary)`
+  - `runICMSelection(std::vector<ICMData*>& icmData, VehicleList* defenders)`
+  - `notifyWinner(bool attackerWins)`
+- Header contains no wx includes and no wx type references.
+- Interface is suitable for use by `FTacticalGame` without pulling in GUI headers.
+
+Implementation files changed:
+- `include/tactical/ITacticalUI.h`
+
+Test files added or modified:
+- `tests/tactical/ITacticalUIBoundaryTest.h`
+- `tests/tactical/ITacticalUIBoundaryTest.cpp`
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
+
+Documentation files changed:
+- None. Verification must confirm that no documentation update was required for this subtask because the change is header-only, additive, already aligned with existing design documentation, and does not yet document later Milestone 6 subtasks such as `WXTacticalUI` implementation or wiring.
+
+Implementation context in scope:
+- Documenter worktree: `/home/tstephen/worktrees/SSW/gui_sep-m6-ui-boundary-documenter-20260329`
+- Documenter branch: `gui_sep-m6-ui-boundary-documenter-20260329`
+- Implementer branch/commit: `gui_sep-m6-ui-boundary-implementer-20260330 @ aee2502dbe8ba7cec8667a63e89c50dabf8fa48f`
+- Tester branch: `gui_sep-m6-ui-boundary-tester-20260329`
+- Test commit hash: `fba94b0e87aca631a64639948bcab912bcaa9366`
+- Base branch for diffing context: `gui_sep`
+- Plan path: `plans/milestone6-itacticalui-wxtacticalui-plan.md`
+
+Commands run:
+- `git --no-pager diff --stat gui_sep...HEAD`
+- `git --no-pager diff gui_sep...HEAD -- include/tactical/ITacticalUI.h tests/tactical/ITacticalUIBoundaryTest.h tests/tactical/ITacticalUIBoundaryTest.cpp tests/tactical/Makefile tests/tactical/TacticalTests.cpp`
+- `make -C tests/tactical && tests/tactical/TacticalTests`
+
+Final test outcome:
+- Success; `make -C tests/tactical && tests/tactical/TacticalTests` passed with `OK (69 tests)` in the assigned documenter worktree.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask1-ui-boundary`
+
+Verification requirements:
+- Verify the implementation and tactical tests still satisfy the Subtask 1 acceptance criteria.
+- Verify the shared artifact directory contains `documenter_report.md`, `documenter_result.json`, and `verifier_prompt.txt`.
+- Verify that no project documentation update was required for this subtask, or explicitly explain if you find evidence that a documentation file should have changed.
+- Confirm later Milestone 6 work (`WXTacticalUI` implementation/wiring) is not documented as completed here.
