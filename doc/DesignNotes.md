@@ -23,7 +23,11 @@ for the same battle state, movement bookkeeping (`FTacticalTurnData`), and
 tactical report ownership needed for later delegation. Its `FTacticalHexData`
 and `FTacticalTurnData` types intentionally mirror `FBattleBoard`'s legacy
 `hexData`/`turnData` structs so model-only includes stay wx-free until later
-migration cleanup removes the legacy copies.
+migration cleanup removes the legacy copies. Milestone 7 Subtask 1 expands
+that additive model surface with delegation-friendly accessors for tactical
+state/control flags, setup/scenario inputs, ship and weapon selection, and
+movement/report access so `FBattleScreen` can start forwarding state queries
+without claiming that the live wx runtime has already been fully rewired.
 
 ## Combat
 
@@ -286,6 +290,32 @@ informational messaging, the tactical damage summary dialog, ICM selection,
 and winner notification semantics. This remains additive infrastructure only;
 the live tactical wx runtime still flows through `FBattleScreen`,
 `FBattleBoard`, and `FBattleDisplay` until Milestone 7 rewires delegation.
+
+Milestone 7 Subtask 1 extends `FTacticalGame` further as the canonical
+additive tactical state-owner surface for upcoming `FBattleScreen`
+delegation. Newly exposed API categories now cover:
+
+- **State/control:** installed UI access (`installUI(ITacticalUI*)`,
+  `getUI()`), control-mode toggles, done-state tracking, and close-in-progress
+  status.
+- **Setup/scenario:** planet choice, planet/station placement, station pointer,
+  and direct access to the attacker/defender fleet and ship lists established
+  during setup.
+- **Ship/weapon selection:** current ship and weapon getters/setters remain on
+  the model surface so UI callers can forward selection state instead of
+  owning duplicate members.
+- **Movement-state helpers:** previously added movement reset/finalization
+  helpers continue to live in the model beside the newer state accessors,
+  keeping tactical bookkeeping wx-free.
+- **Tactical report access:** callers can continue to build, append, clear, and
+  inspect `FTacticalCombatReport` state from the model layer.
+
+The UI seam remains additive: `FTacticalGame` only stores an `ITacticalUI*`
+through `installUI()` / `getUI()` and still introduces no wx headers or wx
+types. This unblocks Milestone 7 delegation work by giving `FBattleScreen` a
+stable forwarding surface for existing runtime state while preserving current
+behavior until later subtasks move the active tactical wx path over to that
+model.
 
 ### Validation Completed
 

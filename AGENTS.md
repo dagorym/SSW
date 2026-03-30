@@ -39,7 +39,7 @@ Headers live under `include/` and source code under `src/`, generally mirroring 
 - `FPlayer`: game participants, including UPF and Sathar factions
 - `FFleet`: non-copyable collection of vehicles belonging to a player; uses `NO_DESTINATION`/`NO_ROUTE` sentinel constants for unset navigation state
 - `FMap`: strategic-level game board and system management
-- `FTacticalGame`: additive pure-C++ tactical model surface that owns tactical mechanics state without pulling in wx headers
+- `FTacticalGame`: additive pure-C++ tactical model surface that owns tactical mechanics state, delegation-facing setup/selection/report APIs, and an `ITacticalUI` seam without pulling in wx headers
 - `FTacticalAttackResult`: structured result from a weapon attack (outcome, damage, and hit details)
 - `FTacticalCombatReport`: per-ship and per-weapon combat reporting for a battle round
 
@@ -191,12 +191,12 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 
 - Keep module boundaries intact; new features should go in the appropriate module directory.
 - Prefer existing core and strategic abstractions before introducing new ones, especially `FObject`, `FGame`, `FMap`, `FVehicle`, and `FWeapon`.
-- Treat `include/tactical/FTacticalGame.h` as the additive non-wx tactical model surface for Milestone 5; use it for model-owned tactical mechanics state and ownership bookkeeping types such as `FTacticalHexData` and `FTacticalTurnData`.
-- Treat `include/tactical/ITacticalUI.h` as the additive non-wx tactical UI boundary introduced in Milestone 6; keep it free of wx includes and limited to the tactical callback surface used by later delegation work.
+- Treat `include/tactical/FTacticalGame.h` as the additive non-wx tactical model surface for Milestones 5-7; use it for model-owned tactical mechanics state, ownership bookkeeping types such as `FTacticalHexData` and `FTacticalTurnData`, and the delegation-facing API categories added for `FBattleScreen` forwarding (state/control, setup/scenario, ship/weapon selection, movement helpers, and tactical report access).
+- Treat `include/tactical/ITacticalUI.h` as the additive non-wx tactical UI boundary introduced in Milestone 6; keep it free of wx includes and limited to the tactical callback surface used by later delegation work, including the `installUI(ITacticalUI*)` / `getUI()` seam now exposed on `FTacticalGame`.
 - During Milestone 5 isolation work, keep `FTacticalHexData`/`FTacticalTurnData` aligned with the legacy `hexData`/`turnData` still owned by `FBattleBoard`; the duplication is an intentional compatibility boundary so model-only includes stay wx-free until Milestones 7-8 remove the legacy copies.
 - Treat `src/tactical/FTacticalGame.cpp` as the additive mechanics owner for battle setup/state transitions, movement reset/finalization helpers, tactical report lifecycle built on `FTacticalCombatReport`, `fireAllWeapons()` report aggregation, and winner/end-of-combat helpers.
 - Keep `include/gui/WXTacticalUI.h` and `src/gui/WXTacticalUI.cpp` as the additive wx-backed tactical adapter introduced in Milestone 6; it wraps existing dialogs and winner messaging semantics but is not the live tactical runtime path yet.
-- Keep the active runtime tactical GUI flow on `FBattleScreen`, `FBattleBoard`, and `FBattleDisplay` until later milestones explicitly rewire delegation; Milestones 5-6 documentation should describe `FTacticalGame`, `ITacticalUI`, and `WXTacticalUI` as additive only and not yet the live wx runtime path.
+- Keep the active runtime tactical GUI flow on `FBattleScreen`, `FBattleBoard`, and `FBattleDisplay` until later milestones explicitly rewire delegation; Milestones 5-7 documentation should describe `FTacticalGame`, `ITacticalUI`, and `WXTacticalUI` as additive only and not yet the live wx runtime path, even though `FTacticalGame` now exposes the canonical state-owner API surface needed for upcoming `FBattleScreen` delegation work.
 - Route strategic-layer dialogs, prompts, and notifications from `FGame` through `IStrategicUI`; keep wx dialog implementations in the gui module (for example `WXStrategicUI`) instead of reintroducing direct gui dependencies in strategic code.
 - Keep icon filenames in model objects and resolve ship or fleet `wxImage` assets in GUI render paths through `WXIconCache`, including tactical displays that draw ships.
 - Maintain cross-platform compatibility across Linux Make builds and Visual Studio builds.
