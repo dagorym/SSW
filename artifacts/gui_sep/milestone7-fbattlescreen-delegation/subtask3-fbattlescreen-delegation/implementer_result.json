@@ -1,0 +1,31 @@
+{
+  "status": "completed",
+  "subtask_id": "milestone7-subtask3-fbattlescreen-delegation",
+  "branch": "gui_sep-ms7-subtask3-implementer-20260330",
+  "worktree": "/home/tstephen/worktrees/SSW/gui_sep-ms7-subtask3-implementer-20260330",
+  "commit": "a567ad3c91035e87ce8fdd2616a273762b62db02",
+  "changed_files": [
+    "include/tactical/FBattleScreen.h",
+    "src/tactical/FBattleScreen.cpp",
+    "include/tactical/FTacticalGame.h",
+    "src/tactical/FTacticalGame.cpp"
+  ],
+  "validation_commands": [
+    "cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask3-implementer-20260330 && make -j4",
+    "cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask3-implementer-20260330/tests/tactical && make -j4 && ./TacticalTests"
+  ],
+  "validation_outcome": {
+    "make -j4": "passed",
+    "tests/tactical make && ./TacticalTests": "failed (14 assertions in source-inspection tests expecting pre-delegation FBattleScreen implementation details)"
+  },
+  "artifacts": {
+    "implementer_result": "artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask3-fbattlescreen-delegation/implementer_result.json",
+    "implementer_report": "artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask3-fbattlescreen-delegation/implementer_report.md",
+    "tester_prompt": "artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask3-fbattlescreen-delegation/tester_prompt.txt"
+  },
+  "notes": [
+    "FBattleScreen tactical mechanics/state/report and fire-flow methods now forward to FTacticalGame.",
+    "FBattleScreen retains wx-shell concerns: redraw/refresh, map UI updates, winner close path, and map ship-removal calls using IDs exposed by FTacticalGame.",
+    "FTacticalGame now records last destroyed ship IDs for FBattleScreen map cleanup and routes electrical-fire summary + ICM selection via installed ITacticalUI when available."
+  ]
+}

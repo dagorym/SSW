@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate Milestone 7 Subtask 3 only: FBattleScreen tactical delegation to FTacticalGame while keeping FBattleBoard/FBattleDisplay compatibility.
+
+Modified files:
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate:
+- FBattleScreen no longer keeps duplicate canonical tactical mechanics state that now lives in FTacticalGame.
+- Key FBattleScreen getters/setters and combat/report helpers forward to FTacticalGame.
+- Setup, phase changes, tactical report lifecycle, electrical-fire handling, ICM handling, and destroyed-ship cleanup route through FTacticalGame while FBattleScreen keeps wx-shell concerns.
+- FBattleBoard and FBattleDisplay continue compiling against FBattleScreen without Milestone 8 rewrites.
+
+Scope constraints:
+- Validate only Subtask 3 behavior and files listed above.
+- Do not expand into Milestone 8 rewiring.
+
+Validation commands used by implementer:
+- cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask3-implementer-20260330 && make -j4
+- cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask3-implementer-20260330/tests/tactical && make -j4 && ./TacticalTests
+
+Notes from implementer validation:
+- Full build passes.
+- TacticalTests currently fail in source-inspection assertions expecting pre-delegation FBattleScreen internals (legacy pattern checks), which may need tester adjudication for updated milestone intent.
+
+Shared artifact directory (reuse this exact path):
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask3-fbattlescreen-delegation
+
+On successful validation:
+- Write tester_report.md in the shared artifact directory.
+- Write tester_result.json in the shared artifact directory.
+- Write documenter_prompt.txt in the shared artifact directory.
