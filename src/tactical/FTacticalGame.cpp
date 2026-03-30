@@ -137,6 +137,10 @@ FTacticalGame::~FTacticalGame() {
 	clearICMVector(m_ICMData);
 }
 
+void FTacticalGame::installUI(ITacticalUI * ui) {
+	m_ui = ui;
+}
+
 void FTacticalGame::reset() {
 	m_ui = NULL;
 	m_state = BS_Unknown;

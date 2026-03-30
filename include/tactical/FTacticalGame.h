@@ -68,17 +68,43 @@ public:
 FTacticalGame();
 virtual ~FTacticalGame();
 
+void installUI(ITacticalUI * ui);
+ITacticalUI * getUI() const { return m_ui; }
+
 void reset();
 
 int setupFleets(FleetList * aList, FleetList * dList, bool planet = false, FVehicle * station = NULL);
 void setState(int s);
 const int & getState() const { return m_state; }
+void toggleControlState() { m_control = !m_control; }
+const bool & getControlState() const { return m_control; }
+void setControlState(bool control) { m_control = control; }
+
+void setDone(bool done) { m_done = done; }
+bool getDone() const { return m_done; }
+
+void setCloseInProgress(bool closeInProgress) { m_closeInProgress = closeInProgress; }
+bool isCloseInProgress() const { return m_closeInProgress; }
+
+void setPlanet(int c) { m_planetChoice = c; }
+const int & getPlanetChoice() const { return m_planetChoice; }
+void setPlanetPosition(FPoint h) { m_planetPos = h; }
+const FPoint & getPlanetPos() const { return m_planetPos; }
+void setStationPosition(FPoint h) { m_stationPos = h; }
+const FPoint & getStationPos() const { return m_stationPos; }
+void setStation(FVehicle * station) { m_station = station; }
+FVehicle * getStation() const { return m_station; }
+bool hasPlanet() const { return m_hasPlanet; }
 
 void setPhase(int p);
 int getPhase() const { return m_phase; }
 
 VehicleList getShipList() const;
 VehicleList getShipList(unsigned int id) const;
+FleetList * getAttackList() const { return m_attackList; }
+FleetList * getDefendList() const { return m_defendList; }
+VehicleList * getAttackShips() const { return m_attackShips; }
+VehicleList * getDefendShips() const { return m_defendShips; }
 
 bool getActivePlayer() const { return m_activePlayer; }
 void setActivePlayer(bool active) { m_activePlayer = active; }
