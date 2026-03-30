@@ -1,0 +1,43 @@
+You are the Documenter Agent.
+
+Task summary:
+- Milestone 6 Subtask 1 added a new additive tactical UI boundary header `include/tactical/ITacticalUI.h` with the required pure-virtual method surface only.
+
+Acceptance criteria validated:
+- `include/tactical/ITacticalUI.h` exists and declares `Frontier::ITacticalUI`.
+- Interface includes these callbacks:
+  - `requestRedraw()`
+  - `showMessage(const std::string& title, const std::string& body)`
+  - `showDamageSummary(const FTacticalCombatReportSummary& summary)`
+  - `runICMSelection(std::vector<ICMData*>& icmData, VehicleList* defenders)`
+  - `notifyWinner(bool attackerWins)`
+- Header contains no wx includes and no wx type references.
+- Interface is suitable for use by `FTacticalGame` without pulling in GUI headers.
+
+Implementation context in scope:
+- Implementer branch/commit: `gui_sep-m6-ui-boundary-implementer-20260330 @ aee2502dbe8ba7cec8667a63e89c50dabf8fa48f`
+- Tester branch: `gui_sep-m6-ui-boundary-tester-20260329`
+
+Tests added/modified:
+- `tests/tactical/ITacticalUIBoundaryTest.h` (new)
+- `tests/tactical/ITacticalUIBoundaryTest.cpp` (new)
+- `tests/tactical/Makefile` (updated to build new test)
+- `tests/tactical/TacticalTests.cpp` (updated to register new suite)
+
+Test commit hash:
+- `fba94b0e87aca631a64639948bcab912bcaa9366`
+
+Commands executed:
+- `make -C tests/tactical && tests/tactical/TacticalTests` (baseline: pass)
+- `make -C tests/tactical && tests/tactical/TacticalTests` (initial new-tests run: fail; test expectation corrected)
+- `make -C tests/tactical && tests/tactical/TacticalTests` (final: pass, 69/69)
+
+Final test outcome:
+- Success; all tactical tests pass after adding focused ITacticalUI boundary coverage.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask1-ui-boundary`
+
+Documentation expectations:
+- Keep documentation scope limited to Subtask 1 (interface-only additive boundary).
+- Do not document later subtasks (WXTacticalUI implementation/wiring) as completed here.
