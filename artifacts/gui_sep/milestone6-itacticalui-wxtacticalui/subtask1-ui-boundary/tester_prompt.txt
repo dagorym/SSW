@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Milestone 6 Subtask 1 added a new additive tactical UI boundary header `include/tactical/ITacticalUI.h` with the required pure-virtual method surface only.
+
+Modified files:
+- include/tactical/ITacticalUI.h
+
+Acceptance criteria to validate (from Planner):
+- `include/tactical/ITacticalUI.h` exists and declares `Frontier::ITacticalUI`.
+- The interface includes exactly these callbacks:
+  - `requestRedraw()`
+  - `showMessage(const std::string& title, const std::string& body)`
+  - `showDamageSummary(const FTacticalCombatReportSummary& summary)`
+  - `runICMSelection(std::vector<ICMData*>& icmData, VehicleList* defenders)`
+  - `notifyWinner(bool attackerWins)`
+- The header contains no wx includes and no wx type references.
+- The interface is suitable for use by `FTacticalGame` without pulling in GUI headers.
+
+Create test files in:
+- tests/tactical
+
+Implementation context for testing:
+- This subtask is interface-only and additive; runtime tactical flow is intentionally unchanged.
+- Later subtasks will add `WXTacticalUI` implementation and GUI build wiring; do not require those in this subtask's validation.
+- Header uses non-wx dependencies for `FTacticalCombatReportSummary`, `VehicleList`, and `ICMData`.
+
+Suggested test command(s):
+- make -C tests/tactical
+- tests/tactical/TacticalTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone6-itacticalui-wxtacticalui/subtask1-ui-boundary
