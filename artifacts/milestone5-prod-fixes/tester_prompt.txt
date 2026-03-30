@@ -1,48 +1,32 @@
-You are the Tester Agent for Milestone 5 production fixes (subtask `m5-prod-fixes`).
+You are the Tester Agent.
 
-Worktree and branch:
-- Worktree: /home/tstephen/worktrees/gui_sep_ms5-implementer-20260329
-- Branch: gui_sep_ms5-implementer-20260329
+Task summary:
+- Validate Milestone 5 production fixes for subtask `m5-prod-fixes` already implemented in commit 475cd7e057b600cc7e5f396e05b5004c9b380d59.
+- This remediation run only regenerated handoff artifacts; production code was not changed.
 
-Shared artifact directory:
-- artifacts/milestone5-prod-fixes
-
-Production changes already landed in:
+Modified files:
 - include/tactical/FTacticalGame.h
 - src/tactical/FTacticalGame.cpp
 
-Behavior/context to test:
-1) Destroyed ship cleanup in `FTacticalGame::clearDestroyedShips()` now removes dead ship IDs from:
-   - side ship list being cleared
-   - model hex occupancy (`m_hexData`)
-   - model turn bookkeeping (`m_turnInfo`)
-   and still returns surviving ship count for the cleared side while preserving winner bookkeeping.
+Acceptance criteria to validate (from plan):
+- clearDestroyedShips() removes dead ship IDs from the cleared side ship list, m_hexData occupancy lists, and m_turnInfo bookkeeping.
+- Winner bookkeeping remains correct when a side is eliminated (m_hasWinner/m_winnerID consistency).
+- fireICM() clears prior m_ICMData before collecting.
+- fireICM() resolves target ship hex occupants by scanning m_hexData.
+- fireICM() enqueues only actionable interceptions (at least one same-side defender in target hex has usable ICM: defense present, ammo > 0, power not damaged, ICM defense not damaged).
+- fireICM() never enqueues ICMData with vehicles == NULL and remains compatible with existing ICMData usage.
 
-2) `FTacticalGame::fireICM()` now:
-   - clears `m_ICMData` before collection
-   - finds target ship hex occupants by scanning `m_hexData`
-   - enqueues only actionable ICM opportunities (target hex exists and has at least one same-side ship with usable ICM: has ICM defense, ammo left, power system not damaged, ICM defense not damaged)
-   - never enqueues `ICMData` with `vehicles == NULL`
+Create test files in:
+- tests/tactical
 
-Acceptance criteria to verify with behavior-level tactical tests:
-- Dead ship IDs are removed from side list, `m_hexData`, and `m_turnInfo`.
-- `clearDestroyedShips()` still returns surviving count for cleared side.
-- Winner bookkeeping remains correct when cleared side is eliminated.
-- Helper-path behavior exists for model hex and turn-info cleanup (verify via observable behavior).
-- `fireICM()` no longer pushes `ICMData` entries with `vehicles == NULL`.
-- Weapons are queued only when an actual defending ship in the target hex can spend ICMs.
-- `m_ICMData` is cleared before new collection starts.
-- No wx tactical rewiring assumptions in tests.
+Implementation context for testing:
+- FTacticalGame is additive model-side tactical state (non-wx); no runtime wx rewiring is expected in this milestone.
+- Destroyed-ship cleanup now includes explicit model-state purging paths for occupancy and turn bookkeeping.
+- ICM collection now stores only actionable opportunities tied to the target-hex occupant list.
 
-Required test work:
-- Create behavior-level tactical tests under existing tactical test locations in:
-  /home/tstephen/worktrees/gui_sep_ms5-implementer-20260329/tests/tactical
-- Register tests in tactical runners as needed.
-- Do not modify production files for test convenience unless absolutely required and justified.
+Suggested test command(s):
+- cd /home/tstephen/worktrees/gui_sep_ms5-implementer-20260329/tests/tactical && make -s && ./TacticalTests
+- (optional broader check) cd /home/tstephen/worktrees/gui_sep_ms5-implementer-20260329/tests && make -s && ./SSWTests
 
-Suggested commands:
-- cd /home/tstephen/worktrees/gui_sep_ms5-implementer-20260329/tests/tactical && make && ./TacticalTests
-- Optionally verify full suite impact from /home/tstephen/worktrees/gui_sep_ms5-implementer-20260329/tests with existing runners.
-
-Please write your tester outputs into:
+Shared artifact directory:
 - artifacts/milestone5-prod-fixes
