@@ -221,6 +221,59 @@ assertContains(clearWinnerBody, "m_hasWinner = false;");
 assertContains(clearWinnerBody, "m_winnerID = 0;");
 }
 
+void FTacticalGameMechanicsTest::testDestroyedShipCleanupPurgesHexAndTurnBookkeeping() {
+// AC: clearDestroyedShips purges dead ships from side list, m_hexData occupancy, and m_turnInfo.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string clearDestroyedBody = extractFunctionBody(source, "int FTacticalGame::clearDestroyedShips()");
+const std::string removeHexBody = extractFunctionBody(source, "void FTacticalGame::removeShipFromHexOccupancy(unsigned int shipID)");
+const std::string removeTurnBody = extractFunctionBody(source, "void FTacticalGame::removeShipFromTurnInfo(unsigned int shipID)");
+const std::string removeModelBody = extractFunctionBody(source, "void FTacticalGame::removeShipFromModelState(unsigned int shipID)");
+
+assertContains(clearDestroyedBody, "removeShipFromModelState((*itr)->getID());");
+assertContains(clearDestroyedBody, "itr = sList->erase(itr);");
+
+assertContains(removeHexBody, "for (int i = 0; i < 100; ++i) {");
+assertContains(removeHexBody, "for (int j = 0; j < 100; ++j) {");
+assertContains(removeHexBody, "if ((*itr)->getID() == shipID) {");
+assertContains(removeHexBody, "itr = ships.erase(itr);");
+
+assertContains(removeTurnBody, "m_turnInfo.erase(shipID);");
+
+assertContains(removeModelBody, "removeShipFromHexOccupancy(shipID);");
+assertContains(removeModelBody, "removeShipFromTurnInfo(shipID);");
+}
+
+void FTacticalGameMechanicsTest::testFireICMCollectsOnlyActionableHexInterceptions() {
+// AC: fireICM clears stale queue data, resolves via m_hexData scanning, and only enqueues actionable non-null interceptions.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string fireIcmBody = extractFunctionBody(source, "void FTacticalGame::fireICM()");
+const std::string findOccupantsBody = extractFunctionBody(source, "VehicleList * FTacticalGame::findHexOccupantsForShip(unsigned int shipID)");
+const std::string hasUsableBody = extractFunctionBody(source, "bool FTacticalGame::hasUsableICMDefenderInHex(const VehicleList & vehicles, unsigned int defendingSideID) const");
+
+assertContains(fireIcmBody, "clearICMVector(m_ICMData);");
+assertContains(fireIcmBody, "VehicleList * targetHexShips = findHexOccupantsForShip(w->getTarget()->getID());");
+assertContains(fireIcmBody, "if (targetHexShips == NULL) {");
+assertContains(fireIcmBody, "if (!hasUsableICMDefenderInHex(*targetHexShips, w->getTarget()->getOwner())) {");
+assertContains(fireIcmBody, "d->vehicles = targetHexShips;");
+assertContains(fireIcmBody, "m_ICMData.push_back(d);");
+
+assertContains(findOccupantsBody, "for (int i = 0; i < 100; ++i) {");
+assertContains(findOccupantsBody, "for (int j = 0; j < 100; ++j) {");
+assertContains(findOccupantsBody, "VehicleList & ships = m_hexData[i][j].ships;");
+assertContains(findOccupantsBody, "if ((*itr)->getID() == shipID) {");
+assertContains(findOccupantsBody, "return &ships;");
+
+assertContains(hasUsableBody, "if (candidate->getOwner() != defendingSideID) {");
+assertContains(hasUsableBody, "unsigned int index = candidate->hasDefense(FDefense::ICM);");
+assertContains(hasUsableBody, "if (index == 0) {");
+assertContains(hasUsableBody, "FDefense * defense = candidate->getDefense(index);");
+assertContains(hasUsableBody, "if (defense == NULL) {");
+assertContains(hasUsableBody, "if (defense->getAmmo()");
+assertContains(hasUsableBody, "&& !candidate->isPowerSystemDamaged()");
+assertContains(hasUsableBody, "&& !defense->isDamaged()) {");
+assertContains(hasUsableBody, "return true;");
+}
+
 void FTacticalGameMechanicsTest::testImplementationRemainsSelfContainedWithoutLegacyWxRewire() {
 // AC: implementation remains additive/self-contained and does not require FBattleScreen/Board/Display rewiring.
 const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));

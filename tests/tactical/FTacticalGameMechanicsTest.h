@@ -20,6 +20,8 @@ CPPUNIT_TEST( testTacticalReportLifecycleUsesSharedReportTypes );
 CPPUNIT_TEST( testFireAllWeaponsOwnsCombatReportLifecycleAndCleanup );
 CPPUNIT_TEST( testMovementHelpersResetAndFinalizeTurnData );
 CPPUNIT_TEST( testWinnerAndCombatEndHelpersResolveBattleState );
+CPPUNIT_TEST( testDestroyedShipCleanupPurgesHexAndTurnBookkeeping );
+CPPUNIT_TEST( testFireICMCollectsOnlyActionableHexInterceptions );
 CPPUNIT_TEST( testImplementationRemainsSelfContainedWithoutLegacyWxRewire );
 CPPUNIT_TEST_SUITE_END();
 
@@ -39,6 +41,8 @@ void testTacticalReportLifecycleUsesSharedReportTypes();
 void testFireAllWeaponsOwnsCombatReportLifecycleAndCleanup();
 void testMovementHelpersResetAndFinalizeTurnData();
 void testWinnerAndCombatEndHelpersResolveBattleState();
+void testDestroyedShipCleanupPurgesHexAndTurnBookkeeping();
+void testFireICMCollectsOnlyActionableHexInterceptions();
 void testImplementationRemainsSelfContainedWithoutLegacyWxRewire();
 };
 
