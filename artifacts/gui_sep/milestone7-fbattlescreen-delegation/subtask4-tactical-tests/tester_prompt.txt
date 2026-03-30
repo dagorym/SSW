@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Task summary:
+- Tactical Milestone 7 regression suite was updated to align with delegated FBattleScreen architecture (FTacticalGame/WXTacticalUI ownership + forwarding), replacing obsolete Milestone 6 source-inspection expectations while retaining guarded close-path coverage.
+
+Modified files:
+- tests/tactical/FTacticalBattleScreenReportContextTest.h
+- tests/tactical/FTacticalBattleScreenReportContextTest.cpp
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.h
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+- tests/tactical/FTacticalBattleScreenDelegationTest.h
+- tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+- tests/tactical/Makefile
+- tests/tactical/TacticalTests.cpp
+
+Acceptance criteria to validate (from Planner):
+- Tactical tests validate the Milestone 7 delegated architecture rather than the Milestone 6 additive-only state.
+- The guarded FBattleScreen close path remains covered.
+- The tactical test runner builds and includes the Milestone 7 delegation tests.
+
+Create test files in:
+- tests/tactical/ (no new tests expected unless needed for follow-up fixes)
+
+Implementation context for testing:
+- Report-context tests now assert FBattleScreen append methods delegate directly to m_tacticalGame and no longer inspect removed m_tacticalReport internals in FBattleScreen.
+- Electrical-fire tests now assert applyFireDamage delegates to FTacticalGame, declareWinner uses ITacticalUI notify path + closeBattleScreen(0), and closeBattleScreen/onClose guard uses m_tacticalGame close-in-progress state with modal-first behavior.
+- New FTacticalBattleScreenDelegationTest validates constructor ownership/install of FTacticalGame + WXTacticalUI, destructor detach/teardown, selected state/selection API forwarding, and showTacticalDamageSummaryDialog ITacticalUI seam delegation.
+- Tactical Makefile/TacticalTests runner now include FTacticalBattleScreenDelegationTest and remove obsolete tactical source-inspection suites from this runner composition for Milestone 7 stacked branch expectations.
+
+Suggested test command(s):
+- cd tests/tactical && make clean && make -j2 && ./TacticalTests
+
+Shared artifact directory:
+- artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask4-tactical-tests
