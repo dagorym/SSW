@@ -8,6 +8,7 @@
 
 #include "tactical/FTacticalGame.h"
 
+#include "tactical/ITacticalUI.h"
 #include "tactical/FTacticalAttackResult.h"
 
 namespace Frontier {
@@ -166,6 +167,7 @@ void FTacticalGame::reset() {
 	m_defendList = NULL;
 	clearICMVector(m_ICMData);
 	m_tacticalReport.clear();
+	m_lastDestroyedShipIDs.clear();
 	m_shipPos.setPoint(-1, -1);
 	m_movementHexes.clear();
 	m_leftHexes.clear();
@@ -354,6 +356,9 @@ void FTacticalGame::applyFireDamage() {
 	if (damagedShip) {
 		FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();
 		if (summary.ships.size() > 0) {
+			if (m_ui != NULL) {
+				m_ui->showDamageSummary(summary);
+			}
 			toggleActivePlayer();
 			clearDestroyedShips();
 			toggleActivePlayer();
@@ -366,6 +371,8 @@ void FTacticalGame::applyFireDamage() {
 void FTacticalGame::fireICM() {
 	clearICMVector(m_ICMData);
 	VehicleList sList = getShipList(getActivePlayerID());
+	VehicleList defendingShips = getShipList(
+		(getActivePlayerID() == getAttackerID()) ? getDefenderID() : getAttackerID());
 	for (VehicleList::iterator itr = sList.begin(); itr < sList.end(); itr++) {
 		if ((*itr)->getHP() <= 0) {
 			continue;
@@ -389,6 +396,10 @@ void FTacticalGame::fireICM() {
 			m_ICMData.push_back(d);
 		}
 	}
+	if (m_ui != NULL && m_ICMData.size() > 0) {
+		m_ui->runICMSelection(m_ICMData, &defendingShips);
+	}
+	clearICMVector(m_ICMData);
 }
 
 FTacticalCombatReportSummary FTacticalGame::fireAllWeapons() {
@@ -429,6 +440,7 @@ FTacticalCombatReportSummary FTacticalGame::fireAllWeapons() {
 }
 
 int FTacticalGame::clearDestroyedShips() {
+	m_lastDestroyedShipIDs.clear();
 	toggleActivePlayer();
 	VehicleList * sList = m_activePlayer ? m_attackShips : m_defendShips;
 	if (sList == NULL) {
@@ -440,6 +452,7 @@ int FTacticalGame::clearDestroyedShips() {
 	VehicleList::iterator itr = sList->begin();
 	while (itr < sList->end()) {
 		if ((*itr)->getHP() <= 0) {
+			m_lastDestroyedShipIDs.push_back((*itr)->getID());
 			removeShipFromModelState((*itr)->getID());
 			itr = sList->erase(itr);
 		} else {

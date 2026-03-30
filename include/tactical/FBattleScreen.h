@@ -129,69 +129,67 @@ public:
 	void fireICM();
 
 	/// get the battle board state
-	const int & getState() const { return m_state; }
+	const int & getState() const;
 	/// set the battle board state
 	void setState(int s);
 	/// toggle the control state
-	void toggleControlState() { m_control = !m_control; }
+	void toggleControlState();
 	/// get the control state
-	const bool & getControlState() const { return m_control; }
+	const bool & getControlState() const;
 	/// sets the id of the planet chosen
-	void setPlanet(int c) { m_planetChoice = c; }
+	void setPlanet(int c);
 	/// get the value of the choice variable
-	const int & getPlanetChoice() const { return m_planetChoice; }
+	const int & getPlanetChoice() const;
 	/// set planet position
-	void setPlanetPosition(FPoint h){ m_planetPos= h;}
+	void setPlanetPosition(FPoint h);
 	/// get the station's current position
-	const FPoint & getPlanetPos() const { return m_planetPos; }
+	const FPoint & getPlanetPos() const;
 	/// set Station position
-	void setStationPosition(FPoint h){ m_stationPos= h;}
+	void setStationPosition(FPoint h);
 	/// get the station's current position
-	const FPoint & getStationPos() const { return m_stationPos; }
+	const FPoint & getStationPos() const;
 	/// get pointer to the station object
-	FVehicle * getStation() const { return m_station; }
+	FVehicle * getStation() const;
 	/// change the scale of the map
 	void setScale(double factor);
 	/// get the current ship selection
-	FVehicle * getShip() const { return m_curShip; }
+	FVehicle * getShip() const;
 	/// set the current ship selection
-	void setShip(FVehicle * s) { m_curShip = s; }
+	void setShip(FVehicle * s);
 	/// get done state
-	bool getDone() { return m_done;}
+	bool getDone();
 	/// set done state
-	void setDone(bool f) { m_done = f; }
+	void setDone(bool f);
 	/// get side
-	bool getActivePlayer() { return m_activePlayer;}
+	bool getActivePlayer();
 	/// set side
-	void setActivePlayer(bool f) { m_activePlayer = f; }
+	void setActivePlayer(bool f);
 	/// toggle side
-	void toggleActivePlayer() { m_activePlayer = !m_activePlayer; /*std::cerr << "It is now side " << m_activePlayer << "'s turn." << std::endl;*/ }
+	void toggleActivePlayer();
 	/// get the current battle phase
-	int getPhase() { return m_phase;}
+	int getPhase();
 	/// set the battle phase
 	void setPhase(int p);
 	/// redraw the screen
 	void reDraw() { m_map->Refresh(); m_display->Refresh(); }
 	/// returns the ID of the attacking player
-	const unsigned int & getAttackerID() const { return m_playerID[1]; }
+	const unsigned int & getAttackerID() const;
 	/// returns the ID of the defending player
-	const unsigned int & getDefenderID() const { return m_playerID[0]; }
+	const unsigned int & getDefenderID() const;
 	/// returns the ID of the player who's turn it currently is
-	const unsigned int & getActivePlayerID() const { return m_activePlayer?getAttackerID():getDefenderID(); }
+	const unsigned int & getActivePlayerID() const;
 	/// sets the movement status
 	void setMoveComplete(bool s);
 	/// get the movement status
-	const bool & isMoveComplete() const { return m_moveComplete; }
+	bool isMoveComplete() const;
 	/// returns the ID of the player who's moving this turn
-	const unsigned int & getMovingPlayerID() const { return m_movingPlayer?getAttackerID():getDefenderID(); }
+	const unsigned int & getMovingPlayerID() const;
 	/// toggles the moving player flag
-	void toggleMovingPlayer() { m_movingPlayer = !m_movingPlayer; /*std::cerr << "It is now side " << m_movingPlayer << "'s move." << std::endl;*/ }
+	void toggleMovingPlayer();
 	/// set the current weapon
 	void setWeapon(FWeapon * w);
 	/// get the current weapon
-	FWeapon * getWeapon() { return m_curWeapon; }
-	/// list of ICM targets
-	std::vector<ICMData *> m_ICMData;
+	FWeapon * getWeapon();
 
 	void beginTacticalReport(const FTacticalCombatReportContext & context);
 	void appendTacticalAttackReport(const FTacticalAttackReport & attack);
@@ -199,60 +197,18 @@ public:
 	FTacticalCombatReportSummary buildCurrentTacticalReportSummary() const;
 	int showTacticalDamageSummaryDialog(const FTacticalCombatReportSummary & summary);
 	void clearTacticalReport();
-	const FTacticalCombatReport & getCurrentTacticalReport() const { return m_tacticalReport; }
+	const FTacticalCombatReport & getCurrentTacticalReport() const;
 
 protected:
 	/// The map window
 	FBattleBoard * m_map;
 	/// The game display window
 	FBattleDisplay * m_display;
-	/// list of attacking fleets
-	FleetList * m_attackList;
-	/// list of attacking ships
-	VehicleList * m_attackShips;
-	/// list of defending fleets
-	FleetList * m_defendList;
-	/// list of defending ships
-	VehicleList * m_defendShips;
-	/// planet flag
-	bool m_hasPlanet;
-	/// pointer to station object
-	FVehicle * m_station;
-	/// display state flag
-	int m_state;
-	/// flag for selecting which sub-window has control true = board board false = display
-	bool m_control;
-	/// planet choice variable
-	int m_planetChoice;
-	/// chosen planet position
-	FPoint m_planetPos;
-	/// whose turn is it, true=attacker, false=defender
-	bool m_activePlayer;
-	/// station position
-	FPoint m_stationPos;
-	/// currently selected ship
-	FVehicle * m_curShip;
-	/// done flag
-	bool m_done;
-	///  Turn phase state variable
-	int m_phase;
-	/// player IDs
-	unsigned int m_playerID[2];
-	/// flag for status of movement.  If true all ships have been moved their minimum and the player can end their turn
-	bool m_moveComplete;
-	/// flag to indicate player whose movement turn it is true=attacker false=defender
-	bool m_movingPlayer;
-	/// pointer to currently selected weapon
-	FWeapon * m_curWeapon;
-	/// current tactical combat report state
-	FTacticalCombatReport m_tacticalReport;
 	/// tactical model owner during delegation migration
 	FTacticalGame * m_tacticalGame;
 	/// wx tactical UI adapter owner during delegation migration
 	WX\
 TacticalUI * m_tacticalUI;
-	/// guard to keep teardown on a single close path
-	bool m_closeInProgress;
 //	/// window disabler object
 //	wxWindowDisabler *m_wd;
 

@@ -138,6 +138,7 @@ void applyFireDamage();
 void fireICM();
 FTacticalCombatReportSummary fireAllWeapons();
 int clearDestroyedShips();
+const std::vector<unsigned int> & getLastDestroyedShipIDs() const { return m_lastDestroyedShipIDs; }
 bool isCombatOver() const;
 bool hasWinner() const { return m_hasWinner; }
 unsigned int getWinnerID() const { return m_winnerID; }
@@ -194,6 +195,7 @@ VehicleList * m_defendShips;
 /// ICM and report lifecycle state (legacy fire-flow owners were FBattleScreen + FBattleDisplay)
 std::vector<ICMData *> m_ICMData;
 FTacticalCombatReport m_tacticalReport;
+std::vector<unsigned int> m_lastDestroyedShipIDs;
 
 /// Tactical hex-map mechanics state (legacy FBattleBoard model data)
 FTacticalHexData m_hexData[100][100];

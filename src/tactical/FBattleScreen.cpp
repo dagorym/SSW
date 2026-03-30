@@ -11,77 +11,11 @@
 #include "core/FGameConfig.h"
 #include "gui/WX\
 TacticalUI.h"
-#include "gui/TacticalDamageSummaryGUI.h"
-#include "gui/ICMSelectionGUI.h"
+#include "tactical/ITacticalUI.h"
 #include "tactical/FTacticalGame.h"
 #include <wx/wx.h>
 
 namespace Frontier {
-
-namespace {
-
-TacticalReportEventType tacticalReportEventTypeForDamageEffect(TacticalDamageEffectType effectType) {
-	switch (effectType) {
-	case TDET_DefenseDamaged:
-		return TRET_DefenseEffect;
-	case TDET_ElectricalFire:
-		return TRET_ElectricalFire;
-	case TDET_HullDamage:
-	case TDET_ADFLoss:
-	case TDET_MRLoss:
-	case TDET_WeaponDamaged:
-	case TDET_PowerSystemDamaged:
-	case TDET_CombatControlDamaged:
-	case TDET_NavigationError:
-	case TDET_DCRLoss:
-	default:
-		return TRET_InternalDamage;
-	}
-}
-
-void appendTacticalDamageResolutionEvents(
-	FTacticalCombatReport & report,
-	FVehicle * ship,
-	const FTacticalDamageResolution & resolution) {
-	if (ship == NULL) {
-		return;
-	}
-
-	for (std::vector<FTacticalDamageEffect>::const_iterator itr = resolution.effects.begin();
-		 itr != resolution.effects.end(); ++itr) {
-		FTacticalReportEvent event;
-		event.eventType = tacticalReportEventTypeForDamageEffect(itr->effectType);
-		event.subject = FTacticalShipReference(ship->getID(), ship->getOwner(), ship->getName());
-		event.source = event.subject;
-		event.target = event.subject;
-		event.rollValue = itr->rollValue;
-		event.hullDamage = itr->hullDamageApplied;
-		event.attackIndex = -1;
-		event.immediate = true;
-		event.label = itr->label;
-		event.detail = itr->detail;
-		report.events.push_back(event);
-	}
-}
-
-void normalizeAttackInternalEvents(FTacticalAttackReport & attack, int attackIndex) {
-	for (unsigned int i = 0; i < attack.internalEvents.size(); ++i) {
-		FTacticalReportEvent & event = attack.internalEvents[i];
-		if (!event.subject.isValid() && attack.target.isValid()) {
-			event.subject = attack.target;
-		}
-		if (!event.source.isValid() && attack.attacker.isValid()) {
-			event.source = attack.attacker;
-		}
-		if (!event.target.isValid() && attack.target.isValid()) {
-			event.target = attack.target;
-		}
-		event.attackIndex = attackIndex;
-		event.immediate = attack.immediate;
-	}
-}
-
-}
 
 FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( (wxDialog *)NULL, -1, title, pos, size, style )
 //FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style )
@@ -114,38 +48,16 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	Centre();
 	SetOwnBackgroundColour(black);
 
-	m_attackShips = NULL;
-	m_defendShips = NULL;
-	m_state = BS_Unknown;
-	m_phase = PH_NONE;
-	m_playerID[0]=0;
-	m_playerID[1]=1;
-	m_movingPlayer=true;
-	m_curWeapon = NULL;
-	m_curShip = NULL;
-	m_activePlayer = -1; // TODO: This should probably be set to true as the attacker always starts
-	m_attackList = NULL;
-	m_defendList = NULL;
-	m_control = false;
-	m_moveComplete = true;
-	m_planetChoice = -1;
-	m_station = NULL;
-	m_hasPlanet = false;
-	m_done = false;
-	m_tacticalReport.clear();
 	m_tacticalGame = new FTacticalGame();
 	m_tacticalUI = new WX\
 TacticalUI(this);
 	m_tacticalGame->installUI(m_tacticalUI);
-	m_closeInProgress = false;
 
 	Bind(wxEVT_CLOSE_WINDOW, &FBattleScreen::onClose, this);
 
 }
 
 FBattleScreen::~FBattleScreen(){
-	if (m_attackShips) { delete m_attackShips; }
-	if (m_defendShips) { delete m_defendShips; }
 	if (m_tacticalGame) {
 		m_tacticalGame->installUI(NULL);
 	}
@@ -161,49 +73,9 @@ void FBattleScreen::onPaint(wxPaintEvent & event){
 }
 
 int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, FVehicle * station){
-	clearTacticalReport();
-	m_attackList = aList;
-	m_defendList = dList;
-	m_hasPlanet = planet;
-	m_station = station;
-	m_activePlayer = false;
-//	m_stationPos.cx=0;
-//	m_stationPos.cy=0;
-//	m_planetPos.cx=0;
-//	m_planetPos.cy=0;
-
-	//create a list of ships from the list of fleets for the attacker and defenders
-	if (m_defendShips) { delete m_defendShips; }
-//	std::cerr << "There are " << m_defendList->size() << " defending fleets" << std::endl;
-	m_defendShips = new VehicleList;
-	for (unsigned int i=0; i< m_defendList->size(); i++){
-		const VehicleList sList = (*m_defendList)[i]->getShipList();
-		for (unsigned int j=0; j< sList.size(); j++){
-			sList[j]->setOwner(0);
-			sList[j]->setCurrentDefense(0);
-			m_defendShips->push_back(sList[j]);
-		}
-	}
-	if (station!=NULL){  // the station always belongs to the defender
-		station->setCurrentDefense(0);
-		m_defendShips->push_back(station);
-	}
-	if (m_attackShips) { delete m_attackShips; }
-	m_attackShips = new VehicleList;
-//	std::cerr << "There are " << m_attackList->size() << " attacking fleets" << std::endl;
-	for (unsigned int i=0; i< m_attackList->size(); i++){
-		const VehicleList sList = (*m_attackList)[i]->getShipList();
-		for (unsigned int j=0; j< sList.size(); j++){
-			sList[j]->setOwner(1);
-			sList[j]->setCurrentDefense(0);
-			m_attackShips->push_back(sList[j]);
-		}
-	}
-
-	m_control=false;
+	const int setupResult = m_tacticalGame->setupFleets(aList, dList, planet, station);
 	if(planet){
 		FGameConfig &gc = FGameConfig::create();
-		m_state = BS_SetupPlanet;
 		ImageList iList;
 		wxImage p0(gc.getBasePath()+"icons/planet_01.png");
 		iList.push_back(p0);
@@ -213,43 +85,63 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 		iList.push_back(p2);
 		m_display->setImageList(iList);
 		m_map->setPlanetImages(iList);
-	} else if (station != NULL){
-		m_state=BS_SetupStation;
-	} else if (m_defendList->size()>0) {
-		m_state=BS_SetupDefendFleet;
-	} else {
-		m_state=BS_SetupAttackFleet;
 	}
-	return 0;
+	reDraw();
+	return setupResult;
+}
+
+const int & FBattleScreen::getState() const {
+	return m_tacticalGame->getState();
+}
+
+void FBattleScreen::toggleControlState() {
+	m_tacticalGame->toggleControlState();
+}
+
+const bool & FBattleScreen::getControlState() const {
+	return m_tacticalGame->getControlState();
+}
+
+void FBattleScreen::setPlanet(int c) {
+	m_tacticalGame->setPlanet(c);
+}
+
+const int & FBattleScreen::getPlanetChoice() const {
+	return m_tacticalGame->getPlanetChoice();
+}
+
+void FBattleScreen::setPlanetPosition(FPoint h) {
+	m_tacticalGame->setPlanetPosition(h);
+}
+
+const FPoint & FBattleScreen::getPlanetPos() const {
+	return m_tacticalGame->getPlanetPos();
+}
+
+void FBattleScreen::setStationPosition(FPoint h) {
+	m_tacticalGame->setStationPosition(h);
+}
+
+const FPoint & FBattleScreen::getStationPos() const {
+	return m_tacticalGame->getStationPos();
+}
+
+FVehicle * FBattleScreen::getStation() const {
+	return m_tacticalGame->getStation();
 }
 
 void FBattleScreen::setState(int s) {
-	if (s == BS_SetupStation && m_station == NULL){
-		s = BS_SetupDefendFleet;
-	}
-	if (s == BS_SetupDefendFleet && m_defendShips->size()==1){
-		s = BS_SetupAttackFleet;
-		toggleActivePlayer();
-	}
-	m_state = s;
+	m_tacticalGame->setState(s);
 	m_map->Refresh();
 	m_display->Refresh();
 }
 
 VehicleList FBattleScreen::getShipList() const{
-	if (m_activePlayer){
-		return *m_attackShips;
-	} else {
-		return *m_defendShips;
-	}
+	return m_tacticalGame->getShipList();
 }
 
 VehicleList FBattleScreen::getShipList(unsigned int id) const{
-	if (id == getAttackerID()){
-		return *m_attackShips;
-	} else {
-		return *m_defendShips;
-	}
+	return m_tacticalGame->getShipList(id);
 }
 
 void FBattleScreen::setScale(double factor) {
@@ -257,29 +149,57 @@ void FBattleScreen::setScale(double factor) {
 	m_map->setScale(factor);
 }
 
-void FBattleScreen::setPhase(int p){
-	m_phase = p;
-	if (p==PH_MOVE) { // we just ended a turn
-		applyFireDamage();
-		if (!m_activePlayer) {  // defender just ended
-			///@todo update turn counters
-			///@todo check for repair turn
-//			std::cerr << "Defender just ended their movement turn" << std::endl;
-		}
-		toggleActivePlayer();
-		m_map->resetMoveData();
+FVehicle * FBattleScreen::getShip() const {
+	return m_tacticalGame->getShip();
+}
 
+void FBattleScreen::setShip(FVehicle * s) {
+	m_tacticalGame->setShip(s);
+}
+
+bool FBattleScreen::getDone() {
+	return m_tacticalGame->getDone();
+}
+
+void FBattleScreen::setDone(bool f) {
+	m_tacticalGame->setDone(f);
+}
+
+bool FBattleScreen::getActivePlayer() {
+	return m_tacticalGame->getActivePlayer();
+}
+
+void FBattleScreen::setActivePlayer(bool f) {
+	m_tacticalGame->setActivePlayer(f);
+}
+
+void FBattleScreen::toggleActivePlayer() {
+	m_tacticalGame->toggleActivePlayer();
+}
+
+int FBattleScreen::getPhase() {
+	return m_tacticalGame->getPhase();
+}
+
+const unsigned int & FBattleScreen::getAttackerID() const {
+	return m_tacticalGame->getAttackerID();
+}
+
+const unsigned int & FBattleScreen::getDefenderID() const {
+	return m_tacticalGame->getDefenderID();
+}
+
+const unsigned int & FBattleScreen::getActivePlayerID() const {
+	return m_tacticalGame->getActivePlayerID();
+}
+
+void FBattleScreen::setPhase(int p){
+	m_tacticalGame->setPhase(p);
+	if (p==PH_MOVE) { // we just ended a turn
+		m_map->resetMoveData();
 	} else 	if (p==PH_FINALIZE_MOVE){
 		m_map->finalizeMove();
-		/// @todo drop into combat phase
-//		toggleMovingPlayer();
-//		setPhase(PH_MOVE);
-		setPhase(PH_DEFENSE_FIRE);
-		m_curShip = NULL;
-	} else if (p==PH_DEFENSE_FIRE){
-		toggleActivePlayer();
-	} else if (p==PH_ATTACK_FIRE){
-		toggleActivePlayer();
+		setShip(NULL);
 	} else {
 	}
 	m_map->Refresh();
@@ -287,110 +207,98 @@ void FBattleScreen::setPhase(int p){
 }
 
 void FBattleScreen::beginTacticalReport(const FTacticalCombatReportContext & context) {
-	m_tacticalReport.clear();
-	m_tacticalReport.context = context;
-	m_tacticalReport.active = true;
+	m_tacticalGame->beginTacticalReport(context);
 }
 
 void FBattleScreen::appendTacticalAttackReport(const FTacticalAttackReport & attack) {
-	if (!m_tacticalReport.active) {
-		FTacticalCombatReportContext context;
-		context.phase = m_phase;
-		context.actingPlayerID = getActivePlayerID();
-		context.immediate = attack.immediate;
-		beginTacticalReport(context);
-	}
-	FTacticalAttackReport normalizedAttack = attack;
-	normalizeAttackInternalEvents(normalizedAttack, static_cast<int>(m_tacticalReport.attacks.size()));
-	// m_tacticalReport.attacks.push_back(attack);
-	m_tacticalReport.attacks.push_back(normalizedAttack);
+	m_tacticalGame->appendTacticalAttackReport(attack);
 }
 
 void FBattleScreen::appendTacticalReportEvent(const FTacticalReportEvent & event) {
-	if (!m_tacticalReport.active) {
-		FTacticalCombatReportContext context;
-		context.phase = m_phase;
-		context.actingPlayerID = getActivePlayerID();
-		context.immediate = event.immediate;
-		beginTacticalReport(context);
-	}
-	FTacticalReportEvent normalizedEvent = event;
-	normalizedEvent.attackIndex = -1;
-	// m_tacticalReport.events.push_back(event);
-	m_tacticalReport.events.push_back(normalizedEvent);
+	m_tacticalGame->appendTacticalReportEvent(event);
 }
 
 FTacticalCombatReportSummary FBattleScreen::buildCurrentTacticalReportSummary() const {
-	return buildTacticalCombatReportSummary(m_tacticalReport);
+	return m_tacticalGame->buildCurrentTacticalReportSummary();
 }
 
 int FBattleScreen::showTacticalDamageSummaryDialog(const FTacticalCombatReportSummary & summary) {
-	TacticalDamageSummaryGUI dialog(this, summary);
-	return dialog.ShowModal();
+	ITacticalUI * tacticalUI = m_tacticalGame->getUI();
+	if (tacticalUI != NULL) {
+		return tacticalUI->showDamageSummary(summary);
+	}
+	return 1;
 }
 
 void FBattleScreen::clearTacticalReport() {
-	m_tacticalReport.clear();
+	m_tacticalGame->clearTacticalReport();
 }
 
 void FBattleScreen::setMoveComplete(bool s) {
 	bool refresh = false;
-	if (m_moveComplete!=s){
+	if (m_tacticalGame->isMoveComplete()!=s){
 		refresh = true;
 	}
-	m_moveComplete = s;
+	m_tacticalGame->setMoveComplete(s);
 	if (refresh){
 		m_map->Refresh();
 		m_display->Refresh();
 	}
 }
 
+bool FBattleScreen::isMoveComplete() const {
+	return m_tacticalGame->isMoveComplete();
+}
+
+const unsigned int & FBattleScreen::getMovingPlayerID() const {
+	return m_tacticalGame->getMovingPlayerID();
+}
+
+void FBattleScreen::toggleMovingPlayer() {
+	m_tacticalGame->toggleMovingPlayer();
+}
+
 void FBattleScreen::setWeapon(FWeapon * w) {
 //	if (w!=NULL) std::cerr << "Setting current weapon to " << w->getLongName() << std::endl;
-	m_curWeapon = w;
+	m_tacticalGame->setWeapon(w);
 //	std::cerr << "computing weapon range" << std::endl;
 	m_map->computeWeaponRange();
 //	std::cerr << "range computed." << std::endl;
 }
 
+FWeapon * FBattleScreen::getWeapon() {
+	return m_tacticalGame->getWeapon();
+}
+
 void FBattleScreen::clearDestroyedShips(){
-	toggleActivePlayer(); // switch to the player getting shot at
-	VehicleList *sList = NULL;
-	if (m_activePlayer){
-		sList = m_attackShips;
-	} else {
-		sList = m_defendShips;
+	const int liveShips = m_tacticalGame->clearDestroyedShips();
+	const std::vector<unsigned int> & destroyedIDs = m_tacticalGame->getLastDestroyedShipIDs();
+	for (std::vector<unsigned int>::const_iterator itr = destroyedIDs.begin();
+		 itr != destroyedIDs.end(); ++itr) {
+		m_map->removeShipFromGame(*itr);
 	}
-	int liveShips = 0;
-	VehicleList::iterator itr = sList->begin();
-	while ( itr < sList->end()){
-		if ((*itr)->getHP() <= 0 ){
-			m_map->removeShipFromGame((*itr)->getID());
-			itr = sList->erase(itr);
-		} else {
-			liveShips++;
-			itr++;
-		}
-	}
-	toggleActivePlayer();  // switch back
-	if (!liveShips){
+	if (!liveShips) {
 		declareWinner();
 	}
 }
 
 void FBattleScreen::declareWinner(){
-	std::string msg = "The winner of the battle is \nPlayer ";
-	msg+= (getActivePlayer())?"Sathar":"UPF";
-	wxMessageBox( msg, "Enemy Defeated!", wxOK | wxICON_INFORMATION );
+	const bool attackerWins = m_tacticalGame->hasWinner()
+		? (m_tacticalGame->getWinnerID() == m_tacticalGame->getAttackerID())
+		: getActivePlayer();
+	ITacticalUI * tacticalUI = m_tacticalGame->getUI();
+	if (tacticalUI != NULL) {
+		tacticalUI->notifyWinner(attackerWins);
+	}
 	closeBattleScreen(0);
 }
 
 void FBattleScreen::closeBattleScreen(int returnCode) {
-	if (m_closeInProgress) {
+	if (m_tacticalGame->isCloseInProgress()) {
 		return;
 	}
 
-	m_closeInProgress = true;
+	m_tacticalGame->setCloseInProgress(true);
 
 	if (IsModal()) {
 		EndModal(returnCode);
@@ -402,7 +310,7 @@ void FBattleScreen::closeBattleScreen(int returnCode) {
 }
 
 void FBattleScreen::onClose(wxCloseEvent & event) {
-	if (m_closeInProgress) {
+	if (m_tacticalGame->isCloseInProgress()) {
 		event.Skip();
 		return;
 	}
@@ -411,81 +319,15 @@ void FBattleScreen::onClose(wxCloseEvent & event) {
 }
 
 void FBattleScreen::fireICM() {
-	VehicleList sList = getShipList(getActivePlayerID());
-	// loop over all ships and weapons to find rocket weapons that have targets
-	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
-		if ((*itr)->getHP()>0){ // if the ship hasn't been destroyed
-			int nWeps = (*itr)->getWeaponCount();
-			for (int i = 0; i < nWeps; i++){
-				FWeapon *w = (*itr)->getWeapon(i);
-				// if the weapon can be affected by ICMs
-				if (w->getTarget()!=NULL && w->getICMMod() != 0){
-					ICMData *d = new ICMData;
-					d->weapon = w;
-					d->vehicles = m_map->getShipList(w->getTarget());
-					if (d->vehicles != NULL){ // if we have vehicles
-						// check to see if any ships in the list have ICMs to use
-						bool haveICMs = false;
-						for (VehicleList::iterator vItr=d->vehicles->begin(); vItr<d->vehicles->end(); vItr++){
-							unsigned int index = (*vItr)->hasDefense(FDefense::ICM);
-							if (index && (*vItr)->getDefense(index)->getAmmo()           // It has ICMs left,
-									&& (*vItr)->isPowerSystemDamaged()==false            // it can use them,
-									&& (*vItr)->getDefense(index)->isDamaged()==false
-									&& w->getTarget()->getOwner() == (*vItr)->getOwner()) {  // and it's on the same team as the defending ship
-								haveICMs = true;
-								break;  // once at least one ship has ICMs we can stop
-							}
-						}
-						// if so add the weapon to the list
-						if (haveICMs){
-							m_ICMData.push_back(d);
-						}
-					}
-				}
-			}
-		}
-	}
-	// now display the ICM targeting panel
-	if (m_ICMData.size()>0){
-		ICMSelectionGUI *panel = new ICMSelectionGUI( this, &m_ICMData);
-		panel->ShowModal();
-	}
-	m_ICMData.clear();
+	m_tacticalGame->fireICM();
 }
 
 void FBattleScreen::applyFireDamage(){
-	clearTacticalReport();
+	m_tacticalGame->applyFireDamage();
+}
 
-	FTacticalCombatReportContext context;
-	context.reportType = TRT_ElectricalFire;
-	context.phase = m_phase;
-	context.actingPlayerID = getMovingPlayerID();
-	context.immediate = true;
-	beginTacticalReport(context);
-
-	VehicleList sList = getShipList(getMovingPlayerID());
-	bool damagedShip = false;
-	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
-		if ((*itr)->isOnFire()){
-			FTacticalDamageResolution resolution;
-			int roll = irand(10);
-			(*itr)->takeDamage(roll,20,false,&resolution);
-			appendTacticalDamageResolutionEvents(m_tacticalReport, *itr, resolution);
-			damagedShip = true;
-		}
-	}
-
-	if (damagedShip){
-		FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();
-		if (summary.ships.size() > 0){
-			showTacticalDamageSummaryDialog(summary);
-			toggleActivePlayer();
-			clearDestroyedShips();
-			toggleActivePlayer();
-		}
-	}
-
-	clearTacticalReport();
+const FTacticalCombatReport & FBattleScreen::getCurrentTacticalReport() const {
+	return m_tacticalGame->getCurrentTacticalReport();
 }
 
 }
