@@ -1,0 +1,30 @@
+{
+  "status": "success",
+  "subtask_id": "milestone7-subtask1-ftacticalgame-api",
+  "branch": "gui_sep-ms7-subtask1-tester-20260330",
+  "worktree": "/home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-tester-20260330",
+  "commit": "5489c3b",
+  "validation_commands": [
+    "cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-tester-20260330 && git --no-pager show --stat --oneline 5489c3b -- include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp",
+    "cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-tester-20260330/tests/tactical && make && ./TacticalTests",
+    "cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-tester-20260330 && grep -nE '#include\\s*<wx|#include\\s*\"wx|\\bwx[A-Za-z_0-9]*\\b' include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp || true"
+  ],
+  "validation_outcome": {
+    "tests": "pass",
+    "tactical_tests": "OK (76 tests)",
+    "acceptance_criteria": {
+      "api_exposed_for_fbattle_screen_delegation": "pass",
+      "safe_itacticalui_installation_path": "pass",
+      "no_wx_in_tactical_model_changes": "pass"
+    }
+  },
+  "artifacts": {
+    "tester_report": "artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api/tester_report.md",
+    "tester_result": "artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api/tester_result.json",
+    "documenter_prompt": "artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api/documenter_prompt.txt"
+  },
+  "notes": [
+    "Validation limited to Milestone 7 Subtask 1 scope and touched tactical files/tests.",
+    "No tester code/test changes were required."
+  ]
+}

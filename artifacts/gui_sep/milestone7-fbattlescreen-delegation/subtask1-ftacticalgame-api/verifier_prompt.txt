@@ -1,0 +1,54 @@
+You are the Verifier Agent.
+
+Validate SSW Milestone 7 Subtask 1 in worktree `/home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-documenter-20260330` on branch `gui_sep-ms7-subtask1-documenter-20260330`.
+
+Original task summary:
+- Document Milestone 7 Subtask 1 only: the `FTacticalGame` API expansion that establishes the canonical additive tactical state-owner surface for upcoming `FBattleScreen` delegation.
+- Use implementation commit `5489c3b` as the source of truth together with tester artifacts in `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api/`.
+- Keep wording aligned with the additive-boundary framing from `AGENTS.md`; do not claim full runtime delegation is already complete.
+
+Acceptance criteria for this verification:
+1. Documentation summarizes the newly exposed `FTacticalGame` API categories: state/control, setup/scenario, ship/weapon selection, movement-state helpers, and tactical report access.
+2. Documentation explicitly notes the additive UI seam `installUI(ITacticalUI*)` / `getUI()` and that the tactical model remains wx-free.
+3. Documentation explains why this unblocks Milestone 7 delegation work while preserving current runtime behavior.
+4. Documentation remains scoped to Subtask 1 and does not claim the live tactical runtime has already been fully rewired.
+5. Verification includes the updated documentation files along with the implementation and tester artifacts.
+
+Implementation source-of-truth context:
+- Implementation commit reviewed by tester: `5489c3b` (`Add FTacticalGame tactical state delegation API`)
+- Documentation commit: `b235ef4fdfc6bc54e5bab0c6d65f48461dd756af` (`Document FTacticalGame delegation API`)
+- Shared artifact directory to reuse: `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api`
+
+Files in review scope:
+- Implementation files:
+  - `include/tactical/FTacticalGame.h`
+  - `src/tactical/FTacticalGame.cpp`
+- Documentation files changed:
+  - `AGENTS.md`
+  - `doc/DesignNotes.md`
+- Test files modified: none
+- Artifact files:
+  - `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api/tester_report.md`
+  - `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api/tester_result.json`
+  - `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api/documenter_report.md`
+  - `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask1-ftacticalgame-api/documenter_result.json`
+
+Subtask 1 behavior/API guarantees to confirm in docs:
+- `FTacticalGame` now exposes delegation-facing state/control accessors and mutators, including done/close-in-progress/control-state helpers.
+- `FTacticalGame` exposes setup/scenario state needed for delegation, including planet/station choices and attacker/defender fleet/ship list access.
+- `FTacticalGame` continues to own ship/weapon selection state, movement-related helpers, and tactical report lifecycle access.
+- `installUI(ITacticalUI*)` / `getUI()` form an additive seam only; the model remains wx-free.
+- Current runtime behavior is preserved because `FBattleScreen`, `FBattleBoard`, and `FBattleDisplay` remain the active tactical wx path pending later delegation subtasks.
+
+Commands already executed during implementation/test/documentation review:
+- `cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-tester-20260330 && git --no-pager show --stat --oneline 5489c3b -- include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-tester-20260330/tests/tactical && make && ./TacticalTests`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-tester-20260330 && grep -nE '#include\\s*<wx|#include\\s*\"wx|\\bwx[A-Za-z_0-9]*\\b' include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp || true`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-documenter-20260330 && git --no-pager show 5489c3b -- include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp`
+- `cd /home/tstephen/worktrees/SSW/gui_sep-ms7-subtask1-documenter-20260330 && git --no-pager diff -- AGENTS.md doc/DesignNotes.md`
+
+Final test outcome from tester:
+- Tactical tests: `OK (76 tests)`
+- Tester verdict: accepted for Milestone 7 Subtask 1
+
+Please verify both the implementation/documentation alignment and the additive-boundary wording in the updated docs before signing off.
