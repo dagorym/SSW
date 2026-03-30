@@ -1,0 +1,20 @@
+Documenter handoff prompt — Milestone 7 Subtask 4 tactical testing
+
+Please document that tactical regression coverage was updated and validated on branch `gui_sep-ms7-subtask4-tester-20260330` for Milestone 7 delegated FBattleScreen architecture.
+
+Include:
+1) Test execution command:
+   `cd tests/tactical && make clean && make -j2 && ./TacticalTests`
+2) Result summary:
+   - Build passed
+   - Tactical suite passed: `OK (44 tests)`
+3) Acceptance criteria outcomes:
+   - Delegation-focused tactical tests validated (report context, electrical fire/declareWinner/close path, delegation ownership-forwarding suite).
+   - Guarded close path coverage retained (`isCloseInProgress` + modal-first close behavior).
+   - Tactical runner composition includes `FTacticalBattleScreenDelegationTest` in both Makefile and runner registration.
+4) Artifact references:
+   - `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask4-tactical-tests/tactical_tests.log`
+   - `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask4-tactical-tests/tester_report.md`
+   - `artifacts/gui_sep/milestone7-fbattlescreen-delegation/subtask4-tactical-tests/tester_result.json`
+
+No follow-up code fixes were required from testing.
