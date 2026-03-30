@@ -50,6 +50,7 @@ OBJS = SystemDialogGUI.o SelectJumpGUI.o ViewFleetGUI.o \
        CombatFleetsGUI.o SelectResolutionGUI.o BattleResultsGUI.o \
        TacticalDamageSummaryGUI.o \
        WXMapDisplay.o WXPlayerDisplay.o WXGameDisplay.o WXStrategicUI.o \
+       WXTacticalUI.o \
        ICMSelectionGUI.o AssignedICMData.o WXIconCache.o
 
 TARGET = libgui.a
@@ -282,3 +283,14 @@ WXPlayerDisplay.o: ../../include/weapons/FWeapon.h
 WXPlayerDisplay.o: ../../include/defenses/FDefense.h
 WXPlayerDisplay.o: ../../include/strategic/FJumpRoute.h
 WXPlayerDisplay.o: ../../include/gui/WXMapDisplay.h
+WXTacticalUI.o: ../../include/gui/WXTacticalUI.h
+WXTacticalUI.o: ../../include/tactical/ITacticalUI.h
+WXTacticalUI.o: ../../include/tactical/FTacticalCombatReport.h
+WXTacticalUI.o: ../../include/ships/FVehicle.h
+WXTacticalUI.o: ../../include/core/FPObject.h ../../include/core/FObject.h
+WXTacticalUI.o: ../../include/core/FGameConfig.h
+WXTacticalUI.o: ../../include/weapons/FWeapon.h
+WXTacticalUI.o: ../../include/defenses/FDefense.h
+WXTacticalUI.o: ../../include/gui/ICMSelectionGUI.h
+WXTacticalUI.o: ../../include/gui/AssignedICMData.h
+WXTacticalUI.o: ../../include/gui/TacticalDamageSummaryGUI.h
