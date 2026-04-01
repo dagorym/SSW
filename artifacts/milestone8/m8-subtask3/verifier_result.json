@@ -1,0 +1,44 @@
+{
+  "status": "completed",
+  "subtask": "milestone8-subtask3",
+  "branch": "gui_sep-m8-subtask3-verifier-20260401",
+  "base_branch": "gui_sep",
+  "verdict": "FAIL",
+  "blocking_findings": 1,
+  "warning_findings": 2,
+  "note_findings": 0,
+  "test_sufficiency_summary": "Passing tactical tests are insufficient because they do not cover the live FBattleDisplay::onMoveDone() -> FBattleScreen::setPhase(PH_FINALIZE_MOVE) path, allowing the move-finalization regression to escape.",
+  "documentation_accuracy_summary": "AGENTS.md matches the intended architecture, but doc/DesignNotes.md records validation success for behavior the shipped runtime move-finalization path does not currently satisfy.",
+  "artifact_files_written": [
+    "artifacts/milestone8/m8-subtask3/verifier_report.md",
+    "artifacts/milestone8/m8-subtask3/verifier_result.json"
+  ],
+  "findings": [
+    {
+      "severity": "BLOCKING",
+      "files": [
+        "src/tactical/FBattleDisplay.cpp:555-560",
+        "src/tactical/FBattleScreen.cpp:196-202",
+        "src/tactical/FTacticalGame.cpp:270-282",
+        "src/tactical/FTacticalGame.cpp:1437-1484"
+      ],
+      "summary": "Move completion bypasses FTacticalGame::completeMovePhase() on the live UI path."
+    },
+    {
+      "severity": "WARNING",
+      "files": [
+        "tests/tactical/FTacticalBattleScreenDelegationTest.cpp:123-125",
+        "tests/tactical/FTacticalBattleScreenDelegationTest.cpp:180-185",
+        "tests/tactical/FTacticalMineDamageFlowTest.cpp:102-109"
+      ],
+      "summary": "Tests validate helper internals but miss the runtime PH_FINALIZE_MOVE caller path."
+    },
+    {
+      "severity": "WARNING",
+      "files": [
+        "doc/DesignNotes.md:401-405"
+      ],
+      "summary": "Validation notes claim shipped behavior that the current runtime path does not provide."
+    }
+  ]
+}
