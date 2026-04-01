@@ -122,10 +122,44 @@ const unsigned int & getMovingPlayerID() const { return m_movingPlayer ? getAtta
 void setMoveComplete(bool complete) { m_moveComplete = complete; }
 bool isMoveComplete() const { return m_moveComplete; }
 
-void setShip(FVehicle * ship) { m_curShip = ship; }
-FVehicle * getShip() const { return m_curShip; }
-void setWeapon(FWeapon * weapon) { m_curWeapon = weapon; }
-FWeapon * getWeapon() const { return m_curWeapon; }
+	void setShip(FVehicle * ship) { m_curShip = ship; }
+	FVehicle * getShip() const { return m_curShip; }
+	void setWeapon(FWeapon * weapon) { m_curWeapon = weapon; }
+	FWeapon * getWeapon() const { return m_curWeapon; }
+	bool selectWeapon(unsigned int weaponIndex);
+	bool selectDefense(unsigned int defenseIndex);
+	bool selectShipFromHex(const FPoint & hex);
+	bool handleHexClick(const FPoint & hex);
+	bool placePlanet(const FPoint & hex);
+	bool placeStation(const FPoint & hex);
+	bool placeShip(const FPoint & hex);
+	bool setShipPlacementHeading(int heading);
+	bool setShipPlacementHeadingByHex(const FPoint & hex);
+	bool beginMinePlacement();
+	void completeMinePlacement();
+	void completeMovePhase();
+	FTacticalCombatReportSummary resolveCurrentFirePhase();
+	void completeDefensiveFirePhase();
+	void completeOffensiveFirePhase();
+	void computeWeaponRange();
+	bool assignTargetFromHex(const FPoint & hex);
+	bool placeMineAtHex(const FPoint & hex);
+	bool isHexMinable(const FPoint & hex);
+	const VehicleList & getHexOccupants(const FPoint & hex) const;
+	const std::vector<FPoint> & getMovementHexes() const { return m_movementHexes; }
+	const std::vector<FPoint> & getLeftTurnHexes() const { return m_leftHexes; }
+	const std::vector<FPoint> & getRightTurnHexes() const { return m_rightHexes; }
+	const PointSet & getTargetHexes() const { return m_targetHexes; }
+	const PointSet & getHeadOnHexes() const { return m_headOnHexes; }
+	const PointSet & getMinedHexes() const { return m_minedHexList; }
+	const FHexMap & getMineTargets() const { return m_mineTargetList; }
+	unsigned int getMineOwner() const { return m_mineOwner; }
+	const std::map<unsigned int, FTacticalTurnData> & getTurnInfo() const { return m_turnInfo; }
+	bool hasShipPlacementPendingRotation() const { return m_setRotation; }
+	const FPoint & getSelectedShipHex() const { return m_shipPos; }
+	const VehicleList & getShipsWithMines() const { return m_shipsWithMines; }
+	bool isHexInBounds(const FPoint & hex) const;
+	bool isHexOccupied(const FPoint & hex) const;
 
 void beginTacticalReport(const FTacticalCombatReportContext & context);
 void appendTacticalAttackReport(const FTacticalAttackReport & attack);
@@ -157,10 +191,29 @@ ITacticalUI * m_ui;
 
 VehicleList * findHexOccupantsForShip(unsigned int shipID);
 const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
-void removeShipFromHexOccupancy(unsigned int shipID);
-void removeShipFromTurnInfo(unsigned int shipID);
-void removeShipFromModelState(unsigned int shipID);
-bool hasUsableICMDefenderInHex(const VehicleList & vehicles, unsigned int defendingSideID) const;
+	void removeShipFromHexOccupancy(unsigned int shipID);
+	void removeShipFromTurnInfo(unsigned int shipID);
+	void removeShipFromModelState(unsigned int shipID);
+	bool hasUsableICMDefenderInHex(const VehicleList & vehicles, unsigned int defendingSideID) const;
+	FVehicle * pickShip(const FVehicle * selected, const VehicleList & ships) const;
+	FVehicle * pickTarget(const FVehicle * selected, const VehicleList & ships) const;
+	bool findHexInList(PointList list, FPoint ref, int & count) const;
+	void setInitialRoute();
+	bool handleMoveHexSelection(const FPoint & hex);
+	void computeRemainingMoves(FPoint start);
+	void computePath(PointList & list, FPoint hex, int heading);
+	int turnShip(int heading, int turn) const;
+	int forceTurn(FVehicle * ship, int curHeading, FPoint current);
+	void checkForPlanetCollision(FPoint & currentHex, int & currentHeading);
+	int getPlanetTurnDirection(FPoint currentHex, int currentHeading) const;
+	void checkMoveStatus();
+	void checkForMines(FVehicle * ship);
+	void applyMineDamage();
+	void computeFFRange(const FPoint & pos, PointSet & targetHexes, PointSet & headOnHexes, int heading = -1) const;
+	void computeBatteryRange(const FPoint & pos, PointSet & targetHexes) const;
+	bool setIfValidTarget(FVehicle * target, const FPoint & targetHex);
+	VehicleList * getShipList(FVehicle * ship);
+	const VehicleList * getShipList(FVehicle * ship) const;
 
 /// Legacy FBattleScreen battle state
 int m_state;
@@ -199,10 +252,11 @@ std::vector<unsigned int> m_lastDestroyedShipIDs;
 
 /// Tactical hex-map mechanics state (legacy FBattleBoard model data)
 FTacticalHexData m_hexData[100][100];
-FPoint m_shipPos;
-std::vector<FPoint> m_movementHexes;
-std::vector<FPoint> m_leftHexes;
-std::vector<FPoint> m_rightHexes;
+	FPoint m_shipPos;
+	bool m_setRotation;
+	std::vector<FPoint> m_movementHexes;
+	std::vector<FPoint> m_leftHexes;
+	std::vector<FPoint> m_rightHexes;
 bool m_drawRoute;
 int m_moved;
 std::map<unsigned int, FTacticalTurnData> m_turnInfo;
@@ -210,9 +264,10 @@ PointSet m_targetHexes;
 PointSet m_headOnHexes;
 std::map<FPoint, int> m_gravityTurns;
 bool m_gravityTurnFlag;
-PointSet m_minedHexList;
-FHexMap m_mineTargetList;
-unsigned int m_mineOwner;
+	PointSet m_minedHexList;
+	FHexMap m_mineTargetList;
+	unsigned int m_mineOwner;
+	VehicleList m_shipsWithMines;
 };
 
 }

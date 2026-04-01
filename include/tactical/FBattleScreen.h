@@ -26,6 +26,7 @@
 #include "tactical/FBattleBoard.h"
 #include "tactical/FBattleDisplay.h"
 #include "tactical/FTacticalCombatReport.h"
+#include "tactical/FTacticalGame.h"
 
 namespace Frontier {
 
@@ -190,6 +191,40 @@ public:
 	void setWeapon(FWeapon * w);
 	/// get the current weapon
 	FWeapon * getWeapon();
+	bool selectWeapon(unsigned int weaponIndex);
+	bool selectDefense(unsigned int defenseIndex);
+	bool selectShipFromHex(const FPoint & hex);
+	bool handleHexClick(const FPoint & hex);
+	bool placePlanet(const FPoint & hex);
+	bool placeStation(const FPoint & hex);
+	bool placeShip(const FPoint & hex);
+	bool setShipPlacementHeading(int heading);
+	bool setShipPlacementHeadingByHex(const FPoint & hex);
+	bool beginMinePlacement();
+	void completeMinePlacement();
+	void completeMovePhase();
+	FTacticalCombatReportSummary resolveCurrentFirePhase();
+	void completeDefensiveFirePhase();
+	void completeOffensiveFirePhase();
+	void computeWeaponRange();
+	bool assignTargetFromHex(const FPoint & hex);
+	bool placeMineAtHex(const FPoint & hex);
+	bool isHexMinable(const FPoint & hex);
+	const VehicleList & getHexOccupants(const FPoint & hex) const;
+	const std::vector<FPoint> & getMovementHexes() const;
+	const std::vector<FPoint> & getLeftTurnHexes() const;
+	const std::vector<FPoint> & getRightTurnHexes() const;
+	const PointSet & getTargetHexes() const;
+	const PointSet & getHeadOnHexes() const;
+	const PointSet & getMinedHexes() const;
+	const FHexMap & getMineTargets() const;
+	unsigned int getMineOwner() const;
+	const std::map<unsigned int, FTacticalTurnData> & getTurnInfo() const;
+	bool hasShipPlacementPendingRotation() const;
+	const FPoint & getSelectedShipHex() const;
+	const VehicleList & getShipsWithMines() const;
+	bool isHexInBounds(const FPoint & hex) const;
+	bool isHexOccupied(const FPoint & hex) const;
 
 	void beginTacticalReport(const FTacticalCombatReportContext & context);
 	void appendTacticalAttackReport(const FTacticalAttackReport & attack);

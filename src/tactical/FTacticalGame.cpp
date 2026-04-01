@@ -124,6 +124,14 @@ void clearICMVector(std::vector<ICMData *> & data) {
 	data.clear();
 }
 
+bool isStationType(FVehicle * ship) {
+	if (ship == NULL) {
+		return false;
+	}
+	const std::string type = ship->getType();
+	return (type == "ArmedStation" || type == "FortifiedStation" || type == "Fortress");
+}
+
 }
 
 FTacticalGame::FTacticalGame() {
@@ -169,6 +177,7 @@ void FTacticalGame::reset() {
 	m_tacticalReport.clear();
 	m_lastDestroyedShipIDs.clear();
 	m_shipPos.setPoint(-1, -1);
+	m_setRotation = false;
 	m_movementHexes.clear();
 	m_leftHexes.clear();
 	m_rightHexes.clear();
@@ -182,6 +191,7 @@ void FTacticalGame::reset() {
 	m_minedHexList.clear();
 	m_mineTargetList.clear();
 	m_mineOwner = 99;
+	m_shipsWithMines.clear();
 
 	for (int i = 0; i < 100; ++i) {
 		for (int j = 0; j < 100; ++j) {
@@ -661,6 +671,923 @@ const FTacticalTurnData * FTacticalGame::findTurnData(unsigned int shipID) const
 		return NULL;
 	}
 	return &itr->second;
+}
+
+bool FTacticalGame::isHexInBounds(const FPoint & hex) const {
+	return (hex.getX() >= 0 && hex.getY() >= 0 && hex.getX() < 100 && hex.getY() < 100);
+}
+
+bool FTacticalGame::isHexOccupied(const FPoint & hex) const {
+	return isHexInBounds(hex) && !m_hexData[hex.getX()][hex.getY()].ships.empty();
+}
+
+const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const {
+	static VehicleList empty;
+	if (!isHexInBounds(hex)) {
+		return empty;
+	}
+	return m_hexData[hex.getX()][hex.getY()].ships;
+}
+
+VehicleList * FTacticalGame::getShipList(FVehicle * ship) {
+	if (ship == NULL) {
+		return NULL;
+	}
+	return findHexOccupantsForShip(ship->getID());
+}
+
+const VehicleList * FTacticalGame::getShipList(FVehicle * ship) const {
+	if (ship == NULL) {
+		return NULL;
+	}
+	return findHexOccupantsForShip(ship->getID());
+}
+
+FVehicle * FTacticalGame::pickShip(const FVehicle * selected, const VehicleList & ships) const {
+	if (ships.size() == 0) {
+		return NULL;
+	}
+	if (selected == NULL) {
+		return ships[0];
+	}
+	FVehicle * choice = ships[0];
+	for (VehicleList::const_iterator itr = ships.begin(); itr != ships.end(); ++itr) {
+		if ((*itr)->getID() == selected->getID()) {
+			VehicleList::const_iterator next = itr + 1;
+			if (next != ships.end()) {
+				choice = *next;
+			}
+			break;
+		}
+	}
+	return choice;
+}
+
+FVehicle * FTacticalGame::pickTarget(const FVehicle * selected, const VehicleList & ships) const {
+	VehicleList targets;
+	for (VehicleList::const_iterator itr = ships.begin(); itr != ships.end(); ++itr) {
+		if ((*itr)->getOwner() != getActivePlayerID()) {
+			targets.push_back(*itr);
+		}
+	}
+	return pickShip(selected, targets);
+}
+
+int FTacticalGame::turnShip(int heading, int turn) const {
+	heading += turn;
+	if (heading >= 6) {
+		heading -= 6;
+	}
+	if (heading < 0) {
+		heading += 6;
+	}
+	return heading;
+}
+
+int FTacticalGame::getPlanetTurnDirection(FPoint currentHex, int currentHeading) const {
+	if (m_planetPos.getX() < 0) {
+		return 0;
+	}
+	const int portBackDir = (currentHeading - 2 < 0) ? currentHeading + 4 : currentHeading - 2;
+	if (FHexMap::findNextHex(currentHex, portBackDir) == m_planetPos && !m_gravityTurnFlag) {
+		return -1;
+	}
+	const int starboardBackDir = (currentHeading + 2 > 5) ? currentHeading - 4 : currentHeading + 2;
+	if (FHexMap::findNextHex(currentHex, starboardBackDir) == m_planetPos && !m_gravityTurnFlag) {
+		return 1;
+	}
+	return 0;
+}
+
+void FTacticalGame::checkForPlanetCollision(FPoint & currentHex, int & currentHeading) {
+	if (m_planetPos.getX() < 0) {
+		return;
+	}
+	if (m_planetPos == currentHex) {
+		currentHex.setPoint(-1, -1);
+		return;
+	}
+	const int turnDir = getPlanetTurnDirection(currentHex, currentHeading);
+	if (turnDir != 0) {
+		m_gravityTurns[currentHex] = turnDir;
+		currentHeading = turnShip(currentHeading, turnDir);
+		m_gravityTurnFlag = true;
+	}
+}
+
+int FTacticalGame::forceTurn(FVehicle * ship, int curHeading, FPoint current) {
+	if (ship == NULL) {
+		return curHeading;
+	}
+	const int turnDirection = ship->getNavControlError();
+	FTacticalTurnData * turnData = findTurnData(ship->getID());
+	if (turnData == NULL) {
+		return curHeading;
+	}
+	if (turnDirection != 0 && turnData->path.countFlags(MR_TURN) < ship->getMR()) {
+		curHeading = turnShip(curHeading, turnDirection);
+		turnData->path.addPoint(current);
+		turnData->path.addFlag(current, MR_TURN);
+		turnData->curHeading = curHeading;
+		turnData->nMoved++;
+		m_moved++;
+	}
+	return curHeading;
+}
+
+void FTacticalGame::computePath(PointList & list, FPoint hex, int heading) {
+	if (m_curShip == NULL) {
+		return;
+	}
+	m_gravityTurnFlag = false;
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL) {
+		return;
+	}
+	if (turnData->gravityTurns.size() > 0) {
+		std::map<FPoint, int>::const_iterator itr = turnData->gravityTurns.find(hex);
+		m_gravityTurnFlag = (itr != turnData->gravityTurns.end());
+		if (FHexMap::computeHexDistance(hex, m_planetPos) == 1) {
+			const FPoint turnHex = turnData->gravityTurns.begin()->first;
+			if (FHexMap::computeHexDistance(hex, turnHex) == 1) {
+				const int back = (heading + 3 > 5) ? heading - 3 : heading + 3;
+				const int back2 = (heading + 2 > 5) ? heading - 4 : heading + 2;
+				const int back3 = (heading + 4 > 5) ? heading - 2 : heading + 4;
+				const int dir = FHexMap::computeHeading(hex, turnHex);
+				if (dir == back || dir == back2 || dir == back3) {
+					m_gravityTurnFlag = true;
+				}
+			}
+		}
+	}
+
+	for (int i = m_moved; i < m_curShip->getSpeed() + m_curShip->getADF(); i++) {
+		if (hex.getX() == -1) {
+			break;
+		}
+		hex = FHexMap::findNextHex(hex, heading);
+		checkForPlanetCollision(hex, heading);
+		if (hex.getX() != -1) {
+			list.push_back(hex);
+			heading = forceTurn(m_curShip, heading, hex);
+		}
+	}
+}
+
+void FTacticalGame::computeRemainingMoves(FPoint start) {
+	if (m_curShip == NULL) {
+		return;
+	}
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL) {
+		return;
+	}
+	const int left = (turnData->curHeading + 1) % 6;
+	const int right = (turnData->curHeading + 5) % 6;
+	const int forward = turnData->curHeading;
+	m_rightHexes.clear();
+	m_leftHexes.clear();
+	m_movementHexes.clear();
+	computePath(m_movementHexes, start, forward);
+	const unsigned int turnLimit = m_curShip->getMR();
+	if (turnData->path.countFlags(MR_TURN) < turnLimit && turnData->path.getPathLength() > 1) {
+		computePath(m_leftHexes, start, left);
+		computePath(m_rightHexes, start, right);
+	}
+}
+
+void FTacticalGame::setInitialRoute() {
+	if (m_curShip == NULL || m_shipPos.getX() < 0) {
+		return;
+	}
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL) {
+		return;
+	}
+
+	m_movementHexes.clear();
+	m_leftHexes.clear();
+	m_rightHexes.clear();
+	m_gravityTurns.clear();
+	m_gravityTurnFlag = false;
+
+	if (turnData->path.getPathLength() > 1) {
+		m_moved = static_cast<int>(turnData->path.getPathLength()) - 1;
+		computeRemainingMoves(turnData->path.endPoint());
+		return;
+	}
+
+	int curHeading = m_curShip->getHeading();
+	FPoint current = m_shipPos;
+	turnData->path.clear();
+	turnData->path.addPoint(current);
+	turnData->curHeading = curHeading;
+	turnData->startHeading = curHeading;
+	turnData->finalHeading = curHeading;
+	turnData->nMoved = 0;
+	m_moved = 0;
+
+	for (int i = 0; i < m_curShip->getSpeed() + m_curShip->getADF(); i++) {
+		if (current.getX() == -1) {
+			break;
+		}
+		current = FHexMap::findNextHex(current, curHeading);
+		checkForPlanetCollision(current, curHeading);
+		if (current.getX() != -1) {
+			m_movementHexes.push_back(current);
+			curHeading = forceTurn(m_curShip, curHeading, current);
+		}
+	}
+}
+
+bool FTacticalGame::findHexInList(PointList list, FPoint ref, int & count) const {
+	count = 0;
+	for (PointList::iterator itr = list.begin(); itr != list.end(); ++itr, ++count) {
+		if ((*itr) == ref) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool FTacticalGame::handleMoveHexSelection(const FPoint & hex) {
+	if (m_curShip == NULL) {
+		return false;
+	}
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL) {
+		return false;
+	}
+	if (turnData->path.isPointOnPath(hex)) {
+		m_moved = static_cast<int>(turnData->path.removeTrailingPoints(hex)) - 1;
+		turnData->nMoved = m_moved;
+		if (turnData->path.getPathLength() == 1) {
+			turnData->curHeading = turnData->startHeading;
+		} else {
+			turnData->curHeading = turnData->path.getLastHeading();
+		}
+		computeRemainingMoves(turnData->path.endPoint());
+		return true;
+	}
+
+	bool found = false;
+	int turn = 0;
+	int moved = 1;
+	found = findHexInList(m_movementHexes, hex, moved);
+	if (!found) {
+		moved = 1;
+		found = findHexInList(m_leftHexes, hex, moved);
+		if (found) {
+			turn = 1;
+		} else {
+			moved = 1;
+			found = findHexInList(m_rightHexes, hex, moved);
+			if (found) {
+				turn = -1;
+			}
+		}
+	}
+	if (!found) {
+		m_drawRoute = false;
+		return false;
+	}
+
+	PointList * curList = &m_movementHexes;
+	if (turn == 1) {
+		curList = &m_leftHexes;
+	} else if (turn == -1) {
+		curList = &m_rightHexes;
+	}
+
+	if (turn != 0) {
+		turnData->path.addFlag(hex, MR_TURN);
+	}
+	turnData->curHeading = turnShip(turnData->curHeading, turn);
+
+	PointList::iterator itr = curList->begin();
+	for (int i = 0; i < moved && itr != curList->end(); ++i, ++itr) {
+		turnData->path.addPoint(*itr);
+		std::map<FPoint, int>::iterator gravityItr = m_gravityTurns.find(*itr);
+		if (gravityItr != m_gravityTurns.end()) {
+			turnData->path.addFlag(*itr, GRAVITY_TURN);
+			turnData->curHeading = turnShip(turnData->curHeading, gravityItr->second);
+			turnData->gravityTurns[*itr] = gravityItr->second;
+		}
+	}
+
+	m_moved += moved;
+	turnData->nMoved += moved;
+	turnData->finalHeading = turnData->curHeading;
+	m_gravityTurnFlag = false;
+	computeRemainingMoves(turnData->path.endPoint());
+	return true;
+}
+
+void FTacticalGame::checkMoveStatus() {
+	VehicleList ships = getShipList(getMovingPlayerID());
+	bool finished = true;
+	for (VehicleList::iterator itr = ships.begin(); itr < ships.end(); ++itr) {
+		FTacticalTurnData * turnData = findTurnData((*itr)->getID());
+		if (turnData == NULL) {
+			continue;
+		}
+		const int minMove = (*itr)->getSpeed() - (*itr)->getADF();
+		if (turnData->nMoved < minMove) {
+			FPoint pos = (turnData->path.getPathLength() > 1) ? turnData->path.endPoint() : m_shipPos;
+			FPoint next = FHexMap::findNextHex(pos, turnData->curHeading);
+			if (next.getX() >= 0 && next.getX() < 55 && next.getY() >= 0 && next.getY() < 39 && next != m_planetPos) {
+				finished = false;
+			}
+		}
+	}
+	setMoveComplete(finished);
+}
+
+void FTacticalGame::computeFFRange(const FPoint & pos, PointSet & targetHexes, PointSet & headOnHexes, int heading) const {
+	if (m_curWeapon == NULL || m_curShip == NULL) {
+		return;
+	}
+	const unsigned int range = m_curWeapon->getRange();
+	if (heading == -1) {
+		heading = m_curShip->getHeading();
+	}
+	FPoint curHex = pos;
+	for (unsigned int i = 0; i <= range; i++) {
+		headOnHexes.insert(curHex);
+		curHex = FHexMap::findNextHex(curHex, heading);
+		if (!isHexInBounds(curHex)) {
+			break;
+		}
+	}
+
+	curHex = FHexMap::findNextHex(pos, heading);
+	int rightHeading = turnShip(heading, -1);
+	curHex = FHexMap::findNextHex(curHex, rightHeading);
+	rightHeading = turnShip(rightHeading, 1);
+	while (isHexInBounds(curHex) && FHexMap::computeHexDistance(pos, curHex) <= (int)range) {
+		targetHexes.insert(curHex);
+		curHex = FHexMap::findNextHex(curHex, rightHeading);
+	}
+
+	curHex = FHexMap::findNextHex(pos, heading);
+	int leftHeading = turnShip(heading, 1);
+	curHex = FHexMap::findNextHex(curHex, leftHeading);
+	leftHeading = turnShip(leftHeading, -1);
+	while (isHexInBounds(curHex) && FHexMap::computeHexDistance(pos, curHex) <= (int)range) {
+		targetHexes.insert(curHex);
+		curHex = FHexMap::findNextHex(curHex, leftHeading);
+	}
+}
+
+void FTacticalGame::computeBatteryRange(const FPoint & pos, PointSet & targetHexes) const {
+	if (m_curWeapon == NULL) {
+		return;
+	}
+	const unsigned int range = m_curWeapon->getRange();
+	int xMin = pos.getX() - range;
+	if (xMin < 0) xMin = 0;
+	int xMax = pos.getX() + range;
+	if (xMax > 54) xMax = 54;
+	int yMin = pos.getY() - range;
+	if (yMin < 0) yMin = 0;
+	int yMax = pos.getY() + range;
+	if (yMax > 38) yMax = 38;
+	for (int i = xMin; i <= xMax; ++i) {
+		for (int j = yMin; j <= yMax; ++j) {
+			if (FHexMap::computeHexDistance(pos.getX(), pos.getY(), i, j) <= (int)range) {
+				targetHexes.insert(FPoint(i, j));
+			}
+		}
+	}
+}
+
+void FTacticalGame::computeWeaponRange() {
+	m_headOnHexes.clear();
+	m_targetHexes.clear();
+	if (m_curWeapon == NULL || m_curShip == NULL || m_shipPos.getX() < 0) {
+		return;
+	}
+	if (m_curWeapon->isFF()) {
+		computeFFRange(m_shipPos, m_targetHexes, m_headOnHexes);
+	} else {
+		computeBatteryRange(m_shipPos, m_targetHexes);
+	}
+
+	if (getMovingPlayerID() == getActivePlayerID()) {
+		FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+		if (turnData != NULL && turnData->path.getPathLength() > 0) {
+			m_headOnHexes.clear();
+			m_targetHexes.clear();
+			int heading = turnData->startHeading;
+			PointList path = turnData->path.getFullPath();
+			for (PointList::iterator itr = path.begin(); itr < path.end(); ++itr) {
+				if (m_curWeapon->isFF()) {
+					computeFFRange(*itr, m_targetHexes, m_headOnHexes, heading);
+				} else {
+					computeBatteryRange(*itr, m_targetHexes);
+				}
+				PointList::iterator next = itr;
+				++next;
+				if (next != path.end()) {
+					unsigned int newHeading = turnData->path.getPointHeading(*next);
+					if (newHeading != static_cast<unsigned int>(heading)) {
+						--next;
+						heading = static_cast<int>(newHeading);
+					}
+				}
+			}
+		}
+	}
+}
+
+bool FTacticalGame::setIfValidTarget(FVehicle * target, const FPoint & targetHex) {
+	if (target == NULL || m_curWeapon == NULL || m_curShip == NULL) {
+		return false;
+	}
+	bool validTarget = false;
+	bool headOn = false;
+	unsigned int minRange = 99;
+	unsigned int minHeadOnRange = 99;
+	const bool movingPlayer = (getActivePlayerID() == getMovingPlayerID());
+
+	if (movingPlayer) {
+		FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+		if (turnData == NULL) {
+			return false;
+		}
+		int heading = turnData->startHeading;
+		PointList path = turnData->path.getFullPath();
+		for (PointList::iterator itr = path.begin(); itr < path.end(); ++itr) {
+			PointSet targetSet;
+			PointSet headOnSet;
+			if (m_curWeapon->isFF()) {
+				computeFFRange(*itr, targetSet, headOnSet, heading);
+			} else {
+				computeBatteryRange(*itr, targetSet);
+			}
+			const unsigned int distance = FHexMap::computeHexDistance(targetHex, *itr);
+			if (targetSet.find(targetHex) != targetSet.end() && distance < minRange) {
+				validTarget = true;
+				minRange = distance;
+			} else if (headOnSet.find(targetHex) != headOnSet.end() && distance < minHeadOnRange) {
+				validTarget = true;
+				headOn = true;
+				minHeadOnRange = distance;
+			}
+			PointList::iterator next = itr;
+			++next;
+			if (next != path.end()) {
+				unsigned int newHeading = turnData->path.getPointHeading(*next);
+				if (newHeading != static_cast<unsigned int>(heading)) {
+					--next;
+					heading = static_cast<int>(newHeading);
+				}
+			}
+		}
+	} else {
+		FTacticalTurnData * turnData = findTurnData(target->getID());
+		if (turnData == NULL) {
+			return false;
+		}
+		PointList path = turnData->path.getFullPath();
+		for (PointList::iterator itr = path.begin(); itr < path.end(); ++itr) {
+			const unsigned int distance = FHexMap::computeHexDistance(m_shipPos, *itr);
+			if (m_targetHexes.find(*itr) != m_targetHexes.end() && distance < minRange) {
+				validTarget = true;
+				minRange = distance;
+			} else if (m_headOnHexes.find(*itr) != m_headOnHexes.end() && distance < minHeadOnRange) {
+				validTarget = true;
+				headOn = true;
+				minHeadOnRange = distance;
+			}
+		}
+	}
+
+	if (!validTarget) {
+		return false;
+	}
+	int range = 99;
+	if (minRange + 2 < minHeadOnRange) {
+		range = minRange;
+		headOn = false;
+	} else {
+		range = minHeadOnRange;
+	}
+	m_curWeapon->setTarget(target, range, headOn);
+	return true;
+}
+
+bool FTacticalGame::assignTargetFromHex(const FPoint & hex) {
+	if (!isHexInBounds(hex) || m_curWeapon == NULL) {
+		return false;
+	}
+	const VehicleList & occupants = getHexOccupants(hex);
+	if (occupants.size() == 0) {
+		return false;
+	}
+	FVehicle * candidate = NULL;
+	if (occupants.size() == 1) {
+		candidate = occupants[0];
+	} else {
+		candidate = pickTarget(m_curWeapon->getTarget(), occupants);
+	}
+	if (candidate == NULL || candidate->getOwner() == getActivePlayerID()) {
+		return false;
+	}
+	return setIfValidTarget(candidate, hex);
+}
+
+bool FTacticalGame::selectWeapon(unsigned int weaponIndex) {
+	if (m_curShip == NULL || m_curShip->getOwner() != getActivePlayerID()) {
+		return false;
+	}
+	if (weaponIndex >= static_cast<unsigned int>(m_curShip->getWeaponCount())) {
+		return false;
+	}
+	FWeapon * weapon = m_curShip->getWeapon(static_cast<int>(weaponIndex));
+	if (weapon == NULL) {
+		return false;
+	}
+	if (weapon->isMPO() && getActivePlayerID() != getMovingPlayerID()) {
+		return false;
+	}
+	if (weapon->isDamaged() || (weapon->getMaxAmmo() && weapon->getAmmo() == 0)) {
+		return false;
+	}
+	m_curWeapon = weapon;
+	computeWeaponRange();
+	return true;
+}
+
+bool FTacticalGame::selectDefense(unsigned int defenseIndex) {
+	if (m_curShip == NULL || m_curShip->getOwner() != getActivePlayerID()) {
+		return false;
+	}
+	if (defenseIndex >= static_cast<unsigned int>(m_curShip->getDefenseCount())) {
+		return false;
+	}
+	FDefense * defense = m_curShip->getDefense(static_cast<int>(defenseIndex));
+	if (defense == NULL || defense->isDamaged()) {
+		return false;
+	}
+	if (defense->getType() == FDefense::ICM || getActivePlayerID() != getMovingPlayerID()) {
+		return false;
+	}
+	if (defense->getType() != FDefense::RH && m_curShip->isPowerSystemDamaged()) {
+		return false;
+	}
+	m_curShip->setCurrentDefense(static_cast<int>(defenseIndex));
+	return true;
+}
+
+bool FTacticalGame::selectShipFromHex(const FPoint & hex) {
+	if (!isHexInBounds(hex)) {
+		return false;
+	}
+	const VehicleList & occupants = getHexOccupants(hex);
+	if (occupants.size() == 0) {
+		return false;
+	}
+	FVehicle * selected = NULL;
+	if (occupants.size() == 1) {
+		selected = occupants[0];
+	} else if (m_curWeapon != NULL) {
+		selected = pickTarget(m_curWeapon->getTarget(), occupants);
+	} else {
+		selected = pickShip(m_curShip, occupants);
+	}
+	if (selected == NULL) {
+		return false;
+	}
+	if (m_curWeapon != NULL && getActivePlayerID() != selected->getOwner()) {
+		return setIfValidTarget(selected, hex);
+	}
+	m_curShip = selected;
+	m_curWeapon = NULL;
+	m_shipPos = hex;
+	if (m_curShip->getOwner() == getMovingPlayerID() && getPhase() == PH_MOVE) {
+		m_drawRoute = true;
+		setInitialRoute();
+	} else {
+		m_drawRoute = false;
+	}
+	return true;
+}
+
+bool FTacticalGame::placePlanet(const FPoint & hex) {
+	if (!isHexInBounds(hex) || getState() != BS_SetupPlanet || !getControlState()) {
+		return false;
+	}
+	setPlanetPosition(hex);
+	setState(BS_SetupStation);
+	toggleControlState();
+	return true;
+}
+
+bool FTacticalGame::placeStation(const FPoint & hex) {
+	if (!isHexInBounds(hex) || getState() != BS_SetupStation || m_station == NULL || m_planetPos.getX() < 0) {
+		return false;
+	}
+	if (FHexMap::computeHexDistance(hex, m_planetPos) != 1) {
+		return false;
+	}
+	setStationPosition(hex);
+	m_hexData[hex.getX()][hex.getY()].ships.push_back(m_station);
+	m_shipPos = hex;
+	setPhase(PH_SET_SPEED);
+	return true;
+}
+
+bool FTacticalGame::placeShip(const FPoint & hex) {
+	if (!isHexInBounds(hex) || m_curShip == NULL || !getControlState()) {
+		return false;
+	}
+	if (hex.getX() == m_planetPos.getX() && hex.getY() == m_planetPos.getY()) {
+		return false;
+	}
+	if (getState() != BS_SetupDefendFleet && getState() != BS_SetupAttackFleet) {
+		return false;
+	}
+	if (!m_setRotation) {
+		m_hexData[hex.getX()][hex.getY()].ships.push_back(m_curShip);
+		m_shipPos = hex;
+		m_setRotation = true;
+		return true;
+	}
+	return false;
+}
+
+bool FTacticalGame::setShipPlacementHeading(int heading) {
+	if (m_curShip == NULL || !m_setRotation || heading < 0 || heading > 5) {
+		return false;
+	}
+	m_curShip->setHeading(heading);
+	toggleControlState();
+	setPhase(PH_SET_SPEED);
+	m_setRotation = false;
+	return true;
+}
+
+bool FTacticalGame::setShipPlacementHeadingByHex(const FPoint & hex) {
+	if (m_shipPos.getX() < 0) {
+		return false;
+	}
+	const int heading = FHexMap::computeHeading(m_shipPos, hex);
+	return setShipPlacementHeading(heading);
+}
+
+bool FTacticalGame::beginMinePlacement() {
+	VehicleList ships = getShipList(getActivePlayerID());
+	m_shipsWithMines.clear();
+	for (VehicleList::iterator itr = ships.begin(); itr != ships.end(); ++itr) {
+		if ((*itr)->hasWeapon(FWeapon::M)) {
+			m_shipsWithMines.push_back(*itr);
+		}
+	}
+	if (m_shipsWithMines.size() == 0) {
+		return false;
+	}
+	setState(BS_PlaceMines);
+	return true;
+}
+
+void FTacticalGame::completeMinePlacement() {
+	setState(BS_SetupAttackFleet);
+	toggleActivePlayer();
+	setShip(NULL);
+	setWeapon(NULL);
+}
+
+void FTacticalGame::checkForMines(FVehicle * ship) {
+	if (ship == NULL || ship->getOwner() == m_mineOwner) {
+		return;
+	}
+	FTacticalTurnData * turnData = findTurnData(ship->getID());
+	if (turnData == NULL) {
+		return;
+	}
+	for (PointSet::iterator itr = m_minedHexList.begin(); itr != m_minedHexList.end(); ++itr) {
+		if (turnData->path.isPointOnPath(*itr)) {
+			m_mineTargetList.addShip(*itr, ship);
+		}
+	}
+}
+
+void FTacticalGame::applyMineDamage() {
+	WeaponList mines;
+	std::vector<ICMData *> icmData;
+	std::vector<VehicleList *> mineTargetGroups;
+	PointSet minedHexes = m_mineTargetList.getOccupiedHexList();
+	for (PointSet::iterator itr = minedHexes.begin(); itr != minedHexes.end(); ++itr) {
+		VehicleList * targets = new VehicleList;
+		mineTargetGroups.push_back(targets);
+		*targets = m_mineTargetList.getShipList(*itr);
+		for (VehicleList::iterator vItr = targets->begin(); vItr != targets->end(); ++vItr) {
+			FWeapon * mine = createWeapon(FWeapon::M);
+			mine->setTarget(*vItr, 0, false);
+			mine->setParent(NULL);
+			mines.push_back(mine);
+			ICMData * iData = new ICMData;
+			iData->weapon = mine;
+			iData->vehicles = targets;
+			icmData.push_back(iData);
+		}
+		PointSet::iterator minedItr = m_minedHexList.find(*itr);
+		if (minedItr != m_minedHexList.end()) {
+			m_minedHexList.erase(minedItr);
+		}
+	}
+
+	if (mines.size() > 0) {
+		FTacticalCombatReportContext context;
+		context.reportType = TRT_MineDamage;
+		context.phase = getPhase();
+		context.actingPlayerID = getMovingPlayerID();
+		context.immediate = true;
+		beginTacticalReport(context);
+		if (m_ui != NULL) {
+			VehicleList * defenders = (icmData.size() > 0) ? icmData[0]->vehicles : NULL;
+			m_ui->runICMSelection(icmData, defenders);
+		}
+		for (WeaponList::iterator itr = mines.begin(); itr != mines.end(); ++itr) {
+			FTacticalAttackResult result = (*itr)->fire();
+			if (!result.fired()) {
+				continue;
+			}
+			appendTacticalAttackReport(buildTacticalAttackReport(result));
+		}
+		FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();
+		if (summary.ships.size() > 0 && m_ui != NULL) {
+			m_ui->showDamageSummary(summary);
+		}
+		clearTacticalReport();
+		clearDestroyedShips();
+	}
+
+	for (std::vector<ICMData *>::iterator itr = icmData.begin(); itr != icmData.end(); ++itr) {
+		delete (*itr)->weapon;
+		delete *itr;
+	}
+	for (std::vector<VehicleList *>::iterator itr = mineTargetGroups.begin(); itr != mineTargetGroups.end(); ++itr) {
+		delete *itr;
+	}
+	m_mineTargetList.clear();
+}
+
+void FTacticalGame::completeMovePhase() {
+	finalizeMovementState();
+	VehicleList ships = getShipList(getMovingPlayerID());
+	for (VehicleList::iterator itr = ships.begin(); itr < ships.end(); ++itr) {
+		checkForMines(*itr);
+		FTacticalTurnData * turnData = findTurnData((*itr)->getID());
+		if (turnData == NULL || turnData->path.getPathLength() == 0) {
+			continue;
+		}
+		const bool station = isStationType(*itr);
+		const FPoint start = turnData->path.startPoint();
+		const FPoint finish = turnData->path.endPoint();
+		const bool changedSpeed = (!station && turnData->nMoved != (*itr)->getSpeed());
+		if (!station) {
+			(*itr)->setSpeed(turnData->nMoved);
+		}
+		(*itr)->setHeading(station ? turnData->finalHeading : turnData->curHeading);
+
+		const FPoint next = FHexMap::findNextHex(finish, turnData->curHeading);
+		const bool nextIsPlanet = (next.getX() == m_planetPos.getX() && next.getY() == m_planetPos.getY());
+		if (next.getX() >= 0 && next.getX() < 55 && next.getY() >= 0 && next.getY() < 39 && !nextIsPlanet) {
+			m_hexData[finish.getX()][finish.getY()].ships.push_back(*itr);
+		} else {
+			(*itr)->setHP(0);
+		}
+		VehicleList & startHexShips = m_hexData[start.getX()][start.getY()].ships;
+		for (VehicleList::iterator i2 = startHexShips.begin(); i2 != startHexShips.end(); ++i2) {
+			if ((*i2)->getID() == (*itr)->getID()) {
+				startHexShips.erase(i2);
+				break;
+			}
+		}
+		if (station) {
+			setStationPosition(finish);
+		}
+		if (((*itr)->getCurrentDefense()->getType() == FDefense::MS && turnData->path.countFlags(MR_TURN) > 0)
+			|| changedSpeed) {
+			if (station) {
+				(*itr)->decrementMSTurnCount();
+			} else {
+				(*itr)->setCurrentDefense(0);
+			}
+		}
+	}
+	applyMineDamage();
+	m_drawRoute = false;
+	setPhase(PH_DEFENSE_FIRE);
+	setShip(NULL);
+}
+
+FTacticalCombatReportSummary FTacticalGame::resolveCurrentFirePhase() {
+	return fireAllWeapons();
+}
+
+void FTacticalGame::completeDefensiveFirePhase() {
+	clearMovementHighlights();
+	setWeapon(NULL);
+	setPhase(PH_ATTACK_FIRE);
+}
+
+void FTacticalGame::completeOffensiveFirePhase() {
+	clearMovementHighlights();
+	setWeapon(NULL);
+	toggleMovingPlayer();
+	setPhase(PH_MOVE);
+}
+
+bool FTacticalGame::placeMineAtHex(const FPoint & hex) {
+	if (m_curWeapon == NULL || m_curShip == NULL || m_curWeapon->getType() != FWeapon::M) {
+		return false;
+	}
+	if (!isHexInBounds(hex)) {
+		return false;
+	}
+	if (m_minedHexList.find(hex) == m_minedHexList.end()) {
+		if (m_curWeapon->getAmmo() > 0) {
+			m_minedHexList.insert(hex);
+			m_curWeapon->setCurrentAmmo(m_curWeapon->getAmmo() - 1);
+			m_mineOwner = m_curShip->getOwner();
+			return true;
+		}
+		return false;
+	}
+
+	if (getState() == BS_PlaceMines && m_curWeapon->getAmmo() != m_curWeapon->getMaxAmmo()) {
+		m_minedHexList.erase(hex);
+		m_curWeapon->setCurrentAmmo(m_curWeapon->getAmmo() + 1);
+		m_mineOwner = m_curShip->getOwner();
+		return true;
+	}
+	return false;
+}
+
+bool FTacticalGame::isHexMinable(const FPoint & hex) {
+	if (m_curShip == NULL || m_curWeapon == NULL || m_curWeapon->getType() != FWeapon::M) {
+		return false;
+	}
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL) {
+		return false;
+	}
+	return turnData->path.isPointOnPath(hex);
+}
+
+bool FTacticalGame::handleHexClick(const FPoint & hex) {
+	if (!isHexInBounds(hex)) {
+		return false;
+	}
+	switch (getState()) {
+	case BS_SetupPlanet:
+		return placePlanet(hex);
+	case BS_SetupStation:
+		return placeStation(hex);
+	case BS_SetupDefendFleet:
+	case BS_SetupAttackFleet:
+		if (getControlState()) {
+			return placeShip(hex);
+		}
+		return false;
+	case BS_PlaceMines:
+		if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::M) {
+			return placeMineAtHex(hex);
+		}
+		return false;
+	case BS_Battle:
+		if (getPhase() == PH_MOVE) {
+			if (m_drawRoute && handleMoveHexSelection(hex)) {
+				checkMoveStatus();
+				return true;
+			}
+			const bool selected = selectShipFromHex(hex);
+			checkMoveStatus();
+			return selected;
+		}
+		if (getPhase() == PH_DEFENSE_FIRE || getPhase() == PH_ATTACK_FIRE) {
+			if (m_curWeapon != NULL && assignTargetFromHex(hex)) {
+				return true;
+			}
+			if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::M && isHexMinable(hex)) {
+				return placeMineAtHex(hex);
+			}
+			if (selectShipFromHex(hex)) {
+				return true;
+			}
+			if (m_curShip != NULL) {
+				setWeapon(NULL);
+				return true;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return false;
 }
 
 }

@@ -270,6 +270,196 @@ FWeapon * FBattleScreen::getWeapon() {
 	return m_tacticalGame->getWeapon();
 }
 
+bool FBattleScreen::selectWeapon(unsigned int weaponIndex) {
+	const bool changed = m_tacticalGame->selectWeapon(weaponIndex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::selectDefense(unsigned int defenseIndex) {
+	const bool changed = m_tacticalGame->selectDefense(defenseIndex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::selectShipFromHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->selectShipFromHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::handleHexClick(const FPoint & hex) {
+	const bool changed = m_tacticalGame->handleHexClick(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::placePlanet(const FPoint & hex) {
+	const bool changed = m_tacticalGame->placePlanet(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::placeStation(const FPoint & hex) {
+	const bool changed = m_tacticalGame->placeStation(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::placeShip(const FPoint & hex) {
+	const bool changed = m_tacticalGame->placeShip(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::setShipPlacementHeading(int heading) {
+	const bool changed = m_tacticalGame->setShipPlacementHeading(heading);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::setShipPlacementHeadingByHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->setShipPlacementHeadingByHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::beginMinePlacement() {
+	const bool changed = m_tacticalGame->beginMinePlacement();
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+void FBattleScreen::completeMinePlacement() {
+	m_tacticalGame->completeMinePlacement();
+	reDraw();
+}
+
+void FBattleScreen::completeMovePhase() {
+	m_tacticalGame->completeMovePhase();
+	reDraw();
+}
+
+FTacticalCombatReportSummary FBattleScreen::resolveCurrentFirePhase() {
+	FTacticalCombatReportSummary summary = m_tacticalGame->resolveCurrentFirePhase();
+	reDraw();
+	return summary;
+}
+
+void FBattleScreen::completeDefensiveFirePhase() {
+	m_tacticalGame->completeDefensiveFirePhase();
+	reDraw();
+}
+
+void FBattleScreen::completeOffensiveFirePhase() {
+	m_tacticalGame->completeOffensiveFirePhase();
+	reDraw();
+}
+
+void FBattleScreen::computeWeaponRange() {
+	m_tacticalGame->computeWeaponRange();
+}
+
+bool FBattleScreen::assignTargetFromHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->assignTargetFromHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::placeMineAtHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->placeMineAtHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::isHexMinable(const FPoint & hex) {
+	return m_tacticalGame->isHexMinable(hex);
+}
+
+const VehicleList & FBattleScreen::getHexOccupants(const FPoint & hex) const {
+	return m_tacticalGame->getHexOccupants(hex);
+}
+
+const std::vector<FPoint> & FBattleScreen::getMovementHexes() const {
+	return m_tacticalGame->getMovementHexes();
+}
+
+const std::vector<FPoint> & FBattleScreen::getLeftTurnHexes() const {
+	return m_tacticalGame->getLeftTurnHexes();
+}
+
+const std::vector<FPoint> & FBattleScreen::getRightTurnHexes() const {
+	return m_tacticalGame->getRightTurnHexes();
+}
+
+const PointSet & FBattleScreen::getTargetHexes() const {
+	return m_tacticalGame->getTargetHexes();
+}
+
+const PointSet & FBattleScreen::getHeadOnHexes() const {
+	return m_tacticalGame->getHeadOnHexes();
+}
+
+const PointSet & FBattleScreen::getMinedHexes() const {
+	return m_tacticalGame->getMinedHexes();
+}
+
+const FHexMap & FBattleScreen::getMineTargets() const {
+	return m_tacticalGame->getMineTargets();
+}
+
+unsigned int FBattleScreen::getMineOwner() const {
+	return m_tacticalGame->getMineOwner();
+}
+
+const std::map<unsigned int, FTacticalTurnData> & FBattleScreen::getTurnInfo() const {
+	return m_tacticalGame->getTurnInfo();
+}
+
+bool FBattleScreen::hasShipPlacementPendingRotation() const {
+	return m_tacticalGame->hasShipPlacementPendingRotation();
+}
+
+const FPoint & FBattleScreen::getSelectedShipHex() const {
+	return m_tacticalGame->getSelectedShipHex();
+}
+
+const VehicleList & FBattleScreen::getShipsWithMines() const {
+	return m_tacticalGame->getShipsWithMines();
+}
+
+bool FBattleScreen::isHexInBounds(const FPoint & hex) const {
+	return m_tacticalGame->isHexInBounds(hex);
+}
+
+bool FBattleScreen::isHexOccupied(const FPoint & hex) const {
+	return m_tacticalGame->isHexOccupied(hex);
+}
+
 void FBattleScreen::clearDestroyedShips(){
 	const int liveShips = m_tacticalGame->clearDestroyedShips();
 	const std::vector<unsigned int> & destroyedIDs = m_tacticalGame->getLastDestroyedShipIDs();
