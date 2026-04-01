@@ -1,0 +1,48 @@
+You are the Documenter Agent.
+
+Task summary:
+- Refactored `FBattleBoard` into a renderer + hex hit-tester that no longer owns tactical mechanics state.
+- Rendering now consumes model state from `FTacticalGame` through `FBattleScreen` pass-through methods.
+- Hex clicks are forwarded via `FBattleBoard::onLeftUp` -> `FBattleScreen::handleHexClick` -> `FTacticalGame::handleHexClick`.
+
+Acceptance criteria validated by tests:
+- `FBattleBoard::draw()` renders from `FTacticalGame` state.
+- `FBattleBoard::onLeftUp()` only computes clicked hex and forwards to model hex-click handling.
+- Duplicated mechanics state removed from `FBattleBoard` (`hexData`, `turnData`, `m_hexData`, `m_turnInfo`, etc.).
+- `FBattleBoard` responsibility narrowed to geometry/rendering/scrolling/hit-testing.
+- Tactical behavior coverage maintained for setup/movement/targeting/mines/combat overlays via model-backed accessors.
+
+Worktree/branch context:
+- Tester worktree: `/home/tstephen/worktrees/SSW-m8/gui_sep-m8-subtask3-tester-20260401`
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m8-subtask3-implementer-20260401`
+- Tester branch: `gui_sep-m8-subtask3-tester-20260401`
+
+Test updates committed (for handoff):
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.h` (new)
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp` (new)
+- `tests/tactical/FTacticalBattleScreenDelegationTest.h` (updated)
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp` (updated)
+- `tests/tactical/FTacticalBatteryRangeClampTest.cpp` (updated to inspect `FTacticalGame::computeBatteryRange`)
+- `tests/tactical/FTacticalMineDamageFlowTest.cpp` (updated to inspect `FTacticalGame` mine-damage flow)
+- `tests/tactical/Makefile` (suite object updates)
+- `tests/tactical/TacticalTests.cpp` (new suite registration)
+
+Test commit hash:
+- `45ce9932ed5c6d4d2bbfc86663ac25d6d5c3654f`
+
+Commands executed:
+1. `make -C src/tactical && make -C tests/tactical && ./tests/tactical/TacticalTests` (baseline, exposed stale tests)
+2. `make -C tests/tactical clean && make -C src/tactical && make -C tests/tactical && ./tests/tactical/TacticalTests` (final pass)
+
+Final test outcome:
+- TacticalTests: `OK (54 tests)`
+- Final status: pass
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8/m8-subtask3`
+
+Artifacts written by tester:
+- `artifacts/milestone8/m8-subtask3/tester_report.md`
+- `artifacts/milestone8/m8-subtask3/tester_result.json`
+- `artifacts/milestone8/m8-subtask3/documenter_prompt.txt`
