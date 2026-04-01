@@ -326,6 +326,33 @@ behavior is preserved through the `m_closeInProgress` gate and the same modal
 `EndModal()` handling, while the tactical `Makefile` change remains limited to
 the new `FBattleScreen` header dependencies needed for that wiring.
 
+Milestone 8 Subtask 1 extends that additive delegation surface again, but only
+on the model and `FBattleScreen` seam. `FTacticalGame` now exposes the
+non-wx interaction APIs that later `FBattleDisplay` and `FBattleBoard` work
+need in order to stop owning tactical mechanics directly. The newly validated
+surface now includes:
+
+- **Selection APIs:** model-side weapon selection, defense selection, ship
+  selection from a clicked hex, and target assignment from a clicked hex.
+- **Setup and placement APIs:** planet placement, station placement, ship
+  placement, pending-rotation heading confirmation, and setup-oriented
+  state access needed during scenario initialization.
+- **Movement and fire progression APIs:** hex-click dispatch, mine placement
+  start/completion helpers, move completion, defensive/offensive fire phase
+  completion, and model-owned weapon-range computation.
+- **Renderer-facing state accessors:** read access to hex occupancy, current
+  selected ship hex, route and turn highlight lists, target and head-on range
+  sets, mined hexes, mine targets/ownership, mine-capable ship lists, turn
+  bookkeeping, and simple in-bounds / occupied checks.
+
+`FBattleScreen` now forwards those calls directly to `FTacticalGame` and
+requests redraws when the forwarded operation mutates tactical state. This is
+still an additive compatibility step rather than the full Milestone 8 renderer
+rewire: `FBattleBoard` and `FBattleDisplay` have **not** been converted yet in
+this subtask, and the live wx rendering/runtime flow still depends on those
+legacy classes even though the canonical tactical interaction API now lives on
+the model.
+
 ### Validation Completed
 
 Milestone 5 production-fix validation confirmed that the additive
@@ -345,3 +372,16 @@ cd tests/tactical && make -s && ./TacticalTests
 ```
 
 Result: `OK (65 tests)`
+
+Milestone 8 Subtask 1 validation then confirmed that the new model-side
+interaction API surface and `FBattleScreen` forwarding layer compile and behave
+as documented without introducing wx dependencies into `FTacticalGame`.
+
+Validation commands:
+
+```bash
+make -C src/tactical clean && make -C src/tactical
+cd tests/tactical && make clean && make && ./TacticalTests
+```
+
+Result: `OK (48 tests)`
