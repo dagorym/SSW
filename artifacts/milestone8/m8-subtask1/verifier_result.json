@@ -1,0 +1,15 @@
+{
+  "status": "completed",
+  "subtask": "milestone8-subtask1",
+  "branch": "gui_sep-m8-subtask1-verifier-20260401",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 1,
+  "note_findings": 0,
+  "test_sufficiency_summary": "Build and tactical tests pass, but the newly added Milestone 8 API tests are mostly source-text assertions rather than executable behavior coverage.",
+  "documentation_accuracy": "Documentation matches the additive model/API expansion and correctly states that FBattleBoard/FBattleDisplay are still the live wx runtime path.",
+  "artifact_files": [
+    "artifacts/milestone8/m8-subtask1/verifier_report.md",
+    "artifacts/milestone8/m8-subtask1/verifier_result.json"
+  ]
+}
