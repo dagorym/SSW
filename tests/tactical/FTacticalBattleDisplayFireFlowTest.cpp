@@ -13,7 +13,7 @@ namespace FrontierTests {
 namespace {
 
 std::string repoFile(const std::string & relativePath) {
-	return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
+return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
 }
 
 }
@@ -27,141 +27,155 @@ void FTacticalBattleDisplayFireFlowTest::tearDown() {
 }
 
 std::string FTacticalBattleDisplayFireFlowTest::readFile(const std::string & path) {
-	std::ifstream file(path.c_str());
-	CPPUNIT_ASSERT_MESSAGE(path, file.is_open());
-	return std::string((std::istreambuf_iterator<char>(file)),
-		std::istreambuf_iterator<char>());
+std::ifstream file(path.c_str());
+CPPUNIT_ASSERT_MESSAGE(path, file.is_open());
+return std::string((std::istreambuf_iterator<char>(file)),
+std::istreambuf_iterator<char>());
 }
 
 std::string FTacticalBattleDisplayFireFlowTest::extractFunctionBody(const std::string & source, const std::string & signature) {
-	std::string::size_type signaturePos = source.find(signature);
-	CPPUNIT_ASSERT(signaturePos != std::string::npos);
+std::string::size_type signaturePos = source.find(signature);
+CPPUNIT_ASSERT(signaturePos != std::string::npos);
 
-	std::string::size_type bodyStart = source.find('{', signaturePos);
-	CPPUNIT_ASSERT(bodyStart != std::string::npos);
+std::string::size_type bodyStart = source.find('{', signaturePos);
+CPPUNIT_ASSERT(bodyStart != std::string::npos);
 
-	int depth = 1;
-	for (std::string::size_type i = bodyStart + 1; i < source.size(); i++) {
-		if (source[i] == '{') {
-			depth++;
-		} else if (source[i] == '}') {
-			depth--;
-			if (depth == 0) {
-				return source.substr(bodyStart + 1, i - bodyStart - 1);
-			}
-		}
-	}
+int depth = 1;
+for (std::string::size_type i = bodyStart + 1; i < source.size(); i++) {
+if (source[i] == '{') {
+depth++;
+} else if (source[i] == '}') {
+depth--;
+if (depth == 0) {
+return source.substr(bodyStart + 1, i - bodyStart - 1);
+}
+}
+}
 
-	CPPUNIT_FAIL("Function body not terminated");
-	return "";
+CPPUNIT_FAIL("Function body not terminated");
+return "";
 }
 
 void FTacticalBattleDisplayFireFlowTest::assertContains(const std::string & haystack, const std::string & needle) {
-	CPPUNIT_ASSERT_MESSAGE(
-		std::string("Expected to find '") + needle + "' in inspected source",
-		haystack.find(needle) != std::string::npos);
+CPPUNIT_ASSERT_MESSAGE(
+std::string("Expected to find '") + needle + "' in inspected source",
+haystack.find(needle) != std::string::npos);
+}
+
+void FTacticalBattleDisplayFireFlowTest::assertNotContains(const std::string & haystack, const std::string & needle) {
+CPPUNIT_ASSERT_MESSAGE(
+std::string("Expected not to find '") + needle + "' in inspected source",
+haystack.find(needle) == std::string::npos);
 }
 
 void FTacticalBattleDisplayFireFlowTest::assertBefore(const std::string & haystack, const std::string & first, const std::string & second) {
-	const std::string::size_type firstPos = haystack.find(first);
-	const std::string::size_type secondPos = haystack.find(second);
-	CPPUNIT_ASSERT_MESSAGE(
-		std::string("Expected to find both source fragments in order: '") + first + "' before '" + second + "'",
-		firstPos != std::string::npos && secondPos != std::string::npos && firstPos < secondPos);
+const std::string::size_type firstPos = haystack.find(first);
+const std::string::size_type secondPos = haystack.find(second);
+CPPUNIT_ASSERT_MESSAGE(
+std::string("Expected to find both source fragments in order: '") + first + "' before '" + second + "'",
+firstPos != std::string::npos && secondPos != std::string::npos && firstPos < secondPos);
 }
 
 unsigned int FTacticalBattleDisplayFireFlowTest::countOccurrences(const std::string & haystack, const std::string & needle) {
-	unsigned int count = 0;
-	std::string::size_type pos = 0;
-	while ((pos = haystack.find(needle, pos)) != std::string::npos) {
-		++count;
-		pos += needle.size();
-	}
-	return count;
+unsigned int count = 0;
+std::string::size_type pos = 0;
+while ((pos = haystack.find(needle, pos)) != std::string::npos) {
+++count;
+pos += needle.size();
+}
+return count;
 }
 
-void FTacticalBattleDisplayFireFlowTest::testFireAllWeaponsShowsSharedSummaryBeforeDestroyedShipCleanup() {
-	// AC: defensive and offensive fire both build a tactical report, show the shared summary dialog, and only then clear destroyed ships.
-	const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-	const std::string body = extractFunctionBody(source, "void FBattleDisplay::fireAllWeapons()");
+void FTacticalBattleDisplayFireFlowTest::testDrawAndOnPaintUseBattleScreenStateAccessors() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
+const std::string onPaintBody = extractFunctionBody(source, "void FBattleDisplay::onPaint(wxPaintEvent & event)");
 
-	assertContains(body, "m_parent->fireICM();");
-	assertContains(body, "beginTacticalReport(context);");
-	assertContains(body, "getWeapon(i)->fire()");
-	assertContains(body, "appendTacticalAttackReport");
-	assertContains(body, "FTacticalCombatReportSummary summary = m_parent->buildCurrentTacticalReportSummary();");
-	assertContains(body, "m_parent->showTacticalDamageSummaryDialog(summary);");
-	assertContains(body, "m_parent->clearTacticalReport();");
-	assertContains(body, "m_parent->clearDestroyedShips();");
-
-	assertBefore(body, "beginTacticalReport(context);", "getWeapon(i)->fire()");
-	assertBefore(body, "getWeapon(i)->fire()", "appendTacticalAttackReport");
-	assertBefore(body, "appendTacticalAttackReport", "FTacticalCombatReportSummary summary = m_parent->buildCurrentTacticalReportSummary();");
-	assertBefore(body, "FTacticalCombatReportSummary summary = m_parent->buildCurrentTacticalReportSummary();", "m_parent->showTacticalDamageSummaryDialog(summary);");
-	assertBefore(body, "m_parent->showTacticalDamageSummaryDialog(summary);", "m_parent->clearTacticalReport();");
-	assertBefore(body, "m_parent->clearTacticalReport();", "m_parent->clearDestroyedShips();");
-	CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "m_parent->clearDestroyedShips();"));
+assertContains(drawBody, "switch (m_parent->getState())");
+assertContains(drawBody, "if (m_parent->getControlState())");
+assertContains(drawBody, "if (m_parent->getPhase()==PH_NONE)");
+assertContains(drawBody, "drawPlaceMines(dc);");
+assertContains(onPaintBody, "draw(dc);");
 }
 
-void FTacticalBattleDisplayFireFlowTest::testBuildTacticalAttackReportPreservesStructuredAttackAndEffectDetailData() {
-	// AC: the structured attack report preserves attacker, target, weapon, hit, damage, and per-effect detail data from FTacticalAttackResult.
-	const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-	const std::string reportBody = extractFunctionBody(source, "FTacticalAttackReport buildTacticalAttackReport(const FTacticalAttackResult & result)");
-	const std::string eventBody = extractFunctionBody(source, "FTacticalReportEvent buildTacticalAttackEvent(");
+void FTacticalBattleDisplayFireFlowTest::testLegacyFireAllWeaponsHelperRemoved() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string header = readFile(repoFile("include/tactical/FBattleDisplay.h"));
 
-	assertContains(reportBody, "report.attacker = FTacticalShipReference(result.attackerID, result.attackerOwnerID, result.attackerName);");
-	assertContains(reportBody, "report.target = FTacticalShipReference(result.targetID, result.targetOwnerID, result.targetName);");
-	assertContains(reportBody, "report.weapon = FTacticalWeaponReference(result.weaponID, result.weaponName);");
-	assertContains(reportBody, "report.hitRoll = result.hitRoll;");
-	assertContains(reportBody, "report.targetRange = result.targetRange;");
-	assertContains(reportBody, "report.hullDamage = result.totalHullDamageApplied;");
-	assertContains(reportBody, "report.hit = result.hit();");
-	assertContains(reportBody, "report.note = result.note;");
-	assertContains(reportBody, "report.internalEvents.push_back(buildTacticalAttackEvent(report, *itr));");
-	assertContains(eventBody, "event.subject = report.target;");
-	assertContains(eventBody, "event.source = report.attacker;");
-	assertContains(eventBody, "event.target = report.target;");
-	assertContains(eventBody, "event.hullDamage = effect.hullDamageApplied;");
-	assertContains(eventBody, "event.immediate = report.immediate;");
-	assertContains(eventBody, "event.label = effect.label;");
-	assertContains(eventBody, "event.detail = effect.detail;");
+assertNotContains(source, "void FBattleDisplay::fireAllWeapons(");
+assertNotContains(header, "void fireAllWeapons(");
 }
 
-void FTacticalBattleDisplayFireFlowTest::testBuildTacticalAttackReportLeavesNestedWeaponFireEventsUnattachedForBattleScreenNormalization() {
-	// AC: weapon-fire report builders leave nested events unattached until FBattleScreen assigns the stored parent attack index.
-	const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-	const std::string eventBody = extractFunctionBody(source, "FTacticalReportEvent buildTacticalAttackEvent(");
-	const std::string reportBody = extractFunctionBody(source, "FTacticalAttackReport buildTacticalAttackReport(const FTacticalAttackResult & result)");
+void FTacticalBattleDisplayFireFlowTest::testDefensiveFireDoneDelegatesToModelFirePhaseResolution() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event )");
 
-	assertContains(eventBody, "event.attackIndex = -1;");
-	assertContains(eventBody, "event.immediate = report.immediate;");
-	assertContains(reportBody, "report.internalEvents.push_back(buildTacticalAttackEvent(report, *itr));");
+assertContains(body, "m_parent->resolveCurrentFirePhase()");
+assertContains(body, "m_parent->showTacticalDamageSummaryDialog(summary);");
+assertContains(body, "m_parent->clearDestroyedShips();");
+assertContains(body, "m_parent->completeDefensiveFirePhase();");
+assertBefore(body, "m_parent->resolveCurrentFirePhase()", "m_parent->showTacticalDamageSummaryDialog(summary);");
+assertBefore(body, "m_parent->showTacticalDamageSummaryDialog(summary);", "m_parent->clearDestroyedShips();");
+assertBefore(body, "m_parent->clearDestroyedShips();", "m_parent->completeDefensiveFirePhase();");
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "fireAllWeapons();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->setPhase("));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->toggleMovingPlayer();"));
 }
 
-void FTacticalBattleDisplayFireFlowTest::testDefensiveFireDoneWaitsForSummaryAcknowledgementBeforeAdvancingToOffensiveFire() {
-	// AC: after the defensive-fire summary dialog is acknowledged, the battle advances to offensive fire.
-	const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-	const std::string body = extractFunctionBody(source, "void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event )");
+void FTacticalBattleDisplayFireFlowTest::testOffensiveFireDoneDelegatesToModelFirePhaseResolution() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event )");
 
-	assertContains(body, "fireAllWeapons();");
-	assertContains(body, "m_parent->setPhase(PH_ATTACK_FIRE);");
-	assertContains(body, "m_parent->setWeapon(NULL);");
-	assertBefore(body, "fireAllWeapons();", "m_parent->setPhase(PH_ATTACK_FIRE);");
-	assertBefore(body, "m_parent->setPhase(PH_ATTACK_FIRE);", "m_parent->setWeapon(NULL);");
-	CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "toggleMovingPlayer();"));
+assertContains(body, "m_parent->resolveCurrentFirePhase()");
+assertContains(body, "m_parent->showTacticalDamageSummaryDialog(summary);");
+assertContains(body, "m_parent->clearDestroyedShips();");
+assertContains(body, "m_parent->completeOffensiveFirePhase();");
+assertBefore(body, "m_parent->resolveCurrentFirePhase()", "m_parent->showTacticalDamageSummaryDialog(summary);");
+assertBefore(body, "m_parent->showTacticalDamageSummaryDialog(summary);", "m_parent->clearDestroyedShips();");
+assertBefore(body, "m_parent->clearDestroyedShips();", "m_parent->completeOffensiveFirePhase();");
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "fireAllWeapons();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->setPhase("));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->toggleMovingPlayer();"));
 }
 
-void FTacticalBattleDisplayFireFlowTest::testOffensiveFireDoneWaitsForSummaryAcknowledgementBeforeReturningToMovement() {
-	// AC: after the offensive-fire summary dialog is acknowledged, the battle returns to movement and toggles the moving player exactly once.
-	const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-	const std::string body = extractFunctionBody(source, "void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event )");
+void FTacticalBattleDisplayFireFlowTest::testWeaponSelectionDelegatesToBattleScreenModelApi() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event)");
 
-	assertContains(body, "fireAllWeapons();");
-	assertContains(body, "m_parent->toggleMovingPlayer();");
-	assertContains(body, "m_parent->setPhase(PH_MOVE);");
-	assertBefore(body, "fireAllWeapons();", "m_parent->toggleMovingPlayer();");
-	assertBefore(body, "m_parent->toggleMovingPlayer();", "m_parent->setPhase(PH_MOVE);");
-	CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "m_parent->toggleMovingPlayer();"));
+assertContains(body, "m_parent->selectWeapon(i);");
+assertContains(body, "m_parent->reDraw();");
+assertNotContains(body, "m_parent->setWeapon(");
+assertNotContains(body, "->setTarget(");
+assertNotContains(body, "->fire(");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDefenseSelectionDelegatesToBattleScreenModelApi() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::checkDefenseSelection(wxMouseEvent &event)");
+
+assertContains(body, "m_parent->selectDefense(i);");
+assertContains(body, "m_parent->reDraw();");
+assertNotContains(body, "m_parent->setDefense(");
+assertNotContains(body, "->setCurrentDefense(");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testMinePlacementFlowUsesModelMinePlacementApis() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string setSpeedBody = extractFunctionBody(source, "void FBattleDisplay::onSetSpeed( wxCommandEvent& event )");
+const std::string doneBody = extractFunctionBody(source, "void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event )");
+
+assertContains(setSpeedBody, "if(!m_parent->beginMinePlacement())");
+assertContains(doneBody, "m_parent->completeMinePlacement();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testMinePlacementDisplayUsesModelShipList() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string placeMinesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+const std::string shipSelectionBody = extractFunctionBody(source, "void FBattleDisplay::checkShipSelection(wxMouseEvent &event)");
+
+assertContains(placeMinesBody, "const VehicleList & shipsWithMines = m_parent->getShipsWithMines();");
+assertContains(shipSelectionBody, "const VehicleList & shipsWithMines = m_parent->getShipsWithMines();");
+assertContains(shipSelectionBody, "m_parent->setShip(shipsWithMines[i]);");
 }
 
 }
