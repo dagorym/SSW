@@ -16,18 +16,15 @@ At any given point in the control flow, you need to know who the active
 player is. You also need to know which player was the last moving player
 so you can draw the paths of their ships. You need some mechanism to
 track the ships' paths, locations, number of turns, speed and heading.
-— **Done**: the live wx flow still keeps `m_activePlayer`, `m_movingPlayer`
-and path-highlighting state in `FBattleScreen`/`FBattleBoard`, while
-Milestone 5 adds `FTacticalGame` as an additive non-wx mechanics container
-for the same battle state, movement bookkeeping (`FTacticalTurnData`), and
-tactical report ownership needed for later delegation. Its `FTacticalHexData`
-and `FTacticalTurnData` types intentionally mirror `FBattleBoard`'s legacy
-`hexData`/`turnData` structs so model-only includes stay wx-free until later
-migration cleanup removes the legacy copies. Milestone 7 Subtask 1 expands
-that additive model surface with delegation-friendly accessors for tactical
-state/control flags, setup/scenario inputs, ship and weapon selection, and
-movement/report access so `FBattleScreen` can start forwarding state queries
-without claiming that the live wx runtime has already been fully rewired.
+— **Done**: the live wx flow still keeps high-level dialog/control flow in
+`FBattleScreen`, but the canonical tactical battle state now lives in
+`FTacticalGame`. That model owns movement bookkeeping (`FTacticalTurnData`),
+hex occupancy (`FTacticalHexData`), tactical report state, and the
+renderer-facing accessors `FBattleScreen` forwards to the wx layer.
+Milestone 8 Subtask 3 narrows `FBattleBoard` to geometry caching,
+scrolling, rendering, and hit-testing; it no longer owns duplicate tactical
+mechanics containers and now forwards clicked hexes through
+`FBattleScreen::handleHexClick()` into `FTacticalGame`.
 
 ## Combat
 
@@ -126,8 +123,10 @@ E. At the end of the moving player's fire phase, the movement data
 7. For each moving ship, a list of the hexes moved through should be kept to
    facilitate determining where that ship can fire and whether or not
    it can be fired upon. — **Done** (`m_movementHexes`, `m_leftHexes`, and
-   `m_rightHexes` vectors in `FBattleBoard`; `computePath()` and
-   `computeMovedWeaponRange()` iterate over the path for range/fire checks).
+   `m_rightHexes` now live in `FTacticalGame`; `FBattleBoard` renders them via
+   `FBattleScreen` forwarding accessors and `computePath()` /
+   `computeMovedWeaponRange()` still iterate over that model-owned path for
+   range/fire checks).
 
 8. We need a mechanism to keep track of whether or not a ship has fired
    its weapons defensively in a round or not. (This really isn't
@@ -146,10 +145,10 @@ E. At the end of the moving player's fire phase, the movement data
     ships know their position? Probably not, since this is related
     to the battle field implementation more than the ship itself. — **Done**:
     `FVehicle` has no position members; positions are stored in
-    `hexData m_hexData[100][100]` inside `FBattleBoard`, where each cell
-    holds a `FPoint pos` (hex centre) and a `VehicleList ships` (ships
-    present). Both query directions (hex→ships and ship→hex) are supported
-    via `FBattleBoard` methods.
+    `FTacticalHexData m_hexData[100][100]` inside `FTacticalGame`, where each
+    cell holds a `FPoint pos` (hex centre) and a `VehicleList ships` (ships
+    present). `FBattleBoard` now reads occupants through `FBattleScreen`
+    forwarding methods instead of owning a duplicate occupancy map.
 
 11. Thinking on this more I believe we may want to use a `std::map`
     structure to hold the actual battle map. The key will be a Point
@@ -160,9 +159,10 @@ E. At the end of the moving player's fire phase, the movement data
     needed to move off the edge of what is currently displayed. It might
     even be able to only store hexes that ships actually are in and
     add more as the game goes and they travel through new hexes. —
-    **Not implemented**: the battle map is still a fixed `hexData m_hexData[100][100]`
-    array. A `std::map<FPoint,int>` is used for gravity turns and `FHexMap`
-    is used for mine targets, but the main board remains a fixed array.
+    **Not implemented**: the battle map is still a fixed
+    `FTacticalHexData m_hexData[100][100]` array in `FTacticalGame`. A
+    `std::map<FPoint,int>` is used for gravity turns and `FHexMap` is used for
+    mine targets, but the main tactical occupancy map remains a fixed array.
     This refactor is still outstanding.
 
 ## Adding Defenses
@@ -263,7 +263,9 @@ All three combat phases and their supporting mechanics are fully implemented:
 
 - **Movement phase** (`PH_MOVE`): path projection via `computePath()`; hex
   highlighting for forward movement, left turns, and right turns stored in
-  `m_movementHexes`, `m_leftHexes`, `m_rightHexes`.
+  model-owned `m_movementHexes`, `m_leftHexes`, `m_rightHexes` on
+  `FTacticalGame` and rendered by `FBattleBoard` through `FBattleScreen`
+  accessors.
 - **Defensive fire phase** (`PH_DEFENSE_FIRE`): closest-approach range
   checking in `setIfValidTarget()`; FF weapon arc validation in
   `computeFFRange()`.
@@ -346,12 +348,22 @@ surface now includes:
   bookkeeping, and simple in-bounds / occupied checks.
 
 `FBattleScreen` now forwards those calls directly to `FTacticalGame` and
-requests redraws when the forwarded operation mutates tactical state. This is
-still an additive compatibility step rather than the full Milestone 8 renderer
-rewire: `FBattleBoard` and `FBattleDisplay` have **not** been converted yet in
-this subtask, and the live wx rendering/runtime flow still depends on those
-legacy classes even though the canonical tactical interaction API now lives on
-the model.
+requests redraws when the forwarded operation mutates tactical state.
+
+Milestone 8 Subtask 3 then applies that forwarding surface to
+`FBattleBoard`. The board now keeps only wx-side geometry, scaling,
+scrolling, drawing, and hex hit-testing helpers (`m_hexCenters`,
+`getHex()`, `drawGrid()`, and related rendering code). Tactical mechanics data
+such as occupancy, turn bookkeeping, movement highlights, target/head-on
+ranges, and mined hex overlays are read from `FTacticalGame` through
+`FBattleScreen` pass-through accessors during rendering. Hex clicks are now
+handled by computing the clicked board hex in `FBattleBoard::onLeftUp()` and
+forwarding that `FPoint` to `FBattleScreen::handleHexClick()`, which delegates
+the behavior to `FTacticalGame::handleHexClick()`.
+
+This narrows `FBattleBoard` into a renderer and input translator, but the live
+wx runtime still depends on `FBattleScreen` and `FBattleDisplay`; only the
+board-local duplicate mechanics state was removed in this subtask.
 
 ### Validation Completed
 
@@ -385,3 +397,18 @@ cd tests/tactical && make clean && make && ./TacticalTests
 ```
 
 Result: `OK (48 tests)`
+
+Milestone 8 Subtask 3 validation then confirmed that `FBattleBoard` renders
+from model-backed tactical state, forwards hex clicks through
+`FBattleScreen::handleHexClick()` to `FTacticalGame`, and no longer owns
+duplicate mechanics members such as `hexData`, `turnData`, `m_hexData`, or
+`m_turnInfo`.
+
+Validation commands:
+
+```bash
+make -C src/tactical && make -C tests/tactical && ./tests/tactical/TacticalTests
+make -C tests/tactical clean && make -C src/tactical && make -C tests/tactical && ./tests/tactical/TacticalTests
+```
+
+Result: `OK (54 tests)`
