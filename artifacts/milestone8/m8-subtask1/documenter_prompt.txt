@@ -1,0 +1,48 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate Milestone 8 Subtask 1 tactical model/API expansion: `FTacticalGame` now exposes model-side interaction APIs for selection, hex-click handling, setup placement, movement/fire progression, and renderer-facing tactical state accessors, with `FBattleScreen` forwarding to the model.
+
+Acceptance criteria validated by tests:
+- `FTacticalGame` exposes interaction APIs needed by Milestone 8, including weapon selection, defense selection, and board hex-click handling.
+- `FTacticalGame` exposes read accessors for occupancy, selection, route/range highlights, mine state, and setup state needed by wx renderers.
+- Tactical mechanics previously trapped in wx classes can execute through the model without wx types.
+- `FTacticalGame` remains non-wx and compiles cleanly.
+- `FBattleScreen` forwards to the model cleanly without reintroducing duplicated mechanics ownership.
+
+Implementation context:
+- Modified implementation files:
+  - `include/tactical/FTacticalGame.h`
+  - `src/tactical/FTacticalGame.cpp`
+  - `include/tactical/FBattleScreen.h`
+  - `src/tactical/FBattleScreen.cpp`
+- No `FBattleBoard`/`FBattleDisplay` refactor in this subtask.
+
+Tester worktree context:
+- Worktree path: `/home/tstephen/worktrees/SSW-m8/gui_sep-m8-subtask1-tester-20260401`
+- Branch: `gui_sep-m8-subtask1-tester-20260401`
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m8-subtask1-implementer-20260401`
+
+Test files added/modified:
+- `tests/tactical/FTacticalGameMechanicsTest.h`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.h`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+
+Test commit hash:
+- `715849b4e570f2f51211c17c787ac2d7ec1ffa7b`
+
+Commands executed:
+- `make -C src/tactical clean && make -C src/tactical`
+- `cd tests/tactical && make clean && make && ./TacticalTests`
+
+Final outcomes:
+- Tactical module build: pass
+- Tactical test suite: pass (`OK (48 tests)`)
+- Added 4 targeted tests covering interaction API exposure, click/target dispatch rules, mine/move/fire state progression, and `FBattleScreen` forwarding/redraw behavior.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8/m8-subtask1`
+
+Please update milestone/subtask documentation to reflect the newly validated tactical model API surface and forwarding behavior, using the above commit and files as the source of truth.
