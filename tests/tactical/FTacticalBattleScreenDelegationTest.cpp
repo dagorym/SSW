@@ -100,77 +100,98 @@ assertContains(extractFunctionBody(source, "void FBattleScreen::setState(int s)"
 assertContains(extractFunctionBody(source, "FVehicle * FBattleScreen::getShip() const"), "return m_tacticalGame->getShip();");
 assertContains(extractFunctionBody(source, "void FBattleScreen::setShip(FVehicle * s)"), "m_tacticalGame->setShip(s);");
 assertContains(extractFunctionBody(source, "FWeapon * FBattleScreen::getWeapon()"), "return m_tacticalGame->getWeapon();");
-	assertContains(extractFunctionBody(source, "void FBattleScreen::setWeapon(FWeapon * w)"), "m_tacticalGame->setWeapon(w);");
+assertContains(extractFunctionBody(source, "void FBattleScreen::setWeapon(FWeapon * w)"), "m_tacticalGame->setWeapon(w);");
 }
 
 void FTacticalBattleScreenDelegationTest::testBattleScreenForwardsInteractionAndRendererAccessorsToModel() {
 // AC: FBattleScreen forwards model APIs for interactions and renderer state with redraw behavior where expected.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 
-	const std::string selectWeaponBody = extractFunctionBody(source, "bool FBattleScreen::selectWeapon(unsigned int weaponIndex)");
-	assertContains(selectWeaponBody, "const bool changed = m_tacticalGame->selectWeapon(weaponIndex);");
-	assertContains(selectWeaponBody, "if (changed) {");
-	assertContains(selectWeaponBody, "reDraw();");
+const std::string selectWeaponBody = extractFunctionBody(source, "bool FBattleScreen::selectWeapon(unsigned int weaponIndex)");
+assertContains(selectWeaponBody, "const bool changed = m_tacticalGame->selectWeapon(weaponIndex);");
+assertContains(selectWeaponBody, "if (changed) {");
+assertContains(selectWeaponBody, "reDraw();");
 
-	const std::string selectDefenseBody = extractFunctionBody(source, "bool FBattleScreen::selectDefense(unsigned int defenseIndex)");
-	assertContains(selectDefenseBody, "const bool changed = m_tacticalGame->selectDefense(defenseIndex);");
-	assertContains(selectDefenseBody, "reDraw();");
+const std::string selectDefenseBody = extractFunctionBody(source, "bool FBattleScreen::selectDefense(unsigned int defenseIndex)");
+assertContains(selectDefenseBody, "const bool changed = m_tacticalGame->selectDefense(defenseIndex);");
+assertContains(selectDefenseBody, "reDraw();");
 
-	const std::string handleHexBody = extractFunctionBody(source, "bool FBattleScreen::handleHexClick(const FPoint & hex)");
-	assertContains(handleHexBody, "const bool changed = m_tacticalGame->handleHexClick(hex);");
-	assertContains(handleHexBody, "reDraw();");
+const std::string handleHexBody = extractFunctionBody(source, "bool FBattleScreen::handleHexClick(const FPoint & hex)");
+assertContains(handleHexBody, "const bool changed = m_tacticalGame->handleHexClick(hex);");
+assertContains(handleHexBody, "reDraw();");
 
-	const std::string completeMoveBody = extractFunctionBody(source, "void FBattleScreen::completeMovePhase()");
-	assertContains(completeMoveBody, "m_tacticalGame->completeMovePhase();");
-	assertContains(completeMoveBody, "reDraw();");
+const std::string completeMoveBody = extractFunctionBody(source, "void FBattleScreen::completeMovePhase()");
+assertContains(completeMoveBody, "m_tacticalGame->completeMovePhase();");
+assertContains(completeMoveBody, "reDraw();");
 
-	const std::string resolveFireBody = extractFunctionBody(source, "FTacticalCombatReportSummary FBattleScreen::resolveCurrentFirePhase()");
-	assertContains(resolveFireBody, "FTacticalCombatReportSummary summary = m_tacticalGame->resolveCurrentFirePhase();");
-	assertContains(resolveFireBody, "reDraw();");
+const std::string resolveFireBody = extractFunctionBody(source, "FTacticalCombatReportSummary FBattleScreen::resolveCurrentFirePhase()");
+assertContains(resolveFireBody, "FTacticalCombatReportSummary summary = m_tacticalGame->resolveCurrentFirePhase();");
+assertContains(resolveFireBody, "reDraw();");
 
-	assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexMinable(const FPoint & hex)"),
-		"return m_tacticalGame->isHexMinable(hex);");
-	assertContains(extractFunctionBody(source, "const VehicleList & FBattleScreen::getHexOccupants(const FPoint & hex) const"),
-		"return m_tacticalGame->getHexOccupants(hex);");
-	assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getMovementHexes() const"),
-		"return m_tacticalGame->getMovementHexes();");
-	assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getLeftTurnHexes() const"),
-		"return m_tacticalGame->getLeftTurnHexes();");
-	assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getRightTurnHexes() const"),
-		"return m_tacticalGame->getRightTurnHexes();");
-	assertContains(extractFunctionBody(source, "const PointSet & FBattleScreen::getTargetHexes() const"),
-		"return m_tacticalGame->getTargetHexes();");
-	assertContains(extractFunctionBody(source, "const PointSet & FBattleScreen::getHeadOnHexes() const"),
-		"return m_tacticalGame->getHeadOnHexes();");
-	assertContains(extractFunctionBody(source, "const PointSet & FBattleScreen::getMinedHexes() const"),
-		"return m_tacticalGame->getMinedHexes();");
-	assertContains(extractFunctionBody(source, "const FHexMap & FBattleScreen::getMineTargets() const"),
-		"return m_tacticalGame->getMineTargets();");
-	assertContains(extractFunctionBody(source, "unsigned int FBattleScreen::getMineOwner() const"),
-		"return m_tacticalGame->getMineOwner();");
-	assertContains(extractFunctionBody(source, "const std::map<unsigned int, FTacticalTurnData> & FBattleScreen::getTurnInfo() const"),
-		"return m_tacticalGame->getTurnInfo();");
-	assertContains(extractFunctionBody(source, "bool FBattleScreen::hasShipPlacementPendingRotation() const"),
-		"return m_tacticalGame->hasShipPlacementPendingRotation();");
-	assertContains(extractFunctionBody(source, "const FPoint & FBattleScreen::getSelectedShipHex() const"),
-		"return m_tacticalGame->getSelectedShipHex();");
-	assertContains(extractFunctionBody(source, "const VehicleList & FBattleScreen::getShipsWithMines() const"),
-		"return m_tacticalGame->getShipsWithMines();");
-	assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexInBounds(const FPoint & hex) const"),
-		"return m_tacticalGame->isHexInBounds(hex);");
-	assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexOccupied(const FPoint & hex) const"),
-		"return m_tacticalGame->isHexOccupied(hex);");
+assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexMinable(const FPoint & hex)"),
+"return m_tacticalGame->isHexMinable(hex);");
+assertContains(extractFunctionBody(source, "const VehicleList & FBattleScreen::getHexOccupants(const FPoint & hex) const"),
+"return m_tacticalGame->getHexOccupants(hex);");
+assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getMovementHexes() const"),
+"return m_tacticalGame->getMovementHexes();");
+assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getLeftTurnHexes() const"),
+"return m_tacticalGame->getLeftTurnHexes();");
+assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getRightTurnHexes() const"),
+"return m_tacticalGame->getRightTurnHexes();");
+assertContains(extractFunctionBody(source, "const PointSet & FBattleScreen::getTargetHexes() const"),
+"return m_tacticalGame->getTargetHexes();");
+assertContains(extractFunctionBody(source, "const PointSet & FBattleScreen::getHeadOnHexes() const"),
+"return m_tacticalGame->getHeadOnHexes();");
+assertContains(extractFunctionBody(source, "const PointSet & FBattleScreen::getMinedHexes() const"),
+"return m_tacticalGame->getMinedHexes();");
+assertContains(extractFunctionBody(source, "const FHexMap & FBattleScreen::getMineTargets() const"),
+"return m_tacticalGame->getMineTargets();");
+assertContains(extractFunctionBody(source, "unsigned int FBattleScreen::getMineOwner() const"),
+"return m_tacticalGame->getMineOwner();");
+assertContains(extractFunctionBody(source, "const std::map<unsigned int, FTacticalTurnData> & FBattleScreen::getTurnInfo() const"),
+"return m_tacticalGame->getTurnInfo();");
+assertContains(extractFunctionBody(source, "bool FBattleScreen::hasShipPlacementPendingRotation() const"),
+"return m_tacticalGame->hasShipPlacementPendingRotation();");
+assertContains(extractFunctionBody(source, "const FPoint & FBattleScreen::getSelectedShipHex() const"),
+"return m_tacticalGame->getSelectedShipHex();");
+assertContains(extractFunctionBody(source, "const VehicleList & FBattleScreen::getShipsWithMines() const"),
+"return m_tacticalGame->getShipsWithMines();");
+assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexInBounds(const FPoint & hex) const"),
+"return m_tacticalGame->isHexInBounds(hex);");
+assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexOccupied(const FPoint & hex) const"),
+"return m_tacticalGame->isHexOccupied(hex);");
 }
 
 void FTacticalBattleScreenDelegationTest::testBattleScreenDamageSummaryDialogDelegatesThroughInstalledUI() {
 // AC: FBattleScreen uses ITacticalUI seam owned by FTacticalGame for summary dialogs.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string body = extractFunctionBody(source,
 "int FBattleScreen::showTacticalDamageSummaryDialog(const FTacticalCombatReportSummary & summary)");
 
 assertContains(body, "ITacticalUI * tacticalUI = m_tacticalGame->getUI();");
 assertContains(body, "return tacticalUI->showDamageSummary(summary);");
 assertContains(body, "return 1;");
+}
+
+void FTacticalBattleScreenDelegationTest::testBattleScreenPhaseWeaponAndCleanupFlowDelegatesToTacticalModel() {
+// AC: phase transitions, weapon range refresh, and destroyed-ship cleanup are model-owned in FTacticalGame.
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+
+const std::string setPhaseBody = extractFunctionBody(source, "void FBattleScreen::setPhase(int p)");
+assertContains(setPhaseBody, "m_tacticalGame->setPhase(p);");
+assertContains(setPhaseBody, "if (p==PH_MOVE)");
+assertContains(setPhaseBody, "m_tacticalGame->resetMovementState();");
+assertContains(setPhaseBody, "if (p==PH_FINALIZE_MOVE)");
+assertContains(setPhaseBody, "m_tacticalGame->finalizeMovementState();");
+
+const std::string setWeaponBody = extractFunctionBody(source, "void FBattleScreen::setWeapon(FWeapon * w)");
+assertContains(setWeaponBody, "m_tacticalGame->setWeapon(w);");
+assertContains(setWeaponBody, "m_tacticalGame->computeWeaponRange();");
+
+const std::string clearDestroyedBody = extractFunctionBody(source, "void FBattleScreen::clearDestroyedShips()");
+assertContains(clearDestroyedBody, "const int liveShips = m_tacticalGame->clearDestroyedShips();");
+CPPUNIT_ASSERT(clearDestroyedBody.find("m_map->") == std::string::npos);
+CPPUNIT_ASSERT(clearDestroyedBody.find("m_turnInfo") == std::string::npos);
 }
 
 }

@@ -13,6 +13,7 @@
 #include "FTacticalMineDamageFlowTest.h"
 #include "FTacticalBattleDisplayFireFlowTest.h"
 #include "FTacticalBatteryRangeClampTest.h"
+#include "FTacticalBattleBoardRendererDelegationTest.h"
 #include "FTacticalGameHeaderTest.h"
 #include "FTacticalGameMechanicsTest.h"
 #include "ITacticalUIBoundaryTest.h"
@@ -29,6 +30,7 @@ runner.addTest(FTacticalMineDamageReportSummaryTest::suite());
 runner.addTest(FTacticalMineDamageFlowTest::suite());
 runner.addTest(FTacticalBattleDisplayFireFlowTest::suite());
 runner.addTest(FTacticalBatteryRangeClampTest::suite());
+runner.addTest(FTacticalBattleBoardRendererDelegationTest::suite());
 runner.addTest(FTacticalGameHeaderTest::suite());
 runner.addTest(FTacticalGameMechanicsTest::suite());
 runner.addTest(ITacticalUIBoundaryTest::suite());
