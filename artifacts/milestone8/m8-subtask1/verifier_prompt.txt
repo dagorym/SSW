@@ -1,0 +1,60 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify Milestone 8 Subtask 1 tactical model/API expansion: `FTacticalGame` now exposes model-side interaction APIs for selection, hex-click handling, setup placement, movement/fire progression, and renderer-facing tactical state accessors, with `FBattleScreen` forwarding to the model.
+- Verify the accompanying documentation updates accurately describe the shipped behavior and current architectural boundary.
+
+Acceptance criteria validated by tests:
+- `FTacticalGame` exposes interaction APIs needed by Milestone 8, including weapon selection, defense selection, and board hex-click handling.
+- `FTacticalGame` exposes read accessors for occupancy, selection, route/range highlights, mine state, and setup state needed by wx renderers.
+- Tactical mechanics previously trapped in wx classes can execute through the model without wx types.
+- `FTacticalGame` remains non-wx and compiles cleanly.
+- `FBattleScreen` forwards to the model cleanly without reintroducing duplicated mechanics ownership.
+
+Implementation context:
+- Modified implementation files:
+  - `include/tactical/FTacticalGame.h`
+  - `src/tactical/FTacticalGame.cpp`
+  - `include/tactical/FBattleScreen.h`
+  - `src/tactical/FBattleScreen.cpp`
+- No `FBattleBoard`/`FBattleDisplay` refactor in this subtask.
+
+Branch/worktree context:
+- Documenter worktree: `/home/tstephen/worktrees/SSW-m8/gui_sep-m8-subtask1-documenter-20260401`
+- Documenter branch: `gui_sep-m8-subtask1-documenter-20260401`
+- Base branch: `gui_sep`
+- Tester branch: `gui_sep-m8-subtask1-tester-20260401`
+- Implementer branch: `gui_sep-m8-subtask1-implementer-20260401`
+
+Test files added/modified:
+- `tests/tactical/FTacticalGameMechanicsTest.h`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.h`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+
+Documentation files added/modified:
+- `doc/DesignNotes.md`
+- `AGENTS.md`
+
+Relevant commits:
+- Implementer commit: `6317af9c1d9d64848c92915b42baa177d32ab270`
+- Test commit: `715849b4e570f2f51211c17c787ac2d7ec1ffa7b`
+- Documentation commit: `8045a8e89a44537c25f633d7d45a7a9cf742cc13`
+
+Commands executed:
+- `make -C src/tactical clean && make -C src/tactical`
+- `cd tests/tactical && make clean && make && ./TacticalTests`
+
+Final outcomes:
+- Tactical module build: pass
+- Tactical test suite: pass (`OK (48 tests)`)
+- Documentation updated to describe the new model-owned API categories, `FBattleScreen` redraw-oriented forwarding, and the explicit caveat that `FBattleBoard` / `FBattleDisplay` remain the live wx runtime path for now.
+
+Verification requirements:
+- Verify the implementation and tests still satisfy the Milestone 8 Subtask 1 scope above.
+- Verify the documentation changes match the implemented and tested behavior exactly.
+- Verify review scope includes the updated documentation files along with the implementation and tests.
+- Confirm the docs do not overstate the milestone: this subtask expands the model/API surface and forwarding only, and does not yet refactor `FBattleBoard` or `FBattleDisplay`.
+
+Shared artifact directory to reuse:
+- `artifacts/milestone8/m8-subtask1`
