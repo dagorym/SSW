@@ -196,9 +196,9 @@ const unsigned int & FBattleScreen::getActivePlayerID() const {
 void FBattleScreen::setPhase(int p){
 	m_tacticalGame->setPhase(p);
 	if (p==PH_MOVE) { // we just ended a turn
-		m_map->resetMoveData();
+		m_tacticalGame->resetMovementState();
 	} else 	if (p==PH_FINALIZE_MOVE){
-		m_map->finalizeMove();
+		m_tacticalGame->finalizeMovementState();
 		setShip(NULL);
 	} else {
 	}
@@ -262,7 +262,7 @@ void FBattleScreen::setWeapon(FWeapon * w) {
 //	if (w!=NULL) std::cerr << "Setting current weapon to " << w->getLongName() << std::endl;
 	m_tacticalGame->setWeapon(w);
 //	std::cerr << "computing weapon range" << std::endl;
-	m_map->computeWeaponRange();
+	m_tacticalGame->computeWeaponRange();
 //	std::cerr << "range computed." << std::endl;
 }
 
@@ -462,11 +462,6 @@ bool FBattleScreen::isHexOccupied(const FPoint & hex) const {
 
 void FBattleScreen::clearDestroyedShips(){
 	const int liveShips = m_tacticalGame->clearDestroyedShips();
-	const std::vector<unsigned int> & destroyedIDs = m_tacticalGame->getLastDestroyedShipIDs();
-	for (std::vector<unsigned int>::const_iterator itr = destroyedIDs.begin();
-		 itr != destroyedIDs.end(); ++itr) {
-		m_map->removeShipFromGame(*itr);
-	}
 	if (!liveShips) {
 		declareWinner();
 	}
