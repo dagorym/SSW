@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Task summary:
+- Refactored `FBattleBoard` into a renderer + hex hit-tester that no longer owns tactical mechanics state. Rendering now consumes model state from `FTacticalGame` (through `FBattleScreen` pass-through methods), and hex clicks are forwarded to model handling.
+
+Modified files:
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate (from Planner):
+- `FBattleBoard::draw()` renders from `FTacticalGame` state.
+- `FBattleBoard::onLeftUp()` only computes the clicked hex and forwards it to `FTacticalGame::handleHexClick(FPoint)` or equivalent model API.
+- `hexData`, `turnData`, `m_hexData`, `m_turnInfo`, and other duplicated mechanics state are removed from `FBattleBoard`.
+- `FBattleBoard` keeps only geometry, rendering, scrolling, and hit-test responsibilities.
+- Tactical board behavior still supports setup, movement, targeting, mines, and combat rendering after the migration.
+
+Create test files in:
+- tests/tactical/ (module test location inferred from repository conventions)
+
+Implementation context for testing:
+- `FBattleBoard` now stores only geometry/rendering resources (`m_hexCenters`, scale/grid constants, icon resources).
+- Click handling path is now strictly: UI click -> hex hit test in `FBattleBoard` -> `FBattleScreen::handleHexClick` -> `FTacticalGame::handleHexClick`.
+- `FBattleScreen::setPhase()` now calls `FTacticalGame::resetMovementState()` and `FTacticalGame::finalizeMovementState()` instead of board-local movement state APIs.
+- `FBattleScreen::setWeapon()` now calls `FTacticalGame::computeWeaponRange()` directly.
+- `FBattleScreen::clearDestroyedShips()` now relies on `FTacticalGame` cleanup without board-local ship removal.
+- Focus regression coverage on setup placement, move path highlights, target-range overlays, mine overlays/trigger flow, and fire-phase rendering consistency.
+
+Suggested test command(s):
+- make -C src/tactical
+- make -C tests/tactical && ./tests/tactical/TacticalTests
+
+Shared artifact directory:
+- artifacts/milestone8/m8-subtask3
