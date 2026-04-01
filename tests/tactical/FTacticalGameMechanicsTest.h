@@ -22,6 +22,9 @@ CPPUNIT_TEST( testMovementHelpersResetAndFinalizeTurnData );
 CPPUNIT_TEST( testWinnerAndCombatEndHelpersResolveBattleState );
 CPPUNIT_TEST( testDestroyedShipCleanupPurgesHexAndTurnBookkeeping );
 CPPUNIT_TEST( testFireICMCollectsOnlyActionableHexInterceptions );
+CPPUNIT_TEST( testInteractionApisAndRendererAccessorsAreExposed );
+CPPUNIT_TEST( testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState );
+CPPUNIT_TEST( testMinePlacementAndMoveFireProgressionUpdateModelState );
 CPPUNIT_TEST( testImplementationRemainsSelfContainedWithoutLegacyWxRewire );
 CPPUNIT_TEST_SUITE_END();
 
@@ -43,6 +46,9 @@ void testMovementHelpersResetAndFinalizeTurnData();
 void testWinnerAndCombatEndHelpersResolveBattleState();
 void testDestroyedShipCleanupPurgesHexAndTurnBookkeeping();
 void testFireICMCollectsOnlyActionableHexInterceptions();
+void testInteractionApisAndRendererAccessorsAreExposed();
+void testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState();
+void testMinePlacementAndMoveFireProgressionUpdateModelState();
 void testImplementationRemainsSelfContainedWithoutLegacyWxRewire();
 };
 

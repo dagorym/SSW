@@ -271,12 +271,129 @@ assertContains(hasUsableBody, "if (defense == NULL) {");
 assertContains(hasUsableBody, "if (defense->getAmmo()");
 assertContains(hasUsableBody, "&& !candidate->isPowerSystemDamaged()");
 assertContains(hasUsableBody, "&& !defense->isDamaged()) {");
-assertContains(hasUsableBody, "return true;");
+	assertContains(hasUsableBody, "return true;");
+}
+
+void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExposed() {
+// AC: FTacticalGame exposes interaction and renderer-facing tactical state accessor APIs.
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+
+	assertContains(header, "bool selectWeapon(unsigned int weaponIndex);");
+	assertContains(header, "bool selectDefense(unsigned int defenseIndex);");
+	assertContains(header, "bool selectShipFromHex(const FPoint & hex);");
+	assertContains(header, "bool handleHexClick(const FPoint & hex);");
+	assertContains(header, "bool placePlanet(const FPoint & hex);");
+	assertContains(header, "bool placeStation(const FPoint & hex);");
+	assertContains(header, "bool placeShip(const FPoint & hex);");
+	assertContains(header, "bool setShipPlacementHeading(int heading);");
+	assertContains(header, "bool setShipPlacementHeadingByHex(const FPoint & hex);");
+	assertContains(header, "bool beginMinePlacement();");
+	assertContains(header, "void completeMinePlacement();");
+	assertContains(header, "void completeMovePhase();");
+	assertContains(header, "FTacticalCombatReportSummary resolveCurrentFirePhase();");
+	assertContains(header, "void completeDefensiveFirePhase();");
+	assertContains(header, "void completeOffensiveFirePhase();");
+	assertContains(header, "void computeWeaponRange();");
+	assertContains(header, "bool assignTargetFromHex(const FPoint & hex);");
+	assertContains(header, "bool placeMineAtHex(const FPoint & hex);");
+	assertContains(header, "bool isHexMinable(const FPoint & hex);");
+
+	assertContains(header, "const VehicleList & getHexOccupants(const FPoint & hex) const;");
+	assertContains(header, "const std::vector<FPoint> & getMovementHexes() const");
+	assertContains(header, "const std::vector<FPoint> & getLeftTurnHexes() const");
+	assertContains(header, "const std::vector<FPoint> & getRightTurnHexes() const");
+	assertContains(header, "const PointSet & getTargetHexes() const");
+	assertContains(header, "const PointSet & getHeadOnHexes() const");
+	assertContains(header, "const PointSet & getMinedHexes() const");
+	assertContains(header, "const FHexMap & getMineTargets() const");
+	assertContains(header, "unsigned int getMineOwner() const");
+	assertContains(header, "const std::map<unsigned int, FTacticalTurnData> & getTurnInfo() const");
+	assertContains(header, "bool hasShipPlacementPendingRotation() const");
+	assertContains(header, "const FPoint & getSelectedShipHex() const");
+	assertContains(header, "const VehicleList & getShipsWithMines() const");
+	assertContains(header, "bool isHexInBounds(const FPoint & hex) const;");
+	assertContains(header, "bool isHexOccupied(const FPoint & hex) const;");
+
+	assertContains(source, "bool FTacticalGame::selectWeapon(unsigned int weaponIndex)");
+	assertContains(source, "bool FTacticalGame::selectDefense(unsigned int defenseIndex)");
+	assertContains(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
+	assertContains(source, "const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const");
+}
+
+void FTacticalGameMechanicsTest::testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState() {
+// AC: model-side selection/click handling enforces range and state rules without wx dependencies.
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+
+	const std::string assignBody = extractFunctionBody(source, "bool FTacticalGame::assignTargetFromHex(const FPoint & hex)");
+	assertContains(assignBody, "if (!isHexInBounds(hex) || m_curWeapon == NULL) {");
+	assertContains(assignBody, "if (occupants.size() == 0) {");
+	assertContains(assignBody, "if (candidate == NULL || candidate->getOwner() == getActivePlayerID()) {");
+	assertContains(assignBody, "return setIfValidTarget(candidate, hex);");
+
+	const std::string clickBody = extractFunctionBody(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
+	assertContains(clickBody, "case BS_SetupPlanet:");
+	assertContains(clickBody, "return placePlanet(hex);");
+	assertContains(clickBody, "case BS_SetupStation:");
+	assertContains(clickBody, "return placeStation(hex);");
+	assertContains(clickBody, "case BS_SetupDefendFleet:");
+	assertContains(clickBody, "case BS_SetupAttackFleet:");
+	assertContains(clickBody, "if (getControlState()) {");
+	assertContains(clickBody, "return placeShip(hex);");
+	assertContains(clickBody, "case BS_PlaceMines:");
+	assertContains(clickBody, "return placeMineAtHex(hex);");
+	assertContains(clickBody, "case BS_Battle:");
+	assertContains(clickBody, "if (getPhase() == PH_MOVE) {");
+	assertContains(clickBody, "if (m_drawRoute && handleMoveHexSelection(hex)) {");
+	assertContains(clickBody, "const bool selected = selectShipFromHex(hex);");
+	assertContains(clickBody, "if (getPhase() == PH_DEFENSE_FIRE || getPhase() == PH_ATTACK_FIRE) {");
+	assertContains(clickBody, "if (m_curWeapon != NULL && assignTargetFromHex(hex)) {");
+	assertContains(clickBody, "if (selectShipFromHex(hex)) {");
+	assertContains(clickBody, "if (m_curShip != NULL) {");
+	assertContains(clickBody, "setWeapon(NULL);");
+}
+
+void FTacticalGameMechanicsTest::testMinePlacementAndMoveFireProgressionUpdateModelState() {
+// AC: mine placement, movement completion, and fire-phase progression mutate model state used by renderers.
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+
+	const std::string mineBody = extractFunctionBody(source, "bool FTacticalGame::placeMineAtHex(const FPoint & hex)");
+	assertContains(mineBody, "if (m_curWeapon == NULL || m_curShip == NULL || m_curWeapon->getType() != FWeapon::M) {");
+	assertContains(mineBody, "if (m_minedHexList.find(hex) == m_minedHexList.end()) {");
+	assertContains(mineBody, "m_minedHexList.insert(hex);");
+	assertContains(mineBody, "m_curWeapon->setCurrentAmmo(m_curWeapon->getAmmo() - 1);");
+	assertContains(mineBody, "m_mineOwner = m_curShip->getOwner();");
+	assertContains(mineBody, "if (getState() == BS_PlaceMines && m_curWeapon->getAmmo() != m_curWeapon->getMaxAmmo()) {");
+	assertContains(mineBody, "m_minedHexList.erase(hex);");
+	assertContains(mineBody, "m_curWeapon->setCurrentAmmo(m_curWeapon->getAmmo() + 1);");
+
+	const std::string minableBody = extractFunctionBody(source, "bool FTacticalGame::isHexMinable(const FPoint & hex)");
+	assertContains(minableBody, "FTacticalTurnData * turnData = findTurnData(m_curShip->getID());");
+	assertContains(minableBody, "return turnData->path.isPointOnPath(hex);");
+
+	const std::string moveBody = extractFunctionBody(source, "void FTacticalGame::completeMovePhase()");
+	assertContains(moveBody, "finalizeMovementState();");
+	assertContains(moveBody, "checkForMines(*itr);");
+	assertContains(moveBody, "applyMineDamage();");
+	assertContains(moveBody, "m_drawRoute = false;");
+	assertContains(moveBody, "setPhase(PH_DEFENSE_FIRE);");
+	assertContains(moveBody, "setShip(NULL);");
+
+	const std::string defensiveBody = extractFunctionBody(source, "void FTacticalGame::completeDefensiveFirePhase()");
+	assertContains(defensiveBody, "clearMovementHighlights();");
+	assertContains(defensiveBody, "setWeapon(NULL);");
+	assertContains(defensiveBody, "setPhase(PH_ATTACK_FIRE);");
+
+	const std::string offensiveBody = extractFunctionBody(source, "void FTacticalGame::completeOffensiveFirePhase()");
+	assertContains(offensiveBody, "clearMovementHighlights();");
+	assertContains(offensiveBody, "setWeapon(NULL);");
+	assertContains(offensiveBody, "toggleMovingPlayer();");
+	assertContains(offensiveBody, "setPhase(PH_MOVE);");
 }
 
 void FTacticalGameMechanicsTest::testImplementationRemainsSelfContainedWithoutLegacyWxRewire() {
 // AC: implementation remains additive/self-contained and does not require FBattleScreen/Board/Display rewiring.
-const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
 const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
 
 CPPUNIT_ASSERT(header.find("#include \"tactical/FBattleScreen.h\"") == std::string::npos);

@@ -16,6 +16,7 @@ CPPUNIT_TEST_SUITE( FTacticalBattleScreenDelegationTest );
 CPPUNIT_TEST( testBattleScreenOwnsAndInstallsTacticalModelAndUI );
 CPPUNIT_TEST( testBattleScreenDetachesTacticalUIBeforeTeardown );
 CPPUNIT_TEST( testBattleScreenStateAndSelectionApiDelegatesToTacticalModel );
+CPPUNIT_TEST( testBattleScreenForwardsInteractionAndRendererAccessorsToModel );
 CPPUNIT_TEST( testBattleScreenDamageSummaryDialogDelegatesThroughInstalledUI );
 CPPUNIT_TEST_SUITE_END();
 
@@ -31,6 +32,7 @@ void tearDown();
 void testBattleScreenOwnsAndInstallsTacticalModelAndUI();
 void testBattleScreenDetachesTacticalUIBeforeTeardown();
 void testBattleScreenStateAndSelectionApiDelegatesToTacticalModel();
+void testBattleScreenForwardsInteractionAndRendererAccessorsToModel();
 void testBattleScreenDamageSummaryDialogDelegatesThroughInstalledUI();
 };
 
