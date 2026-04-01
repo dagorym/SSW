@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate Milestone 8 Subtask 1 tactical model/API expansion: `FTacticalGame` now exposes model-side interaction APIs for selection, hex-click handling, setup placement, movement/fire progression, and renderer-facing tactical state accessors, with `FBattleScreen` forwarding to the model.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate (from Planner):
+- `FTacticalGame` exposes the interaction APIs needed by Milestone 8, including weapon selection, defense selection, and board hex-click handling.
+- `FTacticalGame` exposes read accessors for occupancy, selection, route/range highlights, mine state, and setup state needed by the wx renderers.
+- Tactical mechanics previously trapped in wx classes can execute through the model without wx types.
+- `FTacticalGame` remains non-wx and compiles cleanly.
+- `FBattleScreen` forwards to the model cleanly without reintroducing duplicated mechanics ownership.
+
+Create test files in:
+- `tests/tactical/` (module tactical test location per repository conventions)
+
+Implementation context for testing:
+- New APIs were added on `FTacticalGame` and forwarded through `FBattleScreen` only; no `FBattleBoard`/`FBattleDisplay` refactor was performed in this subtask.
+- Key added categories: ship/weapon/defense selection, hex click dispatch, setup placement, mine placement, movement completion, fire-phase progression, and renderer-facing state getters.
+- Ensure the tactical model surface remains non-wx (`FTacticalGame` should not take wx types).
+- Confirm forwarding methods in `FBattleScreen` map to the tactical model and trigger redraw paths where expected.
+- Edge focus: target selection range validation, mine placement/minable checks, movement route progression state, and compatibility with existing delegation behavior.
+
+Suggested test command(s):
+- `make -C src/tactical clean && make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+
+Shared artifact directory:
+- `artifacts/milestone8/m8-subtask1`
