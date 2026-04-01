@@ -1,0 +1,36 @@
+You are the Documenter Agent.
+
+Task summary:
+- FBattleDisplay was refactored to remove local fire-resolution logic and now delegates weapon/defense selection, fire phase resolution/completion, and mine placement setup/completion through existing FBattleScreen->FTacticalGame APIs.
+
+Acceptance criteria validated:
+- FBattleDisplay::draw() and onPaint() read tactical state from FTacticalGame.
+- FBattleDisplay::fireAllWeapons() is removed.
+- Weapon selection delegates to FTacticalGame::selectWeapon(...) or final equivalent model API.
+- Defense selection delegates to FTacticalGame::selectDefense(...) or final equivalent model API.
+- Event handlers/button callbacks contain no local tactical-resolution flow beyond translating input to model calls and redraw sequencing.
+- Setup and mine-placement display behavior remains operational.
+
+Implementation/test context:
+- Branch tested: `gui_sep-m8-subtask2-tester-20260401`
+- Base branch for comparison: `gui_sep`
+- Implementer branch merged into tester worktree HEAD lineage: `gui_sep-m8-subtask2-implementer-20260401`
+- Implementation files under validation:
+  - `include/tactical/FBattleDisplay.h`
+  - `src/tactical/FBattleDisplay.cpp`
+- Updated test files:
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- Test commit hash (tests only): `9f1a53156f775012ab5e54d6e5057252de4d283f`
+
+Commands executed:
+- `cd tests/tactical && make -s && ./TacticalTests` (iterative runs)
+
+Final outcomes:
+- Final tactical suite result: `OK (51 tests)`
+- All planner acceptance criteria listed for this subtask validated by updated tactical tests.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8/m8-subtask2`
+
+Please update milestone/subtask documentation to reflect that FBattleDisplay now delegates these flows through FBattleScreen/FTacticalGame APIs, and that tactical tests were updated from removed `fireAllWeapons` source-string expectations to delegation-oriented behavioral source checks.
