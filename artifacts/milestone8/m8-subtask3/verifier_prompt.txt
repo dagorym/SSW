@@ -1,0 +1,61 @@
+You are the Verifier Agent.
+
+Task summary:
+- Refactored `FBattleBoard` into a renderer + hex hit-tester that no longer owns tactical mechanics state.
+- Rendering now consumes model state from `FTacticalGame` through `FBattleScreen` pass-through methods.
+- Hex clicks are forwarded via `FBattleBoard::onLeftUp` -> `FBattleScreen::handleHexClick` -> `FTacticalGame::handleHexClick`.
+- Documentation now reflects the model-owned tactical state, narrowed `FBattleBoard` responsibility, and Milestone 8 Subtask 3 validation results.
+
+Acceptance criteria validated by tests:
+- `FBattleBoard::draw()` renders from `FTacticalGame` state.
+- `FBattleBoard::onLeftUp()` only computes clicked hex and forwards to model hex-click handling.
+- Duplicated mechanics state removed from `FBattleBoard` (`hexData`, `turnData`, `m_hexData`, `m_turnInfo`, etc.).
+- `FBattleBoard` responsibility narrowed to geometry/rendering/scrolling/hit-testing.
+- Tactical behavior coverage maintained for setup/movement/targeting/mines/combat overlays via model-backed accessors.
+
+Worktree/branch context:
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m8-subtask3-implementer-20260401`
+- Tester branch: `gui_sep-m8-subtask3-tester-20260401`
+- Documenter branch: `gui_sep-m8-subtask3-documenter-20260401`
+- Documenter worktree: `/home/tstephen/worktrees/SSW-m8/gui_sep-m8-subtask3-documenter-20260401`
+
+Implementation files changed in scope:
+- `include/tactical/FBattleBoard.h`
+- `src/tactical/FBattleBoard.cpp`
+- `src/tactical/FBattleScreen.cpp`
+
+Test files added or modified:
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.h`
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.h`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- `tests/tactical/FTacticalBatteryRangeClampTest.cpp`
+- `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
+
+Documentation files added or modified:
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Commands executed:
+1. `make -C src/tactical && make -C tests/tactical && ./tests/tactical/TacticalTests` (baseline, exposed stale tests)
+2. `make -C tests/tactical clean && make -C src/tactical && make -C tests/tactical && ./tests/tactical/TacticalTests` (final pass)
+
+Final test outcomes:
+- TacticalTests: `OK (54 tests)`
+- Final status: pass
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8/m8-subtask3`
+
+Artifacts present:
+- `artifacts/milestone8/m8-subtask3/tester_report.md`
+- `artifacts/milestone8/m8-subtask3/tester_result.json`
+- `artifacts/milestone8/m8-subtask3/documenter_prompt.txt`
+- `artifacts/milestone8/m8-subtask3/documenter_report.md`
+- `artifacts/milestone8/m8-subtask3/documenter_result.json`
+- `artifacts/milestone8/m8-subtask3/verifier_prompt.txt`
+
+Verification must include the updated documentation files along with the implementation and tests. Confirm the docs match the shipped behavior: model-owned tactical mechanics state in `FTacticalGame`, renderer/hit-test-only `FBattleBoard`, click forwarding through `FBattleScreen::handleHexClick()`, and the recorded validation outcomes.
