@@ -346,12 +346,32 @@ surface now includes:
   bookkeeping, and simple in-bounds / occupied checks.
 
 `FBattleScreen` now forwards those calls directly to `FTacticalGame` and
-requests redraws when the forwarded operation mutates tactical state. This is
-still an additive compatibility step rather than the full Milestone 8 renderer
-rewire: `FBattleBoard` and `FBattleDisplay` have **not** been converted yet in
-this subtask, and the live wx rendering/runtime flow still depends on those
-legacy classes even though the canonical tactical interaction API now lives on
-the model.
+requests redraws when the forwarded operation mutates tactical state. That
+model/screen forwarding layer was the first Milestone 8 compatibility step.
+
+Milestone 8 Subtask 2 then converts `FBattleDisplay` into a tactical HUD/view
+translator for the flows already exposed on `FBattleScreen` / `FTacticalGame`.
+The panel now reads battle state through `m_parent->getState()`,
+`m_parent->getControlState()`, and `m_parent->getPhase()` during draw/paint,
+removes its local `fireAllWeapons()` helper entirely, and delegates the
+remaining non-view interactions through the existing forwarding seam:
+
+- **Weapon/defense selection:** click handling now calls
+  `FBattleScreen::selectWeapon()` / `selectDefense()` instead of mutating the
+  selected ship directly from `FBattleDisplay`.
+- **Fire-phase resolution:** defensive and offensive fire completion now call
+  `resolveCurrentFirePhase()`, show the shared tactical damage summary dialog,
+  clear destroyed ships, and then finish the phase through the dedicated model
+  completion APIs instead of running local fire-resolution logic.
+- **Mine placement/setup:** setup-speed completion now calls
+  `beginMinePlacement()`, mine placement completion calls
+  `completeMinePlacement()`, and the mine-placement UI reads the selectable
+  ship list from `getShipsWithMines()` rather than caching a local copy.
+
+The runtime tactical wx path is therefore only partially rewired in Milestone 8
+so far: `FBattleDisplay` now behaves as a wx renderer/input translator for the
+delegated fire/setup flows, while `FBattleBoard` still owns its legacy board
+state and click semantics pending the later Milestone 8 board subtask.
 
 ### Validation Completed
 
@@ -385,3 +405,23 @@ cd tests/tactical && make clean && make && ./TacticalTests
 ```
 
 Result: `OK (48 tests)`
+
+Milestone 8 Subtask 2 validation then confirmed that the `FBattleDisplay`
+runtime path now delegates fire/setup interactions through the existing
+`FBattleScreen` → `FTacticalGame` APIs and no longer carries its own local
+fire-resolution helper.
+
+Validation command:
+
+```bash
+cd tests/tactical && make -s && ./TacticalTests
+```
+
+Result: `OK (51 tests)`
+
+The tactical source-inspection coverage for this step was updated at the same
+time. `FTacticalBattleDisplayFireFlowTest` no longer expects a local
+`FBattleDisplay::fireAllWeapons()` implementation or other transitional
+source-string patterns from the pre-delegation flow; instead it checks the
+delegation-oriented behavior that is now authoritative for weapon selection,
+defense selection, fire-phase completion ordering, and mine-placement setup.
