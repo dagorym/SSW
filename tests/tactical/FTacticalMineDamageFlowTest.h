@@ -17,6 +17,7 @@ class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testFinalizeMoveAppliesMineDamageExactlyOncePerMovementResolution );
 	CPPUNIT_TEST( testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath );
 	CPPUNIT_TEST( testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem );
+	CPPUNIT_TEST( testRuntimeMoveDonePathUsesCanonicalCompletionAndResolvesOffBoardOutcome );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -32,6 +33,7 @@ public:
 	void testFinalizeMoveAppliesMineDamageExactlyOncePerMovementResolution();
 	void testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath();
 	void testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem();
+	void testRuntimeMoveDonePathUsesCanonicalCompletionAndResolvesOffBoardOutcome();
 };
 
 }
