@@ -9,6 +9,7 @@
 
 ## Summary
 - Requested agent: `documenter`
+- Remediation purpose: correct documenter-stage artifact metadata so the recorded tester code commit hash matches the actual tester commit.
 - Repository-local definition found: yes (`AGENTS.md`)
 - Shared definition found: yes (`/home/tstephen/repos/agents/agents/documenter.yaml`)
 - Precedence used: repository task instructions plus shared documenter definition; no repository-local documenter.yaml was provided.
@@ -20,7 +21,7 @@
 - Documentation decision: no repository documentation edit was warranted because `AGENTS.md` already documents the destroyed-ship cleanup lifecycle validated by this remediation subtask, including the explicit `getLastDestroyedShipIDs()` / `clearLastDestroyedShipIDs()` wx cleanup seam.
 - Validation evidence retained from tester handoff:
   - Implementation commit under test: `615d30ba3fe6de42aa4e7a44882eee53b296efaa`
-  - Test commit hash: `56db7c46265393de0e9f35fbc82357be23d69788`
+  - Test commit hash: `56db7c49dedcf7b4c1f68d1245ffef796e7fabd2`
   - Tactical suite result: `OK (65 tests)`
   - Passed: 65
   - Failed: 0
@@ -28,5 +29,5 @@
 - Documentation commit hash recorded for artifact data: `094e27900bc0e0857060809f60430d3588479c04`
 
 ## Commit Message
-- Documentation commit: `docs: record no documentation changes for m8r-subtask-4`
-- Artifact commit: `artifacts: add documenter handoff for m8r-subtask-4`
+- Documentation commit: `docs: record no documentation changes for m8r-subtask-4` (unchanged)
+- Artifact commit: `artifacts: correct documenter tester hash for m8r-subtask-4`
