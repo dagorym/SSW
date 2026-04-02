@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Shared artifact directory (repository-root-relative):
+- artifacts/milestone8-remediation/m8r-subtask-2
+
+Implementation context:
+- Subtask: Milestone 8 Remediation Subtask 2 (fire-phase callback ordering hardening in FBattleDisplay)
+- Branch under test: gui_sep-m8r-subtask-2-implementer-20260402
+- Implementation commit: cbf61ed4ddf6978ad93f03f6376d2f26f53fe08f
+- Modified files:
+  - src/tactical/FBattleDisplay.cpp
+
+Planner acceptance criteria to validate:
+1. FBattleDisplay no longer initiates a sequence that clears model destroyed-ship bookkeeping before wx cleanup runs.
+2. Defensive-fire and offensive-fire completion paths both use the corrected ordering.
+3. The display still performs the same redraw and phase-advancement orchestration after cleanup.
+
+What changed:
+- In both `onDefensiveFireDone(...)` and `onOffensiveFireDone(...)`, the corresponding fire-done button is now disabled and hidden immediately after disconnect, before delegated fire-phase calls execute.
+- Existing delegated call order was intentionally preserved:
+  - `resolveCurrentFirePhase()`
+  - `showTacticalDamageSummaryDialog(summary)`
+  - `clearDestroyedShips()`
+  - `completeDefensiveFirePhase()` / `completeOffensiveFirePhase()`
+
+Required validation commands:
+- make -C src/tactical
+- cd tests/tactical && make && ./TacticalTests
+
+Test file location guidance / conventions:
+- tests/tactical/
+- Follow existing CppUnit tactical test patterns.
+
+Please write tester artifacts into:
+- artifacts/milestone8-remediation/m8r-subtask-2
+and pass that same shared artifact path forward to the Verifier.
