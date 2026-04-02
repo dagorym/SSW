@@ -1,0 +1,32 @@
+{
+  "status": "success",
+  "subtask": "m8r-subtask-8",
+  "branch": "gui_sep-m8r-subtask-8-documenter-20260402",
+  "base_branch": "gui_sep",
+  "tester_branch": "gui_sep-m8r-subtask-8-tester-20260402",
+  "commit_hash": "a70eb80f3e2319bca5a8337af51b452ca0495746",
+  "documentation_files_added_or_modified": [
+    "doc/DesignNotes.md"
+  ],
+  "agets_md_updated": false,
+  "commands_referenced": [
+    "make -C src/tactical",
+    "cd tests/tactical && make && ./TacticalTests"
+  ],
+  "test_outcome": {
+    "source": "tester_result.json",
+    "total": 69,
+    "passed": 69,
+    "failed": 0
+  },
+  "summary": [
+    "Recorded Subtask 8 runtime coverage for the live FBattleDisplay -> FBattleScreen -> FTacticalGame::completeMovePhase() seam in doc/DesignNotes.md.",
+    "Documented validated post-move outcomes: PH_DEFENSE_FIRE transition, selection clearing, start-hex occupancy clearing, off-board mover destruction, and defender occupancy stability.",
+    "Preserved the documentation commit hash in artifact data before the later artifact commit."
+  ],
+  "artifacts_written": [
+    "artifacts/milestone8-remediation/m8r-subtask-8/documenter_report.md",
+    "artifacts/milestone8-remediation/m8r-subtask-8/documenter_result.json",
+    "artifacts/milestone8-remediation/m8r-subtask-8/verifier_prompt.txt"
+  ]
+}

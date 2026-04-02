@@ -622,3 +622,34 @@ make -C src/tactical && cd tests/tactical && make && ./TacticalTests
 ```
 
 Result: `OK (68 tests)` on both runs.
+
+Milestone 8 remediation Subtask 8 then added runtime coverage for the live wx
+move-done path instead of relying only on helper-level or source-inspection
+assertions. `FTacticalMineDamageFlowTest` now exercises the actual
+`FBattleDisplay` → `FBattleScreen` move-completion seam and confirms that the
+live callback reaches the canonical model-owned `FTacticalGame::completeMovePhase()`
+path before post-move progression continues.
+
+The validated runtime outcomes recorded by that coverage are:
+
+- the live move-done callback reaches the canonical completion seam;
+- post-move phase progression advances to `PH_DEFENSE_FIRE`;
+- selected-ship state is cleared after move completion;
+- the mover's starting hex is cleared from tactical occupancy;
+- an off-board mover is reduced to zero HP during post-move resolution; and
+- defender occupancy remains stable while the mover is finalized.
+
+This keeps the Milestone 8 remediation framing consistent with the additive
+wx/model split: `FBattleDisplay` still acts as the live runtime event source,
+`FBattleScreen` remains the wx-side coordinator, and `FTacticalGame` remains
+the authoritative post-move resolution seam whose observable outcomes are now
+locked by tactical runtime coverage.
+
+Validation commands:
+
+```bash
+make -C src/tactical
+cd tests/tactical && make && ./TacticalTests
+```
+
+Result: tactical build passed and `OK (69 tests)`.

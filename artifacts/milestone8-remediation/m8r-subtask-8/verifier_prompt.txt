@@ -1,0 +1,47 @@
+You are the Verifier Agent.
+
+Shared artifact directory: `artifacts/milestone8-remediation/m8r-subtask-8`
+
+Please verify milestone 8 remediation subtask `m8r-subtask-8` using the implementation, tester, and documenter handoff artifacts in the shared artifact directory above.
+
+Task summary:
+- Confirm that Milestone 8 remediation Subtask 8 is fully documented and validated for the live runtime move-done seam `FBattleDisplay -> FBattleScreen -> FTacticalGame::completeMovePhase()`.
+
+Acceptance criteria to verify:
+1. Tactical suite includes coverage for the live runtime move-done caller path.
+2. The runtime path reaches `FTacticalGame::completeMovePhase()` or the same canonical completion seam.
+3. Observable post-move outcomes are covered and documented: transition to `PH_DEFENSE_FIRE`, selection clearing, start-hex occupancy clearing, off-board mover destruction, and defender occupancy stability.
+
+Implementation and branch context:
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m8r-subtask-8-implementer-20260402`
+- Implementation-under-test commit: `8bc42aace0e682ff029b51595603bc2fbd105afa` (`8bc42aa`)
+- Tester branch/worktree lineage: `gui_sep-m8r-subtask-8-tester-20260402`
+- Documenter branch/worktree: `gui_sep-m8r-subtask-8-documenter-20260402`
+- Documentation commit for this handoff: `a70eb80f3e2319bca5a8337af51b452ca0495746`
+
+Files in scope:
+- Implementation/test files changed on the feature lineage:
+  - `tests/tactical/FTacticalMineDamageFlowTest.h`
+  - `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+- Documentation files changed by documenter:
+  - `doc/DesignNotes.md`
+
+Commands executed during validation/documentation:
+- Tester commands:
+  - `make -C src/tactical`
+  - `cd tests/tactical && make && ./TacticalTests`
+- Documenter review inputs:
+  - reviewed `artifacts/milestone8-remediation/m8r-subtask-8/documenter_prompt.txt`
+  - reviewed `artifacts/milestone8-remediation/m8r-subtask-8/tester_result.json`
+  - reviewed `artifacts/milestone8-remediation/m8r-subtask-8/tester_report.md`
+  - reviewed `doc/DesignNotes.md`, `AGENTS.md`, and the diff versus `gui_sep`
+
+Final test outcome available from tester:
+- Tactical totals: 69 passed, 0 failed
+- Result: PASS
+
+Verification requirements:
+- Verify both the implementation/test coverage and the updated documentation.
+- Confirm `doc/DesignNotes.md` now records the live move-done runtime seam coverage and the validated observable post-move outcomes without overstating broader migration completion.
+- Reuse the shared artifact directory above for any verifier outputs.

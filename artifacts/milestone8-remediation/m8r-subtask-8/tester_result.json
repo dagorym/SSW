@@ -1,0 +1,40 @@
+{
+  "status": "success",
+  "subtask": "m8r-subtask-8",
+  "branch": "gui_sep-m8r-subtask-8-tester-20260402",
+  "implementation_under_test": "8bc42aace0e682ff029b51595603bc2fbd105afa",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "make -C src/tactical",
+    "cd tests/tactical && make && ./TacticalTests"
+  ],
+  "totals": {
+    "total": 69,
+    "passed": 69,
+    "failed": 0
+  },
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "status": "met",
+      "summary": "Tactical suite includes coverage for live runtime move-done caller path."
+    },
+    {
+      "id": 2,
+      "status": "met",
+      "summary": "Runtime path reaches FTacticalGame::completeMovePhase() canonical seam."
+    },
+    {
+      "id": 3,
+      "status": "met",
+      "summary": "Post-move outcomes asserted for off-board/mine/occupancy behavior."
+    }
+  ],
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/milestone8-remediation/m8r-subtask-8/tester_report.md",
+    "artifacts/milestone8-remediation/m8r-subtask-8/tester_result.json",
+    "artifacts/milestone8-remediation/m8r-subtask-8/documenter_prompt.txt"
+  ]
+}
