@@ -1,0 +1,36 @@
+You are the Documenter Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-4`
+
+Task summary:
+- Document validation outcomes for milestone 8 remediation subtask `m8r-subtask-4`.
+- Implementation under test was commit `615d30ba3fe6de42aa4e7a44882eee53b296efaa` on implementer branch `gui_sep-m8r-subtask-4-implementer-20260402`.
+- Tester branch/worktree context: `gui_sep-m8r-subtask-4-tester-20260402`.
+
+Acceptance criteria validated as passing:
+1. `FTacticalGame` no longer erases destroyed-ship IDs too early in delegated fire path.
+2. Destroyed-ship bookkeeping remains internally consistent after cleanup completes.
+3. Canonical lifecycle clear point is explicit.
+
+Implementation files validated:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+
+Tester-added/updated test files:
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+
+Test commit hash (tests only):
+- `56db7c46265393de0e9f35fbc82357be23d69788`
+
+Commands executed during validation:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && make && ./TacticalTests` (post-test-update rerun)
+
+Final test outcomes:
+- Tactical suite: `OK (65 tests)`
+- Passed: 65
+- Failed: 0
+- Attempts: 1
+
+Please produce/update documentation artifacts to reflect that subtask m8r-subtask-4 passed tester validation, using the shared artifact directory above for any required handoff outputs.
