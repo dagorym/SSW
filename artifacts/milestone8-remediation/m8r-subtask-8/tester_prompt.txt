@@ -1,0 +1,29 @@
+You are the Tester Agent.
+
+Shared artifact directory: `artifacts/milestone8-remediation/m8r-subtask-8`
+
+Please validate implementer subtask `m8r-subtask-8` on branch `gui_sep-m8r-subtask-8-implementer-20260402`.
+
+Implementation commit to test:
+- `8bc42aa`
+
+Scope and intent:
+- Tactical coverage was added for the live runtime move-done seam so the `FBattleDisplay -> FBattleScreen -> FTacticalGame::completeMovePhase()` path is locked by tests.
+
+Changed files:
+- `tests/tactical/FTacticalMineDamageFlowTest.h`
+- `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+
+Acceptance criteria to verify:
+1. Tactical suite includes coverage for the live move-done caller path identified by reviewer.
+2. Test verifies runtime path reaches `FTacticalGame::completeMovePhase()` or equivalent canonical seam.
+3. Test observes post-move outcomes (mine/off-board/final occupancy as applicable).
+
+Recommended validation commands:
+- `make -C src/tactical && cd tests/tactical && make && ./TacticalTests`
+- Optionally inspect focused test behavior around:
+  - `FTacticalMineDamageFlowTest::testRuntimeMoveDonePathUsesCanonicalCompletionAndResolvesOffBoardOutcome`
+
+Notes for validation:
+- The new test uses a runtime-style fixture with tactical setup placement, selects the moving ship via `handleHexClick`, then invokes `completeMovePhase()`.
+- Expected outcomes asserted include transition to `PH_DEFENSE_FIRE`, cleared ship selection, start-hex occupancy cleared, off-board mover HP reduction to zero, and stable defender occupancy.
