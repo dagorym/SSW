@@ -21,6 +21,7 @@ CPPUNIT_TEST( testWeaponSelectionDelegatesToBattleScreenModelApi );
 CPPUNIT_TEST( testDefenseSelectionDelegatesToBattleScreenModelApi );
 CPPUNIT_TEST( testMinePlacementFlowUsesModelMinePlacementApis );
 CPPUNIT_TEST( testMinePlacementDisplayUsesModelShipList );
+CPPUNIT_TEST( testDisplayClickFlowUsesModelForwardingApis );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -43,6 +44,7 @@ void testWeaponSelectionDelegatesToBattleScreenModelApi();
 void testDefenseSelectionDelegatesToBattleScreenModelApi();
 void testMinePlacementFlowUsesModelMinePlacementApis();
 void testMinePlacementDisplayUsesModelShipList();
+void testDisplayClickFlowUsesModelForwardingApis();
 };
 
 }

@@ -178,4 +178,17 @@ assertContains(shipSelectionBody, "const VehicleList & shipsWithMines = m_parent
 assertContains(shipSelectionBody, "m_parent->setShip(shipsWithMines[i]);");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testDisplayClickFlowUsesModelForwardingApis() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string onLeftUpBody = extractFunctionBody(source, "void FBattleDisplay::onLeftUp(wxMouseEvent & event)");
+
+assertContains(onLeftUpBody, "checkWeaponSelection(event);");
+assertContains(onLeftUpBody, "checkDefenseSelection(event);");
+assertContains(onLeftUpBody, "checkShipSelection(event);");
+assertNotContains(onLeftUpBody, "m_parent->setWeapon(");
+assertNotContains(onLeftUpBody, "m_parent->setDefense(");
+assertNotContains(onLeftUpBody, "m_parent->assignTargetFromHex(");
+assertNotContains(onLeftUpBody, "m_parent->placeMineAtHex(");
+}
+
 }
