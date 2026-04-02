@@ -595,3 +595,30 @@ cd tests/tactical && make && ./TacticalTests
 ```
 
 Result: tactical build passed and `OK (67 tests)`.
+
+Milestone 8 remediation Subtask 7 then tightened the fire-flow coverage around
+the runtime destroyed-ship lifecycle instead of the earlier duplicate-cleanup
+source expectations. `FTacticalBattleDisplayFireFlowTest` now builds a minimal
+`FTacticalGame`/fleet harness, resolves real defensive-fire and offensive-fire
+kill scenarios, and asserts the same lifecycle the wx runtime depends on:
+destroyed ship IDs are captured once by model fire resolution, the destroyed
+ship is removed from the model-owned side list, and the cached IDs can then be
+cleared exactly once without being repopulated during fire-phase completion.
+The same suite still keeps the wx callback ordering checks that the fire-done
+buttons disable and hide before delegated resolution starts.
+
+The tactical test `Makefile` was updated alongside that coverage so the module
+runner now builds the tactical model/library prerequisites first and links
+against the tactical, weapons, defenses, ships, strategic, and core static
+libraries. That linkage keeps the tactical test target capable of executing the
+runtime model harness directly instead of limiting this seam to source-only
+inspection.
+
+Validation commands:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+make -C src/tactical && cd tests/tactical && make && ./TacticalTests
+```
+
+Result: `OK (68 tests)` on both runs.
