@@ -8,6 +8,7 @@ endif
 CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) -DTACTICAL_TEST_REPO_ROOT=\"$(CURDIR)/../..\"
 
 LIBS = `wx-config --libs`
+MODEL_LIBS = -L../../src/tactical -L../../src/weapons -L../../src/defenses -L../../src/ships -L../../src/strategic -L../../src/core -Wl,--start-group -ltactical -lweapons -ldefenses -lships -lstrategic -lcore -Wl,--end-group
 
 PICFLAGS = -fPIC -DPIC
 
@@ -30,13 +31,21 @@ OBJS = FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTactic
 TARGET = libtacticalTests.a
 RUNNER = TacticalTests
 
-all: $(TARGET) $(RUNNER)
+all: model-deps $(TARGET) $(RUNNER)
+
+model-deps:
+>$(MAKE) -C ../../src/core
+>$(MAKE) -C ../../src/strategic
+>$(MAKE) -C ../../src/ships
+>$(MAKE) -C ../../src/defenses
+>$(MAKE) -C ../../src/weapons
+>$(MAKE) -C ../../src/tactical
 
 $(TARGET): FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalModelSelectionHexClickSurfaceTest.o ITacticalUIBoundaryTest.o
 >ar rcs $(TARGET) FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalModelSelectionHexClickSurfaceTest.o ITacticalUIBoundaryTest.o
 
-$(RUNNER): $(OBJS)
->$(CXX) $(CXXFLAGS) -o $(RUNNER) $(OBJS) -lcppunit $(LIBS)
+$(RUNNER): model-deps $(OBJS)
+>$(CXX) $(CXXFLAGS) -o $(RUNNER) $(OBJS) -lcppunit $(MODEL_LIBS) $(LIBS)
 
 objs: $(OBJS)
 >rm -f *.gcda

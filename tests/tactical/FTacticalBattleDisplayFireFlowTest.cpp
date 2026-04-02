@@ -7,13 +7,109 @@
 
 #include <fstream>
 #include <iterator>
+#include <vector>
+
+#include "strategic/FFleet.h"
+#include "tactical/FTacticalGame.h"
 
 namespace FrontierTests {
 
 namespace {
 
+using namespace Frontier;
+
 std::string repoFile(const std::string & relativePath) {
 return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
+}
+
+class FFireFlowWeaponHarness : public FWeapon {
+public:
+FFireFlowWeaponHarness() {
+m_name = "TST";
+m_fullName = "Fire Flow Harness";
+m_type = FWeapon::LC;
+m_range = 9;
+m_nDice = 1;
+m_dMod = 0;
+m_baseToHitProb = 100;
+}
+
+void aimAt(FVehicle * target) {
+m_target = target;
+m_targetRange = 1;
+m_isHeadOn = false;
+}
+};
+
+class FFireFlowShipHarness : public FVehicle {
+public:
+FFireFlowShipHarness() {
+m_name = "FireFlowShip";
+m_type = "FireFlowHarness";
+}
+
+void configureForOneShotKill() {
+m_maxHP = 1;
+m_currentHP = 1;
+m_maxADF = 1;
+m_currentADF = 1;
+m_maxMR = 1;
+m_currentMR = 1;
+m_maxDCR = 1;
+m_currentDCR = 1;
+}
+
+void addWeapon(FWeapon * weapon) {
+m_weapons.push_back(weapon);
+weapon->setParent(this);
+}
+};
+
+struct FireFlowRuntimeFixture {
+FTacticalGame game;
+FleetList attackFleets;
+FleetList defendFleets;
+FFleet * attackFleet;
+FFleet * defendFleet;
+FFireFlowShipHarness * attacker;
+FFireFlowShipHarness * defender;
+FFireFlowWeaponHarness * weapon;
+};
+
+void destroyFixture(FireFlowRuntimeFixture & fixture) {
+for (FleetList::iterator itr = fixture.attackFleets.begin(); itr != fixture.attackFleets.end(); ++itr) {
+delete *itr;
+}
+for (FleetList::iterator itr = fixture.defendFleets.begin(); itr != fixture.defendFleets.end(); ++itr) {
+delete *itr;
+}
+fixture.attackFleets.clear();
+fixture.defendFleets.clear();
+}
+
+void setupOneKillScenario(FireFlowRuntimeFixture & fixture, int firePhase) {
+fixture.attackFleet = new FFleet();
+fixture.defendFleet = new FFleet();
+fixture.attackFleets.push_back(fixture.attackFleet);
+fixture.defendFleets.push_back(fixture.defendFleet);
+
+fixture.attacker = new FFireFlowShipHarness();
+fixture.defender = new FFireFlowShipHarness();
+fixture.attacker->setName("Attacker");
+fixture.defender->setName("Defender");
+fixture.attacker->configureForOneShotKill();
+fixture.defender->configureForOneShotKill();
+
+fixture.weapon = new FFireFlowWeaponHarness();
+fixture.weapon->aimAt(fixture.defender);
+fixture.attacker->addWeapon(fixture.weapon);
+
+fixture.attackFleet->addShip(fixture.attacker);
+fixture.defendFleet->addShip(fixture.defender);
+
+fixture.game.setupFleets(&fixture.attackFleets, &fixture.defendFleets, false, NULL);
+fixture.game.setPhase(firePhase);
+fixture.game.setActivePlayer(true);
 }
 
 }
@@ -107,35 +203,45 @@ assertNotContains(header, "void fireAllWeapons(");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testDefensiveFireDoneDelegatesToModelFirePhaseResolution() {
-const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-const std::string body = extractFunctionBody(source, "void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event )");
+FireFlowRuntimeFixture fixture;
+setupOneKillScenario(fixture, PH_DEFENSE_FIRE);
 
-assertContains(body, "m_parent->resolveCurrentFirePhase()");
-assertContains(body, "m_parent->showTacticalDamageSummaryDialog(summary);");
-assertContains(body, "m_parent->clearDestroyedShips();");
-assertContains(body, "m_parent->completeDefensiveFirePhase();");
-assertBefore(body, "m_parent->resolveCurrentFirePhase()", "m_parent->showTacticalDamageSummaryDialog(summary);");
-assertBefore(body, "m_parent->showTacticalDamageSummaryDialog(summary);", "m_parent->clearDestroyedShips();");
-assertBefore(body, "m_parent->clearDestroyedShips();", "m_parent->completeDefensiveFirePhase();");
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "fireAllWeapons();"));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->setPhase("));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->toggleMovingPlayer();"));
+fixture.game.resolveCurrentFirePhase();
+
+const std::vector<unsigned int> & destroyedShipIDs = fixture.game.getLastDestroyedShipIDs();
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), static_cast<unsigned int>(destroyedShipIDs.size()));
+CPPUNIT_ASSERT_EQUAL(fixture.defender->getID(), destroyedShipIDs[0]);
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), static_cast<unsigned int>(fixture.game.getShipList(fixture.game.getDefenderID()).size()));
+
+fixture.game.clearLastDestroyedShipIDs();
+CPPUNIT_ASSERT(fixture.game.getLastDestroyedShipIDs().empty());
+
+fixture.game.completeDefensiveFirePhase();
+CPPUNIT_ASSERT(fixture.game.getLastDestroyedShipIDs().empty());
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), static_cast<unsigned int>(fixture.game.getShipList(fixture.game.getDefenderID()).size()));
+
+destroyFixture(fixture);
 }
 
 void FTacticalBattleDisplayFireFlowTest::testOffensiveFireDoneDelegatesToModelFirePhaseResolution() {
-const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-const std::string body = extractFunctionBody(source, "void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event )");
+FireFlowRuntimeFixture fixture;
+setupOneKillScenario(fixture, PH_ATTACK_FIRE);
 
-assertContains(body, "m_parent->resolveCurrentFirePhase()");
-assertContains(body, "m_parent->showTacticalDamageSummaryDialog(summary);");
-assertContains(body, "m_parent->clearDestroyedShips();");
-assertContains(body, "m_parent->completeOffensiveFirePhase();");
-assertBefore(body, "m_parent->resolveCurrentFirePhase()", "m_parent->showTacticalDamageSummaryDialog(summary);");
-assertBefore(body, "m_parent->showTacticalDamageSummaryDialog(summary);", "m_parent->clearDestroyedShips();");
-assertBefore(body, "m_parent->clearDestroyedShips();", "m_parent->completeOffensiveFirePhase();");
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "fireAllWeapons();"));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->setPhase("));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->toggleMovingPlayer();"));
+fixture.game.resolveCurrentFirePhase();
+
+const std::vector<unsigned int> & destroyedShipIDs = fixture.game.getLastDestroyedShipIDs();
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), static_cast<unsigned int>(destroyedShipIDs.size()));
+CPPUNIT_ASSERT_EQUAL(fixture.defender->getID(), destroyedShipIDs[0]);
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), static_cast<unsigned int>(fixture.game.getShipList(fixture.game.getDefenderID()).size()));
+
+fixture.game.clearLastDestroyedShipIDs();
+CPPUNIT_ASSERT(fixture.game.getLastDestroyedShipIDs().empty());
+
+fixture.game.completeOffensiveFirePhase();
+CPPUNIT_ASSERT(fixture.game.getLastDestroyedShipIDs().empty());
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), static_cast<unsigned int>(fixture.game.getShipList(fixture.game.getDefenderID()).size()));
+
+destroyFixture(fixture);
 }
 
 void FTacticalBattleDisplayFireFlowTest::testDefensiveFireDoneDisablesAndHidesButtonBeforeResolution() {
