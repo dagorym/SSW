@@ -1,0 +1,44 @@
+You are the Documenter Agent.
+
+Use shared artifact directory: `artifacts/milestone8-remediation/m8r-subtask-9` (repository-root-relative).
+
+Task summary:
+- Validate and carry forward Milestone 8 remediation Subtask 9 documentation updates for tactical seam framing.
+- Scope was documentation-only and focused on `doc/DesignNotes.md`.
+
+Context to preserve:
+- Base branch: `gui_sep`
+- Implementation branch: `gui_sep-m8r-subtask-9-implementer-20260402`
+- Implementation/content commit validated: `1bc646a`
+- Tester branch/worktree: `gui_sep-m8r-subtask-9-tester-20260402`
+
+Acceptance criteria validated as passing:
+1. Design notes no longer claim fire cleanup and move-finalization fixes were already present before remediation.
+2. Design notes separate the two blocking runtime bugs from the accepted manual GUI playthrough limitation.
+3. Design notes record the new automated seam coverage once it exists.
+
+Warning-alignment checks validated as passing:
+- Wording does not overstate `FTacticalMineDamageFlowTest` as directly covering the full wx `FBattleDisplay -> FBattleScreen` move-done seam.
+- Documentation attributes wx move-done delegation seam coverage to tactical seam tests (notably `FTacticalBattleScreenDelegationTest`) while keeping `FTacticalMineDamageFlowTest` framed as direct canonical `FTacticalGame::completeMovePhase()` outcome coverage.
+
+Evidence highlights from current `doc/DesignNotes.md`:
+- Explicitly calls out two blocking shipped runtime seams (fire cleanup ordering and move-done bypass via `setPhase(PH_FINALIZE_MOVE)`).
+- Explicitly distinguishes those blockers from the accepted non-blocking manual GUI playthrough limitation.
+- Subtask 8 narrative explicitly separates wx delegation seam coverage from canonical model seam outcome coverage.
+
+Test/code validation performed:
+- Command: `cd tests/tactical && make -s && ./TacticalTests`
+- Result: `OK (69 tests)`
+
+Files modified by tester:
+- No test files modified.
+- Artifact files written in shared directory:
+  - `tester_report.md`
+  - `tester_result.json`
+  - `documenter_prompt.txt`
+
+Commit context:
+- Test commit hash: `No Changes Made` (no test-file changes required).
+- Artifacts were committed on tester branch after successful validation.
+
+Please produce any required downstream documentation/handoff updates using this validated context and the same shared artifact directory path above.
