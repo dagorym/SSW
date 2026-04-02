@@ -1,0 +1,36 @@
+You are the Documenter Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-5`
+
+Please document Milestone 8 remediation Subtask 5 based on completed implementation and tester validation.
+
+Implementation context:
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m8r-subtask-5-implementer-20260402`
+- Implementation commit verified: `03258db0886d1ad3ecf6565773a48329b14e5c52`
+- Functional change: `FBattleDisplay::onMoveDone()` in `src/tactical/FBattleDisplay.cpp` now calls `m_parent->completeMovePhase()` instead of `m_parent->setPhase(PH_FINALIZE_MOVE)`.
+
+Tester validation context:
+- Tester branch: `gui_sep-m8r-subtask-5-tester-20260402`
+- Test commit: `787019c10280b7ec6d85a42f86ca69fd57dcd31e`
+- Test files updated:
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- Added tests verify:
+  1. move-done callback delegates through canonical seam (`completeMovePhase`),
+  2. legacy direct finalize-phase call is absent,
+  3. move-done callback still performs UI teardown flow (`Disconnect`, `Hide`, `m_first=true`) around seam delegation.
+
+Commands executed by tester:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+
+Outcomes:
+- Tactical build passed.
+- Tactical tests passed: 67/67.
+- Acceptance criteria status:
+  - Runtime move-done callback reaches canonical model seam: pass.
+  - Phase progression/redraw behavior preserved via existing `FBattleScreen::completeMovePhase()` delegation path: pass.
+  - Fix validated on live wx callback path in `FBattleDisplay`: pass.
+
+Please update the appropriate milestone/remediation documentation to reflect that Subtask 5 is validated and that the live wx move-done callback now routes through the tactical model seam.
