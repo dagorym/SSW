@@ -453,21 +453,27 @@ defense selection, fire-phase completion ordering, and mine-placement setup.
 Milestone 8 Subtask 2 remediation validation then confirmed that fire-phase
 destroyed-ship cleanup preserves cached destroyed IDs long enough for wx map
 removal and still declares the correct winner by checking the destroyed side
-(the active player's opponent) when model cleanup has already run.
+(the active player's opponent) when model cleanup has already run. The same
+runtime callback hardening now disables and hides the defensive-fire and
+offensive-fire completion buttons before delegated fire-phase resolution runs,
+while preserving the existing summary-dialog, cleanup, redraw, and
+phase-advancement lifecycle.
 
 Validation commands:
 
 ```bash
+make -C src/tactical
 cd tests/tactical && make && ./TacticalTests
 ```
 
-Result: `OK (54 tests)`
+Result: `OK (65 tests)`
 
 Milestone 8 remediation Subtask 1 then made the destroyed-ship lifecycle
 contract itself explicit in both the model seam and the wx coordinator. The
 documented ordering is now:
 
-1. `FBattleDisplay::{onDefensiveFireDone(),onOffensiveFireDone()}` calls
+1. `FBattleDisplay::{onDefensiveFireDone(),onOffensiveFireDone()}` disables and
+   hides the relevant fire-done button before calling
    `resolveCurrentFirePhase()`.
 2. `FTacticalGame::fireAllWeapons()` resolves fire, clears any stale cached
    destroyed IDs, and captures the current destroyed-ship IDs while removing
