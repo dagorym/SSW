@@ -1,0 +1,36 @@
+{
+  "status": "completed",
+  "subtask": "m8r-subtask-4",
+  "branch": "gui_sep-m8r-subtask-4-verifier-20260402",
+  "base_branch": "gui_sep",
+  "verdict": "CONDITIONAL PASS",
+  "blocking_finding_count": 1,
+  "warning_finding_count": 0,
+  "note_finding_count": 1,
+  "test_sufficiency_summary": "Sufficient: tactical module rebuilt and TacticalTests passed (OK (65 tests)); lifecycle coverage exists in FTacticalGameMechanicsTest plus battle-screen seam assertions.",
+  "documentation_accuracy_summary": "Repository documentation needed no update because AGENTS.md already matches shipped behavior, but documenter artifacts record an incorrect tester commit hash.",
+  "artifact_paths": {
+    "shared_artifact_dir": "artifacts/milestone8-remediation/m8r-subtask-4",
+    "verifier_report": "artifacts/milestone8-remediation/m8r-subtask-4/verifier_report.md",
+    "verifier_result": "artifacts/milestone8-remediation/m8r-subtask-4/verifier_result.json"
+  },
+  "reviewed_artifacts": {
+    "documenter_report": "artifacts/milestone8-remediation/m8r-subtask-4/documenter_report.md",
+    "documenter_result": "artifacts/milestone8-remediation/m8r-subtask-4/documenter_result.json",
+    "verifier_prompt": "artifacts/milestone8-remediation/m8r-subtask-4/verifier_prompt.txt"
+  },
+  "blocking_findings": [
+    {
+      "title": "Incorrect tester commit hash recorded in documenter artifacts",
+      "files": [
+        "artifacts/milestone8-remediation/m8r-subtask-4/documenter_report.md:23",
+        "artifacts/milestone8-remediation/m8r-subtask-4/documenter_result.json:10"
+      ],
+      "reported_hash": "56db7c46265393de0e9f35fbc82357be23d69788",
+      "actual_hash": "56db7c49dedcf7b4c1f68d1245ffef796e7fabd2"
+    }
+  ],
+  "notes": [
+    "Implementation satisfies the destroyed-ship bookkeeping acceptance criteria and verifier rerun passed TacticalTests."
+  ]
+}
