@@ -1,0 +1,59 @@
+You are the Verifier Agent.
+
+Validate Milestone 8 Subtask 5 in the SSW repository.
+
+Task summary:
+- Subtask 5 is the validation-only pass for the Milestone 8 tactical board refactor sequence.
+- Implementer outcome: no product code or test changes were required.
+- Tester outcome: root build passed, tactical automated validation passed, aggregate `tests/SSWTests` reproduced a known baseline linker failure, and BattleSim could only be launch-smoked in the non-interactive CLI.
+- User/orchestrator acceptance override: treat the current automated validation as sufficient and continue. Do not treat AC3 as manually executed; instead confirm it is documented as an accepted manual follow-up outside this CLI session.
+
+Acceptance criteria to verify:
+- AC1: Modified tactical/UI code builds successfully.
+- AC2: Relevant tactical automated tests pass.
+- AC3: Full tactical combat run exercises movement/defensive fire/offensive fire/battle completion without board breakage.
+- AC4: Manual verification steps or known gaps are documented clearly in implementation notes.
+
+Expected verification interpretation:
+- AC1 and AC2 should be satisfied by the recorded automated validation.
+- AC3 was not executed interactively in this non-interactive CLI session; verification should confirm the documentation accurately records the accepted exception rather than claiming the GUI playthrough occurred.
+- AC4 should be satisfied by the milestone artifacts and updated docs.
+
+Implementation / worktree context:
+- Base branch: `gui_sep`
+- Tester branch: `gui_sep-m8-subtask5-tester-20260401`
+- Documenter branch: `gui_sep-m8-subtask5-documenter-20260401`
+- Documenter worktree: `/home/tstephen/worktrees/SSW-m8/gui_sep-m8-subtask5-documenter-20260401`
+- Documentation commit to review: `9b3b46ac7a553d6e304aae4d26bca7ef9fba5cec`
+
+Implementation files added or modified:
+- None for Subtask 5.
+
+Test files added or modified:
+- None for Subtask 5.
+
+Documentation files added or modified:
+- `doc/DesignNotes.md`
+
+Shared artifact directory to reuse:
+- `artifacts/milestone8/m8-subtask5`
+
+Commands executed during validation (from implementer/tester artifacts):
+- `make -j2`
+- `cd tests/tactical && make clean && make -j2 && ./TacticalTests`
+- `cd tests && make clean && make -j2 && ./SSWTests`
+- `cd tests && make -j2 && ./SSWTests`
+- `cd src && timeout 5s ./BattleSim`
+
+Final recorded outcomes:
+- Root build: PASS
+- Tactical module tests: PASS (`OK (62 tests)`)
+- Aggregate test runner: known baseline failure (`FTacticalCombatReportTest` unresolved symbols during link)
+- BattleSim runtime: launch smoke only; no interactive GUI combat execution in CLI
+- Documentation update: records accepted completion based on automated validation plus explicit manual GUI follow-up outside this session
+
+Verification requirements:
+- Review implementation/test status against the base branch and milestone artifacts.
+- Verify the updated documentation files along with the implementation and tests; documentation review is mandatory for this handoff.
+- Confirm `doc/DesignNotes.md` accurately states that Subtask 5 completion is based on passing build plus tactical automated validation, that the known aggregate-link baseline issue remains unchanged, and that full GUI tactical combat remains a manual follow-up not performed here.
+- Do not rewrite the result as though an interactive wx GUI combat playthrough happened.
