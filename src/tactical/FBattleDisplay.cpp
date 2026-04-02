@@ -538,6 +538,8 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonDefensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
+	// Fire resolution runs in the model first and captures destroyed-ship IDs.
+	// Screen cleanup then consumes that bookkeeping and clears it at the seam.
 	const FTacticalCombatReportSummary summary = m_parent->resolveCurrentFirePhase();
 	m_parent->showTacticalDamageSummaryDialog(summary);
 	m_parent->clearDestroyedShips();
@@ -549,6 +551,7 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonOffensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
+	// Keep same lifecycle as defensive fire: model capture first, wx cleanup second.
 	const FTacticalCombatReportSummary summary = m_parent->resolveCurrentFirePhase();
 	m_parent->showTacticalDamageSummaryDialog(summary);
 	m_parent->clearDestroyedShips();
