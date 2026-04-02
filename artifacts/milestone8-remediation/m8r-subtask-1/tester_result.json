@@ -1,0 +1,36 @@
+{
+  "status": "success",
+  "task": "milestone8-remediation-subtask-1-destroyed-ship-cleanup-lifecycle-contract",
+  "branch": "gui_sep-m8r-subtask-1-tester-20260402",
+  "implementation_commit_tested": "042c3f458b74266802c0f482722053c5305d093f",
+  "test_commit_hash": "aac8f4e7d415cc02ab17ea88662cb28cb605ca80",
+  "test_files_modified": [
+    "tests/tactical/FTacticalBattleScreenDelegationTest.cpp",
+    "tests/tactical/FTacticalGameMechanicsTest.h",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp"
+  ],
+  "commands_run": [
+    "make -C src/tactical",
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/tactical && make && ./TacticalTests",
+    "make -C src/tactical"
+  ],
+  "attempts": 2,
+  "totals": {
+    "run": 63,
+    "passed": 63,
+    "failed": 0,
+    "errors": 0
+  },
+  "acceptance_criteria": {
+    "cleanup_contract_consistency": "pass",
+    "destroyed_ids_available_until_wx_consumption": "pass",
+    "model_fire_vs_wx_cleanup_split_preserved": "pass"
+  },
+  "artifacts": {
+    "shared_artifact_directory": "artifacts/milestone8-remediation/m8r-subtask-1",
+    "tester_report": "artifacts/milestone8-remediation/m8r-subtask-1/tester_report.md",
+    "tester_result": "artifacts/milestone8-remediation/m8r-subtask-1/tester_result.json",
+    "documenter_prompt": "artifacts/milestone8-remediation/m8r-subtask-1/documenter_prompt.txt"
+  }
+}
