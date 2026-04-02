@@ -518,11 +518,13 @@ make -C tests/tactical clean && make -C src/tactical && make -C tests/tactical &
 
 Result: `OK (54 tests)`
 
-Milestone 8 Subtask 3 remediation validation then confirmed that the live
-`FBattleDisplay::onMoveDone()` callback and `FTacticalGame::setPhase(PH_FINALIZE_MOVE)`
-route through model-owned `completeMovePhase()` behavior, with targeted tests
-covering mine checks, relocation/removal, off-board or planet destruction,
-mine damage, selected-ship clearing, and transition to defense fire.
+Milestone 8 Subtask 3 remediation validation confirmed the model-side
+post-move seam itself: `FTacticalGame::setPhase(PH_FINALIZE_MOVE)` routes into
+model-owned `completeMovePhase()` behavior, with targeted tests covering mine
+checks, relocation/removal, off-board or planet destruction, mine damage,
+selected-ship clearing, and transition to defense fire. The live wx
+`FBattleDisplay::onMoveDone()` callback still remained a separate runtime seam
+for later remediation at that point.
 
 Validation commands:
 
@@ -565,25 +567,31 @@ cd tests/tactical && make clean && make && ./TacticalTests
 
 Result: `OK (62 tests)`
 
-Milestone 8 Subtask 5 validation then confirmed that no additional tactical/UI
-code changes were required after the Milestone 8 tactical board refactor work:
-the repository root build still succeeds, the tactical module runner still
-passes, and `BattleSim` still launches for GUI smoke validation. The automated
-validation basis accepted for subtask completion is:
+Milestone 8 remediation Subtask 5 validation then confirmed that the live
+wx move-done callback now follows the same canonical seam as the model-side
+post-move finalization path. `FBattleDisplay::onMoveDone()` disconnects the
+move-done button callback, calls `FBattleScreen::completeMovePhase()`, hides the
+button, and restores `m_first=true` without falling back to the legacy direct
+`setPhase(PH_FINALIZE_MOVE)` call. This means the actual wx runtime path now
+reaches `FTacticalGame::completeMovePhase()` before post-move phase progression
+continues.
 
-- `make -j2` passes at the repository root.
-- `cd tests/tactical && make clean && make -j2 && ./TacticalTests` passes with
-  `OK (62 tests)`.
-- `cd src && timeout 5s ./BattleSim` is sufficient as a launch smoke in this
-  CLI session.
+The targeted tactical source-inspection coverage added for this remediation now
+locks in three expectations for the live callback seam:
 
-The aggregate `tests/SSWTests` runner still reproduces the known baseline linker
-failure for unresolved `FTacticalCombatReportTest` symbols, so that result does
-not change the subtask outcome. Full interactive tactical combat coverage for
-movement, defensive fire, offensive fire, offensive resolution, and battle
-completion was not executed here because the non-interactive CLI cannot drive
-the wxWidgets GUI. Per the accepted milestone orchestration decision, Subtask 5
-is recorded as complete on the basis of the passing build and tactical
-automated validation above, while a manual GUI tactical combat playthrough
-remains a follow-up outside this CLI session rather than something completed by
-this run.
+- `FBattleDisplay::onMoveDone()` delegates through
+  `FBattleScreen::completeMovePhase()` rather than directly calling
+  `setPhase(PH_FINALIZE_MOVE)`.
+- The legacy direct finalize-phase call is absent from the move-done handler.
+- The callback still performs the expected wx-side teardown flow around that
+  seam delegation by disconnecting the move button handler, hiding the button,
+  and resetting `m_first`.
+
+Validation commands:
+
+```bash
+make -C src/tactical
+cd tests/tactical && make && ./TacticalTests
+```
+
+Result: tactical build passed and `OK (67 tests)`.
