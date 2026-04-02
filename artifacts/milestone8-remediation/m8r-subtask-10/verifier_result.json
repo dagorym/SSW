@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "subtask": "milestone8-remediation-subtask-10",
+  "branch": "gui_sep-m8r-subtask-10-verifier-20260402",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Adequate. Verifier independently reran `cd tests/tactical && make clean && make && ./TacticalTests` and observed OK (69 tests), matching implementer/tester evidence for remediated fire-flow and move-completion seam coverage.",
+  "documentation_accuracy_summary": "Accurate for a validation-only closeout. Documenter artifacts correctly record that no repository docs changed while preserving prior content commit and later artifact commit metadata.",
+  "artifact_directory": "artifacts/milestone8-remediation/m8r-subtask-10",
+  "artifact_files_written": [
+    "artifacts/milestone8-remediation/m8r-subtask-10/verifier_report.md",
+    "artifacts/milestone8-remediation/m8r-subtask-10/verifier_result.json"
+  ],
+  "validation_command": "cd tests/tactical && make clean && make && ./TacticalTests",
+  "validation_summary": "OK (69 tests)",
+  "accepted_non_blocking_context": [
+    "Manual GUI playthrough remains accepted and non-automated.",
+    "Adjacent legacy duplicate finalize-path note remains accepted and non-blocking because canonical runtime flow is covered by tactical seams.",
+    "Existing warning in src/strategic/FJumpRoute.cpp (-Wint-to-pointer-cast) was reproduced and remains non-blocking context for this subtask."
+  ]
+}

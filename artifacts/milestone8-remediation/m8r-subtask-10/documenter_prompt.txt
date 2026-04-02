@@ -1,0 +1,46 @@
+You are the Documenter Agent.
+
+Use shared artifact directory: `artifacts/milestone8-remediation/m8r-subtask-10`.
+
+Task summary:
+- Milestone 8 Remediation — Subtask 10 tactical-focused validation was independently re-validated by Tester.
+- Goal was to confirm tactical target build + updated tactical suite pass with fire-flow and move-completion seam coverage, and to confirm remaining non-blocking context notes.
+
+Repository/worktree context:
+- Tester worktree: `/home/tstephen/.copilot/session-state/646e1bca-e189-4033-bd7e-c24e312b62dd/files/worktrees/gui_sep-m8r-subtask-10-tester-20260402`
+- Tester branch: `gui_sep-m8r-subtask-10-tester-20260402`
+- Base branch: `gui_sep`
+- Implementation branch under validation: `gui_sep-m8r-subtask-10-implementer-20260402`
+- Implementation/content commit reference: `6051ffd5a6d7eb5a82a77319bab802ca6279cbcf`
+
+Acceptance criteria validated:
+1. Relevant tactical test target builds successfully.
+2. Updated tactical suite passes with remediated fire-flow and move-completion seam coverage enabled.
+3. Validation notes clearly identify what was run and any remaining known non-blocking gaps.
+
+Tester execution details:
+- Command run:
+  ```bash
+  cd tests/tactical && make clean && make && ./TacticalTests
+  ```
+- Outcome: `OK (69 tests)` (pass)
+- Build status: pass
+- Test totals: 69 passed, 0 failed
+
+Non-blocking context confirmed by tester:
+- Manual GUI playthrough remains accepted and non-automated.
+- Adjacent legacy duplicate finalize-path note remains non-blocking because canonical runtime path is covered by tactical seams.
+- Existing dependency warning in `src/strategic/FJumpRoute.cpp` (`-Wint-to-pointer-cast`) reproduced and remains contextual/non-blocking for this subtask.
+
+Files added/modified by Tester:
+- No implementation or test source files changed.
+- Artifact outputs written:
+  - `artifacts/milestone8-remediation/m8r-subtask-10/tester_report.md`
+  - `artifacts/milestone8-remediation/m8r-subtask-10/tester_result.json`
+  - `artifacts/milestone8-remediation/m8r-subtask-10/documenter_prompt.txt`
+
+Commit context:
+- Test commit hash: `No Changes Made` (no test-file edits required)
+- Artifact commit exists on tester branch after artifact generation.
+
+Please produce/update documentation artifacts as required for this validated subtask using the same shared artifact directory path above.
