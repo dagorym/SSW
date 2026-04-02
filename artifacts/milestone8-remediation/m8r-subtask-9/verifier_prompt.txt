@@ -1,0 +1,47 @@
+You are the Verifier Agent.
+
+Use shared artifact directory: `artifacts/milestone8-remediation/m8r-subtask-9`.
+
+Task summary:
+- Verify Milestone 8 remediation Subtask 9 documentation handoff for tactical seam framing.
+- Scope is documentation-focused, with final documentation state preserved in `doc/DesignNotes.md` and no further document edits made by the Documenter.
+
+Acceptance criteria to verify:
+1. Design notes no longer imply the runtime seam fixes already existed before remediation.
+2. Design notes separate the two blocking runtime bugs from the accepted manual GUI playthrough limitation.
+3. Design notes distinguish wx seam coverage from direct canonical `FTacticalGame::completeMovePhase()` outcome coverage.
+
+Required review context:
+- Base branch: `gui_sep`
+- Implementation branch: `gui_sep-m8r-subtask-9-implementer-20260402`
+- Tester branch: `gui_sep-m8r-subtask-9-tester-20260402`
+- Documenter branch/worktree: `gui_sep-m8r-subtask-9-documenter-20260402`
+- Validated implementation/content commit: `1bc646a`
+- Documentation-state commit to review: `0edd89e5b03b6df1c373eb9e3e4b3ea8ebe935bb`
+
+Files in scope:
+- Documentation files added or modified:
+  - `doc/DesignNotes.md`
+- Test files added or modified during validated lineage:
+  - none
+- Shared artifacts already present:
+  - `artifacts/milestone8-remediation/m8r-subtask-9/implementer_result.json`
+  - `artifacts/milestone8-remediation/m8r-subtask-9/tester_result.json`
+  - `artifacts/milestone8-remediation/m8r-subtask-9/tester_report.md`
+  - `artifacts/milestone8-remediation/m8r-subtask-9/documenter_report.md`
+  - `artifacts/milestone8-remediation/m8r-subtask-9/documenter_result.json`
+
+Commands executed in prior stages:
+- Tester validation: `cd tests/tactical && make -s && ./TacticalTests`
+
+Final test outcomes available:
+- Tactical validation passed: `OK (69 tests)`
+
+Documenter outcome:
+- No additional documentation adjustment was warranted after reviewing the validated tester handoff and the `gui_sep...HEAD` documentation diff.
+- The documenter preserved the validated documentation state and created handoff artifacts only.
+
+Verification requirements:
+- Verify the updated documentation files along with the implementation and tests.
+- Confirm the preserved `doc/DesignNotes.md` wording still matches the implemented and tested behavior from the validated lineage.
+- Confirm the shared artifact directory path remains `artifacts/milestone8-remediation/m8r-subtask-9` and reuse it for verifier outputs.
