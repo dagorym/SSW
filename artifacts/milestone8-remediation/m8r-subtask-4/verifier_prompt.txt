@@ -1,0 +1,47 @@
+You are the Verifier Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-4`
+
+Task summary:
+- Verify milestone 8 remediation subtask `m8r-subtask-4` end to end.
+- Implementation under test was commit `615d30ba3fe6de42aa4e7a44882eee53b296efaa` on implementer branch `gui_sep-m8r-subtask-4-implementer-20260402`.
+- Tester branch/worktree context: `gui_sep-m8r-subtask-4-tester-20260402`.
+- Documenter branch/worktree context: `gui_sep-m8r-subtask-4-documenter-20260402`.
+- Base branch for comparison/context: `gui_sep`.
+
+Acceptance criteria validated as passing by tester:
+1. `FTacticalGame` no longer erases destroyed-ship IDs too early in delegated fire path.
+2. Destroyed-ship bookkeeping remains internally consistent after cleanup completes.
+3. Canonical lifecycle clear point is explicit.
+
+Implementation files validated:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+
+Tester-added/updated test files:
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+
+Documentation files added/modified by Documenter:
+- None. The documenter determined no repository documentation file required changes because `AGENTS.md` already documents the destroyed-ship cleanup lifecycle and explicit wx cleanup seam validated by this subtask.
+
+Commands executed during validation:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && make && ./TacticalTests` (post-test-update rerun)
+
+Final test outcomes:
+- Tactical suite: `OK (65 tests)`
+- Passed: 65
+- Failed: 0
+- Attempts: 1
+
+Documenter artifacts to review:
+- `artifacts/milestone8-remediation/m8r-subtask-4/documenter_report.md`
+- `artifacts/milestone8-remediation/m8r-subtask-4/documenter_result.json`
+- `artifacts/milestone8-remediation/m8r-subtask-4/verifier_prompt.txt`
+
+Verification requirements:
+- Verify the implementation and tests still satisfy the acceptance criteria against base branch `gui_sep`.
+- Verify the documenter decision is correct: no additional repository documentation update was needed because existing guidance already matches the shipped behavior.
+- Verify the artifact files above accurately record the documentation outcome and preserved commit hashes.
+- Verification must include documentation scope review alongside the implementation and tests, even though no repository documentation files were modified in this subtask.
