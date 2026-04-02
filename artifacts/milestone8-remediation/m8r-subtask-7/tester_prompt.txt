@@ -1,0 +1,29 @@
+You are the Tester Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-7`
+
+Please validate implementer changes for subtask `m8r-subtask-7` on branch `gui_sep-m8r-subtask-7-implementer-20260402`.
+
+Implementation commit to verify:
+- `b122628fc796092cc40b66f0cbea987b2643d61a`
+
+Modified files:
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `tests/tactical/Makefile`
+
+Acceptance criteria to verify:
+- Tests no longer encode duplicate cleanup sequence as expected behavior.
+- Tactical coverage verifies destroyed ships are removed exactly once from the wx/runtime side after delegated fire resolution.
+- Coverage protects both defensive-fire and offensive-fire cleanup paths if both can destroy ships.
+
+Implementation context:
+- Replaced the two fire-phase source-inspection tests with runtime fixture-based tests that execute `FTacticalGame` fire resolution and assert destroyed-ship ID lifecycle consistency through post-resolution cleanup.
+- Defensive and offensive paths each set up a one-shot scenario and verify destroyed IDs are captured once, cleaned once, and not reintroduced when completing the phase.
+- Tactical tests now link against existing module static libraries and invoke module builds as prerequisites so runtime model behavior can execute within `tests/tactical`.
+
+Please run (at minimum):
+1. `cd tests/tactical && make && ./TacticalTests`
+2. `make -C src/tactical && cd tests/tactical && make && ./TacticalTests`
+
+Record results and write tester artifacts into:
+- `artifacts/milestone8-remediation/m8r-subtask-7`
