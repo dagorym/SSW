@@ -520,3 +520,26 @@ cd tests/tactical && make clean && make && ./TacticalTests
 ```
 
 Result: `OK (62 tests)`
+
+Milestone 8 Subtask 5 validation then confirmed that no additional tactical/UI
+code changes were required after the Milestone 8 tactical board refactor work:
+the repository root build still succeeds, the tactical module runner still
+passes, and `BattleSim` still launches for GUI smoke validation. The automated
+validation basis accepted for subtask completion is:
+
+- `make -j2` passes at the repository root.
+- `cd tests/tactical && make clean && make -j2 && ./TacticalTests` passes with
+  `OK (62 tests)`.
+- `cd src && timeout 5s ./BattleSim` is sufficient as a launch smoke in this
+  CLI session.
+
+The aggregate `tests/SSWTests` runner still reproduces the known baseline linker
+failure for unresolved `FTacticalCombatReportTest` symbols, so that result does
+not change the subtask outcome. Full interactive tactical combat coverage for
+movement, defensive fire, offensive fire, offensive resolution, and battle
+completion was not executed here because the non-interactive CLI cannot drive
+the wxWidgets GUI. Per the accepted milestone orchestration decision, Subtask 5
+is recorded as complete on the basis of the passing build and tactical
+automated validation above, while a manual GUI tactical combat playthrough
+remains a follow-up outside this CLI session rather than something completed by
+this run.
