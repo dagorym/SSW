@@ -1,0 +1,30 @@
+You are the Tester Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-5`
+
+Please validate Milestone 8 remediation Subtask 5 on branch `gui_sep-m8r-subtask-5-implementer-20260402`.
+
+Implementation commit to verify:
+- `03258db0886d1ad3ecf6565773a48329b14e5c52`
+
+Modified files:
+- `src/tactical/FBattleDisplay.cpp`
+
+Acceptance criteria to validate:
+1. The runtime move-done callback reaches `FTacticalGame::completeMovePhase()` or final equivalent canonical screen/model seam.
+2. The callback still drives expected phase progression and redraw behavior.
+3. The fix applies to the live wx UI path identified in the Milestone 8 reviewer report.
+
+Implementation context:
+- `FBattleDisplay::onMoveDone()` was changed from `m_parent->setPhase(PH_FINALIZE_MOVE)` to `m_parent->completeMovePhase()`.
+- `FBattleScreen::completeMovePhase()` already delegates to `m_tacticalGame->completeMovePhase();` and then calls `reDraw();`.
+
+Relevant existing validations already run by implementer:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+
+Test file locations / conventions for any added tests (if needed):
+- `tests/tactical/`
+- Follow existing CppUnit tactical test patterns.
+
+Please write tester artifacts back into the same shared artifact directory and pass that same path forward to the Verifier.
