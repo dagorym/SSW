@@ -166,16 +166,24 @@ void FTacticalGameMechanicsTest::testDestroyedShipBookkeepingLifecycleContractIs
 // AC: model owns destroyed-ship capture and exposes explicit post-wx clear seam.
 const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
 const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string resetBody = extractFunctionBody(source, "void FTacticalGame::reset()");
 const std::string fireBody = extractFunctionBody(source, "FTacticalCombatReportSummary FTacticalGame::fireAllWeapons()");
 const std::string clearDestroyedBody = extractFunctionBody(source, "int FTacticalGame::clearDestroyedShips()");
 const std::string clearBookkeepingBody = extractFunctionBody(source, "void FTacticalGame::clearLastDestroyedShipIDs()");
 
 assertContains(header, "const std::vector<unsigned int> & getLastDestroyedShipIDs() const { return m_lastDestroyedShipIDs; }");
 assertContains(header, "void clearLastDestroyedShipIDs();");
+assertContains(header, "bool m_lastDestroyedShipIDsConsumed;");
+assertContains(resetBody, "m_lastDestroyedShipIDsConsumed = true;");
+assertContains(fireBody, "if (m_lastDestroyedShipIDsConsumed) {");
 assertContains(fireBody, "m_lastDestroyedShipIDs.clear();");
 assertContains(fireBody, "clearDestroyedShips();");
+assertContains(clearDestroyedBody, "if (m_lastDestroyedShipIDsConsumed) {");
+assertContains(clearDestroyedBody, "m_lastDestroyedShipIDs.clear();");
+assertContains(clearDestroyedBody, "m_lastDestroyedShipIDsConsumed = false;");
 assertContains(clearDestroyedBody, "m_lastDestroyedShipIDs.push_back((*itr)->getID());");
 assertContains(clearBookkeepingBody, "m_lastDestroyedShipIDs.clear();");
+assertContains(clearBookkeepingBody, "m_lastDestroyedShipIDsConsumed = true;");
 }
 
 void FTacticalGameMechanicsTest::testMovementHelpersResetAndFinalizeTurnData() {
