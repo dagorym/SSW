@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Task summary:
+- Subtask 5 validation run completed for Milestone 8 tactical board refactor; no implementation code edits were required in this pass.
+
+Modified files:
+- No tactical/source files modified.
+- Artifact files only:
+  - artifacts/milestone8/m8-subtask5/implementer_report.md
+  - artifacts/milestone8/m8-subtask5/tester_prompt.txt
+  - artifacts/milestone8/m8-subtask5/implementer_result.json
+
+Acceptance criteria to validate (from Planner):
+- The modified tactical/UI code builds successfully.
+- Relevant tactical automated tests pass.
+- A full tactical combat run exercises movement, defensive fire, offensive fire, and battle completion without board breakage.
+- Any manual verification steps or known gaps are documented clearly in the implementation notes.
+
+Create test files in:
+- tests/tactical/ (if additional test authoring is needed)
+
+Implementation context for testing:
+- Build validation passed at repository root (`make -j2`).
+- Tactical module runner passed (`tests/tactical/TacticalTests`, 62 tests).
+- Aggregate runner (`tests/SSWTests`) currently fails linking `FTacticalCombatReportTest` symbols; treat as existing baseline gap unless reproduced as milestone regression.
+- Full tactical combat verification is still manual/GUI-driven; implementer could only validate app launch in non-interactive CLI.
+
+Suggested test command(s):
+- make -j2
+- cd tests/tactical && make clean && make -j2 && ./TacticalTests
+- cd tests && make clean && make -j2 && ./SSWTests
+- Manual GUI validation: cd src && ./BattleSim (or ./SSW) and execute full tactical combat phases
+
+Shared artifact directory:
+- artifacts/milestone8/m8-subtask5
