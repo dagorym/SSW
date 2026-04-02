@@ -15,6 +15,7 @@ class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalMineDamageFlowTest );
 	CPPUNIT_TEST( testApplyMineDamageDefersDestroyedShipCleanupUntilAfterImmediateSummaryDialog );
 	CPPUNIT_TEST( testFinalizeMoveAppliesMineDamageExactlyOncePerMovementResolution );
+	CPPUNIT_TEST( testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath );
 	CPPUNIT_TEST( testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem );
 	CPPUNIT_TEST_SUITE_END();
 
@@ -29,6 +30,7 @@ public:
 
 	void testApplyMineDamageDefersDestroyedShipCleanupUntilAfterImmediateSummaryDialog();
 	void testFinalizeMoveAppliesMineDamageExactlyOncePerMovementResolution();
+	void testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath();
 	void testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem();
 };
 

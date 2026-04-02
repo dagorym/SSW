@@ -109,6 +109,19 @@ assertBefore(body, "finalizeMovementState();", "applyMineDamage();");
 assertBefore(body, "applyMineDamage();", "setPhase(PH_DEFENSE_FIRE);");
 }
 
+void FTacticalMineDamageFlowTest::testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath() {
+// AC: PH_FINALIZE_MOVE routing must use completeMovePhase() as the single post-move resolution path.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::setPhase(int p)");
+
+assertContains(body, "if (p == PH_FINALIZE_MOVE) {");
+assertContains(body, "completeMovePhase();");
+assertContains(body, "return;");
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "finalizeMovementState();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "applyMineDamage();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "clearDestroyedShips();"));
+}
+
 void FTacticalMineDamageFlowTest::testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem() {
 // AC: mine damage uses common tactical attack-report builder path and not board-local custom builders.
 const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
