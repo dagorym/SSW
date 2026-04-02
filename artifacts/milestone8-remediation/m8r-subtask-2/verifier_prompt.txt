@@ -1,0 +1,47 @@
+You are the Verifier Agent.
+
+Shared artifact directory (repository-root-relative):
+- artifacts/milestone8-remediation/m8r-subtask-2
+
+Task summary:
+- Milestone 8 Remediation Subtask 2 validated: fire-phase callback ordering hardening in `FBattleDisplay`.
+- Implementation-under-test code commit: `cbf61ed3f35687a308196cb6a1443ab27e4ead85`.
+- Tester added callback-ordering assertions in `tests/tactical/FTacticalBattleDisplayFireFlowTest.*` and passed the tactical suite.
+- Documenter updated `doc/DesignNotes.md` to record the pre-resolution fire-done button disable/hide behavior and refreshed the recorded validation scope/results.
+
+Acceptance criteria to verify:
+1. `FBattleDisplay` no longer initiates a sequence that clears model destroyed-ship bookkeeping before wx cleanup runs.
+2. Defensive-fire and offensive-fire completion paths both use the corrected ordering.
+3. Display still performs the same redraw and phase-advancement orchestration after cleanup.
+4. Documentation now accurately states that both fire-done callbacks disable/hide their buttons before delegated fire-phase resolution while preserving the delegated cleanup lifecycle.
+
+Implementation branch/worktree context:
+- Working tree branch: `gui_sep-m8r-subtask-2-documenter-20260402`
+- Base branch for comparison: `gui_sep`
+
+Files in review scope:
+- Implementation file:
+  - `src/tactical/FBattleDisplay.cpp`
+- Test files modified:
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- Documentation files modified:
+  - `doc/DesignNotes.md`
+
+Commands executed during testing/documentation context:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+
+Final test outcome:
+- Tactical test suite passed: 65 passed, 0 failed.
+
+Artifact references:
+- `artifacts/milestone8-remediation/m8r-subtask-2/tester_report.md`
+- `artifacts/milestone8-remediation/m8r-subtask-2/tester_result.json`
+- `artifacts/milestone8-remediation/m8r-subtask-2/documenter_report.md`
+- `artifacts/milestone8-remediation/m8r-subtask-2/documenter_result.json`
+
+Verification requirements:
+- Verify the implementation and tests against the acceptance criteria above.
+- Verify the updated documentation files along with the implementation and tests; do not treat docs as out of scope.
+- Confirm `doc/DesignNotes.md` matches the implemented/tested runtime behavior and does not overstate unverified behavior.
