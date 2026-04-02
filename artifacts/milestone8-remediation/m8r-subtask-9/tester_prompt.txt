@@ -1,0 +1,24 @@
+You are the Tester Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-9`.
+
+Please validate Milestone 8 remediation Subtask 9 documentation updates.
+
+Implementation context:
+- Branch: `gui_sep-m8r-subtask-9-implementer-20260402`
+- Implementation/content commit: `1bc646a`
+- Modified file: `doc/DesignNotes.md`
+- Scope: documentation-only edits (no source or test files changed).
+
+Planner acceptance criteria to verify:
+1. Design notes no longer claim fire cleanup and move-finalization fixes were already present before remediation.
+2. Notes separate the two blocking runtime bugs from the accepted manual GUI playthrough limitation.
+3. Notes record the new automated seam coverage once it exists.
+
+Specific verifier-warning alignment to check:
+- Ensure wording no longer overstates that `FTacticalMineDamageFlowTest` directly covers the full `FBattleDisplay -> FBattleScreen` wx move-done seam.
+- Ensure documentation attributes wx seam coverage to `FTacticalBattleScreenDelegationTest` and keeps `FTacticalMineDamageFlowTest` framed as direct canonical `FTacticalGame::completeMovePhase()` outcome coverage.
+
+Test file location guidance (for tester reference):
+- Tactical tests live in `tests/tactical/` (project convention), but this subtask changed only `doc/DesignNotes.md`.
+- Validation should focus on documentation accuracy and consistency against existing remediation narrative.
