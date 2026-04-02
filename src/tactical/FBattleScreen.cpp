@@ -466,11 +466,23 @@ void FBattleScreen::clearDestroyedShips(){
 	//    m_lastDestroyedShipIDs and model-state ship removal.
 	//    Legacy seam reference: const int liveShips = m_tacticalGame->clearDestroyedShips();
 	// 2) FBattleScreen owns wx-side cleanup orchestration (map/display refresh and
-	//    winner handling) using the captured IDs.
+	//    runtime view state updates) using the captured IDs.
 	// 3) FTacticalGame bookkeeping is cleared exactly once here after wx-side
 	//    cleanup consumes this lifecycle boundary.
 	const std::vector<unsigned int> & destroyedShipIDs = m_tacticalGame->getLastDestroyedShipIDs();
 	if (!destroyedShipIDs.empty()) {
+		FVehicle * selectedShip = getShip();
+		if (selectedShip != NULL) {
+			const unsigned int selectedShipID = selectedShip->getID();
+			for (std::vector<unsigned int>::const_iterator itr = destroyedShipIDs.begin();
+				itr != destroyedShipIDs.end();
+				++itr) {
+				if ((*itr) == selectedShipID) {
+					setShip(NULL);
+					break;
+				}
+			}
+		}
 		reDraw();
 	}
 	m_tacticalGame->clearLastDestroyedShipIDs();
