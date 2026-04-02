@@ -1,0 +1,42 @@
+You are the Verifier Agent.
+
+Shared artifact directory (repository-root-relative): artifacts/milestone8-remediation/m8r-subtask-7
+
+Task summary:
+- Subtask: m8r-subtask-7
+- Base branch context: gui_sep
+- Implementer branch: gui_sep-m8r-subtask-7-implementer-20260402
+- Tester branch/worktree: gui_sep-m8r-subtask-7-tester-20260402
+- Documenter branch/worktree: gui_sep-m8r-subtask-7-documenter-20260402
+- Implementation commit validated by tester: b122628fc796092cc40b66f0cbea987b2643d61a
+- Documentation commit: 3ff215bd2aa565276fbbc98f565b224718234736
+
+Acceptance criteria validated in prior stages:
+1. Tests no longer encode duplicate cleanup sequence as expected behavior.
+2. Tactical coverage verifies destroyed ships are removed exactly once from wx/runtime side after delegated fire resolution.
+3. Coverage protects both defensive-fire and offensive-fire cleanup paths.
+
+Implementation and test files in scope:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/Makefile
+
+Documentation files updated:
+- doc/DesignNotes.md
+
+Documentation summary:
+- Added a Design Notes entry for Milestone 8 remediation Subtask 7 describing the new runtime fire-flow coverage.
+- Documented that `FTacticalBattleDisplayFireFlowTest` now uses a minimal `FTacticalGame`/fleet harness to exercise real defensive-fire and offensive-fire destruction scenarios, validating destroyed-ID capture once, model-side removal, and single-clear completion behavior.
+- Documented that `tests/tactical/Makefile` now builds model prerequisites and links the tactical runtime libraries so the tactical module tests can execute that runtime harness.
+
+Commands executed during validated testing:
+- cd tests/tactical && make && ./TacticalTests
+- make -C src/tactical && cd tests/tactical && make && ./TacticalTests
+
+Final test outcomes:
+- OK (68 tests) on both runs.
+
+Verification requirements:
+- Verify the implementation and test changes still satisfy the accepted runtime cleanup behavior for both defensive-fire and offensive-fire paths.
+- Verify `doc/DesignNotes.md` accurately reflects the implemented and tested behavior, and does not claim anything beyond the validated diff.
+- Verify the shared artifact directory contents, including `documenter_report.md` and `documenter_result.json`, are consistent with the documentation commit above.
+- Verification must include the updated documentation file along with the implementation and tests.
