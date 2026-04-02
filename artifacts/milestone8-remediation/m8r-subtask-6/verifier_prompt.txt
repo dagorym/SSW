@@ -1,0 +1,52 @@
+You are the Verifier Agent.
+
+Shared artifact directory (repository-root-relative): artifacts/milestone8-remediation/m8r-subtask-6
+
+Verify Milestone 8 remediation Subtask 6 across implementation, tests, and documentation.
+
+Task summary:
+- Validated that `FTacticalGame::setPhase(PH_FINALIZE_MOVE)` now routes to `completeMovePhase()` and returns.
+- This preserves `completeMovePhase()` as the canonical post-move resolution seam and removes inline finalize-only duplication from that runtime route.
+
+Implementation context:
+- Base branch for comparison: `gui_sep`
+- Implementation branch: `gui_sep-m8r-subtask-6-implementer-20260402`
+- Implementation commit under test: `2473c6d5cae0b7da9c2f41cf5f192e4cb2df6ade`
+- Documenter branch: `gui_sep-m8r-subtask-6-documenter-20260402`
+- Documentation commit: `ef027d8f740a7d6ee2786b9688aec24c19b8b85e`
+
+Implementation files:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+
+Test files added or modified:
+- `tests/tactical/FTacticalMineDamageFlowTest.h`
+- `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+
+Documentation files added or modified:
+- `AGENTS.md`
+
+Acceptance criteria validated:
+1. `FTacticalGame::completeMovePhase()` remains authoritative post-move resolution entry point.
+2. Runtime path reaches intended model behavior for mine interactions, destruction handling, and occupancy finalization.
+3. No duplicated UI-side move-finalization logic remains on the runtime path.
+
+Tester-added coverage to inspect:
+- `testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath`
+  - Confirms `setPhase(PH_FINALIZE_MOVE)` calls `completeMovePhase(); return;`
+  - Confirms no direct `finalizeMovementState();`, `applyMineDamage();`, or `clearDestroyedShips();` remain in `setPhase`
+
+Documentation update to verify:
+- `AGENTS.md` now states that both the live `FBattleDisplay` move-completion callback and `FTacticalGame::setPhase(PH_FINALIZE_MOVE)` route through `FTacticalGame::completeMovePhase()`, preserving that method as the canonical post-move resolution seam for mine interactions, destruction handling, and occupancy finalization.
+
+Commands executed:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && make && ./TacticalTests` (post-test update)
+
+Final outcomes:
+- Tactical module build succeeded.
+- Tactical tests passed: initial `OK (67 tests)`, final `OK (68 tests)`.
+- Test changes commit: `da4cdb68b86ee9c7865c7c2044758a2351a57172`
+
+Verification must include the updated documentation file `AGENTS.md` along with the implementation and test changes.
