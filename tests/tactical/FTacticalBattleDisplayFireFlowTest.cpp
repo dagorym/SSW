@@ -138,6 +138,26 @@ CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_par
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(body, "m_parent->toggleMovingPlayer();"));
 }
 
+void FTacticalBattleDisplayFireFlowTest::testDefensiveFireDoneDisablesAndHidesButtonBeforeResolution() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event )");
+
+assertContains(body, "m_buttonDefensiveFireDone->Enable(false);");
+assertContains(body, "m_buttonDefensiveFireDone->Hide();");
+assertBefore(body, "m_buttonDefensiveFireDone->Enable(false);", "m_parent->resolveCurrentFirePhase()");
+assertBefore(body, "m_buttonDefensiveFireDone->Hide();", "m_parent->resolveCurrentFirePhase()");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testOffensiveFireDoneDisablesAndHidesButtonBeforeResolution() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event )");
+
+assertContains(body, "m_buttonOffensiveFireDone->Enable(false);");
+assertContains(body, "m_buttonOffensiveFireDone->Hide();");
+assertBefore(body, "m_buttonOffensiveFireDone->Enable(false);", "m_parent->resolveCurrentFirePhase()");
+assertBefore(body, "m_buttonOffensiveFireDone->Hide();", "m_parent->resolveCurrentFirePhase()");
+}
+
 void FTacticalBattleDisplayFireFlowTest::testWeaponSelectionDelegatesToBattleScreenModelApi() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string body = extractFunctionBody(source, "void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event)");
