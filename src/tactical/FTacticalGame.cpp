@@ -176,6 +176,7 @@ void FTacticalGame::reset() {
 	clearICMVector(m_ICMData);
 	m_tacticalReport.clear();
 	m_lastDestroyedShipIDs.clear();
+	m_lastDestroyedShipIDsConsumed = true;
 	m_shipPos.setPoint(-1, -1);
 	m_setRotation = false;
 	m_movementHexes.clear();
@@ -445,13 +446,19 @@ FTacticalCombatReportSummary FTacticalGame::fireAllWeapons() {
 	}
 	FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();
 	clearTacticalReport();
-	m_lastDestroyedShipIDs.clear();
+	if (m_lastDestroyedShipIDsConsumed) {
+		m_lastDestroyedShipIDs.clear();
+	}
 	clearDestroyedShips();
 	clearICMVector(m_ICMData);
 	return summary;
 }
 
 int FTacticalGame::clearDestroyedShips() {
+	if (m_lastDestroyedShipIDsConsumed) {
+		m_lastDestroyedShipIDs.clear();
+		m_lastDestroyedShipIDsConsumed = false;
+	}
 	toggleActivePlayer();
 	VehicleList * sList = m_activePlayer ? m_attackShips : m_defendShips;
 	if (sList == NULL) {
@@ -481,6 +488,7 @@ int FTacticalGame::clearDestroyedShips() {
 
 void FTacticalGame::clearLastDestroyedShipIDs() {
 	m_lastDestroyedShipIDs.clear();
+	m_lastDestroyedShipIDsConsumed = true;
 }
 
 VehicleList * FTacticalGame::findHexOccupantsForShip(unsigned int shipID) {

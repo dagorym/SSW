@@ -269,6 +269,8 @@ VehicleList * m_defendShips;
 std::vector<ICMData *> m_ICMData;
 FTacticalCombatReport m_tacticalReport;
 std::vector<unsigned int> m_lastDestroyedShipIDs;
+/// True when destroyed-ship IDs have been consumed by wx cleanup and can be reset by model capture.
+bool m_lastDestroyedShipIDsConsumed;
 
 /// Tactical hex-map mechanics state (legacy FBattleBoard model data)
 FTacticalHexData m_hexData[100][100];
