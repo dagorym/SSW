@@ -492,7 +492,7 @@ void FBattleDisplay::onMoveDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonMoveDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
 //	std::cerr << "Movement Completed" << std::endl;
-	m_parent->setPhase(PH_FINALIZE_MOVE);
+	m_parent->completeMovePhase();
 	m_buttonMoveDone->Hide();
 	m_first=true;
 }
