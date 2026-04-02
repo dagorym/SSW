@@ -363,12 +363,16 @@ remaining non-view interactions through the existing forwarding seam:
   selected ship directly from `FBattleDisplay`.
 - **Fire-phase resolution:** defensive and offensive fire completion now call
   `resolveCurrentFirePhase()`, show the shared tactical damage summary dialog,
-  clear destroyed ships, and then finish the phase through the dedicated model
-  completion APIs instead of running local fire-resolution logic. The shipped
-  remediation path preserves cached destroyed-ship IDs long enough for
-  `FBattleScreen::clearDestroyedShips()` to remove those ships from the wx map,
-  then derives the destroyed side as the active player's opponent so fallback
-  winner detection still works when model cleanup was already performed.
+  run wx-side cleanup through `FBattleScreen::clearDestroyedShips()`, and only
+  then finish the phase through the dedicated model completion APIs instead of
+  running local fire-resolution logic. The remediation contract is now explicit:
+  `FTacticalGame::fireAllWeapons()` owns fire resolution plus destroyed-ship ID
+  capture via `clearDestroyedShips()`, `FBattleScreen::clearDestroyedShips()`
+  owns wx redraw/map cleanup orchestration by consuming
+  `getLastDestroyedShipIDs()`, and `FTacticalGame::clearLastDestroyedShipIDs()`
+  is called exactly once after that wx-side consumption boundary. This keeps
+  fallback winner detection working when model cleanup has already removed the
+  destroyed side from tactical state.
 - **Mine placement/setup:** setup-speed completion now calls
   `beginMinePlacement()`, mine placement completion calls
   `completeMinePlacement()`, and the mine-placement UI reads the selectable
@@ -458,6 +462,38 @@ cd tests/tactical && make && ./TacticalTests
 ```
 
 Result: `OK (54 tests)`
+
+Milestone 8 remediation Subtask 1 then made the destroyed-ship lifecycle
+contract itself explicit in both the model seam and the wx coordinator. The
+documented ordering is now:
+
+1. `FBattleDisplay::{onDefensiveFireDone(),onOffensiveFireDone()}` calls
+   `resolveCurrentFirePhase()`.
+2. `FTacticalGame::fireAllWeapons()` resolves fire, clears any stale cached
+   destroyed IDs, and captures the current destroyed-ship IDs while removing
+   destroyed ships from model-owned tactical state.
+3. `FBattleDisplay` shows the tactical summary dialog before any wx cleanup.
+4. `FBattleScreen::clearDestroyedShips()` consumes
+   `getLastDestroyedShipIDs()`, performs wx redraw / board cleanup
+   orchestration, and only then clears the bookkeeping via
+   `clearLastDestroyedShipIDs()`.
+5. `FBattleDisplay` advances the phase through
+   `completeDefensiveFirePhase()` / `completeOffensiveFirePhase()`.
+
+This preserves the Milestone 8 ownership split: fire resolution and destroyed
+ID capture stay model-owned, while board/map cleanup ordering remains a wx-side
+responsibility.
+
+Validation commands:
+
+```bash
+make -C src/tactical
+cd tests/tactical && make && ./TacticalTests
+cd tests/tactical && make && ./TacticalTests
+make -C src/tactical
+```
+
+Result: `OK (63 tests)`
 
 Milestone 8 Subtask 3 validation then confirmed that `FBattleBoard` renders
 from model-backed tactical state, forwards hex clicks through
