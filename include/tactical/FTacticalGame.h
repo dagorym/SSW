@@ -170,9 +170,29 @@ const FTacticalCombatReport & getCurrentTacticalReport() const { return m_tactic
 
 void applyFireDamage();
 void fireICM();
+/**
+ * @brief Resolve current side weapon fire and capture destroyed-ship bookkeeping.
+ *
+ * Milestone 8 remediation contract:
+ * - Model owns fire resolution and destroyed-ship ID capture.
+ * - wx callers may read getLastDestroyedShipIDs() after this method returns.
+ * - wx-side cleanup must consume IDs before clearLastDestroyedShipIDs() is called.
+ */
 FTacticalCombatReportSummary fireAllWeapons();
+/**
+ * @brief Remove destroyed ships from model-owned tactical state and capture IDs.
+ *
+ * This method is the model-side owner of destroyed-ship ID capture in
+ * m_lastDestroyedShipIDs. It should run during fire resolution before wx cleanup.
+ */
 int clearDestroyedShips();
 const std::vector<unsigned int> & getLastDestroyedShipIDs() const { return m_lastDestroyedShipIDs; }
+/**
+ * @brief Clear destroyed-ship bookkeeping after wx cleanup consumes IDs.
+ *
+ * Canonical clear point for m_lastDestroyedShipIDs in the delegated fire flow.
+ */
+void clearLastDestroyedShipIDs();
 bool isCombatOver() const;
 bool hasWinner() const { return m_hasWinner; }
 unsigned int getWinnerID() const { return m_winnerID; }

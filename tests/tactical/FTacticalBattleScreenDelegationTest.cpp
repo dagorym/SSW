@@ -209,8 +209,12 @@ assertContains(setWeaponBody, "m_tacticalGame->setWeapon(w);");
 assertContains(setWeaponBody, "m_tacticalGame->computeWeaponRange();");
 
 const std::string clearDestroyedBody = extractFunctionBody(source, "void FBattleScreen::clearDestroyedShips()");
-assertContains(clearDestroyedBody, "const int liveShips = m_tacticalGame->clearDestroyedShips();");
-CPPUNIT_ASSERT(clearDestroyedBody.find("m_map->") == std::string::npos);
+assertContains(clearDestroyedBody, "const std::vector<unsigned int> & destroyedShipIDs = m_tacticalGame->getLastDestroyedShipIDs();");
+assertContains(clearDestroyedBody, "if (!destroyedShipIDs.empty()) {");
+assertContains(clearDestroyedBody, "reDraw();");
+assertContains(clearDestroyedBody, "m_tacticalGame->clearLastDestroyedShipIDs();");
+assertContains(clearDestroyedBody, "if (m_tacticalGame->hasWinner()) {");
+assertContains(clearDestroyedBody, "declareWinner();");
 CPPUNIT_ASSERT(clearDestroyedBody.find("m_turnInfo") == std::string::npos);
 }
 

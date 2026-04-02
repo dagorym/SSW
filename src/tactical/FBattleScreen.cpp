@@ -461,8 +461,20 @@ bool FBattleScreen::isHexOccupied(const FPoint & hex) const {
 }
 
 void FBattleScreen::clearDestroyedShips(){
-	const int liveShips = m_tacticalGame->clearDestroyedShips();
-	if (!liveShips) {
+	// Milestone 8 remediation contract:
+	// 1) FTacticalGame::resolveCurrentFirePhase()/fireAllWeapons owns capture of
+	//    m_lastDestroyedShipIDs and model-state ship removal.
+	//    Legacy seam reference: const int liveShips = m_tacticalGame->clearDestroyedShips();
+	// 2) FBattleScreen owns wx-side cleanup orchestration (map/display refresh and
+	//    winner handling) using the captured IDs.
+	// 3) FTacticalGame bookkeeping is cleared exactly once here after wx-side
+	//    cleanup consumes this lifecycle boundary.
+	const std::vector<unsigned int> & destroyedShipIDs = m_tacticalGame->getLastDestroyedShipIDs();
+	if (!destroyedShipIDs.empty()) {
+		reDraw();
+	}
+	m_tacticalGame->clearLastDestroyedShipIDs();
+	if (m_tacticalGame->hasWinner()) {
 		declareWinner();
 	}
 }

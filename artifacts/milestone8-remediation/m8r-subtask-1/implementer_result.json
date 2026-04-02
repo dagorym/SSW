@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "subtask_id": "m8r-subtask-1",
+  "branch": "gui_sep-m8r-subtask-1-implementer-20260402",
+  "implementation_commit": "042c3f458b74266802c0f482722053c5305d093f",
+  "changed_files": [
+    "include/tactical/FTacticalGame.h",
+    "src/tactical/FTacticalGame.cpp",
+    "src/tactical/FBattleScreen.cpp",
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "validation_commands": [
+    "make -C src/tactical && cd tests/tactical && make && ./TacticalTests",
+    "make -C src/tactical && cd tests/tactical && make && ./TacticalTests",
+    "make -C src/tactical && cd tests/tactical && make && ./TacticalTests"
+  ],
+  "validation_outcome": {
+    "baseline": "pass",
+    "post_change_attempt_1": "fail (FTacticalBattleScreenDelegationTest source assertion expected legacy clearDestroyedShips line)",
+    "post_change_attempt_2": "pass"
+  },
+  "artifacts_written": [
+    "artifacts/milestone8-remediation/m8r-subtask-1/implementer_report.md",
+    "artifacts/milestone8-remediation/m8r-subtask-1/implementer_result.json",
+    "artifacts/milestone8-remediation/m8r-subtask-1/tester_prompt.txt"
+  ]
+}
