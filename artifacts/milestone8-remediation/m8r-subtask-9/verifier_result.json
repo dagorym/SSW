@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "subtask": "m8r-subtask-9",
+  "branch": "gui_sep-m8r-subtask-9-verifier-20260402",
+  "base_branch": "gui_sep",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient for this documentation-only subtask: tester artifacts record `cd tests/tactical && make -s && ./TacticalTests` -> `OK (69 tests)`, and the cited tactical tests align with the design-note framing of wx delegation coverage versus direct canonical outcome coverage.",
+  "documentation_accuracy_summary": "doc/DesignNotes.md accurately frames the shipped Milestone 8 state versus later remediation, separates the two blocking runtime bugs from the accepted manual GUI limitation, and distinguishes wx delegation coverage from direct FTacticalGame::completeMovePhase() outcome coverage.",
+  "findings": [],
+  "artifact_files_written": [
+    "artifacts/milestone8-remediation/m8r-subtask-9/verifier_report.md",
+    "artifacts/milestone8-remediation/m8r-subtask-9/verifier_result.json"
+  ]
+}
