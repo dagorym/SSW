@@ -20,5 +20,5 @@
     "cd tests && make -j2",
     "cd src && timeout 5s ./BattleSim"
   ],
-  "commit": "68e2e87f07a650478d1ed17e0d4628d5ba382637"
+  "commit": "feaa4ebf6fbce693dfddc319216c1a985c324464"
 }
