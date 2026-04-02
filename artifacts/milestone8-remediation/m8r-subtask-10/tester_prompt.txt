@@ -1,0 +1,32 @@
+You are the Tester Agent.
+
+Use shared artifact directory: `artifacts/milestone8-remediation/m8r-subtask-10`.
+
+Context:
+- Subtask: Milestone 8 Remediation — Subtask 10 (tactical-focused validation confirmation)
+- Branch: `gui_sep-m8r-subtask-10-implementer-20260402`
+- Implementer performed validation-only execution; no source/test/doc files were modified in this subtask.
+
+Acceptance criteria to verify:
+1. Relevant tactical test target builds successfully.
+2. Updated tactical suite passes with remediated fire-flow and move-completion seam coverage enabled.
+3. Validation notes clearly identify what was run and any remaining known non-blocking gaps.
+
+What was run by implementer:
+```bash
+cd tests/tactical
+make clean
+make
+./TacticalTests
+```
+Observed result: `OK (69 tests)`.
+
+Observed non-blocking context:
+- Existing warning in `src/strategic/FJumpRoute.cpp` (`-Wint-to-pointer-cast`) during dependency rebuild.
+- Accepted limitation: manual GUI playthrough remains non-automated and non-blocking.
+- Adjacent legacy duplicate finalize path note remains non-blocking; canonical runtime path is validated through tactical seam tests.
+
+Modified files list for this subtask:
+- None (validation/artifact-only subtask execution).
+
+Please independently re-run/confirm tactical validation and record tester artifacts in the same shared directory.
