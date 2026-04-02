@@ -480,15 +480,17 @@ documented ordering is now:
    destroyed ships from model-owned tactical state.
 3. `FBattleDisplay` shows the tactical summary dialog before any wx cleanup.
 4. `FBattleScreen::clearDestroyedShips()` consumes
-   `getLastDestroyedShipIDs()`, performs wx redraw / board cleanup
-   orchestration, and only then clears the bookkeeping via
-   `clearLastDestroyedShipIDs()`.
+   `getLastDestroyedShipIDs()`, performs wx/runtime cleanup orchestration
+   (including clearing a now-destroyed selected ship, redrawing the board/view,
+   and preserving winner handling at the screen seam), and only then clears the
+   bookkeeping via `clearLastDestroyedShipIDs()`. The screen seam does not call
+   back into model destructive cleanup during this step.
 5. `FBattleDisplay` advances the phase through
    `completeDefensiveFirePhase()` / `completeOffensiveFirePhase()`.
 
 This preserves the Milestone 8 ownership split: fire resolution and destroyed
-ID capture stay model-owned, while board/map cleanup ordering remains a wx-side
-responsibility.
+ID capture stay model-owned, while runtime view cleanup ordering remains a
+wx-side responsibility owned by `FBattleScreen`.
 
 Validation commands:
 
