@@ -1,0 +1,21 @@
+{
+  "status": "completed",
+  "subtask_identifier": "milestone8-remediation-m8r-subtask-1",
+  "branch_name": "gui_sep-m8r-subtask-1-verifier-20260402",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient. Tactical seam tests cover the explicit destroyed-ship lifecycle contract and FBattleScreen delegation; rerun tactical validation passed with OK (63 tests).",
+  "artifact_files": [
+    "artifacts/milestone8-remediation/m8r-subtask-1/verifier_report.md",
+    "artifacts/milestone8-remediation/m8r-subtask-1/verifier_result.json"
+  ],
+  "validation": {
+    "commands": [
+      "make -C src/tactical",
+      "cd tests/tactical && make && ./TacticalTests"
+    ],
+    "result": "OK (63 tests)"
+  }
+}
