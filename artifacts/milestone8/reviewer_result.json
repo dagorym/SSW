@@ -1,0 +1,69 @@
+{
+  "status": "completed",
+  "feature": "milestone8-battle-display-board-rendering",
+  "plan_reference": "plans/milestone8-battle-display-board-rendering-plan.md",
+  "artifact_directory": "artifacts/milestone8",
+  "outcome": "FAIL",
+  "feature_completeness_summary": "Milestone 8 delivered the intended model API expansion, test-suite reshaping, and accepted automated validation artifacts, but the merged runtime tactical flow still contains blocking regressions in delegated destroyed-ship cleanup and move completion routing.",
+  "inputs_reviewed": [
+    "artifacts/milestone8/m8-subtask1",
+    "artifacts/milestone8/m8-subtask2",
+    "artifacts/milestone8/m8-subtask3",
+    "artifacts/milestone8/m8-subtask4",
+    "artifacts/milestone8/m8-subtask5",
+    "doc/DesignNotes.md",
+    "plans/milestone8-battle-display-board-rendering-plan.md"
+  ],
+  "blocking_findings": [
+    {
+      "summary": "Delegated fire cleanup still clears destroyed ships twice, breaking wx-side destroyed-ship synchronization.",
+      "files": [
+        "src/tactical/FBattleDisplay.cpp:541-555",
+        "src/tactical/FBattleScreen.cpp:463-468",
+        "src/tactical/FTacticalGame.cpp:445-448",
+        "src/tactical/FTacticalGame.cpp:452-478",
+        "artifacts/milestone8/m8-subtask2/verifier_report.md"
+      ]
+    },
+    {
+      "summary": "Live move completion still bypasses FTacticalGame::completeMovePhase(), leaving key movement resolution logic off the runtime path.",
+      "files": [
+        "src/tactical/FBattleDisplay.cpp:491-498",
+        "src/tactical/FTacticalGame.cpp:270-282",
+        "src/tactical/FTacticalGame.cpp:1437-1485",
+        "artifacts/milestone8/m8-subtask3/verifier_result.json"
+      ]
+    }
+  ],
+  "warning_findings": [
+    {
+      "summary": "Design notes claim Milestone 8 remediation behavior that the merged code still does not implement.",
+      "files": [
+        "doc/DesignNotes.md:388-394",
+        "doc/DesignNotes.md:449-452"
+      ]
+    },
+    {
+      "summary": "Passing tactical tests still do not cover the live wx callback seams where the remaining runtime regressions occur.",
+      "files": [
+        "artifacts/milestone8/m8-subtask2/verifier_result.json",
+        "artifacts/milestone8/m8-subtask3/verifier_result.json",
+        "artifacts/milestone8/m8-subtask5/verifier_report.md"
+      ]
+    }
+  ],
+  "note_findings": [
+    {
+      "summary": "The missing interactive GUI playthrough remains an accepted Subtask 5 limitation and is documented consistently.",
+      "files": [
+        "artifacts/milestone8/m8-subtask5/verifier_report.md",
+        "doc/DesignNotes.md:524-545"
+      ]
+    }
+  ],
+  "follow_up_feature_requests": [
+    "Update the delegated fire-resolution cleanup path so destroyed ships are removed exactly once from both model state and the wx board, with automated coverage for defensive and offensive fire cleanup.",
+    "Rewire the live move-completion callback to execute FTacticalGame::completeMovePhase() as the canonical post-move resolution path, and add coverage for mine checks, mine damage, off-board destruction, and final occupancy updates.",
+    "Correct Milestone 8 design notes and related milestone artifacts so documentation reflects the actual runtime status of remediations and validation coverage."
+  ]
+}
