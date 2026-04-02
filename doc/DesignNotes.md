@@ -361,18 +361,13 @@ remaining non-view interactions through the existing forwarding seam:
 - **Weapon/defense selection:** click handling now calls
   `FBattleScreen::selectWeapon()` / `selectDefense()` instead of mutating the
   selected ship directly from `FBattleDisplay`.
-- **Fire-phase resolution:** defensive and offensive fire completion now call
-  `resolveCurrentFirePhase()`, show the shared tactical damage summary dialog,
-  run wx-side cleanup through `FBattleScreen::clearDestroyedShips()`, and only
-  then finish the phase through the dedicated model completion APIs instead of
-  running local fire-resolution logic. The remediation contract is now explicit:
-  `FTacticalGame::fireAllWeapons()` owns fire resolution plus destroyed-ship ID
-  capture via `clearDestroyedShips()`, `FBattleScreen::clearDestroyedShips()`
-  owns wx redraw/map cleanup orchestration by consuming
-  `getLastDestroyedShipIDs()`, and `FTacticalGame::clearLastDestroyedShipIDs()`
-  is called exactly once after that wx-side consumption boundary. This keeps
-  fallback winner detection working when model cleanup has already removed the
-  destroyed side from tactical state.
+- **Fire-phase resolution (shipped Subtask 2 state):** defensive and offensive
+  fire completion delegated through `resolveCurrentFirePhase()`, shared tactical
+  summary UI, and `FBattleScreen::clearDestroyedShips()` rather than local
+  `FBattleDisplay` fire-resolution logic. However, the shipped Milestone 8 build
+  still had a blocking runtime cleanup-order bug in this seam; the explicit
+  single-clear lifecycle contract was added later by Milestone 8 remediation
+  Subtasks 1/2/4.
 - **Mine placement/setup:** setup-speed completion now calls
   `beginMinePlacement()`, mine placement completion calls
   `completeMinePlacement()`, and the mine-placement UI reads the selectable
@@ -389,13 +384,18 @@ handled by computing the clicked board hex in `FBattleBoard::onLeftUp()` and
 forwarding that `FPoint` to `FBattleScreen::handleHexClick()`, which delegates
 the behavior to `FTacticalGame::handleHexClick()`.
 
-This leaves the runtime tactical wx path only partially rewired in Milestone 8:
-`FBattleDisplay` now behaves as a wx renderer/input translator for delegated
-fire/setup flows and its live move-completion callback routes through
-`FTacticalGame::completeMovePhase()`, while `FBattleBoard` has been narrowed to
-renderer/hit-test responsibilities. A remaining legacy bypass through
-`FBattleScreen::setPhase(PH_FINALIZE_MOVE)` is still documented in verifier
-artifacts rather than treated as completed migration work.
+This leaves the originally shipped Milestone 8 runtime tactical wx path only
+partially rewired: `FBattleDisplay` behaved as a wx renderer/input translator
+for delegated fire/setup flows and `FBattleBoard` was narrowed to
+renderer/hit-test responsibilities, but two blocking runtime seams remained.
+First, fire cleanup ordering could clear destroyed-ship bookkeeping before wx
+consumption. Second, the live move-done path still bypassed canonical
+`FTacticalGame::completeMovePhase()` via `setPhase(PH_FINALIZE_MOVE)`.
+
+These blocking runtime defects were remediated after Milestone 8 shipment.
+They are distinct from the accepted non-blocking limitation that full tactical
+GUI scenario playthrough still requires manual wx validation in addition to the
+module's automated seam-level tests.
 
 ### Validation Completed
 
@@ -623,12 +623,13 @@ make -C src/tactical && cd tests/tactical && make && ./TacticalTests
 
 Result: `OK (68 tests)` on both runs.
 
-Milestone 8 remediation Subtask 8 then added runtime coverage for the live wx
-move-done path instead of relying only on helper-level or source-inspection
-assertions. `FTacticalMineDamageFlowTest` now exercises the actual
-`FBattleDisplay` → `FBattleScreen` move-completion seam and confirms that the
-live callback reaches the canonical model-owned `FTacticalGame::completeMovePhase()`
-path before post-move progression continues.
+Milestone 8 remediation Subtask 8 then expanded automated move-completion seam
+coverage instead of relying only on helper-level or source-inspection
+assertions. `FTacticalBattleScreenDelegationTest` covers the live wx callback
+delegation boundary (`FBattleDisplay` move-done flow delegating through
+`FBattleScreen::completeMovePhase()`), while `FTacticalMineDamageFlowTest`
+locks canonical post-move outcomes by calling
+`FTacticalGame::completeMovePhase()` directly.
 
 The validated runtime outcomes recorded by that coverage are:
 
