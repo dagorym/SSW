@@ -1,0 +1,51 @@
+You are the Documenter Agent.
+
+Task summary:
+- Document Milestone 8 Subtask 4 tactical test updates that remove reliance on transitional FBattleDisplay/FBattleBoard logic and verify model-owned selection/hex-click delegation surface.
+
+Acceptance criteria validated by tester:
+- Tactical tests compile and reflect the Milestone 8 architecture.
+- Tests no longer require `FBattleDisplay::fireAllWeapons()` to exist.
+- Tests cover the new selection/hex-click delegation surface and the removal of duplicated board state from `FBattleBoard`.
+- Test registration and makefiles are updated so the suite builds under repository conventions.
+
+Implementation/worktree context:
+- Tester worktree: `/home/tstephen/worktrees/SSW-m8/gui_sep-m8-subtask4-tester-20260401`
+- Tester branch: `gui_sep-m8-subtask4-tester-20260401`
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m8-subtask4-implementer-20260402`
+
+Files in tested implementation scope:
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.h`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/tactical/Makefile`
+
+Tester commit details:
+- Test commit hash: `No Changes Made` (tester did not modify test sources; validated implementer-delivered test updates as-is)
+- Artifact commit contains tester handoff outputs.
+
+Commands executed:
+- `cd tests/tactical && make clean && make && ./TacticalTests`  -> PASS (`OK (62 tests)`)
+- `cd tests && make`  -> optional aggregate check failed due missing module libraries in this worktree context (`-lstrategic`, `-lships`, `-lgui`, `-ltactical`, `-lweapons`, `-ldefenses`, `-lcore` not found)
+
+Final test outcomes:
+- Tactical suite status: PASS
+- Total tests: 62
+- Passed: 62
+- Failed: 0
+- No unmet acceptance criteria.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8/m8-subtask4`
+
+Available tester artifacts:
+- `artifacts/milestone8/m8-subtask4/tester_report.md`
+- `artifacts/milestone8/m8-subtask4/tester_result.json`
+- `artifacts/milestone8/m8-subtask4/documenter_prompt.txt`
+
+Please update project documentation/changelog notes to reflect that Milestone 8 Subtask 4 is test-validated, with tactical tests now anchored on FTacticalGame selection/hex-click delegation surfaces and without transitional FBattleDisplay fireAllWeapons coupling.
