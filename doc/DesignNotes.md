@@ -488,3 +488,35 @@ cd tests/tactical && make clean && make && ./TacticalTests
 ```
 
 Result: `OK (57 tests)`
+
+Milestone 8 Subtask 4 validation then confirmed that the tactical
+source-inspection suite is now anchored on the model-owned
+`FTacticalGame` selection and hex-click delegation surface introduced by the
+earlier Milestone 8 rewiring steps. The updated tactical tests now verify that:
+
+- `FTacticalBattleDisplayFireFlowTest` no longer depends on any
+  transitional `FBattleDisplay::fireAllWeapons()` helper and instead checks
+  the click-flow forwarding APIs that remain authoritative on the wx side.
+- `FTacticalBattleScreenDelegationTest` explicitly covers the selection and
+  hex-interaction mutators (`selectShipFromHex()`, `assignTargetFromHex()`,
+  and `placeMineAtHex()`) as redraw-gated forwarders into `FTacticalGame`.
+- `FTacticalModelSelectionHexClickSurfaceTest` validates the canonical
+  `FTacticalGame` header/implementation API for weapon selection, defense
+  selection, ship selection, target assignment, mine placement, occupancy
+  queries, in-bounds checks, and `handleHexClick()` routing.
+- Tactical test registration now includes that new suite in both
+  `tests/tactical/TacticalTests.cpp` and `tests/tactical/Makefile`, matching
+  repository test-runner conventions.
+
+This validation also confirms that the tactical test coverage now reflects the
+Milestone 8 architecture where `FBattleBoard` no longer owns duplicate
+mechanics state and hex-click behavior is documented and tested through the
+`FBattleScreen` → `FTacticalGame` delegation seam.
+
+Validation command:
+
+```bash
+cd tests/tactical && make clean && make && ./TacticalTests
+```
+
+Result: `OK (62 tests)`
