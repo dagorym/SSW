@@ -22,70 +22,6 @@ const int leftOffset=2*BORDER+ZOOM_SIZE;
 
 namespace Frontier {
 
-namespace {
-
-TacticalReportEventType tacticalReportEventTypeForDamageEffect(TacticalDamageEffectType effectType) {
-	switch (effectType) {
-	case TDET_DefenseDamaged:
-		return TRET_DefenseEffect;
-	case TDET_ElectricalFire:
-		return TRET_ElectricalFire;
-	case TDET_HullDamage:
-	case TDET_ADFLoss:
-	case TDET_MRLoss:
-	case TDET_WeaponDamaged:
-	case TDET_PowerSystemDamaged:
-	case TDET_CombatControlDamaged:
-	case TDET_NavigationError:
-	case TDET_DCRLoss:
-	default:
-		return TRET_InternalDamage;
-	}
-}
-
-FTacticalReportEvent buildTacticalAttackEvent(
-	const FTacticalAttackReport & report,
-	const FTacticalAttackEffect & effect)
-{
-	FTacticalReportEvent event;
-	event.eventType = tacticalReportEventTypeForDamageEffect(static_cast<TacticalDamageEffectType>(effect.effectType));
-	event.subject = report.target;
-	event.source = report.attacker;
-	event.target = report.target;
-	event.rollValue = effect.rollValue;
-	event.hullDamage = effect.hullDamageApplied;
-	event.attackIndex = -1;
-	event.immediate = report.immediate;
-	event.label = effect.label;
-	event.detail = effect.detail;
-	return event;
-}
-
-FTacticalAttackReport buildTacticalAttackReport(const FTacticalAttackResult & result) {
-	FTacticalAttackReport report;
-	report.attacker = FTacticalShipReference(result.attackerID, result.attackerOwnerID, result.attackerName);
-	report.target = FTacticalShipReference(result.targetID, result.targetOwnerID, result.targetName);
-	report.weapon = FTacticalWeaponReference(result.weaponID, result.weaponName);
-	report.hitRoll = result.hitRoll;
-	report.attackRollModifier = 0;
-	report.targetRange = result.targetRange;
-	report.hullDamage = result.totalHullDamageApplied;
-	report.damageTableModifier = result.damageTableModifier;
-	report.hit = result.hit();
-	report.intercepted = false;
-	report.immediate = false;
-	report.note = result.note;
-
-	for (std::vector<FTacticalAttackEffect>::const_iterator itr = result.effects.begin();
-		 itr != result.effects.end(); ++itr) {
-		report.internalEvents.push_back(buildTacticalAttackEvent(report, *itr));
-	}
-
-	return report;
-}
-
-}
-
 FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)
 		: wxPanel( parent, id, pos, size, style, name ) {
 
@@ -392,7 +328,7 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 	m_parent->setPhase(PH_NONE);
 	if(m_parent->getDone()){
 		if(m_parent->getState()==BS_SetupDefendFleet){
-			if(!placeMines()){
+			if(!m_parent->beginMinePlacement()){
 				m_parent->setState(BS_SetupAttackFleet);
 				m_parent->toggleActivePlayer();
 			}
@@ -602,64 +538,23 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonDefensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
-//	std::cerr << "Movement Completed" << std::endl;
-	fireAllWeapons();
-	// Advance to next phase
-	m_parent->setPhase(PH_ATTACK_FIRE);
+	const FTacticalCombatReportSummary summary = m_parent->resolveCurrentFirePhase();
+	m_parent->showTacticalDamageSummaryDialog(summary);
+	m_parent->clearDestroyedShips();
+	m_parent->completeDefensiveFirePhase();
 	m_buttonDefensiveFireDone->Hide();
 	m_first=true;
-	m_parent->setWeapon(NULL);
-}
-
-void FBattleDisplay::fireAllWeapons(){
-	TacticalReportType reportType = TRT_None;
-	if (m_parent->getPhase() == PH_DEFENSE_FIRE){
-		reportType = TRT_DefensiveFire;
-	} else if (m_parent->getPhase() == PH_ATTACK_FIRE){
-		reportType = TRT_OffensiveFire;
-	}
-
-	FTacticalCombatReportContext context;
-	context.reportType = reportType;
-	context.phase = m_parent->getPhase();
-	context.actingPlayerID = m_parent->getActivePlayerID();
-	context.immediate = false;
-	m_parent->beginTacticalReport(context);
-
-	VehicleList sList = m_parent->getShipList(m_parent->getActivePlayerID());
-	m_parent->fireICM();
-	// loop over the list of ships and fire all weapons
-	for (VehicleList::iterator itr =sList.begin(); itr < sList.end(); itr++){
-//		std::cerr << "Processing " << (*itr)->getName() << std::endl;
-		if ((*itr)->getHP()>0){ // if the ship hasn't been destroyed
-			// loop over all the ship's weapons and tell them to fire
-			int nWeps = (*itr)->getWeaponCount();
-			for (int i = 0; i < nWeps; i++){
-//				std::cerr << "Calling the " << (*itr)->getWeapon(i)->getLongName() << "'s fire() method." << std::endl;
-				FTacticalAttackResult result = (*itr)->getWeapon(i)->fire();
-				if (!result.fired()) {
-					continue;
-				}
-				m_parent->appendTacticalAttackReport(buildTacticalAttackReport(result));
-			}
-		}
-	}
-	FTacticalCombatReportSummary summary = m_parent->buildCurrentTacticalReportSummary();
-	m_parent->showTacticalDamageSummaryDialog(summary);
-	m_parent->clearTacticalReport();
-	m_parent->clearDestroyedShips();
 }
 
 void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonOffensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
-//	std::cerr << "Movement Completed" << std::endl;
-	fireAllWeapons();
+	const FTacticalCombatReportSummary summary = m_parent->resolveCurrentFirePhase();
+	m_parent->showTacticalDamageSummaryDialog(summary);
+	m_parent->clearDestroyedShips();
+	m_parent->completeOffensiveFirePhase();
 	m_buttonOffensiveFireDone->Hide();
 	m_first=true;
-	m_parent->setWeapon(NULL);
-	m_parent->toggleMovingPlayer();
-	m_parent->setPhase(PH_MOVE);
 }
 
 void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int textSize){
@@ -743,14 +638,8 @@ void FBattleDisplay::checkWeaponSelection(wxMouseEvent &event){
 	int y = event.GetY();
 	for (unsigned int i = 0; i< m_weaponRegions.size(); i++){
 		if (m_weaponRegions[i].Contains(x,y)){
-			FWeapon *w = m_parent->getShip()->getWeapon(i);
-			if (w->isMPO()==false || m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
-				if (!(w->isDamaged() || (w->getMaxAmmo() && w->getAmmo()==0))){ // only activate selection on undamaged weapons with ammo
-					m_parent->setWeapon(w);
-				}
-//				std::cerr << "You selected the " << m_parent->getWeapon()->getLongName() << std::endl;
-				break;
-			}
+			m_parent->selectWeapon(i);
+			break;
 		}
 	}
 	m_parent->reDraw();
@@ -761,14 +650,8 @@ void FBattleDisplay::checkDefenseSelection(wxMouseEvent &event){
 	int y = event.GetY();
 	for (unsigned int i = 0; i< m_defenseRegions.size(); i++){
 		if (m_defenseRegions[i].Contains(x,y)){
-			FDefense *d = m_parent->getShip()->getDefense(i);
-			if (d->getType()!=FDefense::ICM  && m_parent->getActivePlayerID()==m_parent->getMovingPlayerID()){
-				if (d->getType()==FDefense::RH || !(m_parent->getShip()->isPowerSystemDamaged())) {
-					m_parent->getShip()->setCurrentDefense(i);
-				}
-//				std::cerr << "You selected the " << m_parent->getDefense()->getLongName() << std::endl;
-				break;
-			}
+			m_parent->selectDefense(i);
+			break;
 		}
 	}
 	m_parent->reDraw();
@@ -817,32 +700,11 @@ void FBattleDisplay::drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int tex
 	}
 }
 
-bool FBattleDisplay::placeMines(){
-	// Determine if there are any mines to place and generate a list of ships that have them.
-	VehicleList vList = m_parent->getShipList(m_parent->getActivePlayerID());
-	m_shipsWithMines.clear();
-	for (VehicleList::iterator itr = vList.begin(); itr < vList.end(); itr++){
-		if ((*itr)->hasWeapon(FWeapon::M)){
-			m_shipsWithMines.push_back(*itr);
-		}
-	}
-	if (m_shipsWithMines.size()==0){  // no mines so we're done
-		return false;
-	}
-	// set phase to placing mines
-	m_parent->setState(BS_PlaceMines);
-	return true;
-}
-
 void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonMinePlacementDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
 	m_buttonMinePlacementDone->Hide();
-	// move to next step
-	m_parent->setState(BS_SetupAttackFleet);
-	m_parent->toggleActivePlayer();
-	m_parent->setShip(NULL);
-	m_parent->setWeapon(NULL);
+	m_parent->completeMinePlacement();
 	m_first=true;
 }
 
@@ -868,7 +730,8 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	dc.DrawText(os.str(),lMargin,y);
 	y+= (int)(1.6*textSize*1.3);
 	m_shipNameRegions.clear();
-	for (VehicleList::iterator itr = m_shipsWithMines.begin(); itr < m_shipsWithMines.end(); itr++){
+	const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
+	for (VehicleList::const_iterator itr = shipsWithMines.begin(); itr < shipsWithMines.end(); itr++){
 		if (m_parent->getShip()!=NULL && (*itr)->getID()==m_parent->getShip()->getID()){
 			dc.SetFont(bold);
 			dc.SetTextForeground(green);
@@ -898,10 +761,13 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 void FBattleDisplay::checkShipSelection(wxMouseEvent &event){
 	int x = event.GetX();
 	int y = event.GetY();
+	const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
 	for (unsigned int i = 0; i< m_shipNameRegions.size(); i++){
 		if (m_shipNameRegions[i].Contains(x,y)){
-			m_parent->setShip(m_shipsWithMines[i]);
-			m_parent->setWeapon(m_shipsWithMines[i]->getWeapon(m_shipsWithMines[i]->hasWeapon(FWeapon::M)));
+			if (i < shipsWithMines.size()) {
+				m_parent->setShip(shipsWithMines[i]);
+				m_parent->setWeapon(shipsWithMines[i]->getWeapon(shipsWithMines[i]->hasWeapon(FWeapon::M)));
+			}
 			break;
 		}
 	}

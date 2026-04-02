@@ -1,0 +1,43 @@
+You are the Verifier Agent.
+
+Task summary:
+- FBattleDisplay was refactored to remove local fire-resolution logic and now delegates weapon/defense selection, fire phase resolution/completion, and mine placement setup/completion through existing FBattleScreen->FTacticalGame APIs.
+- Documentation was updated to reflect that Milestone 8 Subtask 2 moved FBattleDisplay onto that delegation seam and that tactical tests now verify delegation-oriented behavior rather than removed `fireAllWeapons` source-string expectations.
+
+Acceptance criteria validated by tester/documenter context:
+- FBattleDisplay::draw() and onPaint() read tactical state from FTacticalGame.
+- FBattleDisplay::fireAllWeapons() is removed.
+- Weapon selection delegates to FTacticalGame::selectWeapon(...) or final equivalent model API.
+- Defense selection delegates to FTacticalGame::selectDefense(...) or final equivalent model API.
+- Event handlers/button callbacks contain no local tactical-resolution flow beyond translating input to model calls and redraw sequencing.
+- Setup and mine-placement display behavior remains operational.
+- Milestone/subtask documentation reflects the shipped FBattleDisplay delegation behavior and the updated tactical test strategy.
+
+Implementation/test/documentation context:
+- Verification branch/worktree: `gui_sep-m8-subtask2-documenter-20260401`
+- Base branch for comparison: `gui_sep`
+- Tester branch in HEAD lineage: `gui_sep-m8-subtask2-tester-20260401`
+- Implementer branch in HEAD lineage: `gui_sep-m8-subtask2-implementer-20260401`
+- Documentation commit to review: `7e84729cb9d7a2da2d943a4dca121f31b6ff8ca4`
+- Implementation files under validation:
+  - `include/tactical/FBattleDisplay.h`
+  - `src/tactical/FBattleDisplay.cpp`
+- Updated test files:
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- Updated documentation files:
+  - `doc/DesignNotes.md`
+  - `AGENTS.md`
+- Test commit hash (tests only): `9f1a53156f775012ab5e54d6e5057252de4d283f`
+
+Commands executed:
+- `cd tests/tactical && make -s && ./TacticalTests` (iterative tester runs)
+
+Final outcomes:
+- Final tactical suite result: `OK (51 tests)`
+- All planner acceptance criteria listed for this subtask were validated by the updated tactical tests.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8/m8-subtask2`
+
+Please verify the implementation, tests, and updated documentation together. Verification must explicitly include the updated documentation files alongside the implementation and test changes, confirming that the docs match the actual shipped FBattleDisplay delegation behavior and the revised delegation-oriented tactical source checks.

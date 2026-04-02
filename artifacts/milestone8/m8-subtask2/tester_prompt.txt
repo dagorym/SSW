@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Task summary:
+- FBattleDisplay was refactored to remove local fire-resolution logic and now delegates weapon/defense selection, fire phase resolution/completion, and mine placement setup/completion through existing FBattleScreen->FTacticalGame APIs.
+
+Modified files:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- FBattleDisplay::draw() and onPaint() read tactical state from FTacticalGame.
+- FBattleDisplay::fireAllWeapons() is removed.
+- Weapon selection delegates to FTacticalGame::selectWeapon(...) or the final equivalent model API.
+- Defense selection delegates to FTacticalGame::selectDefense(...) or the final equivalent model API.
+- Event handlers and button callbacks do not contain tactical battle logic beyond translating wx input into model calls and requesting redraw.
+- Setup and mine-placement display behavior remains operational.
+
+Create test files in:
+- tests/tactical/ (use existing tactical test patterns/runners)
+
+Implementation context for testing:
+- `onDefensiveFireDone` and `onOffensiveFireDone` now call `resolveCurrentFirePhase()`, show summary, clear destroyed ships, and then call phase-completion APIs.
+- `checkWeaponSelection` and `checkDefenseSelection` now call `selectWeapon` / `selectDefense` on parent instead of mutating model objects directly.
+- Setup flow now uses `beginMinePlacement()` and `completeMinePlacement()` APIs; mine placement display reads `getShipsWithMines()` from model state.
+- Current tactical tests include source-string assertions expecting old `fireAllWeapons` helper; those assertions now fail and should be replaced with behavior-oriented checks aligned to delegation architecture.
+
+Suggested test command(s):
+- cd tests/tactical && make -s && ./TacticalTests
+
+Shared artifact directory:
+- artifacts/milestone8/m8-subtask2

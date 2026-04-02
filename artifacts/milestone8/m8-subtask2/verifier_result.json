@@ -1,0 +1,17 @@
+{
+  "status": "completed",
+  "subtask": "milestone8-subtask2",
+  "branch": "gui_sep-m8-subtask2-verifier-20260401",
+  "base_branch": "gui_sep",
+  "documenter_branch": "gui_sep-m8-subtask2-documenter-20260401",
+  "verdict": "FAIL",
+  "blocking_findings": 1,
+  "warning_findings": 1,
+  "note_findings": 0,
+  "test_sufficiency_summary": "TacticalTests passes (OK (51 tests)), but source-inspection coverage misses the destroyed-ship cleanup regression and currently encodes the duplicate clearDestroyedShips sequence.",
+  "documentation_accuracy_summary": "DesignNotes and AGENTS describe the intended delegation seam, but shipped fire-phase cleanup behavior does not fully match because destroyed ships are not synchronized back to the wx map after delegated fire resolution.",
+  "artifact_files": [
+    "artifacts/milestone8/m8-subtask2/verifier_report.md",
+    "artifacts/milestone8/m8-subtask2/verifier_result.json"
+  ]
+}

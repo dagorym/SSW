@@ -80,8 +80,6 @@ protected:
 	std::vector<wxRect> m_defenseRegions;
 	/// button for signaling completion of placing mines phase
 	wxButton* m_buttonMinePlacementDone;
-	/// List of ships with mines
-	VehicleList m_shipsWithMines;
 	/// list of active regions for selection of a ship's name
 	std::vector<wxRect> m_shipNameRegions;
 
@@ -340,20 +338,6 @@ protected:
 	void onOffensiveFireDone( wxCommandEvent& event );
 
 	/**
-	 * @brief Fires all of the active player's targeted weapons
-	 *
-	 * This method loops over all the active player's ships and
-	 * checks each of those ships weapons.  Any weapon that is
-	 * targeted and not damaged is fired and the results are
-	 * computed.
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Apr 29, 2009
-	 * @date Last Modified:  Apr 29, 2009
-	 */
-	void fireAllWeapons();
-
-	/**
 	 * @brief Draws the ships defenses in the tactical display
 	 *
 	 * This method draws the ships final status line showing the other miscellaneous
@@ -370,20 +354,6 @@ protected:
 	 * @date Last Modified:  Jan 28, 2011
 	 */
 	void drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int textSize);
-
-	/**
-	 * @brief Allows the defending player to place mines at the beginning of the game
-	 *
-	 * This method determines the number (if any) of mines the player is allowed
-	 * to place and continues to update as the player adds mines to the field.  If
-	 * no defending ships have mines, it returns false.  Otherwise it sets up the
-	 * state for adding mines and returns true.
-	 *
-	 * @author Tom Stephens
-	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  Feb 22, 2011
-	 */
-	bool placeMines();
 
 	/**
 	 * @brief Draws the display for placing mines

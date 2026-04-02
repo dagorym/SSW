@@ -348,7 +348,31 @@ surface now includes:
   bookkeeping, and simple in-bounds / occupied checks.
 
 `FBattleScreen` now forwards those calls directly to `FTacticalGame` and
-requests redraws when the forwarded operation mutates tactical state.
+requests redraws when the forwarded operation mutates tactical state. That
+model/screen forwarding layer was the first Milestone 8 compatibility step.
+
+Milestone 8 Subtask 2 then converts `FBattleDisplay` into a tactical HUD/view
+translator for the flows already exposed on `FBattleScreen` / `FTacticalGame`.
+The panel now reads battle state through `m_parent->getState()`,
+`m_parent->getControlState()`, and `m_parent->getPhase()` during draw/paint,
+removes its local `fireAllWeapons()` helper entirely, and delegates the
+remaining non-view interactions through the existing forwarding seam:
+
+- **Weapon/defense selection:** click handling now calls
+  `FBattleScreen::selectWeapon()` / `selectDefense()` instead of mutating the
+  selected ship directly from `FBattleDisplay`.
+- **Fire-phase resolution:** defensive and offensive fire completion now call
+  `resolveCurrentFirePhase()`, show the shared tactical damage summary dialog,
+  clear destroyed ships, and then finish the phase through the dedicated model
+  completion APIs instead of running local fire-resolution logic. The shipped
+  remediation path preserves cached destroyed-ship IDs long enough for
+  `FBattleScreen::clearDestroyedShips()` to remove those ships from the wx map,
+  then derives the destroyed side as the active player's opponent so fallback
+  winner detection still works when model cleanup was already performed.
+- **Mine placement/setup:** setup-speed completion now calls
+  `beginMinePlacement()`, mine placement completion calls
+  `completeMinePlacement()`, and the mine-placement UI reads the selectable
+  ship list from `getShipsWithMines()` rather than caching a local copy.
 
 Milestone 8 Subtask 3 then applies that forwarding surface to
 `FBattleBoard`. The board now keeps only wx-side geometry, scaling,
@@ -361,9 +385,13 @@ handled by computing the clicked board hex in `FBattleBoard::onLeftUp()` and
 forwarding that `FPoint` to `FBattleScreen::handleHexClick()`, which delegates
 the behavior to `FTacticalGame::handleHexClick()`.
 
-This narrows `FBattleBoard` into a renderer and input translator, but the live
-wx runtime still depends on `FBattleScreen` and `FBattleDisplay`; only the
-board-local duplicate mechanics state was removed in this subtask.
+This leaves the runtime tactical wx path only partially rewired in Milestone 8:
+`FBattleDisplay` now behaves as a wx renderer/input translator for delegated
+fire/setup flows and its live move-completion callback routes through
+`FTacticalGame::completeMovePhase()`, while `FBattleBoard` has been narrowed to
+renderer/hit-test responsibilities. A remaining legacy bypass through
+`FBattleScreen::setPhase(PH_FINALIZE_MOVE)` is still documented in verifier
+artifacts rather than treated as completed migration work.
 
 ### Validation Completed
 
@@ -398,6 +426,39 @@ cd tests/tactical && make clean && make && ./TacticalTests
 
 Result: `OK (48 tests)`
 
+Milestone 8 Subtask 2 validation then confirmed that the `FBattleDisplay`
+runtime path now delegates fire/setup interactions through the existing
+`FBattleScreen` → `FTacticalGame` APIs and no longer carries its own local
+fire-resolution helper.
+
+Validation command:
+
+```bash
+cd tests/tactical && make -s && ./TacticalTests
+```
+
+Result: `OK (51 tests)`
+
+The tactical source-inspection coverage for this step was updated at the same
+time. `FTacticalBattleDisplayFireFlowTest` no longer expects a local
+`FBattleDisplay::fireAllWeapons()` implementation or other transitional
+source-string patterns from the pre-delegation flow; instead it checks the
+delegation-oriented behavior that is now authoritative for weapon selection,
+defense selection, fire-phase completion ordering, and mine-placement setup.
+
+Milestone 8 Subtask 2 remediation validation then confirmed that fire-phase
+destroyed-ship cleanup preserves cached destroyed IDs long enough for wx map
+removal and still declares the correct winner by checking the destroyed side
+(the active player's opponent) when model cleanup has already run.
+
+Validation commands:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+```
+
+Result: `OK (54 tests)`
+
 Milestone 8 Subtask 3 validation then confirmed that `FBattleBoard` renders
 from model-backed tactical state, forwards hex clicks through
 `FBattleScreen::handleHexClick()` to `FTacticalGame`, and no longer owns
@@ -412,3 +473,18 @@ make -C tests/tactical clean && make -C src/tactical && make -C tests/tactical &
 ```
 
 Result: `OK (54 tests)`
+
+Milestone 8 Subtask 3 remediation validation then confirmed that the live
+`FBattleDisplay::onMoveDone()` callback and `FTacticalGame::setPhase(PH_FINALIZE_MOVE)`
+route through model-owned `completeMovePhase()` behavior, with targeted tests
+covering mine checks, relocation/removal, off-board or planet destruction,
+mine damage, selected-ship clearing, and transition to defense fire.
+
+Validation commands:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+cd tests/tactical && make clean && make && ./TacticalTests
+```
+
+Result: `OK (57 tests)`
