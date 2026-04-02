@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-6`
+
+Please validate Milestone 8 remediation Subtask 6 on branch `gui_sep-m8r-subtask-6-implementer-20260402`.
+
+Implementation commit to verify:
+- `2473c6d5cae0b7da9c2f41cf5f192e4cb2df6ade`
+
+Modified files:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+
+Planner acceptance criteria to verify:
+- `FTacticalGame::completeMovePhase()` remains the authoritative post-move resolution entry point.
+- The runtime path now reaches the intended model behavior for mine interactions, destruction handling, and occupancy finalization.
+- No duplicated UI-side move-finalization logic remains on the runtime path.
+
+Implementation context:
+- `FTacticalGame::setPhase(PH_FINALIZE_MOVE)` was changed to call `completeMovePhase()` and return.
+- This removes the reduced finalize-only branch and ensures finalize-phase routing executes canonical post-move model logic (mine checks/damage, off-board HP-zero handling, occupancy updates, and phase transition performed by `completeMovePhase()`).
+
+Relevant test locations/conventions:
+- `tests/tactical/`
+- Follow existing CppUnit tactical patterns.
+
+Recommended validation commands:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+
+Please write tester artifacts into the same shared artifact directory and pass that path forward to the Verifier.
