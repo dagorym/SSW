@@ -1,0 +1,42 @@
+You are the Documenter Agent.
+
+Shared artifact directory: `artifacts/milestone8-remediation/m8r-subtask-8`
+
+Please document tester-validated subtask `m8r-subtask-8` for milestone 8 remediation.
+
+Implementation context:
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m8r-subtask-8-implementer-20260402`
+- Implementation-under-test commit: `8bc42aace0e682ff029b51595603bc2fbd105afa` (`8bc42aa`)
+- Tester branch/worktree: `gui_sep-m8r-subtask-8-tester-20260402`
+
+Task summary:
+- Validate tactical coverage for the live runtime move-done seam so the path `FBattleDisplay -> FBattleScreen -> FTacticalGame::completeMovePhase()` remains locked by tests.
+
+Acceptance criteria validated:
+1. Tactical suite includes coverage for live move-done caller path.
+2. Runtime path reaches `FTacticalGame::completeMovePhase()` or equivalent canonical seam.
+3. Post-move outcomes are asserted (mine/off-board/final occupancy as applicable).
+
+Files under validation scope:
+- `tests/tactical/FTacticalMineDamageFlowTest.h`
+- `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+
+Tester execution summary:
+- Commands run:
+  - `make -C src/tactical`
+  - `cd tests/tactical && make && ./TacticalTests`
+- Result: PASS
+- Tactical totals: 69 passed, 0 failed
+- Tester-added/modified test files: none
+- Test commit hash: `No Changes Made`
+
+Observed validated behavior from passing tests:
+- Runtime move-done flow uses canonical completion seam.
+- Post-move transition reaches `PH_DEFENSE_FIRE`.
+- Ship selection is cleared.
+- Start-hex occupancy is cleared.
+- Off-board mover HP reduced to zero.
+- Defender occupancy remains stable.
+
+Please produce documentation updates/artifacts consistent with this validated outcome and reuse the shared artifact directory path above.
