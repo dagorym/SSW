@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-4`
+
+Please validate Implementer subtask `m8r-subtask-4` on branch `gui_sep-m8r-subtask-4-implementer-20260402`.
+
+Implementation commit to test:
+- `615d30ba3fe6de42aa4e7a44882eee53b296efaa`
+
+Modified files:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+
+Planner acceptance criteria to verify:
+- `FTacticalGame` no longer erases destroyed-ship IDs too early in the delegated fire path.
+- Destroyed-ship bookkeeping remains internally consistent after cleanup completes.
+- The lifecycle makes the canonical clear point explicit.
+
+Implementation context:
+- Added consumed-state tracking (`m_lastDestroyedShipIDsConsumed`) in `FTacticalGame`.
+- `fireAllWeapons()` now conditionally clears IDs only when prior IDs were already consumed, preventing premature erase before wx consumption.
+- `clearDestroyedShips()` now performs stale-clear only when previous IDs were consumed, then captures new destroyed IDs and marks them pending consumption.
+- `clearLastDestroyedShipIDs()` remains the explicit canonical lifecycle clear seam and marks IDs consumed.
+
+Relevant existing validation commands run by implementer:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+
+Tester test locations/conventions:
+- `tests/tactical/`
+- Follow existing CppUnit tactical test patterns.
+
+Please write tester outputs into the same shared artifact directory and pass it forward unchanged to the Verifier.
