@@ -1,0 +1,25 @@
+{
+  "status": "completed",
+  "subtask_id": "m8r-subtask-3",
+  "branch": "gui_sep-m8r-subtask-3-verifier-20260402",
+  "base_branch": "gui_sep",
+  "verdict": "PASS",
+  "blocking_count": 0,
+  "warning_count": 1,
+  "note_count": 0,
+  "test_sufficiency_summary": "Tester validation passed (make -C src/tactical; cd tests/tactical && make && ./TacticalTests => OK (65 tests)). Coverage is generally sufficient for the cleanup contract, but no tactical seam assertion currently pins the new selected-ship clearing branch in FBattleScreen::clearDestroyedShips().",
+  "documentation_accuracy_summary": "doc/DesignNotes.md accurately reflects the implemented Subtask 3 cleanup contract and remains consistent with Milestone 8 additive tactical separation language.",
+  "artifacts": {
+    "shared_artifact_directory": "artifacts/milestone8-remediation/m8r-subtask-3",
+    "verifier_report": "artifacts/milestone8-remediation/m8r-subtask-3/verifier_report.md",
+    "verifier_result": "artifacts/milestone8-remediation/m8r-subtask-3/verifier_result.json"
+  },
+  "findings": [
+    {
+      "severity": "WARNING",
+      "summary": "New selected-ship cleanup branch is not covered by tactical seam assertions.",
+      "implementation_reference": "src/tactical/FBattleScreen.cpp:474-482",
+      "test_reference": "tests/tactical/FTacticalBattleScreenDelegationTest.cpp:211-218"
+    }
+  ]
+}
