@@ -277,9 +277,7 @@ void FTacticalGame::setPhase(int p) {
 		toggleActivePlayer();
 		resetMovementState();
 	} else if (p == PH_FINALIZE_MOVE) {
-		finalizeMovementState();
-		setPhase(PH_DEFENSE_FIRE);
-		m_curShip = NULL;
+		completeMovePhase();
 		return;
 	} else if (p == PH_DEFENSE_FIRE) {
 		toggleActivePlayer();

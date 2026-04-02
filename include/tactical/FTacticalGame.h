@@ -137,6 +137,7 @@ bool isMoveComplete() const { return m_moveComplete; }
 	bool setShipPlacementHeadingByHex(const FPoint & hex);
 	bool beginMinePlacement();
 	void completeMinePlacement();
+	/// Canonical post-move resolution seam; PH_FINALIZE_MOVE delegates here.
 	void completeMovePhase();
 	FTacticalCombatReportSummary resolveCurrentFirePhase();
 	void completeDefensiveFirePhase();
