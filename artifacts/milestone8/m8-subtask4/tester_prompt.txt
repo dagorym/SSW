@@ -1,0 +1,38 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate Milestone 8 Subtask 4 tactical test updates that remove reliance on transitional FBattleDisplay/FBattleBoard logic and verify model-owned selection/hex-click delegation surface.
+
+Modified files:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+- tests/tactical/FTacticalBattleScreenDelegationTest.h
+- tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp
+- tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h
+- tests/tactical/TacticalTests.cpp
+- tests/tactical/Makefile
+
+Acceptance criteria to validate (from Planner):
+- Tactical tests compile and reflect the Milestone 8 architecture.
+- Tests no longer require `FBattleDisplay::fireAllWeapons()` to exist.
+- Tests cover the new selection/hex-click delegation surface and the removal of duplicated board state from `FBattleBoard`.
+- Test registration and makefiles are updated so the suite builds under repository conventions.
+
+Create test files in:
+- No new tester-authored files required for this subtask; validate current tactical tests under `tests/tactical/`.
+
+Implementation context for testing:
+- Added new source-inspection suite `FTacticalModelSelectionHexClickSurfaceTest` targeting `FTacticalGame` APIs:
+  - `selectWeapon`, `selectDefense`, `selectShipFromHex`, `handleHexClick`, `assignTargetFromHex`, `placeMineAtHex`, `isHexMinable`, and occupancy/bounds accessors.
+- Extended `FTacticalBattleScreenDelegationTest` to verify FBattleScreen forwarding/redraw gating for:
+  - `selectShipFromHex`, `assignTargetFromHex`, `placeMineAtHex`.
+- Extended `FTacticalBattleDisplayFireFlowTest` to assert click flow remains UI translation only and does not directly perform model mutation paths that belong in tactical model handlers.
+- Existing assertions that `FBattleDisplay::fireAllWeapons()` is absent remain and should continue passing.
+
+Suggested test command(s):
+- `cd tests/tactical && make clean && make && ./TacticalTests`
+- Optional aggregate check if full module libraries are available: `cd tests && make`
+
+Shared artifact directory:
+- artifacts/milestone8/m8-subtask4
