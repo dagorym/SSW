@@ -1,0 +1,47 @@
+You are the Verifier Agent.
+
+Shared artifact directory (repository-root-relative):
+- artifacts/milestone8-remediation/m8r-subtask-3
+
+Task summary:
+- Milestone 8 Remediation Subtask 3 validated `FBattleScreen` destroyed-ship cleanup seam refinement.
+- Implementation-under-test commit: `7002766` on branch context `gui_sep-m8r-subtask-3-implementer-20260402`.
+- Documenter branch/worktree context: `gui_sep-m8r-subtask-3-documenter-20260402` at `/home/tstephen/.copilot/session-state/646e1bca-e189-4033-bd7e-c24e312b62dd/files/worktrees/gui_sep-m8r-subtask-3-documenter-20260402`.
+- Base branch for comparison/context: `gui_sep`.
+
+Acceptance criteria previously validated by tester:
+1. `FBattleScreen` no longer re-clears model destroyed-ship state before wx removal finishes.
+2. Destroyed ships are still removed from the battle map/runtime view through the screen seam.
+3. The screen remains responsible for wx-side cleanup orchestration only.
+
+Implementation file changed:
+- `src/tactical/FBattleScreen.cpp`
+
+Documentation file changed:
+- `doc/DesignNotes.md`
+
+Documentation update summary:
+- The Milestone 8 remediation narrative now states that `FBattleScreen::clearDestroyedShips()` consumes model-captured destroyed IDs, performs wx/runtime cleanup orchestration at the screen seam, clears selected-ship UI state when the selected ship was destroyed, redraws the board/view, preserves winner handling at the screen seam, and only then clears model bookkeeping.
+- The notes now explicitly state that the screen seam does not invoke model destructive cleanup during this lifecycle step.
+- No `AGENTS.md` update was made because repository-wide contributor guidance did not change.
+
+Tester validation evidence:
+- Commands executed:
+  - `make -C src/tactical`
+  - `cd tests/tactical && make && ./TacticalTests`
+- Final tactical result: `OK (65 tests)`, 65 passed, 0 failed.
+- Relevant tactical seam/delegation coverage: `tests/tactical/FTacticalBattleScreenDelegationTest.cpp` plus full tactical suite pass.
+
+Test file changes:
+- None.
+- Test commit hash: `No Changes Made`.
+
+Documenter commit information:
+- Documentation commit: `016b2d8778b717f50443bfee3f74fafe3b3faf00`
+- Documentation commit message: `docs: clarify m8r subtask 3 cleanup seam`
+
+Verification requirements:
+- Verify the implementation and the updated documentation together.
+- Confirm `doc/DesignNotes.md` accurately reflects the implemented and tested Subtask 3 cleanup contract without overstating runtime ownership.
+- Confirm the documentation remains consistent with additive/non-runtime-overreach Milestone 8 tactical separation language.
+- Reuse the shared artifact directory path above for verifier outputs.
