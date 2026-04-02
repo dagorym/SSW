@@ -1,0 +1,56 @@
+You are the Verifier Agent.
+
+Use shared artifact directory: `artifacts/milestone8-remediation/m8r-subtask-10`.
+
+Task summary:
+- Milestone 8 Remediation — Subtask 10 tactical-focused validation was independently re-validated by Tester and documented for verifier handoff.
+- Goal was to confirm the tactical target still builds and the updated tactical seam coverage remains passing, while preserving accepted non-blocking context.
+
+Acceptance criteria to verify:
+1. Relevant tactical test target builds successfully.
+2. Updated tactical suite passes with remediated fire-flow and move-completion seam coverage enabled.
+3. Validation closeout artifacts clearly preserve what was run, what passed, and the remaining accepted non-blocking context.
+
+Repository/worktree context:
+- Base branch: `gui_sep`
+- Implementation branch: `gui_sep-m8r-subtask-10-implementer-20260402`
+- Tester branch: `gui_sep-m8r-subtask-10-tester-20260402`
+- Documenter branch: `gui_sep-m8r-subtask-10-documenter-20260402`
+- Implementation/content reference commit: `6051ffd5a6d7eb5a82a77319bab802ca6279cbcf`
+- Documentation commit for this stage: `24e7581cafe166d04ffdc4c1ee6c612c7d09e19c`
+
+Implementation and test file scope:
+- Implementation files added/modified for this subtask: none
+- Test files added/modified for this subtask: none
+- Documentation files added/modified for this subtask: none in the repository docs set; documenter produced handoff artifacts only
+
+Commands executed/confirmed:
+- `cd tests/tactical && make clean && make && ./TacticalTests`
+
+Final validated outcomes:
+- Tactical target build: PASS
+- Tactical suite: PASS
+- Summary: `OK (69 tests)`
+- This confirms the tactical target builds successfully and the updated seam coverage remains passing.
+
+Accepted non-blocking context to preserve:
+- Manual GUI playthrough remains accepted and non-automated.
+- Adjacent legacy duplicate finalize-path note remains non-blocking because canonical runtime flow is covered by tactical seams.
+- Existing warning in `src/strategic/FJumpRoute.cpp` (`-Wint-to-pointer-cast`) was reproduced and remains contextual/non-blocking for this subtask.
+
+Artifacts now present in `artifacts/milestone8-remediation/m8r-subtask-10`:
+- `implementer_report.md`
+- `implementer_result.json`
+- `tester_prompt.txt`
+- `tester_report.md`
+- `tester_result.json`
+- `documenter_prompt.txt`
+- `documenter_report.md`
+- `documenter_result.json`
+- `verifier_prompt.txt`
+
+Verification requirements:
+- Verify the validated tactical outcome against the implementation reference and tester evidence.
+- Verify that no repository documentation change was required for this validation-only closeout.
+- Verify the documenter artifacts preserve the prior-content-commit vs later-artifact-commit pattern in metadata.
+- Verification must include the updated documentation files along with the implementation and tests; for this subtask, that means reviewing the documenter-generated artifact files in addition to confirming there were no repo-doc updates.
