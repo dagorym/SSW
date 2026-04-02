@@ -1,0 +1,40 @@
+You are the Documenter Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-remediation/m8r-subtask-6`
+
+Please document Milestone 8 remediation Subtask 6 based on validated implementation and test evidence.
+
+Task summary:
+- Validated that `FTacticalGame::setPhase(PH_FINALIZE_MOVE)` now routes to `completeMovePhase()` and returns.
+- This preserves `completeMovePhase()` as the canonical post-move resolution seam and removes inline finalize-only duplication from that runtime route.
+
+Implementation context:
+- Implementation branch: `gui_sep-m8r-subtask-6-implementer-20260402`
+- Implementation commit under test: `2473c6d5cae0b7da9c2f41cf5f192e4cb2df6ade`
+- Implementation files:
+  - `include/tactical/FTacticalGame.h`
+  - `src/tactical/FTacticalGame.cpp`
+
+Acceptance criteria validated:
+1. `FTacticalGame::completeMovePhase()` remains authoritative post-move resolution entry point.
+2. Runtime path reaches intended model behavior for mine interactions, destruction handling, and occupancy finalization.
+3. No duplicated UI-side move-finalization logic remains on the runtime path.
+
+Tester-added/updated tests:
+- `tests/tactical/FTacticalMineDamageFlowTest.h`
+- `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+- New test: `testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath`
+  - Confirms `setPhase(PH_FINALIZE_MOVE)` calls `completeMovePhase(); return;`
+  - Confirms no direct `finalizeMovementState();`, `applyMineDamage();`, or `clearDestroyedShips();` in `setPhase`
+
+Commands executed:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && make && ./TacticalTests` (post-test update)
+
+Outcomes:
+- Tactical module build succeeded.
+- Tactical tests passed: initial `OK (67 tests)`, final `OK (68 tests)`.
+- Test changes commit: `da4cdb68b86ee9c7865c7c2044758a2351a57172`
+
+Please update documentation/changelog artifacts as appropriate for this remediation and preserve the additive/canonical seam wording around `completeMovePhase()` routing.
