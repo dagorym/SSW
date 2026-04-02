@@ -1,0 +1,28 @@
+{
+  "status": "success",
+  "subtask": "m8r-subtask-8",
+  "branch": "gui_sep-m8r-subtask-8-verifier-20260402",
+  "base_branch": "gui_sep",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 1,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient combined tactical coverage: existing delegation/source-inspection tests cover the live FBattleDisplay -> FBattleScreen -> FTacticalGame seam, the new FTacticalMineDamageFlowTest covers canonical post-move outcomes, and tester artifacts report 69/69 passing.",
+  "documentation_accuracy_summary": "Mostly accurate, but doc/DesignNotes.md overstates that FTacticalMineDamageFlowTest directly exercises the full wx move-done seam; in practice that seam is covered by other tactical tests while the new test invokes FTacticalGame::completeMovePhase() directly.",
+  "findings": [
+    {
+      "severity": "WARNING",
+      "summary": "doc/DesignNotes.md attributes end-to-end wx seam execution to FTacticalMineDamageFlowTest even though that test directly calls FTacticalGame::completeMovePhase().",
+      "references": [
+        "doc/DesignNotes.md:628-631",
+        "tests/tactical/FTacticalMineDamageFlowTest.cpp:228-236",
+        "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp:320-327",
+        "tests/tactical/FTacticalBattleScreenDelegationTest.cpp:123-125"
+      ]
+    }
+  ],
+  "artifact_files_written": [
+    "artifacts/milestone8-remediation/m8r-subtask-8/verifier_report.md",
+    "artifacts/milestone8-remediation/m8r-subtask-8/verifier_result.json"
+  ]
+}
