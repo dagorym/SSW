@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Shared artifact directory (repository-root-relative):
+- artifacts/milestone8-remediation/m8r-subtask-3
+
+Implementation context:
+- Subtask: Milestone 8 Remediation Subtask 3 (FBattleScreen destroyed-ship cleanup seam refinement)
+- Branch under test: gui_sep-m8r-subtask-3-implementer-20260402
+- Implementation commit: 7002766
+- Modified files:
+  - src/tactical/FBattleScreen.cpp
+
+Planner acceptance criteria to validate:
+1. FBattleScreen no longer re-clears model destroyed-ship state before wx removal finishes.
+2. Destroyed ships are still removed from the battle map/runtime view through the screen seam.
+3. The screen remains responsible for wx-side cleanup orchestration only.
+
+What changed:
+- `FBattleScreen::clearDestroyedShips()` now consumes `getLastDestroyedShipIDs()` and, when IDs are present:
+  - clears selected-ship state if the selected ship is among destroyed IDs,
+  - triggers `reDraw()` for wx/runtime refresh,
+  - clears model bookkeeping once via `clearLastDestroyedShipIDs()` after wx-side consumption,
+  - preserves winner handling via `declareWinner()`.
+- No call to model destructive cleanup was added from screen seam.
+
+Required validation commands:
+- make -C src/tactical
+- cd tests/tactical && make && ./TacticalTests
+
+Test file location guidance / conventions:
+- tests/tactical/
+- Follow existing CppUnit tactical test patterns.
+
+Please write tester artifacts into:
+- artifacts/milestone8-remediation/m8r-subtask-3
+and pass that same shared artifact path forward to the Verifier.
