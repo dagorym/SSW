@@ -1,0 +1,70 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify Milestone 8 Subtask 4 tactical test updates and documentation updates that remove reliance on transitional FBattleDisplay/FBattleBoard logic and confirm the model-owned FTacticalGame selection/hex-click delegation surface is the documented and tested source of truth.
+
+Acceptance criteria previously validated by tester:
+- Tactical tests compile and reflect the Milestone 8 architecture.
+- Tests no longer require `FBattleDisplay::fireAllWeapons()` to exist.
+- Tests cover the new selection/hex-click delegation surface and the removal of duplicated board state from `FBattleBoard`.
+- Test registration and makefiles are updated so the suite builds under repository conventions.
+
+Implementation/worktree context:
+- Base branch: `gui_sep`
+- Implementer branch: `gui_sep-m8-subtask4-implementer-20260402`
+- Tester branch: `gui_sep-m8-subtask4-tester-20260401`
+- Documenter branch: `gui_sep-m8-subtask4-documenter-20260401`
+- Documenter worktree: `/home/tstephen/worktrees/SSW-m8/gui_sep-m8-subtask4-documenter-20260401`
+
+Test files added or modified in implementation scope:
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.h`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/tactical/Makefile`
+
+Documentation files added or modified:
+- `doc/DesignNotes.md`
+
+Documentation change summary:
+- Added Milestone 8 Subtask 4 validation notes stating that the tactical source-inspection suite is now anchored on FTacticalGame selection/hex-click delegation APIs.
+- Documented that `FTacticalBattleDisplayFireFlowTest` no longer depends on a transitional `FBattleDisplay::fireAllWeapons()` helper.
+- Documented that `FTacticalBattleScreenDelegationTest` covers selection and hex-interaction mutator forwarding and that the new `FTacticalModelSelectionHexClickSurfaceTest` covers the model-owned API surface and `handleHexClick()` routing.
+- Documented that the updated tactical validation reflects the Milestone 8 architecture where `FBattleBoard` no longer owns duplicate mechanics state.
+
+Documentation commit to review:
+- `77fb802969c608fa0673d7741cd2f9121e303af1` (`docs: record milestone 8 subtask 4 validation`)
+
+Commands executed and outcomes:
+- `cd tests/tactical && make clean && make && ./TacticalTests` -> PASS (`OK (62 tests)`)
+- `cd tests && make` -> optional aggregate check failed in this worktree context because module libraries were not available (`-lstrategic`, `-lships`, `-lgui`, `-ltactical`, `-lweapons`, `-ldefenses`, `-lcore` not found)
+
+Final test outcomes:
+- Tactical suite status: PASS
+- Total tests: 62
+- Passed: 62
+- Failed: 0
+- No unmet acceptance criteria reported by tester.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8/m8-subtask4`
+
+Artifacts available:
+- `artifacts/milestone8/m8-subtask4/implementer_report.md`
+- `artifacts/milestone8/m8-subtask4/implementer_result.json`
+- `artifacts/milestone8/m8-subtask4/tester_prompt.txt`
+- `artifacts/milestone8/m8-subtask4/tester_report.md`
+- `artifacts/milestone8/m8-subtask4/tester_result.json`
+- `artifacts/milestone8/m8-subtask4/documenter_prompt.txt`
+- `artifacts/milestone8/m8-subtask4/documenter_report.md`
+- `artifacts/milestone8/m8-subtask4/documenter_result.json`
+- `artifacts/milestone8/m8-subtask4/verifier_prompt.txt`
+
+Verification requirements:
+- Verify the implementation and tests still satisfy the Milestone 8 Subtask 4 acceptance criteria.
+- Verify the updated documentation in `doc/DesignNotes.md` accurately reflects the shipped tactical test changes and validation results.
+- Confirm documentation, tests, and architecture notes are consistent with FTacticalGame-owned selection/hex-click delegation and with the removal of duplicated FBattleBoard mechanics state.
+- Do not treat the optional aggregate `tests/make` linker failure as a product regression unless you can reproduce it in a correctly provisioned environment.
