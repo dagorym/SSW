@@ -211,4 +211,24 @@ assertNotContains(onLeftUpBody, "m_parent->assignTargetFromHex(");
 assertNotContains(onLeftUpBody, "m_parent->placeMineAtHex(");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testMoveDoneDelegatesToBattleScreenCompleteMovePhase() {
+// AC: live wx move-done callback must route through the canonical completeMovePhase seam.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::onMoveDone( wxCommandEvent& event )");
+
+assertContains(body, "m_parent->completeMovePhase();");
+assertNotContains(body, "m_parent->setPhase(PH_FINALIZE_MOVE);");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation() {
+// AC: move-done callback still handles UI button teardown while progressing phase flow.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::onMoveDone( wxCommandEvent& event )");
+
+assertContains(body, "m_buttonMoveDone->Disconnect(");
+assertContains(body, "m_buttonMoveDone->Hide();");
+assertContains(body, "m_first=true;");
+assertBefore(body, "m_parent->completeMovePhase();", "m_buttonMoveDone->Hide();");
+}
+
 }
