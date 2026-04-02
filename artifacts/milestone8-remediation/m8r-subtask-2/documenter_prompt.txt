@@ -1,0 +1,34 @@
+You are the Documenter Agent.
+
+Shared artifact directory (repository-root-relative):
+- artifacts/milestone8-remediation/m8r-subtask-2
+
+Task summary:
+- Milestone 8 Remediation Subtask 2 validated: fire-phase callback ordering hardening in `FBattleDisplay`.
+- Implementation-under-test code commit: `cbf61ed3f35687a308196cb6a1443ab27e4ead85`.
+- Note: implementer branch/head includes a later artifact-only commit (`7e1a6ba3e3c6eb680eb9686e29fa4b085c230564`); preserve the earlier code commit hash above as source-of-truth for implementation context.
+
+Acceptance criteria validated by testing:
+1. `FBattleDisplay` no longer initiates sequence that clears model destroyed-ship bookkeeping before wx cleanup runs.
+2. Defensive-fire and offensive-fire completion paths both use corrected ordering.
+3. Display still performs same redraw and phase-advancement orchestration after cleanup.
+
+Tester changes:
+- Test files modified:
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- Test commit hash: `b193878cba7aae50353d75fc7cbdda3ae2cecb84`
+
+Validation commands executed:
+- `make -C src/tactical`
+- `cd tests/tactical && make && ./TacticalTests`
+
+Validation outcome:
+- Tactical test suite passed: 65 passed, 0 failed.
+- Added assertions now explicitly guard that fire-done buttons are disabled/hidden before delegated fire-phase resolution in both defensive and offensive callbacks, while preserving existing delegated ordering checks.
+
+Likely documentation impact:
+- If tactical remediation docs summarize Subtask 2 behavior, note that callback hardening includes pre-resolution UI button disable/hide behavior in both fire-done handlers and retains delegated lifecycle ordering.
+- Reference shared artifact files for details:
+  - `artifacts/milestone8-remediation/m8r-subtask-2/tester_report.md`
+  - `artifacts/milestone8-remediation/m8r-subtask-2/tester_result.json`
