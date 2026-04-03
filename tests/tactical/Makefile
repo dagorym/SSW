@@ -8,7 +8,7 @@ endif
 CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) -DTACTICAL_TEST_REPO_ROOT=\"$(CURDIR)/../..\"
 
 LIBS = `wx-config --libs`
-MODEL_LIBS = -L../../src/tactical -L../../src/weapons -L../../src/defenses -L../../src/ships -L../../src/strategic -L../../src/core -Wl,--start-group -ltactical -lweapons -ldefenses -lships -lstrategic -lcore -Wl,--end-group
+MODEL_LIBS = -L../../src/gui -L../../src/tactical -L../../src/weapons -L../../src/defenses -L../../src/ships -L../../src/strategic -L../../src/core -Wl,--start-group -lgui -ltactical -lweapons -ldefenses -lships -lstrategic -lcore -Wl,--end-group
 
 PICFLAGS = -fPIC -DPIC
 
@@ -26,7 +26,7 @@ PICFLAGS = -fPIC -DPIC
 .rsrc.r:
 >$(DEREZ) $^ Carbon.r -useDF > $@
 
-OBJS = FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalModelSelectionHexClickSurfaceTest.o ITacticalUIBoundaryTest.o TacticalTests.o
+OBJS = FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalDestroyedShipCleanupLifecycleTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalModelSelectionHexClickSurfaceTest.o ITacticalUIBoundaryTest.o TacticalTests.o
 
 TARGET = libtacticalTests.a
 RUNNER = TacticalTests
@@ -40,9 +40,10 @@ model-deps:
 >$(MAKE) -C ../../src/defenses
 >$(MAKE) -C ../../src/weapons
 >$(MAKE) -C ../../src/tactical
+>$(MAKE) -C ../../src/gui
 
-$(TARGET): FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalModelSelectionHexClickSurfaceTest.o ITacticalUIBoundaryTest.o
->ar rcs $(TARGET) FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalModelSelectionHexClickSurfaceTest.o ITacticalUIBoundaryTest.o
+$(TARGET): FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalDestroyedShipCleanupLifecycleTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalModelSelectionHexClickSurfaceTest.o ITacticalUIBoundaryTest.o
+>ar rcs $(TARGET) FTacticalAttackResultTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenReportContextTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalMineDamageReportSummaryTest.o FTacticalMineDamageFlowTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalDestroyedShipCleanupLifecycleTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalStationOrbitalMovementTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalModelSelectionHexClickSurfaceTest.o ITacticalUIBoundaryTest.o
 
 $(RUNNER): model-deps $(OBJS)
 >$(CXX) $(CXXFLAGS) -o $(RUNNER) $(OBJS) -lcppunit $(MODEL_LIBS) $(LIBS)
