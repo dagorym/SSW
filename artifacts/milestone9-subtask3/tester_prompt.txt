@@ -1,0 +1,17 @@
+You are the Tester Agent.
+
+Use shared artifacts directory: `artifacts/milestone9-subtask3` (repository-root-relative).
+
+Context:
+- Subtask: `milestone9-subtask3`
+- Branch: `gui_sep-m9s3-implementer-20260403`
+- Implementer made no production code changes.
+- Build validation passed (`make` from repo root produced both `src/SSW` and `src/BattleSim`).
+- Smoke launches passed for `./src/BattleSim` and `./src/SSW`.
+- Full BattleSim GUI scenario-to-completion run is currently blocked in this environment because the implementer session is non-interactive and lacks GUI automation tooling (`xvfb-run`, `xdotool`, `wmctrl`).
+
+Please validate the remaining acceptance criterion in an environment where interactive GUI execution is possible:
+1. Run a full BattleSim scenario battle to completion via the real GUI flow.
+2. Confirm no tactical UI wiring failures and behavior consistency with the pre-refactor `FBattleScreen` path.
+3. Reconfirm SSW smoke run after the BattleSim pass.
+4. Record tester outcomes and blocker resolution details in the same artifact directory for verifier handoff.
