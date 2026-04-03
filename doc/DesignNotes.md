@@ -654,3 +654,31 @@ cd tests/tactical && make && ./TacticalTests
 ```
 
 Result: tactical build passed and `OK (69 tests)`.
+
+The final Milestone 8 warning-fix follow-up then replaced the remaining
+selected-ship cleanup source inspection with direct lifecycle coverage at the
+wx seam itself. `FBattleScreen.cpp` now exposes a minimal
+`runDestroyedShipCleanupLifecycle(...)` helper plus
+`FDestroyedShipCleanupLifecycle`, and `FBattleScreen::clearDestroyedShips()`
+builds that context from the live screen/model objects without changing the
+existing ownership contract. The focused
+`FTacticalDestroyedShipCleanupLifecycleTest` suite now verifies that:
+
+- a destroyed selected ship clears the active screen selection;
+- redraw still happens on the destroyed-list cleanup path;
+- `clearLastDestroyedShipIDs()` bookkeeping is triggered exactly once per
+  cleanup lifecycle; and
+- winner handling remains sequenced after bookkeeping clear.
+
+`FTacticalBattleScreenDelegationTest` was tightened at the same time to assert
+that `clearDestroyedShips()` wires the extracted seam instead of bypassing it,
+while the tactical test runner continues linking the GUI objects needed to
+exercise that boundary.
+
+Validation command:
+
+```bash
+cd tests/tactical && make clean && make && ./TacticalTests
+```
+
+Result: `OK (72 tests)`.
