@@ -1,0 +1,46 @@
+You are the Verifier Agent.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone8-final-warning-fixes/subtask1`
+
+Original task summary:
+Please document Subtask 1 for milestone8-final-warning-fixes using commit `f6a71087e8d6fb902fe9e83428f4bb07fb32f860`.
+
+Validated scope:
+- `src/tactical/FBattleScreen.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+
+Acceptance criteria / confirmed changes:
+1. `FBattleScreen::setPhase(int)` now delegates phase transitions to `FTacticalGame` without any `PH_FINALIZE_MOVE` screen-side mechanics branch.
+2. `FBattleScreen::setPhase(int)` no longer calls `m_tacticalGame->finalizeMovementState()`.
+3. Delegation test expectations were updated to assert absence of `PH_FINALIZE_MOVE` / `finalizeMovementState` handling in `FBattleScreen::setPhase`.
+4. Canonical finalize-move routing remains model-owned in `FTacticalGame::setPhase(int)`, which routes `PH_FINALIZE_MOVE` to `completeMovePhase()`.
+
+Implementation and branch/worktree context:
+- Documenter worktree: `/home/tstephen/worktrees/gui_sep-m8warn1-documenter-20260403`
+- Documenter branch: `gui_sep-m8warn1-documenter-20260403`
+- Validated implementation commit: `f6a71087e8d6fb902fe9e83428f4bb07fb32f860`
+- Branches containing that commit during the documenter pass: `gui_sep-m8warn1-tester-20260403`, `gui_sep-m8warn1-implementer-20260403`, `gui_sep-m8warn2-implementer-20260403`, and `gui_sep-m8warn1-documenter-20260403`
+- Documentation commit for this pass: `cf35abc904f867747d85af68e4e3293940c5ddbc`
+
+Test files added or modified:
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+
+Documentation files added or modified:
+- No permanent documentation files were changed.
+- Documenter reviewed `doc/DesignNotes.md` and `AGENTS.md` and found them already accurate for this finalize-move seam change.
+
+Commands/evidence reviewed during the documenter pass:
+- `git show --stat --oneline --decorate --summary f6a71087e8d6fb902fe9e83428f4bb07fb32f860`
+- `git show --unified=80 --no-ext-diff --no-color f6a71087e8d6fb902fe9e83428f4bb07fb32f860 -- src/tactical/FBattleScreen.cpp tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- Repository searches over `doc/DesignNotes.md` and `AGENTS.md` for `PH_FINALIZE_MOVE`, `finalizeMovementState`, `completeMovePhase`, and related seam wording
+- Validation evidence supplied in the handoff: `cd tests/tactical && make && ./TacticalTests` -> `OK (69 tests)`
+- Validation evidence supplied in the handoff: source grep fallback confirmed no `finalizeMovementState` / `PH_FINALIZE_MOVE` branch remains in `FBattleScreen.cpp` and only negative assertions remain in the delegation test
+
+Final test outcomes available:
+- Tactical tests: `OK (69 tests)`
+
+Verification requirements:
+- Verify the implementation and test changes still match the validated scope above.
+- Verify that `FBattleScreen` remains a forwarding seam and that finalize-move ownership stays in `FTacticalGame`.
+- Verify that no permanent documentation source update was required by reviewing `doc/DesignNotes.md` and `AGENTS.md` alongside the implementation and tests.
+- Verification must include the documentation review decision together with the implementation and tests, plus the required artifact files in `artifacts/milestone8-final-warning-fixes/subtask1`.
