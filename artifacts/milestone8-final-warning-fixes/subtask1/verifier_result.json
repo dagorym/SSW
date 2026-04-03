@@ -1,0 +1,22 @@
+{
+  "status": "completed",
+  "subtask": "milestone8-final-warning-fixes/subtask1",
+  "branch": "gui_sep-m8warn1-verifier-20260403",
+  "verdict": "PASS",
+  "acceptance_reference": "artifacts/milestone8-final-warning-fixes/subtask1/verifier_prompt.txt",
+  "reviewed_scope": [
+    "src/tactical/FBattleScreen.cpp",
+    "tests/tactical/FTacticalBattleScreenDelegationTest.cpp",
+    "doc/DesignNotes.md review decision",
+    "artifacts/milestone8-final-warning-fixes/subtask1"
+  ],
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency": "Sufficient; tests/tactical/TacticalTests passed with OK (69 tests), including delegation coverage for the removed screen-side finalize-move branch.",
+  "documentation_accuracy": "Accurate; existing DesignNotes.md and AGENTS.md already match the model-owned finalize-move seam, so no permanent doc update was required.",
+  "artifact_files": [
+    "artifacts/milestone8-final-warning-fixes/subtask1/verifier_report.md",
+    "artifacts/milestone8-final-warning-fixes/subtask1/verifier_result.json"
+  ]
+}
