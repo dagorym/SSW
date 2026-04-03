@@ -1,0 +1,69 @@
+You are the Verifier Agent.
+
+Use shared artifacts directory: `artifacts/milestone9-subtask3` (repository-root-relative).
+
+Task context:
+- Subtask: `milestone9-subtask3`
+- Base branch: `gui_sep`
+- Implementer branch/worktree context: `gui_sep-m9s3-implementer-20260403`
+- Tester branch/worktree context: `gui_sep-m9s3-tester-20260403`
+- Documenter branch/worktree context: `gui_sep-m9s3-documenter-20260403`
+- Plan path: `/home/tstephen/repos/SSW/plans/milestone9-battlesim-integration-plan.md`
+
+Original acceptance criteria:
+1. `make` from repo root succeeds and produces both `SSW` and `BattleSim`.
+2. A full BattleSim scenario battle is run to completion through real GUI flow with no tactical UI wiring failures.
+3. Runtime observations confirm behavior consistency with pre-refactor `FBattleScreen` path.
+4. `SSW` is rebuilt and smoke-run successfully after BattleSim verification.
+5. Runtime-only findings are captured clearly.
+
+Implemented/tested/documented state to verify together:
+- Implementation files added or modified: none.
+- Test files added or modified: none.
+- Repository documentation files added or modified: none.
+- Documentation-stage artifact files added or modified:
+  - `artifacts/milestone9-subtask3/documenter_report.md`
+  - `artifacts/milestone9-subtask3/documenter_result.json`
+  - `artifacts/milestone9-subtask3/verifier_prompt.txt`
+- Existing stage artifacts to review alongside them:
+  - `artifacts/milestone9-subtask3/implementer_report.md`
+  - `artifacts/milestone9-subtask3/implementer_result.json`
+  - `artifacts/milestone9-subtask3/tester_report.md`
+  - `artifacts/milestone9-subtask3/tester_result.json`
+  - `artifacts/milestone9-subtask3/tester_battlesim_stderr.log`
+  - `artifacts/milestone9-subtask3/tester_ssw_stderr.log`
+
+Commands executed during validation:
+- Implementer stage:
+  - `make`
+  - `cd src && ./BattleSim`
+  - `cd src && ./SSW`
+- Tester stage:
+  - `make`
+  - `which xvfb-run || echo xvfb-run-missing`
+  - `which xdotool || echo xdotool-missing`
+  - `which wmctrl || echo wmctrl-missing`
+  - `printenv DISPLAY || echo DISPLAY-unset`
+  - `timeout 15 ./src/BattleSim >/dev/null 2>artifacts/milestone9-subtask3/tester_battlesim_stderr.log`
+  - `timeout 15 ./src/SSW >/dev/null 2>artifacts/milestone9-subtask3/tester_ssw_stderr.log`
+
+Final outcomes available for verification:
+- AC1 passed: root `make` succeeded and produced both executables.
+- AC2 blocked: full GUI battle completion could not be performed in this environment.
+- AC3 partially blocked: startup smoke indicated no immediate tactical UI wiring crash, but end-to-end behavior equivalence could not be confirmed without AC2.
+- AC4 passed: `SSW` smoke launch remained running until timeout.
+- AC5 passed: blocker evidence and runtime-validation boundaries were captured.
+
+Explicit blocker evidence:
+- Missing GUI automation tooling in this environment:
+  - `xvfb-run-missing`
+  - `xdotool-missing`
+  - `wmctrl-missing`
+- Both timeout-constrained non-interactive launches exited with code `124`.
+- Stderr logs were retained in the shared artifact directory.
+
+Verification requirements:
+- Review the blocked runtime evidence across implementation, tests, documentation, and artifacts together.
+- Confirm the documenter accurately preserved the passed build/smoke evidence while not claiming milestone success.
+- Confirm no repository implementation, test, or documentation files were changed inappropriately during the documentation stage.
+- Verification must include the documentation outputs along with the implementation and tests, even though no repository documentation files changed.
