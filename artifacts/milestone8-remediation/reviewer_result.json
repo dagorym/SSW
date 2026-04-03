@@ -1,0 +1,60 @@
+{
+  "status": "completed",
+  "feature": "milestone8-remediation",
+  "plan_reference": "plans/milestone8-remediation-plan.md",
+  "artifact_directory": "artifacts/milestone8-remediation",
+  "outcome": "CONDITIONAL PASS",
+  "feature_completeness_summary": "The two original blocking Milestone 8 runtime regressions are fixed, tactical validation passes with OK (69 tests), and the design notes now describe the shipped and remediated seams accurately. Two warning-level follow-ons remain: a legacy screen-side finalize helper still duplicates part of move finalization outside the preferred canonical seam, and the selected-ship cleanup branch in delegated fire cleanup lacks direct tactical coverage.",
+  "inputs_reviewed": [
+    "plans/milestone8-remediation-plan.md",
+    "artifacts/milestone8-remediation/m8r-subtask-1",
+    "artifacts/milestone8-remediation/m8r-subtask-2",
+    "artifacts/milestone8-remediation/m8r-subtask-3",
+    "artifacts/milestone8-remediation/m8r-subtask-4",
+    "artifacts/milestone8-remediation/m8r-subtask-5",
+    "artifacts/milestone8-remediation/m8r-subtask-6",
+    "artifacts/milestone8-remediation/m8r-subtask-7",
+    "artifacts/milestone8-remediation/m8r-subtask-8",
+    "artifacts/milestone8-remediation/m8r-subtask-9",
+    "artifacts/milestone8-remediation/m8r-subtask-10",
+    "src/tactical/FBattleDisplay.cpp",
+    "src/tactical/FBattleScreen.cpp",
+    "src/tactical/FTacticalGame.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/tactical/FTacticalBattleScreenDelegationTest.cpp",
+    "tests/tactical/FTacticalMineDamageFlowTest.cpp",
+    "doc/DesignNotes.md"
+  ],
+  "blocking_findings": [],
+  "warning_findings": [
+    {
+      "summary": "FBattleScreen::setPhase(PH_FINALIZE_MOVE) still preserves a legacy screen-side finalize branch, and FTacticalBattleScreenDelegationTest still encodes that duplicate behavior as expected.",
+      "files": [
+        "src/tactical/FBattleScreen.cpp:196-203",
+        "tests/tactical/FTacticalBattleScreenDelegationTest.cpp:200-205",
+        "artifacts/milestone8-remediation/m8r-subtask-6/verifier_report.md"
+      ]
+    },
+    {
+      "summary": "The selected-ship cleanup branch in FBattleScreen::clearDestroyedShips() is implemented but not directly covered by tactical assertions.",
+      "files": [
+        "src/tactical/FBattleScreen.cpp:472-482",
+        "tests/tactical/FTacticalBattleScreenDelegationTest.cpp:211-218",
+        "artifacts/milestone8-remediation/m8r-subtask-3/verifier_report.md"
+      ]
+    }
+  ],
+  "note_findings": [
+    {
+      "summary": "Manual GUI playthrough remains a documented non-blocking limitation, while tactical seam validation was independently rerun successfully for this remediation.",
+      "files": [
+        "artifacts/milestone8-remediation/m8r-subtask-10/verifier_report.md",
+        "doc/DesignNotes.md:626-645"
+      ]
+    }
+  ],
+  "follow_up_feature_requests": [
+    "Remove the remaining legacy FBattleScreen::setPhase(PH_FINALIZE_MOVE) screen-side finalizeMovementState behavior, route that helper consistently through FTacticalGame::completeMovePhase(), and update the related tactical delegation test and documentation to reflect the unified contract.",
+    "Add tactical regression coverage for FBattleScreen::clearDestroyedShips() when the currently selected ship appears in getLastDestroyedShipIDs(), asserting selection clearing, redraw behavior, single bookkeeping clear, and winner handling."
+  ]
+}
