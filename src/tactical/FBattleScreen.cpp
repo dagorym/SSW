@@ -17,6 +17,83 @@ TacticalUI.h"
 
 namespace Frontier {
 
+struct FDestroyedShipCleanupLifecycle {
+	const std::vector<unsigned int> * destroyedShipIDs;
+	FVehicle * selectedShip;
+	void (*clearSelectedShip)(void *);
+	void (*reDraw)(void *);
+	void (*clearDestroyedShipBookkeeping)(void *);
+	bool (*hasWinner)(void *);
+	void (*declareWinner)(void *);
+	void * context;
+};
+
+void runDestroyedShipCleanupLifecycle(const FDestroyedShipCleanupLifecycle & lifecycle) {
+	const std::vector<unsigned int> * destroyedShipIDs = lifecycle.destroyedShipIDs;
+	if (destroyedShipIDs != NULL && !destroyedShipIDs->empty()) {
+		FVehicle * selectedShip = lifecycle.selectedShip;
+		if (selectedShip != NULL) {
+			const unsigned int selectedShipID = selectedShip->getID();
+			for (std::vector<unsigned int>::const_iterator itr = destroyedShipIDs->begin();
+				itr != destroyedShipIDs->end();
+				++itr) {
+				if ((*itr) == selectedShipID) {
+					if (lifecycle.clearSelectedShip != NULL) {
+						lifecycle.clearSelectedShip(lifecycle.context);
+					}
+					break;
+				}
+			}
+		}
+		if (lifecycle.reDraw != NULL) {
+			lifecycle.reDraw(lifecycle.context);
+		}
+	}
+	if (lifecycle.clearDestroyedShipBookkeeping != NULL) {
+		lifecycle.clearDestroyedShipBookkeeping(lifecycle.context);
+	}
+	if (lifecycle.hasWinner != NULL
+		&& lifecycle.declareWinner != NULL
+		&& lifecycle.hasWinner(lifecycle.context)) {
+		lifecycle.declareWinner(lifecycle.context);
+	}
+}
+
+namespace {
+
+struct FDestroyedShipCleanupContext {
+	FBattleScreen * screen;
+	FTacticalGame * tacticalGame;
+	void (FBattleScreen::*declareWinnerMethod)();
+};
+
+void clearSelectedShipForCleanup(void * context) {
+	FDestroyedShipCleanupContext * cleanupContext = static_cast<FDestroyedShipCleanupContext *>(context);
+	cleanupContext->screen->setShip(NULL);
+}
+
+void redrawForCleanup(void * context) {
+	FDestroyedShipCleanupContext * cleanupContext = static_cast<FDestroyedShipCleanupContext *>(context);
+	cleanupContext->screen->reDraw();
+}
+
+void clearDestroyedShipBookkeepingForCleanup(void * context) {
+	FDestroyedShipCleanupContext * cleanupContext = static_cast<FDestroyedShipCleanupContext *>(context);
+	cleanupContext->tacticalGame->clearLastDestroyedShipIDs();
+}
+
+bool hasWinnerForCleanup(void * context) {
+	FDestroyedShipCleanupContext * cleanupContext = static_cast<FDestroyedShipCleanupContext *>(context);
+	return cleanupContext->tacticalGame->hasWinner();
+}
+
+void declareWinnerForCleanup(void * context) {
+	FDestroyedShipCleanupContext * cleanupContext = static_cast<FDestroyedShipCleanupContext *>(context);
+	(cleanupContext->screen->*(cleanupContext->declareWinnerMethod))();
+}
+
+}
+
 FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( (wxDialog *)NULL, -1, title, pos, size, style )
 //FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style )
 {
@@ -465,26 +542,22 @@ void FBattleScreen::clearDestroyedShips(){
 	//    runtime view state updates) using the captured IDs.
 	// 3) FTacticalGame bookkeeping is cleared exactly once here after wx-side
 	//    cleanup consumes this lifecycle boundary.
-	const std::vector<unsigned int> & destroyedShipIDs = m_tacticalGame->getLastDestroyedShipIDs();
-	if (!destroyedShipIDs.empty()) {
-		FVehicle * selectedShip = getShip();
-		if (selectedShip != NULL) {
-			const unsigned int selectedShipID = selectedShip->getID();
-			for (std::vector<unsigned int>::const_iterator itr = destroyedShipIDs.begin();
-				itr != destroyedShipIDs.end();
-				++itr) {
-				if ((*itr) == selectedShipID) {
-					setShip(NULL);
-					break;
-				}
-			}
-		}
-		reDraw();
-	}
-	m_tacticalGame->clearLastDestroyedShipIDs();
-	if (m_tacticalGame->hasWinner()) {
-		declareWinner();
-	}
+	FDestroyedShipCleanupContext cleanupContext;
+	cleanupContext.screen = this;
+	cleanupContext.tacticalGame = m_tacticalGame;
+	cleanupContext.declareWinnerMethod = &FBattleScreen::declareWinner;
+
+	FDestroyedShipCleanupLifecycle lifecycle;
+	lifecycle.destroyedShipIDs = &m_tacticalGame->getLastDestroyedShipIDs();
+	lifecycle.selectedShip = getShip();
+	lifecycle.clearSelectedShip = clearSelectedShipForCleanup;
+	lifecycle.reDraw = redrawForCleanup;
+	lifecycle.clearDestroyedShipBookkeeping = clearDestroyedShipBookkeepingForCleanup;
+	lifecycle.hasWinner = hasWinnerForCleanup;
+	lifecycle.declareWinner = declareWinnerForCleanup;
+	lifecycle.context = &cleanupContext;
+
+	runDestroyedShipCleanupLifecycle(lifecycle);
 }
 
 void FBattleScreen::declareWinner(){

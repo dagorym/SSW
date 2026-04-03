@@ -209,14 +209,15 @@ const std::string setWeaponBody = extractFunctionBody(source, "void FBattleScree
 assertContains(setWeaponBody, "m_tacticalGame->setWeapon(w);");
 assertContains(setWeaponBody, "m_tacticalGame->computeWeaponRange();");
 
-const std::string clearDestroyedBody = extractFunctionBody(source, "void FBattleScreen::clearDestroyedShips()");
-assertContains(clearDestroyedBody, "const std::vector<unsigned int> & destroyedShipIDs = m_tacticalGame->getLastDestroyedShipIDs();");
-assertContains(clearDestroyedBody, "if (!destroyedShipIDs.empty()) {");
-assertContains(clearDestroyedBody, "reDraw();");
-assertContains(clearDestroyedBody, "m_tacticalGame->clearLastDestroyedShipIDs();");
-assertContains(clearDestroyedBody, "if (m_tacticalGame->hasWinner()) {");
-assertContains(clearDestroyedBody, "declareWinner();");
-CPPUNIT_ASSERT(clearDestroyedBody.find("m_turnInfo") == std::string::npos);
+	const std::string clearDestroyedBody = extractFunctionBody(source, "void FBattleScreen::clearDestroyedShips()");
+	assertContains(clearDestroyedBody, "FDestroyedShipCleanupLifecycle lifecycle;");
+	assertContains(clearDestroyedBody, "lifecycle.destroyedShipIDs = &m_tacticalGame->getLastDestroyedShipIDs();");
+	assertContains(clearDestroyedBody, "lifecycle.selectedShip = getShip();");
+	assertContains(clearDestroyedBody, "lifecycle.clearDestroyedShipBookkeeping = clearDestroyedShipBookkeepingForCleanup;");
+	assertContains(clearDestroyedBody, "lifecycle.hasWinner = hasWinnerForCleanup;");
+	assertContains(clearDestroyedBody, "lifecycle.declareWinner = declareWinnerForCleanup;");
+	assertContains(clearDestroyedBody, "runDestroyedShipCleanupLifecycle(lifecycle);");
+	CPPUNIT_ASSERT(clearDestroyedBody.find("m_turnInfo") == std::string::npos);
 }
 
 }
