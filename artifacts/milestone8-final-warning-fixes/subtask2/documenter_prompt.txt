@@ -1,0 +1,41 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implemented direct regression coverage for the selected-ship destroyed cleanup lifecycle in `FBattleScreen::clearDestroyedShips()` by extracting a minimal callable lifecycle seam and adding focused tactical tests for selection clearing, redraw, bookkeeping clear, and winner handling order.
+
+Modified files:
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+- tests/tactical/FTacticalDestroyedShipCleanupLifecycleTest.h
+- tests/tactical/FTacticalDestroyedShipCleanupLifecycleTest.cpp
+- tests/tactical/Makefile
+- tests/tactical/TacticalTests.cpp
+
+Acceptance criteria validated by tester:
+- Tactical tests directly protect the selected-ship cleanup branch rather than only source-inspecting the surrounding method.
+- The tests verify selection clearing, redraw behavior, single bookkeeping clear, and winner handling in the delegated fire-cleanup lifecycle.
+- Any new helper or seam preserves the existing model/wx ownership contract.
+- Test wiring is updated for any new tactical suite that gets introduced.
+
+Implementation context validated:
+- Added `runDestroyedShipCleanupLifecycle(...)` and `FDestroyedShipCleanupLifecycle` in `src/tactical/FBattleScreen.cpp`.
+- `FBattleScreen::clearDestroyedShips()` builds lifecycle callbacks/context and runs the seam.
+- New focused suite `FTacticalDestroyedShipCleanupLifecycleTest` validates:
+  - selected ship is cleared when destroyed ID list contains selected ship,
+  - redraw occurs on destroyed-list cleanup path,
+  - bookkeeping clear is called exactly once per lifecycle invocation,
+  - winner handling occurs after bookkeeping clear.
+- `FTacticalBattleScreenDelegationTest` asserts seam wiring in `clearDestroyedShips()`.
+- `tests/tactical/Makefile` links GUI library (`-lgui`) and builds `src/gui` dependency for tactical test linking with FBattleScreen/FBattleDisplay objects.
+
+Tester execution:
+- Command: `cd tests/tactical && make clean && make && ./TacticalTests`
+- Result: PASS
+- Totals: 72 passed, 0 failed
+
+Commit context:
+- Branch: `gui_sep-m8warn2-tester-20260403`
+- Tester-authored test commit hash: `No Changes Made` (no additional test edits were required)
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8-final-warning-fixes/subtask2`
