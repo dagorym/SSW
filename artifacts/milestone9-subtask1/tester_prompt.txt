@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Validate Milestone 9 Subtask 1 in branch `gui_sep-m9s1-implementer-20260403`.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone9-subtask1`
+Reuse this exact path for tester outputs and pass it forward unchanged.
+
+Implementation commit to verify:
+- `323675d`
+
+Modified files:
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.h`
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp`
+
+Acceptance criteria to validate:
+- Tactical tests identify the relevant BattleSim tactical launcher files.
+- Tests fail if BattleSim launchers stop using the supported modal FBattleScreen construction/lifetime pattern.
+- Tests fail if FBattleScreen stops creating FTacticalGame and installing WXTacticalUI in its constructor path.
+- `cd tests/tactical && make && ./TacticalTests` passes.
+
+Implementation context:
+- Added source-inspection coverage for BattleSim launch chain:
+  - `BattleSimFrame::onPlayLocal(...)` modal LocalGameDialog flow
+  - `LocalGameDialog::onPlayPredefined(...)` modal ScenarioDialog flow
+  - `LocalGameDialog::onCreateNew(...)` modal ScenarioEditorGUI flow
+  - ScenarioDialog/ScenarioEditor launch calls to `FBattleScreen bb;` + `bb.ShowModal();`
+- Added constructor-path assertions in `FBattleScreen.cpp` for:
+  - `m_tacticalGame = new FTacticalGame();`
+  - `m_tacticalUI = new WXTacticalUI(...)`
+  - `m_tacticalGame->installUI(m_tacticalUI);`
+
+Required validation command:
+- `cd tests/tactical && make && ./TacticalTests`
