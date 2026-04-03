@@ -201,8 +201,9 @@ const std::string setPhaseBody = extractFunctionBody(source, "void FBattleScreen
 assertContains(setPhaseBody, "m_tacticalGame->setPhase(p);");
 assertContains(setPhaseBody, "if (p==PH_MOVE)");
 assertContains(setPhaseBody, "m_tacticalGame->resetMovementState();");
-assertContains(setPhaseBody, "if (p==PH_FINALIZE_MOVE)");
-assertContains(setPhaseBody, "m_tacticalGame->finalizeMovementState();");
+CPPUNIT_ASSERT(setPhaseBody.find("PH_FINALIZE_MOVE") == std::string::npos);
+CPPUNIT_ASSERT(setPhaseBody.find("finalizeMovementState();") == std::string::npos);
+CPPUNIT_ASSERT(setPhaseBody.find("setShip(NULL);") == std::string::npos);
 
 const std::string setWeaponBody = extractFunctionBody(source, "void FBattleScreen::setWeapon(FWeapon * w)");
 assertContains(setWeaponBody, "m_tacticalGame->setWeapon(w);");

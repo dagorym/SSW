@@ -197,10 +197,6 @@ void FBattleScreen::setPhase(int p){
 	m_tacticalGame->setPhase(p);
 	if (p==PH_MOVE) { // we just ended a turn
 		m_tacticalGame->resetMovementState();
-	} else 	if (p==PH_FINALIZE_MOVE){
-		m_tacticalGame->finalizeMovementState();
-		setShip(NULL);
-	} else {
 	}
 	m_map->Refresh();
 	m_display->Refresh();
