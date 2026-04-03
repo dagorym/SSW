@@ -18,6 +18,8 @@ CPPUNIT_TEST( testApplyFireDamageDelegatesToTacticalModel );
 CPPUNIT_TEST( testDeclareWinnerUsesTacticalUIAndGuardedClosePath );
 CPPUNIT_TEST( testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath );
 CPPUNIT_TEST( testModalCallerSitesOwnBattleScreenLifetimeAfterShowModal );
+CPPUNIT_TEST( testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen );
+CPPUNIT_TEST( testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -34,6 +36,8 @@ void testApplyFireDamageDelegatesToTacticalModel();
 void testDeclareWinnerUsesTacticalUIAndGuardedClosePath();
 void testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath();
 void testModalCallerSitesOwnBattleScreenLifetimeAfterShowModal();
+void testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen();
+void testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI();
 };
 
 }

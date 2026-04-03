@@ -156,4 +156,48 @@ CPPUNIT_ASSERT(scenarioEditorSource.find("new FBattleScreen(") == std::string::n
 CPPUNIT_ASSERT(scenarioEditorSource.find("delete bb;") == std::string::npos);
 }
 
+void FTacticalBattleScreenElectricalFireTest::testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen() {
+// AC: BattleSim launch path keeps modal dialog flow and reaches tactical launchers that own FBattleScreen on stack.
+const std::string battleSimFrameSource = readFile(repoFile("src/battleSim/BattleSimFrame.cpp"));
+const std::string localGameSource = readFile(repoFile("src/battleSim/LocalGameDialog.cpp"));
+const std::string scenarioDialogSource = readFile(repoFile("src/battleSim/ScenarioDialog.cpp"));
+const std::string scenarioEditorSource = readFile(repoFile("src/battleSim/ScenarioEditorGUI.cpp"));
+
+const std::string playLocalBody = extractFunctionBody(battleSimFrameSource, "void BattleSimFrame::onPlayLocal( wxCommandEvent& event )");
+assertAppearsInOrder(playLocalBody, std::vector<std::string>(1, "LocalGameDialog d(this);"));
+assertAppearsInOrder(playLocalBody, std::vector<std::string>(1, "d.ShowModal();"));
+CPPUNIT_ASSERT(playLocalBody.find("new LocalGameDialog(") == std::string::npos);
+CPPUNIT_ASSERT(playLocalBody.find("d.Show();") == std::string::npos);
+
+const std::string predefinedBody = extractFunctionBody(localGameSource, "void LocalGameDialog::onPlayPredefined( wxCommandEvent& event )");
+assertAppearsInOrder(predefinedBody, std::vector<std::string>(1, "ScenarioDialog d(this);"));
+assertAppearsInOrder(predefinedBody, std::vector<std::string>(1, "d.ShowModal();"));
+CPPUNIT_ASSERT(predefinedBody.find("new ScenarioDialog(") == std::string::npos);
+
+const std::string customBody = extractFunctionBody(localGameSource, "void LocalGameDialog::onCreateNew( wxCommandEvent& event )");
+assertAppearsInOrder(customBody, std::vector<std::string>(1, "ScenarioEditorGUI d(this);"));
+assertAppearsInOrder(customBody, std::vector<std::string>(1, "d.ShowModal();"));
+CPPUNIT_ASSERT(customBody.find("new ScenarioEditorGUI(") == std::string::npos);
+
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "Hide();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "Show();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "bb.ShowModal();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(scenarioEditorSource, "bb.ShowModal();"));
+CPPUNIT_ASSERT(scenarioEditorSource.find("bb.Show();") == std::string::npos);
+}
+
+void FTacticalBattleScreenElectricalFireTest::testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI() {
+// AC: FBattleScreen constructor owns FTacticalGame and WXTacticalUI installation path.
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string ctorBody = extractFunctionBody(source, "FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style )");
+
+assertContains(source, "#include \"tactical/FTacticalGame.h\"");
+assertContains(source, "#include \"gui/WX");
+assertContains(ctorBody, "m_tacticalGame = new FTacticalGame();");
+assertContains(ctorBody, "m_tacticalUI = new WX");
+assertContains(ctorBody, "m_tacticalGame->installUI(m_tacticalUI);");
+CPPUNIT_ASSERT(ctorBody.find("m_tacticalGame = NULL") == std::string::npos);
+CPPUNIT_ASSERT(ctorBody.find("m_tacticalUI = NULL") == std::string::npos);
+}
+
 }
