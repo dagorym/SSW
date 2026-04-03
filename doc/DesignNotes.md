@@ -682,3 +682,31 @@ cd tests/tactical && make clean && make && ./TacticalTests
 ```
 
 Result: `OK (72 tests)`.
+
+Milestone 9 Subtask 1 validation then confirmed that the BattleSim tactical
+launch paths still honor the supported `FBattleScreen` modal ownership and
+constructor contract introduced by the tactical separation work. The expanded
+`FTacticalBattleScreenElectricalFireTest` source-inspection coverage now
+asserts that:
+
+- `BattleSimFrame`, `LocalGameDialog`, `ScenarioDialog`, and
+  `ScenarioEditorGUI` continue to reach tactical combat through caller-owned
+  stack `ShowModal()` flows instead of heap-owned or bypassing launch patterns.
+- BattleSim launcher coverage still identifies the tactical entry files that
+  hand off into `FBattleScreen`.
+- `FBattleScreen`'s standard constructor path still creates `FTacticalGame`,
+  creates `WXTacticalUI`, and installs that UI on the tactical model rather
+  than depending on caller-managed tactical wiring.
+
+This keeps Milestone 9 Subtask 1 scoped to automated regression coverage rather
+than architecture changes: the live BattleSim runtime path remains the existing
+modal `FBattleScreen` path, while the tests now lock in the constructor-owned
+model/UI pairing that later milestone validation depends on.
+
+Validation command:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+```
+
+Result: `OK (74 tests)`.
