@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Subtask: milestone9-subtask2
+Branch: gui_sep-m9s2-implementer-20260403
+Shared artifact directory (repository-root-relative): artifacts/milestone9-subtask2
+
+Implementer outcome:
+- No-op. No production code changes were required.
+- BattleSim tactical launch paths already use supported FBattleScreen construction and receive installed tactical UI via FBattleScreen constructor ownership/installation.
+
+Modified files:
+- None (production)
+- Artifacts only:
+  - artifacts/milestone9-subtask2/implementer_report.md
+  - artifacts/milestone9-subtask2/implementer_result.json
+  - artifacts/milestone9-subtask2/tester_prompt.txt
+
+Acceptance criteria to verify:
+- Every BattleSim tactical entry point uses a supported FBattleScreen construction path with a valid installed tactical UI.
+- No caller-side manual WXTacticalUI setup is required for BattleSim.
+- Production changes are localized and do not broaden tactical architecture scope beyond Milestone 9.
+- All affected tactical tests pass after the production change.
+- If no bypass exists, document that the subtask is a no-op and leave production code unchanged.
+
+Relevant validation command already run by implementer:
+- cd tests/tactical && make && ./TacticalTests (passed)
+
+Test file location for any tester additions (if needed by your workflow):
+- tests/tactical/
+
+Please reuse this same artifact directory path and pass it forward unchanged.
