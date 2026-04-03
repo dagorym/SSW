@@ -1,0 +1,41 @@
+You are the Verifier Agent.
+
+Review Milestone 9 Subtask 1 across implementation, tests, and documentation together for the BattleSim tactical launch-path validation work.
+
+Shared artifact directory (repository-root-relative): `artifacts/milestone9-subtask1`
+Reuse this exact path for verifier outputs.
+
+Base branch for comparison: `gui_sep`
+Documenter branch/worktree context: `gui_sep-m9s1-documenter-20260403`
+Tester branch context: `gui_sep-m9s1-tester-20260403`
+Implementation branch context: `gui_sep-m9s1-implementer-20260403`
+Implementation commit validated by tester: `323675d`
+Documentation commit to review: `50a3910`
+
+Task summary:
+- Milestone 9 Subtask 1 tightened automated tactical coverage so BattleSim launchers remain on the supported modal `FBattleScreen` construction/lifetime path and `FBattleScreen` continues to own `FTacticalGame` plus `WXTacticalUI` installation.
+- The documenter stage updated milestone documentation to record that this validation passed with the existing tactical test evidence.
+
+Implementation and test files in scope:
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.h`
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp`
+
+Documentation files in scope:
+- `doc/DesignNotes.md`
+
+Acceptance criteria to verify:
+- Tactical tests identify the relevant BattleSim tactical launcher files.
+- Tests fail if BattleSim launchers stop using the supported modal `FBattleScreen` construction/lifetime pattern.
+- Tests fail if `FBattleScreen` stops creating `FTacticalGame` and installing `WXTacticalUI` in its constructor path.
+- `cd tests/tactical && make && ./TacticalTests` passes.
+- Documentation accurately reflects the implemented and tested Milestone 9 Subtask 1 behavior without overstating architecture changes.
+
+Evidence and commands:
+- Reviewed diff against `gui_sep`, including the validated implementation commit and tester artifacts.
+- Validation command from tester: `cd tests/tactical && make && ./TacticalTests`
+- Reported outcome: `OK (74 tests)`
+
+Verifier instructions:
+- Review implementation, tests, and documentation together.
+- Confirm `doc/DesignNotes.md` matches the actual shipped test coverage and tester evidence.
+- Confirm artifact handoff files under `artifacts/milestone9-subtask1` are consistent with the documentation commit and scope.
