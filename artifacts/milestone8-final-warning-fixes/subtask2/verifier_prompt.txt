@@ -1,0 +1,69 @@
+You are the Verifier Agent.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/milestone8-final-warning-fixes/subtask2`
+
+Task summary:
+- Implemented direct regression coverage for the selected-ship destroyed cleanup lifecycle in `FBattleScreen::clearDestroyedShips()` by extracting a minimal callable lifecycle seam and adding focused tactical tests for selection clearing, redraw, bookkeeping clear, and winner handling order.
+
+Acceptance criteria validated by tester:
+- Tactical tests directly protect the selected-ship cleanup branch rather than only source-inspecting the surrounding method.
+- The tests verify selection clearing, redraw behavior, single bookkeeping clear, and winner handling in the delegated fire-cleanup lifecycle.
+- Any new helper or seam preserves the existing model/wx ownership contract.
+- Test wiring is updated for any new tactical suite that gets introduced.
+
+Implementation and branch context:
+- Base branch/commit for comparison was not provided in the handoff; verify against the current feature lineage rooted at the implementer/tester/documenter branches below.
+- Implementer branch: `gui_sep-m8warn2-implementer-20260403`
+- Tester branch: `gui_sep-m8warn2-tester-20260403`
+- Documenter branch: `gui_sep-m8warn2-documenter-20260403`
+- Implementation-under-test commit: `20d11226aa70f7dcbfacd56f17d6af88c770d6fe`
+- Documentation commit: `88dfc69f3689643d1f0468f37ef3af8b6302feed`
+
+Files in scope:
+- Implementation/test files changed on the feature lineage:
+  - `src/tactical/FBattleScreen.cpp`
+  - `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+  - `tests/tactical/FTacticalDestroyedShipCleanupLifecycleTest.h`
+  - `tests/tactical/FTacticalDestroyedShipCleanupLifecycleTest.cpp`
+  - `tests/tactical/Makefile`
+  - `tests/tactical/TacticalTests.cpp`
+- Documentation files changed by documenter:
+  - `AGENTS.md`
+  - `doc/DesignNotes.md`
+
+Implementation context validated:
+- Added `runDestroyedShipCleanupLifecycle(...)` and `FDestroyedShipCleanupLifecycle` in `src/tactical/FBattleScreen.cpp`.
+- `FBattleScreen::clearDestroyedShips()` builds lifecycle callbacks/context and runs the seam.
+- New focused suite `FTacticalDestroyedShipCleanupLifecycleTest` validates:
+  - selected ship is cleared when destroyed ID list contains selected ship,
+  - redraw occurs on destroyed-list cleanup path,
+  - bookkeeping clear is called exactly once per lifecycle invocation,
+  - winner handling occurs after bookkeeping clear.
+- `FTacticalBattleScreenDelegationTest` asserts seam wiring in `clearDestroyedShips()`.
+- `tests/tactical/Makefile` links GUI library (`-lgui`) and builds `src/gui` dependency for tactical test linking with FBattleScreen/FBattleDisplay objects.
+
+Commands executed:
+- Tester command:
+  - `cd tests/tactical && make clean && make && ./TacticalTests`
+- Documenter review inputs:
+  - `AGENTS.md`
+  - `doc/DesignNotes.md`
+  - `artifacts/milestone8-final-warning-fixes/subtask2/documenter_prompt.txt`
+  - `artifacts/milestone8-final-warning-fixes/subtask2/tester_report.md`
+  - `artifacts/milestone8-final-warning-fixes/subtask2/tester_result.json`
+
+Final test outcome:
+- Result: PASS
+- Totals: 72 passed, 0 failed
+
+Documentation update summary:
+- `AGENTS.md` now notes that tactical coverage includes the extracted destroyed-ship cleanup lifecycle seam in `FBattleScreen.cpp` and that the seam preserves the wx/model ownership split.
+- `doc/DesignNotes.md` now records the final Milestone 8 warning-fix validation for `runDestroyedShipCleanupLifecycle(...)`, including direct lifecycle regression coverage for selection clearing, redraw, single bookkeeping clear, and winner handling order.
+
+Verification requirements:
+- Verify the implementation, tests, and updated documentation together.
+- Confirm `FBattleScreen::clearDestroyedShips()` still preserves the existing model/wx ownership contract while routing through the extracted lifecycle seam.
+- Confirm the tactical suite still directly covers selection clearing, redraw behavior, single bookkeeping clear, and winner handling order.
+- Confirm `AGENTS.md` and `doc/DesignNotes.md` accurately describe the shipped seam and validation scope without overstating broader runtime migration completion.
+- Reuse `artifacts/milestone8-final-warning-fixes/subtask2` for any verifier outputs.
