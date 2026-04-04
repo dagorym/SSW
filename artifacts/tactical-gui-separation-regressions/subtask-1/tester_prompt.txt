@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Validate the implemented station orbital movement fix and runtime regression coverage.
+
+Shared artifact directory (reuse exactly):
+- `artifacts/tactical-gui-separation-regressions/subtask-1`
+
+Implementation/code commit to validate:
+- `bc2890e`
+
+Modified files:
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalStationOrbitalMovementTest.h`
+- `tests/tactical/FTacticalStationOrbitalMovementTest.cpp`
+
+Planner acceptance criteria to verify:
+- A station adjacent to a planet remains in orbit after move completion and does not drift straight away from the planet.
+- The station heading after move completion reflects the orbital turn.
+- Station speed preservation remains intact.
+- Non-station movement semantics remain unchanged.
+- The updated station regression test is runtime behavior coverage, not source-text inspection.
+
+Relevant test location convention:
+- `tests/tactical`
+
+Recommended validation command:
+- `cd tests/tactical && make && ./TacticalTests`
+
+Implementation context:
+- `resetTurnInfoForCurrentMover()` now computes station `finalHeading` using planet turn direction at the station’s next orbital hex.
+- Station tests now execute runtime movement seams (`resetMovementState()` and `completeMovePhase()`) instead of scanning source text.
+- Runtime coverage includes station orbit heading/speed behavior and a non-station movement heading check.
+
+Do not report success unless all required artifacts exist and all changes are committed.
