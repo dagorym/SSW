@@ -1,0 +1,44 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate Milestone 10 Subtask 5 documentation-only update to `AGENTS.md`.
+- Tester confirmed all planner acceptance criteria pass by direct repository inspection.
+
+Acceptance criteria validated:
+- `AGENTS.md` clearly states the non-wx build/include rule for non-GUI modules.
+- `AGENTS.md` describes `IStrategicUI` and `ITacticalUI` responsibilities and gui ownership of wx-backed implementations.
+- `AGENTS.md` explicitly notes the absence of a fully automated GUI test system and that this does not block Milestone 10.
+
+Implementation branch or worktree context:
+- Branch: `gui_sep-m10-s5-tester-20260404`
+- Worktree: `/home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-s5-tester-20260404`
+- Implementer baseline artifact commit: `cbc73c8993312b3daf92f328143d95e6f5fc0f9a`
+- Implementation commit under test: `d8ac5a7191d40cfacc67cdcfa2d5039c3714147b`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `AGENTS.md` (implementer)
+- `artifacts/gui_sep/subtask10/subtask5/tester_report.md` (tester)
+- `artifacts/gui_sep/subtask10/subtask5/tester_result.json` (tester)
+- `artifacts/gui_sep/subtask10/subtask5/documenter_prompt.txt` (tester)
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- `grep -n "wx-config" src/core/Makefile src/strategic/Makefile src/ships/Makefile src/weapons/Makefile src/defenses/Makefile src/tactical/Makefile || true`
+- `grep -nE "class (IStrategicUI|ITacticalUI|WXStrategicUI|WXTacticalUI)" include/strategic/IStrategicUI.h include/tactical/ITacticalUI.h include/gui/WXStrategicUI.h include/gui/WXTacticalUI.h`
+- `grep -nE "Milestone 10 Final Module Boundary Rules|non-wx|non-GUI|IStrategicUI|ITacticalUI|WXStrategicUI|WXTacticalUI|automated GUI test|GUI test" AGENTS.md`
+
+Final test outcomes:
+- PASS: 3/3 acceptance criteria met.
+- No implementation defects found for documented Subtask 5 scope.
+
+Documentation context:
+- Milestone 10 final boundary guidance is now explicit in `AGENTS.md`.
+- Interface-seam ownership (`IStrategicUI`/`ITacticalUI` vs `WXStrategicUI`/`WXTacticalUI`) and GUI automation expectations are documented and validated.
+
+Shared artifact directory:
+- artifacts/gui_sep/subtask10/subtask5
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

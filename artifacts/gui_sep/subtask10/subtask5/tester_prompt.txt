@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate Milestone 10 Subtask 5 documentation-only update to `AGENTS.md`.
+- Confirm final module dependency and UI seam guidance is documented accurately.
+
+Modified files:
+- AGENTS.md
+
+Acceptance criteria to validate (from Planner):
+- `AGENTS.md` clearly states the non-wx build/include rule for non-GUI modules.
+- `AGENTS.md` describes `IStrategicUI` and `ITacticalUI` responsibilities and gui ownership of wx-backed implementations.
+- `AGENTS.md` explicitly notes the absence of a fully automated GUI test system and that this does not block Milestone 10.
+
+Create test files in:
+- tests/ (assumption: no new tests needed because this is documentation-only; validate by inspection)
+
+Implementation context for testing:
+- Added "Milestone 10 Final Module Boundary Rules" section in `AGENTS.md`.
+- Added Milestone 10 testing note in `AGENTS.md` clarifying GUI automation expectations.
+- Validation should focus on consistency with existing Makefile/header/test guidance.
+
+Suggested test command(s):
+- `grep -n "wx-config" src/core/Makefile src/strategic/Makefile src/ships/Makefile src/weapons/Makefile src/defenses/Makefile src/tactical/Makefile || true`
+- `grep -nE "class (IStrategicUI|ITacticalUI|WXStrategicUI|WXTacticalUI)" include/strategic/IStrategicUI.h include/tactical/ITacticalUI.h include/gui/WXStrategicUI.h include/gui/WXTacticalUI.h`
+
+Shared artifact directory:
+- artifacts/gui_sep/subtask10/subtask5
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

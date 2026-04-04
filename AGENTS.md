@@ -53,6 +53,12 @@ Headers live under `include/` and source code under `src/`, generally mirroring 
 ### Namespace Convention
 All game code lives in `namespace Frontier`. GUI classes (inheriting from wxWidgets) use `using namespace Frontier;` at file scope. Core/strategic/ships/weapons modules declare `namespace Frontier` and fully qualify external namespaces.
 
+### Milestone 10 Final Module Boundary Rules
+- Non-GUI model modules (`core`, `strategic`, `ships`, `weapons`, `defenses`, and non-gui tactical model code) must remain non-wx in both includes and build/link settings.
+- Keep active wx headers/types isolated to gui-owned surfaces (`include/gui/*`, `src/gui/*`, app entrypoints, and tactical wx runtime files that explicitly bridge to GUI rendering).
+- `IStrategicUI` and `ITacticalUI` are model-facing interface seams; strategic and tactical model code consume these abstractions without owning wx-backed UI classes.
+- `WXStrategicUI` and `WXTacticalUI` are gui-module implementations of those seams and retain ownership of wx dialog/window behavior.
+
 ## Build System
 
 ### Linux / Make
@@ -125,6 +131,8 @@ cd tests/weapons  && make && ./WeaponsTests    # weapons module only
 ```
 
 Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis. Enable coverage reporting with `make COVERAGE=1`.
+
+Milestone 10 note: there is no fully automated end-to-end wx GUI playback system in this repository. Milestone acceptance relies on model/interface regression coverage (including mock `IStrategicUI` and mock `ITacticalUI` seams) plus existing build/test validation; the absence of full GUI automation is expected and does not block Milestone 10 completion.
 
 ### Adding New Tests
 1. Copy `tests/test_template.h` and `tests/test_template.cpp` as starting points
