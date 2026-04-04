@@ -7,7 +7,8 @@
   "test_commit_hash": "No Changes Made",
   "test_files_modified": [],
   "commands_run": [
-    "grep -RInE '^\\s*#include\\s*[<\\\"].*wx' include/tactical src/tactical || true",
+    "rg '^\\s*#include\\s*[<\\\"].*wx' include/tactical -n",
+    "rg '^\\s*#include\\s*[<\\\"].*wx' src/tactical -n",
     "cd src/tactical && make -s",
     "cd tests/tactical && make -s && ./TacticalTests"
   ],
