@@ -1,0 +1,61 @@
+You are the Verifier Agent.
+
+Task summary:
+Validate and document Milestone 10 Subtask 1 tactical wx-include cleanup, where direct tactical wx includes were removed and GUI-owned include aggregation was used.
+
+Acceptance criteria:
+- The audited header/source roots return zero active #include.*wx hits.
+- Tactical model/shared code still compiles.
+- No new wx dependency is introduced into non-GUI modules.
+
+Implementation branch/worktree context:
+- Tested implementation branch: gui_sep-m10-s1-tester-20260404
+- Tested implementation worktree: /home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-s1-tester-20260404
+- Implementation commit tested: 37ff962
+- Documenter branch: gui_sep-m10-s1-documenter-20260404
+- Documenter worktree: /home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-s1-documenter-20260404
+- Documentation commit: c55897dc13e3bc9a98bdfbb8c8a63900c324ba31
+
+Files modified by Implementer:
+- include/gui/GuiTypes.h
+- include/tactical/FBattleScreen.h
+- include/tactical/FBattleDisplay.h
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleScreen.cpp
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FBattleBoard.cpp
+
+Files modified by Tester:
+- artifacts/gui_sep/subtask10/subtask1/tester_report.md
+- artifacts/gui_sep/subtask10/subtask1/tester_result.json
+- artifacts/gui_sep/subtask10/subtask1/documenter_prompt.txt
+
+Files modified by Documenter:
+- AGENTS.md
+- artifacts/gui_sep/subtask10/subtask1/documenter_report.md
+- artifacts/gui_sep/subtask10/subtask1/documenter_result.json
+- artifacts/gui_sep/subtask10/subtask1/verifier_prompt.txt
+
+Commands executed by Tester:
+- rg '^\s*#include\s*[<"].*wx' include/tactical -n
+- rg '^\s*#include\s*[<"].*wx' src/tactical -n
+- cd src/tactical && make -s
+- cd tests/tactical && make -s && ./TacticalTests
+
+Final test outcomes:
+- Include audit: PASS (no tactical wx include matches in audited roots)
+- Tactical build: PASS
+- Tactical tests: PASS (OK (74 tests))
+
+Documentation updates to verify:
+- `AGENTS.md` now states that shared tactical wx type aggregation lives in `include/gui/GuiTypes.h` and that the audited tactical GUI-adjacent headers/sources should avoid direct wx includes in favor of the gui-owned aggregation point.
+
+Verification requirements:
+- Verify the implementation diff still satisfies the acceptance criteria.
+- Verify the updated documentation files alongside the implementation and tester artifacts.
+- Confirm the documentation accurately reflects the implemented tactical wx-include cleanup and does not claim unimplemented broader Milestone 10 work.
+
+Shared artifact directory to reuse (repository-root-relative):
+- artifacts/gui_sep/subtask10/subtask1
+
+Do not report success unless all required artifacts exist and all changes are committed.
