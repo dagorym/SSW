@@ -1,0 +1,53 @@
+{
+  "agent": "reviewer",
+  "feature": "tactical-gui-separation-regressions",
+  "plan_path": "/home/tstephen/repos/SSW/plans/tactical-gui-separation-regressions-plan.md",
+  "worktree": "/home/tstephen/.copilot/session-state/a133f2f5-4873-4897-9efa-632892009c61/worktrees/gui_sep-reviewer-20260404",
+  "branch": "gui_sep-reviewer-20260404",
+  "base_branch": "gui_sep",
+  "artifact_directory": "artifacts/tactical-gui-separation-regressions",
+  "outcome": "PASS",
+  "material_gaps_identified": false,
+  "subtask2_verifier_warnings_resolved": true,
+  "subtasks_reviewed": [
+    {
+      "id": 1,
+      "title": "Restore station orbital turn computation in model-owned movement path",
+      "status": "complete"
+    },
+    {
+      "id": 2,
+      "title": "Fix move-route selection indexing so clicked hexes and committed path endpoints match",
+      "status": "complete"
+    },
+    {
+      "id": 3,
+      "title": "Apply final-orientation heading semantics to forward-fire highlighting and target validation",
+      "status": "complete"
+    },
+    {
+      "id": 4,
+      "title": "Repair tactical regression-fixture registration and update shared mechanics assertions",
+      "status": "complete"
+    }
+  ],
+  "files_reviewed": [
+    "src/tactical/FTacticalGame.cpp",
+    "tests/tactical/FTacticalStationOrbitalMovementTest.cpp",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.cpp",
+    "tests/tactical/FTacticalForwardFireFinalOrientationTest.cpp",
+    "tests/tactical/TacticalTests.cpp",
+    "tests/tactical/Makefile",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp",
+    "doc/DesignNotes.md"
+  ],
+  "validation": {
+    "commands": [
+      "cd tests/tactical && make clean && make && ./TacticalTests",
+      "cd tests/tactical && ./TacticalTests | tail -n 20"
+    ],
+    "result": "OK (84 tests)"
+  },
+  "findings": [],
+  "follow_up_feature_requests": []
+}
