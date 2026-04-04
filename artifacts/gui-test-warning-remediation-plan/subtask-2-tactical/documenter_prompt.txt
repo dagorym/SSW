@@ -1,0 +1,46 @@
+You are the Documenter Agent.
+
+Task summary:
+- Tactical live GUI regression coverage for direct damage-summary and ICM dialog tests was repaired and validated under `GuiTests`.
+- The direct damage-summary test now executes real modal dialog behavior and checks title/context/summary/empty-state plus real Close-button dismissal.
+- The direct ICM test now executes modal selection/finalization through the production completion path and verifies assignment/ammo outcomes.
+- Tactical fixture cleanup behavior was validated to avoid orphan top-level windows.
+
+Acceptance criteria validated:
+- The direct tactical damage-summary and ICM tests are registered in the suite and run under `GuiTests`.
+- The damage-summary test proves title, context, summary, empty-state, and close behavior through real dialog execution.
+- The ICM test proves real selection/finalization behavior and resulting assignment/ammo updates without bypassing the production completion path.
+- The tactical live fixture leaves no orphaned dialogs/windows when each test completes.
+
+Implementation branch or worktree context:
+- Implementer branch context: `gui_tests-implementer-20260404 @ d922fa986038f625eb59ffd6a8d1c00fba8bcf0c`
+- Tester branch/worktree: `gui_tests-tester-20260404` at `/tmp/ssw-orch/gui_tests-tester-20260404`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+- artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/tester_report.md
+- artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/tester_result.json
+- artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && make clean
+
+Final test outcomes:
+- `GuiTests` completed successfully with `OK (24 tests)`.
+- Tactical direct dialog coverage assertions for damage-summary and ICM modal flows passed.
+- No acceptance-criteria failures were observed.
+
+Documentation context:
+- Review docs that describe tactical live GUI regression coverage and modal/harness behavior in the GUI test suite.
+- Confirm documentation reflects that the direct tactical damage-summary and ICM tests are active in `TacticalGuiLiveTest` and validated in `GuiTests`.
+
+Shared artifact directory:
+- artifacts/gui-test-warning-remediation-plan/subtask-2-tactical
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
