@@ -1,0 +1,57 @@
+You are the Verifier Agent.
+
+Task summary:
+- Implemented tactical live GUI automation coverage and deterministic modal handling seams for WXTacticalUI-driven smoke paths; tester validated the GUI suite and tactical live coverage pass in this worktree, and documentation now records the tactical smoke scope and headless command path.
+
+Acceptance criteria to verify:
+- WXTacticalUI parent-backed redraw/message/damage-summary/winner behavior is exercised in live GUI test flow.
+- TacticalDamageSummaryGUI live dialog path is present in tactical GUI tests.
+- GUI test harness builds and executes successfully.
+- Existing GUI suite still passes.
+- Repository guidance accurately documents the tactical GUI smoke coverage and deterministic modal auto-dismiss seams without overstating runtime ownership.
+
+Implementation branch or worktree context:
+- Tester branch: `gui_tests-subtask4-tester-20260404`
+- Tester worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask4-tester-20260404`
+- Tester authoritative stage commit after artifacts: `8f474868e8d24b6e24540d6df7c65f38b5ae469e` (supersedes the stale `350f0b27e50b49b290831d96981b1335468d8d5b` value recorded in `tester_result.json`)
+- Implementer final stage commit context: `350f0b27e50b49b290831d96981b1335468d8d5b`
+- Implementer code commit context: `750b3bc1cbce2a7e596379ccd5cc0dcf2228e89e`
+- Documenter branch: `gui_tests-subtask4-documenter-20260404`
+- Documenter worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask4-documenter-20260404`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/gui/WXTacticalUI.h`
+- `src/gui/WXTacticalUI.cpp`
+- `tests/gui/GuiTests.cpp`
+- `tests/gui/Makefile`
+- `tests/gui/WXGuiTestHarness.h`
+- `tests/gui/WXGuiTestHarness.cpp`
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `AGENTS.md`
+- `artifacts/gui-automated-tests-plan/4-prompt/tester_report.md`
+- `artifacts/gui-automated-tests-plan/4-prompt/tester_result.json`
+- `artifacts/gui-automated-tests-plan/4-prompt/documenter_prompt.txt`
+- `artifacts/gui-automated-tests-plan/4-prompt/documenter_report.md`
+- `artifacts/gui-automated-tests-plan/4-prompt/documenter_result.json`
+- `artifacts/gui-automated-tests-plan/4-prompt/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/gui && if [ -n "$DISPLAY" ]; then make -j2 >/dev/null && ./GuiTests; elif command -v xvfb-run >/dev/null 2>&1; then make -j2 >/dev/null && xvfb-run -a ./GuiTests; else make -j2 >/dev/null && ./GuiTests; fi`
+
+Final test outcomes:
+- GuiTests passed: 11/11, 0 failures.
+- Tactical live path emitted expected TACTICAL1 markers including damage summary and winner sequencing.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm `AGENTS.md` now accurately documents the tactical GUI smoke coverage, shared `WXGuiTestHarness` modal-action helpers, and the headless GUI command path without claiming full end-to-end tactical runtime automation.
+
+Shared artifact directory:
+- `artifacts/gui-automated-tests-plan/4-prompt`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

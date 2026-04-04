@@ -1,0 +1,34 @@
+{
+  "status": "success",
+  "subtask": "4-prompt",
+  "branch_name": "gui_tests-subtask4-documenter-20260404",
+  "commit_hash": "88627b508b5b7159e84d2842936accaa41bac080",
+  "documentation_commit_hash": "88627b508b5b7159e84d2842936accaa41bac080",
+  "documentation_files_added_or_modified": [
+    "AGENTS.md"
+  ],
+  "artifact_file_paths": {
+    "report": "artifacts/gui-automated-tests-plan/4-prompt/documenter_report.md",
+    "result": "artifacts/gui-automated-tests-plan/4-prompt/documenter_result.json",
+    "verifier_prompt": "artifacts/gui-automated-tests-plan/4-prompt/verifier_prompt.txt"
+  },
+  "implementation_context": {
+    "tester_branch": "gui_tests-subtask4-tester-20260404",
+    "tester_worktree": "/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask4-tester-20260404",
+    "tester_stage_commit_hash": "8f474868e8d24b6e24540d6df7c65f38b5ae469e",
+    "implementer_final_stage_commit_hash": "350f0b27e50b49b290831d96981b1335468d8d5b",
+    "implementation_code_commit_hash": "750b3bc1cbce2a7e596379ccd5cc0dcf2228e89e"
+  },
+  "commands_run": [
+    "cd tests/gui && if [ -n \":0\" ]; then make -j2 >/dev/null && ./GuiTests; elif command -v xvfb-run >/dev/null 2>&1; then make -j2 >/dev/null && xvfb-run -a ./GuiTests; else make -j2 >/dev/null && ./GuiTests; fi"
+  ],
+  "tests": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0
+  },
+  "final_test_outcomes": [
+    "GuiTests passed: 11/11, 0 failures.",
+    "Tactical live path emitted expected TACTICAL1 markers including damage summary and winner sequencing."
+  ]
+}
