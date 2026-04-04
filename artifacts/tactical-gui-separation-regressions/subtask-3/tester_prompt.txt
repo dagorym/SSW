@@ -1,0 +1,37 @@
+You are the Tester Agent.
+
+Scope
+- Validate subtask 3 for tactical forward-fire final-orientation handling.
+
+Modified files
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalForwardFireFinalOrientationTest.h
+- tests/tactical/FTacticalForwardFireFinalOrientationTest.cpp
+
+Planner acceptance criteria
+- Endpoint forward-fire highlights use the final post-turn orientation when the last move is a turn.
+- Target validation accepts and rejects targets consistently with the displayed final-orientation highlights.
+- Straight-line movement behavior remains unchanged.
+- Non-forward-firing weapon behavior remains unchanged.
+
+Implementation context
+- `FTacticalGame` now derives a shared per-path heading progression (`buildPathHeadings`) used by both:
+  - moving-player forward-fire range/highlight aggregation in `computeWeaponRange()`
+  - moving-player forward-fire target validation in `setIfValidTarget()`
+- The progression applies `turnData.finalHeading` on the terminal path point so endpoint final-turn orientation is honored.
+- New runtime fixture `FTacticalForwardFireFinalOrientationTest` contains:
+  - final-turn endpoint highlight + target validation acceptance/rejection checks
+  - straight-line forward-fire invariance check
+  - battery/non-forward heading-independence check
+
+Relevant test location convention
+- tests/tactical
+
+Suggested validation commands
+- `cd tests/tactical && make && ./TacticalTests`
+- Optionally compile/run the standalone new fixture as done by implementer to validate runtime behavior directly before registration changes.
+
+Shared artifact directory (reuse exactly and pass forward)
+- artifacts/tactical-gui-separation-regressions/subtask-3
+
+Do not report success unless all required artifacts exist and all changes are committed.
