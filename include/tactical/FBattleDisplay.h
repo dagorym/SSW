@@ -9,9 +9,6 @@
 #ifndef __FBattleDisplay__
 #define __FBattleDisplay__
 
-#include <wx/wx.h>
-#include <wx/spinctrl.h>
-
 #include <vector>
 
 #include "gui/GuiTypes.h"

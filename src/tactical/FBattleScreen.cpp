@@ -13,7 +13,6 @@
 TacticalUI.h"
 #include "tactical/ITacticalUI.h"
 #include "tactical/FTacticalGame.h"
-#include <wx/wx.h>
 
 namespace Frontier {
 

@@ -9,20 +9,8 @@
 #ifndef __FBattleScreen__
 #define __FBattleScreen__
 
-#include <wx/scrolwin.h>
-#include <wx/gdicmn.h>
-#include <wx/font.h>
-#include <wx/colour.h>
-#include <wx/settings.h>
-#include <wx/string.h>
-#include <wx/panel.h>
-#include <wx/sizer.h>
-#include <wx/frame.h>
-#include <wx/dialog.h>
-#include <wx/event.h>
-#include <wx/utils.h>
-
 #include "Frontier.h"
+#include "gui/GuiTypes.h"
 #include "tactical/FBattleBoard.h"
 #include "tactical/FBattleDisplay.h"
 #include "tactical/FTacticalCombatReport.h"
@@ -31,8 +19,7 @@
 namespace Frontier {
 
 class FTacticalGame;
-class WX\
-TacticalUI;
+class WXTacticalUI;
 
 /**
  * @brief Class for the Main tactical combat board
@@ -242,8 +229,7 @@ protected:
 	/// tactical model owner during delegation migration
 	FTacticalGame * m_tacticalGame;
 	/// wx tactical UI adapter owner during delegation migration
-	WX\
-TacticalUI * m_tacticalUI;
+	WXTacticalUI * m_tacticalUI;
 //	/// window disabler object
 //	wxWindowDisabler *m_wd;
 

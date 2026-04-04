@@ -9,16 +9,6 @@
 #ifndef __FBattleBoard__
 #define __FBattleBoard__
 
-#include <wx/scrolwin.h>
-#include <wx/gdicmn.h>
-#include <wx/font.h>
-#include <wx/colour.h>
-#include <wx/settings.h>
-#include <wx/string.h>
-#include <wx/panel.h>
-#include <wx/sizer.h>
-#include <wx/frame.h>
-
 #include "gui/GuiTypes.h"
 #include "Frontier.h"
 #include "strategic/FFleet.h"

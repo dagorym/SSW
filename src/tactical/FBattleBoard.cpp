@@ -10,7 +10,6 @@
 #include "tactical/FBattleScreen.h"
 #include "gui/WXIconCache.h"
 #include "core/FGameConfig.h"
-#include <wx/wx.h>
 #include <cmath>
 
 namespace Frontier {

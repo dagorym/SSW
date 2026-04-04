@@ -8,6 +8,7 @@
 #define _GUITYPES_H_
 
 #include <wx/wx.h>
+#include <wx/spinctrl.h>
 #include <vector>
 
 typedef std::vector<wxImage> ImageList;

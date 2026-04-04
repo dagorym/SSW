@@ -12,7 +12,6 @@
 #include "core/FGameConfig.h"
 #include "core/FHexMap.h"
 #include "gui/WXIconCache.h"
-#include <wx/wx.h>
 #include <sstream>
 
 #define ICON_SIZE 50
