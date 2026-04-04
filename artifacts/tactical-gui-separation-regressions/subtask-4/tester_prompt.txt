@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Validate Subtask 4 in branch `gui_sep-implementer-20260404`.
+
+Implementation/code commit to verify: 2638e2678ad3912115253104d00c46bec4e6dc1f
+Shared artifact directory (repo-relative, reuse exactly): artifacts/tactical-gui-separation-regressions/subtask-4
+
+Modified files:
+- tests/tactical/Makefile
+- tests/tactical/TacticalTests.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- doc/DesignNotes.md
+
+Planner acceptance criteria to verify:
+- The tactical module runner registers the updated station orbit fixture and the new move-selection and final-orientation fire fixtures.
+- The tactical Makefile builds the required regression fixtures.
+- Shared tactical assertions no longer encode the regressions being fixed.
+- Any documentation update is limited to accurate validation notes for the restored regression coverage.
+
+Relevant test location convention:
+- tests/tactical
+
+Recommended validation commands:
+- cd tests/tactical && make clean && make && ./TacticalTests
+
+Implementation context:
+- `tests/tactical/TacticalTests.cpp` now includes/adds suites for `FTacticalStationOrbitalMovementTest`, `FTacticalMoveRouteSelectionTest`, and `FTacticalForwardFireFinalOrientationTest`.
+- `tests/tactical/Makefile` now compiles/archives `FTacticalMoveRouteSelectionTest.o` and `FTacticalForwardFireFinalOrientationTest.o` alongside existing tactical fixtures.
+- `tests/tactical/FTacticalGameMechanicsTest.cpp` now asserts corrected model behavior through source inspection:
+  - move selection trims/extends route to the exact clicked hex (`handleMoveHexSelection`);
+  - forward-fire heading evaluation flows through `buildPathHeadings` with `finalHeading` at path endpoints and shared use in both range highlights and target validation.
+- `doc/DesignNotes.md` validation result counts were updated where the three restored regression fixtures are documented.
+
+Do not report success unless all required artifacts exist and all changes are committed.
