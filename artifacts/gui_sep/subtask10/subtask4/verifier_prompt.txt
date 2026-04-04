@@ -1,0 +1,67 @@
+You are the Verifier Agent.
+
+Task summary:
+Validate and document Subtask 4 outcomes for tactical mock-UI runtime test coverage in SSW.
+
+Acceptance criteria validated by Tester:
+- The test uses a mock ITacticalUI.
+- The combat setup is deterministic and runs entirely through model/test harnesses.
+- The correct winner is asserted from FTacticalGame state and any UI callback interaction goes through the mock.
+- The test is wired into the tactical Makefile and tactical runner.
+
+Implementation/worktree context:
+- Base comparison branch: master
+- Implementation branch: gui_sep-m10-s4-implementer-20260404
+- Tester branch/worktree: gui_sep-m10-s4-tester-20260404
+- Documenter branch/worktree: gui_sep-m10-s4-documenter-20260404
+- Shared artifact directory (repository-root-relative, reuse exactly): artifacts/gui_sep/subtask10/subtask4
+- Plan provenance: plans/milestone10-final-validation-cleanup-plan.md
+
+Files modified by Implementer that may affect verification scope:
+- tests/tactical/FTacticalGameMockUITest.h
+- tests/tactical/FTacticalGameMockUITest.cpp
+- tests/tactical/TacticalTests.cpp
+- tests/tactical/Makefile
+
+Files modified by Tester:
+- artifacts/gui_sep/subtask10/subtask4/tester_report.md
+- artifacts/gui_sep/subtask10/subtask4/tester_result.json
+- artifacts/gui_sep/subtask10/subtask4/documenter_prompt.txt
+
+Files modified by Documenter that may affect verification scope:
+- AGENTS.md
+- artifacts/gui_sep/subtask10/subtask4/documenter_report.md
+- artifacts/gui_sep/subtask10/subtask4/documenter_result.json
+- artifacts/gui_sep/subtask10/subtask4/verifier_prompt.txt
+
+Documentation-specific scope:
+- Verify that AGENTS.md now documents deterministic mock-ITacticalUI winner coverage in FTacticalGameMockUITest.
+- Verify that AGENTS.md states tactical model regression tests may install mock ITacticalUI implementations without wx runtime objects.
+- Verify that AGENTS.md notes Milestone 10 tactical validation relies on model-level tests rather than automated end-to-end wx GUI playback.
+- Verification must include the updated documentation files along with the implementation and tests.
+
+Tester commit context:
+- Test commit hash: No Changes Made
+- Tester artifact commit hash: 46b2a73
+
+Documenter commit context:
+- Documentation commit hash: 22b46adff550299597c03bc9d90be415e2c47101
+- Artifact commit hash: pending in this handoff branch until after artifact commit is created
+
+Commands executed by Tester:
+- cd tests/tactical && make -s && ./TacticalTests
+
+Final test outcomes:
+- Tactical test suite result: OK (75 tests)
+- Totals: 75 passed, 0 failed
+- Acceptance criteria status: all passed
+
+Required success artifacts:
+- artifacts/gui_sep/subtask10/subtask4/tester_report.md
+- artifacts/gui_sep/subtask10/subtask4/tester_result.json
+- artifacts/gui_sep/subtask10/subtask4/documenter_report.md
+- artifacts/gui_sep/subtask10/subtask4/documenter_result.json
+- artifacts/gui_sep/subtask10/subtask4/verifier_prompt.txt
+
+Required completion gate:
+Do not report success unless all required artifacts exist and all changes are committed.
