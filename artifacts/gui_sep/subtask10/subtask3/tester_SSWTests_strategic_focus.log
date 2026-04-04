@@ -1,0 +1,61 @@
+.........................21:55:07: Debug: Adding duplicate image handler for 'PNG file'
+21:55:07: Debug: Adding duplicate image handler for 'JPEG file'
+21:55:07: Debug: Adding duplicate image handler for 'TIFF file'
+21:55:07: Debug: Adding duplicate image handler for 'GIF file'
+21:55:07: Debug: Adding duplicate image handler for 'PNM file'
+21:55:07: Debug: Adding duplicate image handler for 'PCX file'
+21:55:07: Debug: Adding duplicate image handler for 'IFF file'
+21:55:07: Debug: Adding duplicate image handler for 'Windows icon file'
+21:55:07: Debug: Adding duplicate image handler for 'Windows cursor file'
+21:55:07: Debug: Adding duplicate image handler for 'Windows animated cursor file'
+21:55:07: Debug: Adding duplicate image handler for 'TGA file'
+21:55:07: Debug: Adding duplicate image handler for 'XPM file'
+21:55:07: Debug: Adding duplicate image handler for 'WebP file'
+.21:55:07: Debug: Adding duplicate image handler for 'PNG file'
+21:55:07: Debug: Adding duplicate image handler for 'JPEG file'
+21:55:07: Debug: Adding duplicate image handler for 'TIFF file'
+21:55:07: Debug: Adding duplicate image handler for 'GIF file'
+21:55:07: Debug: Adding duplicate image handler for 'PNM file'
+21:55:07: Debug: Adding duplicate image handler for 'PCX file'
+21:55:07: Debug: Adding duplicate image handler for 'IFF file'
+21:55:07: Debug: Adding duplicate image handler for 'Windows icon file'
+21:55:07: Debug: Adding duplicate image handler for 'Windows cursor file'
+21:55:07: Debug: Adding duplicate image handler for 'Windows animated cursor file'
+21:55:07: Debug: Adding duplicate image handler for 'TGA file'
+21:55:07: Debug: Adding duplicate image handler for 'XPM file'
+21:55:07: Debug: Adding duplicate image handler for 'WebP file'
+...............................................................F.F.F...Player 1:  UPF
+Player 2:  Sathar
+
+....The Sathar retreat condition is:
+
+Error:  No retreat condition selected
+.Player 1:  UPF
+Player 2:  Sathar
+
+............................................................
+
+
+!!!FAILURES!!!
+Test Results:
+Run:  159   Failures: 3   Errors: 0
+
+
+1) test: FrontierTests::FTacticalStationOrbitalMovementTest::testStationHeadingUpdatedAfterOrbit (F) line: 40 FTacticalStationOrbitalMovementTest.cpp
+equality assertion failed
+- Expected: 1
+- Actual  : 0
+
+
+2) test: FrontierTests::FTacticalStationOrbitalMovementTest::testStationSpeedPreservedAfterOrbit (F) line: 40 FTacticalStationOrbitalMovementTest.cpp
+equality assertion failed
+- Expected: 1
+- Actual  : 0
+
+
+3) test: FrontierTests::FTacticalStationOrbitalMovementTest::testNonStationHeadingUnchangedByFix (F) line: 40 FTacticalStationOrbitalMovementTest.cpp
+equality assertion failed
+- Expected: 1
+- Actual  : 0
+
+
