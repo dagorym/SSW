@@ -1,0 +1,58 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate Subtask 6 modal-launch GUI coverage implemented on `gui_tests-subtask6-implementer-20260404` and confirmed from tester branch `gui_tests-subtask6-tester-20260404`.
+
+Acceptance criteria validated:
+- SelectCombatGUI live path opens FBattleScreen and closes deterministically in headless automation.
+- BattleSimFrame, LocalGameDialog, ScenarioDialog, and ScenarioEditorGUI modal launch paths have live coverage.
+- FBattleScreen ownership/lifetime behavior is verified by lifecycle assertions (constructed/destroyed/live counters).
+- Canonical contributor command is documented.
+
+Implementation branch or worktree context:
+- Implementer branch context: `gui_tests-subtask6-implementer-20260404`
+- Implementer final stage context (as provided): `1b691e3226838df26d643765e2d6404f1ad43b1d`
+- Implementation code commit context (as provided): `b659903412f7665ec03129d7ff3601328fb7f886`
+- Observed local commit resolution: `1b691e3891efdd0f022f1a8d248b6560a315595a` and `b6599033e710586bb8540cbf062df7d23bebd677`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- doc/DesignNotes.md
+- include/battleSim/ScenarioEditorGUI.h
+- include/gui/SelectCombatGUI.h
+- include/tactical/FBattleScreen.h
+- src/battleSim/ScenarioDialog.cpp
+- src/battleSim/ScenarioEditorGUI.cpp
+- src/gui/SelectCombatGUI.cpp
+- src/tactical/FBattleScreen.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.h
+- tests/gui/GuiTests.cpp
+- tests/gui/Makefile
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/WXGuiTestHarness.cpp
+- artifacts/gui-automated-tests-plan/6-prompt/tester_report.md
+- artifacts/gui-automated-tests-plan/6-prompt/tester_result.json
+- artifacts/gui-automated-tests-plan/6-prompt/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && xvfb-run -a ./GuiTests
+
+Final test outcomes:
+- GUI suite passed: `OK (19 tests)`.
+- Live modal-launch coverage and FBattleScreen lifecycle assertions are present and exercised.
+- Canonical headless command and modal-launch follow-up are documented in DesignNotes.
+
+Documentation context:
+- Update narrative around live modal-launch test coverage in strategic and BattleSim flows.
+- Ensure contributor-facing testing instructions include and preserve the canonical headless command.
+
+Shared artifact directory:
+- artifacts/gui-automated-tests-plan/6-prompt
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
