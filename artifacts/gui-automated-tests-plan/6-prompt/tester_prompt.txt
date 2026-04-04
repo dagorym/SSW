@@ -1,0 +1,15 @@
+Please validate Subtask 6 modal-launch coverage in branch gui_tests-subtask6-implementer-20260404.
+
+Scope to verify:
+1) SelectCombatGUI live path opens FBattleScreen and closes deterministically in headless automation.
+2) BattleSimFrame, LocalGameDialog, ScenarioDialog, and ScenarioEditorGUI modal launch paths have live coverage.
+3) Tests verify FBattleScreen ownership/lifetime behavior (not just structure) via lifecycle assertions.
+4) Canonical command is documented for contributors.
+
+Run:
+cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Expected:
+- Test runner passes (OK, 19 tests).
+- New/updated fixtures include StrategicGuiLiveTest + BattleSimGuiLiveTest modal coverage.
+- DesignNotes includes canonical command and modal-launch follow-up summary.
