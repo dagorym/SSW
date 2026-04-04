@@ -662,7 +662,10 @@ void FTacticalGame::resetTurnInfoForCurrentMover() {
 			d.path.addPoint(nextHex);
 			d.path.addFlag(nextHex, GRAVITY_TURN);
 			d.nMoved = 1;
-			d.finalHeading = d.curHeading;
+			const int stationTurn = getPlanetTurnDirection(nextHex, d.curHeading);
+			if (stationTurn != 0) {
+				d.finalHeading = turnShip(d.curHeading, stationTurn);
+			}
 		}
 		m_turnInfo[(*itr)->getID()] = d;
 	}

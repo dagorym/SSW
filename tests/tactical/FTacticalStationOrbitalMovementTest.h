@@ -9,7 +9,6 @@
 #define _FTACTICALSTATIONORBITALMOVEMENTTEST_H_
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <string>
 
 namespace FrontierTests {
 
@@ -19,10 +18,6 @@ CPPUNIT_TEST( testStationHeadingUpdatedAfterOrbit );
 CPPUNIT_TEST( testStationSpeedPreservedAfterOrbit );
 CPPUNIT_TEST( testNonStationHeadingUnchangedByFix );
 CPPUNIT_TEST_SUITE_END();
-
-private:
-std::string readFile(const std::string & path);
-std::string extractFunctionBody(const std::string & source, const std::string & signature);
 
 public:
 void setUp();
