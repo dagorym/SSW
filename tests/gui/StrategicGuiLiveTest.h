@@ -18,6 +18,10 @@ CPPUNIT_TEST( testMainFrameBuildsExpectedInitialUI );
 CPPUNIT_TEST( testGamePanelPaintTracksParentSize );
 CPPUNIT_TEST( testStrategicDialogsCloseModallyWithoutInput );
 CPPUNIT_TEST( testWXStrategicUIParentBackedModalAndRedrawPaths );
+CPPUNIT_TEST( testUPFAndSatharFleetDialogsMutateModelState );
+CPPUNIT_TEST( testTransferShipsDialogMovesShipsAndUpdatesFleets );
+CPPUNIT_TEST( testCombatSelectionDialogsReturnCodesAndState );
+CPPUNIT_TEST( testBattleResultsDialogUpdatesShipStatistics );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -31,6 +35,10 @@ public:
 	void testGamePanelPaintTracksParentSize();
 	void testStrategicDialogsCloseModallyWithoutInput();
 	void testWXStrategicUIParentBackedModalAndRedrawPaths();
+	void testUPFAndSatharFleetDialogsMutateModelState();
+	void testTransferShipsDialogMovesShipsAndUpdatesFleets();
+	void testCombatSelectionDialogsReturnCodesAndState();
+	void testBattleResultsDialogUpdatesShipStatistics();
 };
 
 }

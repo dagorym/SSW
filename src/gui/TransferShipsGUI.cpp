@@ -75,15 +75,14 @@ TransferShipsGUI::TransferShipsGUI( FPlayer * player, FFleet * fleet, FSystem * 
 	FleetList::iterator fItr;
 	if (!(m_fleet->getInTransit())){
 		m_fleetList = m_system->getFleetList();
-		for (fItr = m_fleetList.begin(); fItr < m_fleetList.end(); fItr++){
+		for (fItr = m_fleetList.begin(); fItr != m_fleetList.end(); ){
 			if ((*fItr)->getOwner() != m_player->getID()
 					|| (*fItr)->getInTransit() == true
 					|| (*fItr) == m_fleet
 					|| (*fItr)->isMilitia() == true ){
-				m_fleetList.erase(fItr);
-				if (m_fleetList.size()==0){ // if there are no more fleets to look at break out of the loop
-					break;
-				}
+				fItr = m_fleetList.erase(fItr);
+			} else {
+				++fItr;
 			}
 		}
 		for (fItr = m_fleetList.begin(); fItr < m_fleetList.end(); fItr++){
@@ -392,32 +391,27 @@ void TransferShipsGUI::onNewFleet( wxCommandEvent& event ){
 
 void TransferShipsGUI::onDone( wxCommandEvent& event ){
 	// first we need to check that all the fleets with fighters have enough Assault Carriers
-	// check the orginal fleet
-//	std::cerr << "Fleet " << m_fleet->getName();
 	if (checkFighters(m_origList)){
 		return;
 	}
-	// check the other fleets
 	for (unsigned int i = 0; i < m_shipLists.size(); i++){
-//		std::cerr << "Fleet " << m_nameList[i];
 		if (checkFighters(m_shipLists[i])){
 			return;
 		}
 	}
 
-	// update original fleet
 	updateFleet(m_fleet,m_origList);
 
-//	std::cerr << "There are " << m_shipLists.size() << " fleets to process" << std::endl;
-	// go through the list fleets
 	for (unsigned int i = 0; i < m_shipLists.size(); i++){
-//		std::cerr << "Processing fleet " << i << std::endl;
-		if (i < m_origFleetCount) { // if fleets already exists, check updated ships
-//			std::cerr << "Original fleet" << std::endl;
-			FFleet *f = m_player->getFleet(m_nameList[i]);
-			updateFleet(f,m_shipLists[i]);
-		} else {  // if fleet doesn't exist create it
-//			std::cerr << "New fleet" << std::endl;
+		if (i < m_origFleetCount) {
+			FFleet *f = NULL;
+			if (i < m_fleetList.size()){
+				f = m_fleetList[i];
+			}
+			if (f != NULL){
+				updateFleet(f,m_shipLists[i]);
+			}
+		} else {
 			FFleet *f = new FFleet;
 			f->setOwner(m_fleet->getOwner());
 			const std::string sourceIconFile = getSerializedFleetIconFile(m_fleet);
@@ -429,25 +423,33 @@ void TransferShipsGUI::onDone( wxCommandEvent& event ){
 			f->setLocation(m_fleet->getLocation());
 			f->setMilitia(m_fleet->isMilitia(),m_fleet->getHomeSystem());
 			f->setHolding(m_fleet->isHolding());
-			f->setName(m_nameList[i]);
+			if (i < m_nameList.size()){
+				f->setName(m_nameList[i]);
+			}
 			updateFleet(f,m_shipLists[i]);
-			// add it to the player's list
 			m_player->addFleet(f);
-			// add it to the the system's list
 			m_system->addFleet(f);
 		}
-		// purge any empty fleets.
-		FleetList fl = m_system->getFleetList();
-		for (unsigned int i = 0; i < fl.size(); i++){
-			if (fl[i]->getShipCount() == 0){
-				m_player->removeFleet(fl[i]->getID());
-				FFleet *f = m_system->removeFleet(fl[i]->getID());
+	}
+
+	FleetList systemFleets = m_system->getFleetList();
+	for (FleetList::iterator itr = systemFleets.begin(); itr != systemFleets.end(); ++itr){
+		if ((*itr) == NULL){
+			continue;
+		}
+		if ((*itr)->getShipCount() == 0){
+			const unsigned int fleetID = (*itr)->getID();
+			m_player->removeFleet(fleetID);
+			FFleet *f = m_system->removeFleet(fleetID);
+			if (f != NULL){
 				delete f;
 			}
 		}
 	}
 
-	EndModal(0);
+	if (IsModal()){
+		EndModal(0);
+	}
 	event.Skip();
 }
 
@@ -488,7 +490,6 @@ bool TransferShipsGUI::checkFighters(VehicleList & sl){
 	int fighterCount = 0;
 	int carrierCount = 0;
 	VehicleList::iterator sItr;
-	unsigned int i=0;
 	for (sItr=sl.begin(); sItr < sl.end(); sItr++){
 		if((*sItr)->getType()=="Fighter"){  // count the fighters
 			fighterCount++;
@@ -501,7 +502,7 @@ bool TransferShipsGUI::checkFighters(VehicleList & sl){
 //	          << "and " << carrierCount << " Carriers" << std::endl;
 	if (fighterCount > carrierCount*8){
 		std::ostringstream os;
-		os << "Fleet " << m_nameList[i] << " does not have enough Assault\n"
+		os << "Fleet does not have enough Assault\n"
 		   << "Carriers for it's " << fighterCount << " fighters.";
 		wxMessageBox(os.str(),"Error:  Too many fighters", wxOK);
 		return true;

@@ -154,6 +154,23 @@ int WXGuiTestHarness::showModalWithAutoDismiss(wxDialog & dialog, int returnCode
 	return result;
 }
 
+int WXGuiTestHarness::showModalWithAction(wxDialog & dialog,
+                                          const std::function<void()> & action,
+                                          int fallbackCode,
+                                          int timeoutMs) {
+	if (!m_bootstrapped && !bootstrap()) {
+		return wxID_NONE;
+	}
+
+	ModalDismissTimer dismissTimer(&dialog, fallbackCode);
+	dismissTimer.Start(timeoutMs, true);
+	dialog.CallAfter(action);
+	const int result = dialog.ShowModal();
+	dismissTimer.Stop();
+	pumpEvents(2);
+	return result;
+}
+
 int WXGuiTestHarness::runModalFunctionWithAutoDismiss(const std::function<int()> & callback,
                                                       int returnCode,
                                                       int timeoutMs) {

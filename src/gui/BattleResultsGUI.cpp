@@ -89,7 +89,7 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 //	sbSizer2->SetMinSize(wxSize(240,-1));
 
 	wxFlexGridSizer* fgSizer5;
-	fgSizer5 = new wxFlexGridSizer( 6, 1, 0, 0 );
+	fgSizer5 = new wxFlexGridSizer( 0, 1, 0, 0 );
 	fgSizer5->SetFlexibleDirection( wxBOTH );
 	fgSizer5->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
@@ -242,7 +242,6 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer8->AddGrowableCol( 0 );
 	fgSizer8->AddGrowableCol( 1 );
 	fgSizer8->AddGrowableCol( 2 );
-	fgSizer8->AddGrowableCol( 3 );
 	fgSizer8->SetFlexibleDirection( wxBOTH );
 	fgSizer8->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
