@@ -17,6 +17,7 @@
 #include "FTacticalBattleBoardRendererDelegationTest.h"
 #include "FTacticalGameHeaderTest.h"
 #include "FTacticalGameMechanicsTest.h"
+#include "FTacticalGameMockUITest.h"
 #include "FTacticalModelSelectionHexClickSurfaceTest.h"
 #include "ITacticalUIBoundaryTest.h"
 
@@ -36,6 +37,7 @@ runner.addTest(FTacticalBatteryRangeClampTest::suite());
 runner.addTest(FTacticalBattleBoardRendererDelegationTest::suite());
 runner.addTest(FTacticalGameHeaderTest::suite());
 runner.addTest(FTacticalGameMechanicsTest::suite());
+runner.addTest(FTacticalGameMockUITest::suite());
 runner.addTest(FTacticalModelSelectionHexClickSurfaceTest::suite());
 runner.addTest(ITacticalUIBoundaryTest::suite());
 bool wasSuccessful = runner.run("", false);

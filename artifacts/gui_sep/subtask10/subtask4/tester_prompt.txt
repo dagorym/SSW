@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Validate Subtask 4 implementation in this worktree/branch:
+- Branch: gui_sep-m10-s4-implementer-20260404
+- Shared artifact directory (reuse exactly): artifacts/gui_sep/subtask10/subtask4
+
+Modified files:
+- tests/tactical/FTacticalGameMockUITest.h
+- tests/tactical/FTacticalGameMockUITest.cpp
+- tests/tactical/TacticalTests.cpp
+- tests/tactical/Makefile
+
+Planner acceptance criteria to validate:
+- The test uses a mock ITacticalUI.
+- The combat setup is deterministic and runs entirely through model/test harnesses.
+- The correct winner is asserted from FTacticalGame state and any UI callback interaction goes through the mock.
+- The test is wired into the tactical Makefile and tactical runner.
+
+Test location convention:
+- tests/tactical/
+
+Implementation context:
+- New runtime CppUnit test `FTacticalGameMockUITest` introduces:
+  - `FMockTacticalUI` implementing `ITacticalUI`
+  - deterministic one-shot attacker vs defender harness setup
+  - combat resolution via `FTacticalGame::fireAllWeapons()`
+  - winner assertions via `isCombatOver()`, `hasWinner()`, `getWinnerID()`
+  - explicit mock callback assertion by invoking `notifyWinner(...)` on the mock with model winner state
+- Tactical test runner and tactical Makefile now include the new test object/suite.
+- Existing validation run by implementer:
+  - `cd tests/tactical && make -s && ./TacticalTests` => OK (75 tests)
+
+Required tester gate:
+Do not report success unless all required artifacts exist and all changes are committed.
