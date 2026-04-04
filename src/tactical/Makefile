@@ -12,7 +12,8 @@ else
 COVERAGE_FLAGS =
 endif
 
-CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+WX_CXXFLAGS ?= -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread
+CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) $(WX_CXXFLAGS)
 
 LIBS =
 
