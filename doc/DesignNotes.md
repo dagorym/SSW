@@ -836,10 +836,22 @@ now exposes constructor/destructor/live-instance counters that the GUI tests use
 to assert real launch ownership and deterministic teardown rather than relying on
 source-structure checks alone.
 
+The next harness remediation tightened those live-GUI expectations around
+top-level ownership and cleanup. `WXGuiTestHarness` now exposes
+`getTopLevelWindows(...)`, `findTopLevelWindow(...)`, `waitForTopLevelWindow(...)`,
+`findModalDialog(...)`, `waitForModalDialog(...)`, and
+`cleanupOrphanTopLevels(...)` so fixtures can prove that launched frames or
+dialogs actually appeared, wait for modal ownership before acting, and enforce a
+zero-orphan top-level state before teardown completes. `GuiHarnessTest` now
+regresses those observation and cleanup paths directly, while the tactical
+damage-summary coverage and the BattleSim launch-chain tests switched from shown
+stack-lifetime assumptions to explicit `Destroy()` plus event pumping on their
+parent frames and dialogs.
+
 Canonical headless GUI validation command:
 
 ```bash
 cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (19 tests)`.
+Result: `OK (22 tests)`.
