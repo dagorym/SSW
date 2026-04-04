@@ -843,10 +843,24 @@ top-level ownership and cleanup. `WXGuiTestHarness` now exposes
 `cleanupOrphanTopLevels(...)` so fixtures can prove that launched frames or
 dialogs actually appeared, wait for modal ownership before acting, and enforce a
 zero-orphan top-level state before teardown completes. `GuiHarnessTest` now
-regresses those observation and cleanup paths directly, while the tactical
-damage-summary coverage and the BattleSim launch-chain tests switched from shown
-stack-lifetime assumptions to explicit `Destroy()` plus event pumping on their
-parent frames and dialogs.
+regresses those observation and cleanup paths directly, while the tactical and
+BattleSim live fixtures switched from shown stack-lifetime assumptions to
+explicit `Destroy()` plus event pumping on their parent frames and dialogs.
+
+The tactical follow-up extends that same live-dialog discipline inside
+`TacticalGuiLiveTest`, which now registers direct
+`testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior` and
+`testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo` coverage under
+`GuiTests`. The damage-summary test drives `TacticalDamageSummaryGUI` modally,
+asserts the dialog title plus populated and empty-state report text, verifies
+the rendered report context, and dismisses the real `Close` button through the
+modal harness. The ICM test now drives `ICMSelectionGUI` modally through row
+selection, spin-control assignment, and the production `Done` completion path,
+then asserts the assigned interceptor count and defender ammo decrements without
+bypassing the dialog's finalization logic. Those direct tactical dialog tests
+finish by destroying any shown parents or dialogs, pumping events, and calling
+`cleanupOrphanTopLevels(...)` so the fixture proves zero orphaned top-level
+windows before teardown completes.
 
 Canonical headless GUI validation command:
 
@@ -854,4 +868,4 @@ Canonical headless GUI validation command:
 cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (22 tests)`.
+Result: `OK (24 tests)`.
