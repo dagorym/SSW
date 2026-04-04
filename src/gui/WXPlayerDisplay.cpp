@@ -9,6 +9,7 @@
 #include "gui/WXMapDisplay.h"
 #include "gui/WXIconCache.h"
 #include "strategic/FPlayer.h"
+#include <algorithm>
 
 namespace Frontier
 {
@@ -29,7 +30,12 @@ void WXPlayerDisplay::drawFleets(wxDC &dc, FPlayer *player){
 	FleetList fleetList = player->getFleetList();
 	if (fleetList.size()>0){
 		for (FleetList::iterator itr = fleetList.begin(); itr < fleetList.end(); itr++){
-			wxBitmap b(WXIconCache::instance().get((*itr)->getIconName()).Scale((int)scale,(int)scale));
+			const wxImage & icon = WXIconCache::instance().get((*itr)->getIconName());
+			if (!icon.IsOk()) {
+				continue;
+			}
+			const int iconSize = std::max(1, (int)scale);
+			wxBitmap b(icon.Scale(iconSize, iconSize));
 			if((*itr)->getInTransit()){  // it's in a jump
 				if ((*itr)->getDestination() == FFleet::NO_DESTINATION || (*itr)->getJumpRoute() == FFleet::NO_ROUTE) {
 					wxCoord x = (wxCoord)(((*itr)->getCoord(0)-0.5) * scale);

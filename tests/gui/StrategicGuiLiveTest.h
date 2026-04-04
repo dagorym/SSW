@@ -22,6 +22,9 @@ CPPUNIT_TEST( testUPFAndSatharFleetDialogsMutateModelState );
 CPPUNIT_TEST( testTransferShipsDialogMovesShipsAndUpdatesFleets );
 CPPUNIT_TEST( testCombatSelectionDialogsReturnCodesAndState );
 CPPUNIT_TEST( testBattleResultsDialogUpdatesShipStatistics );
+CPPUNIT_TEST( testWXMapDisplayOffscreenRendering );
+CPPUNIT_TEST( testWXPlayerDisplayOffscreenRendersSystemAndTransitFleets );
+CPPUNIT_TEST( testWXGameDisplayOffscreenRendersTurnCounterAndIcons );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -32,6 +35,9 @@ public:
 	void tearDown();
 
 	void testMainFrameBuildsExpectedInitialUI();
+	void testWXMapDisplayOffscreenRendering();
+	void testWXPlayerDisplayOffscreenRendersSystemAndTransitFleets();
+	void testWXGameDisplayOffscreenRendersTurnCounterAndIcons();
 	void testGamePanelPaintTracksParentSize();
 	void testStrategicDialogsCloseModallyWithoutInput();
 	void testWXStrategicUIParentBackedModalAndRedrawPaths();

@@ -24,6 +24,13 @@ const wxImage & WXIconCache::get(const std::string & filename) {
     std::string fullPath = gc.getBasePath() + filename;
     wxImage img(fullPath);
     if (!img.IsOk()) {
+        std::string fallbackPath = gc.getBasePath() + "../" + filename;
+        wxImage fallback(fallbackPath);
+        if (fallback.IsOk()) {
+            img = fallback;
+        }
+    }
+    if (!img.IsOk()) {
         wxLogWarning("WXIconCache: failed to load image '%s'", fullPath.c_str());
         m_cache[filename] = wxImage();
     } else {

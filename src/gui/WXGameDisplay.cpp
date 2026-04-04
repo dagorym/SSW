@@ -10,6 +10,7 @@
 #include "gui/WXPlayerDisplay.h"
 #include "gui/WXIconCache.h"
 #include "strategic/FGame.h"
+#include <algorithm>
 #include <sstream>
 
 namespace Frontier
@@ -74,12 +75,21 @@ void WXGameDisplay::drawTurnCounter(wxDC &dc, const FGame &game) {
 	const int tenday = round / 10;
 	int row = tenday / 5;
 	int col = tenday % 5;
+	const int iconSize = std::max(1, 4 * s / 5);
 	const wxImage &tendayImage = WXIconCache::instance().get("icons/tenday.png");
-	dc.DrawBitmap(wxBitmap(tendayImage.Scale(4 * s / 5, 4 * s / 5)), (wxCoord)(col * s + 0.1 * s), (wxCoord)(row * s + 0.1 * s));
+	if (tendayImage.IsOk()) {
+		dc.DrawBitmap(wxBitmap(tendayImage.Scale(iconSize, iconSize)),
+		              (wxCoord)(col * s + 0.1 * s),
+		              (wxCoord)(row * s + 0.1 * s));
+	}
 	row = day / 5;
 	col = day % 5;
 	const wxImage &dayImage = WXIconCache::instance().get("icons/day.png");
-	dc.DrawBitmap(wxBitmap(dayImage.Scale(4 * s / 5, 4 * s / 5)), (wxCoord)(col * s + 0.2 * s), (wxCoord)(row * s + 0.2 * s));
+	if (dayImage.IsOk()) {
+		dc.DrawBitmap(wxBitmap(dayImage.Scale(iconSize, iconSize)),
+		              (wxCoord)(col * s + 0.2 * s),
+		              (wxCoord)(row * s + 0.2 * s));
+	}
 
 	dc.SetFont(wxFont((int)(s / 3.), wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
 	const PlayerList &players = game.getPlayers();
