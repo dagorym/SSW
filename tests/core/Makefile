@@ -59,8 +59,8 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS)
+	rm -f $(TARGET)
 
 
 # DO NOT DELETE
