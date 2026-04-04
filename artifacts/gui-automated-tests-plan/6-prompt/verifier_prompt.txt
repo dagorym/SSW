@@ -1,0 +1,68 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate Subtask 6 modal-launch GUI coverage across the implemented wx launch chains, the passing GUI regression suite, and the final documentation updates.
+
+Acceptance criteria to verify:
+- SelectCombatGUI live path opens FBattleScreen and closes deterministically in headless automation.
+- BattleSimFrame, LocalGameDialog, ScenarioDialog, and ScenarioEditorGUI modal launch paths have live coverage.
+- FBattleScreen ownership/lifetime behavior is verified by lifecycle assertions (constructed/destroyed/live counters).
+- Canonical contributor command is documented.
+
+Implementation branch or worktree context:
+- Documenter branch context: `gui_tests-subtask6-documenter-20260404`
+- Documenter worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask6-documenter-20260404`
+- Tester final stage context (authoritative): `b5de2ed8446cc3911c9ed88d50596f5621ebceeb`
+- Documentation commit context: `4b2590f34f15f4bce1070c84baed5371a4bdb7ec`
+- Implementation code commit context (authoritative): `b659903412f7665ec03129d7ff3601328fb7f886`
+- Observed local implementation commit resolution: `1b691e3891efdd0f022f1a8d248b6560a315595a`
+- Observed local code commit resolution: `b6599033e710586bb8540cbf062df7d23bebd677`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- AGENTS.md
+- doc/DesignNotes.md
+- include/battleSim/ScenarioEditorGUI.h
+- include/gui/SelectCombatGUI.h
+- include/tactical/FBattleScreen.h
+- src/battleSim/ScenarioDialog.cpp
+- src/battleSim/ScenarioEditorGUI.cpp
+- src/gui/SelectCombatGUI.cpp
+- src/tactical/FBattleScreen.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.h
+- tests/gui/GuiTests.cpp
+- tests/gui/Makefile
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/WXGuiTestHarness.cpp
+- artifacts/gui-automated-tests-plan/6-prompt/implementer_report.md
+- artifacts/gui-automated-tests-plan/6-prompt/implementer_result.json
+- artifacts/gui-automated-tests-plan/6-prompt/tester_prompt.txt
+- artifacts/gui-automated-tests-plan/6-prompt/tester_report.md
+- artifacts/gui-automated-tests-plan/6-prompt/tester_result.json
+- artifacts/gui-automated-tests-plan/6-prompt/documenter_prompt.txt
+- artifacts/gui-automated-tests-plan/6-prompt/documenter_report.md
+- artifacts/gui-automated-tests-plan/6-prompt/documenter_result.json
+- artifacts/gui-automated-tests-plan/6-prompt/verifier_prompt.txt
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && xvfb-run -a ./GuiTests
+
+Final test outcomes:
+- GUI suite passed: `OK (19 tests)`.
+- Live modal-launch coverage and FBattleScreen lifecycle assertions are present and exercised in strategic and BattleSim flows.
+- DesignNotes and AGENTS now preserve the canonical headless GUI validation command.
+
+Documentation files updated:
+- AGENTS.md
+- doc/DesignNotes.md
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Shared artifact directory:
+- artifacts/gui-automated-tests-plan/6-prompt
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

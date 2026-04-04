@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "subtask": "gui-automated-tests-plan/6-prompt",
+  "branch_name": "gui_tests-subtask6-documenter-20260404",
+  "commit_hash": "4b2590f34f15f4bce1070c84baed5371a4bdb7ec",
+  "documentation_commit_hash": "4b2590f34f15f4bce1070c84baed5371a4bdb7ec",
+  "documentation_files_added_or_modified": [
+    "AGENTS.md"
+  ],
+  "commands_reviewed": [
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && xvfb-run -a ./GuiTests"
+  ],
+  "test_outcome_summary": "GUI suite passed: OK (19 tests).",
+  "artifact_file_paths": {
+    "report": "artifacts/gui-automated-tests-plan/6-prompt/documenter_report.md",
+    "result": "artifacts/gui-automated-tests-plan/6-prompt/documenter_result.json",
+    "verifier_prompt": "artifacts/gui-automated-tests-plan/6-prompt/verifier_prompt.txt"
+  }
+}
