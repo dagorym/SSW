@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Validate Milestone 10 Subtask 2 in branch `gui_sep-m10-s2-implementer-20260404`.
+
+Modified files:
+- src/core/Makefile
+- src/strategic/Makefile
+- src/ships/Makefile
+- src/weapons/Makefile
+- src/defenses/Makefile
+- src/tactical/Makefile
+
+Planner acceptance criteria:
+- None of the six Makefiles contain active `wx-config --cxxflags` or `wx-config --libs`.
+- The root build still succeeds after the Makefile changes.
+
+Implementation context:
+- Active `CXXFLAGS` lines in the six non-GUI module Makefiles no longer include `wx-config --cxxflags`.
+- Active `LIBS` lines in those six Makefiles no longer include `wx-config --libs`.
+- Root build (`make`) was run and passed after the edits.
+
+Test locations convention:
+- Existing validations only for this subtask (no new tests requested).
+- Use repo root build command and Makefile content checks.
+
+Required validation commands:
+- `cd /home/tstephen/repos/SSW && make`
+- Verify no active `wx-config --cxxflags` / `wx-config --libs` remain in:
+  - `src/core/Makefile`
+  - `src/strategic/Makefile`
+  - `src/ships/Makefile`
+  - `src/weapons/Makefile`
+  - `src/defenses/Makefile`
+  - `src/tactical/Makefile`
+
+Shared artifact directory (reuse exactly):
+- `artifacts/gui_sep/subtask10/subtask2`
+
+Do not report success unless all required artifacts exist and all changes are committed.
