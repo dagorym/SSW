@@ -763,3 +763,28 @@ Result: `OK (75 tests)`.
 ```
 
 Result: `OK (3 tests)`.
+
+The forward-fire final-orientation regression follow-up then documented the
+restored moving-ship fire-arc contract for model-owned range highlighting and
+target validation. `FTacticalGame` now derives a shared per-path heading
+sequence from `FTacticalTurnData`, so the endpoint of a move uses
+`finalHeading` when the last movement step is a turn and both
+`computeWeaponRange()` and `setIfValidTarget()` evaluate the same heading
+progression. The new `FTacticalForwardFireFinalOrientationTest` runtime fixture
+locks that behavior through tactical-model coverage for:
+
+- endpoint forward-fire highlights using the post-turn orientation instead of
+  the stale pre-turn heading;
+- target acceptance and rejection staying aligned with the displayed
+  final-orientation highlights for moving ships;
+- straight-line movement preserving the pre-existing forward-fire behavior; and
+- non-forward-firing battery weapons remaining heading-independent.
+
+Validation commands:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+cd tests/tactical && ./TacticalTests
+```
+
+Result: `OK (75 tests)`.
