@@ -1,0 +1,58 @@
+{
+  "status": "success",
+  "subtask": "Subtask 2 move-route selection regression validation",
+  "branch": "gui_sep-tester-20260404",
+  "implementer_branch": "gui_sep-implementer-20260404",
+  "test_commit_hash": "No Changes Made",
+  "test_files_modified": [],
+  "implementation_files_validated": [
+    "src/tactical/FTacticalGame.cpp",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.h",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "Standalone build and execution of FTacticalMoveRouteSelectionTest fixture with tactical libraries"
+  ],
+  "results": {
+    "tactical_runner": {
+      "total": 75,
+      "passed": 75,
+      "failed": 0
+    },
+    "move_route_fixture": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0
+    }
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "Clicking the first highlighted movement hex advances the selected path by exactly one hex.",
+      "status": "pass"
+    },
+    {
+      "criterion": "Clicking any later highlighted movement hex lands the route on that exact clicked hex.",
+      "status": "pass"
+    },
+    {
+      "criterion": "Clicking an earlier path hex trims the current route to that exact hex.",
+      "status": "pass"
+    },
+    {
+      "criterion": "Movement counters and heading state remain consistent after extension or trimming.",
+      "status": "pass"
+    },
+    {
+      "criterion": "If a renderer adjustment is necessary, the displayed selectable contract matches the corrected model behavior.",
+      "status": "pass",
+      "note": "No renderer adjustment required; model and renderer contract remained aligned."
+    }
+  ],
+  "unmet_acceptance_criteria": [],
+  "artifact_paths": [
+    "artifacts/tactical-gui-separation-regressions/subtask-2/tester_report.md",
+    "artifacts/tactical-gui-separation-regressions/subtask-2/tester_result.json",
+    "artifacts/tactical-gui-separation-regressions/subtask-2/documenter_prompt.txt"
+  ]
+}

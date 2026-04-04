@@ -1,0 +1,47 @@
+You are the Documenter Agent.
+
+Task Summary
+Validate and document Subtask 2 move-route selection regression fixes for tactical movement route selection semantics.
+
+Original Acceptance Criteria
+- Clicking the first highlighted movement hex advances the selected path by exactly one hex.
+- Clicking any later highlighted movement hex lands the route on that exact clicked hex.
+- Clicking an earlier path hex trims the current route to that exact hex.
+- Movement counters and heading state remain consistent after extension or trimming.
+- If a renderer adjustment is necessary, the displayed selectable contract matches the corrected model behavior.
+
+Implementation Branch/Worktree Context
+- Tester worktree: /home/tstephen/.copilot/session-state/a133f2f5-4873-4897-9efa-632892009c61/worktrees/gui_sep-tester-20260404
+- Tester branch: gui_sep-tester-20260404
+- Implementer base branch: gui_sep-implementer-20260404
+
+Files Modified by Implementer and Tester Relevant to Documentation Review
+- Implementer-modified files:
+  - src/tactical/FTacticalGame.cpp
+  - tests/tactical/FTacticalMoveRouteSelectionTest.h
+  - tests/tactical/FTacticalMoveRouteSelectionTest.cpp
+- Tester-authored committed test changes:
+  - None (validated existing implementer-delivered test fixture)
+- Tester artifact outputs:
+  - artifacts/tactical-gui-separation-regressions/subtask-2/tester_report.md
+  - artifacts/tactical-gui-separation-regressions/subtask-2/tester_result.json
+  - artifacts/tactical-gui-separation-regressions/subtask-2/documenter_prompt.txt
+
+Commit Context
+- Test commit hash: No Changes Made
+
+Commands Executed by Tester
+1. cd tests/tactical && make && ./TacticalTests
+   - Result: OK (75 tests)
+2. Standalone compile/run of FTacticalMoveRouteSelectionTest fixture with tactical libs
+   - Result: OK (3 tests)
+
+Final Test Outcomes
+- PASS: Tactical suite remained green.
+- PASS: Standalone move-route fixture confirmed all three route-selection behaviors and heading/move-counter consistency.
+- PASS: No renderer-side adjustment required; FBattleBoard.cpp remained intentionally unchanged with model/render contract alignment intact.
+
+Shared Artifact Directory (repository-root-relative; reuse as-is)
+- artifacts/tactical-gui-separation-regressions/subtask-2
+
+Do not report success unless all required artifacts exist and all changes are committed.
