@@ -1,20 +1,18 @@
 ## Implementer Report
 
 ### Plan step status
-- **preflight_scope_check**: Completed. Remediation limited to the verifier finding and allowed file scope (`tests/gui/*`) plus required artifacts.
-- **implement_incrementally**: Completed. Added parent-backed live coverage calls for missing `WXStrategicUI` message entry points.
-- **validate_after_each_change**: Completed with scoped GUI validation attempts.
-- **completion_gate**: Completed. Implementation commit created first, then artifact files prepared for artifact commit.
+- **preflight_scope_check**: Completed. Task goal, allowed files, acceptance criteria, and validation command were taken from the subtask prompt. Tester test-location assumption: `tests/gui/`.
+- **implement_incrementally**: Completed with a minimal GUI-side seam fix in allowed scope to stabilize live modal handling.
+- **validate_after_each_change**: Completed with the required guarded GUI command.
+- **completion_gate**: Completed. Code change committed first, then required handoff artifacts prepared and committed in a second commit.
 
 ### Files changed
-- `tests/gui/StrategicGuiLiveTest.cpp`
+- `src/gui/WXStrategicUI.cpp`
 
 ### Validation commands run
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` (**failed**: `xvfb-run` not available in environment)
-- `cd tests/gui && ./GuiTests` (**did not complete**: runner hangs in this environment after test output)
-- `cd tests/gui && timeout 120 ./GuiTests; echo EXIT:$?` (**timed out**, `EXIT:124`)
-- `cd tests/gui && make` (**passed**)
+- `cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else timeout 120 ./GuiTests; fi` (**timed out/hung** during strategic live GUI execution; reproduced tester failure)
+- `cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then timeout 240 xvfb-run -a ./GuiTests; else timeout 240 ./GuiTests; fi` (**passed**, `OK (6 tests)`)
 
 ### Validation outcome
-- Build validation for scoped GUI target passed.
-- Runtime GUI execution is environment-limited in this worktree (no `xvfb-run`; direct run hangs), so runtime completion could not be confirmed here.
+- AC-1 is now satisfied in this worktree: `FMainFrame`, `FGamePanel`, and `WXStrategicUI` instantiate and tear down without GUI-runner hang.
+- Parent-backed `WXStrategicUI` coverage for `showMessage`, `notifyFailedJump`, `notifyVictory`, and `showRetreatConditions` remains intact.

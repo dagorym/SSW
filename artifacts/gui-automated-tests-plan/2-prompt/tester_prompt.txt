@@ -1,39 +1,32 @@
 You are the Tester Agent.
 
 Task summary:
-- Verifier remediation for Subtask 2 added missing parent-backed `WXStrategicUI` message entry-point coverage in live GUI smoke tests.
+- Subtask 2 remediation fixed the strategic live GUI hang while preserving the newly added parent-backed `WXStrategicUI` message entry-point coverage.
 
 Modified files:
-- tests/gui/StrategicGuiLiveTest.cpp
+- src/gui/WXStrategicUI.cpp
 
 Acceptance criteria to validate (from Planner):
-- The new tests instantiate and tear down `FMainFrame`, `FGamePanel`, and `WXStrategicUI` under the GUI runner without hangs.
-- The tests verify top-level frame basics such as drawing-panel creation and initial strategic menu state.
-- Live dialog smoke coverage exists for `SatharRetreatGUI`, `SystemDialogGUI`, `ViewFleetGUI`, and `SelectJumpGUI`.
-- Parent-backed `WXStrategicUI` message/modal entry points are covered in addition to existing guarded no-parent behavior.
-- Any testability changes preserve the strategic/gui boundary rules in the repo instructions.
+- AC-1: `FMainFrame`, `FGamePanel`, and `WXStrategicUI` instantiate and tear down under the GUI runner without hangs.
+- Preserve coverage for parent-backed `WXStrategicUI` `showMessage`, `notifyFailedJump`, `notifyVictory`, and `showRetreatConditions`.
+- Keep the strategic/gui boundary intact (no model-layer wx coupling changes).
 
 Create test files in:
-- tests/gui/
+- tests/gui/ (assumption from project GUI test convention; no new tests were added in this implementer cycle)
 
 Implementation context for testing:
-- `StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths()` now explicitly invokes:
-  - `ui.showMessage(...)`
-  - `ui.notifyFailedJump(...)`
-  - `ui.notifyVictory(1)`
-  - `ui.showRetreatConditions(...)`
-- Each call is wrapped with `m_harness.runVoidFunctionWithAutoDismiss(..., wxID_OK, 25)` to exercise modal entry points without manual input.
-- Existing parent-backed modal (`selectRetreatCondition`, `showSystemDialog`, `showFleetDialog`) and redraw checks are unchanged.
+- `WXStrategicUI::showMessage(...)` now uses `wxGenericMessageDialog` instead of `wxMessageDialog`.
+- The change keeps parent-backed modal behavior but avoids the native message-dialog path that was hanging under the guarded GUI test runner.
+- No test logic was removed; the parent-backed strategic message-path calls remain exercised by existing live GUI tests.
 
 Suggested test command(s):
-- cd tests/gui && make && xvfb-run -a ./GuiTests
-- cd tests/gui && ./GuiTests
+- cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else timeout 120 ./GuiTests; fi
 
 Shared artifact directory:
 - artifacts/gui-automated-tests-plan/2-prompt
 
 Commit references:
-- Implementation/code commit: 8d8303641aeb9528ebc0aa6831f085b78728e276
+- Implementation/code commit: 2eee58a5cf841f29addf8a17e6e12f312b3de36b
 
 Completion gate:
 - Do not report success unless all required artifacts exist and all changes are committed.
