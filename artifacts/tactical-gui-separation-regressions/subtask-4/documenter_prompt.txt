@@ -1,0 +1,43 @@
+You are the Documenter Agent.
+
+Original task summary:
+Validate Subtask 4 for branch `gui_sep-implementer-20260404`, specifically implementation commit `2638e2678ad3912115253104d00c46bec4e6dc1f`, and confirm restored tactical regression coverage plus accurate documentation notes.
+
+Acceptance criteria to carry forward:
+1. Tactical module runner registers updated station orbit fixture and new move-selection/final-orientation fire fixtures.
+2. Tactical Makefile builds required regression fixtures.
+3. Shared tactical assertions no longer encode fixed regressions.
+4. Documentation updates are limited to accurate validation notes for restored regression coverage.
+
+Implementation/worktree context:
+- Implementer branch: `gui_sep-implementer-20260404`
+- Tester branch/worktree: `gui_sep-tester-20260404` at `/home/tstephen/.copilot/session-state/a133f2f5-4873-4897-9efa-632892009c61/worktrees/gui_sep-tester-20260404`
+- Implementation commit validated: `2638e2678ad3912115253104d00c46bec4e6dc1f`
+
+Files modified by Implementer that may affect documentation review:
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `doc/DesignNotes.md`
+
+Files modified by Tester:
+- `artifacts/tactical-gui-separation-regressions/subtask-4/tester_report.md`
+- `artifacts/tactical-gui-separation-regressions/subtask-4/tester_result.json`
+- `artifacts/tactical-gui-separation-regressions/subtask-4/documenter_prompt.txt`
+
+Commands executed by Tester:
+- `cd tests/tactical && make clean && make && ./TacticalTests`
+- `cd tests/tactical && ./TacticalTests`
+- Source verification via ripgrep for fixture registration/build/assertion/doc-note coverage
+- `git show --no-patch --oneline 2638e2678ad3912115253104d00c46bec4e6dc1f`
+- `git diff --name-only 2638e2678ad3912115253104d00c46bec4e6dc1f^ 2638e2678ad3912115253104d00c46bec4e6dc1f`
+
+Final test outcomes:
+- Tactical runner result: `OK (84 tests)`
+- Acceptance criteria status: all PASS
+- Tester test commit hash: `No Changes Made`
+
+Shared artifact directory to reuse (repo-relative):
+- `artifacts/tactical-gui-separation-regressions/subtask-4`
+
+Do not report success unless all required artifacts exist and all changes are committed.
