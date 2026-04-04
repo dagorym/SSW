@@ -1,55 +1,41 @@
 You are the Documenter Agent.
 
-Use shared artifacts directory: `artifacts/milestone9-subtask3` (repository-root-relative).
+Task summary:
+- Milestone 9 Subtask 3 remediation cycle 1 tester validation for BattleSim integration runtime verification scope.
+- Shared artifact directory (repository-root-relative): `artifacts/milestone9-subtask3`.
+- Tested branch/worktree: `gui_sep-m9s3r1-tester-20260403` derived from implementer branch `gui_sep-m9s3r1-implementer-20260403`.
 
-Task context:
-- Subtask: `milestone9-subtask3`
-- Tester branch/worktree: `gui_sep-m9s3-tester-20260403`
-- Implementer branch context: `gui_sep-m9s3-implementer-20260403`
-- Plan path: `/home/tstephen/repos/SSW/plans/milestone9-battlesim-integration-plan.md`
+Acceptance criteria status for this cycle:
+- AC1 (`make` builds both executables): Passed.
+- AC2 (full BattleSim battle completion through GUI): Deferred due to missing automated GUI runtime system.
+- AC3 (behavior equivalence runtime validation): Deferred due to AC2 prerequisite not met.
+- AC4 (`SSW` rebuild + smoke-run): Passed at smoke scope.
 
-Original acceptance criteria under validation:
-1. `make` from repo root succeeds and produces both `SSW` and `BattleSim`.
-2. A full BattleSim scenario battle is run to completion through real GUI flow with no tactical UI wiring failures.
-3. Runtime observations confirm behavior consistency with pre-refactor `FBattleScreen` path.
-4. `SSW` is rebuilt and smoke-run successfully after BattleSim verification.
-5. Runtime-only findings are captured clearly.
+Important signoff condition:
+- The missing automated GUI test system is an accepted limitation for this milestone and a planned follow-up for the next development cycle.
+- Do not describe AC2/AC3 as fully runtime-validated in this cycle.
 
-Tester execution summary:
-- Implementation code changes by tester: none.
-- Test file changes by tester: none.
-- Test commit hash: `No Changes Made`.
-- Commands run:
-  - `make`
-  - `which xvfb-run || echo xvfb-run-missing`
-  - `which xdotool || echo xdotool-missing`
-  - `which wmctrl || echo wmctrl-missing`
-  - `printenv DISPLAY || echo DISPLAY-unset`
-  - `timeout 15 ./src/BattleSim >/dev/null 2>artifacts/milestone9-subtask3/tester_battlesim_stderr.log`
-  - `timeout 15 ./src/SSW >/dev/null 2>artifacts/milestone9-subtask3/tester_ssw_stderr.log`
+Commands executed by tester:
+- `make`
+- `which xvfb-run || echo xvfb-run-missing`
+- `which xdotool || echo xdotool-missing`
+- `which wmctrl || echo wmctrl-missing`
+- `printenv DISPLAY || echo DISPLAY-unset`
+- `timeout 20 ./src/BattleSim >/dev/null 2>artifacts/milestone9-subtask3/tester_remediation_battlesim_stderr.log`
+- `timeout 15 ./src/SSW >/dev/null 2>artifacts/milestone9-subtask3/tester_remediation_ssw_stderr.log`
 
-Final tester outcome (blocked runtime validation):
-- AC1 passed: build succeeded and produced both executables.
-- AC2 blocked: full GUI battle completion could not be executed in this environment.
-- AC3 partially blocked: startup smoke observed, but no full end-to-end behavior confirmation possible without AC2.
-- AC4 passed: SSW smoke launch reconfirmed (process remained running until timeout).
-- AC5 passed: blocker evidence and boundaries documented.
-
-Blocker evidence:
-- Missing GUI automation tooling in this environment:
-  - `xvfb-run-missing`
-  - `xdotool-missing`
-  - `wmctrl-missing`
-- BattleSim and SSW were launchable but non-interactive timeout-constrained runs exited with code 124.
-- stderr evidence files retained in artifact directory:
-  - `artifacts/milestone9-subtask3/tester_battlesim_stderr.log`
-  - `artifacts/milestone9-subtask3/tester_ssw_stderr.log`
-
-Artifacts produced by tester:
+Files created/updated by tester:
 - `artifacts/milestone9-subtask3/tester_report.md`
 - `artifacts/milestone9-subtask3/tester_result.json`
 - `artifacts/milestone9-subtask3/documenter_prompt.txt`
-- `artifacts/milestone9-subtask3/tester_battlesim_stderr.log`
-- `artifacts/milestone9-subtask3/tester_ssw_stderr.log`
+- `artifacts/milestone9-subtask3/tester_remediation_battlesim_stderr.log`
+- `artifacts/milestone9-subtask3/tester_remediation_ssw_stderr.log`
 
-Please document this as a blocked runtime-validation outcome without claiming milestone success, while preserving the passed build/smoke evidence and the explicit GUI-interaction blocker constraints.
+Commit context:
+- Test commit hash: `No Changes Made` (no test file modifications were made).
+- Artifact commit hash is recorded in `tester_result.json` and should be cited in documentation notes.
+
+Documentation guidance:
+- Record AC1/AC4 as validated in current scope.
+- Record AC2/AC3 as accepted/deferred due to environment tooling limitations.
+- Explicitly carry forward the planned next-cycle work item: provision/enable automated GUI runtime test infrastructure (e.g., xvfb/GUI automation stack) to close full runtime validation.
