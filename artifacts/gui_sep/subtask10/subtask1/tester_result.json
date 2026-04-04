@@ -1,0 +1,37 @@
+{
+  "status": "success",
+  "task": "Milestone 10 Subtask 1 tactical wx-include cleanup",
+  "branch": "gui_sep-m10-s1-tester-20260404",
+  "worktree": "/home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-s1-tester-20260404",
+  "implementation_commit_tested": "37ff962",
+  "test_commit_hash": "No Changes Made",
+  "test_files_modified": [],
+  "commands_run": [
+    "grep -RInE '^\\s*#include\\s*[<\\\"].*wx' include/tactical src/tactical || true",
+    "cd src/tactical && make -s",
+    "cd tests/tactical && make -s && ./TacticalTests"
+  ],
+  "totals": {
+    "passed": 74,
+    "failed": 0
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "The audited header/source roots return zero active #include.*wx hits.",
+      "status": "pass"
+    },
+    {
+      "criterion": "Tactical model/shared code still compiles.",
+      "status": "pass"
+    },
+    {
+      "criterion": "No new wx dependency is introduced into non-GUI modules.",
+      "status": "pass"
+    }
+  ],
+  "artifact_paths": {
+    "tester_report": "artifacts/gui_sep/subtask10/subtask1/tester_report.md",
+    "tester_result": "artifacts/gui_sep/subtask10/subtask1/tester_result.json",
+    "documenter_prompt": "artifacts/gui_sep/subtask10/subtask1/documenter_prompt.txt"
+  }
+}
