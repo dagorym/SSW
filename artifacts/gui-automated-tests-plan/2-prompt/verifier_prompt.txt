@@ -1,56 +1,48 @@
 You are the Verifier Agent.
 
 Task summary:
-- Added and validated live GUI smoke tests in `tests/gui` for `FMainFrame`, `FGamePanel`, `WXStrategicUI`, and representative strategic dialogs using shared wx harness auto-dismiss support, then documented the shipped regression surface in `doc/DesignNotes.md`.
+- Subtask 2 remediation changed `WXStrategicUI::showMessage(...)` in `src/gui/WXStrategicUI.cpp` to use `wxGenericMessageDialog`, keeping parent-backed strategic message flows inside the wx-managed modal path so the live GUI harness can auto-dismiss them without hanging.
+- Tester re-ran the existing GUI suite without changing test source and got `OK (6 tests)`.
+- Documenter updated `doc/DesignNotes.md` so the strategic live GUI smoke notes reflect the shipped dialog-path remediation and the validated headless-friendly GUI command.
 
 Acceptance criteria to verify:
-- The new tests instantiate and tear down `FMainFrame`, `FGamePanel`, and `WXStrategicUI` under the GUI runner without hangs.
-- The tests verify top-level frame basics such as drawing-panel creation and initial strategic menu state.
-- Live dialog smoke coverage exists for `SatharRetreatGUI`, `SystemDialogGUI`, `ViewFleetGUI`, and `SelectJumpGUI`.
-- Parent-backed `WXStrategicUI` message/modal entry points are covered in addition to existing guarded no-parent behavior.
-- Any testability changes preserve the strategic/gui boundary rules in the repo instructions.
+- AC-1: `FMainFrame`, `FGamePanel`, and `WXStrategicUI` instantiate and tear down under the GUI runner without hangs.
+- AC-2: Coverage remains for parent-backed `WXStrategicUI` `showMessage`, `notifyFailedJump`, `notifyVictory`, and `showRetreatConditions`.
+- AC-3: Strategic/gui boundary remains intact with no model-layer wx coupling changes.
 
 Implementation branch or worktree context:
-- Base comparison: `gui_tests...gui_tests-documenter-20260404`
-- Current branch: `gui_tests-documenter-20260404`
-- Current worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-documenter-20260404`
-- Tester context: branch `gui_tests-tester-20260404`, worktree `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-tester-20260404`
-- Documentation commit: `a28638b790f3c6348570c5fad60d42e9bfe33d9e`
+- Current branch: `gui_tests-subtask2fix2-documenter-20260404`
+- Current worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask2fix2-documenter-20260404`
+- Tester branch/worktree: `gui_tests-subtask2fix2-tester-20260404` at `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask2fix2-tester-20260404`
+- Implementation/code commit under test: `2eee58a5cf841f29addf8a17e6e12f312b3de36b`
+- Documentation commit: `08dadb3302e151599cd608755915376ca0916fd3`
 
 Files modified by Implementer, Tester, and Documenter to inspect:
-- `tests/gui/WXGuiTestHarness.h`
-- `tests/gui/WXGuiTestHarness.cpp`
-- `tests/gui/StrategicGuiLiveTest.h`
-- `tests/gui/StrategicGuiLiveTest.cpp`
-- `tests/gui/FMainFrameEventTableShim.cpp`
-- `tests/gui/GuiTests.cpp`
-- `tests/gui/Makefile`
-- `artifacts/gui-automated-tests-plan/2-prompt/documenter_prompt.txt`
-- `artifacts/gui-automated-tests-plan/2-prompt/implementer_report.md`
-- `artifacts/gui-automated-tests-plan/2-prompt/implementer_result.json`
-- `artifacts/gui-automated-tests-plan/2-prompt/tester_prompt.txt`
+- `src/gui/WXStrategicUI.cpp`
+- `doc/DesignNotes.md`
 - `artifacts/gui-automated-tests-plan/2-prompt/tester_report.md`
 - `artifacts/gui-automated-tests-plan/2-prompt/tester_result.json`
-- `doc/DesignNotes.md`
+- `artifacts/gui-automated-tests-plan/2-prompt/documenter_prompt.txt`
 - `artifacts/gui-automated-tests-plan/2-prompt/documenter_report.md`
 - `artifacts/gui-automated-tests-plan/2-prompt/documenter_result.json`
 - `artifacts/gui-automated-tests-plan/2-prompt/verifier_prompt.txt`
 
 Commands executed:
-- `git --no-pager diff --stat gui_tests...gui_tests-documenter-20260404`
-- `git --no-pager diff gui_tests...gui_tests-documenter-20260404 -- tests/gui/WXGuiTestHarness.h tests/gui/WXGuiTestHarness.cpp tests/gui/StrategicGuiLiveTest.h tests/gui/StrategicGuiLiveTest.cpp tests/gui/FMainFrameEventTableShim.cpp tests/gui/GuiTests.cpp tests/gui/Makefile`
-- `cd tests/gui && make && timeout 30 ./GuiTests`
+- `pwd && git rev-parse --abbrev-ref HEAD && git --no-pager status --short`
+- `git --no-pager show --no-ext-diff --format=medium 2eee58a5cf841f29addf8a17e6e12f312b3de36b -- src/gui/WXStrategicUI.cpp`
+- `cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else timeout 120 ./GuiTests; fi`
 
 Final test outcomes:
-- `GuiTests` completed successfully on attempt 1 with `OK (6 tests)` and no failures in tester validation.
-- The Documenter stage made no implementation or test changes; it only updated `doc/DesignNotes.md` and wrote handoff artifacts.
+- Attempt 1/3 passed: `GuiTests` reported `OK (6 tests)`.
+- Parent-backed strategic message entry points remained exercised in `StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths`.
+- No test source changed in this cycle.
 
 Documentation files updated:
 - `doc/DesignNotes.md`
 
 Verification scope:
 - Verify implementation behavior, test coverage, and the updated documentation files together.
-- Confirm the `doc/DesignNotes.md` update matches the shipped live strategic GUI smoke coverage and shared harness behavior without documenting unimplemented behavior.
+- Confirm the `doc/DesignNotes.md` update matches the shipped GUI-only remediation in `src/gui/WXStrategicUI.cpp` and does not overstate behavior beyond the implemented change and tester-validated coverage.
 
 Shared artifact directory:
 - `artifacts/gui-automated-tests-plan/2-prompt`
