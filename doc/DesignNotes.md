@@ -786,3 +786,32 @@ cd tests/tactical && ./TacticalTests
 ```
 
 Result: `OK (84 tests)`.
+
+The strategic live-GUI smoke follow-up then documented the new wx-backed
+regression surface for top-level strategic UI. `tests/gui/StrategicGuiLiveTest`
+now runs under the shared `WXGuiTestHarness`, which can bootstrap against an
+existing `wxApp`, tear down leftover top-level windows during shutdown, and
+auto-dismiss whichever modal dialog is currently active so dialog-owned flows
+can run without manual input. That live GUI suite now confirms that:
+
+- `FMainFrame` constructs its `MapPanel` as an `FGamePanel` and starts with the
+  expected disabled strategic menu items before a game is loaded;
+- `FGamePanel` repaint behavior tracks its parent frame's client size in a live
+  wx window;
+- `SatharRetreatGUI`, `SystemDialogGUI`, `ViewFleetGUI`, and `SelectJumpGUI`
+  can all be opened modally and closed deterministically by the harness; and
+- parent-backed `WXStrategicUI` coverage now exercises retreat selection,
+  system/fleet dialog entry points, and redraw-triggered paint handling in
+  addition to the existing guarded no-parent paths.
+
+No strategic/model boundary changed for this work: the added regression
+coverage stays in `tests/gui/*` and exercises the wx-owned surface from the GUI
+side rather than introducing new model dependencies.
+
+Validation command:
+
+```bash
+cd tests/gui && make && timeout 30 ./GuiTests
+```
+
+Result: `OK (6 tests)`.
