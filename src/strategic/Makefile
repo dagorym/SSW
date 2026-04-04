@@ -12,9 +12,9 @@ else
 COVERAGE_FLAGS =
 endif
 
-CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
 
-LIBS = `wx-config --libs`
+LIBS =
 
 PICFLAGS = -fPIC -DPIC
 
