@@ -12,5 +12,6 @@
     "report": "artifacts/gui-automated-tests-plan/6-prompt/verifier_report.md",
     "result": "artifacts/gui-automated-tests-plan/6-prompt/verifier_result.json"
   },
-  "commit_hash": "PENDING_ARTIFACT_COMMIT"
+  "commit_hash": "52c21bc1ebc64d8fef36d7a2dc56580d84b56c67",
+  "artifact_commit_hash": "52c21bc1ebc64d8fef36d7a2dc56580d84b56c67"
 }
