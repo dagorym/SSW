@@ -189,6 +189,7 @@ CPPUNIT_ASSERT(m_harness.bootstrap());
 }
 
 void TacticalGuiLiveTest::tearDown() {
+	m_harness.cleanupOrphanTopLevels(10);
 	m_harness.shutdown();
 }
 
@@ -260,32 +261,36 @@ parent->Show();
 m_harness.pumpEvents();
 
 const FTacticalCombatReportSummary summary = buildSummaryWithLines();
-TacticalDamageSummaryGUI dialog(parent, summary);
+TacticalDamageSummaryGUI * dialog = new TacticalDamageSummaryGUI(parent, summary);
 
 CPPUNIT_ASSERT_EQUAL(
 wxString::FromUTF8("Tactical Damage Summary - Offensive Fire Results"),
-dialog.GetTitle());
+dialog->GetTitle());
 
-wxStaticText * contextText = findStaticTextContaining(&dialog, wxT("Report:"));
+wxStaticText * contextText = findStaticTextContaining(dialog, wxT("Report:"));
 CPPUNIT_ASSERT(contextText != NULL);
 CPPUNIT_ASSERT(contextText->GetLabel().Find(wxT("Immediate report")) != wxNOT_FOUND);
 CPPUNIT_ASSERT(contextText->GetLabel().Find(wxT("Phase: 2")) != wxNOT_FOUND);
 
-wxTextCtrl * summaryText = findFirstTextCtrl(&dialog);
+wxTextCtrl * summaryText = findFirstTextCtrl(dialog);
 CPPUNIT_ASSERT(summaryText != NULL);
 CPPUNIT_ASSERT(summaryText->GetValue().Find(wxT("Destroyer Alpha took 4 hull damage.")) != wxNOT_FOUND);
 
-	wxButton * closeButton = findButtonByLabel(&dialog, wxT("Close"));
+	wxButton * closeButton = findButtonByLabel(dialog, wxT("Close"));
 	CPPUNIT_ASSERT(closeButton != NULL);
-	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), m_harness.showModalWithAutoDismiss(dialog, wxID_OK, 25));
+	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), m_harness.showModalWithAutoDismiss(*dialog, wxID_OK, 25));
+	dialog->Destroy();
+	m_harness.pumpEvents(3);
 
 FTacticalCombatReportSummary emptySummary;
 emptySummary.context.reportType = TRT_None;
-TacticalDamageSummaryGUI emptyDialog(parent, emptySummary);
-wxTextCtrl * emptyText = findFirstTextCtrl(&emptyDialog);
+TacticalDamageSummaryGUI * emptyDialog = new TacticalDamageSummaryGUI(parent, emptySummary);
+wxTextCtrl * emptyText = findFirstTextCtrl(emptyDialog);
 CPPUNIT_ASSERT(emptyText != NULL);
 CPPUNIT_ASSERT(emptyText->GetValue().Find(wxT("No ships sustained damage in this report.")) != wxNOT_FOUND);
-CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), m_harness.showModalWithAutoDismiss(emptyDialog, wxID_OK, 25));
+CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), m_harness.showModalWithAutoDismiss(*emptyDialog, wxID_OK, 25));
+emptyDialog->Destroy();
+m_harness.pumpEvents(3);
 
 parent->Destroy();
 m_harness.pumpEvents(10);

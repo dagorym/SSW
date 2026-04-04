@@ -15,6 +15,9 @@ namespace FrontierTests {
 class GuiHarnessTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( GuiHarnessTest );
 CPPUNIT_TEST( testPumpEventsAfterBootstrap );
+CPPUNIT_TEST( testCanObserveShownTopLevelWindow );
+CPPUNIT_TEST( testWaitForModalDialogFindsLaunchedModal );
+CPPUNIT_TEST( testCleanupOrphanTopLevelsRemovesShownWindows );
 CPPUNIT_TEST( testShowModalWithAutoDismissReturnsExpectedCode );
 CPPUNIT_TEST_SUITE_END();
 
@@ -26,6 +29,9 @@ public:
 	void tearDown();
 
 	void testPumpEventsAfterBootstrap();
+	void testCanObserveShownTopLevelWindow();
+	void testWaitForModalDialogFindsLaunchedModal();
+	void testCleanupOrphanTopLevelsRemovesShownWindows();
 	void testShowModalWithAutoDismissReturnsExpectedCode();
 };
 

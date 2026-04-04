@@ -10,6 +10,7 @@
 #include <wx/dialog.h>
 #include <wx/toplevel.h>
 #include <wx/timer.h>
+#include <wx/utils.h>
 
 namespace FrontierTests {
 
@@ -143,15 +144,7 @@ void WXGuiTestHarness::shutdown() {
 		return;
 	}
 
-	wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
-	while (node != NULL) {
-		wxTopLevelWindow * topLevel = dynamic_cast<wxTopLevelWindow *>(node->GetData());
-		node = node->GetNext();
-		if (topLevel != NULL && !topLevel->IsBeingDeleted()) {
-			topLevel->Destroy();
-		}
-	}
-	pumpEvents(5);
+	cleanupOrphanTopLevels(5);
 
 	if (m_startedWx && wxTheApp != NULL) {
 		wxTheApp->OnExit();
@@ -174,6 +167,94 @@ void WXGuiTestHarness::pumpEvents(int iterations) {
 		}
 		wxTheApp->ProcessPendingEvents();
 	}
+}
+
+std::vector<wxTopLevelWindow *> WXGuiTestHarness::getTopLevelWindows(bool includeBeingDeleted) const {
+	std::vector<wxTopLevelWindow *> topLevels;
+	wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
+	while (node != NULL) {
+		wxTopLevelWindow * topLevel = dynamic_cast<wxTopLevelWindow *>(node->GetData());
+		if (topLevel != NULL && (includeBeingDeleted || !topLevel->IsBeingDeleted())) {
+			topLevels.push_back(topLevel);
+		}
+		node = node->GetNext();
+	}
+	return topLevels;
+}
+
+wxTopLevelWindow * WXGuiTestHarness::findTopLevelWindow(const std::function<bool(wxTopLevelWindow *)> & predicate,
+                                                        bool includeBeingDeleted) const {
+	const std::vector<wxTopLevelWindow *> topLevels = getTopLevelWindows(includeBeingDeleted);
+	for (std::vector<wxTopLevelWindow *>::const_iterator itr = topLevels.begin();
+	     itr != topLevels.end();
+	     ++itr) {
+		if (predicate(*itr)) {
+			return *itr;
+		}
+	}
+	return NULL;
+}
+
+wxTopLevelWindow * WXGuiTestHarness::waitForTopLevelWindow(const std::function<bool(wxTopLevelWindow *)> & predicate,
+                                                           int timeoutMs,
+                                                           int pollMs) {
+	if (!m_bootstrapped && !bootstrap()) {
+		return NULL;
+	}
+
+	const int safePollMs = (pollMs > 0) ? pollMs : 1;
+	int elapsedMs = 0;
+	while (elapsedMs <= timeoutMs) {
+		wxTopLevelWindow * found = findTopLevelWindow(predicate);
+		if (found != NULL) {
+			return found;
+		}
+		pumpEvents(1);
+		if (elapsedMs < timeoutMs) {
+			wxMilliSleep(static_cast<unsigned long>(safePollMs));
+		}
+		elapsedMs += safePollMs;
+	}
+	return NULL;
+}
+
+wxDialog * WXGuiTestHarness::findModalDialog() const {
+	wxTopLevelWindow * topLevel = findTopLevelWindow([](wxTopLevelWindow * window) {
+		wxDialog * dialog = dynamic_cast<wxDialog *>(window);
+		return dialog != NULL && dialog->IsModal();
+	});
+	return dynamic_cast<wxDialog *>(topLevel);
+}
+
+wxDialog * WXGuiTestHarness::waitForModalDialog(int timeoutMs, int pollMs) {
+	wxTopLevelWindow * topLevel = waitForTopLevelWindow([](wxTopLevelWindow * window) {
+		wxDialog * dialog = dynamic_cast<wxDialog *>(window);
+		return dialog != NULL && dialog->IsModal();
+	}, timeoutMs, pollMs);
+	return dynamic_cast<wxDialog *>(topLevel);
+}
+
+int WXGuiTestHarness::cleanupOrphanTopLevels(int pumpIterations) {
+	const std::vector<wxTopLevelWindow *> topLevels = getTopLevelWindows(false);
+	for (std::vector<wxTopLevelWindow *>::const_iterator itr = topLevels.begin();
+	     itr != topLevels.end();
+	     ++itr) {
+		if (*itr != NULL && !(*itr)->IsBeingDeleted() && (*itr)->IsShown()) {
+			(*itr)->Destroy();
+		}
+	}
+	pumpEvents(pumpIterations);
+
+	int shownTopLevels = 0;
+	const std::vector<wxTopLevelWindow *> remainingTopLevels = getTopLevelWindows(false);
+	for (std::vector<wxTopLevelWindow *>::const_iterator itr = remainingTopLevels.begin();
+	     itr != remainingTopLevels.end();
+	     ++itr) {
+		if (*itr != NULL && (*itr)->IsShown()) {
+			shownTopLevels++;
+		}
+	}
+	return shownTopLevels;
 }
 
 int WXGuiTestHarness::showModalWithAutoDismiss(wxDialog & dialog, int returnCode, int timeoutMs) {

@@ -7,9 +7,11 @@
 #define _WXGUITESTHARNESS_H_
 
 #include <functional>
+#include <vector>
 #include <wx/defs.h>
 
 class wxDialog;
+class wxTopLevelWindow;
 
 namespace FrontierTests {
 
@@ -26,6 +28,15 @@ public:
 	void shutdown();
 
 	void pumpEvents(int iterations = 5);
+	std::vector<wxTopLevelWindow *> getTopLevelWindows(bool includeBeingDeleted = false) const;
+	wxTopLevelWindow * findTopLevelWindow(const std::function<bool(wxTopLevelWindow *)> & predicate,
+	                                      bool includeBeingDeleted = false) const;
+	wxTopLevelWindow * waitForTopLevelWindow(const std::function<bool(wxTopLevelWindow *)> & predicate,
+	                                         int timeoutMs = 250,
+	                                         int pollMs = 5);
+	wxDialog * findModalDialog() const;
+	wxDialog * waitForModalDialog(int timeoutMs = 250, int pollMs = 5);
+	int cleanupOrphanTopLevels(int pumpIterations = 10);
 	int showModalWithAutoDismiss(wxDialog & dialog, int returnCode, int timeoutMs = 25);
 	int showModalWithAction(wxDialog & dialog,
 	                        const std::function<void()> & action,
