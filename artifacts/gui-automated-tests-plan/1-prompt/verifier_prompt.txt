@@ -1,0 +1,70 @@
+You are the Verifier Agent.
+
+Task summary:
+- Implementer added a dedicated `tests/gui` wx test module with `WXGuiTestHarness`, a standalone `GuiTests` runner, a top-level `make gui-tests` build target, and `src/battleSim/Makefile` normalization to `wx-config --libs`.
+- Tester validated the new build and execution paths, including successful direct `GuiTests` execution and the expected `xvfb-run` tool absence in this environment.
+- Documenter tightened the contributor docs so the shipped workflow now explicitly distinguishes building the GUI module from running it and states that headless environments must provide `xvfb-run` or an equivalent virtual-display wrapper.
+
+Acceptance criteria to verify:
+- A shared wx bootstrap/event-pump/modal-dismiss test utility exists under `tests/gui`.
+- `tests/gui/Makefile` builds a `GuiTests` runner against required libraries with the current `wx-config` toolchain.
+- `tests/Makefile` can build the GUI test module while keeping GUI execution separate from `SSWTests` and `TacticalTests`.
+- Any `battleSim` build dependency used by the GUI runner no longer requires `wx-config-3.0`.
+- Contributor-facing docs mention the new GUI runner and make the virtual-display requirement explicit for headless automation.
+
+Implementation branch or worktree context:
+- Documenter branch: `gui_tests-documenter-20260404`
+- Documenter worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-documenter-20260404`
+- Tester branch: `gui_tests-tester-20260404`
+- Tester worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-tester-20260404`
+- Git common dir: `/home/tstephen/repos/SSW/.git`
+- Base comparison context: `gui_tests..gui_tests-documenter-20260404`
+- Implementer/artifact baseline before tester artifacts: `eeaf29c`
+- Documentation commit hash: `9ff198a410520c31875877e0fdb612fe03d14fcf`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `.github/copilot-instructions.md`
+- `AGENTS.md`
+- `src/battleSim/Makefile`
+- `tests/Makefile`
+- `tests/gui/GuiHarnessTest.cpp`
+- `tests/gui/GuiHarnessTest.h`
+- `tests/gui/GuiTests.cpp`
+- `tests/gui/Makefile`
+- `tests/gui/WXGuiTestHarness.cpp`
+- `tests/gui/WXGuiTestHarness.h`
+- `artifacts/gui-automated-tests-plan/1-prompt/implementer_report.md`
+- `artifacts/gui-automated-tests-plan/1-prompt/implementer_result.json`
+- `artifacts/gui-automated-tests-plan/1-prompt/tester_prompt.txt`
+- `artifacts/gui-automated-tests-plan/1-prompt/tester_report.md`
+- `artifacts/gui-automated-tests-plan/1-prompt/tester_result.json`
+- `artifacts/gui-automated-tests-plan/1-prompt/documenter_prompt.txt`
+- `artifacts/gui-automated-tests-plan/1-prompt/documenter_report.md`
+- `artifacts/gui-automated-tests-plan/1-prompt/documenter_result.json`
+- `artifacts/gui-automated-tests-plan/1-prompt/verifier_prompt.txt`
+
+Commands executed:
+- `make -C tests/gui --no-print-directory`
+- `make -C tests gui-tests --no-print-directory`
+- `make -C tests/tactical --no-print-directory`
+- `make -C tests --no-print-directory`
+- `cd tests/gui && xvfb-run -a ./GuiTests` (failed: `xvfb-run: command not found`)
+- `cd tests/gui && ./GuiTests`
+
+Final test outcomes:
+- GUI harness regression runner executed successfully: 2 tests, 2 passed, 0 failed.
+- `tests/gui/Makefile`, `tests/Makefile`, and `src/battleSim/Makefile` acceptance criteria were validated by build/test execution and Makefile inspection.
+- Documentation now explicitly says `make gui-tests` only builds the GUI module and that headless GUI execution depends on `xvfb-run` or an equivalent virtual-display wrapper being available.
+
+Documentation files updated:
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Shared artifact directory:
+- `artifacts/gui-automated-tests-plan/1-prompt`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

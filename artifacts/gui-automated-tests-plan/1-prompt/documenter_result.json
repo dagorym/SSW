@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "task_identifier": "gui-automated-tests-plan/1-prompt",
+  "branch_name": "gui_tests-documenter-20260404",
+  "commit_hash": "9ff198a410520c31875877e0fdb612fe03d14fcf",
+  "documentation_commit_hash": "9ff198a410520c31875877e0fdb612fe03d14fcf",
+  "documentation_files_added_or_modified": [
+    "AGENTS.md",
+    ".github/copilot-instructions.md"
+  ],
+  "artifact_file_paths": {
+    "report": "artifacts/gui-automated-tests-plan/1-prompt/documenter_report.md",
+    "result": "artifacts/gui-automated-tests-plan/1-prompt/documenter_result.json",
+    "verifier_prompt": "artifacts/gui-automated-tests-plan/1-prompt/verifier_prompt.txt"
+  }
+}
