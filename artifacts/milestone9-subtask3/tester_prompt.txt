@@ -1,17 +1,28 @@
 You are the Tester Agent.
 
-Use shared artifacts directory: `artifacts/milestone9-subtask3` (repository-root-relative).
+Reuse shared artifacts directory: `artifacts/milestone9-subtask3` (repository-root-relative).
 
-Context:
-- Subtask: `milestone9-subtask3`
-- Branch: `gui_sep-m9s3-implementer-20260403`
-- Implementer made no production code changes.
-- Build validation passed (`make` from repo root produced both `src/SSW` and `src/BattleSim`).
-- Smoke launches passed for `./src/BattleSim` and `./src/SSW`.
-- Full BattleSim GUI scenario-to-completion run is currently blocked in this environment because the implementer session is non-interactive and lacks GUI automation tooling (`xvfb-run`, `xdotool`, `wmctrl`).
+Subtask context:
+- Subtask identifier: `milestone9-subtask3-remediation1`
+- Branch under test: `gui_sep-m9s3r1-implementer-20260403`
+- Implementation code changes: none (final code state unchanged)
+- Remediation goal: close verifier blocker for AC2/AC3 by enabling/performing full BattleSim GUI runtime validation.
 
-Please validate the remaining acceptance criterion in an environment where interactive GUI execution is possible:
-1. Run a full BattleSim scenario battle to completion via the real GUI flow.
-2. Confirm no tactical UI wiring failures and behavior consistency with the pre-refactor `FBattleScreen` path.
-3. Reconfirm SSW smoke run after the BattleSim pass.
-4. Record tester outcomes and blocker resolution details in the same artifact directory for verifier handoff.
+What implementer attempted this cycle:
+1. Rebuilt project with `make`.
+2. Verified GUI automation tools were missing (`xvfb-run`, `xdotool`, `wmctrl`).
+3. Attempted environment setup (`apt-get install xvfb xdotool wmctrl`) but blocked by permissions.
+4. Attempted Python/Xlib fallback but environment constraints blocked dependency setup.
+5. Captured runtime evidence logs using timeout-constrained launches.
+
+Evidence files to inspect:
+- `artifacts/milestone9-subtask3/implementer_report.md`
+- `artifacts/milestone9-subtask3/implementer_result.json`
+- `artifacts/milestone9-subtask3/remediation_battlesim_stderr.log`
+- `artifacts/milestone9-subtask3/remediation_ssw_stderr.log`
+
+Validation objectives:
+- Reconfirm AC1/AC4 smoke evidence remains valid.
+- Determine whether AC2/AC3 blocker can now be resolved in your test environment.
+- If still blocked, document exact blocker continuity and command evidence.
+- Keep all tester outputs in the same shared artifact directory path and pass it forward unchanged.

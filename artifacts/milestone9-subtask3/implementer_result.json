@@ -1,22 +1,31 @@
 {
   "status": "blocked",
-  "subtask_identifier": "milestone9-subtask3",
-  "branch_name": "gui_sep-m9s3-implementer-20260403",
+  "subtask_identifier": "milestone9-subtask3-remediation1",
+  "branch_name": "gui_sep-m9s3r1-implementer-20260403",
   "implementation_code_commit_hash": "No Changes Made",
   "changed_files": [],
   "validation_commands_run": [
     "make",
-    "cd src && ./BattleSim",
-    "cd src && ./SSW"
+    "which xvfb-run || echo xvfb-run-missing",
+    "which xdotool || echo xdotool-missing",
+    "which wmctrl || echo wmctrl-missing",
+    "printenv DISPLAY || echo DISPLAY-unset",
+    "sudo -n true >/dev/null 2>&1; echo sudo_noninteractive_exit:$?",
+    "apt-get update -y && apt-get install -y xvfb xdotool wmctrl",
+    "timeout 20 ./src/BattleSim >/dev/null 2>artifacts/milestone9-subtask3/remediation_battlesim_stderr.log",
+    "timeout 15 ./src/SSW >/dev/null 2>artifacts/milestone9-subtask3/remediation_ssw_stderr.log"
   ],
   "validation_outcome": {
     "make": "passed",
-    "battlesim_gui_flow": "blocked - application launches, but full scenario battle-to-completion could not be executed non-interactively in this environment",
-    "ssw_smoke_run": "passed - application launches"
+    "automation_tools": "blocked - xvfb-run/xdotool/wmctrl unavailable",
+    "installation_attempt": "blocked - insufficient privileges for apt package install",
+    "battlesim_gui_runtime": "blocked - no usable non-interactive GUI automation path",
+    "ssw_smoke_run": "passed (timeout-based launch smoke)"
   },
   "runtime_findings": [
-    "No startup-time tactical UI wiring failure observed on BattleSim launch.",
-    "Full GUI-driven scenario completion could not be performed due to lack of interactive GUI automation capabilities in this run context."
+    "DISPLAY was set to :0 but no usable GUI automation tooling was available.",
+    "Non-interactive sudo and apt package installation were not permitted in this environment.",
+    "Without GUI automation support, AC2 full BattleSim completion and AC3 behavioral equivalence remain unverified."
   ],
   "artifact_file_paths": [
     "artifacts/milestone9-subtask3/implementer_report.md",

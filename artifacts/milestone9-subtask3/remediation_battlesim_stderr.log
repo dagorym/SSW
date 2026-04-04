@@ -1,0 +1,1 @@
+../src/gtk/dialog.cpp(193): assert "Assert failure" failed in EndModal(): either wxDialog:EndModal called twice or ShowModal wasn't called
