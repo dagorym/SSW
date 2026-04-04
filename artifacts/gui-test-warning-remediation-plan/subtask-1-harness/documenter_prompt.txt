@@ -1,0 +1,47 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implementer extended the shared GUI harness with top-level/modal discovery and orphan cleanup utilities, added regression coverage for these behaviors, and updated tactical/BattleSim live GUI tests to use explicit destruction/event pumping.
+- Tester validated the implementation by running the headless GUI suite (`GuiTests`) and confirmed all acceptance criteria are met.
+
+Acceptance criteria validated:
+- The harness can observe or locate launched top-level dialogs/windows during a test.
+- The harness can enforce and clean zero-orphan top-level state at test completion.
+- Harness regression coverage exists for the new observation/cleanup behavior.
+- The tactical and BattleSim GUI live tests touched by this story no longer rely on implicit stack lifetime for shown top-level window cleanup.
+
+Implementation branch or worktree context:
+- Implementer branch context: `gui_tests-implementer-20260404` @ `2e0b21db39b4044c7e0ba31db3fe572d595fd13b`
+- Tester branch/worktree: `gui_tests-tester-20260404` at `/tmp/ssw-orch/gui_tests-tester-20260404`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- tests/gui/WXGuiTestHarness.h
+- tests/gui/WXGuiTestHarness.cpp
+- tests/gui/GuiHarnessTest.h
+- tests/gui/GuiHarnessTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- artifacts/gui-test-warning-remediation-plan/subtask-1-harness/tester_report.md
+- artifacts/gui-test-warning-remediation-plan/subtask-1-harness/tester_result.json
+- artifacts/gui-test-warning-remediation-plan/subtask-1-harness/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Final test outcomes:
+- `GuiTests` passed: **22 passed, 0 failed**
+- Harness observation/cleanup behavior is covered and validated in regression tests.
+- Tactical/BattleSim live test paths validated with explicit destroy + event pumping behavior.
+
+Documentation context:
+- Review documentation that describes GUI harness capabilities and live GUI test behavior/cleanup assumptions.
+- Confirm docs reflect new harness APIs (`getTopLevelWindows`, `findTopLevelWindow`, `waitForTopLevelWindow`, `findModalDialog`, `waitForModalDialog`, `cleanupOrphanTopLevels`) and explicit cleanup expectations in tactical/BattleSim live tests.
+
+Shared artifact directory:
+- artifacts/gui-test-warning-remediation-plan/subtask-1-harness
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
