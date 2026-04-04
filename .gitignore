@@ -34,3 +34,4 @@ plans/notes.txt
 *.ilk
 *.pdb
 .idea
+.codex

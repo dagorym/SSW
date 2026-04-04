@@ -876,7 +876,7 @@ Deliverables:
    existing CppUnit test structure.
 4. Run: make all_clean && make from the repo root.  Confirm clean build.
 5. Run: cd tests && make && ./SSWTests.  Confirm all tests pass.
-6. Update WARP.md to document the new module dependency rules and the IStrategicUI /
+6. Update AGENTS.md to document the new module dependency rules and the IStrategicUI /
    ITacticalUI interfaces.
 ```
 
