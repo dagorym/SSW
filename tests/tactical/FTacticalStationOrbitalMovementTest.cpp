@@ -1,6 +1,6 @@
 /**
  * @file FTacticalStationOrbitalMovementTest.cpp
- * @brief Implementation file for FBattleBoard station orbital movement tests
+ * @brief Implementation file for FTacticalGame station orbital movement tests
  * @author Tom Stephens
  * @date Created: Mar 26, 2026
  */
@@ -59,9 +59,9 @@ return "";
 }
 
 void FTacticalStationOrbitalMovementTest::testStationHeadingUpdatedAfterOrbit() {
-const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
-const std::string body = extractFunctionBody(source, "void FBattleBoard::finalizeMove()");
-const std::string headingLine = "(*itr)->setHeading(isStation ? m_turnInfo[id].finalHeading : m_turnInfo[id].curHeading);";
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::finalizeMovementState()");
+const std::string headingLine = "(*itr)->setHeading(tItr->second.finalHeading);";
 CPPUNIT_ASSERT_EQUAL(true, body.find(headingLine) != std::string::npos);
 
 const int curHeading = 0;
@@ -72,15 +72,15 @@ CPPUNIT_ASSERT_EQUAL(finalHeading, resolvedHeading);
 }
 
 void FTacticalStationOrbitalMovementTest::testStationSpeedPreservedAfterOrbit() {
-const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
-const std::string body = extractFunctionBody(source, "void FBattleBoard::finalizeMove()");
-const std::string resetBody = extractFunctionBody(source, "void FBattleBoard::resetMoveData()");
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::finalizeMovementState()");
+const std::string resetBody = extractFunctionBody(source, "void FTacticalGame::resetTurnInfoForCurrentMover()");
 
-const std::string stationGuard = "if (!isStation){";
-const std::string speedSet = "(*itr)->setSpeed(m_turnInfo[id].nMoved);";
+const std::string stationGuard = "if (!isStation) {";
+const std::string speedSet = "(*itr)->setSpeed(tItr->second.nMoved);";
 CPPUNIT_ASSERT_EQUAL(true, body.find(stationGuard) != std::string::npos);
 CPPUNIT_ASSERT_EQUAL(true, body.find(speedSet) != std::string::npos);
-CPPUNIT_ASSERT_EQUAL(true, resetBody.find("d.nMoved=1;") != std::string::npos);
+CPPUNIT_ASSERT_EQUAL(true, resetBody.find("d.nMoved = 1;") != std::string::npos);
 
 const int stationSpeed = 0;
 const int nMoved = 1;
@@ -90,9 +90,9 @@ CPPUNIT_ASSERT_EQUAL(0, resolvedSpeed);
 }
 
 void FTacticalStationOrbitalMovementTest::testNonStationHeadingUnchangedByFix() {
-const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
-const std::string body = extractFunctionBody(source, "void FBattleBoard::finalizeMove()");
-const std::string headingLine = "(*itr)->setHeading(isStation ? m_turnInfo[id].finalHeading : m_turnInfo[id].curHeading);";
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::finalizeMovementState()");
+const std::string headingLine = "(*itr)->setHeading(tItr->second.curHeading);";
 CPPUNIT_ASSERT_EQUAL(true, body.find(headingLine) != std::string::npos);
 
 const int curHeading = 2;

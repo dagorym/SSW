@@ -1,0 +1,30 @@
+You are the Tester Agent.
+
+Task summary:
+- Validated Milestone 10 Subtask 6 final build/test commands and fixed the remaining tactical regression by updating `FTacticalStationOrbitalMovementTest` to assert against current `FTacticalGame` movement/finalization methods.
+
+Modified files:
+- tests/tactical/FTacticalStationOrbitalMovementTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- `make all_clean && make` passes from repo root.
+- `cd tests && make && ./SSWTests` passes.
+- Final handoff includes the validation result and notes only non-blocking limitations.
+
+Create test files in:
+- tests/tactical (assumption from project convention if any new/adjusted tests are needed)
+
+Implementation context for testing:
+- Station orbital movement checks were migrated from outdated string checks in `FBattleBoard::finalizeMove/resetMoveData` to current tactical model methods in `FTacticalGame` (`finalizeMovementState` and `resetTurnInfoForCurrentMover`).
+- Assertions now verify station heading behavior and station speed preservation against model-owned movement bookkeeping.
+- Full suite currently passes at 159 tests.
+
+Suggested test command(s):
+- make all_clean && make
+- cd tests && make && ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui_sep/subtask10/subtask6
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
