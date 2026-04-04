@@ -1,0 +1,62 @@
+{
+  "status": "completed",
+  "review_type": "feature_level_final_review",
+  "feature_plan": "plans/gui-automated-tests-plan.md",
+  "branch_name": "gui_tests-reviewer-20260404",
+  "reviewed_merged_head": "48bb1e17d9d2d242540dc68e2916786d95b9a0c1",
+  "commit_hash": "PENDING_ARTIFACT_COMMIT_HASH",
+  "overall_outcome": "CONDITIONAL PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 2,
+  "note_finding_count": 2,
+  "validation": {
+    "gui_tests_command": "cd tests/gui && make -s && xvfb-run -a ./GuiTests",
+    "gui_tests_result": "OK (19 tests)"
+  },
+  "artifact_file_paths": {
+    "report": "artifacts/gui-automated-tests-plan/reviewer/reviewer_report.md",
+    "result": "artifacts/gui-automated-tests-plan/reviewer/reviewer_result.json"
+  },
+  "findings": [
+    {
+      "severity": "WARNING",
+      "summary": "Subtask 4 tactical live-dialog coverage is only partially enforced because TacticalDamageSummaryGUI and ICM interaction tests are unregistered dead code.",
+      "evidence": [
+        "plans/gui-automated-tests-plan.md:91-97",
+        "tests/gui/TacticalGuiLiveTest.h:16-18",
+        "tests/gui/TacticalGuiLiveTest.cpp:257-345",
+        "artifacts/gui-automated-tests-plan/4-prompt/verifier_report.md"
+      ]
+    },
+    {
+      "severity": "WARNING",
+      "summary": "BattleSimFrame and LocalGameDialog launch tests do not prove their downstream child modals opened, weakening Subtask 6 ownership/lifetime evidence.",
+      "evidence": [
+        "plans/gui-automated-tests-plan.md:119-124",
+        "tests/gui/BattleSimGuiLiveTest.cpp:173-201",
+        "artifacts/gui-automated-tests-plan/6-prompt/verifier_report.md"
+      ]
+    },
+    {
+      "severity": "NOTE",
+      "summary": "GuiHarnessTest still smoke-tests pumpEvents() without asserting observable event dispatch.",
+      "evidence": [
+        "tests/gui/GuiHarnessTest.cpp:23-25",
+        "artifacts/gui-automated-tests-plan/1-prompt/verifier_report.md"
+      ]
+    },
+    {
+      "severity": "NOTE",
+      "summary": "Historical Subtask 2, 3, and 5 verifier notes were reviewed and do not change the final feature-level outcome.",
+      "evidence": [
+        "artifacts/gui-automated-tests-plan/2-prompt/verifier_report.md",
+        "artifacts/gui-automated-tests-plan/3-prompt/verifier_report.md",
+        "artifacts/gui-automated-tests-plan/5-prompt/verifier_report.md"
+      ]
+    }
+  ],
+  "follow_up_feature_requests": [
+    "Register and execute the existing TacticalGuiLiveTest cases for TacticalDamageSummaryGUI and ICM assignment interaction, then narrow or refresh tactical GUI documentation so it matches the tests that actually run in GuiTests.",
+    "Strengthen BattleSimGuiLiveTest so BattleSimFrame and LocalGameDialog assertions verify LocalGameDialog, ScenarioDialog, and ScenarioEditorGUI actually open before auto-dismiss, making early-return/no-op regressions fail automatically."
+  ]
+}
