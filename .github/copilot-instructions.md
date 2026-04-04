@@ -79,7 +79,7 @@ To build only the GUI test module from the top-level test makefile:
 cd tests && make gui-tests
 ```
 
-GUI test execution requires an X display. For headless automation, run GUI tests with a virtual display such as `xvfb-run -a ./GuiTests`.
+GUI test execution requires an X display. Run `./GuiTests` directly when a display session is already available; in headless automation, ensure `xvfb-run` (or an equivalent virtual-display wrapper) is installed and run GUI tests with it, such as `xvfb-run -a ./GuiTests`.
 
 Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis. Enable coverage reporting with `make COVERAGE=1`.
 
