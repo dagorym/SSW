@@ -5,6 +5,10 @@
 
 #include "StrategicGuiLiveTest.h"
 
+#include <algorithm>
+#include <functional>
+
+#include <wx/dcmemory.h>
 #include <wx/panel.h>
 #include <wx/toplevel.h>
 #include <wx/window.h>
@@ -21,11 +25,17 @@
 #include "gui/SystemDialogGUI.h"
 #include "gui/TransferShipsGUI.h"
 #include "gui/TwoPlanetsGUI.h"
+#include "gui/WXGameDisplay.h"
+#include "gui/WXIconCache.h"
+#include "gui/WXMapDisplay.h"
+#include "gui/WXPlayerDisplay.h"
 #include "gui/UPFUnattachedGUI.h"
 #include "gui/ViewFleetGUI.h"
 #include "gui/WXStrategicUI.h"
 #include "ships/FVehicle.h"
 #include "strategic/FFleet.h"
+#include "strategic/FGame.h"
+#include "strategic/FJumpRoute.h"
 #include "strategic/FMap.h"
 #include "strategic/FPlanet.h"
 #include "strategic/FPlayer.h"
@@ -36,6 +46,58 @@ namespace FrontierTests {
 using namespace Frontier;
 
 namespace {
+
+wxImage renderOffscreen(int width, int height, const std::function<void(wxMemoryDC &)> &drawFn) {
+	wxBitmap bitmap(width, height);
+	wxMemoryDC dc(bitmap);
+	dc.SetBackground(wxBrush(*wxBLACK));
+	dc.Clear();
+	drawFn(dc);
+	dc.SelectObject(wxNullBitmap);
+	return bitmap.ConvertToImage();
+}
+
+int countNonBackgroundPixels(const wxImage &image, const wxColour &background) {
+	if (!image.IsOk()) {
+		return 0;
+	}
+	int changed = 0;
+	for (int y = 0; y < image.GetHeight(); ++y) {
+		for (int x = 0; x < image.GetWidth(); ++x) {
+			if (image.GetRed(x, y) != background.Red()
+			    || image.GetGreen(x, y) != background.Green()
+			    || image.GetBlue(x, y) != background.Blue()) {
+				changed++;
+			}
+		}
+	}
+	return changed;
+}
+
+bool hasNonBackgroundPixelInRegion(const wxImage &image,
+                                   const wxColour &background,
+                                   int centerX,
+                                   int centerY,
+                                   int halfWidth,
+                                   int halfHeight) {
+	if (!image.IsOk()) {
+		return false;
+	}
+	const int minX = std::max(0, centerX - halfWidth);
+	const int maxX = std::min(image.GetWidth() - 1, centerX + halfWidth);
+	const int minY = std::max(0, centerY - halfHeight);
+	const int maxY = std::min(image.GetHeight() - 1, centerY + halfHeight);
+	for (int y = minY; y <= maxY; ++y) {
+		for (int x = minX; x <= maxX; ++x) {
+			if (image.GetRed(x, y) != background.Red()
+			    || image.GetGreen(x, y) != background.Green()
+			    || image.GetBlue(x, y) != background.Blue()) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 FMap & ensureFrontierMap(unsigned int upfPlayerID, unsigned int satharPlayerID) {
 std::vector<unsigned int> playerIDs;
@@ -343,7 +405,12 @@ onDone(event);
 CPPUNIT_TEST_SUITE_REGISTRATION( StrategicGuiLiveTest );
 
 void StrategicGuiLiveTest::setUp() {
-CPPUNIT_ASSERT(m_harness.bootstrap());
+	CPPUNIT_ASSERT(m_harness.bootstrap());
+	static bool handlersInitialized = false;
+	if (!handlersInitialized) {
+		wxInitAllImageHandlers();
+		handlersInitialized = true;
+	}
 }
 
 void StrategicGuiLiveTest::tearDown() {
@@ -385,28 +452,131 @@ CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
 CPPUNIT_ASSERT(!placeNovaItem->IsEnabled());
 CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
 
-frame->Destroy();
-m_harness.pumpEvents(10);
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testWXMapDisplayOffscreenRendering() {
+	FPlayer upfPlayer;
+	FPlayer satharPlayer;
+	FMap & map = ensureFrontierMap(upfPlayer.getID(), satharPlayer.getID());
+	WXMapDisplay mapDisplay;
+
+	const wxImage rendered = renderOffscreen(800, 800, [&](wxMemoryDC &dc) {
+		mapDisplay.draw(dc);
+	});
+
+	const wxColour black(0, 0, 0);
+	CPPUNIT_ASSERT(rendered.IsOk());
+	CPPUNIT_ASSERT(countNonBackgroundPixels(rendered, black) > 500);
+
+	const double scale = 800.0 / map.getMaxSize();
+	FSystem * prenglar = map.getSystem("Prenglar");
+	CPPUNIT_ASSERT(prenglar != NULL);
+	const int prenglarX = static_cast<int>(prenglar->getCoord(0) * scale);
+	const int prenglarY = static_cast<int>(prenglar->getCoord(1) * scale);
+	CPPUNIT_ASSERT(hasNonBackgroundPixelInRegion(rendered, black, prenglarX, prenglarY, 15, 15));
+	delete &map;
+}
+
+void StrategicGuiLiveTest::testWXPlayerDisplayOffscreenRendersSystemAndTransitFleets() {
+	FPlayer player;
+	FPlayer satharPlayer;
+	FMap & map = ensureFrontierMap(player.getID(), satharPlayer.getID());
+
+	player.setFleetIcon("icons/UPFFighter.png");
+
+	FSystem * prenglar = map.getSystem("Prenglar");
+	FSystem * whiteLight = map.getSystem("White Light");
+	CPPUNIT_ASSERT(prenglar != NULL);
+	CPPUNIT_ASSERT(whiteLight != NULL);
+
+	FFleet * systemFleet = new FFleet;
+	systemFleet->setName("System Fleet");
+	systemFleet->setOwner(player.getID());
+	systemFleet->setIcon(player.getFleetIconName());
+	systemFleet->addShip(createShip("AssaultScout"));
+	systemFleet->setLocation(prenglar, false);
+	player.addFleet(systemFleet);
+
+	FFleet * transitFleet = new FFleet;
+	transitFleet->setName("Transit Fleet");
+	transitFleet->setOwner(player.getID());
+	transitFleet->setIcon(player.getFleetIconName());
+	transitFleet->addShip(createShip("AssaultScout"));
+	transitFleet->setLocation(whiteLight, true, 4, FFleet::NO_DESTINATION, 1, FFleet::NO_ROUTE);
+	player.addFleet(transitFleet);
+
+	WXPlayerDisplay playerDisplay;
+	WXMapDisplay mapDisplay;
+	const wxImage rendered = renderOffscreen(800, 800, [&](wxMemoryDC &dc) {
+		playerDisplay.drawFleets(dc, &player);
+	});
+
+	const wxColour black(0, 0, 0);
+	CPPUNIT_ASSERT(rendered.IsOk());
+	CPPUNIT_ASSERT(countNonBackgroundPixels(rendered, black) > 50);
+
+	const double scale = 800.0 / map.getMaxSize();
+	double xoffset = -0.2 * scale;
+	double yoffset = -0.2 * scale;
+	if (player.getID() != 1) {
+		xoffset = 0.2 * scale;
+		yoffset = -0.2 * scale;
+	}
+
+	const int systemX = static_cast<int>(prenglar->getCoord(0) * scale - 0.5 * scale + xoffset);
+	const int systemY = static_cast<int>(prenglar->getCoord(1) * scale - 0.5 * scale + yoffset);
+	CPPUNIT_ASSERT(hasNonBackgroundPixelInRegion(rendered, black, systemX, systemY, 30, 30));
+
+	const int transitX = static_cast<int>((whiteLight->getCoord(0) - 0.5) * scale);
+	const int transitY = static_cast<int>((whiteLight->getCoord(1) - 0.5) * scale);
+	CPPUNIT_ASSERT(hasNonBackgroundPixelInRegion(rendered, black, transitX, transitY, 30, 30));
+	delete &map;
+}
+
+void StrategicGuiLiveTest::testWXGameDisplayOffscreenRendersTurnCounterAndIcons() {
+	FPlayer upfPlayer;
+	FPlayer satharPlayer;
+	FMap & map = ensureFrontierMap(upfPlayer.getID(), satharPlayer.getID());
+	FGame * game = &(FGame::create());
+
+	WXGameDisplay gameDisplay;
+	const wxImage rendered = renderOffscreen(800, 800, [&](wxMemoryDC &dc) {
+		gameDisplay.draw(dc, *game);
+	});
+	delete game;
+
+	const wxColour black(0, 0, 0);
+	CPPUNIT_ASSERT(rendered.IsOk());
+	CPPUNIT_ASSERT(countNonBackgroundPixels(rendered, black) > 500);
+	CPPUNIT_ASSERT(WXIconCache::instance().get("icons/day.png").IsOk());
+	CPPUNIT_ASSERT(WXIconCache::instance().get("icons/tenday.png").IsOk());
+
+	const int s = std::min(800, 800) / 20;
+	CPPUNIT_ASSERT(hasNonBackgroundPixelInRegion(rendered, black, static_cast<int>(0.5 * s), static_cast<int>(0.5 * s), 30, 30));
+	CPPUNIT_ASSERT(hasNonBackgroundPixelInRegion(rendered, black, static_cast<int>(2.0 * s), static_cast<int>(2.5 * s), 40, 20));
+	delete &map;
 }
 
 void StrategicGuiLiveTest::testGamePanelPaintTracksParentSize() {
-wxFrame * frame = new wxFrame(NULL, wxID_ANY, "FGamePanel Parent", wxDefaultPosition, wxSize(640, 480));
-FGamePanel * panel = new FGamePanel(frame);
-frame->Show();
-m_harness.pumpEvents();
+	wxFrame * frame = new wxFrame(NULL, wxID_ANY, "FGamePanel Parent", wxDefaultPosition, wxSize(640, 480));
+	FGamePanel * panel = new FGamePanel(frame);
+	frame->Show();
+	m_harness.pumpEvents();
 
-frame->SetClientSize(480, 320);
-panel->Refresh();
-panel->Update();
-m_harness.pumpEvents(2);
+	frame->SetClientSize(480, 320);
+	panel->Refresh();
+	panel->Update();
+	m_harness.pumpEvents(2);
 
-const wxSize parentSize = frame->GetClientSize();
-const wxSize panelSize = panel->GetClientSize();
-CPPUNIT_ASSERT_EQUAL(parentSize.GetWidth(), panelSize.GetWidth());
-CPPUNIT_ASSERT_EQUAL(parentSize.GetHeight(), panelSize.GetHeight());
+	const wxSize parentSize = frame->GetClientSize();
+	const wxSize panelSize = panel->GetClientSize();
+	CPPUNIT_ASSERT_EQUAL(parentSize.GetWidth(), panelSize.GetWidth());
+	CPPUNIT_ASSERT_EQUAL(parentSize.GetHeight(), panelSize.GetHeight());
 
-frame->Destroy();
-m_harness.pumpEvents(10);
+	frame->Destroy();
+	m_harness.pumpEvents(10);
 }
 
 void StrategicGuiLiveTest::testStrategicDialogsCloseModallyWithoutInput() {

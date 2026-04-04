@@ -1,0 +1,37 @@
+You are the Tester Agent.
+
+Task summary:
+- Added deterministic offscreen strategic rendering tests and icon-loading robustness for headless GUI runs.
+
+Modified files:
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/StrategicGuiLiveTest.cpp
+- src/gui/WXIconCache.cpp
+- src/gui/WXPlayerDisplay.cpp
+- src/gui/WXGameDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- Offscreen GUI fixtures cover WXMapDisplay, WXPlayerDisplay, and WXGameDisplay.
+- The tests assert stable observable rendering outcomes such as non-background pixel changes, icon placement behavior, or turn-counter rendering.
+- WXPlayerDisplay coverage includes both in-transit and in-system fleet drawing cases.
+- WXIconCache remains covered for resolved-path loading and cache reuse, and the rendering tests consume cached icons through live draw code.
+- FGamePanel has at least smoke-level paint-path coverage with a live parent frame.
+
+Create test files in:
+- tests/gui/
+
+Implementation context for testing:
+- StrategicGuiLiveTest now includes offscreen bitmap rendering helpers and three new tests for map, player, and game display drawing.
+- WXIconCache now retries icon loading from `../` relative to base path to support GUI test executable layout.
+- WXPlayerDisplay and WXGameDisplay now skip scaling/drawing when cache returns invalid images to avoid wx assert failures.
+- StrategicGuiLiveTest setUp initializes image handlers once for deterministic icon decode behavior.
+
+Suggested test command(s):
+- cd tests/gui && make -s && xvfb-run -a ./GuiTests
+- cd tests && xvfb-run -a ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui-automated-tests-plan/5-prompt
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

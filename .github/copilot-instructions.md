@@ -51,11 +51,12 @@ Tests mirror module structure under `tests/`:
 - Core tests: `tests/core/*` (covers `FPoint`, `FObject`, `FGameConfig`, etc.)
 - Weapons tests: `tests/weapons/*` (covers all weapon types, including `FWeaponFireResultTest`)
 - Ships tests: `tests/ships/*` (covers all vehicle types, including `FTacticalAttackIntegrationTest`)
+- GUI tests: `tests/gui/*` (covers live wx dialog/widget behavior including `StrategicGuiLiveTest`, deterministic modal driving through `WXGuiTestHarness::showModalWithAction(...)`, offscreen rendering assertions for `WXMapDisplay`, `WXPlayerDisplay`, and `WXGameDisplay`, in-transit and in-system fleet drawing checks, `FGamePanel` live-parent paint-path smoke coverage, and model-state assertions for strategic dialogs such as fleet setup, ship transfer, combat selection, and battle results flows)
 - Tactical tests: `tests/tactical/*` (covers `FTacticalGame` header inclusion and additive mechanics ownership via `FTacticalGameMechanicsTest`, `FTacticalCombatReport`, `FTacticalAttackResult`, `ITacticalUI`/`WXTacticalUI` adapter coverage, battery range clamping, station orbital movement, etc.)
 - Strategic tests: `tests/strategic/*` (covers `FGame`, `FPlayer`, `FFleet`, etc.)
 - Test classes named `<Class>Test` (e.g., `FPointTest` for `FPoint`)
 - Use `CPPUNIT_TEST_SUITE` macros (see [tests/core/FPointTest.h](../tests/core/FPointTest.h))
-- Each test explicitly registered in [tests/SSWTests.cpp](../tests/SSWTests.cpp) via `runner.addTest()`
+- Each test explicitly registered in the runner that links it, such as [tests/SSWTests.cpp](../tests/SSWTests.cpp) for the top-level suite or [tests/gui/GuiTests.cpp](../tests/gui/GuiTests.cpp) for the GUI runner.
 
 ### Running Tests
 ```bash
@@ -80,6 +81,8 @@ cd tests && make gui-tests
 ```
 
 GUI test execution requires an X display. Run `./GuiTests` directly when a display session is already available; in headless automation, ensure `xvfb-run` (or an equivalent virtual-display wrapper) is installed and run GUI tests with it, such as `xvfb-run -a ./GuiTests`.
+
+For deterministic strategic rendering coverage in headless runs, prefer offscreen `wxMemoryDC` assertions that check observable pixels or icon-placement regions for `WXMapDisplay`, `WXPlayerDisplay`, and `WXGameDisplay`; keep live parent frames for smoke-level paint-path checks such as `FGamePanel`.
 
 Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis. Enable coverage reporting with `make COVERAGE=1`.
 
@@ -157,7 +160,7 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 - Keep `include/gui/WXTacticalUI.h` and `src/gui/WXTacticalUI.cpp` as the additive wx-backed tactical adapter introduced in Milestone 6; it wraps existing dialogs and winner messaging semantics but is not the live tactical runtime path yet.
 - Keep the active runtime tactical GUI flow on `FBattleScreen`, `FBattleBoard`, and `FBattleDisplay` until later milestones explicitly rewire delegation; Milestones 5-6 documentation should describe `FTacticalGame`, `ITacticalUI`, and `WXTacticalUI` as additive only and not yet the live wx runtime path.
 - Route strategic-layer dialogs, prompts, and notifications from `FGame` through `IStrategicUI`; keep wx dialog implementations in the gui module (for example `WXStrategicUI`) instead of reintroducing direct gui dependencies in strategic code.
-- Keep icon filenames in model objects and resolve ship or fleet `wxImage` assets in GUI render paths through `WXIconCache`, including tactical displays that draw ships.
+- Keep icon filenames in model objects and resolve ship or fleet `wxImage` assets in GUI render paths through `WXIconCache`, including tactical displays that draw ships; preserve the cache loader's `../` fallback for headless or executable-layout compatibility, and keep `WXPlayerDisplay`/`WXGameDisplay` draw paths tolerant of invalid images before scaling or drawing.
 - Maintain cross-platform compatibility across Linux Make builds and Visual Studio builds.
 - Update or add tests alongside functional changes.
 

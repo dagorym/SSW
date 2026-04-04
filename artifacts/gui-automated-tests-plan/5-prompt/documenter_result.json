@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "subtask": "gui-automated-tests-plan/5-prompt",
+  "branch_name": "gui_tests-subtask5-documenter-20260404",
+  "commit_hash": "c9aae9a75f15b4d06ce0d140105a247ae4b23d52",
+  "documentation_commit_hash": "9430315cfc9195c8f8f554385712d2d8c2e26f5b",
+  "documentation_files": [
+    "AGENTS.md",
+    ".github/copilot-instructions.md"
+  ],
+  "artifact_file_paths": {
+    "report": "artifacts/gui-automated-tests-plan/5-prompt/documenter_report.md",
+    "result": "artifacts/gui-automated-tests-plan/5-prompt/documenter_result.json",
+    "verifier_prompt": "artifacts/gui-automated-tests-plan/5-prompt/verifier_prompt.txt"
+  },
+  "notes": [
+    "Tester-stage authoritative final commit is f4134fc1b259f05694fa607b50878f424701b261.",
+    "Implementation code-change context commit is 860c9cb557fd70a507b64fb5ac3ef3d448e5362c."
+  ],
+  "artifact_commit_hash": "c9aae9a75f15b4d06ce0d140105a247ae4b23d52"
+}
