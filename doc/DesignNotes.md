@@ -733,3 +733,33 @@ cd tests/tactical && make && ./TacticalTests
 ```
 
 Result: `OK (75 tests)`.
+
+The move-route selection regression follow-up then documented the restored
+exact-click contract for model-owned tactical movement selection.
+`FTacticalGame::handleMoveHexSelection()` now lands the route on the exact
+highlighted hex the player clicks instead of stopping one hex early, and
+clicking an earlier path node trims the route back to that exact hex without an
+extra backward click. The new `FTacticalMoveRouteSelectionTest` runtime fixture
+locks that behavior through `handleHexClick()` coverage for:
+
+- the first highlighted movement hex extending the route by exactly one hex;
+- later highlighted movement hexes becoming the actual route endpoint; and
+- earlier path hexes trimming the current route back to the clicked hex while
+  preserving `nMoved`, `curHeading`, and `finalHeading` invariants.
+
+No `FBattleBoard` renderer change was required for this fix; the existing move
+overlay already matched the corrected model selection contract.
+
+Validation commands:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+```
+
+Result: `OK (75 tests)`.
+
+```bash
+# Standalone FTacticalMoveRouteSelectionTest fixture build/run with tactical libs
+```
+
+Result: `OK (3 tests)`.
