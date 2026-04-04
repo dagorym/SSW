@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "subtask": "Subtask 2 move-route selection regression documentation",
+  "branch": "gui_sep-documenter-20260404",
+  "base_branch": "gui_sep",
+  "tester_branch": "gui_sep-tester-20260404",
+  "implementer_branch": "gui_sep-implementer-20260404",
+  "commit_hash": "97a23491987a5ab4963e037218332d6cb3904b8a",
+  "documentation_files_modified": [
+    "doc/DesignNotes.md"
+  ],
+  "artifact_paths_written": [
+    "artifacts/tactical-gui-separation-regressions/subtask-2/documenter_report.md",
+    "artifacts/tactical-gui-separation-regressions/subtask-2/documenter_result.json",
+    "artifacts/tactical-gui-separation-regressions/subtask-2/verifier_prompt.txt"
+  ],
+  "commands_reviewed": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "Standalone compile/run of FTacticalMoveRouteSelectionTest fixture with tactical libs"
+  ],
+  "test_outcomes": {
+    "tactical_runner": "OK (75 tests)",
+    "move_route_fixture": "OK (3 tests)"
+  }
+}

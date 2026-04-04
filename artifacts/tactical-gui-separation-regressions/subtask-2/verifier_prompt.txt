@@ -1,0 +1,55 @@
+You are the Verifier Agent.
+
+Task Summary
+Validate and confirm Subtask 2 move-route selection regression fixes and the matching documentation update for tactical movement route selection semantics.
+
+Original Acceptance Criteria
+- Clicking the first highlighted movement hex advances the selected path by exactly one hex.
+- Clicking any later highlighted movement hex lands the route on that exact clicked hex.
+- Clicking an earlier path hex trims the current route to that exact hex.
+- Movement counters and heading state remain consistent after extension or trimming.
+- If a renderer adjustment is necessary, the displayed selectable contract matches the corrected model behavior.
+
+Implementation Branch/Worktree Context
+- Base/root branch context: gui_sep
+- Implementer base branch: gui_sep-implementer-20260404
+- Tester branch: gui_sep-tester-20260404
+- Documenter branch/worktree: gui_sep-documenter-20260404 at /home/tstephen/.copilot/session-state/a133f2f5-4873-4897-9efa-632892009c61/worktrees/gui_sep-documenter-20260404
+- Documentation commit hash: 97a23491987a5ab4963e037218332d6cb3904b8a
+
+Files Modified by Implementer, Tester, and Documenter Relevant to Verification
+- Implementer-modified files:
+  - src/tactical/FTacticalGame.cpp
+  - tests/tactical/FTacticalMoveRouteSelectionTest.h
+  - tests/tactical/FTacticalMoveRouteSelectionTest.cpp
+- Tester-authored committed changes:
+  - artifacts/tactical-gui-separation-regressions/subtask-2/tester_report.md
+  - artifacts/tactical-gui-separation-regressions/subtask-2/tester_result.json
+  - artifacts/tactical-gui-separation-regressions/subtask-2/documenter_prompt.txt
+- Documenter-modified files:
+  - doc/DesignNotes.md
+  - artifacts/tactical-gui-separation-regressions/subtask-2/documenter_report.md
+  - artifacts/tactical-gui-separation-regressions/subtask-2/documenter_result.json
+  - artifacts/tactical-gui-separation-regressions/subtask-2/verifier_prompt.txt
+
+Verification Scope Notes
+- Verification must include the updated documentation file `doc/DesignNotes.md` along with the implementation and tests.
+- Confirm the documentation reflects the shipped behavior rather than only the plan hint.
+- Confirm no renderer-side adjustment was required and that `FBattleBoard.cpp` correctly remained unchanged.
+
+Commands Executed
+1. Tester: `cd tests/tactical && make && ./TacticalTests`
+   - Result: `OK (75 tests)`
+2. Tester: standalone compile/run of `FTacticalMoveRouteSelectionTest` fixture with tactical libs
+   - Result: `OK (3 tests)`
+3. Documenter: reviewed `gui_sep...gui_sep-tester-20260404` diff, tester artifacts, `AGENTS.md`, and `plans/tactical-gui-separation-regressions-plan.md`, then updated `doc/DesignNotes.md` only.
+
+Final Test Outcomes
+- PASS: Tactical suite remained green.
+- PASS: Standalone move-route fixture confirmed first-step extension, later-hex endpoint selection, earlier-hex trimming, and heading/move-counter consistency.
+- PASS: No renderer-side adjustment required; model/render contract remained aligned.
+
+Shared Artifact Directory (repository-root-relative; reuse as-is)
+- artifacts/tactical-gui-separation-regressions/subtask-2
+
+Do not report success unless all required artifacts exist and all changes are committed.
