@@ -1,0 +1,42 @@
+You are the Documenter Agent.
+
+Original task summary:
+Validate the implemented station orbital movement fix and runtime regression coverage.
+
+Acceptance criteria to document:
+- A station adjacent to a planet remains in orbit after move completion and does not drift straight away from the planet.
+- The station heading after move completion reflects the orbital turn.
+- Station speed preservation remains intact.
+- Non-station movement semantics remain unchanged.
+- The updated station regression test is runtime behavior coverage, not source-text inspection.
+
+Repository/worktree context:
+- Worktree: /home/tstephen/.copilot/session-state/a133f2f5-4873-4897-9efa-632892009c61/worktrees/gui_sep-tester-20260404
+- Branch: gui_sep-tester-20260404
+- Implementer base branch context: gui_sep-implementer-20260404
+- Implementation commit validated: bc2890e
+- Tester test commit hash: No Changes Made (no tester-owned test-file edits were necessary)
+
+Files modified by Implementer and Tester that may affect documentation review:
+- Implementer:
+  - src/tactical/FTacticalGame.cpp
+  - tests/tactical/FTacticalStationOrbitalMovementTest.h
+  - tests/tactical/FTacticalStationOrbitalMovementTest.cpp
+- Tester:
+  - artifacts/tactical-gui-separation-regressions/subtask-1/tester_report.md
+  - artifacts/tactical-gui-separation-regressions/subtask-1/tester_result.json
+  - artifacts/tactical-gui-separation-regressions/subtask-1/documenter_prompt.txt
+
+Commands executed by Tester:
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/tactical && ./TacticalTests | tail -n 80
+
+Final test outcomes:
+- Tactical test suite result: OK (75 tests)
+- Totals: 75 passed, 0 failed
+- All listed acceptance criteria validated.
+
+Shared artifact directory to reuse (repository-root-relative):
+- artifacts/tactical-gui-separation-regressions/subtask-1
+
+Do not report success unless all required artifacts exist and all changes are committed.
