@@ -1,0 +1,28 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented tactical live GUI automation coverage and deterministic modal handling seams for WXTacticalUI-driven smoke paths.
+
+Modified files:
+- include/gui/WXTacticalUI.h
+- src/gui/WXTacticalUI.cpp
+- tests/gui/GuiTests.cpp
+- tests/gui/Makefile
+- tests/gui/WXGuiTestHarness.h
+- tests/gui/WXGuiTestHarness.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Validate:
+1) WXTacticalUI parent-backed redraw/message/damage-summary/winner behavior is exercised in live GUI test flow.
+2) TacticalDamageSummaryGUI live dialog path is present in tactical GUI tests.
+3) GUI test harness builds and executes successfully.
+4) Existing GUI suite still passes.
+
+Suggested command:
+- cd tests/gui && make -j2 >/dev/null && ./GuiTests
+
+Artifacts directory:
+- artifacts/gui-automated-tests-plan/4-prompt
+
+Do not report success unless required artifacts exist and validations pass.
