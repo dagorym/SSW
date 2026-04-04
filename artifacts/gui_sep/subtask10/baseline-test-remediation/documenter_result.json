@@ -1,0 +1,28 @@
+{
+  "status": "success",
+  "task": "gui_sep subtask10 baseline-test-remediation",
+  "branch": "gui_sep-m10-remed-documenter-20260404",
+  "commit_hash": "a807283936eced10563e42803c8d7be7ad467bb6",
+  "documentation_commit_hash": "a807283936eced10563e42803c8d7be7ad467bb6",
+  "implementation_commit": "975f1e5",
+  "tester_base_head": "0004b8e74f0f42774587d3b46e4055a67a23cb9b",
+  "documentation_files_added_or_modified": [
+    "AGENTS.md"
+  ],
+  "artifact_files_written": [
+    "artifacts/gui_sep/subtask10/baseline-test-remediation/documenter_report.md",
+    "artifacts/gui_sep/subtask10/baseline-test-remediation/documenter_result.json",
+    "artifacts/gui_sep/subtask10/baseline-test-remediation/verifier_prompt.txt"
+  ],
+  "scope_validated_from_files": [
+    "tests/Makefile",
+    "tests/SSWTests.cpp",
+    "artifacts/gui_sep/subtask10/baseline-test-remediation/tester_report.md",
+    "artifacts/gui_sep/subtask10/baseline-test-remediation/tester_result.json",
+    "artifacts/gui_sep/subtask10/baseline-test-remediation/documenter_prompt.txt"
+  ],
+  "summary": [
+    "Documented that top-level tests/make bootstraps required ../src libraries before linking SSWTests.",
+    "Documented that fixtures must be registered in the runner that actually links them, avoiding top-level vs module-runner drift."
+  ]
+}
