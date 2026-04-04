@@ -1,0 +1,43 @@
+{
+  "status": "completed",
+  "subtask": "Subtask 2 move-route selection regression verification",
+  "branch": "gui_sep-verifier-20260404",
+  "base_branch": "gui_sep",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 2,
+  "note_finding_count": 1,
+  "test_sufficiency_summary": "Standalone FTacticalMoveRouteSelectionTest coverage matches the acceptance criteria, but the fixture is not wired into tests/tactical/Makefile or TacticalTests.cpp so routine tactical suite runs do not enforce it.",
+  "documentation_accuracy_summary": "Behavioral documentation matches the shipped model fix and correctly notes that FBattleBoard stayed unchanged, but the validation section is not fully reproducible because TacticalTests omits the new fixture and the standalone command is only a placeholder comment.",
+  "artifact_paths_written": [
+    "artifacts/tactical-gui-separation-regressions/subtask-2/verifier_report.md",
+    "artifacts/tactical-gui-separation-regressions/subtask-2/verifier_result.json"
+  ],
+  "findings": [
+    {
+      "severity": "WARNING",
+      "summary": "New regression fixture is not integrated into the tactical module's normal test build/run path.",
+      "references": [
+        "tests/tactical/Makefile:29",
+        "tests/tactical/Makefile:45-49",
+        "tests/tactical/TacticalTests.cpp:8-22",
+        "tests/tactical/TacticalTests.cpp:28-42"
+      ]
+    },
+    {
+      "severity": "WARNING",
+      "summary": "Design-note validation section is not fully reproducible and overstates how the route-selection fixture is exercised.",
+      "references": [
+        "doc/DesignNotes.md:742-765"
+      ]
+    },
+    {
+      "severity": "NOTE",
+      "summary": "New test header guard diverges from the repository's test-header convention and uses a leading underscore.",
+      "references": [
+        "tests/tactical/FTacticalMoveRouteSelectionTest.h:8-9",
+        "AGENTS.md:137-142"
+      ]
+    }
+  ]
+}
