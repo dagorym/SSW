@@ -132,6 +132,38 @@ bool isStationType(FVehicle * ship) {
 	return (type == "ArmedStation" || type == "FortifiedStation" || type == "Fortress");
 }
 
+void buildPathHeadings(const FTacticalTurnData & turnData, PointList & path, std::vector<int> & headings) {
+	path = turnData.path.getFullPath();
+	headings.clear();
+	if (path.empty()) {
+		return;
+	}
+
+	int heading = turnData.startHeading;
+	for (unsigned int i = 0; i < path.size(); ++i) {
+		const bool lastPoint = (i + 1 >= path.size());
+		headings.push_back(lastPoint ? turnData.finalHeading : heading);
+		if (lastPoint) {
+			break;
+		}
+		if (path[i + 1] != path[i]) {
+			heading = FHexMap::computeHeading(path[i], path[i + 1]);
+			continue;
+		}
+		bool resolved = false;
+		for (unsigned int j = i + 2; j < path.size(); ++j) {
+			if (path[j] != path[i + 1]) {
+				heading = FHexMap::computeHeading(path[i + 1], path[j]);
+				resolved = true;
+				break;
+			}
+		}
+		if (!resolved) {
+			heading = turnData.finalHeading;
+		}
+	}
+}
+
 }
 
 FTacticalGame::FTacticalGame() {
@@ -1093,22 +1125,14 @@ void FTacticalGame::computeWeaponRange() {
 		if (turnData != NULL && turnData->path.getPathLength() > 0) {
 			m_headOnHexes.clear();
 			m_targetHexes.clear();
-			int heading = turnData->startHeading;
-			PointList path = turnData->path.getFullPath();
-			for (PointList::iterator itr = path.begin(); itr < path.end(); ++itr) {
+			PointList path;
+			std::vector<int> headings;
+			buildPathHeadings(*turnData, path, headings);
+			for (unsigned int i = 0; i < path.size(); ++i) {
 				if (m_curWeapon->isFF()) {
-					computeFFRange(*itr, m_targetHexes, m_headOnHexes, heading);
+					computeFFRange(path[i], m_targetHexes, m_headOnHexes, headings[i]);
 				} else {
-					computeBatteryRange(*itr, m_targetHexes);
-				}
-				PointList::iterator next = itr;
-				++next;
-				if (next != path.end()) {
-					unsigned int newHeading = turnData->path.getPointHeading(*next);
-					if (newHeading != static_cast<unsigned int>(heading)) {
-						--next;
-						heading = static_cast<int>(newHeading);
-					}
+					computeBatteryRange(path[i], m_targetHexes);
 				}
 			}
 		}
@@ -1130,17 +1154,18 @@ bool FTacticalGame::setIfValidTarget(FVehicle * target, const FPoint & targetHex
 		if (turnData == NULL) {
 			return false;
 		}
-		int heading = turnData->startHeading;
-		PointList path = turnData->path.getFullPath();
-		for (PointList::iterator itr = path.begin(); itr < path.end(); ++itr) {
+		PointList path;
+		std::vector<int> headings;
+		buildPathHeadings(*turnData, path, headings);
+		for (unsigned int i = 0; i < path.size(); ++i) {
 			PointSet targetSet;
 			PointSet headOnSet;
 			if (m_curWeapon->isFF()) {
-				computeFFRange(*itr, targetSet, headOnSet, heading);
+				computeFFRange(path[i], targetSet, headOnSet, headings[i]);
 			} else {
-				computeBatteryRange(*itr, targetSet);
+				computeBatteryRange(path[i], targetSet);
 			}
-			const unsigned int distance = FHexMap::computeHexDistance(targetHex, *itr);
+			const unsigned int distance = FHexMap::computeHexDistance(targetHex, path[i]);
 			if (targetSet.find(targetHex) != targetSet.end() && distance < minRange) {
 				validTarget = true;
 				minRange = distance;
@@ -1148,15 +1173,6 @@ bool FTacticalGame::setIfValidTarget(FVehicle * target, const FPoint & targetHex
 				validTarget = true;
 				headOn = true;
 				minHeadOnRange = distance;
-			}
-			PointList::iterator next = itr;
-			++next;
-			if (next != path.end()) {
-				unsigned int newHeading = turnData->path.getPointHeading(*next);
-				if (newHeading != static_cast<unsigned int>(heading)) {
-					--next;
-					heading = static_cast<int>(newHeading);
-				}
 			}
 		}
 	} else {
