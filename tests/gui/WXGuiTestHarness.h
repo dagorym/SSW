@@ -34,9 +34,17 @@ public:
 	int runModalFunctionWithAutoDismiss(const std::function<int()> & callback,
 	                                    int returnCode,
 	                                    int timeoutMs = 25);
+	int runModalFunctionWithAction(const std::function<int()> & callback,
+	                               const std::function<void()> & action,
+	                               int fallbackCode = wxID_CANCEL,
+	                               int timeoutMs = 100);
 	void runVoidFunctionWithAutoDismiss(const std::function<void()> & callback,
 	                                    int returnCode,
 	                                    int timeoutMs = 25);
+	void runVoidFunctionWithAction(const std::function<void()> & callback,
+	                               const std::function<void()> & action,
+	                               int fallbackCode = wxID_CANCEL,
+	                               int timeoutMs = 100);
 };
 
 }

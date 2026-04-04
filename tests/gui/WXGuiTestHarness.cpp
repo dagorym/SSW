@@ -186,6 +186,23 @@ int WXGuiTestHarness::runModalFunctionWithAutoDismiss(const std::function<int()>
 	return result;
 }
 
+int WXGuiTestHarness::runModalFunctionWithAction(const std::function<int()> & callback,
+                                                 const std::function<void()> & action,
+                                                 int fallbackCode,
+                                                 int timeoutMs) {
+	if (!m_bootstrapped && !bootstrap()) {
+		return wxID_NONE;
+	}
+
+	AnyModalDismissTimer dismissTimer(fallbackCode);
+	dismissTimer.Start(timeoutMs, false);
+	wxTheApp->CallAfter(action);
+	const int result = callback();
+	dismissTimer.Stop();
+	pumpEvents(2);
+	return result;
+}
+
 void WXGuiTestHarness::runVoidFunctionWithAutoDismiss(const std::function<void()> & callback,
                                                       int returnCode,
                                                       int timeoutMs) {
@@ -195,6 +212,22 @@ void WXGuiTestHarness::runVoidFunctionWithAutoDismiss(const std::function<void()
 
 	AnyModalDismissTimer dismissTimer(returnCode);
 	dismissTimer.Start(timeoutMs, false);
+	callback();
+	dismissTimer.Stop();
+	pumpEvents(2);
+}
+
+void WXGuiTestHarness::runVoidFunctionWithAction(const std::function<void()> & callback,
+                                                 const std::function<void()> & action,
+                                                 int fallbackCode,
+                                                 int timeoutMs) {
+	if (!m_bootstrapped && !bootstrap()) {
+		return;
+	}
+
+	AnyModalDismissTimer dismissTimer(fallbackCode);
+	dismissTimer.Start(timeoutMs, false);
+	wxTheApp->CallAfter(action);
 	callback();
 	dismissTimer.Stop();
 	pumpEvents(2);

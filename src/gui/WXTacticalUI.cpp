@@ -8,10 +8,14 @@
 #include "gui/ICMSelectionGUI.h"
 #include "gui/TacticalDamageSummaryGUI.h"
 
+#include <wx/generic/msgdlgg.h>
 #include <wx/msgdlg.h>
+#include <wx/timer.h>
 #include <wx/window.h>
 
 namespace Frontier {
+
+int WXTacticalUI::s_modalAutoDismissMs = 0;
 
 WXTacticalUI::WXTacticalUI(wxWindow* parent) : m_parent(parent) {}
 
@@ -26,8 +30,29 @@ void WXTacticalUI::requestRedraw() {
 void WXTacticalUI::showMessage(const std::string& title,
                                const std::string& body) {
   if (m_parent != NULL) {
-    wxMessageDialog dialog(m_parent, body, title, wxOK | wxICON_INFORMATION);
+    class ModalAutoDismissTimer : public wxTimer {
+     public:
+      explicit ModalAutoDismissTimer(wxDialog* dialog) : m_dialog(dialog) {}
+      virtual void Notify() wxOVERRIDE {
+        if (m_dialog != NULL && m_dialog->IsModal()) {
+          m_dialog->EndModal(wxID_OK);
+        }
+      }
+
+     private:
+      wxDialog* m_dialog;
+    };
+
+    wxGenericMessageDialog dialog(m_parent, body, title, wxOK | wxICON_INFORMATION);
+    ModalAutoDismissTimer* autoDismiss = NULL;
+    if (s_modalAutoDismissMs > 0) {
+      autoDismiss = new ModalAutoDismissTimer(&dialog);
+      autoDismiss->Start(s_modalAutoDismissMs, true);
+    }
     dialog.ShowModal();
+    if (autoDismiss != NULL) {
+      delete autoDismiss;
+    }
     return;
   }
   wxMessageOutputBest().Printf("%s\n%s", title.c_str(), body.c_str());
@@ -57,6 +82,10 @@ void WXTacticalUI::notifyWinner(bool attackerWins) {
   std::string msg = "The winner of the battle is \nPlayer ";
   msg += attackerWins ? "Sathar" : "UPF";
   showMessage("Enemy Defeated!", msg);
+}
+
+void WXTacticalUI::setModalAutoDismissMs(int timeoutMs) {
+  s_modalAutoDismissMs = timeoutMs;
 }
 
 }  // namespace Frontier

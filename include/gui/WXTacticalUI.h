@@ -25,8 +25,10 @@ class WXTacticalUI : public ITacticalUI {
   int showDamageSummary(const FTacticalCombatReportSummary& summary);
   int runICMSelection(std::vector<ICMData*>& icmData, VehicleList* defenders);
   void notifyWinner(bool attackerWins);
+  static void setModalAutoDismissMs(int timeoutMs);
 
  private:
+  static int s_modalAutoDismissMs;
   wxWindow* m_parent;
 };
 
