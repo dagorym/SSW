@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Validate Subtask 1 implementation for Milestone 10 tactical wx-include cleanup.
+
+Shared artifact directory (reuse exactly and pass forward to Verifier):
+artifacts/gui_sep/subtask10/subtask1
+
+Implementation/code commit to test:
+37ff962
+
+Modified files:
+- include/gui/GuiTypes.h
+- include/tactical/FBattleScreen.h
+- include/tactical/FBattleDisplay.h
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleScreen.cpp
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FBattleBoard.cpp
+
+Planner acceptance criteria:
+- The audited header/source roots return zero active #include.*wx hits.
+- Tactical model/shared code still compiles.
+- No new wx dependency is introduced into non-GUI modules.
+
+Relevant test file location convention:
+- tests/tactical/
+
+Implementation context:
+- Direct tactical wx include directives were removed from scoped tactical headers and sources.
+- Tactical declarations now rely on existing GUI-owned include aggregation (`include/gui/GuiTypes.h`) for wx types.
+- Added `#include <wx/spinctrl.h>` in `include/gui/GuiTypes.h` to satisfy `wxSpinCtrl` used by `FBattleDisplay.h` without reintroducing tactical wx includes.
+
+Run at least:
+- rg '^\s*#include\s*[<\"].*wx' include/tactical -n
+- rg '^\s*#include\s*[<\"].*wx' src/tactical -n
+- cd src/tactical && make -s
+- cd tests/tactical && make -s && ./TacticalTests
+
+Do not report success unless all required artifacts exist and all changes are committed.
