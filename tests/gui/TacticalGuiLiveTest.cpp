@@ -72,34 +72,8 @@ return m_grid1->GetCellValue(row, 2);
 
 	void clickDone() {
 		wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, m_button1->GetId());
+		event.SetEventObject(m_button1);
 		finalizeAssignments(event);
-	}
-
-	void finalizeAssignmentsWithoutModal() {
-		std::map<unsigned int, FVehicle *> shipList;
-		std::vector<ICMData *>::iterator wItr = m_ICMData->begin();
-		for (unsigned int i = 0; i < m_ICMData->size(); i++) {
-			std::map<unsigned int, AssignedICMData *>::iterator sItr = m_shipICMData.begin();
-			int totalICMs = 0;
-			for (unsigned int j = 0; j < m_shipICMData.size(); j++) {
-				totalICMs += (*sItr).second->getICMsAllocatedToWeapon((*wItr)->weapon);
-				sItr++;
-			}
-			(*wItr)->weapon->setAssignedICMCount(totalICMs);
-			VehicleList::iterator itr = (*wItr)->vehicles->begin();
-			for (unsigned int j = 0; j < (*wItr)->vehicles->size(); j++) {
-				shipList[(*itr)->getID()] = (*itr);
-				itr++;
-			}
-			wItr++;
-		}
-		std::map<unsigned int, FVehicle *>::iterator vItr = shipList.begin();
-		for (unsigned int i = 0; i < shipList.size(); i++) {
-			FDefense * d = vItr->second->getDefense(vItr->second->hasDefense(FDefense::ICM));
-			int expendedICMs = m_shipICMData[vItr->first]->getAllocatedICMs();
-			d->setCurrentAmmo(d->getAmmo() - expendedICMs);
-			vItr++;
-		}
 	}
 };
 
@@ -190,7 +164,6 @@ CPPUNIT_ASSERT(m_harness.bootstrap());
 
 void TacticalGuiLiveTest::tearDown() {
 	m_harness.cleanupOrphanTopLevels(10);
-	m_harness.shutdown();
 }
 
 void TacticalGuiLiveTest::testWXTacticalUIParentBackedModalAndRedrawPaths() {
@@ -252,6 +225,7 @@ icmData.push_back(&row);
 	delete defender;
 	parent->Destroy();
 	m_harness.pumpEvents(10);
+	m_harness.cleanupOrphanTopLevels(10);
 	std::cerr << "TACTICAL1:done" << std::endl;
 }
 
@@ -276,11 +250,25 @@ wxTextCtrl * summaryText = findFirstTextCtrl(dialog);
 CPPUNIT_ASSERT(summaryText != NULL);
 CPPUNIT_ASSERT(summaryText->GetValue().Find(wxT("Destroyer Alpha took 4 hull damage.")) != wxNOT_FOUND);
 
+bool closeActionRan = false;
+bool closeButtonFound = false;
+const int closeResult = m_harness.runModalFunctionWithAction([&]() {
+	return dialog->ShowModal();
+}, [&]() {
+	closeActionRan = true;
 	wxButton * closeButton = findButtonByLabel(dialog, wxT("Close"));
-	CPPUNIT_ASSERT(closeButton != NULL);
-	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), m_harness.showModalWithAutoDismiss(*dialog, wxID_OK, 25));
-	dialog->Destroy();
-	m_harness.pumpEvents(3);
+	closeButtonFound = (closeButton != NULL);
+	if (closeButton != NULL) {
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
+		click.SetEventObject(closeButton);
+		closeButton->Command(click);
+	}
+}, wxID_CANCEL, 100);
+CPPUNIT_ASSERT(closeActionRan);
+CPPUNIT_ASSERT(closeButtonFound);
+CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), closeResult);
+dialog->Destroy();
+m_harness.pumpEvents(3);
 
 FTacticalCombatReportSummary emptySummary;
 emptySummary.context.reportType = TRT_None;
@@ -288,32 +276,47 @@ TacticalDamageSummaryGUI * emptyDialog = new TacticalDamageSummaryGUI(parent, em
 wxTextCtrl * emptyText = findFirstTextCtrl(emptyDialog);
 CPPUNIT_ASSERT(emptyText != NULL);
 CPPUNIT_ASSERT(emptyText->GetValue().Find(wxT("No ships sustained damage in this report.")) != wxNOT_FOUND);
-CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), m_harness.showModalWithAutoDismiss(*emptyDialog, wxID_OK, 25));
+bool emptyCloseActionRan = false;
+bool emptyCloseButtonFound = false;
+const int emptyCloseResult = m_harness.runModalFunctionWithAction([&]() {
+	return emptyDialog->ShowModal();
+}, [&]() {
+	emptyCloseActionRan = true;
+	wxButton * closeButton = findButtonByLabel(emptyDialog, wxT("Close"));
+	emptyCloseButtonFound = (closeButton != NULL);
+	if (closeButton != NULL) {
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
+		click.SetEventObject(closeButton);
+		closeButton->Command(click);
+	}
+}, wxID_CANCEL, 100);
+CPPUNIT_ASSERT(emptyCloseActionRan);
+CPPUNIT_ASSERT(emptyCloseButtonFound);
+CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), emptyCloseResult);
 emptyDialog->Destroy();
 m_harness.pumpEvents(3);
 
 parent->Destroy();
 m_harness.pumpEvents(10);
+m_harness.cleanupOrphanTopLevels(10);
 }
 
 void TacticalGuiLiveTest::testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo() {
-wxFrame * parent = new wxFrame(NULL, wxID_ANY, "ICM Selection Parent", wxDefaultPosition, wxSize(620, 460));
-parent->Show();
-m_harness.pumpEvents();
-
 FVehicle * target = createShip("Destroyer");
+FVehicle * attacker = createShip("Destroyer");
 FVehicle * defenderA = createShip("Destroyer");
 FVehicle * defenderB = createShip("Frigate");
-CPPUNIT_ASSERT(target != NULL && defenderA != NULL && defenderB != NULL);
+CPPUNIT_ASSERT(target != NULL && attacker != NULL && defenderA != NULL && defenderB != NULL);
 target->setOwner(2);
+attacker->setOwner(1);
 defenderA->setOwner(2);
 defenderB->setOwner(2);
 
-InspectableWeapon * weapon = new InspectableWeapon();
+FWeapon * weapon = attacker->getWeapon(0);
+CPPUNIT_ASSERT(weapon != NULL);
 weapon->setTarget(target, 4);
 
 VehicleList nearbyShips;
-nearbyShips.push_back(target);
 nearbyShips.push_back(defenderA);
 nearbyShips.push_back(defenderB);
 
@@ -331,22 +334,32 @@ CPPUNIT_ASSERT(defenderB->getDefense(defenseIndexB) != NULL);
 const int defenderAStartingAmmo = defenderA->getDefense(defenseIndexA)->getAmmo();
 const int defenderBStartingAmmo = defenderB->getDefense(defenseIndexB)->getAmmo();
 
-	{
-		ICMSelectionGUITestPeer dialog(parent, &icmRows);
-		dialog.selectWeaponRow(0);
-		CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), dialog.appliedControlCount());
-		dialog.setAppliedICMValue(0, 2);
-		dialog.setAppliedICMValue(1, 1);
-		CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("3"), dialog.assignedCellText(0));
+ICMSelectionGUITestPeer * dialog = new ICMSelectionGUITestPeer(NULL, &icmRows);
+size_t appliedControlCount = 0;
+wxString assignedCountText;
+bool modalActionRan = false;
+const int modalResult = m_harness.runModalFunctionWithAction([&]() {
+	return dialog->ShowModal();
+}, [&]() {
+	modalActionRan = true;
+	dialog->selectWeaponRow(0);
+	appliedControlCount = dialog->appliedControlCount();
+	dialog->setAppliedICMValue(0, 2);
+	dialog->setAppliedICMValue(1, 1);
+	assignedCountText = dialog->assignedCellText(0);
+	dialog->clickDone();
+}, wxID_CANCEL, 150);
 
-		dialog.finalizeAssignmentsWithoutModal();
-		CPPUNIT_ASSERT_EQUAL(3, weapon->assignedICMCount());
-		CPPUNIT_ASSERT_EQUAL(defenderAStartingAmmo - 2, defenderA->getDefense(defenseIndexA)->getAmmo());
-		CPPUNIT_ASSERT_EQUAL(defenderBStartingAmmo - 1, defenderB->getDefense(defenseIndexB)->getAmmo());
-	}
+CPPUNIT_ASSERT(modalActionRan);
+CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), appliedControlCount);
+CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("3"), assignedCountText);
+CPPUNIT_ASSERT_EQUAL(0, modalResult);
+CPPUNIT_ASSERT_EQUAL(defenderAStartingAmmo - 2, defenderA->getDefense(defenseIndexA)->getAmmo());
+CPPUNIT_ASSERT_EQUAL(defenderBStartingAmmo - 1, defenderB->getDefense(defenseIndexB)->getAmmo());
+dialog->Destroy();
+m_harness.pumpEvents(3);
 
-parent->Destroy();
-m_harness.pumpEvents(10);
+m_harness.cleanupOrphanTopLevels(10);
 }
 
 }
