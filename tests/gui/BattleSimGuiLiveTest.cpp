@@ -51,7 +51,58 @@ void clickButton(wxWindow * target, wxButton * button) {
 	CPPUNIT_ASSERT(button != NULL);
 	wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, button->GetId());
 	event.SetEventObject(button);
-	target->GetEventHandler()->ProcessEvent(event);
+	button->GetEventHandler()->ProcessEvent(event);
+}
+
+int countShownTopLevels(const WXGuiTestHarness & harness) {
+	const std::vector<wxTopLevelWindow *> topLevels = harness.getTopLevelWindows(false);
+	int shownTopLevels = 0;
+	for (std::vector<wxTopLevelWindow *>::const_iterator itr = topLevels.begin();
+	     itr != topLevels.end();
+	     ++itr) {
+		if (*itr != NULL && (*itr)->IsShown() && !(*itr)->IsBeingDeleted()) {
+			++shownTopLevels;
+		}
+	}
+	return shownTopLevels;
+}
+
+bool wasTopLevelPresent(const std::vector<wxTopLevelWindow *> & existingTopLevels, wxTopLevelWindow * candidate) {
+	for (std::vector<wxTopLevelWindow *>::const_iterator itr = existingTopLevels.begin();
+	     itr != existingTopLevels.end();
+	     ++itr) {
+		if (*itr == candidate) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void stabilizeTopLevels(WXGuiTestHarness & harness, int attempts = 4) {
+	for (int attempt = 0; attempt < attempts; ++attempt) {
+		harness.cleanupOrphanTopLevels(10);
+		harness.pumpEvents(10);
+	}
+}
+
+void forceCloseShownTopLevels(WXGuiTestHarness & harness, int attempts = 3) {
+	for (int attempt = 0; attempt < attempts; ++attempt) {
+		const std::vector<wxTopLevelWindow *> topLevels = harness.getTopLevelWindows(false);
+		for (std::vector<wxTopLevelWindow *>::const_iterator itr = topLevels.begin();
+		     itr != topLevels.end();
+		     ++itr) {
+			wxTopLevelWindow * topLevel = *itr;
+			if (topLevel == NULL || topLevel->IsBeingDeleted() || !topLevel->IsShown()) {
+				continue;
+			}
+			wxDialog * dialog = dynamic_cast<wxDialog *>(topLevel);
+			if (dialog != NULL && dialog->IsModal()) {
+				dialog->EndModal(wxID_CANCEL);
+			}
+			topLevel->Destroy();
+		}
+		harness.pumpEvents(10);
+	}
 }
 
 class LocalGameDialogTestPeer : public LocalGameDialog {
@@ -157,6 +208,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( BattleSimGuiLiveTest );
 
 void BattleSimGuiLiveTest::setUp() {
 	CPPUNIT_ASSERT(m_harness.bootstrap());
+	m_harness.cleanupOrphanTopLevels(10);
 	m_originalCwd = wxGetCwd();
 	if (!wxFileName::DirExists(wxT("icons")) && wxFileName::DirExists(wxT("../../icons"))) {
 		CPPUNIT_ASSERT(wxSetWorkingDirectory(wxT("../../")));
@@ -179,19 +231,23 @@ void BattleSimGuiLiveTest::testBattleSimFrameOpensLocalGameDialogAndReturns() {
 	m_harness.pumpEvents();
 
 	wxButton * localButton = findButtonByLabel(&frame, wxT("Play a Local Game"));
-	wxTopLevelWindow * launchedWindow = NULL;
+	const std::vector<wxTopLevelWindow *> existingTopLevels = m_harness.getTopLevelWindows(true);
+	bool localDialogWindowPresented = false;
 	m_harness.runVoidFunctionWithAction([&]() {
 		clickButton(&frame, localButton);
 	}, [&]() {
-		launchedWindow = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
-			return topLevel != NULL && topLevel != &frame;
+		wxTopLevelWindow * launchedWindow = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
+			return topLevel != NULL && topLevel != &frame && !wasTopLevelPresent(existingTopLevels, topLevel);
 		}, 200, 5);
+		localDialogWindowPresented = (launchedWindow != NULL);
 	}, 0, 200);
 
-	CPPUNIT_ASSERT(launchedWindow != NULL);
+	CPPUNIT_ASSERT(localDialogWindowPresented);
 	CPPUNIT_ASSERT(frame.IsShown());
 	frame.Destroy();
 	m_harness.pumpEvents(10);
+	stabilizeTopLevels(m_harness);
+	forceCloseShownTopLevels(m_harness);
 }
 
 void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalChains() {
@@ -200,48 +256,69 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 	m_harness.pumpEvents();
 
 	{
-		LocalGameDialogTestPeer predefinedDialog(parent);
-		wxDialog * predefinedLaunchedDialog = NULL;
+		LocalGameDialogTestPeer * predefinedDialog = new LocalGameDialogTestPeer(parent);
+		bool scenarioDialogPresented = false;
 		m_harness.runVoidFunctionWithAction([&]() {
-			predefinedDialog.clickPlayPredefined();
+			predefinedDialog->clickPlayPredefined();
 		}, [&]() {
-			predefinedLaunchedDialog = m_harness.waitForModalDialog(200, 5);
+			wxDialog * launchedDialog = m_harness.waitForModalDialog(200, 5);
+			scenarioDialogPresented = (launchedDialog != NULL && launchedDialog->GetParent() == predefinedDialog);
 		}, 0, 200);
-		CPPUNIT_ASSERT(predefinedLaunchedDialog != NULL);
+		CPPUNIT_ASSERT(scenarioDialogPresented);
+		if (predefinedDialog->IsShown()) {
+			predefinedDialog->Hide();
+		}
+		predefinedDialog->Destroy();
+		m_harness.pumpEvents(5);
 	}
 
 	{
-		LocalGameDialogTestPeer customDialog(parent);
-		wxDialog * customLaunchedDialog = NULL;
+		LocalGameDialogTestPeer * customDialog = new LocalGameDialogTestPeer(parent);
+		bool scenarioEditorPresented = false;
 		m_harness.runVoidFunctionWithAction([&]() {
-			customDialog.clickCreateNew();
+			customDialog->clickCreateNew();
 		}, [&]() {
-			customLaunchedDialog = m_harness.waitForModalDialog(200, 5);
+			wxDialog * launchedDialog = m_harness.waitForModalDialog(200, 5);
+			scenarioEditorPresented = (launchedDialog != NULL && launchedDialog->GetParent() == customDialog);
 		}, 0, 200);
-		CPPUNIT_ASSERT(customLaunchedDialog != NULL);
+		CPPUNIT_ASSERT(scenarioEditorPresented);
+		if (customDialog->IsShown()) {
+			customDialog->Hide();
+		}
+		customDialog->Destroy();
+		m_harness.pumpEvents(5);
 	}
 
 	parent->Destroy();
 	m_harness.pumpEvents(10);
+	stabilizeTopLevels(m_harness);
+	forceCloseShownTopLevels(m_harness);
 }
 
 void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage() {
+	const int baselineShownTopLevels = countShownTopLevels(m_harness);
 	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Scenario Dialog Parent");
 	parent->Show();
 	m_harness.pumpEvents();
 
 	FBattleScreen::resetLifecycleCounters();
 	{
-		ScenarioDialogTestPeer dialog(parent);
-		wxTopLevelWindow * launchedTopLevel = NULL;
+		ScenarioDialogTestPeer * dialog = new ScenarioDialogTestPeer(parent);
+		bool launchedTopLevelPresented = false;
 		m_harness.runVoidFunctionWithAction([&]() {
-			dialog.clickScenario1();
+			dialog->clickScenario1();
 		}, [&]() {
-			launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
-				return topLevel != NULL && topLevel != parent && topLevel != &dialog;
+			wxTopLevelWindow * launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
+				return topLevel != NULL && topLevel != parent && topLevel != dialog;
 			}, 200, 5);
+			launchedTopLevelPresented = (launchedTopLevel != NULL);
 		}, 0, 200);
-		CPPUNIT_ASSERT(launchedTopLevel != NULL);
+		CPPUNIT_ASSERT(launchedTopLevelPresented);
+		if (dialog->IsShown()) {
+			dialog->Hide();
+		}
+		dialog->Destroy();
+		m_harness.pumpEvents(5);
 	}
 
 	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
@@ -249,32 +326,42 @@ void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWit
 	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
 	parent->Destroy();
 	m_harness.pumpEvents(10);
+	stabilizeTopLevels(m_harness);
+	forceCloseShownTopLevels(m_harness);
+	CPPUNIT_ASSERT_EQUAL(baselineShownTopLevels, countShownTopLevels(m_harness));
 }
 
 void BattleSimGuiLiveTest::testScenarioEditorStartBattleLaunchesBattleScreenWithLifecycleCoverage() {
+	const int baselineShownTopLevels = countShownTopLevels(m_harness);
 	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Scenario Editor Parent");
 	parent->Show();
 	m_harness.pumpEvents();
 
 	FBattleScreen::resetLifecycleCounters();
 	{
-		ScenarioEditorGUITestPeer dialog(parent);
-		wxTopLevelWindow * launchedTopLevel = NULL;
+		ScenarioEditorGUITestPeer * dialog = new ScenarioEditorGUITestPeer(parent);
+		bool launchedTopLevelPresented = false;
 		m_harness.runVoidFunctionWithAction([&]() {
-			dialog.chooseDefenderTeam(1);
-			dialog.chooseDefenderType(0);
-			dialog.addDefenderShip();
-			dialog.chooseAttackerTeam(2);
-			dialog.chooseAttackerType(0);
-			dialog.addAttackerShip();
-			dialog.clickStartBattle();
+			dialog->chooseDefenderTeam(1);
+			dialog->chooseDefenderType(0);
+			dialog->addDefenderShip();
+			dialog->chooseAttackerTeam(2);
+			dialog->chooseAttackerType(0);
+			dialog->addAttackerShip();
+			dialog->clickStartBattle();
 		}, [&]() {
-			launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
-				return topLevel != NULL && topLevel != parent && topLevel != &dialog;
+			wxTopLevelWindow * launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
+				return topLevel != NULL && topLevel != parent && topLevel != dialog;
 			}, 200, 5);
+			launchedTopLevelPresented = (launchedTopLevel != NULL);
 		}, 0, 200);
-		CPPUNIT_ASSERT(launchedTopLevel != NULL);
-		CPPUNIT_ASSERT(dialog.finalizeCalled());
+		CPPUNIT_ASSERT(launchedTopLevelPresented);
+		CPPUNIT_ASSERT(dialog->finalizeCalled());
+		if (dialog->IsShown()) {
+			dialog->Hide();
+		}
+		dialog->Destroy();
+		m_harness.pumpEvents(5);
 	}
 
 	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
@@ -282,6 +369,9 @@ void BattleSimGuiLiveTest::testScenarioEditorStartBattleLaunchesBattleScreenWith
 	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
 	parent->Destroy();
 	m_harness.pumpEvents(10);
+	stabilizeTopLevels(m_harness);
+	forceCloseShownTopLevels(m_harness);
+	CPPUNIT_ASSERT_EQUAL(baselineShownTopLevels, countShownTopLevels(m_harness));
 }
 
 }
