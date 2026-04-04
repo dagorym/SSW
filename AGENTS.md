@@ -127,8 +127,16 @@ To run a **single module's tests**, each module under `tests/` also has its own 
 ```bash
 cd tests/tactical && make && ./TacticalTests   # tactical module only
 cd tests/weapons  && make && ./WeaponsTests    # weapons module only
+cd tests/gui      && make && ./GuiTests        # GUI module only (needs display)
 # pattern: tests/<module> && make && ./<Module>Tests
 ```
+
+To build only the GUI test module from the top-level tests makefile without running GUI tests:
+```bash
+cd tests && make gui-tests
+```
+
+GUI test execution requires an X display. In headless automation, run GUI tests under a virtual display (for example `xvfb-run -a ./GuiTests`).
 
 Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis. Enable coverage reporting with `make COVERAGE=1`.
 

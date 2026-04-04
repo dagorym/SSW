@@ -14,7 +14,7 @@ endif
 
 CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
 
-LIBS = `wx-config-3.0 --libs`
+LIBS = `wx-config --libs`
 
 PICFLAGS = -fPIC -DPIC
 

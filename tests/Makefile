@@ -56,6 +56,9 @@ model-deps:
 	$(MAKE) -C ../src/tactical
 	$(MAKE) -C ../src/gui
 
+gui-tests: model-deps
+	@ cd gui; $(MAKE) all
+
 libcoreTests.a:
 	@ cd core; $(MAKE) $@
 	
@@ -82,7 +85,7 @@ objs: $(OBJS)
 .PHONY:
 all_clean:
 	@ cd core; ${MAKE} clean
-#	@ cd gui; ${MAKE} clean
+	@ cd gui; ${MAKE} clean
 	@ cd ships; ${MAKE} clean
 	@ cd strategic; ${MAKE} clean
 	@ cd tactical; ${MAKE} clean
