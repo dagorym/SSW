@@ -1,0 +1,38 @@
+You are the Tester Agent.
+
+Task summary:
+- Tactical live GUI regression coverage was repaired so direct tactical damage-summary and ICM dialog tests are registered and run in `GuiTests`.
+- The damage-summary direct test now drives real modal dialog execution and validates title/context/summary/empty-state and Close behavior.
+- The ICM direct test now drives real modal selection/finalization behavior through the production completion path and validates assignment/ammo outcomes.
+- Tactical fixture cleanup paths were tightened to avoid leftover top-level windows between tests.
+
+Modified files:
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The direct tactical damage-summary and ICM tests are registered in the suite and run under `GuiTests`.
+- The damage-summary test proves title, context, summary, empty-state, and close behavior through real dialog execution.
+- The ICM test proves real selection/finalization behavior and resulting assignment/ammo updates without bypassing the production completion path.
+- The tactical live fixture leaves no orphaned dialogs/windows when each test completes.
+
+Create test files in:
+- tests/gui/
+
+Implementation context for testing:
+- `TacticalGuiLiveTest` suite now explicitly registers:
+  - `testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior`
+  - `testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo`
+- Damage summary path uses `runModalFunctionWithAction(...)` to execute modal dialogs and close through the real `Close` button event.
+- ICM path removed the old non-modal bypass helper and now executes `ICMSelectionGUI` modally; the test drives selection and calls the production completion handler (`finalizeAssignments`) via the test peer’s `clickDone()`.
+- Tactical test teardown relies on orphan cleanup without per-test wx shutdown to keep the GUI harness stable across multiple tactical live tests.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/gui-test-warning-remediation-plan/subtask-2-tactical
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
+
