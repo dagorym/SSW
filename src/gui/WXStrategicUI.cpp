@@ -12,7 +12,7 @@
 #include "gui/UPFUnattachedGUI.h"
 #include "gui/ViewFleetGUI.h"
 
-#include <wx/msgdlg.h>
+#include <wx/generic/msgdlgg.h>
 #include <wx/window.h>
 
 namespace Frontier {
@@ -24,7 +24,8 @@ WXStrategicUI::~WXStrategicUI() {}
 void WXStrategicUI::showMessage(const std::string& title,
                                 const std::string& body) {
   if (m_parent != NULL) {
-    wxMessageDialog dialog(m_parent, body, title, wxOK | wxICON_INFORMATION);
+    wxGenericMessageDialog dialog(m_parent, body, title,
+                                  wxOK | wxICON_INFORMATION);
     dialog.ShowModal();
     return;
   }
