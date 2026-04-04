@@ -710,3 +710,26 @@ cd tests/tactical && make && ./TacticalTests
 ```
 
 Result: `OK (74 tests)`.
+
+The station orbital-movement regression follow-up then documented the restored
+model-owned runtime behavior for defender stations orbiting a planet.
+`FTacticalGame::resetTurnInfoForCurrentMover()` now carries the orbital turn
+heading into move finalization, and the refreshed
+`FTacticalStationOrbitalMovementTest` suite verifies the runtime seam through
+`resetMovementState()` and `completeMovePhase()` instead of inspecting source
+text. That focused regression coverage now confirms that:
+
+- a station adjacent to a planet stays in orbit after move completion rather
+  than drifting straight away;
+- the station heading reflects the orbital turn resolved during the move;
+- station speed preservation remains intact across repeated orbit completion;
+  and
+- non-station movement semantics remain unchanged by the station-specific fix.
+
+Validation command:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+```
+
+Result: `OK (75 tests)`.
