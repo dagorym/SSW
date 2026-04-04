@@ -1,34 +1,19 @@
 {
   "status": "completed",
-  "subtask": "milestone10-subtask3",
-  "branch": "gui_sep-m10-s3r-implementer-20260404",
-  "implementation_commit_hash": "80712b0d02be715308ad0776efedcc1cf1f807ef",
+  "subtask": "milestone10-subtask3-remediation",
+  "branch": "gui_sep-m10-s3rr-implementer-20260404",
+  "implementation_commit_hash": "c285797848e7ce643c16ccdd029dcc8e92f0f950",
   "changed_files": [
-    "tests/strategic/FGameMockStrategicUITest.h",
-    "tests/strategic/FGameMockStrategicUITest.cpp",
-    "tests/strategic/Makefile",
-    "tests/SSWTests.cpp"
+    "tests/strategic/FFleetTest.cpp"
   ],
   "validation_commands": [
     {
       "command": "cd tests/strategic && make",
-      "outcome": "pass",
-      "phase": "baseline"
+      "outcome": "pass"
     },
     {
       "command": "cd tests && make",
-      "outcome": "pass",
-      "phase": "baseline"
-    },
-    {
-      "command": "cd tests/strategic && make",
-      "outcome": "pass",
-      "phase": "post-change"
-    },
-    {
-      "command": "cd tests && make",
-      "outcome": "pass",
-      "phase": "post-change"
+      "outcome": "pass"
     },
     {
       "command": "cd tests && ./SSWTests",
@@ -37,11 +22,10 @@
         "FTacticalStationOrbitalMovementTest::testStationHeadingUpdatedAfterOrbit",
         "FTacticalStationOrbitalMovementTest::testStationSpeedPreservedAfterOrbit",
         "FTacticalStationOrbitalMovementTest::testNonStationHeadingUnchangedByFix"
-      ],
-      "phase": "post-change"
+      ]
     }
   ],
-  "validation_outcome": "targeted strategic build and top-level test build pass; full suite fails only on unrelated pre-existing tactical tests",
+  "validation_outcome": "required strategic and top-level builds pass; full suite failure remains limited to unrelated pre-existing tactical tests; FFleet order-dependent failure no longer reproduced",
   "artifacts": {
     "implementer_report": "artifacts/gui_sep/subtask10/subtask3/implementer_report.md",
     "implementer_result": "artifacts/gui_sep/subtask10/subtask3/implementer_result.json",

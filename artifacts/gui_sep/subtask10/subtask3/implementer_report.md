@@ -1,41 +1,37 @@
-# Implementer Report - Milestone 10 Subtask 3
+# Implementer Report - Milestone 10 Subtask 3 Remediation
 
 ## Summary
-Implemented a new strategic CppUnit test that initializes `FGame` using a mock `IStrategicUI`, verifies non-GUI strategic initialization state, and confirms UI-seam callback behavior without creating real wx dialogs/windows.
+Applied a minimal strategic-test remediation to remove an order-dependent destination ID assumption in `FFleetTest`, preserving the new mock-`IStrategicUI` Subtask 3 coverage while stabilizing strategic-suite behavior.
 
-## Approved Scope
-- `tests/strategic/Makefile`
-- `tests/SSWTests.cpp`
-- `tests/strategic/FGameMockStrategicUITest.h`
-- `tests/strategic/FGameMockStrategicUITest.cpp`
+## Goal, Scope, and Acceptance Criteria
+- Goal: make Subtask 3 combined strategic tests order-independent.
+- Allowed files from prompt: Subtask 3 files plus existing nearby strategic tests if needed.
+- Remediation file changed: `tests/strategic/FFleetTest.cpp`.
+- Acceptance criteria preserved:
+  - mock `IStrategicUI` test remains intact.
+  - strategic initialization/state checks remain intact.
+  - prior wiring in Makefile and `tests/SSWTests.cpp` remains intact.
 
-## Changes Made
-1. Added `FGameMockStrategicUITest` fixture and test declaration.
-2. Added concrete in-test `MockStrategicUI` implementing `IStrategicUI` with call tracking.
-3. Added test `testInitWithMockStrategicUI` that verifies:
-   - `FGame::init(NULL)` succeeds.
-   - Strategic state after init (`players`, `current player`, `round`, turn).
-   - UI seam calls (`requestRedraw`, `selectRetreatCondition`, setup hooks).
-   - `showPlayers()` routes through UI message API.
-   - `showRetreatConditions()` routes through UI adapter text callback.
-4. Wired the new test object into `tests/strategic/Makefile`.
-5. Registered suite in `tests/SSWTests.cpp`.
+## Change Implemented
+Updated `FFleetTest` to avoid hardcoded destination ID `13` in transit-related tests:
+- `testDecTransitTime()` now computes destination as `s->getID() + 1` and asserts against that dynamic value.
+- `testCancelJump()` now uses the same computed destination value for both transit setups.
+
+This removes collision risk with `FSystem` static IDs when earlier tests (including `FGameMockStrategicUITest`) create systems first.
 
 ## Validation Commands and Outcomes
-1. Baseline build scope:
-   - `cd tests/strategic && make` ✅ pass
-   - `cd tests && make` ✅ pass
-2. Post-change validation:
-   - `cd tests/strategic && make` ✅ pass
-   - `cd tests && make` ✅ pass
-   - `cd tests && ./SSWTests` ⚠️ fails due to pre-existing unrelated tactical failures:
-     - `FTacticalStationOrbitalMovementTest::testStationHeadingUpdatedAfterOrbit`
-     - `FTacticalStationOrbitalMovementTest::testStationSpeedPreservedAfterOrbit`
-     - `FTacticalStationOrbitalMovementTest::testNonStationHeadingUnchangedByFix`
+1. `cd tests/strategic && make` ✅ pass
+2. `cd tests && make` ✅ pass
+3. `cd tests && ./SSWTests` ⚠️ fails only on unrelated pre-existing tactical tests:
+   - `FTacticalStationOrbitalMovementTest::testStationHeadingUpdatedAfterOrbit`
+   - `FTacticalStationOrbitalMovementTest::testStationSpeedPreservedAfterOrbit`
+   - `FTacticalStationOrbitalMovementTest::testNonStationHeadingUnchangedByFix`
+
+No `FFleetTest::testDecTransitTime` failure occurred in the full-suite run after this remediation.
 
 ## Commits
-- Implementation/code commit: `80712b0d02be715308ad0776efedcc1cf1f807ef`
-- Artifact commit: pending at report generation time (created in next commit)
+- Implementation/code commit: `c285797848e7ce643c16ccdd029dcc8e92f0f950`
+- Artifact commit: pending at report generation time (created next)
 
 ## Artifact Files
 - `artifacts/gui_sep/subtask10/subtask3/implementer_report.md`
