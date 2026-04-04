@@ -28,7 +28,8 @@ Files modified by Tester:
 - artifacts/gui_sep/subtask10/subtask1/documenter_prompt.txt
 
 Commands executed by Tester:
-- grep -RInE '^\s*#include\s*[<\"].*wx' include/tactical src/tactical || true
+- rg '^\s*#include\s*[<\"].*wx' include/tactical -n
+- rg '^\s*#include\s*[<\"].*wx' src/tactical -n
 - cd src/tactical && make -s
 - cd tests/tactical && make -s && ./TacticalTests
 
