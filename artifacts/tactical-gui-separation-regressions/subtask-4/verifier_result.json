@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "subtask": "tactical-gui-separation-regressions-subtask-4",
+  "branch": "gui_sep-verifier-20260404",
+  "verdict": "PASS",
+  "implementation_commit": "2638e2678ad3912115253104d00c46bec4e6dc1f",
+  "documenter_commit": "42ee29dfd1dc1fbc31a1d496522fbe0f60050771",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency_summary": "Re-ran cd tests/tactical && make clean && make && ./TacticalTests in the verifier worktree; result OK (84 tests) and coverage is sufficient for the restored station-orbit, move-route, and final-orientation regressions.",
+  "documentation_accuracy_summary": "doc/DesignNotes.md accurately limits Subtask 4 changes to validation-note updates for restored tactical regression coverage and removes the redundant standalone move-route result.",
+  "artifact_files": [
+    "artifacts/tactical-gui-separation-regressions/subtask-4/verifier_report.md",
+    "artifacts/tactical-gui-separation-regressions/subtask-4/verifier_result.json"
+  ]
+}
