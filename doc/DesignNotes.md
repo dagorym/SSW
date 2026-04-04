@@ -787,12 +787,12 @@ cd tests/tactical && ./TacticalTests
 
 Result: `OK (84 tests)`.
 
-The strategic live-GUI smoke follow-up then documented the new wx-backed
-regression surface for top-level strategic UI. `tests/gui/StrategicGuiLiveTest`
-now runs under the shared `WXGuiTestHarness`, which can bootstrap against an
-existing `wxApp`, tear down leftover top-level windows during shutdown, and
-auto-dismiss whichever modal dialog is currently active so dialog-owned flows
-can run without manual input. That live GUI suite now confirms that:
+The strategic live-GUI follow-up then expanded the wx-backed regression surface
+for top-level strategic UI. `tests/gui/StrategicGuiLiveTest` runs under the
+shared `WXGuiTestHarness`, which can bootstrap against an existing `wxApp`,
+tear down leftover top-level windows during shutdown, and now drive modal
+dialogs deterministically through `showModalWithAction(...)` before a fallback
+auto-dismiss closes the window. That live GUI suite now confirms that:
 
 - `FMainFrame` constructs its `MapPanel` as an `FGamePanel` and starts with the
   expected disabled strategic menu items before a game is loaded;
@@ -802,7 +802,17 @@ can run without manual input. That live GUI suite now confirms that:
   can all be opened modally and closed deterministically by the harness; and
 - parent-backed `WXStrategicUI` coverage now exercises retreat selection,
   system/fleet dialog entry points, and redraw-triggered paint handling in
-  addition to the existing guarded no-parent paths.
+  addition to the existing guarded no-parent paths;
+- `UPFUnattachedGUI` and `SatharFleetsGUI` mutate fleet composition and system
+  placement through live add/remove/update interactions, with assertions on the
+  owning `FPlayer`, `FFleet`, and `FSystem` state after commit;
+- `TransferShipsGUI` moves ships between fleets in a live dialog and commits the
+  resulting fleet membership changes back to the model when Done is selected;
+- `CombatFleetsGUI`, `CombatLocationGUI`, `TwoPlanetsGUI`, and
+  `SelectResolutionGUI` now have live modal return-code coverage tied to their
+  dialog-owned selection state instead of widget-existence-only checks; and
+- `BattleResultsGUI` coverage now verifies both modal completion and ship-stat
+  mutation through the dialog's update path.
 
 The Subtask 2 remediation follow-up preserved that coverage but changed the
 parent-backed informational message path inside `src/gui/WXStrategicUI.cpp`:
@@ -820,7 +830,8 @@ side rather than introducing new model dependencies.
 Validation command:
 
 ```bash
-cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else timeout 120 ./GuiTests; fi
+cd tests/gui && make && xvfb-run -a ./GuiTests
+cd tests/gui && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (6 tests)`.
+Result: `OK (10 tests)`.

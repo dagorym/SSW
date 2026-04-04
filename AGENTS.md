@@ -104,6 +104,7 @@ Unit tests use **CppUnit** and are organized under `tests/` by module:
 - Core tests: `tests/core/*` (covers `FPoint`, `FObject`, `FGameConfig`, etc.)
 - Weapons tests: `tests/weapons/*` (covers all weapon types, including `FWeaponFireResultTest`)
 - Ships tests: `tests/ships/*` (covers all vehicle types, including `FTacticalAttackIntegrationTest`)
+- GUI tests: `tests/gui/*` (covers live wx dialog/widget behavior including `StrategicGuiLiveTest`, deterministic modal driving through `WXGuiTestHarness::showModalWithAction(...)`, and model-state assertions for strategic dialogs such as fleet setup, ship transfer, combat selection, and battle results flows)
 - Tactical tests: `tests/tactical/*` (covers `FTacticalGame` header inclusion and additive mechanics ownership via `FTacticalGameMechanicsTest`, `FTacticalCombatReport`, `FTacticalAttackResult`, `ITacticalUI`/`WXTacticalUI` adapter coverage, deterministic mock-`ITacticalUI` winner coverage in `FTacticalGameMockUITest`, battery range clamping, station orbital movement, and the destroyed-ship cleanup lifecycle seam in `FBattleScreen.cpp`, etc.)
 - Strategic tests: `tests/strategic/*` (covers `FGame`, `FPlayer`, `FFleet`, and mock-`IStrategicUI` initialization seam coverage in `FGameMockStrategicUITest`, etc.)
 - Test classes named `<Class>Test` (e.g., `FPointTest` for `FPoint`)
@@ -137,6 +138,8 @@ cd tests && make gui-tests
 ```
 
 GUI test execution requires an X display. Run `./GuiTests` directly when a display session is already available; in headless automation, ensure `xvfb-run` (or an equivalent virtual-display wrapper) is installed and run the suite under it, for example `xvfb-run -a ./GuiTests`.
+
+For deterministic live-dialog coverage, prefer the shared `tests/gui/WXGuiTestHarness` helpers over ad hoc timers; `showModalWithAction(...)` is the seam that schedules in-dialog interactions before the modal fallback closes the window, which lets GUI tests assert dialog-owned model mutations and return codes instead of only checking widget construction.
 
 Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis. Enable coverage reporting with `make COVERAGE=1`.
 
