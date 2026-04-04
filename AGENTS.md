@@ -115,6 +115,8 @@ make              # Builds SSWTests executable and all test libraries
 
 Main test runner: `tests/SSWTests.cpp`
 
+The top-level `tests/Makefile` now bootstraps the required `../src/*` model/gui libraries before linking `SSWTests`, so `cd tests && make` is expected to work from a clean repository state without a separate root build first.
+
 To run a **single module's tests**, each module under `tests/` also has its own standalone runner:
 ```bash
 cd tests/tactical && make && ./TacticalTests   # tactical module only
@@ -128,7 +130,7 @@ Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analys
 1. Copy `tests/test_template.h` and `tests/test_template.cpp` as starting points
 2. Create `tests/<module>/<Class>Test.h` and `.cpp`, replacing `XXX` with the class name
 3. Update `tests/<module>/Makefile` to include the new test object
-4. Add `#include` and `runner.addTest()` call in `tests/SSWTests.cpp`
+4. Add `#include` and `runner.addTest()` call in the runner that actually links the fixture (`tests/SSWTests.cpp` for top-level coverage, or a module-specific runner such as `tests/tactical/TacticalTests.cpp` when the fixture remains module-local)
 5. Test include guards use `#ifndef CLASSNAME_H_` (no leading underscore, unlike production headers)
 
 ## Critical Conventions
