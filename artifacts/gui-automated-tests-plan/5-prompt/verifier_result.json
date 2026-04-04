@@ -2,7 +2,7 @@
   "status": "success",
   "subtask_id": "5-prompt",
   "branch_name": "gui_tests-subtask5-verifier-20260404",
-  "commit_hash": "pending-artifact-commit",
+  "commit_hash": "4b7ad36fadfc9b3414e5acd38198d5f91c3e972a",
   "verdict": "PASS",
   "blocking_finding_count": 0,
   "warning_finding_count": 0,
@@ -27,4 +27,6 @@
       "details": "See also .github/copilot-instructions.md:59, tests/gui/GuiTests.cpp:14-15, and tests/SSWTests.cpp:66-109. This is documentation drift rather than an acceptance-criteria blocker."
     }
   ]
+,
+  "artifact_commit_hash": "4b7ad36fadfc9b3414e5acd38198d5f91c3e972a"
 }
