@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Remediate Milestone 10 Subtask 3 order-sensitive strategic failure by removing hardcoded destination-ID assumptions from FFleet transit tests while keeping the new mock-IStrategicUI strategic coverage intact.
+
+Modified files:
+- tests/strategic/FFleetTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The test uses a mock IStrategicUI, not real wx dialogs/windows.
+- The test verifies successful initialization and expected strategic state.
+- The test is wired into the strategic Makefile and the top-level SSWTests runner.
+- Combined strategic test behavior is order-independent (no FFleet destination-ID collision from prior system creation).
+
+Create test files in:
+- No new tests requested; validate existing suites under tests/strategic and tests/.
+
+Implementation context for testing:
+- `FFleetTest::testDecTransitTime()` now derives destination from the created `FSystem` ID (`s->getID() + 1`) and asserts against that value.
+- `FFleetTest::testCancelJump()` uses the same dynamic destination value instead of hardcoded `13`.
+- This avoids accidental collision with `FSystem` static ID state affected by earlier fixtures (including mock-UI FGame initialization tests).
+- Existing mock-UI fixture/wiring files are unchanged in this remediation commit and should remain present/working.
+
+Suggested test command(s):
+- cd tests/strategic && make
+- cd tests && make
+- cd tests && ./SSWTests
+
+Shared artifact directory:
+- artifacts/gui_sep/subtask10/subtask3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

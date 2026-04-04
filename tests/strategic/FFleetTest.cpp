@@ -146,7 +146,8 @@ void FFleetTest::testGetRJChance(){
 
 void FFleetTest::testDecTransitTime(){
 	FSystem *s = new FSystem;
-	m_f1->setLocation(s,true,10,13,2,12);
+	const unsigned int destination = s->getID() + 1;
+	m_f1->setLocation(s,true,10,destination,2,12);
 	int tTime = m_f1->decTransitTime();
 	CPPUNIT_ASSERT(m_f1->getTransitTime() == 8);
 	CPPUNIT_ASSERT(tTime == 8);
@@ -161,7 +162,7 @@ void FFleetTest::testDecTransitTime(){
 	CPPUNIT_ASSERT(tTime == 1);
 	tTime = m_f1->decTransitTime();
 	CPPUNIT_ASSERT(tTime == 0);
-	CPPUNIT_ASSERT(m_f1->getLocation() == 13);
+	CPPUNIT_ASSERT(m_f1->getLocation() == destination);
 	CPPUNIT_ASSERT(m_f1->getInTransit() == false);
 	CPPUNIT_ASSERT(m_f1->getJumpRoute() == FFleet::NO_ROUTE);
 	CPPUNIT_ASSERT(m_f1->getDestination() == FFleet::NO_DESTINATION);
@@ -182,7 +183,8 @@ void FFleetTest::testGetMaxSpeed(){
 
 void FFleetTest::testCancelJump(){
 	FSystem *s = new FSystem;
-	m_f1->setLocation(s,true,10,13,2,12);
+	const unsigned int destination = s->getID() + 1;
+	m_f1->setLocation(s,true,10,destination,2,12);
 	CPPUNIT_ASSERT(m_f1->getDestination() != FFleet::NO_DESTINATION);
 	CPPUNIT_ASSERT(m_f1->getJumpRoute() != FFleet::NO_ROUTE);
 	m_f1->decTransitTime();
@@ -194,7 +196,7 @@ void FFleetTest::testCancelJump(){
 	CPPUNIT_ASSERT(m_f1->decTransitTime() == 0);
 	CPPUNIT_ASSERT(m_f1->getDestination() == FFleet::NO_DESTINATION);
 	CPPUNIT_ASSERT(m_f1->getJumpRoute() == FFleet::NO_ROUTE);
-	m_f1->setLocation(s,true,10,13,2,12);
+	m_f1->setLocation(s,true,10,destination,2,12);
 	m_f1->cancelJump();
 	CPPUNIT_ASSERT(m_f1->getTransitTime() == 0 );
 	CPPUNIT_ASSERT(m_f1->getInTransit() == false);

@@ -1,0 +1,1 @@
+ar rcs libstrategicTests.a FGameTest.o FGameHeaderDependencyTest.o FGameMockStrategicUITest.o FPlanetTest.o FFleetTest.o FJumpRouteTest.o FSystemTest.o FMapTest.o FPlayerTest.o 
