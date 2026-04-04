@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "subtask": "tactical-gui-separation-regressions-subtask-2",
+  "branch": "gui_sep-implementer-20260404",
+  "implementation_commit": "334c17bcf31838d8f1842d035f5e3835937e28eb",
+  "changed_files": [
+    "src/tactical/FTacticalGame.cpp",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.h",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.cpp"
+  ],
+  "validation_commands": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "g++ -Iinclude -Itests/tactical -g -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread -Wall -Woverloaded-virtual -DLINUX -DTACTICAL_TEST_REPO_ROOT=\\\"/home/tstephen/.copilot/session-state/a133f2f5-4873-4897-9efa-632892009c61/worktrees/gui_sep-implementer-20260404\\\" -c tests/tactical/FTacticalMoveRouteSelectionTest.cpp -o tests/tactical/FTacticalMoveRouteSelectionTest.o",
+    "standalone compile+run for FTacticalMoveRouteSelectionTest (OK (3 tests))"
+  ],
+  "validation_outcome": "pass",
+  "artifacts_written": [
+    "artifacts/tactical-gui-separation-regressions/subtask-2/implementer_report.md",
+    "artifacts/tactical-gui-separation-regressions/subtask-2/implementer_result.json",
+    "artifacts/tactical-gui-separation-regressions/subtask-2/tester_prompt.txt"
+  ]
+}

@@ -1,0 +1,34 @@
+You are the Tester Agent.
+
+Validate Subtask 2 move-route selection regression fixes.
+
+Modified files:
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalMoveRouteSelectionTest.h
+- tests/tactical/FTacticalMoveRouteSelectionTest.cpp
+
+Planner acceptance criteria to verify:
+- Clicking the first highlighted movement hex advances the selected path by exactly one hex.
+- Clicking any later highlighted movement hex lands the route on that exact clicked hex.
+- Clicking an earlier path hex trims the current route to that exact hex.
+- Movement counters and heading state remain consistent after extension or trimming.
+- If a renderer adjustment is necessary, the displayed selectable contract matches the corrected model behavior.
+
+Test location convention:
+- tests/tactical
+
+Implementation context:
+- Model fix is in `FTacticalGame::findHexInList(...)` where matched index now returns 1-based count for move application.
+- New runtime fixture `FTacticalMoveRouteSelectionTest` contains 3 behavior tests for forward extension and backtracking trim semantics.
+- `FBattleBoard.cpp` was intentionally unchanged because model and renderer contract remained aligned.
+
+Suggested validation commands:
+- cd tests/tactical && make && ./TacticalTests
+- Compile/run the new fixture standalone until Subtask 4 wires it into the tactical runner:
+  - compile `FTacticalMoveRouteSelectionTest.cpp` with tactical libs
+  - execute resulting binary and confirm `OK (3 tests)`
+
+Shared artifact directory (reuse and pass to Verifier):
+- artifacts/tactical-gui-separation-regressions/subtask-2
+
+Do not report success unless all required artifacts exist and all changes are committed.
