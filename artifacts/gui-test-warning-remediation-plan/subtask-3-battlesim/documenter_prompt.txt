@@ -1,0 +1,42 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate BattleSim live GUI launch-chain remediation that hardens launch assertions and teardown behavior in `BattleSimGuiLiveTest`.
+- Tester confirmed all acceptance criteria pass in headless GUI execution.
+
+Acceptance criteria validated:
+- The `BattleSimFrame` test proves `LocalGameDialog` was presented.
+- The `LocalGameDialog` test proves `ScenarioDialog` and `ScenarioEditorGUI` were each presented from their respective button paths.
+- The BattleSim scenario-launch tests still verify `FBattleScreen` lifecycle counts and also finish with zero live top-level windows/dialogs.
+- The BattleSim live tests explicitly destroy shown parents and pump events before returning.
+
+Implementation branch or worktree context:
+- Tester branch: `gui_tests-tester-20260404`
+- Implementer context: `gui_tests-implementer-20260404 @ ff3ad880cb86e73b289a4ae4980e7a0f2a0955d9`
+- Repository worktree: `/tmp/ssw-orch/gui_tests-tester-20260404`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `tests/gui/BattleSimGuiLiveTest.cpp` (implementer test hardening)
+- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_report.md` (tester validation report)
+- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_result.json` (tester machine-readable outcome)
+- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/documenter_prompt.txt` (this handoff)
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Final test outcomes:
+- `GuiTests` completed successfully with `OK (24 tests)`.
+- BattleSim launch-chain and teardown/lifecycle assertions in `BattleSimGuiLiveTest` passed under headless execution.
+
+Documentation context:
+- Update design/testing notes where BattleSim GUI live coverage is described to reflect stronger launch-proof assertions and explicit teardown stabilization/cleanup behavior.
+- Confirm docs mention that scenario launch paths still enforce `FBattleScreen` lifecycle accounting and no residual shown top-level windows.
+
+Shared artifact directory:
+- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
