@@ -1,0 +1,59 @@
+You are the Verifier Agent.
+
+Original task summary:
+- Validate baseline remediation for top-level test build drift.
+- Implementation commit: 975f1e5
+- Implementation branch: gui_sep-m10-remed-implementer-20260404
+- Documentation commit: a807283936eced10563e42803c8d7be7ad467bb6
+- Documenter branch/worktree: gui_sep-m10-remed-documenter-20260404 at /home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-remed-documenter-20260404
+- Shared artifact directory to reuse (repository-root-relative): artifacts/gui_sep/subtask10/baseline-test-remediation
+
+Acceptance criteria (validated by tester):
+- `cd /home/tstephen/repos/SSW && make all_clean && make` succeeds.
+- `cd /home/tstephen/repos/SSW/tests && make` succeeds at least through successful `SSWTests` link.
+- FTacticalCombatReportTest registration/build wiring is internally consistent between top-level and tactical test runners.
+- No unrelated scope expansion.
+
+Implementation context provided:
+- `tests/Makefile` now explicitly builds model libs (`../src/*`) before linking `SSWTests`, fixing `/usr/bin/ld: cannot find -lgui` from clean test-only builds.
+- `tests/SSWTests.cpp` no longer registers/includes `FTacticalCombatReportTest`, matching tactical runner wiring and preventing unresolved `FTacticalCombatReportTest::*` symbols in top-level link.
+
+Files modified by Implementer, Tester, and Documenter that may affect verification scope:
+- Implementer:
+  - tests/Makefile
+  - tests/SSWTests.cpp
+- Tester:
+  - artifacts/gui_sep/subtask10/baseline-test-remediation/tester_report.md
+  - artifacts/gui_sep/subtask10/baseline-test-remediation/tester_result.json
+  - artifacts/gui_sep/subtask10/baseline-test-remediation/documenter_prompt.txt
+- Documenter:
+  - AGENTS.md
+  - artifacts/gui_sep/subtask10/baseline-test-remediation/documenter_report.md
+  - artifacts/gui_sep/subtask10/baseline-test-remediation/documenter_result.json
+  - artifacts/gui_sep/subtask10/baseline-test-remediation/verifier_prompt.txt
+
+Documentation scope:
+- Verification must include the updated documentation file `AGENTS.md` along with the implementation and tester artifacts.
+- Confirm the docs reflect the implemented behavior only: clean `cd tests && make` bootstrapping and runner-specific test registration guidance.
+
+Tester commit context:
+- Branch: gui_sep-m10-remed-tester-20260404
+- HEAD before artifact commit creation: 0004b8e74f0f42774587d3b46e4055a67a23cb9b
+- Test commit hash: No Changes Made (no tester-authored test-file changes were required)
+
+Commands executed by Tester:
+- `cd /home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-remed-tester-20260404 && make all_clean && make && cd tests && make && cd tactical && make -s && ./TacticalTests`
+- `cd /home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-remed-tester-20260404 && set -e && make all_clean >/dev/null && make -s >/dev/null && echo ROOT_BUILD_OK && cd tests && make -s >/dev/null && echo TESTS_LINK_OK && cd tactical && make -s >/dev/null && ./TacticalTests >/dev/null && echo TACTICAL_RUN_OK`
+- `cd /home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-remed-tester-20260404 && git --no-pager show --name-only --oneline 975f1e5`
+
+Final test outcomes:
+- PASS: root clean rebuild succeeded.
+- PASS: tests make succeeded through SSWTests link.
+- PASS: tactical runner build + execution succeeded.
+- PASS: no unrelated scope expansion in implementation commit.
+
+Documenter actions:
+- Updated `AGENTS.md` to state that the top-level `tests/Makefile` bootstraps required `../src/*` libraries before linking `SSWTests`, so `cd tests && make` should work from a clean tree.
+- Updated `AGENTS.md` to clarify that new fixtures belong in the runner that actually links them, which keeps top-level and module-local test wiring consistent.
+
+Do not report success unless all required artifacts exist and all changes are committed.

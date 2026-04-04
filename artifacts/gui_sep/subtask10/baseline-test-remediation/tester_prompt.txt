@@ -1,0 +1,32 @@
+You are the Tester Agent.
+
+Validate baseline remediation for top-level test build drift.
+
+Implementation commit: 975f1e5
+Branch: gui_sep-m10-remed-implementer-20260404
+Shared artifact directory (reuse exactly): artifacts/gui_sep/subtask10/baseline-test-remediation
+
+Modified files:
+- tests/Makefile
+- tests/SSWTests.cpp
+
+Acceptance criteria to verify:
+- `cd /home/tstephen/repos/SSW && make all_clean && make` succeeds.
+- `cd /home/tstephen/repos/SSW/tests && make` succeeds at least through successful `SSWTests` link.
+- FTacticalCombatReportTest registration/build wiring is internally consistent between top-level and tactical test runners.
+- No unrelated scope expansion.
+
+Relevant validation commands:
+- `cd /home/tstephen/repos/SSW && make all_clean && make`
+- `cd /home/tstephen/repos/SSW/tests && make`
+- `cd /home/tstephen/repos/SSW/tests/tactical && make -s && ./TacticalTests`
+
+Test file location convention:
+- tests/
+- tests/tactical/
+
+Implementation context:
+- `tests/Makefile` now explicitly builds model libs (`../src/*`) before linking `SSWTests`, fixing `/usr/bin/ld: cannot find -lgui` from clean test-only builds.
+- `tests/SSWTests.cpp` no longer registers/includes `FTacticalCombatReportTest`, matching current tactical runner wiring and preventing unresolved `FTacticalCombatReportTest::*` symbols in top-level link.
+
+Do not report success unless all required artifacts exist and all changes are committed.

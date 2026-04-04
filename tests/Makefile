@@ -44,8 +44,17 @@ OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a libshipsTests.a 
 
 TARGET = SSWTests
 
-all: $(OBJ_LIBS) $(OBJS)
+all: model-deps $(OBJ_LIBS) $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+
+model-deps:
+	$(MAKE) -C ../src/core
+	$(MAKE) -C ../src/strategic
+	$(MAKE) -C ../src/ships
+	$(MAKE) -C ../src/defenses
+	$(MAKE) -C ../src/weapons
+	$(MAKE) -C ../src/tactical
+	$(MAKE) -C ../src/gui
 
 libcoreTests.a:
 	@ cd core; $(MAKE) $@

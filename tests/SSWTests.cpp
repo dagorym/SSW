@@ -41,7 +41,6 @@
 #include "ships/FHvCruiserTest.h"
 #include "ships/FLtCruiserTest.h"
 #include "ships/FMinelayerTest.h"
-#include "tactical/FTacticalCombatReportTest.h"
 #include "tactical/FTacticalAttackResultTest.h"
 #include "tactical/FTacticalBatteryRangeClampTest.h"
 #include "tactical/FTacticalStationOrbitalMovementTest.h"
@@ -95,7 +94,6 @@ int main( int argc, char **argv)
   runner.addTest( FHvCruiserTest::suite() );
   runner.addTest( FLtCruiserTest::suite() );
   runner.addTest( FMinelayerTest::suite() );
-  runner.addTest( FTacticalCombatReportTest::suite() );
   runner.addTest( FTacticalAttackResultTest::suite() );
   runner.addTest( FTacticalBatteryRangeClampTest::suite() );
   runner.addTest( FTacticalStationOrbitalMovementTest::suite() );
