@@ -804,6 +804,15 @@ can run without manual input. That live GUI suite now confirms that:
   system/fleet dialog entry points, and redraw-triggered paint handling in
   addition to the existing guarded no-parent paths.
 
+The Subtask 2 remediation follow-up preserved that coverage but changed the
+parent-backed informational message path inside `src/gui/WXStrategicUI.cpp`:
+`WXStrategicUI::showMessage(...)` now uses `wxGenericMessageDialog` so the live
+GUI harness can auto-dismiss those modal dialogs without hanging. That keeps
+`StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths`
+covering `showMessage`, `notifyFailedJump`, `notifyVictory`, and
+`showRetreatConditions` on the wx-owned GUI side while leaving the
+strategic/model boundary unchanged.
+
 No strategic/model boundary changed for this work: the added regression
 coverage stays in `tests/gui/*` and exercises the wx-owned surface from the GUI
 side rather than introducing new model dependencies.
@@ -811,7 +820,7 @@ side rather than introducing new model dependencies.
 Validation command:
 
 ```bash
-cd tests/gui && make && timeout 30 ./GuiTests
+cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else timeout 120 ./GuiTests; fi
 ```
 
 Result: `OK (6 tests)`.
