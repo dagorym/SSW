@@ -1,0 +1,40 @@
+You are the Tester Agent.
+
+Validate Milestone 10 Subtask 3 implementation for strategic mock-UI initialization coverage.
+
+Shared artifact directory (reuse exactly):
+artifacts/gui_sep/subtask10/subtask3
+
+Implementation/code commit to validate:
+80712b0d02be715308ad0776efedcc1cf1f807ef
+
+Artifact commit references this implementation commit; verify consistency.
+
+Modified files:
+- tests/strategic/FGameMockStrategicUITest.h
+- tests/strategic/FGameMockStrategicUITest.cpp
+- tests/strategic/Makefile
+- tests/SSWTests.cpp
+
+Planner acceptance criteria:
+- The test uses a mock IStrategicUI, not real wx dialogs/windows.
+- The test verifies successful initialization and expected strategic state.
+- The test is wired into the strategic Makefile and the top-level SSWTests runner.
+
+Test file location convention:
+- tests/strategic/
+
+Validation guidance:
+1. Build strategic tests:
+   - cd tests/strategic && make
+2. Build top-level test runner:
+   - cd tests && make
+3. Run full suite to confirm current repository baseline interaction:
+   - cd tests && ./SSWTests
+   Note: current baseline includes unrelated tactical failures in FTacticalStationOrbitalMovementTest; do not mark this subtask failed for those unrelated pre-existing failures.
+4. Confirm new suite registration exists in tests/SSWTests.cpp.
+5. Confirm strategic Makefile includes FGameMockStrategicUITest.o.
+6. Inspect test logic for UI seam assertions and non-GUI init-state assertions.
+
+Completion gate:
+Do not report success unless all required artifacts exist and all changes are committed.
