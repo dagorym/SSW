@@ -9,15 +9,18 @@
 #include <functional>
 
 #include <wx/dcmemory.h>
+#include <wx/filename.h>
 #include <wx/panel.h>
 #include <wx/toplevel.h>
 #include <wx/window.h>
 
 #include "FGamePanel.h"
 #include "FMainFrame.h"
+#include "core/FGameConfig.h"
 #include "gui/BattleResultsGUI.h"
 #include "gui/CombatFleetsGUI.h"
 #include "gui/CombatLocationGUI.h"
+#include "gui/SelectCombatGUI.h"
 #include "gui/SatharFleetsGUI.h"
 #include "gui/SatharRetreatGUI.h"
 #include "gui/SelectJumpGUI.h"
@@ -40,6 +43,7 @@
 #include "strategic/FPlanet.h"
 #include "strategic/FPlayer.h"
 #include "strategic/FSystem.h"
+#include "tactical/FBattleScreen.h"
 #include "wxWidgets.h"
 
 namespace FrontierTests {
@@ -400,12 +404,49 @@ onDone(event);
 }
 };
 
+class SelectCombatGUITestPeer : public SelectCombatGUI {
+public:
+SelectCombatGUITestPeer(wxWindow * parent,
+                       FSystem * system,
+                       FleetList defenders,
+                       FleetList attackers,
+                       PlayerList * players,
+                       bool satharAttacking)
+: SelectCombatGUI(parent, system, defenders, attackers, players, satharAttacking), m_finishCode(-1) {
+}
+
+int finishCode() const {
+	return m_finishCode;
+}
+
+void selectAttackerFleet(int index) {
+	m_listBox1->SetSelection(index, true);
+	wxCommandEvent event(wxEVT_COMMAND_LISTBOX_SELECTED, m_listBox1->GetId());
+	OnSelectLeftFleet(event);
+}
+
+void clickAttack() {
+	wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, m_button3->GetId());
+	onAttack(event);
+}
+
+protected:
+virtual void finishDialog(int returnCode) wxOVERRIDE {
+	m_finishCode = returnCode;
+}
+
+private:
+int m_finishCode;
+};
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( StrategicGuiLiveTest );
 
 void StrategicGuiLiveTest::setUp() {
 	CPPUNIT_ASSERT(m_harness.bootstrap());
+	FGameConfig::reset();
+	FGameConfig::create();
 	static bool handlersInitialized = false;
 	if (!handlersInitialized) {
 		wxInitAllImageHandlers();
@@ -876,8 +917,74 @@ CPPUNIT_ASSERT_EQUAL(0, m_harness.showModalWithAction(doneDialog, [&]() {
 doneDialog.clickDone();
 }, wxID_CANCEL, 200));
 
-parent->Destroy();
-m_harness.pumpEvents(10);
+	parent->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testSelectCombatLaunchesBattleScreenAndCleansUpLifetime() {
+	const wxString originalCwd = wxGetCwd();
+	if (!wxFileName::DirExists(wxT("icons")) && wxFileName::DirExists(wxT("../../icons"))) {
+		CPPUNIT_ASSERT(wxSetWorkingDirectory(wxT("../../")));
+	}
+	FGameConfig::reset();
+	FGameConfig::create();
+
+	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "SelectCombat Parent", wxDefaultPosition, wxSize(720, 520));
+	parent->Show();
+	m_harness.pumpEvents();
+
+	FPlayer * attackerPlayer = new FPlayer;
+	FPlayer * defenderPlayer = new FPlayer;
+	attackerPlayer->setName("UPF");
+	defenderPlayer->setName("Sathar");
+	FMap & map = ensureFrontierMap(attackerPlayer->getID(), defenderPlayer->getID());
+	FSystem * system = map.getSystem("Prenglar");
+	CPPUNIT_ASSERT(system != NULL);
+
+	FFleet * attackerFleet = new FFleet;
+	attackerFleet->setName("Attacker Fleet");
+	attackerFleet->setIcon("icons/UPF.png");
+	attackerFleet->setOwner(attackerPlayer->getID());
+	attackerFleet->setLocation(system, false);
+	attackerFleet->addShip(createShip("Destroyer"));
+	attackerPlayer->addFleet(attackerFleet);
+	system->addFleet(attackerFleet);
+
+	FFleet * defenderFleet = new FFleet;
+	defenderFleet->setName("Defender Fleet");
+	defenderFleet->setIcon("icons/Sathar.png");
+	defenderFleet->setOwner(defenderPlayer->getID());
+	defenderFleet->setLocation(system, false);
+	defenderFleet->addShip(createShip("Frigate"));
+	defenderPlayer->addFleet(defenderFleet);
+	system->addFleet(defenderFleet);
+
+	FleetList attackers;
+	attackers.push_back(attackerFleet);
+	FleetList defenders;
+	defenders.push_back(defenderFleet);
+	PlayerList players;
+	players.push_back(attackerPlayer);
+	players.push_back(defenderPlayer);
+
+	SelectCombatGUITestPeer dialog(parent, system, defenders, attackers, &players, false);
+	FBattleScreen::resetLifecycleCounters();
+	m_harness.runVoidFunctionWithAutoDismiss([&]() {
+		dialog.selectAttackerFleet(0);
+		dialog.clickAttack();
+	}, 0, 200);
+	CPPUNIT_ASSERT_EQUAL(1, dialog.finishCode());
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
+	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
+
+	parent->Destroy();
+	m_harness.pumpEvents(10);
+	if (!originalCwd.IsEmpty()) {
+		wxSetWorkingDirectory(originalCwd);
+	}
+	FGameConfig::reset();
+	FGameConfig::create();
 }
 
 }

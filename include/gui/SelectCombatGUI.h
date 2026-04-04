@@ -52,6 +52,7 @@ class SelectCombatGUI : public wxDialog
 		FleetList m_defenderList, m_attackerList;
 		bool m_satharAttacking;
 		PlayerList *m_playerList;
+		virtual void finishDialog(int returnCode) { EndModal(returnCode); }
 
 
 		// Virtual event handlers, overide them in your derived class

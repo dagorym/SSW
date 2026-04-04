@@ -45,6 +45,10 @@ public:
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 	/// Default destructor
 	~FBattleScreen();
+	static void resetLifecycleCounters();
+	static int getConstructedCount();
+	static int getDestroyedCount();
+	static int getLiveInstanceCount();
 
 	void draw();
 	void onPaint(wxPaintEvent & event);

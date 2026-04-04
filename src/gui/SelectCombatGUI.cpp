@@ -177,7 +177,7 @@ void SelectCombatGUI::onDecline( wxCommandEvent& event ){
 		switchRoles();
 	}
 	// otherwise just exit
-	EndModal(0);
+	finishDialog(0);
 	event.Skip();
 }
 
@@ -271,7 +271,7 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 		switchRoles();
 	}
 
-	EndModal(1);
+	finishDialog(1);
 	event.Skip();
 }
 

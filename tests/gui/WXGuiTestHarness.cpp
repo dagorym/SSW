@@ -6,6 +6,7 @@
 #include "WXGuiTestHarness.h"
 
 #include <wx/app.h>
+#include <wx/debug.h>
 #include <wx/dialog.h>
 #include <wx/toplevel.h>
 #include <wx/timer.h>
@@ -23,6 +24,13 @@ wxIMPLEMENT_APP_NO_MAIN(WXGuiHarnessApp);
 
 namespace {
 
+void IgnoreWxAssertHandler(const wxString &,
+                           int,
+                           const wxString &,
+                           const wxString &,
+                           const wxString &) {
+}
+
 class ModalDismissTimer : public wxTimer {
 private:
 	wxDialog * m_dialog;
@@ -38,9 +46,10 @@ public:
 class AnyModalDismissTimer : public wxTimer {
 private:
 	int m_returnCode;
+	wxDialog * m_lastClosedDialog;
 
 public:
-	explicit AnyModalDismissTimer(int returnCode) : m_returnCode(returnCode) {
+	explicit AnyModalDismissTimer(int returnCode) : m_returnCode(returnCode), m_lastClosedDialog(NULL) {
 	}
 
 	virtual void Notify() wxOVERRIDE;
@@ -53,17 +62,37 @@ void ModalDismissTimer::Notify() {
 }
 
 void AnyModalDismissTimer::Notify() {
+	wxWindow * active = wxGetActiveWindow();
+	wxDialog * activeDialog = dynamic_cast<wxDialog *>(active);
+	if (activeDialog != NULL && activeDialog->IsModal()) {
+		if (activeDialog == m_lastClosedDialog) {
+			return;
+		}
+		m_lastClosedDialog = activeDialog;
+		activeDialog->EndModal(m_returnCode);
+		return;
+	}
+
 	wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
+	wxDialog * lastModalDialog = NULL;
 	while (node != NULL) {
 		wxTopLevelWindow * topLevel = dynamic_cast<wxTopLevelWindow *>(node->GetData());
 		if (topLevel != NULL) {
 			wxDialog * dialog = dynamic_cast<wxDialog *>(topLevel);
 			if (dialog != NULL && dialog->IsModal()) {
-				dialog->EndModal(m_returnCode);
-				return;
+				lastModalDialog = dialog;
 			}
 		}
 		node = node->GetNext();
+	}
+	if (lastModalDialog != NULL) {
+		if (lastModalDialog == m_lastClosedDialog) {
+			return;
+		}
+		m_lastClosedDialog = lastModalDialog;
+		lastModalDialog->EndModal(m_returnCode);
+	} else {
+		m_lastClosedDialog = NULL;
 	}
 }
 
@@ -79,6 +108,12 @@ WXGuiTestHarness::~WXGuiTestHarness() {
 bool WXGuiTestHarness::bootstrap() {
 	if (m_bootstrapped) {
 		return true;
+	}
+
+	static bool assertHandlerInstalled = false;
+	if (!assertHandlerInstalled) {
+		wxSetAssertHandler(IgnoreWxAssertHandler);
+		assertHandlerInstalled = true;
 	}
 
 	if (wxTheApp != NULL) {

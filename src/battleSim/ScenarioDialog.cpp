@@ -104,6 +104,7 @@ void ScenarioDialog::onScenario1( wxCommandEvent& event ){
 	FVehicle *st = createShip("ArmedStation", "UPFB Doliin Bay");
 	FFleet *f = new FFleet();
 	f->setName("UPF");
+	f->setIcon("icons/UPF.png");
 	FVehicle *s = createShip("Frigate", "UPFS Z'Gata");
 	s->setIcon("icons/UPFFrigate.png");
 	f->addShip(s);
@@ -111,6 +112,7 @@ void ScenarioDialog::onScenario1( wxCommandEvent& event ){
 	dList.push_back(f);
 	f = new FFleet();
 	f->setName("Sathar");
+	f->setIcon("icons/Sathar.png");
 	s = createShip("HvCruiser", "SAV Perdition");
 	s->setIcon("icons/SatharHvCruiser.png");
 	f->addShip(s);
@@ -136,6 +138,7 @@ void ScenarioDialog::onScenario2( wxCommandEvent& event ){
 	st->setName("UPFB Kdikit");
 	FFleet *f = new FFleet();
 	f->setName("UPF");
+	f->setIcon("icons/UPF.png");
 	FVehicle *s = createShip("Battleship", "UPFS Admiral Clinton");
 	f->addShip(s);
 	s = createShip("Fighter", "UPF Fighter 1");
@@ -157,6 +160,7 @@ void ScenarioDialog::onScenario2( wxCommandEvent& event ){
 	// set up the Sathar
 	f = new FFleet();
 	f->setName("Sathar");
+	f->setIcon("icons/Sathar.png");
 	s = createShip("AssaultCarrier", "SAV Infamous");
 	s->setIcon("icons/SatharAssaultCarrier.png");
 	f->addShip(s);
@@ -207,6 +211,7 @@ void ScenarioDialog::onScenario3( wxCommandEvent& event ){
 	// set up the UPF
 	FFleet *f = new FFleet();
 	f->setName("UPF");
+	f->setIcon("icons/UPF.png");
 	FVehicle *s = createShip("LtCruiser", "UPFS Courageous");
 	s->setIcon("icons/UPFLtCruiser.png");
 	f->addShip(s);
@@ -228,6 +233,7 @@ void ScenarioDialog::onScenario3( wxCommandEvent& event ){
 	// set up the Sathar
 	f = new FFleet();
 	f->setName("Sathar");
+	f->setIcon("icons/Sathar.png");
 	s = createShip("LtCruiser", "SAV Faminewind");
 	s->setIcon("icons/SatharLtCruiser.png");
 	f->addShip(s);
@@ -253,6 +259,7 @@ void ScenarioDialog::onScenario4( wxCommandEvent& event ){
 	st->setName("UPFB Ken'Zah");
 	FFleet *f = new FFleet();
 	f->setName("UPF");
+	f->setIcon("icons/UPF.png");
 	FVehicle *s = createShip("Minelayer", "UPFS Z'Rat't Zoz");
 	f->addShip(s);
 	s = createShip("Fighter", "UPF Fighter 1");
@@ -283,6 +290,7 @@ void ScenarioDialog::onScenario4( wxCommandEvent& event ){
 	// set up the Sathar
 	f = new FFleet();
 	f->setName("Sathar");
+	f->setIcon("icons/Sathar.png");
 	s = createShip("AssaultCarrier", "SAV Maelstrom");
 	s->setIcon("icons/SatharAssaultCarrier.png");
 	f->addShip(s);

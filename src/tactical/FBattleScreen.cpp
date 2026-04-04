@@ -16,6 +16,12 @@ TacticalUI.h"
 
 namespace Frontier {
 
+namespace {
+int g_battleScreenConstructedCount = 0;
+int g_battleScreenDestroyedCount = 0;
+int g_battleScreenLiveCount = 0;
+}
+
 struct FDestroyedShipCleanupLifecycle {
 	const std::vector<unsigned int> * destroyedShipIDs;
 	FVehicle * selectedShip;
@@ -96,6 +102,8 @@ void declareWinnerForCleanup(void * context) {
 FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( (wxDialog *)NULL, -1, title, pos, size, style )
 //FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style )
 {
+	g_battleScreenConstructedCount++;
+	g_battleScreenLiveCount++;
 //	m_wd = new wxWindowDisabler(this);
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 //	this->MakeModal(true);
@@ -134,6 +142,10 @@ TacticalUI(this);
 }
 
 FBattleScreen::~FBattleScreen(){
+	g_battleScreenDestroyedCount++;
+	if (g_battleScreenLiveCount > 0) {
+		g_battleScreenLiveCount--;
+	}
 	if (m_tacticalGame) {
 		m_tacticalGame->installUI(NULL);
 	}
@@ -141,6 +153,24 @@ FBattleScreen::~FBattleScreen(){
 	if (m_tacticalGame) { delete m_tacticalGame; }
 //	delete m_wd;
 //	this->MakeModal(false);
+}
+
+void FBattleScreen::resetLifecycleCounters() {
+	g_battleScreenConstructedCount = 0;
+	g_battleScreenDestroyedCount = 0;
+	g_battleScreenLiveCount = 0;
+}
+
+int FBattleScreen::getConstructedCount() {
+	return g_battleScreenConstructedCount;
+}
+
+int FBattleScreen::getDestroyedCount() {
+	return g_battleScreenDestroyedCount;
+}
+
+int FBattleScreen::getLiveInstanceCount() {
+	return g_battleScreenLiveCount;
 }
 
 void FBattleScreen::draw(){

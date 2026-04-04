@@ -21,6 +21,7 @@ CPPUNIT_TEST( testWXStrategicUIParentBackedModalAndRedrawPaths );
 CPPUNIT_TEST( testUPFAndSatharFleetDialogsMutateModelState );
 CPPUNIT_TEST( testTransferShipsDialogMovesShipsAndUpdatesFleets );
 CPPUNIT_TEST( testCombatSelectionDialogsReturnCodesAndState );
+CPPUNIT_TEST( testSelectCombatLaunchesBattleScreenAndCleansUpLifetime );
 CPPUNIT_TEST( testBattleResultsDialogUpdatesShipStatistics );
 CPPUNIT_TEST( testWXMapDisplayOffscreenRendering );
 CPPUNIT_TEST( testWXPlayerDisplayOffscreenRendersSystemAndTransitFleets );
@@ -44,6 +45,7 @@ public:
 	void testUPFAndSatharFleetDialogsMutateModelState();
 	void testTransferShipsDialogMovesShipsAndUpdatesFleets();
 	void testCombatSelectionDialogsReturnCodesAndState();
+	void testSelectCombatLaunchesBattleScreenAndCleansUpLifetime();
 	void testBattleResultsDialogUpdatesShipStatistics();
 };
 

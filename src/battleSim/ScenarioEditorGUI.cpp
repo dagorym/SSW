@@ -428,7 +428,7 @@ void ScenarioEditorGUI::onStartBattle( wxCommandEvent& event ){
 //		delete (*itr);
 //	}
 //	delete defendFleet;
-	EndModal(0);
+	finalizeStartBattle();
 //	event.Skip();
 }
 
@@ -484,6 +484,9 @@ FFleet * ScenarioEditorGUI::createFleet(StringList ships, std::string teamName,u
 	FFleet *f = new FFleet;
 	f->setOwner(id);
 	f->setName(teamName);
+	std::ostringstream fleetIconPath;
+	fleetIconPath << "icons/" << teamName << ".png";
+	f->setIcon(fleetIconPath.str());
 	for(StringList::iterator itr = ships.begin(); itr<ships.end(); itr++){
 		FVehicle *s = createShip(*itr);
 		s->setOwner(id);

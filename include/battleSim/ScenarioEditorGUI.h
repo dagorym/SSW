@@ -94,6 +94,7 @@ class ScenarioEditorGUI : public wxDialog
 		wxListBox* m_assignedAttackerListBox;
 		wxButton* m_cancelButton;
 		wxButton* m_startBattleButton;
+		virtual void finalizeStartBattle() { EndModal(0); }
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void onSelectDefenderTeam( wxCommandEvent& event );

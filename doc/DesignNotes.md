@@ -827,11 +827,19 @@ No strategic/model boundary changed for this work: the added regression
 coverage stays in `tests/gui/*` and exercises the wx-owned surface from the GUI
 side rather than introducing new model dependencies.
 
-Validation command:
+The modal-launch follow-up extends that live coverage to the battle-board entry
+chains. `StrategicGuiLiveTest` now drives `SelectCombatGUI::onAttack(...)`
+through the real dialog chain into `FBattleScreen`, while `BattleSimGuiLiveTest`
+covers the `BattleSimFrame` local-game launch path plus the `LocalGameDialog`,
+`ScenarioDialog`, and `ScenarioEditorGUI` modal launch flows. `FBattleScreen`
+now exposes constructor/destructor/live-instance counters that the GUI tests use
+to assert real launch ownership and deterministic teardown rather than relying on
+source-structure checks alone.
+
+Canonical headless GUI validation command:
 
 ```bash
 cd tests/gui && make && xvfb-run -a ./GuiTests
-cd tests/gui && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (10 tests)`.
+Result: `OK (19 tests)`.

@@ -4,6 +4,7 @@
  */
 
 #include <cppunit/ui/text/TestRunner.h>
+#include "BattleSimGuiLiveTest.h"
 #include "GuiHarnessTest.h"
 #include "StrategicGuiLiveTest.h"
 #include "TacticalGuiLiveTest.h"
@@ -15,6 +16,7 @@ int main(int argc, char **argv) {
 	runner.addTest(GuiHarnessTest::suite());
 	runner.addTest(StrategicGuiLiveTest::suite());
 	runner.addTest(TacticalGuiLiveTest::suite());
+	runner.addTest(BattleSimGuiLiveTest::suite());
 	const bool wasSuccessful = runner.run("", false);
 	return wasSuccessful ? 0 : 1;
 }
