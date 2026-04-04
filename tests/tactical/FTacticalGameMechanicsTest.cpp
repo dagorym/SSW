@@ -302,6 +302,10 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 // AC: FTacticalGame exposes interaction and renderer-facing tactical state accessor APIs.
 	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
 	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string buildPathHeadingsBody =
+		extractFunctionBody(source, "void buildPathHeadings(const FTacticalTurnData & turnData, PointList & path, std::vector<int> & headings)");
+	const std::string computeRangeBody = extractFunctionBody(source, "void FTacticalGame::computeWeaponRange()");
+	const std::string setIfValidTargetBody = extractFunctionBody(source, "bool FTacticalGame::setIfValidTarget(FVehicle * target, const FPoint & targetHex)");
 
 	assertContains(header, "bool selectWeapon(unsigned int weaponIndex);");
 	assertContains(header, "bool selectDefense(unsigned int defenseIndex);");
@@ -343,17 +347,34 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(source, "bool FTacticalGame::selectDefense(unsigned int defenseIndex)");
 	assertContains(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
 	assertContains(source, "const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const");
+	assertContains(buildPathHeadingsBody, "headings.push_back(lastPoint ? turnData.finalHeading : heading);");
+	assertContains(buildPathHeadingsBody, "heading = FHexMap::computeHeading(path[i], path[i + 1]);");
+	assertContains(buildPathHeadingsBody, "heading = turnData.finalHeading;");
+	assertContains(computeRangeBody, "buildPathHeadings(*turnData, path, headings);");
+	assertContains(computeRangeBody, "computeFFRange(path[i], m_targetHexes, m_headOnHexes, headings[i]);");
+	assertContains(setIfValidTargetBody, "buildPathHeadings(*turnData, path, headings);");
+	assertContains(setIfValidTargetBody, "computeFFRange(path[i], targetSet, headOnSet, headings[i]);");
 }
 
 void FTacticalGameMechanicsTest::testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState() {
 // AC: model-side selection/click handling enforces range and state rules without wx dependencies.
 	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string moveSelectionBody = extractFunctionBody(source, "bool FTacticalGame::handleMoveHexSelection(const FPoint & hex)");
 
 	const std::string assignBody = extractFunctionBody(source, "bool FTacticalGame::assignTargetFromHex(const FPoint & hex)");
 	assertContains(assignBody, "if (!isHexInBounds(hex) || m_curWeapon == NULL) {");
 	assertContains(assignBody, "if (occupants.size() == 0) {");
 	assertContains(assignBody, "if (candidate == NULL || candidate->getOwner() == getActivePlayerID()) {");
 	assertContains(assignBody, "return setIfValidTarget(candidate, hex);");
+
+	assertContains(moveSelectionBody, "if (turnData->path.isPointOnPath(hex)) {");
+	assertContains(moveSelectionBody, "turnData->path.removeTrailingPoints(hex)");
+	assertContains(moveSelectionBody, "turnData->nMoved = m_moved;");
+	assertContains(moveSelectionBody, "found = findHexInList(m_movementHexes, hex, moved);");
+	assertContains(moveSelectionBody, "turnData->path.addPoint(*itr);");
+	assertContains(moveSelectionBody, "turnData->nMoved += moved;");
+	assertContains(moveSelectionBody, "turnData->finalHeading = turnData->curHeading;");
+	assertContains(moveSelectionBody, "computeRemainingMoves(turnData->path.endPoint());");
 
 	const std::string clickBody = extractFunctionBody(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
 	assertContains(clickBody, "case BS_SetupPlanet:");

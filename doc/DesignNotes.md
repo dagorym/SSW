@@ -732,7 +732,7 @@ Validation command:
 cd tests/tactical && make && ./TacticalTests
 ```
 
-Result: `OK (75 tests)`.
+Result: `OK (84 tests)`.
 
 The move-route selection regression follow-up then documented the restored
 exact-click contract for model-owned tactical movement selection.
@@ -756,7 +756,7 @@ Validation commands:
 cd tests/tactical && make && ./TacticalTests
 ```
 
-Result: `OK (75 tests)`.
+Result: `OK (84 tests)`.
 
 ```bash
 # Standalone FTacticalMoveRouteSelectionTest fixture build/run with tactical libs
@@ -787,4 +787,4 @@ cd tests/tactical && make && ./TacticalTests
 cd tests/tactical && ./TacticalTests
 ```
 
-Result: `OK (75 tests)`.
+Result: `OK (84 tests)`.

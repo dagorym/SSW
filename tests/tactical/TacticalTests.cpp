@@ -15,6 +15,9 @@
 #include "FTacticalDestroyedShipCleanupLifecycleTest.h"
 #include "FTacticalBatteryRangeClampTest.h"
 #include "FTacticalBattleBoardRendererDelegationTest.h"
+#include "FTacticalStationOrbitalMovementTest.h"
+#include "FTacticalMoveRouteSelectionTest.h"
+#include "FTacticalForwardFireFinalOrientationTest.h"
 #include "FTacticalGameHeaderTest.h"
 #include "FTacticalGameMechanicsTest.h"
 #include "FTacticalGameMockUITest.h"
@@ -35,6 +38,9 @@ runner.addTest(FTacticalBattleDisplayFireFlowTest::suite());
 runner.addTest(FTacticalDestroyedShipCleanupLifecycleTest::suite());
 runner.addTest(FTacticalBatteryRangeClampTest::suite());
 runner.addTest(FTacticalBattleBoardRendererDelegationTest::suite());
+runner.addTest(FTacticalStationOrbitalMovementTest::suite());
+runner.addTest(FTacticalMoveRouteSelectionTest::suite());
+runner.addTest(FTacticalForwardFireFinalOrientationTest::suite());
 runner.addTest(FTacticalGameHeaderTest::suite());
 runner.addTest(FTacticalGameMechanicsTest::suite());
 runner.addTest(FTacticalGameMockUITest::suite());
