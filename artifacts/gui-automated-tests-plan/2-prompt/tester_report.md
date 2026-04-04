@@ -1,55 +1,39 @@
-### Test Execution Report
+# Test Execution Report
 
-**Agent:** tester  
 **Attempt:** 1/3  
-**Branch:** gui_tests-subtask2rem-tester-20260404  
-**Worktree:** /home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask2rem-tester-20260404  
-**Shared artifact directory:** artifacts/gui-automated-tests-plan/2-prompt
+**Total Tests:** 6  
+**Passed:** 6  
+**Failed:** 0
 
-**Command(s) executed**
-1. `cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else timeout 120 ./GuiTests; fi`
+## Commands executed
 
-**Total Tests:** Not available (run hung before completion)  
-**Passed:** Not available  
-**Failed:** 1 (acceptance-criteria failure due hang)
+1. `pwd && git rev-parse --abbrev-ref HEAD && git --no-pager status --short`
+2. `cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else timeout 120 ./GuiTests; fi`
 
-### Acceptance Criteria Validation
+## Acceptance criteria validation
 
-1. **The new tests instantiate and tear down `FMainFrame`, `FGamePanel`, and `WXStrategicUI` under the GUI runner without hangs.**  
-**Status:** NOT MET  
-**Expected:** `GuiTests` completes and exits normally without hanging in live GUI smoke paths.  
-**Actual:** Test run stalled in the strategic live GUI sequence and did not complete; process required manual termination after prolonged hang.  
-**Error:** Hung GUI test execution (no completion summary produced).
+1. **AC-1: `FMainFrame`, `FGamePanel`, and `WXStrategicUI` instantiate and tear down under the GUI runner without hangs.**  
+   **Status:** MET  
+   **Expected:** `GuiTests` completes normally.  
+   **Actual:** `GuiTests` completed with `OK (6 tests)`.
 
-2. **The tests verify top-level frame basics such as drawing-panel creation and initial strategic menu state.**  
-**Status:** BLOCKED BY HANG  
-**Evidence:** Relevant test code exists in `tests/gui/StrategicGuiLiveTest.cpp`, but full-run completion evidence was not produced due hang.
+2. **AC-2: Preserve coverage for parent-backed `WXStrategicUI` `showMessage`, `notifyFailedJump`, `notifyVictory`, and `showRetreatConditions`.**  
+   **Status:** MET  
+   **Expected:** Parent-backed message entry points remain exercised in the live GUI suite.  
+   **Actual:** `StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths` exercises all four calls and passed.
 
-3. **Live dialog smoke coverage exists for `SatharRetreatGUI`, `SystemDialogGUI`, `ViewFleetGUI`, and `SelectJumpGUI`.**  
-**Status:** BLOCKED BY HANG  
-**Evidence:** Relevant smoke test exists in `tests/gui/StrategicGuiLiveTest.cpp`, but full-run completion evidence was not produced due hang.
+3. **AC-3: Keep the strategic/gui boundary intact (no model-layer wx coupling changes).**  
+   **Status:** MET  
+   **Expected:** GUI-only implementation change surface.  
+   **Actual:** Implementation commit `2eee58a5cf841f29addf8a17e6e12f312b3de36b` changes only `src/gui/WXStrategicUI.cpp`.
 
-4. **Parent-backed `WXStrategicUI` message/modal entry points are covered in addition to existing guarded no-parent behavior.**  
-**Status:** BLOCKED BY HANG  
-**Evidence:** Coverage code exists in `testWXStrategicUIParentBackedModalAndRedrawPaths`, but run did not complete.
+## Commit status
 
-5. **Any testability changes preserve the strategic/gui boundary rules in the repo instructions.**  
-**Status:** PARTIALLY VERIFIED  
-**Evidence:** Implementer change remained in `tests/gui/StrategicGuiLiveTest.cpp` only; runtime validation remains incomplete because the run hung.
+- **Test changes commit:** No Changes Made
+- **Reason:** No test source updates were required for this cycle.
+- **Artifact commit:** Required (performed after writing artifacts)
 
-### Failure Details
-
-**Acceptance Criterion:** AC-1 (no hangs)  
-**Expected:** GUI runner finishes and tears down cleanly.  
-**Actual:** Execution stalled and required termination.  
-**Traceability:** `tests/gui/StrategicGuiLiveTest.cpp`; command above.
-
-### Commit Decision
-
-- **Test changes commit:** No Changes Made (tester did not create or modify test files)
-- **Artifact commit:** Required and performed after writing failure artifacts
-
-### Cleanup
+## Cleanup status
 
 - Removed temporary non-handoff byproduct: `tests/gui/GuiTests`
-- No other temporary non-handoff byproducts were left in the worktree.
+- Remaining temporary non-handoff byproducts: None
