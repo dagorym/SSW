@@ -1,0 +1,49 @@
+You are the Tester Agent.
+
+Task summary:
+- Extended the shared GUI test harness so live tests can locate launched top-level windows/dialogs, wait for modal appearance, and run orphan top-level cleanup.
+- Updated GUI harness regression tests and adjusted tactical/BattleSim live tests to use explicit window/dialog destruction and event pumping instead of relying on implicit shown-window stack lifetime cleanup.
+
+Modified files:
+- tests/gui/WXGuiTestHarness.h
+- tests/gui/WXGuiTestHarness.cpp
+- tests/gui/GuiHarnessTest.h
+- tests/gui/GuiHarnessTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The harness can observe or locate launched top-level dialogs/windows during a test.
+- The harness can enforce and clean zero-orphan top-level state at test completion.
+- Harness regression coverage exists for the new observation/cleanup behavior.
+- The tactical and BattleSim GUI live tests touched by this story no longer rely on implicit stack lifetime for shown top-level window cleanup.
+
+Create test files in:
+- tests/gui/
+
+Implementation context for testing:
+- `WXGuiTestHarness` now provides:
+  - `getTopLevelWindows(...)`
+  - `findTopLevelWindow(...)`
+  - `waitForTopLevelWindow(...)`
+  - `findModalDialog()`
+  - `waitForModalDialog(...)`
+  - `cleanupOrphanTopLevels(...)`
+- `GuiHarnessTest` now includes coverage for:
+  - observing a shown top-level frame,
+  - detecting a launched modal dialog,
+  - exercising orphan cleanup behavior.
+- `TacticalGuiLiveTest` now explicitly destroys `TacticalDamageSummaryGUI` dialogs after modal execution and continues pumping events.
+- `BattleSimGuiLiveTest` now:
+  - uses harness observation when launching dialog/window flows,
+  - uses explicit parent/frame `Destroy()` + event pumping,
+  - ensures child dialog stack objects go out of scope before parent destruction.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/gui-test-warning-remediation-plan/subtask-1-harness
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
