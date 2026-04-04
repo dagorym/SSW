@@ -1,8 +1,8 @@
 You are the Documenter Agent.
 
 Task summary:
-- Validate BattleSim live GUI launch-chain remediation that hardens launch assertions and teardown behavior in `BattleSimGuiLiveTest`.
-- Tester confirmed all acceptance criteria pass in headless GUI execution.
+- BattleSim live GUI launch-path coverage was remediated so launch assertions now prove concrete dialog types (`LocalGameDialog`, `ScenarioDialog`, `ScenarioEditorGUI`) while preserving `FBattleScreen` lifecycle coverage and explicit parent/window cleanup behavior.
+- Tester validated all acceptance criteria in headless GUI execution.
 
 Acceptance criteria validated:
 - The `BattleSimFrame` test proves `LocalGameDialog` was presented.
@@ -11,15 +11,17 @@ Acceptance criteria validated:
 - The BattleSim live tests explicitly destroy shown parents and pump events before returning.
 
 Implementation branch or worktree context:
-- Tester branch: `gui_tests-tester-20260404`
-- Implementer context: `gui_tests-implementer-20260404 @ ff3ad880cb86e73b289a4ae4980e7a0f2a0955d9`
-- Repository worktree: `/tmp/ssw-orch/gui_tests-tester-20260404`
+- Tester branch: `gui_tests-rem3-tester-20260404`
+- Implementer remediation context: `gui_tests-rem3-implementer-20260404 @ acb20c6a2f448b1ee35246b6a8c749287d29f12c`
+- Repository worktree: `/tmp/ssw-orch/gui_tests-rem3-tester-20260404`
 
 Files modified by Implementer and Tester to inspect for documentation impact:
-- `tests/gui/BattleSimGuiLiveTest.cpp` (implementer test hardening)
-- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_report.md` (tester validation report)
-- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_result.json` (tester machine-readable outcome)
-- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/documenter_prompt.txt` (this handoff)
+- Implementer-modified:
+  - `tests/gui/BattleSimGuiLiveTest.cpp`
+- Tester-modified:
+  - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_report.md`
+  - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_result.json`
+  - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/documenter_prompt.txt`
 
 Test commit:
 - No Changes Made
@@ -29,11 +31,12 @@ Commands executed:
 
 Final test outcomes:
 - `GuiTests` completed successfully with `OK (24 tests)`.
-- BattleSim launch-chain and teardown/lifecycle assertions in `BattleSimGuiLiveTest` passed under headless execution.
+- BattleSim launch-chain assertions passed with concrete modal class checks for `LocalGameDialog`, `ScenarioDialog`, and `ScenarioEditorGUI`.
+- Scenario launch-path tests passed with `FBattleScreen` lifecycle assertions (`constructed == destroyed`, `live == 0`) and no residual shown top-level windows beyond baseline after deterministic cleanup.
 
 Documentation context:
-- Update design/testing notes where BattleSim GUI live coverage is described to reflect stronger launch-proof assertions and explicit teardown stabilization/cleanup behavior.
-- Confirm docs mention that scenario launch paths still enforce `FBattleScreen` lifecycle accounting and no residual shown top-level windows.
+- Update BattleSim GUI live-test notes to reflect strengthened launch-proof assertions using modal class identity checks and parent linkage checks.
+- Keep lifecycle/cleanup documentation aligned with validated behavior: explicit parent hide/destroy, event pumping, top-level stabilization, forced closure, and zero post-test shown top-level windows beyond baseline.
 
 Shared artifact directory:
 - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim`
