@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "task": "Validate the implemented station orbital movement fix and runtime regression coverage",
+  "subtask": "tactical-gui-separation-regressions/subtask-1",
+  "branch": "gui_sep-documenter-20260404",
+  "commit_hash": "4f67755",
+  "documentation_files": [
+    "doc/DesignNotes.md"
+  ],
+  "artifact_files": {
+    "documenter_report_md": "artifacts/tactical-gui-separation-regressions/subtask-1/documenter_report.md",
+    "documenter_result_json": "artifacts/tactical-gui-separation-regressions/subtask-1/documenter_result.json",
+    "verifier_prompt_txt": "artifacts/tactical-gui-separation-regressions/subtask-1/verifier_prompt.txt"
+  },
+  "test_outcomes": {
+    "suite": "TacticalTests",
+    "result": "OK",
+    "total": 75,
+    "passed": 75,
+    "failed": 0
+  }
+}
