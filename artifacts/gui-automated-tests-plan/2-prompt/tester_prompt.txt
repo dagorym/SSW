@@ -1,16 +1,10 @@
 You are the Tester Agent.
 
 Task summary:
-- Added live GUI smoke tests in `tests/gui` for `FMainFrame`, `FGamePanel`, `WXStrategicUI`, and representative strategic dialogs, using the shared wx harness with non-interactive modal auto-dismiss support.
+- Verifier remediation for Subtask 2 added missing parent-backed `WXStrategicUI` message entry-point coverage in live GUI smoke tests.
 
 Modified files:
-- tests/gui/WXGuiTestHarness.h
-- tests/gui/WXGuiTestHarness.cpp
-- tests/gui/StrategicGuiLiveTest.h
 - tests/gui/StrategicGuiLiveTest.cpp
-- tests/gui/FMainFrameEventTableShim.cpp
-- tests/gui/GuiTests.cpp
-- tests/gui/Makefile
 
 Acceptance criteria to validate (from Planner):
 - The new tests instantiate and tear down `FMainFrame`, `FGamePanel`, and `WXStrategicUI` under the GUI runner without hangs.
@@ -23,23 +17,23 @@ Create test files in:
 - tests/gui/
 
 Implementation context for testing:
-- `StrategicGuiLiveTest` adds four live GUI cases:
-  - `FMainFrame` construction, map panel presence, and initial menu enable/disable state.
-  - `FGamePanel` redraw/parent-size behavior.
-  - Modal smoke for `SatharRetreatGUI`, `SystemDialogGUI`, `ViewFleetGUI`, and `SelectJumpGUI`.
-  - Parent-backed `WXStrategicUI` modal and redraw paths (`selectRetreatCondition`, `showSystemDialog`, `showFleetDialog`, `requestRedraw`).
-- `WXGuiTestHarness` gained callback-based modal auto-dismiss helpers and safer bootstrap/shutdown handling for shared GUI runner usage.
-- `tests/gui/Makefile` now compiles `../../src/FMainFrame.cpp` and `../../src/FGamePanel.cpp` plus `tests/gui/FMainFrameEventTableShim.cpp` so the live frame tests link cleanly.
+- `StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths()` now explicitly invokes:
+  - `ui.showMessage(...)`
+  - `ui.notifyFailedJump(...)`
+  - `ui.notifyVictory(1)`
+  - `ui.showRetreatConditions(...)`
+- Each call is wrapped with `m_harness.runVoidFunctionWithAutoDismiss(..., wxID_OK, 25)` to exercise modal entry points without manual input.
+- Existing parent-backed modal (`selectRetreatCondition`, `showSystemDialog`, `showFleetDialog`) and redraw checks are unchanged.
 
 Suggested test command(s):
-- cd tests/gui && make && timeout 30 ./GuiTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && ./GuiTests
 
 Shared artifact directory:
 - artifacts/gui-automated-tests-plan/2-prompt
 
 Commit references:
-- Implementation/code commit: 6827b67eb559fc300af98b7e491deea491900d20
-- Artifact commit: 222184ba8f17e13a34b3f97408a4f9fcd4687b79
+- Implementation/code commit: 8d8303641aeb9528ebc0aa6831f085b78728e276
 
 Completion gate:
 - Do not report success unless all required artifacts exist and all changes are committed.
