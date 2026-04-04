@@ -1,0 +1,63 @@
+You are the Verifier Agent.
+
+Task summary:
+- Implemented and validated live wx GUI interaction coverage for strategic dialogs with deterministic model/state assertions.
+- Tester executed the GUI suite in headless mode and confirmed all dialog-flow acceptance criteria pass.
+- Documenter updated repository guidance and design notes to reflect the expanded strategic live-dialog coverage and the `WXGuiTestHarness::showModalWithAction(...)` seam.
+
+Acceptance criteria to verify:
+- UPFUnattachedGUI and SatharFleetsGUI flows are covered for selecting fleets, adding/removing ships, choosing systems, and committing updates.
+- TransferShipsGUI has live interaction coverage for ship movement and fleet-update behavior.
+- CombatFleetsGUI, CombatLocationGUI, TwoPlanetsGUI, SelectResolutionGUI, and BattleResultsGUI have live return-code/state coverage.
+- The tests assert model-side outcomes owned by the dialogs rather than only widget existence.
+- Fixture setup remains deterministic and self-contained.
+- Documentation now reflects the expanded GUI coverage, the deterministic modal-driving seam, and the validated GUI suite result.
+
+Implementation branch or worktree context:
+- Tester branch: `gui_tests-subtask3-tester-20260404`
+- Tester worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask3-tester-20260404`
+- Documenter branch: `gui_tests-subtask3-documenter-20260404`
+- Documenter worktree: `/home/tstephen/worktrees/ssw-gui-automated-tests/gui_tests-subtask3-documenter-20260404`
+- Authoritative tester-stage final HEAD context: `41e9a5c13246e1031c04981b64ee3bce4ac72cee`
+- Authoritative implementation code commit context: `ae5a98198a5753d38b26986c0895fea28b0d4ca2`
+- Documentation commit context: `71ae17c5746f9a8684f1b1bc0efa8b635868203d`
+- Note: `artifacts/gui-automated-tests-plan/3-prompt/tester_result.json` recorded `commit_hash` as `2ba9bb5159f0fbee2ca5bb1478997d2c511c139d`, but verification should use `41e9a5c13246e1031c04981b64ee3bce4ac72cee` as the authoritative tester-stage final HEAD.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/gui/StrategicGuiLiveTest.h`
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `tests/gui/WXGuiTestHarness.h`
+- `tests/gui/WXGuiTestHarness.cpp`
+- `src/gui/TransferShipsGUI.cpp`
+- `src/gui/BattleResultsGUI.cpp`
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+- `artifacts/gui-automated-tests-plan/3-prompt/tester_report.md`
+- `artifacts/gui-automated-tests-plan/3-prompt/tester_result.json`
+- `artifacts/gui-automated-tests-plan/3-prompt/documenter_prompt.txt`
+- `artifacts/gui-automated-tests-plan/3-prompt/documenter_report.md`
+- `artifacts/gui-automated-tests-plan/3-prompt/documenter_result.json`
+- `artifacts/gui-automated-tests-plan/3-prompt/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- `cd tests/gui && xvfb-run -a ./GuiTests`
+
+Final test outcomes:
+- GUI test suite result: `OK (10 tests)`.
+- Strategic live-dialog acceptance criteria listed above validated as passing.
+- wx debug sizer-parenting warnings appeared during execution, but no test failures occurred.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm the documentation matches the implemented GUI behavior and test seams rather than planned-only behavior.
+
+Shared artifact directory:
+- `artifacts/gui-automated-tests-plan/3-prompt`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
