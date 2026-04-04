@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate BattleSim live GUI launch-chain remediation that now asserts modal launch proof plus explicit teardown/cleanup behavior in `BattleSimGuiLiveTest`.
+
+Modified files:
+- tests/gui/BattleSimGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The `BattleSimFrame` test proves `LocalGameDialog` was presented.
+- The `LocalGameDialog` test proves `ScenarioDialog` and `ScenarioEditorGUI` were each presented from their respective button paths.
+- The BattleSim scenario-launch tests still verify `FBattleScreen` lifecycle counts and also finish with zero live top-level windows/dialogs.
+- The BattleSim live tests explicitly destroy shown parents and pump events before returning.
+
+Create test files in:
+- tests/gui/
+
+Implementation context for testing:
+- BattleSim live test coverage remains in `BattleSimGuiLiveTest` and now uses stronger launch-path checks:
+  - local game button path validates a newly launched top-level dialog during the frame launch chain.
+  - predefined/custom paths validate downstream modal launch parentage.
+- Scenario launch tests retain `FBattleScreen::resetLifecycleCounters()` and lifecycle count assertions.
+- Teardown logic now explicitly destroys shown parent/dialog instances, pumps events, and runs repeated orphan top-level cleanup helpers before end-of-test assertions.
+- No production battleSim/gui runtime files were modified; this is test-only behavior hardening.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
