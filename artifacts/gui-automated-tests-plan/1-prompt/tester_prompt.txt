@@ -1,0 +1,53 @@
+You are the Tester Agent.
+
+Task summary:
+- Added a dedicated `tests/gui` wx test module with a shared GUI harness (`WXGuiTestHarness`) and standalone `GuiTests` runner.
+- Wired top-level GUI test build as a separate target (`make gui-tests`) so GUI execution remains separate from existing non-GUI runners.
+- Normalized `src/battleSim/Makefile` to use `wx-config --libs` (no `wx-config-3.0` dependency).
+- Updated contributor-facing docs with GUI runner usage and virtual display guidance for headless runs.
+
+Modified files:
+- .github/copilot-instructions.md
+- AGENTS.md
+- src/battleSim/Makefile
+- tests/Makefile
+- tests/gui/GuiHarnessTest.cpp
+- tests/gui/GuiHarnessTest.h
+- tests/gui/GuiTests.cpp
+- tests/gui/Makefile
+- tests/gui/WXGuiTestHarness.cpp
+- tests/gui/WXGuiTestHarness.h
+- tests/gui/GuiTests (removed tracked build artifact)
+
+Acceptance criteria to validate (from Planner):
+- A shared wx bootstrap/event-pump/modal-dismiss test utility exists under `tests/gui`.
+- `tests/gui/Makefile` builds a `GuiTests` runner against the required libraries with the current `wx-config` toolchain.
+- `tests/Makefile` can build the GUI test module while keeping GUI execution separate from `SSWTests` and `TacticalTests`.
+- Any `battleSim` build dependency used by the GUI runner no longer requires `wx-config-3.0`.
+- Contributor-facing docs mention the new GUI runner and the need for a virtual display in headless automation.
+
+Create test files in:
+- tests/gui/
+
+Implementation context for testing:
+- Shared harness: `tests/gui/WXGuiTestHarness.{h,cpp}` provides:
+  - `bootstrap()` for wx app startup
+  - `pumpEvents()` for event loop pumping
+  - `showModalWithAutoDismiss()` for deterministic modal close behavior in tests
+- `tests/gui/GuiHarnessTest.cpp` currently exercises harness bootstrap/pump/modal auto-dismiss behavior.
+- `tests/gui/Makefile` links `GuiTests` against `battleSim`, `gui`, `tactical`, `weapons`, `defenses`, `ships`, `strategic`, and `core` with `wx-config`.
+- `tests/Makefile` adds `gui-tests` target; `all` remains `SSWTests`-focused.
+- GUI tests require a display and should be executed with virtual display tooling in headless CI (e.g., `xvfb-run`).
+
+Suggested test command(s):
+- make -C tests/gui --no-print-directory
+- make -C tests gui-tests --no-print-directory
+- make -C tests/tactical --no-print-directory
+- make -C tests --no-print-directory
+- cd tests/gui && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/gui-automated-tests-plan/1-prompt
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
