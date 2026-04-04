@@ -4,7 +4,7 @@
   "feature_plan": "plans/gui-automated-tests-plan.md",
   "branch_name": "gui_tests-reviewer-20260404",
   "reviewed_merged_head": "48bb1e17d9d2d242540dc68e2916786d95b9a0c1",
-  "commit_hash": "PENDING_ARTIFACT_COMMIT_HASH",
+  "commit_hash": "e716958511bf6fca8df473e92ef1d2efeb3d7e04",
   "overall_outcome": "CONDITIONAL PASS",
   "blocking_finding_count": 0,
   "warning_finding_count": 2,
