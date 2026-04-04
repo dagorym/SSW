@@ -1,0 +1,57 @@
+You are the Verifier Agent.
+
+Task summary:
+- Tactical live GUI regression coverage for direct damage-summary and ICM dialog tests was repaired and validated under `GuiTests`.
+- The direct damage-summary test now executes real modal dialog behavior and checks title, context, summary, empty-state, and real Close-button dismissal.
+- The direct ICM test now executes modal selection/finalization through the production completion path and verifies assignment and ammo outcomes.
+- Documentation now reflects that these direct tactical dialog tests are active in `TacticalGuiLiveTest`, run under `GuiTests`, and rely on orphan-free teardown via `WXGuiTestHarness`.
+
+Acceptance criteria to verify:
+- The direct tactical damage-summary and ICM tests are registered in the suite and run under `GuiTests`.
+- The damage-summary test proves title, context, summary, empty-state, and close behavior through real dialog execution.
+- The ICM test proves real selection/finalization behavior and resulting assignment/ammo updates without bypassing the production completion path.
+- The tactical live fixture leaves no orphaned dialogs/windows when each test completes.
+- The updated documentation accurately reflects the shipped tactical live GUI coverage and cleanup expectations.
+
+Implementation branch or worktree context:
+- Base branch for diff review: `gui_tests`
+- Implementer branch context: `gui_tests-implementer-20260404 @ d922fa986038f625eb59ffd6a8d1c00fba8bcf0c`
+- Tester branch/worktree: `gui_tests-tester-20260404` at `/tmp/ssw-orch/gui_tests-tester-20260404`
+- Documenter branch/worktree: `gui_tests-documenter-20260404` at `/tmp/ssw-orch/gui_tests-documenter-20260404`
+- Documentation commit: `fbb448c9ce66b343889ca1c61470f3a37eb4c271`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/implementer_report.md`
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/implementer_result.json`
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/tester_report.md`
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/tester_result.json`
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/documenter_prompt.txt`
+- `doc/DesignNotes.md`
+- `AGENTS.md`
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/documenter_report.md`
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/documenter_result.json`
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- `cd tests/gui && make clean`
+
+Final test outcomes:
+- `GuiTests` completed successfully with `OK (24 tests)`.
+- Tactical direct dialog coverage assertions for damage-summary and ICM modal flows passed.
+- No acceptance-criteria failures were observed.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Shared artifact directory:
+- `artifacts/gui-test-warning-remediation-plan/subtask-2-tactical`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
