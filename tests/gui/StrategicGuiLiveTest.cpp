@@ -163,6 +163,14 @@ void StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths() {
 		[&]() { ui.showSystemDialog(&system, &map, &player); }, wxID_CANCEL, 25);
 	m_harness.runVoidFunctionWithAutoDismiss(
 		[&]() { ui.showFleetDialog(&fleet, &system, &destination); }, wxID_CANCEL, 25);
+	m_harness.runVoidFunctionWithAutoDismiss(
+		[&]() { ui.showMessage("Smoke Message", "Parent-backed strategic message"); }, wxID_OK, 25);
+	m_harness.runVoidFunctionWithAutoDismiss(
+		[&]() { ui.notifyFailedJump("Smoke Fleet"); }, wxID_OK, 25);
+	m_harness.runVoidFunctionWithAutoDismiss(
+		[&]() { ui.notifyVictory(1); }, wxID_OK, 25);
+	m_harness.runVoidFunctionWithAutoDismiss(
+		[&]() { ui.showRetreatConditions("Retreat when conditions are met."); }, wxID_OK, 25);
 
 	ui.requestRedraw();
 	redrawPanel->Update();
