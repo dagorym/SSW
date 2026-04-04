@@ -67,7 +67,7 @@ make docs         # Generate Doxygen documentation
 
 Individual modules can also be built by navigating to their source directories and running `make`. Each module produces a static library (`.a` file) that is linked into the final executables.
 
-Dependencies: wxWidgets 3.3.1 via `wx-config`, CppUnit for testing. See `WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
+Dependencies: wxWidgets 3.3.1 and CppUnit for testing. GUI-facing builds still resolve wx settings via `wx-config`; the six non-GUI module Makefiles (`src/core`, `src/strategic`, `src/ships`, `src/weapons`, `src/defenses`, and `src/tactical`) must not contain active `wx-config --cxxflags` or `wx-config --libs` usage. See `WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
 
 ### Windows / Visual Studio 2022
 
@@ -168,7 +168,7 @@ Use `#ifndef _<FILENAME>_H_` pattern (e.g., `#ifndef _FGAME_H_`). Doxygen-style 
 ### Common Patterns
 - Main app classes inherit from `wxApp` (`FApp`, `FBattleSimApp`)
 - UI panels inherit from generated GUI base classes in `include/gui/`; shared tactical wx type aggregation lives in `include/gui/GuiTypes.h`
-- Use `wx-config --cxxflags` and `wx-config --libs` for compiler/linker flags
+- Use `wx-config --cxxflags` and `wx-config --libs` for GUI-facing executable or gui-module builds; keep active `wx-config` usage out of the six non-GUI module Makefiles and preserve their explicit non-GUI build flags separately.
 
 ## Debugging & Development
 
