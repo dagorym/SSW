@@ -1,7 +1,7 @@
 You are the Tester Agent.
 
 Task summary:
-- Validate BattleSim live GUI launch-chain remediation that now asserts modal launch proof plus explicit teardown/cleanup behavior in `BattleSimGuiLiveTest`.
+- Remediated BattleSim live GUI launch-path coverage so dialog-launch assertions now prove concrete dialog types (`LocalGameDialog`, `ScenarioDialog`, `ScenarioEditorGUI`) while preserving `FBattleScreen` lifecycle coverage and explicit parent/window cleanup behavior.
 
 Modified files:
 - tests/gui/BattleSimGuiLiveTest.cpp
@@ -16,15 +16,13 @@ Create test files in:
 - tests/gui/
 
 Implementation context for testing:
-- BattleSim live test coverage remains in `BattleSimGuiLiveTest` and now uses stronger launch-path checks:
-  - local game button path validates a newly launched top-level dialog during the frame launch chain.
-  - predefined/custom paths validate downstream modal launch parentage.
-- Scenario launch tests retain `FBattleScreen::resetLifecycleCounters()` and lifecycle count assertions.
-- Teardown logic now explicitly destroys shown parent/dialog instances, pumps events, and runs repeated orphan top-level cleanup helpers before end-of-test assertions.
-- No production battleSim/gui runtime files were modified; this is test-only behavior hardening.
+- `testBattleSimFrameOpensLocalGameDialogAndReturns()` now waits for a modal dialog and asserts it is `LocalGameDialog` with `BattleSimFrame` parent.
+- `testLocalGameDialogLaunchesPredefinedAndCustomModalChains()` now waits for modals and asserts class identity (`ScenarioDialog` for predefined path, `ScenarioEditorGUI` for custom path), preserving parent linkage assertions.
+- Scenario launch tests still assert `FBattleScreen` constructed/destroyed/live counters and now also assert that no shown top-level windows beyond pre-test baseline remain after explicit hide/destroy + event pumping + stabilization cleanup.
+- Parent frames are explicitly hidden before destroy; cleanup sequencing remains deterministic (`pumpEvents`, `stabilizeTopLevels`, `forceCloseShownTopLevels`).
 
 Suggested test command(s):
-- cd tests/gui && make && xvfb-run -a ./GuiTests
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
 
 Shared artifact directory:
 - artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim
