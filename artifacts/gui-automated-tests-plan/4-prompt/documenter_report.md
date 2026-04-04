@@ -7,7 +7,7 @@
 - **`artifacts/gui-automated-tests-plan/4-prompt/verifier_prompt.txt`** — Prepared the verifier handoff covering implementation, tests, and updated documentation.
 
 ### Summary
-Updated `AGENTS.md` to reflect the implemented tactical live GUI smoke coverage, the shared `WXGuiTestHarness` action helpers used for deterministic modal handling, and the headless `GuiTests` command path validated by the tester stage. Added the required documenter report, result metadata, and verifier handoff artifacts for the shared `artifacts/gui-automated-tests-plan/4-prompt` directory.
+Updated `AGENTS.md` to reflect the implemented tactical live GUI smoke coverage, the shared `WXGuiTestHarness` action helpers used for deterministic modal handling, and the headless `GuiTests` command path validated by the tester stage. Added the required documenter report, result metadata, and verifier handoff artifacts for the shared `artifacts/gui-automated-tests-plan/4-prompt` directory, then aligned the result metadata with the artifact-stage commit.
 
 ### Commit Message
-`artifacts: add documenter handoff outputs`
+`artifacts: correct documenter result metadata`
