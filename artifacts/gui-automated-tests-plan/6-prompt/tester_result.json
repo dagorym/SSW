@@ -3,7 +3,7 @@
   "subtask": "gui-automated-tests-plan/6-prompt",
   "branch_name": "gui_tests-subtask6-tester-20260404",
   "test_commit_hash": "No Changes Made",
-  "commit_hash": "TO_BE_SET_AFTER_ARTIFACT_COMMIT",
+  "commit_hash": "d2c785f6d6f7a0f297de27cdf36e0d38505ca8f3",
   "test_files_added_or_modified": [],
   "commands_run": [
     "cd tests/gui && make && xvfb-run -a ./GuiTests",
