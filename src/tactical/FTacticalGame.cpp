@@ -918,6 +918,7 @@ bool FTacticalGame::findHexInList(PointList list, FPoint ref, int & count) const
 	count = 0;
 	for (PointList::iterator itr = list.begin(); itr != list.end(); ++itr, ++count) {
 		if ((*itr) == ref) {
+			++count;
 			return true;
 		}
 	}
