@@ -747,6 +747,10 @@ locks that behavior through `handleHexClick()` coverage for:
 - earlier path hexes trimming the current route back to the clicked hex while
   preserving `nMoved`, `curHeading`, and `finalHeading` invariants.
 
+Subtask 4 then registered that move-route fixture together with the refreshed
+station-orbit and final-orientation fixtures in `tests/tactical/TacticalTests.cpp`,
+so the routine tactical module run now enforces all three runtime regressions.
+
 No `FBattleBoard` renderer change was required for this fix; the existing move
 overlay already matched the corrected model selection contract.
 
@@ -757,12 +761,6 @@ cd tests/tactical && make && ./TacticalTests
 ```
 
 Result: `OK (84 tests)`.
-
-```bash
-# Standalone FTacticalMoveRouteSelectionTest fixture build/run with tactical libs
-```
-
-Result: `OK (3 tests)`.
 
 The forward-fire final-orientation regression follow-up then documented the
 restored moving-ship fire-arc contract for model-owned range highlighting and
