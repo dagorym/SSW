@@ -2,22 +2,21 @@ You are the Verifier Agent.
 
 Use shared artifacts directory: `artifacts/milestone9-subtask3` (repository-root-relative).
 
-Task context:
-- Subtask: `milestone9-subtask3`
-- Base branch: `gui_sep`
-- Implementer branch/worktree context: `gui_sep-m9s3-implementer-20260403`
-- Tester branch/worktree context: `gui_sep-m9s3-tester-20260403`
-- Documenter branch/worktree context: `gui_sep-m9s3-documenter-20260403`
-- Plan path: `/home/tstephen/repos/SSW/plans/milestone9-battlesim-integration-plan.md`
+Task summary:
+- Milestone 9 Subtask 3 remediation cycle 1 BattleSim integration runtime verification scope.
+- Base branch: `gui_sep`.
+- Implementer branch/worktree context: `gui_sep-m9s3r1-implementer-20260403`.
+- Tester branch/worktree context: `gui_sep-m9s3r1-tester-20260403`.
+- Documenter branch/worktree context: `gui_sep-m9s3r1-documenter-20260403`.
+- Plan path: `/home/tstephen/repos/SSW/plans/milestone9-battlesim-integration-plan.md`.
 
-Original acceptance criteria:
-1. `make` from repo root succeeds and produces both `SSW` and `BattleSim`.
-2. A full BattleSim scenario battle is run to completion through real GUI flow with no tactical UI wiring failures.
-3. Runtime observations confirm behavior consistency with pre-refactor `FBattleScreen` path.
-4. `SSW` is rebuilt and smoke-run successfully after BattleSim verification.
-5. Runtime-only findings are captured clearly.
+Acceptance criteria status for this cycle:
+- AC1 (`make` builds both executables): Passed / validated.
+- AC2 (full BattleSim battle completion through GUI): Deferred as an accepted limitation for this milestone because automated GUI runtime tooling is unavailable in the environment.
+- AC3 (runtime behavior equivalence validation): Deferred as an accepted limitation for this milestone because AC2 prerequisite evidence is unavailable.
+- AC4 (`SSW` rebuild + smoke-run): Passed at smoke scope.
 
-Implemented/tested/documented state to verify together:
+Implementation/test/documentation scope to verify together:
 - Implementation files added or modified: none.
 - Test files added or modified: none.
 - Repository documentation files added or modified: none.
@@ -30,40 +29,27 @@ Implemented/tested/documented state to verify together:
   - `artifacts/milestone9-subtask3/implementer_result.json`
   - `artifacts/milestone9-subtask3/tester_report.md`
   - `artifacts/milestone9-subtask3/tester_result.json`
-  - `artifacts/milestone9-subtask3/tester_battlesim_stderr.log`
-  - `artifacts/milestone9-subtask3/tester_ssw_stderr.log`
+  - `artifacts/milestone9-subtask3/tester_remediation_battlesim_stderr.log`
+  - `artifacts/milestone9-subtask3/tester_remediation_ssw_stderr.log`
 
-Commands executed during validation:
-- Implementer stage:
-  - `make`
-  - `cd src && ./BattleSim`
-  - `cd src && ./SSW`
-- Tester stage:
-  - `make`
-  - `which xvfb-run || echo xvfb-run-missing`
-  - `which xdotool || echo xdotool-missing`
-  - `which wmctrl || echo wmctrl-missing`
-  - `printenv DISPLAY || echo DISPLAY-unset`
-  - `timeout 15 ./src/BattleSim >/dev/null 2>artifacts/milestone9-subtask3/tester_battlesim_stderr.log`
-  - `timeout 15 ./src/SSW >/dev/null 2>artifacts/milestone9-subtask3/tester_ssw_stderr.log`
+Commands executed by tester:
+- `make`
+- `which xvfb-run || echo xvfb-run-missing`
+- `which xdotool || echo xdotool-missing`
+- `which wmctrl || echo wmctrl-missing`
+- `printenv DISPLAY || echo DISPLAY-unset`
+- `timeout 20 ./src/BattleSim >/dev/null 2>artifacts/milestone9-subtask3/tester_remediation_battlesim_stderr.log`
+- `timeout 15 ./src/SSW >/dev/null 2>artifacts/milestone9-subtask3/tester_remediation_ssw_stderr.log`
 
 Final outcomes available for verification:
-- AC1 passed: root `make` succeeded and produced both executables.
-- AC2 blocked: full GUI battle completion could not be performed in this environment.
-- AC3 partially blocked: startup smoke indicated no immediate tactical UI wiring crash, but end-to-end behavior equivalence could not be confirmed without AC2.
-- AC4 passed: `SSW` smoke launch remained running until timeout.
-- AC5 passed: blocker evidence and runtime-validation boundaries were captured.
+- AC1 validated: root `make` succeeded and produced both executables.
+- AC2 deferred/accepted: full GUI battle completion was not runtime-validated in this cycle.
+- AC3 deferred/accepted: behavior-equivalence validation was not runtime-validated in this cycle.
+- AC4 validated at smoke scope: `SSW` rebuild and timeout smoke-run succeeded.
+- Tester artifact commit hash reviewed by documenter: `5bf6180`.
 
-Explicit blocker evidence:
-- Missing GUI automation tooling in this environment:
-  - `xvfb-run-missing`
-  - `xdotool-missing`
-  - `wmctrl-missing`
-- Both timeout-constrained non-interactive launches exited with code `124`.
-- Stderr logs were retained in the shared artifact directory.
-
-Verification requirements:
-- Review the blocked runtime evidence across implementation, tests, documentation, and artifacts together.
-- Confirm the documenter accurately preserved the passed build/smoke evidence while not claiming milestone success.
-- Confirm no repository implementation, test, or documentation files were changed inappropriately during the documentation stage.
-- Verification must include the documentation outputs along with the implementation and tests, even though no repository documentation files changed.
+Required verification focus:
+- Confirm the documenter preserved the current-cycle status accurately without claiming AC2 or AC3 were validated.
+- Confirm the accepted/deferred next-cycle follow-up is stated clearly: provision or enable automated GUI runtime test infrastructure (for example `xvfb-run` plus GUI automation tooling) so AC2 and AC3 can be fully validated later.
+- Confirm no implementation, test, plan, or repository documentation files were changed during the documentation stage.
+- Verification must include the updated documentation artifacts along with the implementation and tester artifacts, even though no repository documentation files changed.
