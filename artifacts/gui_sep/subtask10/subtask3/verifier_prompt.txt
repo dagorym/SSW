@@ -1,35 +1,31 @@
 You are the Verifier Agent.
 
 Task summary:
-- Verify Milestone 10 Subtask 3 end-to-end: the strategic mock-UI initialization coverage implemented in commit `80712b0d02be715308ad0776efedcc1cf1f807ef`, the tester validation artifacts, and the documenter update that records the new `IStrategicUI` mock-testing expectation in contributor guidance.
+- Verify Milestone 10 Subtask 3 remediation end-to-end: `FFleetTest` was hardened to remove order-sensitive destination-ID assumptions while preserving the previously documented strategic mock-`IStrategicUI` validation seam, and the documenter review concluded that no additional contributor-guidance update was needed beyond existing `AGENTS.md` coverage.
 
 Acceptance criteria to verify:
 - The test uses a mock `IStrategicUI`, not real wx dialogs/windows.
 - The test verifies successful initialization and expected strategic state.
 - The test is wired into the strategic Makefile and the top-level `SSWTests` runner.
-- `AGENTS.md` accurately reflects the strategic mock-UI seam/test expectation introduced by this subtask and does not overstate behavior beyond the implemented/tested change.
+- Combined strategic behavior is order-independent (no `FFleet` destination-ID collision from prior system creation).
+- `AGENTS.md` remains accurate for this remediation even though no additional documentation edit was required.
 
 Implementation branch or worktree context:
-- Worktree: `/home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-s3r-documenter-20260404`
-- Branch: `gui_sep-m10-s3r-documenter-20260404`
-- Base branch for comparison: `gui_sep`
-- Tester artifact baseline commit at documenter start: `d00a652d7f4754740b941664e5a79fefeecd41c9`
-- Implementation commit validated by tester: `80712b0d02be715308ad0776efedcc1cf1f807ef`
-- Documentation commit: `3e7d08d99373e44c35dec1a09bda11422453bab9`
-- Plan/context document used as hint: `plans/milestone10-final-validation-cleanup-plan.md` (Subtask 3 prompt and overall documentation impact)
+- Worktree: `/home/tstephen/.copilot/session-state/b31e2a83-8edf-4f07-b4f4-7913ac679318/files/worktrees/gui_sep-m10-s3rr-documenter-20260404`
+- Branch: `gui_sep-m10-s3rr-documenter-20260404`
+- Documenter branch starting point: `7d41d9b26cdab43b47bf1360585282b7dd22f5ad`
+- Remediation implementation commit validated by tester: `c285797848e7ce643c16ccdd029dcc8e92f0f950`
+- Prior Subtask 3 documentation commit already on branch ancestry: `3e7d08d99373e44c35dec1a09bda11422453bab9` (`docs: document strategic mock UI test seam`)
 
 Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/strategic/FFleetTest.cpp`
 - `tests/strategic/FGameMockStrategicUITest.h`
 - `tests/strategic/FGameMockStrategicUITest.cpp`
 - `tests/strategic/Makefile`
 - `tests/SSWTests.cpp`
 - `AGENTS.md`
-- `artifacts/gui_sep/subtask10/subtask3/implementer_report.md`
-- `artifacts/gui_sep/subtask10/subtask3/implementer_result.json`
-- `artifacts/gui_sep/subtask10/subtask3/tester_prompt.txt`
 - `artifacts/gui_sep/subtask10/subtask3/tester_report.md`
 - `artifacts/gui_sep/subtask10/subtask3/tester_result.json`
-- `artifacts/gui_sep/subtask10/subtask3/documenter_prompt.txt`
 - `artifacts/gui_sep/subtask10/subtask3/documenter_report.md`
 - `artifacts/gui_sep/subtask10/subtask3/documenter_result.json`
 - `artifacts/gui_sep/subtask10/subtask3/verifier_prompt.txt`
@@ -38,26 +34,29 @@ Commands executed:
 - Tester: `cd tests/strategic && make`
 - Tester: `cd tests && make`
 - Tester: `cd tests && ./SSWTests`
-- Documenter: `git --no-pager diff gui_sep..HEAD -- tests/strategic/FGameMockStrategicUITest.h tests/strategic/FGameMockStrategicUITest.cpp tests/strategic/Makefile tests/SSWTests.cpp`
-- Documenter: `git --no-pager diff -- AGENTS.md`
+- Tester: `cd tests && ./SSWTests FGameMockStrategicUITest FFleetTest`
+- Documenter: `git --no-pager diff gui_sep..HEAD -- tests/strategic/FFleetTest.cpp AGENTS.md`
+- Documenter: `git --no-pager log --oneline --decorate -5`
 
 Final test outcomes:
-- Tester confirmed all strategic mock-UI acceptance criteria passed.
+- Tester confirmed all scoped strategic acceptance criteria passed.
 - `cd tests/strategic && make` passed.
 - `cd tests && make` passed.
-- `cd tests && ./SSWTests` failed only on known unrelated baseline tactical failures:
+- `cd tests && ./SSWTests` failed only on known unrelated tactical baseline failures:
   - `FTacticalStationOrbitalMovementTest::testStationHeadingUpdatedAfterOrbit`
   - `FTacticalStationOrbitalMovementTest::testStationSpeedPreservedAfterOrbit`
   - `FTacticalStationOrbitalMovementTest::testNonStationHeadingUnchangedByFix`
-- Tester summary: 159 run, 3 failures, 0 errors.
+- Full suite summary: 159 run, 3 failures, 0 errors.
+- No `FFleet` order-sensitive regression failures were observed.
 
 Documentation files updated:
-- `AGENTS.md`
+- None for this remediation; `AGENTS.md` was reviewed and the existing strategic mock-`IStrategicUI` guidance from `3e7d08d99373e44c35dec1a09bda11422453bab9` remained accurate.
 
 Verification scope:
-- Verify the implementation behavior, test coverage, and the updated documentation files together.
-- Confirm the `AGENTS.md` edits are narrowly scoped to the implemented strategic mock-`IStrategicUI` test seam and remain accurate relative to the code/test diff.
-- Confirm the required documenter-stage artifacts exist and their recorded documentation commit hash matches the documentation commit above.
+- Verify the implementation behavior, test coverage, and documenter artifacts together.
+- Confirm the `FFleetTest` remediation is order-independent relative to prior system creation.
+- Confirm the previously documented `AGENTS.md` strategic mock-UI guidance remains accurate and was not missing any remediation-specific contributor requirement.
+- Confirm the required documenter-stage artifacts exist and are committed.
 
 Shared artifact directory:
 - `artifacts/gui_sep/subtask10/subtask3`
