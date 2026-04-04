@@ -1,0 +1,40 @@
+You are the Documenter Agent.
+
+Original task summary
+- Validate subtask 3 for tactical forward-fire final-orientation handling, then hand off for documentation updates if testing passes.
+
+Acceptance criteria
+- Endpoint forward-fire highlights use the final post-turn orientation when the last move is a turn.
+- Target validation accepts and rejects targets consistently with the displayed final-orientation highlights.
+- Straight-line movement behavior remains unchanged.
+- Non-forward-firing weapon behavior remains unchanged.
+
+Implementation/worktree context
+- Tester branch: gui_sep-tester-20260404
+- Implementer base/context branch: gui_sep-implementer-20260404
+- Worktree: /home/tstephen/.copilot/session-state/a133f2f5-4873-4897-9efa-632892009c61/worktrees/gui_sep-tester-20260404
+- Current implementation commit at validation time: 7e1c25371ea5a27b91356d9fd8869969c61f0bad
+
+Files modified by Implementer and Tester that may affect documentation review
+- Implementer-modified:
+  - src/tactical/FTacticalGame.cpp
+  - tests/tactical/FTacticalForwardFireFinalOrientationTest.h
+  - tests/tactical/FTacticalForwardFireFinalOrientationTest.cpp
+- Tester-modified:
+  - artifacts/tactical-gui-separation-regressions/subtask-3/tester_report.md
+  - artifacts/tactical-gui-separation-regressions/subtask-3/tester_result.json
+  - artifacts/tactical-gui-separation-regressions/subtask-3/documenter_prompt.txt
+
+Commands executed
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/tactical && ./TacticalTests
+
+Final test outcomes
+- Tactical test suite result: OK (75 tests)
+- Acceptance criteria status: all criteria passed
+- Tester-authored test file edits: none required
+
+Shared artifact directory to reuse (repository-root-relative)
+- artifacts/tactical-gui-separation-regressions/subtask-3
+
+Do not report success unless all required artifacts exist and all changes are committed.
