@@ -26,7 +26,7 @@ PICFLAGS = -fPIC -DPIC
 .rsrc.r:
 >$(DEREZ) $^ Carbon.r -useDF > $@
 
-OBJS = WXGuiTestHarness.o GuiHarnessTest.o GuiTests.o
+OBJS = WXGuiTestHarness.o GuiHarnessTest.o StrategicGuiLiveTest.o FMainFrame.o FGamePanel.o FMainFrameEventTableShim.o GuiTests.o
 TARGET = libguiTests.a
 RUNNER = GuiTests
 
@@ -42,11 +42,17 @@ model-deps:
 >$(MAKE) -C ../../src/gui
 >$(MAKE) -C ../../src/battleSim
 
-$(TARGET): WXGuiTestHarness.o GuiHarnessTest.o
->ar rcs $(TARGET) WXGuiTestHarness.o GuiHarnessTest.o
+$(TARGET): WXGuiTestHarness.o GuiHarnessTest.o StrategicGuiLiveTest.o FMainFrame.o FGamePanel.o FMainFrameEventTableShim.o
+>ar rcs $(TARGET) WXGuiTestHarness.o GuiHarnessTest.o StrategicGuiLiveTest.o FMainFrame.o FGamePanel.o FMainFrameEventTableShim.o
 
 $(RUNNER): model-deps $(OBJS)
 >$(CXX) $(CXXFLAGS) -o $(RUNNER) $(OBJS) -lcppunit $(MODEL_LIBS) $(LIBS)
+
+FMainFrame.o: ../../src/FMainFrame.cpp
+>$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+
+FGamePanel.o: ../../src/FGamePanel.cpp
+>$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
 
 objs: $(OBJS)
 >rm -f *.gcda
