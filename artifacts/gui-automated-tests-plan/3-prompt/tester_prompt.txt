@@ -1,0 +1,37 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented live wx GUI interaction coverage for strategic dialogs with deterministic model/state assertions.
+
+Modified files:
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/WXGuiTestHarness.h
+- tests/gui/WXGuiTestHarness.cpp
+- src/gui/TransferShipsGUI.cpp
+- src/gui/BattleResultsGUI.cpp
+
+Acceptance criteria to validate (from Planner):
+- UPFUnattachedGUI and SatharFleetsGUI flows are covered for selecting fleets, adding/removing ships, choosing systems, and committing updates.
+- TransferShipsGUI has live interaction coverage for ship movement and fleet-update behavior.
+- CombatFleetsGUI, CombatLocationGUI, TwoPlanetsGUI, SelectResolutionGUI, and BattleResultsGUI have live return-code/state coverage.
+- The tests assert model-side outcomes owned by the dialogs rather than only widget existence.
+- Fixture setup remains deterministic and self-contained.
+
+Create test files in:
+- tests/gui/
+
+Implementation context for testing:
+- StrategicGuiLiveTest now includes dedicated live tests for each required dialog flow.
+- WXGuiTestHarness now has showModalWithAction(...) to drive modal dialogs through real button handlers while remaining deterministic.
+- TransferShipsGUI received iterator-safety and defensive update fixes to support stable live interaction execution.
+- BattleResultsGUI received grid-sizer fixes needed to run under current wx assertions.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/gui-automated-tests-plan/3-prompt
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
