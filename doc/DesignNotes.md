@@ -831,10 +831,13 @@ The modal-launch follow-up extends that live coverage to the battle-board entry
 chains. `StrategicGuiLiveTest` now drives `SelectCombatGUI::onAttack(...)`
 through the real dialog chain into `FBattleScreen`, while `BattleSimGuiLiveTest`
 covers the `BattleSimFrame` local-game launch path plus the `LocalGameDialog`,
-`ScenarioDialog`, and `ScenarioEditorGUI` modal launch flows. `FBattleScreen`
-now exposes constructor/destructor/live-instance counters that the GUI tests use
-to assert real launch ownership and deterministic teardown rather than relying on
-source-structure checks alone.
+`ScenarioDialog`, and `ScenarioEditorGUI` modal launch flows. The BattleSim
+tests now wait for newly launched top-level or modal windows so they can prove
+that `BattleSimFrame` really presented `LocalGameDialog` and that each
+`LocalGameDialog` button path really presented the expected downstream modal.
+`FBattleScreen` continues to expose constructor/destructor/live-instance
+counters that those GUI tests use to assert real launch ownership and
+deterministic teardown rather than relying on source-structure checks alone.
 
 The next harness remediation tightened those live-GUI expectations around
 top-level ownership and cleanup. `WXGuiTestHarness` now exposes
@@ -846,6 +849,10 @@ zero-orphan top-level state before teardown completes. `GuiHarnessTest` now
 regresses those observation and cleanup paths directly, while the tactical and
 BattleSim live fixtures switched from shown stack-lifetime assumptions to
 explicit `Destroy()` plus event pumping on their parent frames and dialogs.
+The BattleSim scenario-launch paths also preserve `FBattleScreen` lifecycle
+accounting and compare the final shown top-level count to the pre-launch
+baseline after stabilization and forced-close cleanup passes, so the live suite
+now proves those launch chains return to a zero-residual shown-window state.
 
 The tactical follow-up extends that same live-dialog discipline inside
 `TacticalGuiLiveTest`, which now registers direct
