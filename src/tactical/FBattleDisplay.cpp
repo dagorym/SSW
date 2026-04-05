@@ -36,19 +36,37 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 
 	m_zoomImage.LoadFile(gc.getBasePath()+"data/zoom.png");
 
-	/// set up the set speed controls
-	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxPoint(leftOffset,3*BORDER+2), wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
-	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxPoint(leftOffset+60,3*BORDER), wxDefaultSize, 0 );
-	m_buttonMoveDone = new wxButton( this, wxID_ANY, wxT("Movement Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
-	m_buttonDefensiveFireDone = new wxButton( this, wxID_ANY, wxT("Defensive Fire Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
-	m_buttonOffensiveFireDone = new wxButton( this, wxID_ANY, wxT("Offensive Fire Done"), wxPoint(leftOffset,ICON_SIZE+BORDER), wxDefaultSize, 0 );
-	m_buttonMinePlacementDone = new wxButton( this, wxID_ANY, wxT("Mine Placement Done"), wxPoint(leftOffset,ICON_SIZE+2*BORDER), wxDefaultSize, 0 );
+	/// set up tactical controls using sizer-based layout to keep spin control sizing stable
+	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, 55, 10 );
+	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonMoveDone = new wxButton( this, wxID_ANY, wxT("Movement Done"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonDefensiveFireDone = new wxButton( this, wxID_ANY, wxT("Defensive Fire Done"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonOffensiveFireDone = new wxButton( this, wxID_ANY, wxT("Offensive Fire Done"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonMinePlacementDone = new wxButton( this, wxID_ANY, wxT("Mine Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
+
+	wxBoxSizer * rootSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer * speedSizer = new wxBoxSizer(wxHORIZONTAL);
+	speedSizer->AddSpacer(leftOffset);
+	speedSizer->Add(m_spinCtrl1, 0, wxALIGN_CENTER_VERTICAL);
+	speedSizer->Add(m_button1, 0, wxLEFT | wxALIGN_CENTER_VERTICAL, BORDER * 2);
+	rootSizer->Add(speedSizer, 0, wxTOP, 3 * BORDER);
+
+	wxBoxSizer * actionSizer = new wxBoxSizer(wxHORIZONTAL);
+	actionSizer->AddSpacer(leftOffset);
+	actionSizer->Add(m_buttonMoveDone, 0, wxALIGN_CENTER_VERTICAL);
+	actionSizer->Add(m_buttonDefensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
+	actionSizer->Add(m_buttonOffensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
+	actionSizer->Add(m_buttonMinePlacementDone, 0, wxALIGN_CENTER_VERTICAL);
+	rootSizer->Add(actionSizer, 0, wxTOP, BORDER);
+	rootSizer->AddStretchSpacer(1);
+	SetSizer(rootSizer);
 	m_spinCtrl1->Hide();
 	m_button1->Hide();
 	m_buttonMoveDone->Hide();
 	m_buttonDefensiveFireDone->Hide();
 	m_buttonOffensiveFireDone->Hide();
 	m_buttonMinePlacementDone->Hide();
+	Layout();
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
 
@@ -304,6 +322,7 @@ void FBattleDisplay::drawGetSpeed(wxDC &dc){
 		// Connect Events
 		m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSetSpeed ), NULL, this );
 		m_first = false;
+		Layout();
 	}
 
 	dc.SetTextForeground(white);
@@ -322,6 +341,7 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 	// Hid the set speed controls
 	m_spinCtrl1->Hide();
 	m_button1->Hide();
+	Layout();
 
 	m_first = true;
 	m_parent->setPhase(PH_NONE);

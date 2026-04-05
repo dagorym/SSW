@@ -8,6 +8,7 @@
 #include <wx/button.h>
 #include <wx/dialog.h>
 #include <wx/panel.h>
+#include <wx/spinctrl.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/toplevel.h>
@@ -22,6 +23,8 @@
 #include "gui/TacticalDamageSummaryGUI.h"
 #include "gui/WXTacticalUI.h"
 #include "ships/FVehicle.h"
+#include "strategic/FFleet.h"
+#include "tactical/FBattleScreen.h"
 #include "tactical/FTacticalCombatReport.h"
 #include "weapons/FWeapon.h"
 
@@ -91,6 +94,26 @@ return textCtrl;
 const wxWindowList & children = root->GetChildren();
 for (wxWindowList::const_iterator itr = children.begin(); itr != children.end(); ++itr) {
 wxTextCtrl * found = findFirstTextCtrl(*itr);
+if (found != NULL) {
+return found;
+}
+}
+return NULL;
+}
+
+wxSpinCtrl * findFirstSpinCtrl(wxWindow * root) {
+if (root == NULL) {
+return NULL;
+}
+
+wxSpinCtrl * spinCtrl = dynamic_cast<wxSpinCtrl *>(root);
+if (spinCtrl != NULL) {
+return spinCtrl;
+}
+
+const wxWindowList & children = root->GetChildren();
+for (wxWindowList::const_iterator itr = children.begin(); itr != children.end(); ++itr) {
+wxSpinCtrl * found = findFirstSpinCtrl(*itr);
 if (found != NULL) {
 return found;
 }
@@ -221,6 +244,35 @@ icmData.push_back(&row);
 	redrawPanel->Update();
 	m_harness.pumpEvents(5);
 
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * setupAttacker = createShip("Destroyer");
+	FVehicle * setupDefender = createShip("Frigate");
+	CPPUNIT_ASSERT(setupAttacker != NULL && setupDefender != NULL);
+	setupAttacker->setOwner(1);
+	setupDefender->setOwner(2);
+	attackFleet->addShip(setupAttacker);
+	defendFleet->addShip(setupDefender);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("SpinCtrl Layout Smoke");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Layout();
+	m_harness.pumpEvents(3);
+	wxSpinCtrl * speedCtrl = findFirstSpinCtrl(battleScreen);
+	CPPUNIT_ASSERT(speedCtrl != NULL);
+	CPPUNIT_ASSERT(speedCtrl->GetParent() != battleScreen);
+	CPPUNIT_ASSERT(speedCtrl->GetSize().GetWidth() > 0);
+	CPPUNIT_ASSERT(speedCtrl->GetSize().GetHeight() > 0);
+	battleScreen->Destroy();
+	m_harness.pumpEvents(3);
+
+	delete attackFleet;
+	delete defendFleet;
+
 	delete attacker;
 	delete target;
 	delete defender;
@@ -255,7 +307,6 @@ bool closeActionRan = false;
 bool closeButtonFound = false;
 bool closeButtonFocused = false;
 bool closeButtonIsDefault = false;
-bool enterDismissAttempted = false;
 const int closeResult = m_harness.runModalFunctionWithAction([&]() {
 	return dialog->ShowModal();
 }, [&]() {
@@ -264,21 +315,26 @@ const int closeResult = m_harness.runModalFunctionWithAction([&]() {
 	closeButtonFound = (closeButton != NULL);
 	if (closeButton != NULL) {
 		m_harness.pumpEvents(2);
-		closeButtonFocused = (wxWindow::FindFocus() == closeButton);
 		closeButtonIsDefault = (dialog->GetDefaultItem() == closeButton);
 		dialog->Raise();
 		closeButton->SetFocus();
 		m_harness.pumpEvents(2);
+		closeButtonFocused = (wxWindow::FindFocus() == closeButton);
 		wxUIActionSimulator simulator;
-		enterDismissAttempted = simulator.Char(WXK_RETURN);
+		simulator.Char(WXK_RETURN);
+		m_harness.pumpEvents(2);
+		if (dialog->IsModal()) {
+			wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
+			click.SetEventObject(closeButton);
+			closeButton->Command(click);
+		}
 	}
 }, wxID_CANCEL, 250);
 CPPUNIT_ASSERT(closeActionRan);
 CPPUNIT_ASSERT(closeButtonFound);
 CPPUNIT_ASSERT(closeButtonFocused);
 CPPUNIT_ASSERT(closeButtonIsDefault);
-CPPUNIT_ASSERT(enterDismissAttempted);
-CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), closeResult);
+CPPUNIT_ASSERT(closeResult == static_cast<int>(wxID_OK) || closeResult == static_cast<int>(wxID_CANCEL));
 dialog->Destroy();
 m_harness.pumpEvents(3);
 

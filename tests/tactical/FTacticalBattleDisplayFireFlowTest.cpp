@@ -186,12 +186,18 @@ void FTacticalBattleDisplayFireFlowTest::testDrawAndOnPaintUseBattleScreenStateA
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
 const std::string onPaintBody = extractFunctionBody(source, "void FBattleDisplay::onPaint(wxPaintEvent & event)");
+const std::string ctorBody = extractFunctionBody(
+source,
+"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
 
 assertContains(drawBody, "switch (m_parent->getState())");
 assertContains(drawBody, "if (m_parent->getControlState())");
 assertContains(drawBody, "if (m_parent->getPhase()==PH_NONE)");
 assertContains(drawBody, "drawPlaceMines(dc);");
 assertContains(onPaintBody, "draw(dc);");
+assertContains(ctorBody, "new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition");
+assertContains(ctorBody, "SetSizer(rootSizer);");
+assertNotContains(ctorBody, "wxPoint(leftOffset,3*BORDER+2)");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testLegacyFireAllWeaponsHelperRemoved() {
