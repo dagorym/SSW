@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "subtask_id": "subtask-1-model-placement-contract",
+  "branch": "ship-placement-orientation-regression-subtask-1-implementer-20260405",
+  "implementation_commit": "00863adf2bfd4fccd1662ab48a9ee65f19b4e17b",
+  "changed_files": [
+    "src/tactical/FTacticalGame.cpp",
+    "tests/tactical/FTacticalBattleScreenDelegationTest.cpp",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp",
+    "tests/tactical/FTacticalShipPlacementOrientationTest.cpp",
+    "tests/tactical/FTacticalShipPlacementOrientationTest.h",
+    "tests/tactical/Makefile",
+    "tests/tactical/TacticalTests.cpp"
+  ],
+  "validation_commands": [
+    {
+      "command": "cd tests/tactical && make && ./TacticalTests",
+      "outcome": "passed",
+      "details": "OK (88 tests)"
+    }
+  ],
+  "artifact_files": [
+    "artifacts/ship-placement-orientation-regression/subtask-1/implementer_report.md",
+    "artifacts/ship-placement-orientation-regression/subtask-1/implementer_result.json",
+    "artifacts/ship-placement-orientation-regression/subtask-1/tester_prompt.txt"
+  ]
+}

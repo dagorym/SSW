@@ -1,0 +1,45 @@
+You are the Tester agent for Subtask 1 of the approved plan at `plans/ship-placement-orientation-regression-plan.md`.
+
+Subtask identifier: `subtask-1-model-placement-contract`
+Implementation branch/worktree context:
+- Branch: `ship-placement-orientation-regression-subtask-1-implementer-20260405`
+- Worktree: `/home/tstephen/.copilot/session-state/5a344522-5c8b-4366-b442-d964f513422c/files/worktrees/ship-placement-orientation-regression-subtask-1-implementer-20260405`
+- Shared artifact directory (repository-root-relative): `artifacts/ship-placement-orientation-regression/subtask-1`
+
+Original task summary:
+Implement a two-step tactical ship-placement heading contract in the model. Hover updates must preview snapped heading without finalizing placement, and the second setup click must commit the currently previewed heading and advance to speed selection. Keep the tactical model as the owner of placement state and make `FBattleScreen` forward any revised placement API without embedding wx-only placement logic.
+
+Acceptance criteria:
+1. Previewing a heading by hex updates the selected ship heading but does not toggle control state, change phase, or clear pending rotation.
+2. Finalizing placement from setup click flow commits the current snapped heading only when rotation is pending and leaves setup in `PH_SET_SPEED`.
+3. `handleHexClick(...)` supports the intended first-click place / second-click finalize flow during `BS_SetupDefendFleet` and `BS_SetupAttackFleet`.
+4. Tactical regression coverage proves the preview path and finalization path are behaviorally distinct and correct.
+
+Files modified by the Implementer that may affect testing:
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalShipPlacementOrientationTest.cpp`
+- `tests/tactical/FTacticalShipPlacementOrientationTest.h`
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
+
+Implementation context:
+- `setShipPlacementHeadingByHex(...)` is now the non-finalizing preview path. It computes a snapped heading from `m_shipPos` and updates the selected ship heading only when the snapped heading changes.
+- `setShipPlacementHeading(...)` remains the finalizing placement path and still performs the end-of-placement transitions.
+- `handleHexClick(...)` now finalizes the current previewed heading on the second setup click when `m_setRotation` is pending instead of routing both setup clicks through `placeShip(...)`.
+- New runtime regression coverage lives in `tests/tactical/FTacticalShipPlacementOrientationTest.*`.
+
+Suggested validation focus:
+- Build and run the tactical test suite from `tests/tactical`.
+- Confirm the new runtime regression fixture passes and that no existing tactical placement or delegation coverage regressed.
+- Verify the two-step flow behavior in both defender and attacker setup states.
+
+Test file locations:
+- `tests/tactical/FTacticalShipPlacementOrientationTest.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- `tests/tactical/TacticalTests.cpp`
+- `tests/tactical/Makefile`
+
+Do not report success unless all required artifacts exist and all changes are committed.
