@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "subtask": "subtask-2-fix-select-combat-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s2-implementer-20260405",
+  "implementation_commit": "f11af2b71719010831d2994522dec2db694ace2c",
+  "changed_files": [
+    "src/gui/SelectCombatGUI.cpp",
+    "tests/gui/StrategicGuiLiveTest.cpp"
+  ],
+  "validation_commands": [
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && grep -n \"\\(\\\"Combat\\\"\\)\" gui-tests-subtask2.log || true"
+  ],
+  "validation_outcome": "pass",
+  "artifacts": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/implementer_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/tester_prompt.txt",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/implementer_result.json"
+  ]
+}

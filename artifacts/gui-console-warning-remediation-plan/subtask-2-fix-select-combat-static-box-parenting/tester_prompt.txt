@@ -1,0 +1,32 @@
+You are the Tester Agent.
+
+Task summary:
+- Verify Subtask 2 remediation for SelectCombatGUI static-box parenting in the "Combat" dialog and confirm no behavior regression.
+
+Modified files:
+- src/gui/SelectCombatGUI.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The "Combat" dialog constructs its static-box child controls with wxGTK-correct parentage.
+- Existing attack-selection behavior is unchanged.
+- Strategic GUI regression coverage explicitly exercises the corrected dialog path.
+- The `wxListBox ... should be created as child of its wxStaticBox ... ("Combat")` warning no longer appears in the covered flow.
+
+Create test files in:
+- No new tests expected for this subtask; validate using existing GUI live coverage under `tests/gui/`.
+
+Implementation context for testing:
+- `SelectCombatGUI` now creates `m_listBox1` and `m_listBox2` as children of `sbSizer1->GetStaticBox()` and `sbSizer2->GetStaticBox()` respectively.
+- Strategic GUI live test peer now asserts the parent static-box labels for both list boxes before executing attack launch behavior.
+- Covered interaction path remains: select attacker fleet -> attack -> tactical launch lifecycle assertions.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- (optional log check) grep for wxStaticBox warning lines mentioning `("Combat")` in captured GUI test output
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
