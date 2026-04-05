@@ -35,8 +35,9 @@ SystemDialogGUI::SystemDialogGUI( wxWindow* parent, FSystem * sys, FMap * map, F
 
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Planets") ), wxVERTICAL );
+	wxWindow* planetsBox = sbSizer1->GetStaticBox();
 
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 );
+	m_listBox1 = new wxListBox( planetsBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 );
 	m_listBox1->SetMinSize( wxSize( -1,-1 ) );
 	PlanetList planets = sys->getPlanetList();
 	if (planets.size()==0){
@@ -51,8 +52,9 @@ SystemDialogGUI::SystemDialogGUI( wxWindow* parent, FSystem * sys, FMap * map, F
 
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Station Type") ), wxVERTICAL );
+	wxWindow* stationTypeBox = sbSizer2->GetStaticBox();
 
-	m_listBox2 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 );
+	m_listBox2 = new wxListBox( stationTypeBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 );
 	m_listBox2->SetMinSize( wxSize( -1,25 ) );
 	m_listBox2->Enable(false);
 
@@ -60,7 +62,7 @@ SystemDialogGUI::SystemDialogGUI( wxWindow* parent, FSystem * sys, FMap * map, F
 
 	sbSizer1->Add( sbSizer2, 1, wxEXPAND, 5 );
 
-	m_button1 = new wxButton( this, wxID_ANY, wxT("Station Status"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_button1 = new wxButton( planetsBox, wxID_ANY, wxT("Station Status"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button1->Enable(false);
 	sbSizer1->Add( m_button1, 0, wxALL|wxEXPAND, 5 );
 
@@ -68,8 +70,9 @@ SystemDialogGUI::SystemDialogGUI( wxWindow* parent, FSystem * sys, FMap * map, F
 
 	wxStaticBoxSizer* sbSizer3;
 	sbSizer3 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Fleets") ), wxVERTICAL );
+	wxWindow* fleetsBox = sbSizer3->GetStaticBox();
 
-	m_listBox3 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 );
+	m_listBox3 = new wxListBox( fleetsBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 );
 	m_listBox3->SetMinSize( wxSize( -1,-1 ) );
 	FleetList fleets = sys->getFleetList();
 	for (unsigned int i = 0; i < fleets.size(); i++){
@@ -86,15 +89,15 @@ SystemDialogGUI::SystemDialogGUI( wxWindow* parent, FSystem * sys, FMap * map, F
 	fgSizer1->AddGrowableCol( 1 );
 	fgSizer1->AddGrowableCol( 2 );
 
-	m_button2 = new wxButton( this, wxID_ANY, wxT("View Ships"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_button2 = new wxButton( fleetsBox, wxID_ANY, wxT("View Ships"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button2->Enable(false);
 	fgSizer1->Add( m_button2, 0, wxALL|wxEXPAND, 5 );
 
-	m_button3 = new wxButton( this, wxID_ANY, wxT("Transfer Ships"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_button3 = new wxButton( fleetsBox, wxID_ANY, wxT("Transfer Ships"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button3->Enable(false);
 	fgSizer1->Add( m_button3, 0, wxALL|wxEXPAND, 5 );
 
-	m_button5 = new wxButton( this, wxID_ANY, wxT("Move Fleet"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_button5 = new wxButton( fleetsBox, wxID_ANY, wxT("Move Fleet"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button5->SetMinSize( wxSize( 115,-1 ) );
 	m_button5->Enable(false);
 	fgSizer1->Add( m_button5, 0, wxALIGN_RIGHT|wxALL|wxEXPAND, 5 );

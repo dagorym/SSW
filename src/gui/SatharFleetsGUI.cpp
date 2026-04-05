@@ -51,8 +51,9 @@ SatharFleetsGUI::SatharFleetsGUI( wxWindow* parent, FPlayer * player, FMap * map
 
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Unassigned Ships") ), wxVERTICAL );
+	wxWindow* unassignedShipsBox = sbSizer1->GetStaticBox();
 
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
+	m_listBox1 = new wxListBox( unassignedShipsBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
 	VehicleList ships = m_player->getShipList();
 	VehicleList::iterator itr;
 	for (itr=ships.begin(); itr < ships.end(); itr++){
@@ -82,23 +83,24 @@ SatharFleetsGUI::SatharFleetsGUI( wxWindow* parent, FPlayer * player, FMap * map
 
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("New Fleet") ), wxVERTICAL );
+	wxWindow* newFleetBox = sbSizer2->GetStaticBox();
 
 	wxString m_choice1Choices[] = { wxT("-- Select a Fleet --"), wxT("New Fleet")};
 	int m_choice1NChoices = sizeof( m_choice1Choices ) / sizeof( wxString );
-	m_choice1 = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice1NChoices, m_choice1Choices, 0 );
+	m_choice1 = new wxChoice( newFleetBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice1NChoices, m_choice1Choices, 0 );
 	m_choice1->SetSelection( 0 );
 	sbSizer2->Add( m_choice1, 0, wxBOTTOM|wxEXPAND, 5 );
 
 	wxBoxSizer* bSizer3;
 	bSizer3 = new wxBoxSizer( wxHORIZONTAL );
 
-	m_staticText2 = new wxStaticText( this, wxID_ANY, wxT("Name:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText2 = new wxStaticText( newFleetBox, wxID_ANY, wxT("Name:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText2->Wrap( -1 );
 	m_staticText2->Enable( false );
 
 	bSizer3->Add( m_staticText2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
-	m_textCtrl1 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_textCtrl1 = new wxTextCtrl( newFleetBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	m_textCtrl1->Enable( false );
 
 	bSizer3->Add( m_textCtrl1, 1, wxEXPAND, 5 );
@@ -107,7 +109,7 @@ SatharFleetsGUI::SatharFleetsGUI( wxWindow* parent, FPlayer * player, FMap * map
 
 	wxString m_choice2Choices[] = { wxT("-- Select a System --") };
 	int m_choice2NChoices = sizeof( m_choice2Choices ) / sizeof( wxString );
-	m_choice2 = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice2NChoices, m_choice2Choices, 0 );
+	m_choice2 = new wxChoice( newFleetBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice2NChoices, m_choice2Choices, 0 );
 	std::vector<FSystem *> systems = m_map->getSystemList();
 	std::vector<FSystem *>::iterator sItr;
 	for (sItr = systems.begin(); sItr < systems.end(); sItr++){
@@ -122,8 +124,9 @@ SatharFleetsGUI::SatharFleetsGUI( wxWindow* parent, FPlayer * player, FMap * map
 
 	wxStaticBoxSizer* sbSizer3;
 	sbSizer3 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Fleet Ships") ), wxVERTICAL );
+	wxWindow* fleetShipsBox = sbSizer3->GetStaticBox();
 
-	m_listBox2 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
+	m_listBox2 = new wxListBox( fleetShipsBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
 	m_listBox2->Enable( false );
 	m_listBox2->SetMinSize( wxSize( 160,150 ) );
 
@@ -131,7 +134,7 @@ SatharFleetsGUI::SatharFleetsGUI( wxWindow* parent, FPlayer * player, FMap * map
 
 	sbSizer2->Add( sbSizer3, 2, wxEXPAND, 5 );
 
-	m_button3 = new wxButton( this, wxID_ANY, wxT("Update Fleet"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_button3 = new wxButton( newFleetBox, wxID_ANY, wxT("Update Fleet"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button3->Enable( false );
 
 	sbSizer2->Add( m_button3, 0, wxEXPAND, 5 );

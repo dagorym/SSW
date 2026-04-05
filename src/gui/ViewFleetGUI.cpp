@@ -53,8 +53,9 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Ship List") ), wxVERTICAL );
+	wxWindow* shipListBox = sbSizer1->GetStaticBox();
 
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE );
+	m_listBox1 = new wxListBox( shipListBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE );
 	int nShips = fleet->getShipCount();
 	m_listBox1->SetMinSize( wxSize( -1, nShips * 26 ) );
 	for (unsigned int i = 0; i < fleet->getShipCount(); i++){
@@ -66,6 +67,7 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Ship Information") ), wxVERTICAL );
+	wxWindow* shipInfoBox = sbSizer2->GetStaticBox();
 	sbSizer2->SetMinSize( wxSize( 200, -1 ) );
 
 	wxFlexGridSizer* fgSizer3;
@@ -73,53 +75,53 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 	fgSizer3->SetFlexibleDirection( wxBOTH );
 	fgSizer3->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_ALL );
 
-	m_staticText5 = new wxStaticText( this, wxID_ANY, wxT("Current/Max ADF:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText5 = new wxStaticText( shipInfoBox, wxID_ANY, wxT("Current/Max ADF:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText5->Wrap( -1 );
 	fgSizer3->Add( m_staticText5, 0, wxTOP|wxBOTTOM|wxLEFT, 5 );
 
-	ADF = new wxStaticText(this,wxID_ANY, wxT(""),wxDefaultPosition,wxDefaultSize, wxALIGN_CENTRE );
+	ADF = new wxStaticText(shipInfoBox,wxID_ANY, wxT(""),wxDefaultPosition,wxDefaultSize, wxALIGN_CENTRE );
 	ADF->SetMinSize(wxSize(62,-1));
 	ADF->Wrap( -1 );
 	fgSizer3->Add( ADF, 0, wxTOP|wxBOTTOM|wxRIGHT, 5 );
 
-	m_staticText6 = new wxStaticText( this, wxID_ANY, wxT("Current/Max MR:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText6 = new wxStaticText( shipInfoBox, wxID_ANY, wxT("Current/Max MR:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText6->Wrap( -1 );
 	fgSizer3->Add( m_staticText6, 0, wxTOP|wxBOTTOM|wxLEFT, 5 );
 
-	MR = new wxStaticText(this,wxID_ANY, wxT(""),wxDefaultPosition,wxDefaultSize, wxALIGN_CENTRE );
+	MR = new wxStaticText(shipInfoBox,wxID_ANY, wxT(""),wxDefaultPosition,wxDefaultSize, wxALIGN_CENTRE );
 	MR->SetMinSize(wxSize(62,-1));
 	MR->Wrap( -1 );
 	fgSizer3->Add( MR, 0, wxTOP|wxBOTTOM|wxRIGHT, 5 );
 
-	m_staticText7 = new wxStaticText( this, wxID_ANY, wxT("Current/Max HP:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText7 = new wxStaticText( shipInfoBox, wxID_ANY, wxT("Current/Max HP:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText7->Wrap( -1 );
 	fgSizer3->Add( m_staticText7, 0, wxTOP|wxBOTTOM|wxLEFT, 5 );
 
-	HP = new wxStaticText(this,wxID_ANY, wxT(""),wxDefaultPosition,wxDefaultSize, wxALIGN_CENTRE );
+	HP = new wxStaticText(shipInfoBox,wxID_ANY, wxT(""),wxDefaultPosition,wxDefaultSize, wxALIGN_CENTRE );
 	HP->SetMinSize(wxSize(62,-1));
 	HP->Wrap( -1 );
 	fgSizer3->Add( HP, 0, wxTOP|wxBOTTOM|wxRIGHT, 5 );
 
-	m_staticText8 = new wxStaticText( this, wxID_ANY, wxT("Current/Max DCR:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText8 = new wxStaticText( shipInfoBox, wxID_ANY, wxT("Current/Max DCR:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText8->Wrap( -1 );
 	fgSizer3->Add( m_staticText8, 0, wxTOP|wxBOTTOM|wxLEFT, 5 );
 
-	DCR = new wxStaticText(this,wxID_ANY, wxT(""),wxDefaultPosition,wxDefaultSize, wxALIGN_CENTRE );
+	DCR = new wxStaticText(shipInfoBox,wxID_ANY, wxT(""),wxDefaultPosition,wxDefaultSize, wxALIGN_CENTRE );
 	DCR->SetMinSize(wxSize(62,-1));
 	DCR->Wrap( -1 );
 	fgSizer3->Add( DCR, 0, wxTOP|wxBOTTOM|wxRIGHT, 5 );
 
 	sbSizer2->Add( fgSizer3, 0, wxALL, 5);
 
-	m_staticText9 = new wxStaticText( this, wxID_ANY, wxT("Weapons:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText9 = new wxStaticText( shipInfoBox, wxID_ANY, wxT("Weapons:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText9->Wrap( -1 );
 	sbSizer2->Add( m_staticText9, 0, wxTOP|wxLEFT, 5 );
 
-	Weapons = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0 );
+	Weapons = new wxStaticText(shipInfoBox, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0 );
 	Weapons->Wrap(100);
 	sbSizer2->Add( Weapons, 0, wxBOTTOM|wxLEFT, 5 );
 
-	Defenses = new wxStaticText(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0 );
+	Defenses = new wxStaticText(shipInfoBox, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0 );
 	Defenses->Wrap(100);
 	sbSizer2->Add( Defenses, 0, wxBOTTOM|wxLEFT, 5 );
 

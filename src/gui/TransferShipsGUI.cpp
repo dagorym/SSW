@@ -115,8 +115,9 @@ TransferShipsGUI::TransferShipsGUI( FPlayer * player, FFleet * fleet, FSystem * 
 
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, m_fleet->getName() ), wxVERTICAL );
+	wxWindow* sourceFleetBox = sbSizer1->GetStaticBox();
 
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED );
+	m_listBox1 = new wxListBox( sourceFleetBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED );
 	VehicleList::iterator itr;
 	for (itr=m_origList.begin(); itr < m_origList.end(); itr++){
 		m_listBox1->Append((*itr)->getName());
@@ -181,8 +182,9 @@ TransferShipsGUI::TransferShipsGUI( FPlayer * player, FFleet * fleet, FSystem * 
 
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Transfer to/from") ), wxVERTICAL );
+	wxWindow* transferFleetBox = sbSizer2->GetStaticBox();
 
-	m_listBox2 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED );
+	m_listBox2 = new wxListBox( transferFleetBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED );
 	m_listBox2->Enable( false );
 	m_listBox2->SetMinSize( wxSize( 150,-1 ) );
 
