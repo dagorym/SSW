@@ -1,0 +1,30 @@
+You are the Tester agent for Subtask 2 of the approved plan at `plans/ship-placement-orientation-regression-plan.md`.
+
+Subtask identifier: `subtask-2-wx-placement-wiring`
+Implementation branch/worktree context:
+- Branch: `ship-placement-orientation-regression-subtask-2-implementer-20260405`
+- Worktree: `/home/tstephen/.copilot/session-state/5a344522-5c8b-4366-b442-d964f513422c/files/worktrees/ship-placement-orientation-regression-subtask-2-implementer-20260405`
+- Shared artifact directory (repository-root-relative): `artifacts/ship-placement-orientation-regression/subtask-2`
+
+Original task summary:
+Keep tactical placement hover/click behavior wired through the model-owned contract. Hover on the battle board must stay preview-only through `setShipPlacementHeadingByHex(...)`, and the second click must still finalize through the setup click path rather than direct wx-side placement logic.
+
+Acceptance criteria:
+1. `FBattleBoard::onMotion(...)` only forwards setup hover through the placement preview seam and redraws when the preview heading changes.
+2. `FBattleBoard::onLeftUp(...)` only hit-tests and routes clicks through `handleHexClick(...)` instead of bypassing the model contract.
+3. Tactical regression coverage explicitly locks the wx hover/click forwarding split so the placement-orientation regression cannot reappear silently.
+
+Files modified by the Implementer that may affect testing:
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp`
+
+Implementation context:
+- The production wx board code already routed hover through `setShipPlacementHeadingByHex(...)` and clicks through `handleHexClick(...)`.
+- Subtask 1 changed the model semantics so the hover seam is preview-only and the second click finalizes the current previewed heading.
+- This subtask tightens source-level regression coverage so the board forwarding split stays aligned with that contract.
+
+Suggested validation focus:
+- Build and run the tactical test suite from `tests/tactical`.
+- Confirm the updated board delegation fixture passes and that the full tactical suite remains green.
+- Verify the new assertions prevent `onMotion(...)` from using the finalizing `setShipPlacementHeading(...)` path and prevent `onLeftUp(...)` from calling the preview helper directly.
+
+Do not report success unless all required artifacts exist and all changes are committed.
