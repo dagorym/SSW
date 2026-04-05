@@ -1,16 +1,11 @@
 You are the Tester Agent.
 
 Task summary:
-- Verified and remediated wxGTK static-box child-parenting defects in remaining scoped SSW dialogs by parenting controls inside each wxStaticBoxSizer to that sizer's GetStaticBox().
+- Remediated the remaining Subtask 3 static-box parenting defects by fixing two missed `BattleResultsGUI` controls and extending strategic GUI static-parentage regression checks for those controls.
 
 Modified files:
-- src/gui/ViewFleetGUI.cpp
-- src/gui/SystemDialogGUI.cpp
-- src/gui/TransferShipsGUI.cpp
-- src/gui/UPFUnattachedGUI.cpp
-- src/gui/SatharFleetsGUI.cpp
-- src/gui/SelectJumpGUI.cpp
 - src/gui/BattleResultsGUI.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
 
 Acceptance criteria to validate (from Planner):
 - Each scoped dialog uses wxGTK-correct parentage for controls placed inside static-box sizers.
@@ -19,15 +14,16 @@ Acceptance criteria to validate (from Planner):
 - No scoped SSW dialog retains the same static-box parenting anti-pattern after the sweep.
 
 Create test files in:
-- tests/gui (if new tests are required; prefer extending StrategicGuiLiveTest.cpp conventions)
+- tests/gui (if additional tests are needed; prefer extending existing StrategicGuiLiveTest patterns)
 
 Implementation context for testing:
-- Only constructor parent arguments were updated for controls contained by static-box sizers.
-- No event wiring, selection logic, enable/disable flow, or modal control flow changes were made.
-- Existing GUI suite output may still show static-box warnings from ScenarioEditorGUI (BattleSim), which is outside Subtask 3 scope.
+- `BattleResultsGUI` now parents `m_staticText8` and `m_staticText12` to `editShipStatsBox` (`wxStaticBox`) instead of the dialog.
+- `StrategicGuiLiveTest::testStrategicDialogsUseStaticBoxChildParents()` now asserts required/forbidden parentage patterns for those two controls.
+- No functional dialog behavior changes were made beyond control parent correction.
+- Existing out-of-scope static-box warnings may still appear from `ScenarioEditorGUI` (`Create a Custom Scenario`) and should not be treated as Subtask 3 regressions.
 
 Suggested test command(s):
-- cd tests/gui && make -j2 && xvfb-run -a ./GuiTests
+- cd tests/gui && make -s && xvfb-run -a ./GuiTests
 
 Shared artifact directory:
 - artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting

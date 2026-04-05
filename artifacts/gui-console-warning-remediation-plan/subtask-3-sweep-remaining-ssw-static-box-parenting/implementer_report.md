@@ -1,39 +1,37 @@
-# Implementer Report — Subtask 3
+# Implementer Report — Subtask 3 Remediation Cycle
 
 ## Status
-- Completed Subtask 3 implementation.
-- Applied wxGTK-correct static-box parenting fixes across all scoped SSW dialogs.
+- Completed verifier-driven remediation for Subtask 3.
 
 ## Plan Step Status
-1. Preflight scope check — complete.
-2. Implement incremental dialog parenting fixes — complete.
-3. Validate with existing GUI build/test commands — complete.
-4. Commit implementation changes — complete.
-5. Write and commit required handoff artifacts — complete.
+1. Preflight scope and verifier artifact review — complete.
+2. Implement targeted remediation in allowed files — complete.
+3. Validate with existing GUI test command — complete.
+4. Commit implementation/code changes — complete.
+5. Update and commit required implementer artifacts — complete.
 
 ## Files Changed
-- src/gui/ViewFleetGUI.cpp
-- src/gui/SystemDialogGUI.cpp
-- src/gui/TransferShipsGUI.cpp
-- src/gui/UPFUnattachedGUI.cpp
-- src/gui/SatharFleetsGUI.cpp
-- src/gui/SelectJumpGUI.cpp
 - src/gui/BattleResultsGUI.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+
+## Implementation Summary
+- Fixed remaining static-box parenting defects in `BattleResultsGUI` by parenting `m_staticText8` and `m_staticText12` to `editShipStatsBox` instead of `this`.
+- Extended `StrategicGuiLiveTest::testStrategicDialogsUseStaticBoxChildParents()` with explicit required/forbidden pattern checks for both corrected controls.
 
 ## Validation Commands Run
-- Baseline build: `cd tests/gui && make -j2`
-- Post-change validation: `cd tests/gui && make -j2 && xvfb-run -a ./GuiTests`
+- `cd tests/gui && make -s && xvfb-run -a ./GuiTests` (baseline)
+- `cd tests/gui && make -s && xvfb-run -a ./GuiTests` (post-change)
 
 ## Validation Outcomes
-- Baseline build succeeded.
-- Post-change GUI test suite succeeded: `OK (24 tests)`.
-- Remaining wx static-box warnings during suite execution were limited to `ScenarioEditorGUI` (`"Create a Custom Scenario"`), which is out of scope for Subtask 3 and covered by Subtask 4.
+- Baseline GUI suite passed: `OK (25 tests)`.
+- Post-change GUI suite passed: `OK (25 tests)`.
+- Existing static-box debug warnings still appear for `Create a Custom Scenario` (`ScenarioEditorGUI`), which is outside Subtask 3 scope.
 
 ## Acceptance Criteria Check
-1. Each scoped dialog now uses wxGTK-correct parentage for controls placed inside static-box sizers — satisfied.
-2. Existing dialog behavior remains intact — satisfied (no behavioral logic changed; only control parents adjusted).
-3. Strategic GUI live coverage still exercises affected dialogs — satisfied via `GuiTests` pass including Strategic GUI live tests.
-4. No scoped SSW dialog in this sweep retains the same static-box-parenting anti-pattern — satisfied for the listed Subtask 3 dialog files.
+1. Each scoped dialog uses wxGTK-correct parentage for controls placed inside static-box sizers — satisfied for Subtask 3 scope, including the previously missed `BattleResultsGUI` controls.
+2. Existing dialog behavior remains intact — satisfied (constructor parenting only; no behavior logic changes).
+3. Strategic GUI live coverage still exercises affected dialogs — satisfied via Strategic GUI live tests in `GuiTests` plus strengthened static pattern checks.
+4. No scoped SSW dialog retains the same static-box parenting anti-pattern after the sweep — satisfied for the Subtask 3 SSW dialog set.
 
 ## Implementation Commit
-- 574a2a3c5b8cfd8cdaabbc23ffffed808a1106c3
+- 1152a6e7c9d886ec1b8f5d04caae24c762f321b5

@@ -1,20 +1,15 @@
 {
   "status": "completed",
-  "subtask": "gui-console-warning-remediation-plan:subtask-3",
+  "subtask": "gui-console-warning-remediation-plan:subtask-3-remediation-cycle",
   "branch": "fixes-gui-console-warning-remediation-s3-implementer-20260405",
-  "implementation_commit": "574a2a3c5b8cfd8cdaabbc23ffffed808a1106c3",
+  "implementation_commit": "1152a6e7c9d886ec1b8f5d04caae24c762f321b5",
   "changed_files": [
-    "src/gui/ViewFleetGUI.cpp",
-    "src/gui/SystemDialogGUI.cpp",
-    "src/gui/TransferShipsGUI.cpp",
-    "src/gui/UPFUnattachedGUI.cpp",
-    "src/gui/SatharFleetsGUI.cpp",
-    "src/gui/SelectJumpGUI.cpp",
-    "src/gui/BattleResultsGUI.cpp"
+    "src/gui/BattleResultsGUI.cpp",
+    "tests/gui/StrategicGuiLiveTest.cpp"
   ],
   "validation_commands": [
-    "cd tests/gui && make -j2",
-    "cd tests/gui && make -j2 && xvfb-run -a ./GuiTests"
+    "cd tests/gui && make -s && xvfb-run -a ./GuiTests",
+    "cd tests/gui && make -s && xvfb-run -a ./GuiTests"
   ],
   "validation_outcome": "pass",
   "artifact_files": [
