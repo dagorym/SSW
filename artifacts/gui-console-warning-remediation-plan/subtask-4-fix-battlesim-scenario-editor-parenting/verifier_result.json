@@ -1,0 +1,15 @@
+{
+  "status": "completed",
+  "subtask": "subtask-4-fix-battlesim-scenario-editor-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s4-verifier-20260405",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient: BattleSimGuiLiveTest asserts ScenarioEditorGUI static-box parenting before the preserved battle-launch path and FBattleScreen lifecycle checks, and verifier reran GuiTests with a follow-up warning scan showing no Scenario Editor warning lines.",
+  "documentation_accuracy_summary": "Accurate: AGENTS.md and artifacts/WXWIDGETS_UPGRADE_CHANGES.md describe the ScenarioEditorGUI parenting fix, BattleSim live-test assertion coverage, and the warning-scan outcome for this path.",
+  "artifact_paths": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/verifier_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/verifier_result.json"
+  ]
+}
