@@ -1,0 +1,12 @@
+{
+  "status": "success",
+  "subtask_id": "subtask-1-model-placement-contract",
+  "branch": "ship-placement-orientation-regression-subtask-1-documenter-20260405",
+  "commit_hash": "16a0559a961dba5608278be08be1628dc4076966",
+  "documentation_files": [],
+  "artifact_files": [
+    "artifacts/ship-placement-orientation-regression/subtask-1/documenter_report.md",
+    "artifacts/ship-placement-orientation-regression/subtask-1/documenter_result.json",
+    "artifacts/ship-placement-orientation-regression/subtask-1/verifier_prompt.txt"
+  ]
+}

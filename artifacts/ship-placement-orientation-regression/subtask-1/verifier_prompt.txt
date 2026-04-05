@@ -1,0 +1,45 @@
+You are the Verifier Agent.
+
+Subtask identifier: `subtask-1-model-placement-contract`
+Plan path: `plans/ship-placement-orientation-regression-plan.md`
+Base branch: `master`
+
+Original task summary:
+Implement a two-step tactical ship-placement heading contract in the model. Hover updates must preview snapped heading without finalizing placement, and the second setup click must commit the currently previewed heading and advance to speed selection. Keep the tactical model as the owner of placement state and make `FBattleScreen` forward any revised placement API without embedding wx-only placement logic.
+
+Acceptance criteria:
+1. Previewing a heading by hex updates the selected ship heading but does not toggle control state, change phase, or clear pending rotation.
+2. Finalizing placement from setup click flow commits the current snapped heading only when rotation is pending and leaves setup in `PH_SET_SPEED`.
+3. `handleHexClick(...)` supports the intended first-click place / second-click finalize flow during `BS_SetupDefendFleet` and `BS_SetupAttackFleet`.
+4. Tactical regression coverage proves the preview path and finalization path are behaviorally distinct and correct.
+
+Implementation, test, and documentation context:
+- Implementer branch: `ship-placement-orientation-regression-subtask-1-implementer-20260405`
+- Implementer code commit: `00863adf2bfd4fccd1662ab48a9ee65f19b4e17b`
+- Implementer artifact commit: `de8ccf7f9a864131ac0a77c00123eb2f0b34820d`
+- Tester branch: `ship-placement-orientation-regression-subtask-1-tester-20260405`
+- Tester artifact commit: `321b017a4f38dea657fd946edae2007a6d41d575`
+- Documenter branch: `ship-placement-orientation-regression-subtask-1-documenter-20260405`
+- Documenter commit: `16a0559a961dba5608278be08be1628dc4076966`
+
+Files modified by Implementer, Tester, and Documenter that may affect verification scope:
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalShipPlacementOrientationTest.cpp`
+- `tests/tactical/FTacticalShipPlacementOrientationTest.h`
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
+- No documentation files were modified; verify that no documentation update was required.
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+
+Final test outcomes:
+- Passed: `OK (88 tests)`
+
+Shared artifact directory (repository-root-relative): `artifacts/ship-placement-orientation-regression/subtask-1`
+
+Verification must include the updated documentation files along with the implementation and tests. In this subtask, that means confirming the absence of documentation edits is accurate and non-contradictory with the implemented behavior.
+
+Do not report success unless all required artifacts exist and all changes are committed.
