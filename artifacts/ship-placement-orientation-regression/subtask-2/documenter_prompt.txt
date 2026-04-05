@@ -1,0 +1,38 @@
+You are the Documenter Agent.
+
+Subtask identifier: `subtask-2-wx-placement-wiring`
+Plan path: `plans/ship-placement-orientation-regression-plan.md`
+Base branch: `master`
+
+Original task summary:
+Keep tactical placement hover/click behavior wired through the model-owned contract. Hover on the battle board must stay preview-only through `setShipPlacementHeadingByHex(...)`, and the second click must still finalize through the setup click path rather than direct wx-side placement logic.
+
+Acceptance criteria:
+1. `FBattleBoard::onMotion(...)` only forwards setup hover through the placement preview seam and redraws when the preview heading changes.
+2. `FBattleBoard::onLeftUp(...)` only hit-tests and routes clicks through `handleHexClick(...)` instead of bypassing the model contract.
+3. Tactical regression coverage explicitly locks the wx hover/click forwarding split so the placement-orientation regression cannot reappear silently.
+
+Implementation branch/worktree context:
+- Implementer branch: `ship-placement-orientation-regression-subtask-2-implementer-20260405`
+- Implementer worktree: `/home/tstephen/.copilot/session-state/5a344522-5c8b-4366-b442-d964f513422c/files/worktrees/ship-placement-orientation-regression-subtask-2-implementer-20260405`
+- Implementer code commit: `81b5024731c3ce20e3eb0cac2b652d6725734a26`
+- Tester branch: `ship-placement-orientation-regression-subtask-2-tester-20260405`
+- Tester worktree: `/home/tstephen/.copilot/session-state/5a344522-5c8b-4366-b442-d964f513422c/files/worktrees/ship-placement-orientation-regression-subtask-2-tester-20260405`
+- Tester commit hash: `No Changes Made`
+
+Files modified by the Implementer and Tester that may affect documentation review:
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+
+Final test outcomes:
+- Passed: `OK (88 tests)`
+
+Likely documentation impact:
+- This subtask tightens board delegation regression coverage around existing runtime behavior, so documentation changes may not be required.
+- If any tactical design note claims wx board code finalizes placement directly on hover or click, update it to reflect the model-owned hover-preview / click-finalize split.
+
+Shared artifact directory (repository-root-relative): `artifacts/ship-placement-orientation-regression/subtask-2`
+
+Do not report success unless all required artifacts exist and all changes are committed.
