@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "subtask": "Subtask 1 - auto-register precomputed station movement",
+  "branch": "tactical-station-move-subtask-1-implementer-20260405",
+  "implementation_commit": "4466ecc8950a7003ecbe3dd7f8eafcbee1ddb2ac",
+  "changed_files": [
+    "src/tactical/FTacticalGame.cpp",
+    "tests/tactical/FTacticalStationOrbitalMovementTest.h",
+    "tests/tactical/FTacticalStationOrbitalMovementTest.cpp",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp"
+  ],
+  "validation_commands": [
+    "cd tests/tactical && make -s && ./TacticalTests"
+  ],
+  "validation_outcome": "pass",
+  "artifact_files": [
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/implementer_report.md",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/tester_prompt.txt",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/implementer_result.json"
+  ]
+}

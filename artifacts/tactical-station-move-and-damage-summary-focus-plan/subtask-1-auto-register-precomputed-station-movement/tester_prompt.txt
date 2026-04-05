@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Task summary:
+- resetMovementState() now recomputes movement completion immediately after rebuilding turn data so pre-seeded station orbital movement is recognized at movement-phase entry.
+
+Modified files:
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalStationOrbitalMovementTest.h
+- tests/tactical/FTacticalStationOrbitalMovementTest.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- resetMovementState() or its immediate call chain recomputes move completion after current-mover turn data is rebuilt.
+- A tactical regression proves isMoveComplete() is already true for a moving side whose only required move is the pre-seeded station orbit.
+- Existing station orbital movement assertions still pass conceptually: orbit distance remains 1, heading updates correctly, and speed is preserved.
+- Existing non-station movement route behavior remains covered and unchanged.
+- Any mechanics-source assertions updated by this change still describe the real code path accurately.
+
+Create test files in:
+- tests/tactical (no new test files expected for this subtask; validate within existing tactical suites/files)
+
+Implementation context for testing:
+- resetMovementState() now calls checkMoveStatus() after resetTurnInfoForCurrentMover().
+- New station regression test verifies nMoved/path pre-seeding and isMoveComplete() at PH_MOVE entry without requiring station click selection.
+- Existing station heading/speed/orbit behavior tests remain and should still pass.
+- Non-station regression now asserts pre-move nMoved=0 and route path growth after a move selection to guard route behavior.
+
+Suggested test command(s):
+- cd tests/tactical && make -s && ./TacticalTests
+
+Shared artifact directory:
+- artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
