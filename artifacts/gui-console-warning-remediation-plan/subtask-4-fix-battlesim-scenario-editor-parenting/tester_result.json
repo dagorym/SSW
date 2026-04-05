@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "subtask": "subtask-4-fix-battlesim-scenario-editor-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s4-tester-20260405",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && xvfb-run -a ./GuiTests",
+    "cd tests/gui && out=$(xvfb-run -a ./GuiTests 2>&1); status=$?; printf '%s\\n' \"$out\" | grep -n \"wxStaticBoxSizer should be created\" | head -n 20; printf '%s\\n' \"$out\" | grep -n \"Scenario Editor\"; printf '%s\\n' \"$out\" | tail -n 5; exit $status"
+  ],
+  "totals": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_paths": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/tester_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/tester_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/documenter_prompt.txt"
+  ]
+}

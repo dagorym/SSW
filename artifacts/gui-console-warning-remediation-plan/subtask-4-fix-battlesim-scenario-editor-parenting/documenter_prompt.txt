@@ -1,0 +1,46 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implementer fixed wxGTK static-box child parenting in `ScenarioEditorGUI` and retained scenario editor battle-launch behavior.
+- Tester validated GUI behavior and acceptance criteria with live GUI runs and warning-scan evidence.
+
+Acceptance criteria validated:
+- `ScenarioEditorGUI` no longer constructs static-box child controls with the dialog as the parent where wxGTK requires the static box.
+- Scenario editing and tactical launch behavior are preserved.
+- BattleSim live GUI coverage continues to exercise the corrected scenario editor path.
+- No scenario-editor launch path emits the same static-box parenting warning.
+
+Implementation branch or worktree context:
+- Branch: `fixes-gui-console-warning-remediation-s4-tester-20260405`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s4-tester-20260405`
+- Implementer commit: `1e52862b28cd3a2100caba75e679b0c1458a1f6b`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/battleSim/ScenarioEditorGUI.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/tester_report.md
+- artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/tester_result.json
+- artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && xvfb-run -a ./GuiTests
+- cd tests/gui && out=$(xvfb-run -a ./GuiTests 2>&1); status=$?; printf '%s\n' "$out" | grep -n "wxStaticBoxSizer should be created" | head -n 20; printf '%s\n' "$out" | grep -n "Scenario Editor"; printf '%s\n' "$out" | tail -n 5; exit $status
+
+Final test outcomes:
+- GUI suite passed: `OK (24 tests)`.
+- Scenario editor launch-path test passed and verifies static-box parenting via `usesStaticBoxParenting()`.
+- Static-box wx debug warnings still appear in other dialogs; no warning lines reference `Scenario Editor`.
+
+Documentation context:
+- Update documentation that tracks wxGTK static-box warning remediation status to reflect Subtask 4 completion.
+- Note that ScenarioEditorGUI control-parenting is now static-box-correct and that BattleSim live GUI test coverage explicitly asserts this path.
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
