@@ -1,44 +1,41 @@
 You are the Verifier Agent.
 
 Task summary:
-- Verify the BattleSim live GUI launch-chain remediation in `tests/gui/BattleSimGuiLiveTest.cpp` together with the follow-on documentation updates that describe the shipped launch-proof and teardown behavior.
-- Tester confirmed the headless GUI suite passed with all BattleSim acceptance criteria met.
+- BattleSim live GUI launch-path coverage was remediated so launch assertions now prove concrete dialog types (`LocalGameDialog`, `ScenarioDialog`, `ScenarioEditorGUI`) and parent linkage while preserving `FBattleScreen` lifecycle coverage and explicit parent/window cleanup behavior.
+- Documentation now matches the remediated BattleSim assertions and cleanup guarantees validated by the tester in headless GUI execution.
 
 Acceptance criteria to verify:
 - The `BattleSimFrame` test proves `LocalGameDialog` was presented.
 - The `LocalGameDialog` test proves `ScenarioDialog` and `ScenarioEditorGUI` were each presented from their respective button paths.
 - The BattleSim scenario-launch tests still verify `FBattleScreen` lifecycle counts and also finish with zero live top-level windows/dialogs.
 - The BattleSim live tests explicitly destroy shown parents and pump events before returning.
-- The updated documentation accurately describes the stronger launch-proof assertions, `FBattleScreen` lifecycle accounting, and final shown-top-level cleanup/baseline behavior.
+- The updated documentation accurately describes the stronger class-identity and parent-link launch assertions, `FBattleScreen` lifecycle accounting, and final shown-top-level cleanup/baseline behavior.
 
 Implementation branch or worktree context:
 - Base branch context for diff review: `gui_tests`
-- Tester branch: `gui_tests-tester-20260404`
-- Documenter branch: `gui_tests-documenter-20260404`
-- Implementer context: `gui_tests-implementer-20260404 @ ff3ad880cb86e73b289a4ae4980e7a0f2a0955d9`
-- Repository worktree: `/tmp/ssw-orch/gui_tests-documenter-20260404`
+- Tester branch: `gui_tests-rem3-tester-20260404`
+- Documenter branch: `gui_tests-rem3-documenter-20260404`
+- Implementer context: `gui_tests-rem3-implementer-20260404 @ acb20c6a2f448b1ee35246b6a8c749287d29f12c`
+- Repository worktree: `/tmp/ssw-orch/gui_tests-rem3-documenter-20260404`
 
 Files modified by Implementer, Tester, and Documenter to inspect:
 - `tests/gui/BattleSimGuiLiveTest.cpp`
-- `doc/DesignNotes.md`
-- `AGENTS.md`
-- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/implementer_report.md`
-- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/implementer_result.json`
-- `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_prompt.txt`
 - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_report.md`
 - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/tester_result.json`
 - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/documenter_prompt.txt`
+- `doc/DesignNotes.md`
+- `AGENTS.md`
 - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/documenter_report.md`
 - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/documenter_result.json`
 - `artifacts/gui-test-warning-remediation-plan/subtask-3-battlesim/verifier_prompt.txt`
 
 Commands executed:
 - `cd tests/gui && make && xvfb-run -a ./GuiTests`
-- `git --no-pager diff --stat gui_tests...HEAD`
 
 Final test outcomes:
 - `GuiTests` completed successfully with `OK (24 tests)`.
-- `BattleSimGuiLiveTest` passed its BattleSim launch-chain presentation checks, `FBattleScreen` lifecycle assertions, and teardown/baseline top-level cleanup assertions under headless execution.
+- BattleSim launch-chain assertions passed with concrete modal class checks for `LocalGameDialog`, `ScenarioDialog`, and `ScenarioEditorGUI`.
+- Scenario launch-path tests passed with `FBattleScreen` lifecycle assertions (`constructed == destroyed`, `live == 0`) and no residual shown top-level windows beyond baseline after deterministic cleanup.
 
 Documentation files updated:
 - `doc/DesignNotes.md`

@@ -1,8 +1,8 @@
 {
   "status": "success",
   "subtask_id": "subtask-3-battlesim",
-  "branch": "gui_tests-documenter-20260404",
-  "commit": "7a95e4998b20c7c13204175bd29cf752d078beb9",
+  "branch": "gui_tests-rem3-documenter-20260404",
+  "commit": "3f6368e8477509c636a0886571a12d62341089e1",
   "documentation_files": [
     "AGENTS.md",
     "doc/DesignNotes.md"
