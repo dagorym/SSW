@@ -1,0 +1,46 @@
+{
+  "status": "success",
+  "subtask": "subtask-1-stabilize-tactical-spin-control-layout",
+  "branch": "fixes-gui-console-warning-remediation-s1-tester-20260405",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s1-tester-20260405",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "make -s",
+    "cd tests/tactical && make -s && ./TacticalTests",
+    "cd tests/gui && set -o pipefail && make -s && xvfb-run -a ./GuiTests"
+  ],
+  "totals": {
+    "total_tests": 112,
+    "passed": 112,
+    "failed": 0
+  },
+  "acceptance_criteria": [
+    {
+      "id": "AC1",
+      "text": "FBattleDisplay uses a stable layout/ownership model for the speed-selection control path.",
+      "status": "met"
+    },
+    {
+      "id": "AC2",
+      "text": "Tactical speed selection still works and keeps existing battle-state transitions intact.",
+      "status": "met"
+    },
+    {
+      "id": "AC3",
+      "text": "Tactical GUI coverage exercises the corrected path.",
+      "status": "met"
+    },
+    {
+      "id": "AC4",
+      "text": "The covered tactical flow no longer emits the reported GtkSpinButton assertion.",
+      "status": "met"
+    }
+  ],
+  "unmet_acceptance_criteria": [],
+  "artifact_files_written": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout/tester_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout/tester_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout/documenter_prompt.txt"
+  ]
+}

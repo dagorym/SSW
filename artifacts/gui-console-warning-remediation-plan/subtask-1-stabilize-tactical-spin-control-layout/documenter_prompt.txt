@@ -1,0 +1,46 @@
+You are the Documenter Agent.
+
+Task summary:
+- Stabilized tactical speed-control layout by converting FBattleDisplay tactical controls from free-positioned creation to sizer-managed ownership while preserving setup flow behavior; tester validated build/tactical/gui outcomes and acceptance criteria.
+
+Acceptance criteria validated:
+- FBattleDisplay uses a stable layout/ownership model for the speed-selection control path.
+- Tactical speed selection still works and keeps existing battle-state transitions intact.
+- Tactical GUI coverage exercises the corrected path.
+- The covered tactical flow no longer emits the reported GtkSpinButton assertion.
+
+Implementation branch or worktree context:
+- Branch: fixes-gui-console-warning-remediation-s1-tester-20260405
+- Worktree: /home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s1-tester-20260405
+- Implementer baseline commit in this line of work: b876f58
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleDisplay.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- Tester did not modify additional test source files; only tester artifacts were added in the shared artifact directory.
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- make -s
+- cd tests/tactical && make -s && ./TacticalTests
+- cd tests/gui && set -o pipefail && make -s && xvfb-run -a ./GuiTests
+
+Final test outcomes:
+- TacticalTests: OK (88 tests)
+- GuiTests (headless via xvfb): OK (24 tests)
+- Combined: 112 passed, 0 failed
+- No GtkSpinButton assertion observed in the validated tactical GUI flow.
+
+Documentation context:
+- Update tactical GUI/layout remediation notes to reflect speed spin control now uses sizer-managed ownership and default positioning rather than fragile absolute placement.
+- Record that tactical GUI live coverage now includes FBattleScreen spin-control parentage/size smoke validation and tactical source-inspection coverage for constructor layout expectations.
+- Mention tester-stage validation commands and passing outcomes for this subtask.
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
