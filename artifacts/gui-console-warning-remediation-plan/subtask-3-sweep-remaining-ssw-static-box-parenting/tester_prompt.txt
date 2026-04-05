@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified and remediated wxGTK static-box child-parenting defects in remaining scoped SSW dialogs by parenting controls inside each wxStaticBoxSizer to that sizer's GetStaticBox().
+
+Modified files:
+- src/gui/ViewFleetGUI.cpp
+- src/gui/SystemDialogGUI.cpp
+- src/gui/TransferShipsGUI.cpp
+- src/gui/UPFUnattachedGUI.cpp
+- src/gui/SatharFleetsGUI.cpp
+- src/gui/SelectJumpGUI.cpp
+- src/gui/BattleResultsGUI.cpp
+
+Acceptance criteria to validate (from Planner):
+- Each scoped dialog uses wxGTK-correct parentage for controls placed inside static-box sizers.
+- Existing dialog behavior remains intact.
+- Strategic GUI live coverage still exercises the affected dialogs.
+- No scoped SSW dialog retains the same static-box parenting anti-pattern after the sweep.
+
+Create test files in:
+- tests/gui (if new tests are required; prefer extending StrategicGuiLiveTest.cpp conventions)
+
+Implementation context for testing:
+- Only constructor parent arguments were updated for controls contained by static-box sizers.
+- No event wiring, selection logic, enable/disable flow, or modal control flow changes were made.
+- Existing GUI suite output may still show static-box warnings from ScenarioEditorGUI (BattleSim), which is outside Subtask 3 scope.
+
+Suggested test command(s):
+- cd tests/gui && make -j2 && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

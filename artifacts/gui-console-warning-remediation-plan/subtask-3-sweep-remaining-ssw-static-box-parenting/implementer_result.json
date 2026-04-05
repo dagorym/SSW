@@ -1,0 +1,25 @@
+{
+  "status": "completed",
+  "subtask": "gui-console-warning-remediation-plan:subtask-3",
+  "branch": "fixes-gui-console-warning-remediation-s3-implementer-20260405",
+  "implementation_commit": "574a2a3c5b8cfd8cdaabbc23ffffed808a1106c3",
+  "changed_files": [
+    "src/gui/ViewFleetGUI.cpp",
+    "src/gui/SystemDialogGUI.cpp",
+    "src/gui/TransferShipsGUI.cpp",
+    "src/gui/UPFUnattachedGUI.cpp",
+    "src/gui/SatharFleetsGUI.cpp",
+    "src/gui/SelectJumpGUI.cpp",
+    "src/gui/BattleResultsGUI.cpp"
+  ],
+  "validation_commands": [
+    "cd tests/gui && make -j2",
+    "cd tests/gui && make -j2 && xvfb-run -a ./GuiTests"
+  ],
+  "validation_outcome": "pass",
+  "artifact_files": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/implementer_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/tester_prompt.txt",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/implementer_result.json"
+  ]
+}
