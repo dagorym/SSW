@@ -45,6 +45,11 @@ TacticalDamageSummaryGUI::TacticalDamageSummaryGUI(
 	buttonSizer->AddStretchSpacer(1);
 	rootSizer->Add(buttonSizer, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 8);
 
+	SetAffirmativeId(wxID_OK);
+	m_closeButton->SetDefault();
+	SetDefaultItem(m_closeButton);
+	m_closeButton->SetFocus();
+
 	SetSizer(rootSizer);
 	Layout();
 	Centre();

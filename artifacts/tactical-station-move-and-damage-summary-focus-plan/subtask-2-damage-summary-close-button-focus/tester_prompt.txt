@@ -1,0 +1,30 @@
+You are the Tester Agent.
+
+Task summary:
+- Remediated Subtask 2 GUI regression so `TacticalGuiLiveTest` now dismisses `TacticalDamageSummaryGUI` via simulated Enter keypress (`wxUIActionSimulator::Char(WXK_RETURN)`) instead of posting a synthetic button-click event.
+
+Modified files:
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The dialog constructor explicitly leaves the Close button as the initial focused control and default action.
+- A GUI test proves the dialog can be dismissed with Enter without manually clicking the button first.
+- Existing assertions for title, context text, populated summary text, empty-state text, and wxID_OK close result remain valid.
+- No unrelated dialog behavior or layout is changed.
+
+Create test files in:
+- tests/gui (existing live GUI regression files; no new test files required for this remediation unless strictly necessary)
+
+Implementation context for testing:
+- The live regression at `TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior` now raises/focuses the Close button and sends Enter via `wxUIActionSimulator` while the modal dialog is open.
+- The prior synthetic `wxEVT_COMMAND_BUTTON_CLICKED` dispatch path was removed for the Enter-dismiss assertion path.
+- Dialog runtime behavior in `src/gui/TacticalDamageSummaryGUI.cpp` was not changed in this remediation cycle.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-2-damage-summary-close-button-focus
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
