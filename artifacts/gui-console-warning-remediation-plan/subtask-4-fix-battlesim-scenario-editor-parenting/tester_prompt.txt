@@ -1,0 +1,31 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified Subtask 4 implementation that fixes wxGTK static-box child parenting in `ScenarioEditorGUI` while preserving scenario editor battle-launch flow.
+
+Modified files:
+- src/battleSim/ScenarioEditorGUI.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- `ScenarioEditorGUI` no longer constructs static-box child controls with the dialog as the parent where wxGTK requires the static box.
+- Scenario editing and tactical launch behavior are preserved.
+- BattleSim live GUI coverage continues to exercise the corrected scenario editor path.
+- No scenario-editor launch path emits the same static-box parenting warning.
+
+Create test files in:
+- tests/gui/ (reuse existing BattleSimGuiLiveTest coverage; add tests only if needed)
+
+Implementation context for testing:
+- `ScenarioEditorGUI` now parents defender/attacker controls and list boxes under their owning static boxes (`Defenders`, `Attackers`, and nested `Available Ship Types` / `Assigned Ships`).
+- Battle start flow still executes `onStartBattle()` setup and `FBattleScreen` launch path.
+- Live GUI test now checks scenario editor control parentage through `ScenarioEditorGUITestPeer::usesStaticBoxParenting()` before exercising battle launch.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
