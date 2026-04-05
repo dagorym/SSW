@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "subtask": "subtask-2-damage-summary-close-button-focus",
+  "branch": "tactical-damage-summary-subtask-2-documenter-20260405",
+  "commit": "2b33a16a7bf8d8b7ef7ffc9eaa15e28aa5562367",
+  "documentation_files": [
+    "AGENTS.md"
+  ],
+  "artifact_files": [
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-2-damage-summary-close-button-focus/documenter_report.md",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-2-damage-summary-close-button-focus/documenter_result.json",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-2-damage-summary-close-button-focus/verifier_prompt.txt"
+  ]
+}
