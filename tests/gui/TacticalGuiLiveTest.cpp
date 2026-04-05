@@ -252,6 +252,9 @@ CPPUNIT_ASSERT(summaryText->GetValue().Find(wxT("Destroyer Alpha took 4 hull dam
 
 bool closeActionRan = false;
 bool closeButtonFound = false;
+bool closeButtonFocused = false;
+bool closeButtonIsDefault = false;
+bool enterDismissAttempted = false;
 const int closeResult = m_harness.runModalFunctionWithAction([&]() {
 	return dialog->ShowModal();
 }, [&]() {
@@ -259,13 +262,20 @@ const int closeResult = m_harness.runModalFunctionWithAction([&]() {
 	wxButton * closeButton = findButtonByLabel(dialog, wxT("Close"));
 	closeButtonFound = (closeButton != NULL);
 	if (closeButton != NULL) {
-		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
-		click.SetEventObject(closeButton);
-		closeButton->Command(click);
+		m_harness.pumpEvents(2);
+		closeButtonFocused = (wxWindow::FindFocus() == closeButton);
+		closeButtonIsDefault = (dialog->GetDefaultItem() == closeButton);
+		enterDismissAttempted = true;
+		wxCommandEvent activateDefault(wxEVT_COMMAND_BUTTON_CLICKED, dialog->GetAffirmativeId());
+		activateDefault.SetEventObject(closeButton);
+		closeButton->GetEventHandler()->ProcessEvent(activateDefault);
 	}
 }, wxID_CANCEL, 100);
 CPPUNIT_ASSERT(closeActionRan);
 CPPUNIT_ASSERT(closeButtonFound);
+CPPUNIT_ASSERT(closeButtonFocused);
+CPPUNIT_ASSERT(closeButtonIsDefault);
+CPPUNIT_ASSERT(enterDismissAttempted);
 CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), closeResult);
 dialog->Destroy();
 m_harness.pumpEvents(3);
