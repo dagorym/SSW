@@ -363,6 +363,7 @@ void FTacticalGameMechanicsTest::testHexClickDispatchAndTargetSelectionRulesFlow
 	const std::string moveSelectionBody = extractFunctionBody(source, "bool FTacticalGame::handleMoveHexSelection(const FPoint & hex)");
 
 	const std::string assignBody = extractFunctionBody(source, "bool FTacticalGame::assignTargetFromHex(const FPoint & hex)");
+	const std::string placementByHexBody = extractFunctionBody(source, "bool FTacticalGame::setShipPlacementHeadingByHex(const FPoint & hex)");
 	assertContains(assignBody, "if (!isHexInBounds(hex) || m_curWeapon == NULL) {");
 	assertContains(assignBody, "if (occupants.size() == 0) {");
 	assertContains(assignBody, "if (candidate == NULL || candidate->getOwner() == getActivePlayerID()) {");
@@ -385,6 +386,8 @@ void FTacticalGameMechanicsTest::testHexClickDispatchAndTargetSelectionRulesFlow
 	assertContains(clickBody, "case BS_SetupDefendFleet:");
 	assertContains(clickBody, "case BS_SetupAttackFleet:");
 	assertContains(clickBody, "if (getControlState()) {");
+	assertContains(clickBody, "if (m_setRotation) {");
+	assertContains(clickBody, "return setShipPlacementHeading(m_curShip->getHeading());");
 	assertContains(clickBody, "return placeShip(hex);");
 	assertContains(clickBody, "case BS_PlaceMines:");
 	assertContains(clickBody, "return placeMineAtHex(hex);");
@@ -397,6 +400,14 @@ void FTacticalGameMechanicsTest::testHexClickDispatchAndTargetSelectionRulesFlow
 	assertContains(clickBody, "if (selectShipFromHex(hex)) {");
 	assertContains(clickBody, "if (m_curShip != NULL) {");
 	assertContains(clickBody, "setWeapon(NULL);");
+
+	assertContains(placementByHexBody, "if (m_curShip == NULL || !m_setRotation || m_shipPos.getX() < 0 || m_shipPos.getY() < 0) {");
+	assertContains(placementByHexBody, "const int heading = FHexMap::computeHeading(m_shipPos, hex);");
+	assertContains(placementByHexBody, "if (m_curShip->getHeading() == heading) {");
+	assertContains(placementByHexBody, "m_curShip->setHeading(heading);");
+	CPPUNIT_ASSERT(placementByHexBody.find("toggleControlState();") == std::string::npos);
+	CPPUNIT_ASSERT(placementByHexBody.find("setPhase(PH_SET_SPEED);") == std::string::npos);
+	CPPUNIT_ASSERT(placementByHexBody.find("m_setRotation = false;") == std::string::npos);
 }
 
 void FTacticalGameMechanicsTest::testMinePlacementAndMoveFireProgressionUpdateModelState() {

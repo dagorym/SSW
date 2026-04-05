@@ -166,15 +166,25 @@ void FTacticalBattleScreenDelegationTest::testBattleScreenForwardsSelectionAndHe
 // AC: selection and hex interaction mutators remain simple model forwarders with redraw gating.
 const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 
-const std::string selectShipBody = extractFunctionBody(source, "bool FBattleScreen::selectShipFromHex(const FPoint & hex)");
-assertContains(selectShipBody, "const bool changed = m_tacticalGame->selectShipFromHex(hex);");
-assertContains(selectShipBody, "if (changed) {");
-assertContains(selectShipBody, "reDraw();");
+	const std::string selectShipBody = extractFunctionBody(source, "bool FBattleScreen::selectShipFromHex(const FPoint & hex)");
+	assertContains(selectShipBody, "const bool changed = m_tacticalGame->selectShipFromHex(hex);");
+	assertContains(selectShipBody, "if (changed) {");
+	assertContains(selectShipBody, "reDraw();");
 
-const std::string assignTargetBody = extractFunctionBody(source, "bool FBattleScreen::assignTargetFromHex(const FPoint & hex)");
-assertContains(assignTargetBody, "const bool changed = m_tacticalGame->assignTargetFromHex(hex);");
-assertContains(assignTargetBody, "if (changed) {");
-assertContains(assignTargetBody, "reDraw();");
+	const std::string previewHeadingBody = extractFunctionBody(source, "bool FBattleScreen::setShipPlacementHeadingByHex(const FPoint & hex)");
+	assertContains(previewHeadingBody, "const bool changed = m_tacticalGame->setShipPlacementHeadingByHex(hex);");
+	assertContains(previewHeadingBody, "if (changed) {");
+	assertContains(previewHeadingBody, "reDraw();");
+
+	const std::string finalizeHeadingBody = extractFunctionBody(source, "bool FBattleScreen::setShipPlacementHeading(int heading)");
+	assertContains(finalizeHeadingBody, "const bool changed = m_tacticalGame->setShipPlacementHeading(heading);");
+	assertContains(finalizeHeadingBody, "if (changed) {");
+	assertContains(finalizeHeadingBody, "reDraw();");
+
+	const std::string assignTargetBody = extractFunctionBody(source, "bool FBattleScreen::assignTargetFromHex(const FPoint & hex)");
+	assertContains(assignTargetBody, "const bool changed = m_tacticalGame->assignTargetFromHex(hex);");
+	assertContains(assignTargetBody, "if (changed) {");
+	assertContains(assignTargetBody, "reDraw();");
 
 const std::string placeMineBody = extractFunctionBody(source, "bool FBattleScreen::placeMineAtHex(const FPoint & hex)");
 assertContains(placeMineBody, "const bool changed = m_tacticalGame->placeMineAtHex(hex);");

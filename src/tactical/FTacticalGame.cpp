@@ -1361,11 +1361,18 @@ bool FTacticalGame::setShipPlacementHeading(int heading) {
 }
 
 bool FTacticalGame::setShipPlacementHeadingByHex(const FPoint & hex) {
-	if (m_shipPos.getX() < 0) {
+	if (m_curShip == NULL || !m_setRotation || m_shipPos.getX() < 0 || m_shipPos.getY() < 0) {
 		return false;
 	}
 	const int heading = FHexMap::computeHeading(m_shipPos, hex);
-	return setShipPlacementHeading(heading);
+	if (heading < 0 || heading > 5) {
+		return false;
+	}
+	if (m_curShip->getHeading() == heading) {
+		return false;
+	}
+	m_curShip->setHeading(heading);
+	return true;
 }
 
 bool FTacticalGame::beginMinePlacement() {
@@ -1583,6 +1590,9 @@ bool FTacticalGame::handleHexClick(const FPoint & hex) {
 	case BS_SetupDefendFleet:
 	case BS_SetupAttackFleet:
 		if (getControlState()) {
+			if (m_setRotation) {
+				return setShipPlacementHeading(m_curShip->getHeading());
+			}
 			return placeShip(hex);
 		}
 		return false;
