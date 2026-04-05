@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "subtask": "gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s3-documenter-20260405",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-documenter-20260405",
+  "base_branch": "fixes",
+  "base_merge_base": "78940d2bf78f5e887c42e937b2bfeccf73586810",
+  "commit_hash": "e138991bf86d70a05e8139b836f1623e2a0f0b33",
+  "documentation_files": [
+    "AGENTS.md",
+    "artifacts/WXWIDGETS_UPGRADE_CHANGES.md"
+  ],
+  "artifact_files_written": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_prompt.txt"
+  ],
+  "test_commit_hash": "345b5d9aecae3bc99860450fd3efb34037b7b2dc",
+  "summary": "Documented Subtask 3 static-box parenting remediation, GUI regression coverage, and the remaining out-of-scope ScenarioEditorGUI warning."
+}
