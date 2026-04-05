@@ -1,0 +1,38 @@
+You are the Verifier Agent.
+
+Subtask identifier: `subtask-2-wx-placement-wiring`
+Plan path: `plans/ship-placement-orientation-regression-plan.md`
+Base branch: `master`
+
+Original task summary:
+Keep tactical placement hover/click behavior wired through the model-owned contract. Hover on the battle board must stay preview-only through `setShipPlacementHeadingByHex(...)`, and the second click must still finalize through the setup click path rather than direct wx-side placement logic.
+
+Acceptance criteria:
+1. `FBattleBoard::onMotion(...)` only forwards setup hover through the placement preview seam and redraws when the preview heading changes.
+2. `FBattleBoard::onLeftUp(...)` only hit-tests and routes clicks through `handleHexClick(...)` instead of bypassing the model contract.
+3. Tactical regression coverage explicitly locks the wx hover/click forwarding split so the placement-orientation regression cannot reappear silently.
+
+Implementation, test, and documentation context:
+- Implementer branch: `ship-placement-orientation-regression-subtask-2-implementer-20260405`
+- Implementer code commit: `81b5024731c3ce20e3eb0cac2b652d6725734a26`
+- Implementer artifact commit: `eae29644288ab48cc3a50db19c56ec2fc802cb13`
+- Tester branch: `ship-placement-orientation-regression-subtask-2-tester-20260405`
+- Tester artifact commit: `0abddaa80f69b9945308defeeddab9e6fceca092`
+- Documenter branch: `ship-placement-orientation-regression-subtask-2-documenter-20260405`
+- Documenter commit: `dcc59611d7e1ed11ec0bb3fbbc04e4ef986b045f`
+
+Files modified by Implementer, Tester, and Documenter that may affect verification scope:
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp`
+- No documentation files were modified; verify that no documentation update was required.
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+
+Final test outcomes:
+- Passed: `OK (88 tests)`
+
+Shared artifact directory (repository-root-relative): `artifacts/ship-placement-orientation-regression/subtask-2`
+
+Verification must include the updated documentation files along with the implementation and tests. In this subtask, that means confirming the absence of documentation edits is accurate and non-contradictory with the implemented behavior.
+
+Do not report success unless all required artifacts exist and all changes are committed.
