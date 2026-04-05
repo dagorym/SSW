@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "task": "subtask-2-damage-summary-close-button-focus",
+  "branch": "tactical-damage-summary-subtask-2-tester-20260405",
+  "test_commit_hash": "No Changes Made",
+  "test_files_modified": [],
+  "commands_run": [
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && set -o pipefail && xvfb-run -a ./GuiTests | tail -n 40"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "tests_run": 24,
+    "passed": 24,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-2-damage-summary-close-button-focus/tester_report.md",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-2-damage-summary-close-button-focus/tester_result.json",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-2-damage-summary-close-button-focus/documenter_prompt.txt"
+  ]
+}
