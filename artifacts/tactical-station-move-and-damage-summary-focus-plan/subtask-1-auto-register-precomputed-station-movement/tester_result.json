@@ -1,0 +1,45 @@
+{
+  "status": "success",
+  "subtask": "subtask-1-auto-register-precomputed-station-movement",
+  "branch": "tactical-station-move-subtask-1-tester-20260405",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make -s && ./TacticalTests"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "tests_run": 85,
+    "passed": 85,
+    "failed": 0,
+    "attempts_completed": 1,
+    "attempt_limit": 3
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "resetMovementState() or immediate call chain recomputes move completion after current-mover turn data rebuild",
+      "status": "met"
+    },
+    {
+      "criterion": "Regression proves isMoveComplete() is true for moving side whose only required move is pre-seeded station orbit",
+      "status": "met"
+    },
+    {
+      "criterion": "Station orbital assertions still hold: orbit distance 1, heading update, speed preserved",
+      "status": "met"
+    },
+    {
+      "criterion": "Non-station movement route behavior remains covered and unchanged",
+      "status": "met"
+    },
+    {
+      "criterion": "Mechanics-source assertions accurately describe real code path",
+      "status": "met"
+    }
+  ],
+  "artifact_files_written": [
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/tester_report.md",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/tester_result.json",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/documenter_prompt.txt"
+  ]
+}

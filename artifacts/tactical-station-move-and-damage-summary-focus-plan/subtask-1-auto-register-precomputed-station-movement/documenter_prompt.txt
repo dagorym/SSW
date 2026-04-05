@@ -1,0 +1,47 @@
+You are the Documenter Agent.
+
+Task summary:
+- resetMovementState() now recomputes movement completion immediately after rebuilding turn data so pre-seeded station orbital movement is recognized at movement-phase entry, and tactical regressions validating this behavior pass.
+
+Acceptance criteria validated:
+- resetMovementState() or its immediate call chain recomputes move completion after current-mover turn data is rebuilt.
+- A tactical regression proves isMoveComplete() is already true for a moving side whose only required move is the pre-seeded station orbit.
+- Existing station orbital movement assertions still pass conceptually: orbit distance remains 1, heading updates correctly, and speed is preserved.
+- Existing non-station movement route behavior remains covered and unchanged.
+- Any mechanics-source assertions updated by this change still describe the real code path accurately.
+
+Implementation branch or worktree context:
+- Tester worktree: /home/tstephen/.copilot/session-state/44cce820-08b1-462e-8bd8-f96db6f00826/files/worktrees/tactical-station-move-subtask-1-tester-20260405
+- Tester branch: tactical-station-move-subtask-1-tester-20260405
+- Parent implementer branch: tactical-station-move-subtask-1-implementer-20260405
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalStationOrbitalMovementTest.h
+- tests/tactical/FTacticalStationOrbitalMovementTest.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/tester_report.md
+- artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/tester_result.json
+- artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/tactical && make -s && ./TacticalTests
+
+Final test outcomes:
+- Tactical suite passed: 85 passed, 0 failed.
+- Station auto-registration and movement-complete behavior validated at movement-phase entry.
+- Station orbit distance/heading/speed assertions and non-station route behavior checks remain passing.
+
+Documentation context:
+- Update tactical mechanics notes where resetMovementState movement-completion behavior is described.
+- Ensure documentation mentions that pre-seeded station orbital movement can auto-complete move phase on entry.
+- Confirm any mechanics-source assertion notes reference the current resetMovementState -> checkMoveStatus path.
+
+Shared artifact directory:
+- artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
