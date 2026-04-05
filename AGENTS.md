@@ -73,11 +73,11 @@ make docs         # Generate Doxygen documentation
 
 Individual modules can also be built by navigating to their source directories and running `make`. Each module produces a static library (`.a` file) that is linked into the final executables.
 
-Dependencies: wxWidgets 3.3.1 and CppUnit for testing. GUI-facing builds still resolve wx settings via `wx-config`; the six non-GUI module Makefiles (`src/core`, `src/strategic`, `src/ships`, `src/weapons`, `src/defenses`, and `src/tactical`) must not contain active `wx-config --cxxflags` or `wx-config --libs` usage. See `WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
+Dependencies: wxWidgets 3.3.1 and CppUnit for testing. GUI-facing builds still resolve wx settings via `wx-config`; the six non-GUI module Makefiles (`src/core`, `src/strategic`, `src/ships`, `src/weapons`, `src/defenses`, and `src/tactical`) must not contain active `wx-config --cxxflags` or `wx-config --libs` usage. See `artifacts/WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
 
 ### Windows / Visual Studio 2022
 
-Open `SSW.sln`. Requires wxWidgets 3.3.1 built locally at `C:\Users\steph26\repos\wxWidgets-3.3.1\`. Library names use `wxmsw33u*` (release) or `wxmsw33ud*` (debug). See `VS_PROJECT_CHANGES.md` for configuration details.
+Open `SSW.sln`. Requires wxWidgets 3.3.1 built locally at `C:\Users\steph26\repos\wxWidgets-3.3.1\`. Library names use `wxmsw33u*` (release) or `wxmsw33ud*` (debug). See `artifacts/VS_PROJECT_CHANGES.md` for configuration details.
 
 ### Module Dependencies
 Executables link in this order: `-lgui -ltactical -lweapons -ldefenses -lships -lstrategic -lcore`. Changes to core require rebuilding all dependent modules. Each `src/*/Makefile` produces its module's static library independently.
@@ -191,7 +191,7 @@ Use `#ifndef _<FILENAME>_H_` pattern (e.g., `#ifndef _FGAME_H_`). Doxygen-style 
 ### Recent Upgrade (3.0.3 → 3.3.1)
 - `wxInitAllImageHandlers()` removed (automatic in 3.1+)
 - Virtual methods now use `wxOVERRIDE` macro instead of raw `override`
-- See `WXWIDGETS_UPGRADE_CHANGES.md` for complete migration details
+- See `artifacts/WXWIDGETS_UPGRADE_CHANGES.md` for complete migration details
 
 ### Common Patterns
 - Main app classes inherit from `wxApp` (`FApp`, `FBattleSimApp`)
@@ -235,7 +235,7 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 ## Documentation
 
 - Doxygen configuration: `doc/Doxyfile`
-- Generated documentation: `doc/`
+- Generated documentation: `doc/` (`make docs` writes HTML output to `doc/html/`)
 - AI agent information: `AGENTS.md` (this file)
 - Design documentation: `doc/DesignNotes.odt`
 - User Guide: `doc/UsersGuide.odt`
