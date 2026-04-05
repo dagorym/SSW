@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "subtask_id": "subtask-1-model-placement-contract",
+  "branch": "ship-placement-orientation-regression-subtask-1-verifier-20260405",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency": "Sufficient: tactical suite passed with OK (88 tests) and the new runtime fixture covers defender and attacker placement finalization.",
+  "artifact_files": [
+    "artifacts/ship-placement-orientation-regression/subtask-1/verifier_report.md",
+    "artifacts/ship-placement-orientation-regression/subtask-1/verifier_result.json"
+  ]
+}
