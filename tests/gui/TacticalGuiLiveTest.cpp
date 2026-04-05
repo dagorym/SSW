@@ -11,6 +11,7 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/toplevel.h>
+#include <wx/uiaction.h>
 #include <wx/window.h>
 
 #include <algorithm>
@@ -265,12 +266,13 @@ const int closeResult = m_harness.runModalFunctionWithAction([&]() {
 		m_harness.pumpEvents(2);
 		closeButtonFocused = (wxWindow::FindFocus() == closeButton);
 		closeButtonIsDefault = (dialog->GetDefaultItem() == closeButton);
-		enterDismissAttempted = true;
-		wxCommandEvent activateDefault(wxEVT_COMMAND_BUTTON_CLICKED, dialog->GetAffirmativeId());
-		activateDefault.SetEventObject(closeButton);
-		closeButton->GetEventHandler()->ProcessEvent(activateDefault);
+		dialog->Raise();
+		closeButton->SetFocus();
+		m_harness.pumpEvents(2);
+		wxUIActionSimulator simulator;
+		enterDismissAttempted = simulator.Char(WXK_RETURN);
 	}
-}, wxID_CANCEL, 100);
+}, wxID_CANCEL, 250);
 CPPUNIT_ASSERT(closeActionRan);
 CPPUNIT_ASSERT(closeButtonFound);
 CPPUNIT_ASSERT(closeButtonFocused);
