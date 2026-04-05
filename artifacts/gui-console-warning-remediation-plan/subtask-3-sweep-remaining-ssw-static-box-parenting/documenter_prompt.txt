@@ -1,0 +1,49 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implementer remediated wxGTK static-box child-parenting defects in seven scoped SSW dialogs by constructing static-box-contained controls with each sizer's `GetStaticBox()` parent.
+- Tester added strategic GUI regression coverage to verify the remediation patterns remain in place and validated full GUI-suite behavior after the change.
+
+Acceptance criteria validated:
+- Each scoped dialog uses wxGTK-correct parentage for controls placed inside static-box sizers.
+- Existing dialog behavior remains intact.
+- Strategic GUI live coverage still exercises the affected dialogs.
+- No scoped SSW dialog retains the same static-box parenting anti-pattern after the sweep.
+
+Implementation branch or worktree context:
+- Branch: `fixes-gui-console-warning-remediation-s3-tester-20260405`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-tester-20260405`
+- Shared artifact directory to reuse: `artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `src/gui/ViewFleetGUI.cpp`
+- `src/gui/SystemDialogGUI.cpp`
+- `src/gui/TransferShipsGUI.cpp`
+- `src/gui/UPFUnattachedGUI.cpp`
+- `src/gui/SatharFleetsGUI.cpp`
+- `src/gui/SelectJumpGUI.cpp`
+- `src/gui/BattleResultsGUI.cpp`
+- `tests/gui/StrategicGuiLiveTest.h`
+- `tests/gui/StrategicGuiLiveTest.cpp`
+
+Test commit:
+- `345b5d9aecae3bc99860450fd3efb34037b7b2dc`
+
+Commands executed:
+- `cd tests/gui && make -j2 && xvfb-run -a ./GuiTests` (baseline)
+- `cd tests/gui && make -j2 && xvfb-run -a ./GuiTests` (attempt 1)
+- `cd tests/gui && timeout 180s xvfb-run -a ./GuiTests` (attempt 2 diagnostics)
+- `cd tests/gui && make -j2 && timeout 180s xvfb-run -a ./GuiTests` (final pass)
+
+Final test outcomes:
+- Final run passed: `OK (25 tests)`.
+- Strategic, tactical, and battleSim GUI live tests remained green.
+- wx debug static-box warnings still appear for `ScenarioEditorGUI` (“Create a Custom Scenario”), which is outside Subtask 3 scope and unchanged by this work.
+
+Documentation context:
+- Update any remediation tracking docs to reflect Subtask 3 completion and tester validation evidence.
+- Call out that Subtask 3 scope is limited to the seven listed SSW dialogs; ScenarioEditor warnings are still expected until later scope addresses BattleSim.
+- Note new strategic GUI regression coverage that locks in source-level static-box parenting patterns for the remediated dialogs.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

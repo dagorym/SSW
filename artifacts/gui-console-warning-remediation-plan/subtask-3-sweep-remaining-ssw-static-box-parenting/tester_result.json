@@ -1,0 +1,29 @@
+{
+  "status": "success",
+  "subtask": "gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s3-tester-20260405",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-tester-20260405",
+  "test_commit_hash": "345b5d9aecae3bc99860450fd3efb34037b7b2dc",
+  "test_files_modified": [
+    "tests/gui/StrategicGuiLiveTest.h",
+    "tests/gui/StrategicGuiLiveTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests/gui && make -j2 && xvfb-run -a ./GuiTests",
+    "cd tests/gui && make -j2 && xvfb-run -a ./GuiTests",
+    "cd tests/gui && timeout 180s xvfb-run -a ./GuiTests",
+    "cd tests/gui && make -j2 && timeout 180s xvfb-run -a ./GuiTests"
+  ],
+  "attempts": 3,
+  "totals": {
+    "total": 25,
+    "passed": 25,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/tester_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/tester_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_prompt.txt"
+  ]
+}
