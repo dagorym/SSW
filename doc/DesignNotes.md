@@ -714,13 +714,20 @@ Result: `OK (74 tests)`.
 The station orbital-movement regression follow-up then documented the restored
 model-owned runtime behavior for defender stations orbiting a planet.
 `FTacticalGame::resetTurnInfoForCurrentMover()` now carries the orbital turn
-heading into move finalization, and the refreshed
+heading into move finalization, and `resetMovementState()` immediately follows
+that rebuild by routing through `checkMoveStatus()`. This lets pre-seeded
+station orbital movement auto-complete the move phase as soon as the side enters
+`PH_MOVE` when the station orbit is the only required movement. The refreshed
 `FTacticalStationOrbitalMovementTest` suite verifies the runtime seam through
-`resetMovementState()` and `completeMovePhase()` instead of inspecting source
-text. That focused regression coverage now confirms that:
+`resetMovementState()` and `completeMovePhase()`, while
+`FTacticalGameMechanicsTest` keeps the mechanics-source assertion aligned with
+the current `resetMovementState() -> checkMoveStatus()` path. That focused
+regression coverage now confirms that:
 
 - a station adjacent to a planet stays in orbit after move completion rather
   than drifting straight away;
+- a moving side whose only required movement is the pre-seeded station orbit is
+  already move-complete at movement-phase entry;
 - the station heading reflects the orbital turn resolved during the move;
 - station speed preservation remains intact across repeated orbit completion;
   and
