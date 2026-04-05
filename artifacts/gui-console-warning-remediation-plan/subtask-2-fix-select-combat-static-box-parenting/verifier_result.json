@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "subtask": "subtask-2-fix-select-combat-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s2-verifier-20260405",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s2-verifier-20260405",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient: live strategic GUI coverage asserts wxStaticBox parentage and still exercises the attack-launch flow; verifier rerun produced GuiTests OK (24 tests) and combat_warning_matches=0.",
+  "documentation_accuracy_summary": "Accurate: AGENTS.md and artifacts/WXWIDGETS_UPGRADE_CHANGES.md match the implemented SelectCombatGUI parenting fix, strategic coverage, and validated warning outcome.",
+  "artifact_files_written": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/verifier_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/verifier_result.json"
+  ],
+  "validation_commands": [
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && xvfb-run -a ./GuiTests 2>&1 | grep -F '(\"Combat\")' | wc -l"
+  ]
+}
