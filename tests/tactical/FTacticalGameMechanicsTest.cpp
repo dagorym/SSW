@@ -200,6 +200,7 @@ assertContains(resetMoveBody, "m_gravityTurnFlag = false;");
 assertContains(resetMoveBody, "m_gravityTurns.clear();");
 assertContains(resetMoveBody, "setMoveComplete(false);");
 assertContains(resetMoveBody, "resetTurnInfoForCurrentMover();");
+assertContains(resetMoveBody, "checkMoveStatus();");
 
 assertContains(clearBody, "m_movementHexes.clear();");
 assertContains(clearBody, "m_leftHexes.clear();");

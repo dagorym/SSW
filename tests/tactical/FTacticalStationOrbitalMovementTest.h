@@ -14,6 +14,7 @@ namespace FrontierTests {
 
 class FTacticalStationOrbitalMovementTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalStationOrbitalMovementTest );
+CPPUNIT_TEST( testStationMoveAlreadyCompleteAtPhaseEntry );
 CPPUNIT_TEST( testStationHeadingUpdatedAfterOrbit );
 CPPUNIT_TEST( testStationSpeedPreservedAfterOrbit );
 CPPUNIT_TEST( testNonStationHeadingUnchangedByFix );
@@ -23,6 +24,7 @@ public:
 void setUp();
 void tearDown();
 
+void testStationMoveAlreadyCompleteAtPhaseEntry();
 void testStationHeadingUpdatedAfterOrbit();
 void testStationSpeedPreservedAfterOrbit();
 void testNonStationHeadingUnchangedByFix();

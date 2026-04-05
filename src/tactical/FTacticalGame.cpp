@@ -637,6 +637,7 @@ void FTacticalGame::resetMovementState() {
 	m_gravityTurns.clear();
 	setMoveComplete(false);
 	resetTurnInfoForCurrentMover();
+	checkMoveStatus();
 }
 
 void FTacticalGame::finalizeMovementState() {

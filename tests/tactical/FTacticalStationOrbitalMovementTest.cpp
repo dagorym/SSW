@@ -120,6 +120,28 @@ void FTacticalStationOrbitalMovementTest::setUp() {
 void FTacticalStationOrbitalMovementTest::tearDown() {
 }
 
+void FTacticalStationOrbitalMovementTest::testStationMoveAlreadyCompleteAtPhaseEntry() {
+FOrbitFixture fixture;
+setupOrbitFixture(fixture);
+
+const FPoint planetPos(20, 20);
+const FPoint stationPos = FHexMap::findNextHex(planetPos, 0);
+const int startHeading = findOrbitalHeading(planetPos, stationPos);
+CPPUNIT_ASSERT(startHeading >= 0);
+
+initializeStationOrbit(fixture, planetPos, stationPos, startHeading);
+fixture.game.setPhase(PH_MOVE);
+fixture.game.resetMovementState();
+
+FTacticalTurnData * stationTurnData = fixture.game.findTurnData(fixture.station->getID());
+CPPUNIT_ASSERT(stationTurnData != NULL);
+CPPUNIT_ASSERT_EQUAL(1, stationTurnData->nMoved);
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2), stationTurnData->path.getPathLength());
+CPPUNIT_ASSERT(fixture.game.isMoveComplete());
+
+destroyOrbitFixture(fixture);
+}
+
 void FTacticalStationOrbitalMovementTest::testStationHeadingUpdatedAfterOrbit() {
 FOrbitFixture fixture;
 setupOrbitFixture(fixture);
@@ -183,14 +205,19 @@ CPPUNIT_ASSERT(fixture.game.setShipPlacementHeading(1));
 fixture.game.setState(BS_Battle);
 fixture.game.setMovingPlayer(true);
 fixture.game.setPhase(PH_MOVE);
+fixture.game.resetMovementState();
+FTacticalTurnData * preMoveTurnData = fixture.game.findTurnData(fixture.attacker->getID());
+CPPUNIT_ASSERT(preMoveTurnData != NULL);
+CPPUNIT_ASSERT_EQUAL(0, preMoveTurnData->nMoved);
 CPPUNIT_ASSERT(fixture.game.selectShipFromHex(FPoint(15, 10)));
 const std::vector<FPoint> & moves = fixture.game.getMovementHexes();
 CPPUNIT_ASSERT(!moves.empty());
 CPPUNIT_ASSERT(fixture.game.handleHexClick(moves.front()));
 
-const FTacticalTurnData * turnData = fixture.game.findTurnData(fixture.attacker->getID());
+FTacticalTurnData * turnData = fixture.game.findTurnData(fixture.attacker->getID());
 CPPUNIT_ASSERT(turnData != NULL);
 const int expectedHeading = turnData->curHeading;
+CPPUNIT_ASSERT(turnData->path.getPathLength() > 1);
 
 fixture.game.completeMovePhase();
 
