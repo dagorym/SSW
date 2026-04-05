@@ -1,0 +1,32 @@
+You are the Tester Agent.
+
+Task summary:
+- Remediated the remaining Subtask 3 static-box parenting defects by fixing two missed `BattleResultsGUI` controls and extending strategic GUI static-parentage regression checks for those controls.
+
+Modified files:
+- src/gui/BattleResultsGUI.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Each scoped dialog uses wxGTK-correct parentage for controls placed inside static-box sizers.
+- Existing dialog behavior remains intact.
+- Strategic GUI live coverage still exercises the affected dialogs.
+- No scoped SSW dialog retains the same static-box parenting anti-pattern after the sweep.
+
+Create test files in:
+- tests/gui (if additional tests are needed; prefer extending existing StrategicGuiLiveTest patterns)
+
+Implementation context for testing:
+- `BattleResultsGUI` now parents `m_staticText8` and `m_staticText12` to `editShipStatsBox` (`wxStaticBox`) instead of the dialog.
+- `StrategicGuiLiveTest::testStrategicDialogsUseStaticBoxChildParents()` now asserts required/forbidden parentage patterns for those two controls.
+- No functional dialog behavior changes were made beyond control parent correction.
+- Existing out-of-scope static-box warnings may still appear from `ScenarioEditorGUI` (`Create a Custom Scenario`) and should not be treated as Subtask 3 regressions.
+
+Suggested test command(s):
+- cd tests/gui && make -s && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

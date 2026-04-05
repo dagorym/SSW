@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "subtask": "subtask-3-sweep-remaining-ssw-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s3-tester-20260405",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-tester-20260405",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/gui && make -s && xvfb-run -a ./GuiTests"
+  ],
+  "totals": {
+    "total": 25,
+    "passed": 25,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_files": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/tester_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/tester_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_prompt.txt"
+  ]
+}

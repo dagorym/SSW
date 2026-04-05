@@ -46,8 +46,9 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Fleet Ships") ), wxVERTICAL );
+	wxWindow* fleetShipsBox = sbSizer1->GetStaticBox();
 
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED );
+	m_listBox1 = new wxListBox( fleetShipsBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED );
 	m_listBox1->Enable( false );
 	m_listBox1->SetMinSize( wxSize( 200,-1 ) );
 
@@ -86,6 +87,7 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Edit Ship Statistics") ), wxVERTICAL );
+	wxWindow* editShipStatsBox = sbSizer2->GetStaticBox();
 //	sbSizer2->SetMinSize(wxSize(240,-1));
 
 	wxFlexGridSizer* fgSizer5;
@@ -99,13 +101,13 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer3->SetFlexibleDirection( wxBOTH );
 	fgSizer3->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
-	m_staticText2 = new wxStaticText( this, wxID_ANY, wxT("Ship Type:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText2 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("Ship Type:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText2->Wrap( -1 );
 	m_staticText2->Enable( false );
 
 	fgSizer3->Add( m_staticText2, 0, wxALL, 5 );
 
-	m_staticText3 = new wxStaticText( this, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText3 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText3->Wrap( -1 );
 	m_staticText3->Enable( false );
 
@@ -119,13 +121,13 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer4->SetFlexibleDirection( wxBOTH );
 	fgSizer4->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
-	m_staticText4 = new wxStaticText( this, wxID_ANY, wxT("Name:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText4 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("Name:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText4->Wrap( -1 );
 	m_staticText4->Enable( false );
 
 	fgSizer4->Add( m_staticText4, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
 
-	m_textCtrl2 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_textCtrl2 = new wxTextCtrl( editShipStatsBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	m_textCtrl2->Enable( false );
 	m_textCtrl2->SetMinSize( wxSize( 140,-1 ) );
 
@@ -145,19 +147,19 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer6->SetFlexibleDirection( wxBOTH );
 	fgSizer6->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
-	m_staticText5 = new wxStaticText( this, wxID_ANY, wxT("ADF:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText5 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("ADF:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText5->Wrap( -1 );
 	m_staticText5->Enable( false );
 
 	fgSizer6->Add( m_staticText5, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 5 );
 
-	m_textCtrl3 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 20,-1 ), 0 );
+	m_textCtrl3 = new wxTextCtrl( editShipStatsBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 20,-1 ), 0 );
 	m_textCtrl3->Enable( false );
 	m_textCtrl3->SetMaxSize( wxSize( 20,-1 ) );
 
 	fgSizer6->Add( m_textCtrl3, 0, wxBOTTOM|wxTOP, 5 );
 
-	m_staticText6 = new wxStaticText( this, wxID_ANY, wxT("/ N"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText6 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("/ N"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText6->Wrap( -1 );
 	m_staticText6->Enable( false );
 
@@ -166,19 +168,19 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 
 	fgSizer6->Add( 15, 0, 1, wxEXPAND, 5 );
 
-	m_staticText7 = new wxStaticText( this, wxID_ANY, wxT("MR:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText7 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("MR:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText7->Wrap( -1 );
 	m_staticText7->Enable( false );
 
 	fgSizer6->Add( m_staticText7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
-	m_textCtrl7 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 20,-1 ), 0 );
+	m_textCtrl7 = new wxTextCtrl( editShipStatsBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 20,-1 ), 0 );
 	m_textCtrl7->Enable( false );
 	m_textCtrl7->SetMaxSize( wxSize( 20,-1 ) );
 
 	fgSizer6->Add( m_textCtrl7, 0, wxBOTTOM|wxTOP, 5 );
 
-	m_staticText8 = new wxStaticText( this, wxID_ANY, wxT("/ N"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText8 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("/ N"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText8->Wrap( -1 );
 	m_staticText8->Enable( false );
 
@@ -192,19 +194,19 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer7->SetFlexibleDirection( wxBOTH );
 	fgSizer7->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
-	m_staticText9 = new wxStaticText( this, wxID_ANY, wxT("Hull Points:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText9 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("Hull Points:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText9->Wrap( -1 );
 	m_staticText9->Enable( false );
 
 	fgSizer7->Add( m_staticText9, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
-	m_textCtrl8 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 45,-1 ), 0 );
+	m_textCtrl8 = new wxTextCtrl( editShipStatsBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 45,-1 ), 0 );
 	m_textCtrl8->Enable( false );
 	m_textCtrl8->SetMaxSize( wxSize( 45,-1 ) );
 
 	fgSizer7->Add( m_textCtrl8, 0, 0, 5 );
 
-	m_staticText10 = new wxStaticText( this, wxID_ANY, wxT("/ NNN"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText10 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("/ NNN"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText10->Wrap( -1 );
 	m_staticText10->Enable( false );
 
@@ -217,19 +219,19 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer71->SetFlexibleDirection( wxBOTH );
 	fgSizer71->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
-	m_staticText11 = new wxStaticText( this, wxID_ANY, wxT("DCR:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText11 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("DCR:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText11->Wrap( -1 );
 	m_staticText11->Enable( false );
 
 	fgSizer71->Add( m_staticText11, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
-	m_textCtrl9 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 45,-1 ), 0 );
+	m_textCtrl9 = new wxTextCtrl( editShipStatsBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 45,-1 ), 0 );
 	m_textCtrl9->Enable( false );
 	m_textCtrl9->SetMaxSize( wxSize( 45,-1 ) );
 
 	fgSizer71->Add( m_textCtrl9, 0, 0, 5 );
 
-	m_staticText12 = new wxStaticText( this, wxID_ANY, wxT("/ NNN"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText12 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("/ NNN"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText12->Wrap( -1 );
 	m_staticText12->Enable( false );
 
@@ -246,27 +248,27 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer8->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
 	fgSizer8->SetMinSize( wxSize( -1,30 ) );
-	m_staticText13 = new wxStaticText( this, wxID_ANY, wxT("Weapon/Defense"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText13 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("Weapon/Defense"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText13->Wrap( -1 );
 	m_staticText13->Enable( false );
 	fgSizer8->Add( m_staticText13, 0, wxALL, 5 );
 
-	m_staticText14 = new wxStaticText( this, wxID_ANY, wxT("Dam?"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText14 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("Dam?"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText14->Wrap( -1 );
 	m_staticText14->Enable( false );
 	fgSizer8->Add( m_staticText14, 0, wxALL, 5 );
 
-	m_staticText15 = new wxStaticText( this, wxID_ANY, wxT("Ammo/Max"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText15 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("Ammo/Max"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText15->Wrap( -1 );
 	m_staticText15->Enable( false );
 	fgSizer8->Add( m_staticText15, 0, wxALL, 5 );
 
-	m_staticText16 = new wxStaticText( this, wxID_ANY, wxT("Laser Battery"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText16 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("Laser Battery"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText16->Wrap( -1 );
 	m_staticText16->Enable( false );
 	fgSizer8->Add( m_staticText16, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 5 );
 
-	m_checkBox1 = new wxCheckBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_checkBox1 = new wxCheckBox( editShipStatsBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	m_checkBox1->Enable(false);
 
 	fgSizer8->Add( m_checkBox1, 0, wxALIGN_CENTER, 5 );
@@ -276,11 +278,11 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer13->SetFlexibleDirection( wxBOTH );
 	fgSizer13->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
-	m_textCtrl10 = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 30,-1 ), 0 );
+	m_textCtrl10 = new wxTextCtrl( editShipStatsBox, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 30,-1 ), 0 );
 	m_textCtrl10->Enable(false);
 	fgSizer13->Add( m_textCtrl10, 0, wxALIGN_CENTER|wxALL, 5 );
 
-	m_staticText17 = new wxStaticText( this, wxID_ANY, wxT("N/A"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText17 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("N/A"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText17->Wrap( -1 );
 	m_staticText17->Enable( false );
 	fgSizer13->Add( m_staticText17, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT, 5 );
@@ -320,7 +322,7 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 	fgSizer12->SetMinSize( wxSize( -1,30 ) );
 	fgSizer5->Add( fgSizer12, 1, wxEXPAND, 5 );
 
-	m_button4 = new wxButton( this, wxID_ANY, wxT("Update Ship Statistics"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_button4 = new wxButton( editShipStatsBox, wxID_ANY, wxT("Update Ship Statistics"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_button4->Enable( false );
 
 	fgSizer5->Add( m_button4, 0, wxALL|wxEXPAND, 5 );

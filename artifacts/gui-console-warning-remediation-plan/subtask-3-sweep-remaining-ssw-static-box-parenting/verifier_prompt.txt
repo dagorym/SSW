@@ -1,0 +1,49 @@
+You are the Verifier Agent.
+
+Task summary:
+- Remediated Subtask 3 static-box parenting in `BattleResultsGUI` by correcting the two missed `Edit Ship Statistics` control parents, updated strategic GUI regression coverage to lock those constructors down, and refreshed the developer-facing documentation to match the final tested behavior.
+
+Acceptance criteria to verify:
+- Each scoped dialog uses wxGTK-correct parentage for controls placed inside static-box sizers.
+- Existing dialog behavior remains intact.
+- Strategic GUI live coverage still exercises the affected dialogs.
+- No scoped SSW dialog retains the same static-box parenting anti-pattern after the sweep.
+
+Implementation branch or worktree context:
+- Current branch: `fixes-gui-console-warning-remediation-s3-documenter-20260405`
+- Current worktree: `/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-documenter-20260405`
+- Documentation commit: `7250718c36f1560f06238e92466a2e38cb6a9ee6`
+- Tester handoff context: branch `fixes-gui-console-warning-remediation-s3-tester-20260405`, worktree `/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-tester-20260405`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/gui/BattleResultsGUI.cpp`
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `AGENTS.md`
+- `artifacts/WXWIDGETS_UPGRADE_CHANGES.md`
+- `artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/tester_report.md`
+- `artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/tester_result.json`
+- `artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_prompt.txt`
+- `artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_report.md`
+- `artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_result.json`
+- `artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/gui && make -s && xvfb-run -a ./GuiTests`
+
+Final test outcomes:
+- GUI suite passed: 25/25 tests.
+- Strategic static-box parentage regression coverage passed, including `BattleResultsGUI` checks for the corrected `m_textCtrl2`, `m_staticText8`, and `m_staticText12` constructors.
+- Known out-of-scope `ScenarioEditorGUI` wxGTK static-box warnings were observed and are not Subtask 3 regressions.
+
+Documentation files updated:
+- `AGENTS.md`
+- `artifacts/WXWIDGETS_UPGRADE_CHANGES.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Shared artifact directory:
+- `artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

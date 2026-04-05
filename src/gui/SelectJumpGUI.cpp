@@ -43,8 +43,9 @@ SelectJumpGUI::SelectJumpGUI( wxWindow* parent, FFleet * fleet, FMap * map, std:
 	fgSizer1->SetMinSize( wxSize( 150,-1 ) );
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Destinations") ), wxVERTICAL );
+	wxWindow* destinationsBox = sbSizer1->GetStaticBox();
 
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE );
+	m_listBox1 = new wxListBox( destinationsBox, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE );
 	m_listBox1->SetMinSize( wxSize( 150,170 ) );
 	m_sList = map->getConnectedSystems(system,player,fleet);
 	for (unsigned int i = 0; i < m_sList.size(); i++){
@@ -57,17 +58,18 @@ SelectJumpGUI::SelectJumpGUI( wxWindow* parent, FFleet * fleet, FMap * map, std:
 
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Jump Info") ), wxVERTICAL );
+	wxWindow* jumpInfoBox = sbSizer2->GetStaticBox();
 	sbSizer2->SetMinSize( wxSize( 230,-1 ) );
 
-	m_staticText2 = new wxStaticText( this, wxID_ANY, wxT("Standard Travel Time:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText2 = new wxStaticText( jumpInfoBox, wxID_ANY, wxT("Standard Travel Time:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText2->Wrap( -1 );
 	sbSizer2->Add( m_staticText2, 0, wxALL, 5 );
 
-	m_staticText3 = new wxStaticText( this, wxID_ANY, wxT("Risk Jump 2 Travel Time:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText3 = new wxStaticText( jumpInfoBox, wxID_ANY, wxT("Risk Jump 2 Travel Time:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText3->Wrap( -1 );
 	sbSizer2->Add( m_staticText3, 0, wxALL, 5 );
 
-	m_staticText4 = new wxStaticText( this, wxID_ANY, wxT("Risk Jump 3 Travel Time:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText4 = new wxStaticText( jumpInfoBox, wxID_ANY, wxT("Risk Jump 3 Travel Time:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText4->Wrap( -1 );
 	sbSizer2->Add( m_staticText4, 0, wxALL, 5 );
 

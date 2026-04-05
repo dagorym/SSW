@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "subtask": "subtask-3-sweep-remaining-ssw-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s3-verifier-20260405",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-verifier-20260405",
+  "reviewed_head_commit": "e4fe1f6",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient: StrategicGuiLiveTest combines live dialog behavior checks with source-inspection assertions for all seven scoped SSW dialogs, including the corrected BattleResultsGUI edit-stats controls, and GuiTests passed 25/25 on verifier rerun.",
+  "documentation_accuracy_summary": "Accurate: AGENTS.md and WXWIDGETS_UPGRADE_CHANGES.md match the implemented BattleResultsGUI parenting fix, the expanded regression coverage, and the verified 25/25 GUI rerun while keeping ScenarioEditorGUI warnings scoped out of Subtask 3.",
+  "commands_run": [
+    "cd tests/gui && make -s && xvfb-run -a ./GuiTests"
+  ],
+  "artifact_files_written": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_result.json"
+  ]
+}

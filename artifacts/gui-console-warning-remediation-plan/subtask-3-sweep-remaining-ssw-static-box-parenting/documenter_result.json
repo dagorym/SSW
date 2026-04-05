@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "subtask": "subtask-3-sweep-remaining-ssw-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s3-documenter-20260405",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-documenter-20260405",
+  "commit_hash": "7250718c36f1560f06238e92466a2e38cb6a9ee6",
+  "documentation_files": [
+    "AGENTS.md",
+    "artifacts/WXWIDGETS_UPGRADE_CHANGES.md"
+  ],
+  "artifact_files": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/documenter_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_prompt.txt"
+  ],
+  "commands_run": [
+    "cd tests/gui && make -s && xvfb-run -a ./GuiTests"
+  ],
+  "test_outcomes": [
+    "GUI suite passed: 25/25 tests.",
+    "Strategic static-box parentage regression coverage passed, including BattleResultsGUI checks for corrected controls.",
+    "Known out-of-scope ScenarioEditorGUI wxGTK static-box warnings were observed and are not Subtask 3 regressions."
+  ],
+  "documentation_commit_message": "Document BattleResults static-box coverage"
+}
