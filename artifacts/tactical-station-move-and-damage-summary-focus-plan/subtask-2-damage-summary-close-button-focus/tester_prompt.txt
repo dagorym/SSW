@@ -1,10 +1,9 @@
 You are the Tester Agent.
 
 Task summary:
-- Verified tactical damage summary dialog now initializes with Close as focused/default action and added live GUI coverage for keyboard-first close behavior via default-action activation path.
+- Remediated Subtask 2 GUI regression so `TacticalGuiLiveTest` now dismisses `TacticalDamageSummaryGUI` via simulated Enter keypress (`wxUIActionSimulator::Char(WXK_RETURN)`) instead of posting a synthetic button-click event.
 
 Modified files:
-- src/gui/TacticalDamageSummaryGUI.cpp
 - tests/gui/TacticalGuiLiveTest.cpp
 
 Acceptance criteria to validate (from Planner):
@@ -14,12 +13,12 @@ Acceptance criteria to validate (from Planner):
 - No unrelated dialog behavior or layout is changed.
 
 Create test files in:
-- tests/gui/ (prefer existing tactical live GUI coverage; no new test file required unless strictly needed)
+- tests/gui (existing live GUI regression files; no new test files required for this remediation unless strictly necessary)
 
 Implementation context for testing:
-- TacticalDamageSummaryGUI constructor now sets wxID_OK as affirmative, marks Close as default item, and explicitly focuses Close.
-- TacticalGuiLiveTest damage summary test now asserts Close is focused/default during modal execution and exercises default-action dismissal path without direct button-click helper calls.
-- Existing title/context/summary/empty-state assertions and wxID_OK modal result checks remain in place.
+- The live regression at `TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior` now raises/focuses the Close button and sends Enter via `wxUIActionSimulator` while the modal dialog is open.
+- The prior synthetic `wxEVT_COMMAND_BUTTON_CLICKED` dispatch path was removed for the Enter-dismiss assertion path.
+- Dialog runtime behavior in `src/gui/TacticalDamageSummaryGUI.cpp` was not changed in this remediation cycle.
 
 Suggested test command(s):
 - cd tests/gui && make && xvfb-run -a ./GuiTests
