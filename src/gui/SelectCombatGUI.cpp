@@ -59,7 +59,7 @@ SelectCombatGUI::SelectCombatGUI( wxWindow* parent, FSystem * sys, FleetList def
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Attacking Fleets") ), wxVERTICAL );
 //	std::cerr << "The attacker list has " << attacker.size() << " entries." << std::endl;
 
-	m_listBox1 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
+	m_listBox1 = new wxListBox( sbSizer1->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
 	for (FleetList::iterator itr = attacker.begin(); itr < attacker.end(); itr++){
 		m_listBox1->Append((*itr)->getName());
 	}
@@ -70,7 +70,7 @@ SelectCombatGUI::SelectCombatGUI( wxWindow* parent, FSystem * sys, FleetList def
 	wxStaticBoxSizer* sbSizer2;
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Defending Fleets and Stations") ), wxVERTICAL );
 
-	m_listBox2 = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
+	m_listBox2 = new wxListBox( sbSizer2->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
 	int count = 0;
 	for (FleetList::iterator itr = defender.begin(); itr < defender.end(); itr++){
 		m_listBox2->Append((*itr)->getName());

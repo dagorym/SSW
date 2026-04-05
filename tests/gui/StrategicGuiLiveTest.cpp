@@ -430,6 +430,16 @@ void clickAttack() {
 	onAttack(event);
 }
 
+wxString attackerListParentLabel() const {
+	wxStaticBox * box = wxDynamicCast(m_listBox1->GetParent(), wxStaticBox);
+	return box ? box->GetLabel() : wxString();
+}
+
+wxString defenderListParentLabel() const {
+	wxStaticBox * box = wxDynamicCast(m_listBox2->GetParent(), wxStaticBox);
+	return box ? box->GetLabel() : wxString();
+}
+
 protected:
 virtual void finishDialog(int returnCode) wxOVERRIDE {
 	m_finishCode = returnCode;
@@ -969,6 +979,8 @@ void StrategicGuiLiveTest::testSelectCombatLaunchesBattleScreenAndCleansUpLifeti
 
 	SelectCombatGUITestPeer dialog(parent, system, defenders, attackers, &players, false);
 	FBattleScreen::resetLifecycleCounters();
+	CPPUNIT_ASSERT_EQUAL(wxString("Attacking Fleets"), dialog.attackerListParentLabel());
+	CPPUNIT_ASSERT_EQUAL(wxString("Defending Fleets and Stations"), dialog.defenderListParentLabel());
 	m_harness.runVoidFunctionWithAutoDismiss([&]() {
 		dialog.selectAttackerFleet(0);
 		dialog.clickAttack();
