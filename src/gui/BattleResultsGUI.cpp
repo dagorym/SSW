@@ -180,7 +180,7 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 
 	fgSizer6->Add( m_textCtrl7, 0, wxBOTTOM|wxTOP, 5 );
 
-	m_staticText8 = new wxStaticText( this, wxID_ANY, wxT("/ N"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText8 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("/ N"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText8->Wrap( -1 );
 	m_staticText8->Enable( false );
 
@@ -231,7 +231,7 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 
 	fgSizer71->Add( m_textCtrl9, 0, 0, 5 );
 
-	m_staticText12 = new wxStaticText( this, wxID_ANY, wxT("/ NNN"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText12 = new wxStaticText( editShipStatsBox, wxID_ANY, wxT("/ NNN"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText12->Wrap( -1 );
 	m_staticText12->Enable( false );
 

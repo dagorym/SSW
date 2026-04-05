@@ -792,7 +792,9 @@ const FileCheck checks[] = {
 	{"../../src/gui/SelectJumpGUI.cpp", "m_listBox1 = new wxListBox( destinationsBox,", "m_listBox1 = new wxListBox( this,"},
 	{"../../src/gui/SelectJumpGUI.cpp", "m_staticText2 = new wxStaticText( jumpInfoBox,", "m_staticText2 = new wxStaticText( this,"},
 	{"../../src/gui/BattleResultsGUI.cpp", "m_listBox1 = new wxListBox( fleetShipsBox,", "m_listBox1 = new wxListBox( this,"},
-	{"../../src/gui/BattleResultsGUI.cpp", "m_textCtrl2 = new wxTextCtrl( editShipStatsBox,", "m_textCtrl2 = new wxTextCtrl( this,"}
+	{"../../src/gui/BattleResultsGUI.cpp", "m_textCtrl2 = new wxTextCtrl( editShipStatsBox,", "m_textCtrl2 = new wxTextCtrl( this,"},
+	{"../../src/gui/BattleResultsGUI.cpp", "m_staticText8 = new wxStaticText( editShipStatsBox,", "m_staticText8 = new wxStaticText( this,"},
+	{"../../src/gui/BattleResultsGUI.cpp", "m_staticText12 = new wxStaticText( editShipStatsBox,", "m_staticText12 = new wxStaticText( this,"}
 };
 
 for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); ++i) {
