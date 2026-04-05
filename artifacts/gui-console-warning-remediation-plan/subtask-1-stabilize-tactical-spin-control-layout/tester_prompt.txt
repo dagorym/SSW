@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Task summary:
+- Stabilized tactical speed-control layout by converting FBattleDisplay tactical controls from free-positioned creation to sizer-managed ownership while preserving setup flow behavior.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- FBattleDisplay uses a stable layout/ownership model for the speed-selection control path.
+- Tactical speed selection still works and keeps existing battle-state transitions intact.
+- Tactical GUI coverage exercises the corrected path.
+- The covered tactical flow no longer emits the reported GtkSpinButton assertion.
+
+Create test files in:
+- No new test files required for this subtask; validate using existing tactical and GUI suites.
+
+Implementation context for testing:
+- FBattleDisplay now creates speed/action controls with `wxDefaultPosition` and adds them to panel sizers (`SetSizer(rootSizer)`), removing fragile startup absolute placement for the speed spin control.
+- Speed selection remains hidden by default and is shown/hidden in `drawGetSpeed` / `onSetSpeed`; tactical state transitions in `onSetSpeed` are unchanged.
+- Tactical GUI live coverage now includes an FBattleScreen construction smoke assertion that verifies speed spin control existence, parentage (not parented directly to FBattleScreen), and non-zero allocated size.
+- Tactical source-inspection coverage now asserts constructor-level sizer usage and absence of the legacy free-positioned spin control creation pattern.
+
+Suggested test command(s):
+- `make -s`
+- `cd tests/tactical && make -s && ./TacticalTests`
+- `cd tests/gui && set -o pipefail && make -s && xvfb-run -a ./GuiTests`
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
