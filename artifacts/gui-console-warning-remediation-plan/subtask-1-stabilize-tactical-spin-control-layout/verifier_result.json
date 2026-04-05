@@ -1,0 +1,23 @@
+{
+  "status": "completed",
+  "subtask_id": "subtask-1-stabilize-tactical-spin-control-layout",
+  "branch": "fixes-gui-console-warning-remediation-s1-verifier-20260405",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency_summary": "Coverage is sufficient for this subtask: tactical source-inspection assertions lock the constructor away from free-positioned spin control creation, live GUI smoke coverage instantiates FBattleScreen and verifies the speed control has non-root parentage and allocated size, and the verifier reran TacticalTests and GuiTests without any GtkSpinButton assertion.",
+  "documentation_accuracy_summary": "AGENTS.md and artifacts/WXWIDGETS_UPGRADE_CHANGES.md accurately describe the stabilized tactical speed-control path, the added regression coverage, and the validated command outcomes.",
+  "validation": {
+    "commands_run": [
+      "make -s",
+      "cd tests/tactical && make -s && ./TacticalTests",
+      "cd tests/gui && set -o pipefail && make -s && xvfb-run -a ./GuiTests"
+    ],
+    "result": "root build passed; TacticalTests OK (88 tests); GuiTests OK (24 tests); no GtkSpinButton assertion observed in the covered tactical flow"
+  },
+  "artifact_files": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout/verifier_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout/verifier_result.json"
+  ]
+}
