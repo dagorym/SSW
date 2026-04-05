@@ -1,14 +1,18 @@
 {
-  "status": "completed",
-  "subtask": "gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting",
+  "status": "success",
+  "subtask": "subtask-3-sweep-remaining-ssw-static-box-parenting",
   "branch": "fixes-gui-console-warning-remediation-s3-verifier-20260405",
-  "verdict": "FAIL",
-  "blocking_finding_count": 3,
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s3-verifier-20260405",
+  "reviewed_head_commit": "e4fe1f6",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
   "warning_finding_count": 0,
-  "note_finding_count": 1,
-  "test_sufficiency_summary": "`cd tests/gui && make -j2 && xvfb-run -a ./GuiTests` passed with OK (25 tests), but StrategicGuiLiveTest does not inspect all static-box-contained BattleResultsGUI controls and missed remaining `this`-parented labels.",
-  "documentation_accuracy_summary": "Documenter artifacts exist and reference commit e138991bf86d70a05e8139b836f1623e2a0f0b33, but AGENTS.md and WXWIDGETS_UPGRADE_CHANGES.md overstate Subtask 3 completion because BattleResultsGUI still retains scoped static-box parenting defects.",
-  "documenter_commit_hash_confirmed": "e138991bf86d70a05e8139b836f1623e2a0f0b33",
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient: StrategicGuiLiveTest combines live dialog behavior checks with source-inspection assertions for all seven scoped SSW dialogs, including the corrected BattleResultsGUI edit-stats controls, and GuiTests passed 25/25 on verifier rerun.",
+  "documentation_accuracy_summary": "Accurate: AGENTS.md and WXWIDGETS_UPGRADE_CHANGES.md match the implemented BattleResultsGUI parenting fix, the expanded regression coverage, and the verified 25/25 GUI rerun while keeping ScenarioEditorGUI warnings scoped out of Subtask 3.",
+  "commands_run": [
+    "cd tests/gui && make -s && xvfb-run -a ./GuiTests"
+  ],
   "artifact_files_written": [
     "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_report.md",
     "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_result.json"
