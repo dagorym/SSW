@@ -1,0 +1,55 @@
+You are the Verifier Agent.
+
+Task summary:
+- Subtask 2 remediation for `SelectCombatGUI` static-box parenting corrected the combat dialog list-box parentage for wxGTK, preserved the existing attack-launch behavior, and updated repository documentation to record the validated parenting rule and strategic GUI coverage.
+
+Acceptance criteria to verify:
+- The "Combat" dialog constructs its static-box child controls with wxGTK-correct parentage.
+- Existing attack-selection behavior is unchanged.
+- Strategic GUI regression coverage explicitly exercises the corrected dialog path.
+- The `wxListBox ... should be created as child of its wxStaticBox ... ("Combat")` warning no longer appears in the covered flow.
+
+Implementation branch or worktree context:
+- Branch: fixes-gui-console-warning-remediation-s2-documenter-20260405
+- Worktree: /home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s2-documenter-20260405
+- Tester branch lineage: fixes-gui-console-warning-remediation-s2-tester-20260405
+- Implementer baseline commit in this line of work: f11af2b71719010831d2994522dec2db694ace2c
+- Documentation commit for this stage: 05c53006d6b954a46500af4f4ffca24e831232a0
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- src/gui/SelectCombatGUI.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+- AGENTS.md
+- artifacts/WXWIDGETS_UPGRADE_CHANGES.md
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/documenter_prompt.txt
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/implementer_report.md
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/implementer_result.json
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/tester_report.md
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/tester_result.json
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/documenter_report.md
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/documenter_result.json
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/verifier_prompt.txt
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && xvfb-run -a ./GuiTests
+- cd tests/gui && xvfb-run -a ./GuiTests 2>&1 | grep -F '("Combat")' || true
+
+Final test outcomes:
+- GUI suite passed: `OK (24 tests)`.
+- Combat list-box parent static-box assertions passed in `StrategicGuiLiveTest`.
+- No `("Combat")` wxStaticBox warning lines were found in the covered flow output.
+- Non-Combat wxStaticBox warnings are still present elsewhere and remain outside this subtask.
+
+Documentation files updated:
+- AGENTS.md
+- artifacts/WXWIDGETS_UPGRADE_CHANGES.md
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

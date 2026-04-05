@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "subtask": "subtask-2-fix-select-combat-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s2-documenter-20260405",
+  "commit": "05c53006d6b954a46500af4f4ffca24e831232a0",
+  "documentation_files": [
+    "AGENTS.md",
+    "artifacts/WXWIDGETS_UPGRADE_CHANGES.md"
+  ],
+  "artifact_files": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/documenter_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/documenter_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/verifier_prompt.txt"
+  ]
+}
