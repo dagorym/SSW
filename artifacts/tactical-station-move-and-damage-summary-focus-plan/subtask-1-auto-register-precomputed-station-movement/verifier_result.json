@@ -1,0 +1,30 @@
+{
+  "status": "success",
+  "subtask": "subtask-1-auto-register-precomputed-station-movement",
+  "branch": "tactical-station-move-subtask-1-verifier-20260405",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 1,
+  "plan_reference": "plans/tactical-station-move-and-damage-summary-focus-plan.md",
+  "shared_artifact_directory": "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement",
+  "validation_commands": [
+    "git --no-pager diff --check",
+    "cd tests/tactical && make -s && ./TacticalTests"
+  ],
+  "test_sufficiency_summary": "Sufficient. Coverage verifies movement completion at PH_MOVE entry for the pre-seeded station orbit, preserves orbit distance/heading/speed assertions, keeps non-station route behavior covered, and aligns the mechanics-source assertion with the resetMovementState() -> checkMoveStatus() path.",
+  "documentation_accuracy_summary": "Accurate. doc/DesignNotes.md documents the resetMovementState() -> checkMoveStatus() bookkeeping path and the PH_MOVE-entry auto-complete behavior in a way that matches the implementation and passing tactical regressions.",
+  "findings": [
+    {
+      "severity": "NOTE",
+      "file": "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/tester_report.md",
+      "lines": [19, 21],
+      "summary": "Tester report cites stale test names",
+      "details": "The report references testStationOrbitalMovementAutoCompletesMovePhase and testNonStationMoveSelectionStillBuildsMovementRoute, but the actual verified fixture methods are testStationMoveAlreadyCompleteAtPhaseEntry and testNonStationHeadingUnchangedByFix in tests/tactical/FTacticalStationOrbitalMovementTest.cpp:123 and :188."
+    }
+  ],
+  "artifact_files_written": [
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/verifier_report.md",
+    "artifacts/tactical-station-move-and-damage-summary-focus-plan/subtask-1-auto-register-precomputed-station-movement/verifier_result.json"
+  ]
+}
