@@ -7,6 +7,7 @@ SSW
 tests/SSWTests
 tests/TacticalTests
 tests/tactical/TacticalTests
+tests/gui/GuiTests
 .project
 .cproject
 *.ssw
