@@ -23,6 +23,7 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Defenders") ), wxVERTICAL );
+	wxWindow* defenderPanel = sbSizer1->GetStaticBox();
 	
 	wxFlexGridSizer* fgSizer1;
 	fgSizer1 = new wxFlexGridSizer( 4, 1, 0, 0 );
@@ -31,7 +32,7 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	
 	wxString m_defenderTeamChoices[] = { wxT("-- Select Team --"), wxT("UPF"), wxT("Sathar")/*, wxT("Pirates") */};
 	int m_defenderTeamNChoices = sizeof( m_defenderTeamChoices ) / sizeof( wxString );
-	m_defenderTeam = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_defenderTeamNChoices, m_defenderTeamChoices, 0 );
+	m_defenderTeam = new wxChoice( defenderPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_defenderTeamNChoices, m_defenderTeamChoices, 0 );
 	m_defenderTeam->SetSelection( 0 );
 	fgSizer1->Add( m_defenderTeam, 0, wxALL, 5 );
 	
@@ -41,10 +42,10 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	fgSizer2->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 	
 	wxStaticBoxSizer* sbSizer2;
-	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Available Ship Types") ), wxVERTICAL );
+	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( defenderPanel, wxID_ANY, wxT("Available Ship Types") ), wxVERTICAL );
 	
 	sbSizer2->SetMinSize( wxSize( 150,-1 ) ); 
-	m_availableDefenderListBox = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	m_availableDefenderListBox = new wxListBox( sbSizer2->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
 	m_availableDefenderListBox->SetMinSize( wxSize( -1,230 ) );
 	
 	sbSizer2->Add( m_availableDefenderListBox, 0, wxALL|wxEXPAND, 5 );
@@ -54,33 +55,33 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
 	
-	m_defenderAddButton = new wxButton( this, wxID_ANY, wxT("Add -->"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_defenderAddButton = new wxButton( defenderPanel, wxID_ANY, wxT("Add -->"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_defenderAddButton->Enable(false);
 	bSizer1->Add( m_defenderAddButton, 0, wxALIGN_CENTER|wxALL, 5 );
 	
-	m_staticText4 = new wxStaticText( this, wxID_ANY, wxT("Fleet Value:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText4 = new wxStaticText( defenderPanel, wxID_ANY, wxT("Fleet Value:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText4->Wrap( -1 );
 	m_staticText4->Enable( false );
 	
 	bSizer1->Add( m_staticText4, 0, wxALIGN_CENTER|wxALL, 5 );
 	
-	m_staticText5 = new wxStaticText( this, wxID_ANY, wxT("value"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText5 = new wxStaticText( defenderPanel, wxID_ANY, wxT("value"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText5->Wrap( -1 );
 	m_staticText5->Enable( false );
 	
 	bSizer1->Add( m_staticText5, 0, wxALIGN_CENTER|wxALL, 5 );
 	
-	m_defenderRemoveButton = new wxButton( this, wxID_ANY, wxT("<-- Remove"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_defenderRemoveButton = new wxButton( defenderPanel, wxID_ANY, wxT("<-- Remove"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_defenderRemoveButton->Enable(false);
 	bSizer1->Add( m_defenderRemoveButton, 0, wxALIGN_CENTER|wxALL, 5 );
 	
 	fgSizer2->Add( bSizer1, 1, wxALIGN_CENTER_VERTICAL, 5 );
 	
 	wxStaticBoxSizer* sbSizer3;
-	sbSizer3 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Assigned Ships") ), wxVERTICAL );
+	sbSizer3 = new wxStaticBoxSizer( new wxStaticBox( defenderPanel, wxID_ANY, wxT("Assigned Ships") ), wxVERTICAL );
 	
 	sbSizer3->SetMinSize( wxSize( 150,-1 ) ); 
-	m_assignedDefenderListBox = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	m_assignedDefenderListBox = new wxListBox( sbSizer3->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
 	m_assignedDefenderListBox->SetMinSize( wxSize( -1,230 ) );
 	
 	sbSizer3->Add( m_assignedDefenderListBox, 0, wxALL|wxEXPAND, 5 );
@@ -94,15 +95,15 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	fgSizer8->SetFlexibleDirection( wxBOTH );
 	fgSizer8->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 	
-	m_hasPlanetText = new wxStaticText( this, wxID_ANY, wxT("Does the system have a planet?"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_hasPlanetText = new wxStaticText( defenderPanel, wxID_ANY, wxT("Does the system have a planet?"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_hasPlanetText->Wrap( -1 );
 	fgSizer8->Add( m_hasPlanetText, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	m_planetYes = new wxRadioButton( this, wxID_ANY, wxT("Yes"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+	m_planetYes = new wxRadioButton( defenderPanel, wxID_ANY, wxT("Yes"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
 	m_planetYes->Enable(false);
 	fgSizer8->Add( m_planetYes, 0, wxALL, 5 );
 	
-	m_planetNo = new wxRadioButton( this, wxID_ANY, wxT("No"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_planetNo = new wxRadioButton( defenderPanel, wxID_ANY, wxT("No"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_planetNo->SetValue( true ); 
 	fgSizer8->Add( m_planetNo, 0, wxALL, 5 );
 	
@@ -113,7 +114,7 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	fgSizer9->SetFlexibleDirection( wxBOTH );
 	fgSizer9->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 	
-	m_staticText3 = new wxStaticText( this, wxID_ANY, wxT("Station Type:  "), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText3 = new wxStaticText( defenderPanel, wxID_ANY, wxT("Station Type:  "), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText3->Wrap( -1 );
 	m_staticText3->Enable( false );
 	
@@ -121,7 +122,7 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	
 	wxString m_stationChoiceChoices[] = { wxT("None"), wxT("Armed Station"), wxT("Fortified Station"), wxT("Fortress") };
 	int m_stationChoiceNChoices = sizeof( m_stationChoiceChoices ) / sizeof( wxString );
-	m_stationChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_stationChoiceNChoices, m_stationChoiceChoices, 0 );
+	m_stationChoice = new wxChoice( defenderPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_stationChoiceNChoices, m_stationChoiceChoices, 0 );
 	m_stationChoice->SetSelection( 0 );
 	m_stationChoice->Enable( false );
 	
@@ -135,6 +136,7 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	
 	wxStaticBoxSizer* sbSizer4;
 	sbSizer4 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Attackers") ), wxVERTICAL );
+	wxWindow* attackerPanel = sbSizer4->GetStaticBox();
 	
 	wxFlexGridSizer* fgSizer4;
 	fgSizer4 = new wxFlexGridSizer( 3, 1, 0, 0 );
@@ -143,7 +145,7 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	
 	wxString m_attackerTeamChoices[] = { wxT("-- Select Team --"), wxT("UPF"), wxT("Sathar")/*, wxT("Pirates") */};
 	int m_attackerTeamNChoices = sizeof( m_attackerTeamChoices ) / sizeof( wxString );
-	m_attackerTeam = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_attackerTeamNChoices, m_attackerTeamChoices, 0 );
+	m_attackerTeam = new wxChoice( attackerPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_attackerTeamNChoices, m_attackerTeamChoices, 0 );
 	m_attackerTeam->SetSelection( 0 );
 	fgSizer4->Add( m_attackerTeam, 0, wxALL, 5 );
 	
@@ -153,10 +155,10 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	fgSizer21->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 	
 	wxStaticBoxSizer* sbSizer21;
-	sbSizer21 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Available Ship Types") ), wxVERTICAL );
+	sbSizer21 = new wxStaticBoxSizer( new wxStaticBox( attackerPanel, wxID_ANY, wxT("Available Ship Types") ), wxVERTICAL );
 	
 	sbSizer21->SetMinSize( wxSize( 150,-1 ) ); 
-	m_availableAttackerListBox = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	m_availableAttackerListBox = new wxListBox( sbSizer21->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
 	m_availableAttackerListBox->SetMinSize( wxSize( -1,230 ) );
 	
 	sbSizer21->Add( m_availableAttackerListBox, 0, wxALL|wxEXPAND, 5 );
@@ -166,33 +168,33 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	wxBoxSizer* bSizer11;
 	bSizer11 = new wxBoxSizer( wxVERTICAL );
 	
-	m_attackerAddButton = new wxButton( this, wxID_ANY, wxT("Add -->"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_attackerAddButton = new wxButton( attackerPanel, wxID_ANY, wxT("Add -->"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_attackerAddButton->Enable(false);
 	bSizer11->Add( m_attackerAddButton, 0, wxALIGN_CENTER|wxALL, 5 );
 	
-	m_staticText6 = new wxStaticText( this, wxID_ANY, wxT("Fleet Value:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText6 = new wxStaticText( attackerPanel, wxID_ANY, wxT("Fleet Value:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText6->Wrap( -1 );
 	m_staticText6->Enable( false );
 	
 	bSizer11->Add( m_staticText6, 0, wxALIGN_CENTER|wxALL, 5 );
 	
-	m_staticText7 = new wxStaticText( this, wxID_ANY, wxT("value"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText7 = new wxStaticText( attackerPanel, wxID_ANY, wxT("value"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText7->Wrap( -1 );
 	m_staticText7->Enable( false );
 	
 	bSizer11->Add( m_staticText7, 0, wxALIGN_CENTER|wxALL, 5 );
 	
-	m_attackerRemoveButton = new wxButton( this, wxID_ANY, wxT("<-- Remove"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_attackerRemoveButton = new wxButton( attackerPanel, wxID_ANY, wxT("<-- Remove"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_attackerRemoveButton->Enable(false);
 	bSizer11->Add( m_attackerRemoveButton, 0, wxALIGN_CENTER|wxALL, 5 );
 	
 	fgSizer21->Add( bSizer11, 1, wxALIGN_CENTER_VERTICAL, 5 );
 	
 	wxStaticBoxSizer* sbSizer31;
-	sbSizer31 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Assigned Ships") ), wxVERTICAL );
+	sbSizer31 = new wxStaticBoxSizer( new wxStaticBox( attackerPanel, wxID_ANY, wxT("Assigned Ships") ), wxVERTICAL );
 	
 	sbSizer31->SetMinSize( wxSize( 150,-1 ) ); 
-	m_assignedAttackerListBox = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	m_assignedAttackerListBox = new wxListBox( sbSizer31->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
 	m_assignedAttackerListBox->SetMinSize( wxSize( -1,230 ) );
 	
 	sbSizer31->Add( m_assignedAttackerListBox, 0, wxALL|wxEXPAND, 5 );
@@ -205,10 +207,10 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	gSizer2 = new wxGridSizer( 1, 2, 0, 0 );
 	
 	gSizer2->SetMinSize( wxSize( -1,70 ) ); 
-	m_cancelButton = new wxButton( this, wxID_ANY, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_cancelButton = new wxButton( attackerPanel, wxID_ANY, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
 	gSizer2->Add( m_cancelButton, 0, wxALIGN_BOTTOM|wxALL, 5 );
 	
-	m_startBattleButton = new wxButton( this, wxID_ANY, wxT("Start Battle!"), wxPoint( -1,-1 ), wxDefaultSize, 0 );
+	m_startBattleButton = new wxButton( attackerPanel, wxID_ANY, wxT("Start Battle!"), wxPoint( -1,-1 ), wxDefaultSize, 0 );
 	gSizer2->Add( m_startBattleButton, 0, wxALIGN_BOTTOM|wxALIGN_RIGHT|wxALL, 5 );
 	
 	fgSizer4->Add( gSizer2, 1, wxEXPAND, 5 );

@@ -9,6 +9,7 @@
 #include <wx/dialog.h>
 #include <wx/filename.h>
 #include <wx/frame.h>
+#include <wx/statbox.h>
 #include <wx/toplevel.h>
 
 #include "battleSim/BattleSimFrame.h"
@@ -167,6 +168,23 @@ ScenarioEditorGUITestPeer(wxWindow * parent)
 
 bool finalizeCalled() const {
 	return m_finalizeCalled;
+}
+
+bool hasStaticBoxParent(wxWindow * child, const wxString & expectedLabel) const {
+	if (child == NULL) {
+		return false;
+	}
+	wxStaticBox * parentBox = dynamic_cast<wxStaticBox *>(child->GetParent());
+	return parentBox != NULL && parentBox->GetLabel() == expectedLabel;
+}
+
+bool usesStaticBoxParenting() const {
+	return hasStaticBoxParent(m_defenderTeam, wxT("Defenders"))
+	    && hasStaticBoxParent(m_availableDefenderListBox, wxT("Available Ship Types"))
+	    && hasStaticBoxParent(m_assignedDefenderListBox, wxT("Assigned Ships"))
+	    && hasStaticBoxParent(m_attackerTeam, wxT("Attackers"))
+	    && hasStaticBoxParent(m_availableAttackerListBox, wxT("Available Ship Types"))
+	    && hasStaticBoxParent(m_assignedAttackerListBox, wxT("Assigned Ships"));
 }
 
 void chooseDefenderTeam(int index) {
@@ -374,6 +392,7 @@ void BattleSimGuiLiveTest::testScenarioEditorStartBattleLaunchesBattleScreenWith
 	{
 		ScenarioEditorGUITestPeer * dialog = new ScenarioEditorGUITestPeer(parent);
 		bool launchedTopLevelPresented = false;
+		CPPUNIT_ASSERT(dialog->usesStaticBoxParenting());
 		m_harness.runVoidFunctionWithAction([&]() {
 			dialog->chooseDefenderTeam(1);
 			dialog->chooseDefenderType(0);
