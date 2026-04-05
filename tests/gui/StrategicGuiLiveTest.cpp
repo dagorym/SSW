@@ -6,7 +6,9 @@
 #include "StrategicGuiLiveTest.h"
 
 #include <algorithm>
+#include <fstream>
 #include <functional>
+#include <sstream>
 
 #include <wx/dcmemory.h>
 #include <wx/filename.h>
@@ -120,6 +122,67 @@ return true;
 return false;
 }
 
+wxString staticBoxLabelFor(const wxWindow * control) {
+	const wxStaticBox * box = wxDynamicCast(control ? control->GetParent() : NULL, wxStaticBox);
+	return box ? box->GetLabel() : wxString();
+}
+
+std::string readFileText(const std::string & path) {
+	std::ifstream stream(path.c_str());
+	std::ostringstream contents;
+	contents << stream.rdbuf();
+	return contents.str();
+}
+
+class SystemDialogGUITestPeer : public SystemDialogGUI {
+public:
+SystemDialogGUITestPeer(wxWindow * parent, FSystem * sys, FMap * map, FPlayer * player, const wxString & title)
+: SystemDialogGUI(parent, sys, map, player, title) {
+}
+
+wxString planetsParentLabel() const {
+	return staticBoxLabelFor(m_listBox1);
+}
+
+wxString stationTypeParentLabel() const {
+	return staticBoxLabelFor(m_listBox2);
+}
+
+wxString fleetsParentLabel() const {
+	return staticBoxLabelFor(m_listBox3);
+}
+};
+
+class ViewFleetGUITestPeer : public ViewFleetGUI {
+public:
+ViewFleetGUITestPeer(wxWindow * parent, FFleet * fleet, FSystem * sys, FSystem * dest)
+: ViewFleetGUI(parent, fleet, sys, dest) {
+}
+
+wxString shipListParentLabel() const {
+	return staticBoxLabelFor(m_listBox1);
+}
+
+wxString shipInfoParentLabel() const {
+	return staticBoxLabelFor(ADF);
+}
+};
+
+class SelectJumpGUITestPeer : public SelectJumpGUI {
+public:
+SelectJumpGUITestPeer(wxWindow * parent, FFleet * fleet, FMap * map, const std::string & system, int player)
+: SelectJumpGUI(parent, fleet, map, system, player) {
+}
+
+wxString destinationsParentLabel() const {
+	return staticBoxLabelFor(m_listBox1);
+}
+
+wxString jumpInfoParentLabel() const {
+	return staticBoxLabelFor(m_staticText2);
+}
+};
+
 class UPFUnattachedGUITestPeer : public UPFUnattachedGUI {
 public:
 UPFUnattachedGUITestPeer(wxWindow * parent, FPlayer * player, FMap * map)
@@ -178,6 +241,18 @@ m_setFleetCount = threshold;
 bool doneEnabled() const {
 return m_button4->IsEnabled();
 }
+
+wxString unattachedShipsParentLabel() const {
+	return staticBoxLabelFor(m_listBox1);
+}
+
+wxString newFleetParentLabel() const {
+	return staticBoxLabelFor(m_choice1);
+}
+
+wxString fleetShipsParentLabel() const {
+	return staticBoxLabelFor(m_listBox2);
+}
 };
 
 class SatharFleetsGUITestPeer : public SatharFleetsGUI {
@@ -234,6 +309,18 @@ onUpdateFleet(event);
 void setFleetThreshold(unsigned int threshold) {
 m_setFleetCount = threshold;
 }
+
+wxString unassignedShipsParentLabel() const {
+	return staticBoxLabelFor(m_listBox1);
+}
+
+wxString newFleetParentLabel() const {
+	return staticBoxLabelFor(m_choice1);
+}
+
+wxString fleetShipsParentLabel() const {
+	return staticBoxLabelFor(m_listBox2);
+}
 };
 
 class TransferShipsGUITestPeer : public TransferShipsGUI {
@@ -279,6 +366,14 @@ onRemove(event);
 void clickDone() {
 wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, m_button5->GetId());
 onDone(event);
+}
+
+wxString sourceFleetParentLabel() const {
+	return staticBoxLabelFor(m_listBox1);
+}
+
+wxString selectedFleetParentLabel() const {
+	return staticBoxLabelFor(m_listBox2);
 }
 };
 
@@ -401,6 +496,14 @@ return m_button4->IsEnabled();
 void clickDone() {
 wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, m_button1->GetId());
 onDone(event);
+}
+
+wxString fleetShipsParentLabel() const {
+	return staticBoxLabelFor(m_listBox1);
+}
+
+wxString editStatsParentLabel() const {
+	return staticBoxLabelFor(m_textCtrl2);
 }
 };
 
@@ -663,6 +766,44 @@ CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL),
 
 parent->Destroy();
 m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testStrategicDialogsUseStaticBoxChildParents() {
+struct FileCheck {
+	const char * path;
+	const char * required;
+	const char * forbidden;
+};
+
+const FileCheck checks[] = {
+	{"../../src/gui/ViewFleetGUI.cpp", "m_listBox1 = new wxListBox( shipListBox,", "m_listBox1 = new wxListBox( this,"},
+	{"../../src/gui/ViewFleetGUI.cpp", "ADF = new wxStaticText(shipInfoBox,", "ADF = new wxStaticText(this,"},
+	{"../../src/gui/SystemDialogGUI.cpp", "m_listBox1 = new wxListBox( planetsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"../../src/gui/SystemDialogGUI.cpp", "m_listBox2 = new wxListBox( stationTypeBox,", "m_listBox2 = new wxListBox( this,"},
+	{"../../src/gui/SystemDialogGUI.cpp", "m_listBox3 = new wxListBox( fleetsBox,", "m_listBox3 = new wxListBox( this,"},
+	{"../../src/gui/TransferShipsGUI.cpp", "m_listBox1 = new wxListBox( sourceFleetBox,", "m_listBox1 = new wxListBox( this,"},
+	{"../../src/gui/TransferShipsGUI.cpp", "m_listBox2 = new wxListBox( transferFleetBox,", "m_listBox2 = new wxListBox( this,"},
+	{"../../src/gui/UPFUnattachedGUI.cpp", "m_listBox1 = new wxListBox( unattachedShipsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"../../src/gui/UPFUnattachedGUI.cpp", "m_choice1 = new wxChoice( newFleetBox,", "m_choice1 = new wxChoice( this,"},
+	{"../../src/gui/UPFUnattachedGUI.cpp", "m_listBox2 = new wxListBox( fleetShipsBox,", "m_listBox2 = new wxListBox( this,"},
+	{"../../src/gui/SatharFleetsGUI.cpp", "m_listBox1 = new wxListBox( unassignedShipsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"../../src/gui/SatharFleetsGUI.cpp", "m_choice1 = new wxChoice( newFleetBox,", "m_choice1 = new wxChoice( this,"},
+	{"../../src/gui/SatharFleetsGUI.cpp", "m_listBox2 = new wxListBox( fleetShipsBox,", "m_listBox2 = new wxListBox( this,"},
+	{"../../src/gui/SelectJumpGUI.cpp", "m_listBox1 = new wxListBox( destinationsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"../../src/gui/SelectJumpGUI.cpp", "m_staticText2 = new wxStaticText( jumpInfoBox,", "m_staticText2 = new wxStaticText( this,"},
+	{"../../src/gui/BattleResultsGUI.cpp", "m_listBox1 = new wxListBox( fleetShipsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"../../src/gui/BattleResultsGUI.cpp", "m_textCtrl2 = new wxTextCtrl( editShipStatsBox,", "m_textCtrl2 = new wxTextCtrl( this,"}
+};
+
+for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); ++i) {
+	const std::string contents = readFileText(checks[i].path);
+	const std::string required(checks[i].required);
+	const std::string forbidden(checks[i].forbidden);
+	CPPUNIT_ASSERT_MESSAGE(std::string("Missing expected pattern in ") + checks[i].path,
+	                       contents.find(required) != std::string::npos);
+	CPPUNIT_ASSERT_MESSAGE(std::string("Found legacy parentage pattern in ") + checks[i].path,
+	                       contents.find(forbidden) == std::string::npos);
+}
 }
 
 void StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths() {
