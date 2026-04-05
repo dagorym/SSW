@@ -178,6 +178,12 @@ After compilation, test the following functionality:
 
 ## Additional Notes
 
+- wxGTK layout-sensitive controls should prefer sizer-managed placement over free-positioned creation when they appear during tactical screen setup; `FBattleDisplay` now creates its speed `wxSpinCtrl` and related action buttons with `wxDefaultPosition`, installs them under a root sizer via `SetSizer(...)`, and refreshes layout after showing or hiding the speed-selection path.
+- Subtask 1 of the GUI console warning remediation plan validated this tactical layout rule with:
+  - `make -s`
+  - `cd tests/tactical && make -s && ./TacticalTests`
+  - `cd tests/gui && set -o pipefail && make -s && xvfb-run -a ./GuiTests`
+- Validation outcome for that remediation pass: `TacticalTests` OK (88 tests), `GuiTests` OK (24 tests), combined 112 passing tests, and no `GtkSpinButton` assertion observed in the covered tactical flow.
 - The `.svn` directories contain old versions with the previous code and were not modified
 - All main source files have been updated; test directories were already compatible
 - The changes maintain backward compatibility with existing game save files
