@@ -112,6 +112,7 @@ assertContains(body, "event.Skip();");
 CPPUNIT_ASSERT(body.find("placeShip(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("placePlanet(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("placeMineAtHex(") == std::string::npos);
+CPPUNIT_ASSERT(body.find("setShipPlacementHeadingByHex(") == std::string::npos);
 }
 
 void FTacticalBattleBoardRendererDelegationTest::testHeaderRemovesDuplicatedMechanicsState() {
@@ -136,8 +137,11 @@ const std::string body = extractFunctionBody(source, "void FBattleBoard::onMotio
 
 assertContains(body, "m_parent->hasShipPlacementPendingRotation()");
 assertContains(body, "m_parent->setShipPlacementHeadingByHex(FPoint(a,b))");
+assertContains(body, "Refresh();");
 CPPUNIT_ASSERT(body.find("computeWeaponRange(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("resetMovementState(") == std::string::npos);
+CPPUNIT_ASSERT(body.find("setShipPlacementHeading(") == std::string::npos);
+CPPUNIT_ASSERT(body.find("handleHexClick(") == std::string::npos);
 }
 
 }
