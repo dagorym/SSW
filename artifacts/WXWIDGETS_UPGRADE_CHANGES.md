@@ -184,6 +184,8 @@ After compilation, test the following functionality:
   - `cd tests/tactical && make -s && ./TacticalTests`
   - `cd tests/gui && set -o pipefail && make -s && xvfb-run -a ./GuiTests`
 - Validation outcome for that remediation pass: `TacticalTests` OK (88 tests), `GuiTests` OK (24 tests), combined 112 passing tests, and no `GtkSpinButton` assertion observed in the covered tactical flow.
+- Subtask 2 of the GUI console warning remediation plan validated the wxGTK static-box ownership rule for strategic combat selection: controls placed inside a `wxStaticBoxSizer` must be created as children of that sizer's static box rather than the dialog. `SelectCombatGUI` now creates the combat list boxes with `sbSizer1->GetStaticBox()` and `sbSizer2->GetStaticBox()`, and `StrategicGuiLiveTest` asserts those `Attacking Fleets` and `Defending Fleets and Stations` parents before the attack-launch flow continues.
+- Validation outcome for that remediation pass: `cd tests/gui && make && xvfb-run -a ./GuiTests`, `cd tests/gui && xvfb-run -a ./GuiTests`, and `cd tests/gui && xvfb-run -a ./GuiTests 2>&1 | grep -F '("Combat")' || true` all passed for the covered flow, with `GuiTests` reporting `OK (24 tests)` and no `("Combat")` wxStaticBox warning lines observed.
 - The `.svn` directories contain old versions with the previous code and were not modified
 - All main source files have been updated; test directories were already compatible
 - The changes maintain backward compatibility with existing game save files
