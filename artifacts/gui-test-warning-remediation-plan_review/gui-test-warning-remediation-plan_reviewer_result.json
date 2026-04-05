@@ -1,0 +1,44 @@
+{
+  "status": "completed",
+  "review_type": "feature_level_final_review",
+  "feature_plan": "plans/gui-test-warning-remediation-plan.md",
+  "branch_name": "gui_tests-reviewer-20260404",
+  "reviewed_merged_head": "617dcab",
+  "overall_outcome": "CONDITIONAL PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 1,
+  "note_finding_count": 1,
+  "validation": {
+    "gui_tests_command": "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "gui_tests_result": "Reviewed current tester/verifier evidence; reviewer re-run was permission-blocked in its subprocess environment."
+  },
+  "artifact_file_paths": {
+    "report": "artifacts/gui-test-warning-remediation-plan_review/gui-test-warning-remediation-plan_reviewer_report.md",
+    "result": "artifacts/gui-test-warning-remediation-plan_review/gui-test-warning-remediation-plan_reviewer_result.json"
+  },
+  "findings": [
+    {
+      "severity": "WARNING",
+      "summary": "The direct harness cleanup regression does not yet assert that cleanupOrphanTopLevels() reduces the shown-window count to zero.",
+      "evidence": [
+        "plans/gui-test-warning-remediation-plan.md:42-46",
+        "tests/gui/GuiHarnessTest.cpp:68-72",
+        "artifacts/gui-test-warning-remediation-plan/subtask-1-harness/verifier_report.md"
+      ]
+    },
+    {
+      "severity": "NOTE",
+      "summary": "The merged tactical and BattleSim live GUI suites now satisfy the planned registration, modal-identity, lifecycle, and baseline-cleanup expectations at the feature level.",
+      "evidence": [
+        "tests/gui/TacticalGuiLiveTest.h:16-20",
+        "tests/gui/TacticalGuiLiveTest.cpp:166-362",
+        "tests/gui/BattleSimGuiLiveTest.cpp:243-411",
+        "AGENTS.md:107",
+        "doc/DesignNotes.md:830-842"
+      ]
+    }
+  ],
+  "follow_up_feature_requests": [
+    "Tighten GuiHarnessTest::testCleanupOrphanTopLevelsRemovesShownWindows() so it proves cleanupOrphanTopLevels() leaves zero shown top-level windows after cleanup."
+  ]
+}
