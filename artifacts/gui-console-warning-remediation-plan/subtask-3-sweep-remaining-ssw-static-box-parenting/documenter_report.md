@@ -1,11 +1,11 @@
 ## Documenter Report
 
 ### Files Updated
-- **`AGENTS.md`** — Added the repository-wide wxGTK static-box parenting rule and noted the new strategic GUI source-inspection coverage for the seven remediated SSW dialogs.
-- **`artifacts/WXWIDGETS_UPGRADE_CHANGES.md`** — Recorded Subtask 3 scope, the new regression-coverage approach, the final GUI-suite result, and the remaining out-of-scope `ScenarioEditorGUI` warning.
+- **`AGENTS.md`** — Clarified that `StrategicGuiLiveTest`'s Subtask 3 coverage explicitly checks the corrected `BattleResultsGUI` edit-stats controls under the `Edit Ship Statistics` static box.
+- **`artifacts/WXWIDGETS_UPGRADE_CHANGES.md`** — Refreshed the Subtask 3 remediation note with the post-remediation tester rerun command/result and the explicit `BattleResultsGUI` control coverage.
 
 ### Summary
-Documented the completed Subtask 3 wxGTK static-box parenting remediation, the tester-validated GUI regression evidence, and the fact that `ScenarioEditorGUI` warnings remain expected because BattleSim remediation is still a later scope.
+Updated the developer-facing wxGTK remediation notes to reflect the final `BattleResultsGUI` fix and the passing post-remediation GUI rerun.
 
 ### Commit Message
-`Document Subtask 3 wxGTK dialog remediation`
+`Document BattleResults static-box coverage`
