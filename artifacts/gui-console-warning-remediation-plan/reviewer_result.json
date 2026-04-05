@@ -1,0 +1,43 @@
+{
+  "status": "completed",
+  "feature_plan": "plans/gui-console-warning-remediation-plan.md",
+  "artifact_directory": "artifacts/gui-console-warning-remediation-plan",
+  "reviewer_definition": "/home/tstephen/repos/agents/agents/reviewer.md",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-reviewer-20260405",
+  "branch": "fixes-gui-console-warning-remediation-reviewer-20260405",
+  "reviewed_start_commit": "6b5ac28",
+  "outcome": "PASS",
+  "feature_complete": true,
+  "blocking_findings": [],
+  "warning_findings": [],
+  "notes": [
+    "No feature-level gaps were found in the merged fixes state.",
+    "Documentation correctly tracks repo-fixed warning paths and preserves the plan's environment-only dconf separation."
+  ],
+  "follow_up_feature_requests": [],
+  "inputs_reviewed": [
+    "plans/gui-console-warning-remediation-plan.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout/verifier_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-1-stabilize-tactical-spin-control-layout/verifier_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/verifier_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/verifier_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-3-sweep-remaining-ssw-static-box-parenting/verifier_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/verifier_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-4-fix-battlesim-scenario-editor-parenting/verifier_result.json",
+    "AGENTS.md",
+    "artifacts/WXWIDGETS_UPGRADE_CHANGES.md"
+  ],
+  "validation": {
+    "commands_run": [
+      "make -s",
+      "cd tests/tactical && make -s && ./TacticalTests",
+      "cd tests/gui && make -s && xvfb-run -a ./GuiTests"
+    ],
+    "result": "build passed; TacticalTests OK (88 tests); GuiTests OK (25 tests); reviewer warning scan counts were GtkSpinButton=0, (\"Combat\")=0, Scenario Editor=0, dconf=0"
+  },
+  "artifact_files": [
+    "artifacts/gui-console-warning-remediation-plan/reviewer_report.md",
+    "artifacts/gui-console-warning-remediation-plan/reviewer_result.json"
+  ]
+}
