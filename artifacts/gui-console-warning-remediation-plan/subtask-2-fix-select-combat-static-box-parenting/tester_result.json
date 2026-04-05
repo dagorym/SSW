@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "subtask": "gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting",
+  "branch": "fixes-gui-console-warning-remediation-s2-tester-20260405",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s2-tester-20260405",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && xvfb-run -a ./GuiTests",
+    "cd tests/gui && xvfb-run -a ./GuiTests 2>&1 | grep -F '(\"Combat\")' || true"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "tests_executed": 24,
+    "passed": 24,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_files_written": [
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/tester_report.md",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/tester_result.json",
+    "artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/documenter_prompt.txt"
+  ]
+}

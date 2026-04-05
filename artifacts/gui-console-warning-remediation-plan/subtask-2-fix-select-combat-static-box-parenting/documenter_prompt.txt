@@ -1,0 +1,47 @@
+You are the Documenter Agent.
+
+Task summary:
+- Subtask 2 remediation for SelectCombatGUI static-box parenting was validated in GUI live coverage. Combat dialog list-box parentage and attack-launch behavior passed in headless GUI tests.
+
+Acceptance criteria validated:
+- The "Combat" dialog constructs its static-box child controls with wxGTK-correct parentage.
+- Existing attack-selection behavior is unchanged.
+- Strategic GUI regression coverage explicitly exercises the corrected dialog path.
+- The `wxListBox ... should be created as child of its wxStaticBox ... ("Combat")` warning no longer appears in the covered flow.
+
+Implementation branch or worktree context:
+- Branch: `fixes-gui-console-warning-remediation-s2-tester-20260405`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/fixes-gui-console-warning-remediation-s2-tester-20260405`
+- Implementer changes were already present on this branch when Tester validated.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/gui/SelectCombatGUI.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/implementer_report.md
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/implementer_result.json
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/tester_report.md
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting/tester_result.json
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && xvfb-run -a ./GuiTests
+- cd tests/gui && xvfb-run -a ./GuiTests 2>&1 | grep -F '("Combat")' || true
+
+Final test outcomes:
+- GUI suite passed: `OK (24 tests)`.
+- Combat list-box parent static-box assertions passed in `StrategicGuiLiveTest`.
+- No `("Combat")` wxStaticBox warning lines found in covered flow output.
+- Non-Combat wxStaticBox warnings are still present elsewhere and were not part of this subtask.
+
+Documentation context:
+- Update remediation/progress notes to reflect that Subtask 2 testing is complete and passing.
+- Mention the tested behavior: SelectCombat list controls now parented by their static boxes and covered by live strategic GUI assertions.
+
+Shared artifact directory:
+- artifacts/gui-console-warning-remediation-plan/subtask-2-fix-select-combat-static-box-parenting
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
