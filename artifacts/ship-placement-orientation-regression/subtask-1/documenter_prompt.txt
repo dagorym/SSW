@@ -1,0 +1,45 @@
+You are the Documenter Agent.
+
+Subtask identifier: `subtask-1-model-placement-contract`
+Plan path: `plans/ship-placement-orientation-regression-plan.md`
+Base branch: `master`
+
+Original task summary:
+Implement a two-step tactical ship-placement heading contract in the model. Hover updates must preview snapped heading without finalizing placement, and the second setup click must commit the currently previewed heading and advance to speed selection. Keep the tactical model as the owner of placement state and make `FBattleScreen` forward any revised placement API without embedding wx-only placement logic.
+
+Acceptance criteria:
+1. Previewing a heading by hex updates the selected ship heading but does not toggle control state, change phase, or clear pending rotation.
+2. Finalizing placement from setup click flow commits the current snapped heading only when rotation is pending and leaves setup in `PH_SET_SPEED`.
+3. `handleHexClick(...)` supports the intended first-click place / second-click finalize flow during `BS_SetupDefendFleet` and `BS_SetupAttackFleet`.
+4. Tactical regression coverage proves the preview path and finalization path are behaviorally distinct and correct.
+
+Implementation branch/worktree context:
+- Implementer branch: `ship-placement-orientation-regression-subtask-1-implementer-20260405`
+- Implementer worktree: `/home/tstephen/.copilot/session-state/5a344522-5c8b-4366-b442-d964f513422c/files/worktrees/ship-placement-orientation-regression-subtask-1-implementer-20260405`
+- Implementer code commit: `00863adf2bfd4fccd1662ab48a9ee65f19b4e17b`
+- Tester branch: `ship-placement-orientation-regression-subtask-1-tester-20260405`
+- Tester worktree: `/home/tstephen/.copilot/session-state/5a344522-5c8b-4366-b442-d964f513422c/files/worktrees/ship-placement-orientation-regression-subtask-1-tester-20260405`
+- Tester commit hash: `No Changes Made`
+
+Files modified by the Implementer and Tester that may affect documentation review:
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalShipPlacementOrientationTest.cpp`
+- `tests/tactical/FTacticalShipPlacementOrientationTest.h`
+- `tests/tactical/Makefile`
+- `tests/tactical/TacticalTests.cpp`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+
+Final test outcomes:
+- Passed: `OK (88 tests)`
+
+Likely documentation impact:
+- The runtime display text already matches the intended UX, so documentation changes may not be required.
+- If any tactical design notes mention placement heading finalization behavior, update them to match the implemented two-step preview/commit flow.
+
+Shared artifact directory (repository-root-relative): `artifacts/ship-placement-orientation-regression/subtask-1`
+
+Do not report success unless all required artifacts exist and all changes are committed.

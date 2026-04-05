@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "subtask_id": "subtask-1-model-placement-contract",
+  "branch": "ship-placement-orientation-regression-subtask-1-tester-20260405",
+  "test_commit": "No Changes Made",
+  "test_files_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests"
+  ],
+  "totals": {
+    "summary": "OK (88 tests)"
+  },
+  "artifact_files": [
+    "artifacts/ship-placement-orientation-regression/subtask-1/tester_report.md",
+    "artifacts/ship-placement-orientation-regression/subtask-1/tester_result.json",
+    "artifacts/ship-placement-orientation-regression/subtask-1/documenter_prompt.txt"
+  ]
+}
