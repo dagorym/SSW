@@ -1,0 +1,48 @@
+{
+  "status": "success",
+  "feature_plan": "plans/damage-report-weapon-hit-labels-plan.md",
+  "branch": "report-damage-report-weapon-hit-labels-reviewer-20260406",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/report-damage-report-weapon-hit-labels-reviewer-20260406",
+  "outcome": "PASS",
+  "review_mode": "feature-level read-only except reviewer artifacts",
+  "scope": {
+    "subtasks_reviewed": [
+      "subtask-1",
+      "subtask-2"
+    ],
+    "implementation_files": [
+      "include/tactical/FTacticalCombatReport.h",
+      "src/tactical/FTacticalGame.cpp",
+      "tests/tactical/FTacticalCombatReportTest.cpp",
+      "tests/tactical/FTacticalDamageSummaryGUITest.cpp",
+      "doc/DesignNotes.md"
+    ],
+    "verifier_artifacts": [
+      "artifacts/damage-report-weapon-hit-labels-plan/subtask-1/verifier_report.md",
+      "artifacts/damage-report-weapon-hit-labels-plan/subtask-1/verifier_result.json",
+      "artifacts/damage-report-weapon-hit-labels-plan/subtask-2/verifier_report.md",
+      "artifacts/damage-report-weapon-hit-labels-plan/subtask-2/verifier_result.json"
+    ]
+  },
+  "validation_commands": [
+    {
+      "command": "cd tests/tactical && make -s clean && make -s && ./TacticalTests",
+      "outcome": "pass",
+      "details": "OK (88 tests)"
+    },
+    {
+      "command": "cd tests && make -s && ./SSWTests",
+      "outcome": "pass",
+      "details": "OK (160 tests)"
+    }
+  ],
+  "findings": {
+    "blocking": [],
+    "warning": [],
+    "note": [
+      "Subtask 1 tester artifact reported an older SSWTests failure, but verifier and reviewer reruns both passed at OK (160 tests)."
+    ]
+  },
+  "follow_up_feature_requests": [],
+  "summary": "The merged feature matches the approved plan: structured weapon-hit identity is preserved into raw tactical report events, summary rollups render canonical weapon abbreviations while preserving duplicate order, tests pass, and documentation reflects the shipped behavior."
+}
