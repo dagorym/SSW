@@ -1,0 +1,118 @@
+# Damage Report Weapon Hit Labels Plan
+
+## Feature Restatement
+Update the tactical damage report dialog so weapon-hit effects identify the damaged weapon systems by abbreviation. A single hit should read `Weapon Hit: LB`; multiple hits on the same ship should read `Weapon Hit: LB, LB, AR`, preserving repeated hits rather than collapsing them.
+
+## Confirmed Repository Facts
+- [`src/ships/FVehicle.cpp`](../src/ships/FVehicle.cpp) already records weapon-hit damage effects with `weaponType`, `weaponID`, `weaponName`, label `Weapon Hit`, and long-name detail text.
+- [`src/tactical/FTacticalGame.cpp`](../src/tactical/FTacticalGame.cpp) converts tactical attack effects and standalone damage-resolution effects into `FTacticalReportEvent`, but currently only copies generic label/detail text.
+- [`include/tactical/FTacticalCombatReport.h`](../include/tactical/FTacticalCombatReport.h) builds the player-facing ship rollup lines for the damage summary dialog by aggregating event labels, which is why the current output stops at `Weapon Hit`.
+- [`src/gui/TacticalDamageSummaryGUI.cpp`](../src/gui/TacticalDamageSummaryGUI.cpp) renders prebuilt summary lines and does not currently enrich weapon-hit text on its own.
+- [`include/weapons/FWeapon.h`](../include/weapons/FWeapon.h) defines canonical weapon abbreviations via the `FWeapon::Weapon` enum, including `LB`.
+
+## Assumptions
+- The abbreviated weapon code shown in the dialog should use the canonical short weapon identifier (`LB`, `LC`, `AR`, etc.), not the long display name.
+- When more than one weapon system is damaged on the same ship, the summary should preserve encounter order and repeat duplicates exactly as they occurred, for example `Weapon Hit: LB, LB, AR`.
+
+## Files To Modify
+- Likely: `include/tactical/FTacticalCombatReport.h`
+- Likely: `src/tactical/FTacticalGame.cpp`
+- Likely: `tests/tactical/FTacticalCombatReportTest.cpp`
+- Likely: `tests/tactical/FTacticalDamageSummaryGUITest.cpp`
+- Possible, only if dialog-specific formatting is needed instead of pure summary-line generation: `src/gui/TacticalDamageSummaryGUI.cpp`
+
+## Overall Documentation Impact
+- No user-facing documentation update is expected unless an existing tactical damage-summary note or milestone artifact explicitly documents the old generic `Weapon Hit` wording.
+- Downstream documentation review should check tactical reporting notes for any screenshots or example summary text that may need refreshing.
+
+## Subtasks
+
+### 1. Preserve structured weapon-hit identity in tactical report events
+**Description**
+Carry enough structured weapon-hit metadata from damage resolution into the tactical report model so the summary builder can distinguish `Weapon Hit` effects by specific weapon system instead of relying only on generic label/detail strings.
+
+**Likely files**
+- `include/tactical/FTacticalCombatReport.h`
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+
+**Acceptance Criteria**
+- Tactical report event data retains weapon-hit identity in a structured form for both attack-generated internal events and standalone immediate damage-resolution events.
+- The summary builder has access to canonical weapon-hit identity without having to parse long-name prose such as `Laser Battery damaged`.
+- Multiple weapon-hit events against the same ship remain individually represented in the raw report path so duplicates can be shown later as `LB, LB`.
+- Existing non-weapon internal effects continue to flow through the same report-building path without regression.
+- Tactical regression coverage proves the structured weapon-hit metadata survives both `buildTacticalAttackEvent(...)` and `appendTacticalDamageResolutionEvents(...)`.
+
+**Documentation Impact**
+- No documentation update expected beyond any internal reporting notes that describe event payload shape.
+
+### 2. Format damage-summary rollups to show weapon abbreviations
+**Description**
+Update the tactical combat report summary rollup so ship display lines render weapon-hit effects as `Weapon Hit: <abbr-list>` and combine multiple damaged weapon systems into one comma-separated list while preserving duplicates and event order.
+
+**Likely files**
+- `include/tactical/FTacticalCombatReport.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `tests/tactical/FTacticalDamageSummaryGUITest.cpp`
+- Possible: `src/gui/TacticalDamageSummaryGUI.cpp`
+
+**Acceptance Criteria**
+- A ship with one damaged weapon system renders `Weapon Hit: LB` instead of bare `Weapon Hit`.
+- A ship with multiple damaged weapon systems renders one player-facing effect entry with a comma-separated list such as `Weapon Hit: LB, LB, AR`.
+- Weapon-hit abbreviations coexist cleanly with other effect summaries on the same line; non-weapon effects keep their current wording unless required for formatting consistency.
+- The damage-summary dialog continues to render only the ship rollup lines, but those lines now include the weapon abbreviations generated by the summary layer.
+- Regression coverage proves the summary text for both single-hit and repeated multi-hit cases.
+
+**Documentation Impact**
+- No documentation update expected unless a GUI test description or tactical summary example text explicitly references the old generic wording.
+
+## Dependency Ordering
+1. Subtask 1 must complete first because Subtask 2 depends on structured weapon-hit identity reaching the report-summary layer.
+2. Subtask 2 follows after Subtask 1 and should remain sequential because both subtasks touch `include/tactical/FTacticalCombatReport.h` and share summary/report behavior.
+3. No parallelization is recommended for this story because the file ownership and behavior overlap are too tight.
+
+## Implementer Agent Prompts
+
+### Implementer Prompt for Subtask 1
+You are the implementer agent
+
+Allowed files:
+- `include/tactical/FTacticalCombatReport.h`
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+
+Task:
+Preserve structured weapon-hit identity in the tactical report event path so the report summary layer can tell which specific weapon system was damaged. Cover both attack-generated internal events and standalone immediate damage-resolution events, and keep the design compatible with repeated hits to the same abbreviated weapon code.
+
+Acceptance criteria:
+- Tactical report event data retains weapon-hit identity in a structured form for both attack-generated internal events and standalone immediate damage-resolution events.
+- The summary builder can consume weapon-hit identity without parsing free-form long-name detail text.
+- Multiple weapon-hit events against the same ship remain individually represented in the raw report path.
+- Existing non-weapon internal effects continue to flow through the report path without regression.
+- Tactical regression coverage proves the structured weapon-hit metadata survives both `buildTacticalAttackEvent(...)` and `appendTacticalDamageResolutionEvents(...)`.
+
+Do not report success unless all required artifacts exist and all changes are committed.
+
+### Implementer Prompt for Subtask 2
+You are the implementer agent
+
+Allowed files:
+- `include/tactical/FTacticalCombatReport.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `tests/tactical/FTacticalDamageSummaryGUITest.cpp`
+- `src/gui/TacticalDamageSummaryGUI.cpp`
+
+Task:
+Update the tactical damage-summary rollup so weapon-hit effects render canonical abbreviated weapon codes in the dialog summary. A single hit should read `Weapon Hit: LB`; repeated hits on the same ship should be emitted as one comma-separated list such as `Weapon Hit: LB, LB, AR`, preserving duplicates and event encounter order.
+
+Acceptance criteria:
+- A ship with one damaged weapon system renders `Weapon Hit: LB` instead of bare `Weapon Hit`.
+- A ship with multiple damaged weapon systems renders one player-facing effect entry with a comma-separated list such as `Weapon Hit: LB, LB, AR`.
+- Weapon-hit abbreviations coexist cleanly with other effect summaries on the same line.
+- The dialog still renders the prebuilt ship rollup lines, now containing the enriched weapon-hit text.
+- Regression coverage proves both single-hit and repeated multi-hit summary text.
+
+Do not report success unless all required artifacts exist and all changes are committed.
+
+## Output Artifact Path
+- `plans/damage-report-weapon-hit-labels-plan.md`
