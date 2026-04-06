@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Task summary:
+- Tactical damage-summary rollups now render weapon-hit effects with canonical abbreviations and combine repeated hits into one ordered comma-separated list (e.g., `Weapon Hit: LB, LB, AR`).
+- Mixed effect lines should include both the aggregated weapon-hit text and other effects.
+- Dialog rendering remains display-line driven (no raw event rendering in GUI).
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Acceptance criteria to validate (from Planner):
+- A ship with one damaged weapon system renders `Weapon Hit: LB` instead of bare `Weapon Hit`.
+- A ship with multiple damaged weapon systems renders one player-facing effect entry with a comma-separated list such as `Weapon Hit: LB, LB, AR`.
+- Weapon-hit abbreviations coexist cleanly with other effect summaries on the same line.
+- The dialog still renders the prebuilt ship rollup lines, now containing the enriched weapon-hit text.
+- Regression coverage proves both single-hit and repeated multi-hit summary text.
+
+Create test files in:
+- tests/tactical/ (assumption based on existing tactical summary and TacticalDamageSummaryGUI regression fixtures)
+
+Implementation context for testing:
+- `TacticalCombatReportDetail::appendEffectSummary(...)` now routes weapon-damage events into an ordered abbreviation list and keeps other effects in counted summaries.
+- `buildShipSummaryDisplayLine(...)` now emits one `Weapon Hit: ...` entry when weapon hits exist, then appends other effects.
+- Existing tactical summary behavior for hull damage and non-weapon effects should remain intact.
+
+Suggested test command(s):
+- cd tests/tactical && make -s clean && make -s && ./TacticalTests
+- cd tests && make -s && ./SSWTests
+
+Shared artifact directory:
+- artifacts/damage-report-weapon-hit-labels-plan/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
