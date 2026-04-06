@@ -293,6 +293,14 @@ existing label/detail text so later summary builders can identify the damaged
 weapon system without parsing prose, while repeated weapon hits and non-weapon
 effects remain separate event entries in the same report path.
 
+The summary rollup now consumes that structured weapon metadata to emit one
+player-facing weapon effect entry per ship in the form `Weapon Hit:
+<abbr-list>`, preserving event order and duplicates such as `Weapon Hit: LB,
+LB, AR`. Mixed-effect lines keep that aggregated weapon text alongside other
+effect summaries on the same ship display line, and `TacticalDamageSummaryGUI`
+continues to render the prebuilt `FTacticalShipReportSummary::displayLines`
+without inspecting raw attack or event collections itself.
+
 Milestone 6 adds the tactical UI boundary alongside that model-only work:
 `ITacticalUI` now defines the non-wx tactical callback surface and
 `WXTacticalUI` provides the wx-backed adapter for redraw requests,
@@ -879,7 +887,10 @@ The tactical follow-up extends that same live-dialog discipline inside
 `GuiTests`. The damage-summary test drives `TacticalDamageSummaryGUI` modally,
 asserts the dialog title plus populated and empty-state report text, verifies
 the rendered report context, and dismisses the real `Close` button through the
-modal harness. The ICM test now drives `ICMSelectionGUI` modally through row
+modal harness. It also proves that the dialog still renders prebuilt ship
+rollup lines while those lines now carry enriched weapon-hit text such as
+`Weapon Hit: LB, LB, AR` next to other summarized effects. The ICM test now
+drives `ICMSelectionGUI` modally through row
 selection, spin-control assignment, and the production `Done` completion path,
 then asserts the assigned interceptor count and defender ammo decrements without
 bypassing the dialog's finalization logic. Those direct tactical dialog tests
