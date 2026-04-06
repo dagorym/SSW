@@ -1,0 +1,24 @@
+{
+  "status": "success",
+  "subtask": "damage-report-weapon-hit-labels-plan/subtask-1",
+  "branch": "report-damage-report-weapon-hit-labels-subtask-1-tester-20260406",
+  "test_commit": "No Changes Made",
+  "test_files_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make -s && ./TacticalTests",
+    "cd tests && make -s && ./SSWTests"
+  ],
+  "pass_fail_totals": {
+    "tactical_tests": {"run": 88, "passed": 88, "failed": 0},
+    "sswtests": {"run": 160, "passed": 159, "failed": 1}
+  },
+  "unmet_acceptance_criteria": [],
+  "notes": [
+    "SSWTests failure appears unrelated baseline regression in FFleetTest::testDecTransitTime."
+  ],
+  "artifacts_written": [
+    "artifacts/damage-report-weapon-hit-labels-plan/subtask-1/tester_report.md",
+    "artifacts/damage-report-weapon-hit-labels-plan/subtask-1/tester_result.json",
+    "artifacts/damage-report-weapon-hit-labels-plan/subtask-1/documenter_prompt.txt"
+  ]
+}

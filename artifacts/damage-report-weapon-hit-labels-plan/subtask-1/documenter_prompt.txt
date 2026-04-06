@@ -1,0 +1,47 @@
+You are the Documenter Agent.
+
+Task summary:
+- Subtask 1 validated tactical report structured weapon-hit identity propagation for attack-generated and immediate damage-resolution event paths.
+
+Acceptance criteria validated:
+- Tactical report event data retains weapon-hit identity in a structured form for both attack-generated internal events and standalone immediate damage-resolution events.
+- The summary builder can consume weapon-hit identity without parsing free-form long-name detail text.
+- Multiple weapon-hit events against the same ship remain individually represented in the raw report path.
+- Existing non-weapon internal effects continue to flow through the report path without regression.
+- Tactical regression coverage proves the structured weapon-hit metadata survives both `buildTacticalAttackEvent(...)` and `appendTacticalDamageResolutionEvents(...)`.
+
+Implementation branch or worktree context:
+- Branch: report-damage-report-weapon-hit-labels-subtask-1-tester-20260406
+- Worktree: /home/tstephen/repos/SSW-worktrees/report-damage-report-weapon-hit-labels-subtask-1-tester-20260406
+- Base branch: report
+- Approved plan: plans/damage-report-weapon-hit-labels-plan.md
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalCombatReport.h
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalCombatReportTest.cpp
+- artifacts/damage-report-weapon-hit-labels-plan/subtask-1/tester_report.md
+- artifacts/damage-report-weapon-hit-labels-plan/subtask-1/tester_result.json
+- artifacts/damage-report-weapon-hit-labels-plan/subtask-1/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/tactical && make -s && ./TacticalTests
+- cd tests && make -s && ./SSWTests
+
+Final test outcomes:
+- TacticalTests passed: 88/88.
+- Existing baseline failure remains in SSWTests: FrontierTests::FFleetTest::testDecTransitTime (expected `tTime == 5`).
+- Subtask acceptance criteria were validated by tactical report tests and source-inspection assertions in `FTacticalCombatReportTest`.
+
+Documentation context:
+- Review tactical reporting documentation for structured event payload fields (`damageEffectType`, `damagedWeaponType`, `damagedWeaponID`, `damagedWeaponName`).
+- Confirm any tactical reporting notes describe that metadata now survives both attack event mapping and immediate damage-resolution event mapping.
+
+Shared artifact directory:
+- artifacts/damage-report-weapon-hit-labels-plan/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
