@@ -72,6 +72,36 @@ void FTacticalDamageSummaryGUITest::testReportTypeLabelsAndDialogTitleMapToRepor
 
 void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupOnlyAndEmptyStateText() {
 	// AC: the modal summary dialog renders only ship rollups and shows a safe empty-state message.
+	FTacticalCombatReport report;
+	FTacticalShipReference target(2002, 2, "Sathar Frigate");
+
+	FTacticalReportEvent firstWeaponHit;
+	firstWeaponHit.eventType = TRET_InternalDamage;
+	firstWeaponHit.damageEffectType = TDET_WeaponDamaged;
+	firstWeaponHit.subject = target;
+	firstWeaponHit.label = "Weapon Hit";
+	firstWeaponHit.damagedWeaponType = FWeapon::LB;
+
+	FTacticalReportEvent secondWeaponHit = firstWeaponHit;
+
+	FTacticalReportEvent thirdWeaponHit = firstWeaponHit;
+	thirdWeaponHit.damagedWeaponType = FWeapon::AR;
+
+	FTacticalReportEvent defenseEffect;
+	defenseEffect.eventType = TRET_DefenseEffect;
+	defenseEffect.subject = target;
+	defenseEffect.label = "Defense damaged";
+
+	report.events.push_back(firstWeaponHit);
+	report.events.push_back(secondWeaponHit);
+	report.events.push_back(thirdWeaponHit);
+	report.events.push_back(defenseEffect);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.ships.size());
+	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Weapon Hit: LB, LB, AR") != std::string::npos);
+	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense damaged") != std::string::npos);
+
 	const std::string source = readFile(repoFile("src/gui/TacticalDamageSummaryGUI.cpp"));
 
 	assertContains(source, "toWxString(tacticalCombatReportDialogTitle(summary.context))");

@@ -262,6 +262,11 @@ inline FTacticalWeaponReference createTacticalWeaponReference(const FWeapon *wea
 
 namespace TacticalCombatReportDetail {
 
+struct TacticalEffectSummaryAccumulator {
+	std::map<std::string, int> effectCounts;
+	std::vector<std::string> weaponHitAbbreviations;
+};
+
 struct TacticalShipSummaryKey {
 	unsigned int shipID;
 	unsigned int ownerID;
@@ -346,9 +351,36 @@ inline std::string summarizeEventEffect(const FTacticalReportEvent & event) {
 	}
 }
 
+inline std::string damagedWeaponAbbreviation(const FTacticalReportEvent & event) {
+	switch (event.damagedWeaponType) {
+	case FWeapon::LB:
+		return "LB";
+	case FWeapon::LC:
+		return "LC";
+	case FWeapon::DC:
+		return "DC";
+	case FWeapon::EB:
+		return "EB";
+	case FWeapon::PB:
+		return "PB";
+	case FWeapon::RB:
+		return "RB";
+	case FWeapon::AR:
+		return "AR";
+	case FWeapon::T:
+		return "T";
+	case FWeapon::SM:
+		return "SM";
+	case FWeapon::M:
+		return "M";
+	default:
+		return "";
+	}
+}
+
 inline void appendEffectSummary(
 	FTacticalShipReportSummary & shipSummary,
-	std::map<std::string, int> & effectCounts,
+	TacticalEffectSummaryAccumulator & effectSummary,
 	const FTacticalReportEvent & event) {
 	if (!eventRepresentsDamageEffect(event)) {
 		return;
@@ -358,12 +390,20 @@ inline void appendEffectSummary(
 		shipSummary.nonHullEffectsTaken++;
 	}
 
-	effectCounts[summarizeEventEffect(event)]++;
+	if (event.damageEffectType == TDET_WeaponDamaged) {
+		const std::string abbreviation = damagedWeaponAbbreviation(event);
+		if (abbreviation.size() > 0) {
+			effectSummary.weaponHitAbbreviations.push_back(abbreviation);
+			return;
+		}
+	}
+
+	effectSummary.effectCounts[summarizeEventEffect(event)]++;
 }
 
 inline std::string buildShipSummaryDisplayLine(
 	const FTacticalShipReportSummary & shipSummary,
-	const std::map<std::string, int> & effectCounts) {
+	const TacticalEffectSummaryAccumulator & effectSummary) {
 	std::ostringstream os;
 	os << shipSummary.ship.shipName << ": "
 	   << shipSummary.hullDamageTaken << " hull damage";
@@ -375,11 +415,21 @@ inline std::string buildShipSummaryDisplayLine(
 		}
 	}
 
-	if (!effectCounts.empty()) {
+	if (!effectSummary.effectCounts.empty() || !effectSummary.weaponHitAbbreviations.empty()) {
 		os << "; effects: ";
 		bool first = true;
-		for (std::map<std::string, int>::const_iterator itr = effectCounts.begin();
-			 itr != effectCounts.end(); ++itr) {
+		if (!effectSummary.weaponHitAbbreviations.empty()) {
+			os << "Weapon Hit: ";
+			for (unsigned int i = 0; i < effectSummary.weaponHitAbbreviations.size(); i++) {
+				if (i > 0) {
+					os << ", ";
+				}
+				os << effectSummary.weaponHitAbbreviations[i];
+			}
+			first = false;
+		}
+		for (std::map<std::string, int>::const_iterator itr = effectSummary.effectCounts.begin();
+			 itr != effectSummary.effectCounts.end(); ++itr) {
 			if (!first) {
 				os << ", ";
 			}
@@ -402,7 +452,7 @@ inline FTacticalCombatReportSummary buildTacticalCombatReportSummary(const FTact
 
 	std::map<TacticalCombatReportDetail::TacticalShipSummaryKey, FTacticalShipReportSummary> summaryMap;
 	std::vector<TacticalCombatReportDetail::TacticalShipSummaryKey> summaryOrder;
-	std::map<TacticalCombatReportDetail::TacticalShipSummaryKey, std::map<std::string, int> > effectSummaries;
+	std::map<TacticalCombatReportDetail::TacticalShipSummaryKey, TacticalCombatReportDetail::TacticalEffectSummaryAccumulator> effectSummaries;
 
 	for (unsigned int i = 0; i < report.attacks.size(); i++) {
 		const FTacticalAttackReport & attack = report.attacks[i];

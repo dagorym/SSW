@@ -368,13 +368,30 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeR
 	hullEffect.attackIndex = 0;
 	weaponFire.internalEvents.push_back(hullEffect);
 
-	FTacticalReportEvent weaponDestroyed;
-	weaponDestroyed.eventType = TRET_InternalDamage;
-	weaponDestroyed.subject = weaponFire.target;
-	weaponDestroyed.hullDamage = 0;
-	weaponDestroyed.label = "Rocket battery destroyed";
-	weaponDestroyed.attackIndex = 0;
-	weaponFire.internalEvents.push_back(weaponDestroyed);
+	FTacticalReportEvent firstWeaponHit;
+	firstWeaponHit.eventType = TRET_InternalDamage;
+	firstWeaponHit.damageEffectType = TDET_WeaponDamaged;
+	firstWeaponHit.subject = weaponFire.target;
+	firstWeaponHit.hullDamage = 0;
+	firstWeaponHit.label = "Weapon Hit";
+	firstWeaponHit.damagedWeaponType = FWeapon::LB;
+	firstWeaponHit.attackIndex = 0;
+	weaponFire.internalEvents.push_back(firstWeaponHit);
+
+	FTacticalReportEvent secondWeaponHit = firstWeaponHit;
+	weaponFire.internalEvents.push_back(secondWeaponHit);
+
+	FTacticalReportEvent thirdWeaponHit = firstWeaponHit;
+	thirdWeaponHit.damagedWeaponType = FWeapon::AR;
+	weaponFire.internalEvents.push_back(thirdWeaponHit);
+
+	FTacticalReportEvent defenseEffect;
+	defenseEffect.eventType = TRET_DefenseEffect;
+	defenseEffect.subject = weaponFire.target;
+	defenseEffect.hullDamage = 0;
+	defenseEffect.label = "Defense damaged";
+	defenseEffect.attackIndex = 0;
+	weaponFire.internalEvents.push_back(defenseEffect);
 
 	report.attacks.push_back(weaponFire);
 
@@ -383,10 +400,12 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeR
 
 	CPPUNIT_ASSERT(cruiserSummary != NULL);
 	CPPUNIT_ASSERT_EQUAL(5, cruiserSummary->hullDamageTaken);
-	CPPUNIT_ASSERT_EQUAL(1, cruiserSummary->nonHullEffectsTaken);
-	CPPUNIT_ASSERT_EQUAL(2, cruiserSummary->internalEventsTriggered);
-	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), cruiserSummary->rawEvents.size());
-	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Rocket battery destroyed") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(4, cruiserSummary->nonHullEffectsTaken);
+	CPPUNIT_ASSERT_EQUAL(5, cruiserSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), cruiserSummary->rawEvents.size());
+	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Weapon Hit: LB, LB, AR") != std::string::npos);
+	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Weapon Hit x") == std::string::npos);
+	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Defense damaged") != std::string::npos);
 	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Internal hull hit") != std::string::npos);
 }
 
@@ -542,9 +561,11 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 
 	FTacticalReportEvent internalDamage;
 	internalDamage.eventType = TRET_InternalDamage;
+	internalDamage.damageEffectType = TDET_WeaponDamaged;
 	internalDamage.subject = attack.target;
-	internalDamage.label = "ADF reduced";
+	internalDamage.label = "Weapon Hit";
 	internalDamage.hullDamage = 0;
+	internalDamage.damagedWeaponType = FWeapon::LB;
 	attack.internalEvents.push_back(internalDamage);
 
 	report.attacks.push_back(attack);
@@ -566,7 +587,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 2);
 	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 1);
 	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("4 hull damage") != std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("ADF reduced") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Weapon Hit: LB") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Weapon Hit x") == std::string::npos);
 	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Electrical fire") != std::string::npos);
 }
 
