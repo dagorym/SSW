@@ -1,0 +1,60 @@
+You are the Verifier Agent.
+
+Task summary:
+- Tactical damage-summary rollups now render weapon-hit effects with canonical abbreviations and combine repeated hits into one ordered comma-separated list (for example, `Weapon Hit: LB, LB, AR`).
+- Mixed effect lines now include aggregated weapon-hit text together with other effects.
+- Dialog rendering remains display-line driven and continues to consume prebuilt ship rollup lines.
+- Documentation now records the enriched rollup format and the display-line-driven dialog contract in `doc/DesignNotes.md`.
+- Tester validated tactical and full-suite regressions in this worktree.
+
+Acceptance criteria to verify:
+- A ship with one damaged weapon system renders `Weapon Hit: LB` instead of bare `Weapon Hit`.
+- A ship with multiple damaged weapon systems renders one player-facing effect entry with a comma-separated list such as `Weapon Hit: LB, LB, AR`.
+- Weapon-hit abbreviations coexist cleanly with other effect summaries on the same line.
+- The dialog still renders the prebuilt ship rollup lines, now containing the enriched weapon-hit text.
+- Regression coverage proves both single-hit and repeated multi-hit summary text.
+- Documentation accurately reflects the shipped tactical rollup behavior and the dialog's display-line-driven rendering contract.
+
+Implementation branch or worktree context:
+- Tester branch: `report-damage-report-weapon-hit-labels-subtask-2-tester-20260406`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/report-damage-report-weapon-hit-labels-subtask-2-tester-20260406`
+- Documenter branch: `report-damage-report-weapon-hit-labels-subtask-2-documenter-20260406`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/report-damage-report-weapon-hit-labels-subtask-2-documenter-20260406`
+- Base branch for subtask chain: `report`
+- Documentation commit: `56369ed7d77a409b6c1fbc18893edbb624d868d9`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/tactical/FTacticalCombatReport.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `tests/tactical/FTacticalDamageSummaryGUITest.cpp`
+- `doc/DesignNotes.md`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/implementer_report.md`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/implementer_result.json`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/tester_prompt.txt`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/tester_report.md`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/tester_result.json`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/documenter_prompt.txt`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/documenter_report.md`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/documenter_result.json`
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/tactical && make -s clean && make -s && ./TacticalTests`
+- `cd tests && make -s && ./SSWTests`
+
+Final test outcomes:
+- TacticalTests passed: OK (88 tests)
+- SSWTests passed: OK (160 tests)
+- No acceptance-criteria regressions detected.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Shared artifact directory:
+- `artifacts/damage-report-weapon-hit-labels-plan/subtask-2`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
