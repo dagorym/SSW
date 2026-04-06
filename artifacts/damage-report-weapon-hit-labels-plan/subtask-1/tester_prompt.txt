@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate that tactical report events preserve structured weapon-hit identity metadata through both attack-generated and standalone immediate damage-resolution event paths.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Tactical report event data retains weapon-hit identity in a structured form for both attack-generated internal events and standalone immediate damage-resolution events.
+- The summary builder can consume weapon-hit identity without parsing free-form long-name detail text.
+- Multiple weapon-hit events against the same ship remain individually represented in the raw report path.
+- Existing non-weapon internal effects continue to flow through the report path without regression.
+- Tactical regression coverage proves the structured weapon-hit metadata survives both `buildTacticalAttackEvent(...)` and `appendTacticalDamageResolutionEvents(...)`.
+
+Create test files in:
+- tests/tactical (use existing tactical report coverage location, primarily `tests/tactical/FTacticalCombatReportTest.cpp`)
+
+Implementation context for testing:
+- `FTacticalReportEvent` now includes structured fields: `damageEffectType`, `damagedWeaponType`, `damagedWeaponID`, `damagedWeaponName`.
+- `buildTacticalAttackEvent(...)` now maps attack effect metadata into these structured fields.
+- `appendTacticalDamageResolutionEvents(...)` now maps damage-resolution effect metadata into these structured fields for immediate report events.
+- No summary text formatting changes were implemented in this subtask; this work is limited to preserving structured metadata and non-regression in the event pipeline.
+
+Suggested test command(s):
+- cd tests/tactical && make -s && ./TacticalTests
+- cd tests && make -s && ./SSWTests
+
+Shared artifact directory:
+- artifacts/damage-report-weapon-hit-labels-plan/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
