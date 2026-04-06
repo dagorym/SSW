@@ -111,6 +111,7 @@ struct FTacticalWeaponReference {
 
 struct FTacticalReportEvent {
 	TacticalReportEventType eventType;
+	TacticalDamageEffectType damageEffectType;
 	FTacticalShipReference subject;
 	FTacticalShipReference source;
 	FTacticalShipReference target;
@@ -118,12 +119,16 @@ struct FTacticalReportEvent {
 	int hullDamage;
 	int attackIndex;
 	bool immediate;
+	int damagedWeaponType;
+	unsigned int damagedWeaponID;
+	std::string damagedWeaponName;
 	std::string label;
 	std::string detail;
 
 	FTacticalReportEvent()
-		: eventType(TRET_None), rollValue(-1), hullDamage(0), attackIndex(-1), immediate(false),
-		  label(""), detail("") {}
+		: eventType(TRET_None), damageEffectType(TDET_None), rollValue(-1), hullDamage(0),
+		  attackIndex(-1), immediate(false), damagedWeaponType(FWeapon::NONE), damagedWeaponID(0),
+		  damagedWeaponName(""), label(""), detail("") {}
 };
 
 struct FTacticalAttackReport {

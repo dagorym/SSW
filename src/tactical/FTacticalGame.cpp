@@ -46,6 +46,7 @@ void appendTacticalDamageResolutionEvents(
 		 itr != resolution.effects.end(); ++itr) {
 		FTacticalReportEvent event;
 		event.eventType = tacticalReportEventTypeForDamageEffect(itr->effectType);
+		event.damageEffectType = itr->effectType;
 		event.subject = FTacticalShipReference(ship->getID(), ship->getOwner(), ship->getName());
 		event.source = event.subject;
 		event.target = event.subject;
@@ -53,6 +54,9 @@ void appendTacticalDamageResolutionEvents(
 		event.hullDamage = itr->hullDamageApplied;
 		event.attackIndex = -1;
 		event.immediate = true;
+		event.damagedWeaponType = itr->weaponType;
+		event.damagedWeaponID = itr->weaponID;
+		event.damagedWeaponName = itr->weaponName;
 		event.label = itr->label;
 		event.detail = itr->detail;
 		report.events.push_back(event);
@@ -82,6 +86,7 @@ FTacticalReportEvent buildTacticalAttackEvent(
 {
 	FTacticalReportEvent event;
 	event.eventType = tacticalReportEventTypeForDamageEffect(static_cast<TacticalDamageEffectType>(effect.effectType));
+	event.damageEffectType = static_cast<TacticalDamageEffectType>(effect.effectType);
 	event.subject = report.target;
 	event.source = report.attacker;
 	event.target = report.target;
@@ -89,6 +94,9 @@ FTacticalReportEvent buildTacticalAttackEvent(
 	event.hullDamage = effect.hullDamageApplied;
 	event.attackIndex = -1;
 	event.immediate = report.immediate;
+	event.damagedWeaponType = effect.weaponType;
+	event.damagedWeaponID = effect.weaponID;
+	event.damagedWeaponName = effect.weaponName;
 	event.label = effect.label;
 	event.detail = effect.detail;
 	return event;
