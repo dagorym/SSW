@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "subtask": "damage-report-weapon-hit-labels-plan/subtask-1",
+  "branch": "report-damage-report-weapon-hit-labels-subtask-1-verifier-20260406",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 1,
+  "test_sufficiency_summary": "Sufficient. TacticalTests passed 88/88 and verifier reran SSWTests successfully at 160/160. Coverage verifies structured weapon-hit metadata survives both buildTacticalAttackEvent(...) and appendTacticalDamageResolutionEvents(...), while existing summary tests continue covering repeated raw events and non-weapon effects.",
+  "documentation_accuracy": "DesignNotes.md matches the implemented structured FTacticalReportEvent payload and correctly documents the preserved weapon-hit metadata fields across both mapping paths.",
+  "artifact_files_written": [
+    "artifacts/damage-report-weapon-hit-labels-plan/subtask-1/verifier_report.md",
+    "artifacts/damage-report-weapon-hit-labels-plan/subtask-1/verifier_result.json"
+  ],
+  "notes": [
+    "Tester artifacts still report an SSWTests baseline failure, but verifier reran SSWTests on this branch and observed OK (160 tests)."
+  ]
+}
