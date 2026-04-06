@@ -1,0 +1,32 @@
+{
+  "status": "success",
+  "subtask": "damage-report-weapon-hit-labels-plan/subtask-2",
+  "branch": "report-damage-report-weapon-hit-labels-subtask-2-tester-20260406",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/report-damage-report-weapon-hit-labels-subtask-2-tester-20260406",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make -s clean && make -s && ./TacticalTests",
+    "cd tests && make -s && ./SSWTests"
+  ],
+  "results": {
+    "attempt": 1,
+    "max_attempts": 3,
+    "tactical_tests": {
+      "passed": true,
+      "total": 88
+    },
+    "ssw_tests": {
+      "passed": true,
+      "total": 160
+    },
+    "total_tests": 248,
+    "failed_tests": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/damage-report-weapon-hit-labels-plan/subtask-2/tester_report.md",
+    "artifacts/damage-report-weapon-hit-labels-plan/subtask-2/tester_result.json",
+    "artifacts/damage-report-weapon-hit-labels-plan/subtask-2/documenter_prompt.txt"
+  ]
+}
