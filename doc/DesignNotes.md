@@ -285,6 +285,14 @@ tactical report lifecycle built on `FTacticalCombatReport`, `fireAllWeapons()`
 combat report aggregation/cleanup, and winner/combat-end detection so later
 migration milestones can delegate to it incrementally.
 
+The raw `FTacticalReportEvent` payload now also preserves structured damage
+metadata from both attack-generated internal events and standalone immediate
+damage-resolution events. Weapon-hit effects carry `damageEffectType`,
+`damagedWeaponType`, `damagedWeaponID`, and `damagedWeaponName` alongside the
+existing label/detail text so later summary builders can identify the damaged
+weapon system without parsing prose, while repeated weapon hits and non-weapon
+effects remain separate event entries in the same report path.
+
 Milestone 6 adds the tactical UI boundary alongside that model-only work:
 `ITacticalUI` now defines the non-wx tactical callback surface and
 `WXTacticalUI` provides the wx-backed adapter for redraw requests,
