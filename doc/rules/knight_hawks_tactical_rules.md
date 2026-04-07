@@ -1,62 +1,75 @@
 # UPF Tactical Operations Manual
+## Basic and Advanced Boardgame Rules
+_Starships Clash over Unknown Worlds_
 
-Knight Hawks Tactical Boardgame Rules
-
-## PDF Page 68
-
-Attention All Star Fleets
-
-Please direct comments and questions about the Knight Hawks Game to:
-
-Knight Hawks Questions
-TSR, Inc.
-POB 756
-Lake Geneva, WI 53147
-
-Enclose a stamped, self-addressed envelope.
-
-Distributed to the book trade in the United States by Random House, Inc., and in Canada by Random House of Canada, Ltd. Distributed in the United Kingdom by TSR (UK) Ltd. Distributed to the toy and hobby trade by regional distributors.
-
-This book is protected under the copyright laws of the United States of America. Any reproduction or other unauthorized use of the material or artwork contained herein is prohibited without the express written permission of TSR, Inc.
-
-STAR FRONTIERS and PRODUCTS OF YOUR IMAGINATION are trademarks owned by TSR, Inc.
-
-First Printing: March 1983
-Second Printing: November 1983
-Printed in U.S.A.
-
-© 1983 TSR, Inc. All Rights Reserved.
-
-## PDF Page 69
-
-Basic and Advanced Boardgame Rules
-
-Table of Contents
-
-Introduction ................................................................ 2
-Basic Game ................................................................. 3
-Sequence of Play ........................................................ 3
-Movement ................................................................... 3
-Combat ...................................................................... 4
-Combat Table .............................................................. 6
-Spaceships .................................................................. 7
-Basic Game Scenarios ..................................................... 8
-Advanced Game ............................................................ 10
-Sequence of Play ....................................................... 10
-Advanced Game Movement .................................................. 10
-Advanced Game Combat .................................................... 10
-Advanced Game Tables .................................................... 12
-Repairs .................................................................... 14
-Advanced Game Spaceships ................................................ 14
-Advanced Game Scenarios ................................................. 15
-
-## PDF Page 70
+Designed by Doublas Niles
 
 
 
-## PDF Page 71
+Accompanied by a Stiletto class assault scout ship, the UPF Frigate Z’Gata cruised toward the orbiting station Doliin Bay. The ship’s commander, Beril Gamache, was nervous. Doliin Bay, and its mining colony on the planet Kenzah’ Kit, were on the very edge of the Frontier. Reports of unfamiliar ships had been trickling in from this area for the last few months. Gamache hated to carry a valuable cargo into a border system without more information about possible dangers.
 
-BASIC GAME
+Suddenly, the frigate’s sensors lit up; long range detectors reported two ships emerging from the Void inside the system. Immediately, the commander ordered all hands to their stations. There was no good reason to be suspicious, but he had an odd feeling...
+
+As the intruders closed in, Gamache studied the computer’s report:
+
+```
+OBJECT ONE:     STARSHIP    HEAVY CRUISER CLASS
+                ORIGIN:     UNKNOWN
+                BUILDERS:   UNKNOWN
+                COURSE:     DOLIIN BAY
+
+OBJECT TWO:     STARSHIP    DESTROYER CLASS
+                ORIGIN:     UNKNOWN
+                BUILDERS:   UNKNOWN
+                COURSE:     DOLIIN BAY
+
+ADVISEMENT:     INTERCEPT AND CONTACT INTRUDERS
+                PROCEDURE YELLOW ALERT
+```
+
+The UPF ships swung into an intercept course. With weapon crews on alert, Z’Gata’s automatic beacons began radioing friendly messages in all known languages toward the unidentified ships. The intruder’s reply vaporized the Stiletto’s starboard thrusters in a blinding laser flash — The Second Sathar War had begun!
+
+## INTRODUCTION TO STAR FRONTIERS KNIGHT HAWKS
+
+STAR FRONTIERS Knight Hawks Space Battle game mixes the role-playing rules of STAR FRONTIERS Science Fiction Game with rules for spaceships. This booklet contains rules for a fast-moving boardgame of spaceship combat. The game can be played on its own, and requires no knowledge of STAR FRONTIERS game. The second book in this set contains rules that tie this game into the STAR FRONTIERS role-playing game. It covers spaceship design and construction, boarding combat, and new spaceship-related skills for STAR FRONTIERS characters. It is ideally suited for players that want to expand their STAR FRONTIERS adventures into the dark reaches of space.
+
+#### How to Use This Book
+
+This boardgame is divided into two sections: the Basic Game and the Advanced Game. The Basic Game introduces simple rules on ship movement and combat. The Advanced Game expands the basic system, adding detail and complexity. Players should try the Basic Game first, moving on to the Advanced Game after playing the Basic Game scenarios.
+
+#### Components
+
+To play this game, players need the map, dice and cardboard playing pieces (counters) included with this set. Paper and pencils also are needed to keep notes about the different ships. Sample ship roster forms are included with the game. Players may photocopy these or make copies on scratch paper.
+
+The map shows an empty area of space. A hexagonal grid is printed on it. This grid divides the map into spaces, called hexes, to regulate ship movement and indicate positions.
+
+Most of the counters represent individual spaceships or space stations. Some are used to record other information that is needed during the game. Many of the counters are not used in the Basic Game.
+
+#### Game Scale
+
+One turn in this game represents 10 minutes of time. Each hex is 10,000 kilometers across. Each unit is a single ship or space station.
+
+#### How To Use The Dice
+
+Two dice are included in Knight Hawks games. These dice have 10 sides, numbered from 0 to 9. They are called ten-sided dice (abbreviated d10).
+
+If the rules tell you to roll one ten-sided die (abbreviated 1d10), roll one die to get a number from 1 to 10. A zero is read as a 10.
+
+If the rules tell you to roll two ten-sided dice (abbreviated 2d10), roll both dice and add the results to get a number from 2 to 20. A zero is read as a 10. For example, if the rolls were 0 and 4, the result would be (10 + 4 =) 14. More dice can be rolled to give results of 3-30 (3d10), 4-40 (4d10), etc. If the number of dice is followed by a plus sign and a number, then the number is added to the dice roll. For example, 1d10 + 2 means roll one die and add 2 to the result.
+
+If the rules tell you to roll percentile dice (abbreviated d100), roll both dice. Instead of adding the results, read the dark-colored die as the first (tens) digit and the light-colored die as the second (ones) digit. A zero is read as a zero. The following table shows several examples of percentile dice rolls.
+
+| Dark die | Light die | Result |
+|----------|-----------|--------|
+| 5 | 3 | 53 |
+| 6 | 0 | 60 |
+| 0 | 6 | 6 |
+| 0 | 0 | 100 |
+
+The crayon included with this game can be used to color in the numbers on the dice and make them easier to read. Simply rub the crayon over the sides of the die and wipe away the excess wax with a tissue or paper towel.
+
+
+## BASIC GAME
 
 The Basic Game can be played by two or more players. The
 players must be divided into two teams: the United Planetary
@@ -66,7 +79,7 @@ Two sample battle set-ups, called scenarios, are given at the
 end of the Basic Game. Players can make up an endless variety
 of scenarios on their own.
 
-Sequence of Play
+### Sequence of Play
 
 The game is played in a series of game turns. Each game turn is
 divided in half. The first half is Side A's turn and the second
@@ -77,41 +90,24 @@ During each side's turn, players do the following things in
 order:
 
 1. Player A's Turn
-a. Movement
+    
 
-Player A announces which of his ships are using
-masking screens. A masking screen counter is
-placed on top of each of these ship counters.
+    a. Movement    
+    - Player A announces which of his ships are using masking screens. A masking screen counter is placed on top of each of these ship counters.
+    - Ships and space stations in orbit are moved one hex, following the direction of their orbit.
+    - Player A moves each of his ships, making sure that no ship moves a longer or shorter distance than its speed from the previous turn will allow. The player writes down each ship's new speed after it moves.
 
-Ships and space stations in orbit are moved one
-hex, following the direction of their orbit.
-
-Player A moves each of his ships, making sure that
-no ship moves a longer or shorter distance than its
-speed from the previous turn will allow. The player
-writes down each ship's new speed after it moves.
-
-b. Combat
-
-The non-moving player (player B, in this case) an-
-nounces which of his ships will shoot at moving
-ships, and which weapons they will use. The non-
-moving player then resolves all of these attacks
-and their effects are applied immediately.
-
-The moving player (player A, in this case) announ-
-ces which of his ships will shoot at the non-moving
-player's ships, and which weapons they will use.
-He then resolves all of these attacks, and their
-results are applied.
+    b. Combat
+    - The non-moving player (player B, in this case) announces which of his Ships will shoot at moving ships, and which weapons they will use. The non-moving player then resolves all of these attacks and their effects are applied immediately.
+    - The moving player (player A, in this case) announces which of his ships will shoot at the non-moving player's ships, and which weapons they will use. He then resolves all of these attacks, and their results are applied.
 
 2. Side B's Turn — The steps described above are repeated, but
 Side B becomes the moving side and Side A becomes the
 non-moving side.
 
-MOVEMENT
+### MOVEMENT
 
-Speed
+#### Speed
 
 Every ship has a speed when the game starts. This speed is the
 number of hexes the ship will move on the space map during
@@ -119,17 +115,16 @@ its turn. Players should write down each of their ships' speeds
 so they remember them during the turn. Also, a ship's speed
 this turn will affect its speed next turn.
 
-Acceleration and Deceleration
+#### Acceleration and Deceleration
 
 Each ship has an Acceleration/Deceleration Factor (ADF).
 This is anumber that tells the player how many hexes the ship
-
-can add to or subtract from its speed in one turn. Ships accel-
-erate or decelerate just before they move. A ship cannot accel-
-erate and decelerate on the same turn.
+can add to or subtract from its speed in one turn. Ships accelerate 
+or decelerate just before they move. A ship cannot accelerate 
+and decelerate on the same turn.
 
 EXAMPLE: A ship that moved five hexes last turn has a speed
-of 5 at the beginning of this turn. If its ADF is 2, itcan add one or
+of 5 at the beginning of this turn. If its ADF is 2, it can add one or
 two hexes to its previous speed, or subtract one or two hexes
 from its previous speed. This turn, the ship can move 3, 4, 5, 6
 or 7 hexes. The player decides he wants the ship to move 6
@@ -146,7 +141,7 @@ TOP SPEED. Ships do not have a top speed. They can acceler-
 ate to any speed, but players may find that ships traveling very
 fast will be forced to leave the map.
 
-Turning
+#### Turning
 
 Each ship has a Maneuver Rating (MR). This number tells the
 player how many times the ship can turn during its move.
@@ -162,9 +157,7 @@ ship can turn only one hexside in any hex, however. If the
 number of hexes a ship moves is less than its MR, it still can
 turn only once per hex.
 
-sesen>re
-ence
-erence
+[add image]
 
 EXAMPLE: The frigate in the illustration has a speed of 7 and
 an MR of 3. The player controlling the ship decides she wants it
@@ -179,52 +172,51 @@ moved seven hexes and turned three times.
 If a ship has a speed of zero through the entire turn, it can
 rotate during its movement phase so it faces any hexside.
 
-## PDF Page 72
-
-Stacking Counters
+#### Stacking Counters
 
 Any number of ships can be in one hex at the same time. Ships can shoot at other ships in the same hex without penalty.
 
-Planets
+#### Planets
 
 A hex that contains a planet counter is blocked. No ship can move into or through that hex. The planet also blocks shots if the shortest path from the attacker to the target must be traced through the planet's hex.
 
-Orbiting Planets
+#### Orbiting Planets
 
 Any ship that starts its move in a hex next to a planet can orbit that planet. The player simply announces during his movement phase that the ship is orbiting the planet.
 
 A ship that is orbiting a planet has a speed of 0. However, the ship automatically moves one hex around the planet each turn. The direction of the orbit (clockwise or counterclockwise) is up to the player who controls the ship. Once it is established, the direction cannot be changed unless the ship leaves orbit and returns to start a new orbit in the opposite direction. The ship in the illustration is orbiting clockwise. The numbers show how many turns it will take the ship to move from its starting hex to the various hexes around the planet. It will return to its starting hex in six turns.
 
+[add image]
+
 Because a ship in orbit has a speed of 0, it can rotate to face any hexside during its movement. The ship can rotate this way even if it leaves orbit during the turn. If the ship leaves orbit, it still has its full MR to use during its move.
 
-Moving Off The Map
+#### Moving Off The Map
 
 Ships that leave the map are considered lost and are taken out of the game. If a ship travels off the map because it cannot turn before reaching the edge, then it cannot return to the map on a later turn.
 
-COMBAT
+### COMBAT
 
 A ship can fire its weapons during the opposing player's movement phase and during its own combat phase. Weapons cannot be fired at any other time during the turn.
 
-Range
+#### Range
 
 Before firing any weapons, the player that is attacking must count the range from the attacking ship to its target. To find the range, count the number of hexes in the shortest path between the attacking ship and the target ship. Count the hex the target ship is in, but not the hex the attacking ship is in. Weapons cannot be fired at targets beyond a certain range, and some weapons become less effective at long ranges; see Weapon Systems for more information.
 
+[add image]
+
 Example: The range from Ship A to Ship B in the illustration is five hexes.
 
-Fields of Fire
+#### Fields of Fire
 
-Laser batteries, torpedoes and rocket batteries can be fired in any direction. Laser cannons and assault rockets can only be fired straight ahead of the firing ship. Laser cannons and assault rockets are called forward-firing weapons. Forward-firing weapons can be fired at any target inside the three-hex-wide area outlined in the diagram. The field of fire extends to the limit of the weapon's range. Targets in the central row of hexes are easier to hit; see Head-On Shots.
+Laser batteries, torpedoes and rocket batteries can be fired in any direction. Laser cannons and assault rockets can only be fired straight ahead of the firing ship. Laser cannons and assault rockets are called forward-firing weapons. Forward-firing weapons can be fired at any target inside the three-hex-wide area outlined in the diagram. (The weapons are not limited to the range shown in the diagram.  The field of fire extends to the limit of the weapon's range. Targets in the central row of hexes are easier to hit; see Head-On Shots.)
+
+[add image - Forward Field of Fire diagram]
 
 If a moving ship enters a hex containing an enemy ship, the moving ship may always use its forward-firing weapons against that enemy ship. The enemy ship, however, may only use a forward-firing weapon for defensive fire if the last hex the moving ship was in before entering the enemy's hex was in the enemy ship's forward field of fire.
 
-Aiming Weapons
+#### Aiming Weapons
 
 A player must announce which weapons he is using and which targets he will use them against before the dice are rolled to resolve any attacks. If a target is destroyed by the first few shots, any other weapons the player had aimed at that target must be fired, even though there is nothing for them to hit. The attacker cannot shift these weapons to a new target once they are aimed. If these wasted shots include torpedo or rocket fire, these weapons are fired and must be crossed off the attacking ship's record sheet.
-
-## PDF Page 73
-
-rocket fire, these weapons are fired and must be crossed off
-the attacking ship's record sheet.
 
 EXAMPLE: A player announces he will fire five weapons —
 two lasers, two torpedoes and a rocket battery — at an enemy. The
@@ -232,7 +224,7 @@ lasers and one torpedo are enough to destroy the target. The
 second torpedo and the rocket battery are wasted shots, be-
 cause their target is already destroyed.
 
-Combat Procedure
+#### Combat Procedure
 
 When a player wants to shoot at an enemy ship, he must use
 the Combat Table. Find the row on the Combat Table that lists
@@ -253,12 +245,12 @@ equal to 50, so the laser hits the ship. If the ship had a masking
 screen, the laser battery would have had only a 10% chance to
 hit, and a roll of 26 would have missed.
 
-Attack Modifiers
+#### Attack Modifiers
 
 A ship's percentage chance to hit its target can be modified by
 several factors. These are explained below.
 
-Head-On Shots. If a forward-firing weapon is used against a
+**Head-On Shots**. If a forward-firing weapon is used against a
 target in the center row of the three-hex firing area, the at-
 tacker can add 10% to his chance to hit. This central row is
 shown in the Forward Field of Fire diagram.
@@ -267,7 +259,7 @@ If a ship with a forward-firing weapon enters the same hex its
 target is in, the attacking ship automatically gets the head-on
 bonus.
 
-Range Diffusion. Laser cannons and laser batteries become
+**Range Diffusion**. Laser cannons and laser batteries become
 less effective at longer ranges. The attacker's chance to hit his
 target with a laser weapon is reduced by 5% x the range to the
 target.
@@ -279,7 +271,7 @@ a head-on shot, increasing the chance to 70%. This is reduced
 by (4 x 5% =) 20% because of the range. The attacker will hit the
 enemy ship on a d100 roll of (70-20=) 50 or less.
 
-Evasive Maneuvers. Fighters and assault scouts have a spe-
+**Evasive Maneuvers**. Fighters and assault scouts have a spe-
 cial defensive ability. Because they are small and
 maneuverable, these types of ships can try to dodge torpedoes
 that have been launched at them. The player controlling the
@@ -292,10 +284,10 @@ If the evading ship is not destroyed by the torpedo, it must turn
 in every hex it enters during its next move, until its MR is used
 up. The ship must move a number of hexes equal to or greater
 than its MR on its next turn; it cannot evade by staying in its
-hex and rotating. An evading ship can zig-zag or move ina
+hex and rotating. An evading ship can zig-zag or move in a
 circle.
 
-Rate of Fire
+#### Rate of Fire
 
 Laser cannons, laser batteries and rocket batteries can be fired
 during both the controlling player's combat phase and during
@@ -306,15 +298,15 @@ battery can fire each only once per turn. For example, a ship
 with four torpedoes and two rocket batteries can fire only one
 torpedo and one rocket battery per turn.
 
-Automatic Hits and Misses
+#### Automatic Hits and Misses
 
 if a target is within a weapon's maximum range, a d100 roll of
 5 or less always will hit the target, even if the attack's chance
 to hit was modified to O by range, evasion or other factors.
-Similarly, ad100 roll of 96 or more will always miss, even if the
+Similarly, a d100 roll of 96 or more will always miss, even if the
 attack's chance to hit was modified above 100%.
 
-Defensive Attacks
+#### Defensive Attacks
 
 The non-moving player can shoot at his opponent's ships at
 the start of his opponent's combat phase. Moving ships can be
@@ -331,7 +323,7 @@ defensively at the start of the moving player's combat phase.
 Torpedos and assault rockets cannot be launched at this time;
 they can be used only during the player's own combat phase.
 
-Ship Damage
+#### Ship Damage
 
 If a weapon hits its target, the player who made the attack must
 roll dice to determine how many points of damage the attack
@@ -354,35 +346,30 @@ points of damage. This damage reduces the ship's hull points
 to O or less, so the ship is destroyed and the player removes it
 from the map.
 
-Weapon Systems
+#### Weapon Systems
 
-The following weapons are used in the Basic Game. The ab-
-breviations listed after the weapon name are explained at the
-end of the weapon list.
+The following weapons are used in the Basic Game. The abbreviations listed after the weapon name are explained at the end of the weapon list.
 
-Laser Cannon — FF / RD / Range: 10 / Damage: 2d10
-A laser cannon is a large weapon that is mounted on the bow of
-a spaceship. It fires an intense, concentrated beam of light.
+**Laser Cannon** — FF / RD / Range: 10 / Damage: 2d10
 
-Laser Battery — RD / Range: 9 / Damage: 1d10
-A laser battery is a cluster of very small laser cannons mount-
+A laser cannon is a large weapon that is mounted on the bow of a spaceship. It fires an intense, concentrated beam of light.
 
-## PDF Page 74
+**Laser Battery** — RD / Range: 9 / Damage: 1d10
 
-ed in a rotating turret. It can fire in any direction, but is not as
-powerful as a laser cannon.
+A laser battery is a cluster of very small laser cannons mounted in a rotating turret. It can fire in any direction, but is not as powerful as a laser cannon.
 
-Torpedo — MPO / LTD / Range: 4 / Damage: 4d10
+**Torpedo** — MPO / LTD / Range: 4 / Damage: 4d10
 
 A torpedo is a self-guided nuclear bomb that homes in on its
 target after it is launched. Torpedos are propelled by prolonged
 fission reactions which enable them to travel at tremendous
-speeds. A shipcancarry only a limited number of torpedoes, and
+speeds. A ship can carry only a limited number of torpedoes, and
 these must be marked off the ship's record sheet as they are
 used.
 
-Assault Rockets — MPO / FF / LTD / Range: 4 / Damage:
-2d10+4. Assault rockets usually are carried by fighters and
+**Assault Rockets** — MPO / FF / LTD / Range: 4 / Damage: 2d10+4. 
+
+Assault rockets usually are carried by fighters and
 other small ships. They can be launched at a target during the
 owning player's combat phase. Assault rockets are powered
 by a brief fusion reaction which causes them to fly even faster
@@ -392,7 +379,7 @@ their target before it can dodge away. A ship can carry only a
 limited supply, so assault rockets must be marked off the ship's
 record sheet as they are fired.
 
-Rocket Battery — LTD / Range: 3 / Damage: 2d10
+**Rocket Battery** — LTD / Range: 3 / Damage: 2d10
 
 A rocket battery is a cluster of small rocket launchers. These
 rockets are much smaller than assault rockets, but they cause
@@ -401,7 +388,7 @@ rockets are fired together. Like torpedoes and assault rockets,
 rocket batteries must be marked off the ship's record sheet as
 they are fired.
 
-Explanation of Terms
+#### Explanation of Terms
 FF — Forward-firing weapon.
 
 MPO — Moving Player Only. MPO weapons can be fired only
@@ -421,31 +408,30 @@ Damage: #d10 — This is the number of 10-sided dice that are
 rolled to determine how many points of damage are caused by
 a successful attack.
 
-Defensive Systems
+#### Defensive Systems
 
 The following types of spaceship defenses are available in the
 Basic Game. If a ship has more than one defensive system, an
 attack's chance to hit is calculated against the most effective
 defense.
 
-Reflective Hull. This is mirror-like paint that is sprayed onto a
+**Reflective Hull**. This is mirror-like paint that is sprayed onto a
 ship's hull. It will often cause a laser beam to bounce off the
 ship without causing any damage. A reflective hull is the most
 common defense on spaceships.
 
-Masking Screen. A masking screen is created when a ship
-releases a cloud of water vapor into space. The vapor crystal-
-izes and forms a protective cloud surrounding the ship.
+**Masking Screen**. A masking screen is created when a ship
+releases a cloud of water vapor into space. The vapor crystalizes
+and forms a protective cloud surrounding the ship.
 
 Besides making the ship more difficult to hit, a masking screen
 absorbs energy from a laser. If a ship is hit by a laser while
-inside a masking screen, the amount of damage thatis rolled is
-
+inside a masking screen, the amount of damage that is rolled is
 divided in half (fractions are rounded up). The result is the
 number of damage points inflicted on the target ship.
 
 A masking screen has exactly the same effect on a laser fired
-out of the screen as it does on a laser fired into the screen. Ifa
+out of the screen as it does on a laser fired into the screen. I fa
 ship surrounded by a masking screen fires its lasers, resolve
 the attack as if the defending ship is masked.
 
@@ -464,10 +450,10 @@ These must be marked off the ship's record sheet as they are
 used. When all of them are used, the ship cannot create any
 more masking screens.
 
-Interceptor Missiles (ICM). Interceptor missiles are small
+**Interceptor Missiles (ICM)**. Interceptor missiles are small
 missiles that can be fired at incoming torpedoes, assault rockets
-and rocket battery barrages. Before the torpedo or rocket at-
-tack is resolved, the player controlling the target ship can
+and rocket battery barrages. Before the torpedo or rocket attack
+is resolved, the player controlling the target ship can
 declare that it is launching ICMs. The player must declare how
 many ICMs the ship is using. The attack's chance to hit is
 determined as if the attack was hitting a reflective hull or a
@@ -486,34 +472,32 @@ A ship carries a limited number of ICMs. Whenever one is
 used, it must be checked off the ship's record sheet. ICMs can
 defend only the ship that launched them.
 
-COMBAT TABLE
-Weapons Defenses Damage
-Reflective Masking ICM
-Hull Screen
+<table>
+<tr><td colspan="5" style="text-align: center;">COMBAT TABLE</td></tr>
+<tr><td>Weapons</td><td colspan="3" style="text-align: center;">Defenses</td><td>Damage</td></tr>
+<tr><td></td><td>Reflective Hull</td><td>Masking Screen</td><td>ICM</td><td></td></tr>
+<tr><td>Laser Cannon</td><td>60%</td><td>20%</td><td>—</td><td>2d10</td></tr>
+<tr><td>Laser Battery</td><td>50%</td><td>10%*</td><td>—</td><td>1d10</td></tr>
+<tr><td>Torpedo</td><td>70%</td><td>70%</td><td>-10%/ICM</td><td>4d10</td></tr>
+<tr><td>Assault Rocket</td><td>60%</td><td>60%</td><td>-5%/ICM</td><td>2d10 +4</td></tr>
+<tr><td>Rocket Battery</td><td>40%</td><td>40%</td><td>-3%/ICM</td><td>2d10</td></tr>
+<tr><td colspan="5"> *The target ship takes only one-half damage (round fractions down) if it is hit.</td></tr>
+</table>
 
-Laser Cannon 60% 20%, 2d10
-Laser Battery 50% 10%* — 1d10
-Torpedo 70% 70% -10%/ICM 4d10
-Assault Rocket 60% 60% -B%/ICM = =2d10 +4
 
-Rocket Battery 40% 40% -3%/ICM 2d10
+<table>
+<tr><td colspan="3" style="text-align: center;">WEAPON RESTRICTIONS TABLE</td></tr>
 
-* The target ship takes only one-half damage (round fractions
-down) if it is hit.
-OT
+<tr><td>Weapon</td><td>Restrictions</td><td>Range</td></tr>
+<tr><td>Laser Cannon</td><td>FF, RD</td><td>10</td></tr>
+<tr><td>Laser Battery</td><td>RD</td><td>9</td></tr>
+<tr><td>Torpedo</td><td>MPO, LTD</td><td>4</td></tr>
+<tr><td>Assault Rocket</td><td>MPO, LTD FF</td><td>4</td></tr>
+<tr><td>Rocket Battery</td><td>LTD</td><td>7</td></tr>
+</table>
 
-WEAPON RESTRICTIONS TABLE
 
-Weapon Restrictions Range
-Laser Cannon FF, RD 10
-Laser Battery RD 9
-Torpedo MPO, LTD 4
-Assault Rocket MPO, LTD FF 4
-Rocket Battery LTD 7
-
-## PDF Page 75
-
-SPACESHIPS
+### SPACESHIPS
 
 All of the spaceships used in the Basic Game are warships. Space stations that serve as bases for these military vessels also are used. All of the various types of ships and stations used in the Basic Game are described below.
 
@@ -521,68 +505,101 @@ Besides a short report about the ship, each description includes the number of h
 
 Not all ships of the same type are identical. All ships of one type will have the same ADF, MR and hull points. The weapon and defense information, however, lists the maximum amount of equipment a ship can carry. Many ships do not carry their maximum armament.
 
-Fighter
-Hull Points: 8
-ADF: 5
-MR: 5
-Weapons: 3 assault rockets
-Defenses: reflective hull
+**Fighters***. Fighters are small, single-seat spaceships. They
+must be based on an assault carrier or a space station. Fighters
+are fast and maneuverable, but because they are small the
+only weapons they can carry are three assault rockets. Their
+size also makes them easy to destroy.
 
-Assault Scout
-Hull Points: 15
-ADF: 5
-MR: 4
-Weapons: 4 assault rockets, laser battery
-Defenses: reflective hull
+A fighter that has fired all of its assault rockets can dock at a
+station or assault carrier to rearm. In order to dock, the fighter
+must stop (have a speed of 0) in the same hex as the station or
+assault carrier.
 
-Frigate
-Hull Points: 40
-ADF: 3
-MR: 3
-Weapons: laser cannon, laser battery, 2 torpedoes, 4 rocket batteries
-Defenses: reflective hull, 1 masking screen, 4 ICMs
+To be rearmed, a fighter must spend one complete game turn
+on board its station or carrier. If the fighter’s base is attacked,
+the fighter cannot be rearmed that turn. A fighter that is
+docked cannot be attacked.
 
-Destroyer
-Hull Points: 50
-ADF: 3
-MR: 2
-Weapons: laser cannon, laser battery, 2 torpedoes, 6 rocket batteries
-Defenses: reflective hull, 2 masking screens, 4 ICMs
+* Hull Points: 8
+* ADF: 5
+* MR: 5
+* Weapons: 3 assault rockets
+* Defenses: reflective hull
 
-Heavy Cruiser
-Hull Points: 80
-ADF: 1
-MR: 1
-Weapons: laser cannon, 3 laser batteries, 4 torpedoes, 8 rocket batteries
-Defenses: reflective hull, 1 masking screen, 8 ICMs
+**Assault Scout**. Assault scouts are larger than fighters, and
+carry five crew members. They are as fast as fighters, and are
+big enough to operate without a base station or carrier. They
+are lightly armed and easily damaged, however.
 
-Battleship
-Hull Points: 120
-ADF: 2
-MR: 2
-Weapons: 2 laser cannons, 4 laser batteries, 8 torpedoes, 10 rocket batteries
-Defenses: reflective hull, 4 masking screens, 20 ICMs
+Like fighters, assault scouts can rearm at a space station. They
+cannot be attacked while docked at the station. Assault scouts
+cannot be rearmed at assault carriers.
 
-[Enemy silhouette recognition graphic omitted in this text reconstruction.]
+* Hull Points: 15
+* ADF: 5
+* MR: 4
+* Weapons: 4 assault rockets, laser battery
+* Defenses: reflective hull
 
-## PDF Page 76
+**Frigate**. Frigates are small warships, carrying about 25 crew
+members. They are commonly used as patrol ships by the UPF,
+as they are large enough to handle most pirate ships and other
+criminal vessels.
 
-Assault Carrier. This type of ship is a relatively new develop-
-ment. Assault carriers carry groups of four to 10 fighters
+* Hull Points: 40
+* ADF: 3
+* MR: 3
+* Weapons: laser cannon, laser battery, 2 torpedoes, 4 rocket batteries
+* Defenses: reflective hull, 1 masking screen, 4 ICMs
+
+**Destroyer**. Destroyers are slightly larger than frigates, and
+also a little slower. They carry 40 to 50 crew members. Their
+main function is to escort larger ships.
+
+* Hull Points: 50
+* ADF: 3
+* MR: 2
+* Weapons: laser cannon, laser battery, 2 torpedoes, 6 rocket batteries
+* Defenses: reflective hull, 2 masking screens, 4 ICMs
+
+**Heavy Cruiser**. These large ships were the first space battleships. 
+Advances in technology have caused them to be downgraded 
+to cruisers, and they tend to be slow and somewhat
+clumsy compared to most modern warships.
+
+* Hull Points: 80
+* ADF: 1
+* MR: 1
+* Weapons: laser cannon, 3 laser batteries, 4 torpedoes, 8 rocket batteries
+* Defenses: reflective hull, 1 masking screen, 8 ICMs
+
+**Battleship**. These galactic dreadnoughts are the mightiest
+vessels to travel between the stars. The UPF has only a few of
+them, and they usually stay near the largest space stations.
+Battleships have never fought in ship-to-ship battles, so their
+effectiveness is a matter of theory.
+
+* Hull Points: 120
+* ADF: 2
+* MR: 2
+* Weapons: 2 laser cannons, 4 laser batteries, 8 torpedoes, 10 rocket batteries
+* Defenses: reflective hull, 4 masking screens, 20 ICMs
+
+[add Enemy silhouette recognition graphic]
+
+**Assault Carrier**. This type of ship is a relatively new development.
+Assault carriers carry groups of four to 10 fighters
 through the Void, launching the fighters where they are
 needed and taking them back on board to refuel and rearm.
 
-Hull Points: 75
+* Hull Points: 75
+* ADF: 2
+* MR: 1
+* Weapons: 2 laser batteries, 6 rocket batteries
+* Defenses: reflective hull, masking screen, 8 ICMs
 
-ADF: 2
-
-MR: 1
-
-Weapons: 2 laser batteries, 6 rocket batteries
-
-Defenses: reflective hull, masking screen, 8 ICMs
-
-Space Station. These are large outposts that orbit planets. A
+**Space Station**. These are large outposts that orbit planets. A
 space station has no engines to move itself; it simply serves as
 a base of operations for other ships.
 
@@ -597,7 +614,7 @@ moves, the ship that is leaving does not move with the station.
 It can move normally during its movement phase.
 
 A docked ship can use its battery weapons to help defend the
-station. Adocked ship cannot fire any forward-firing weapons,
+station. A docked ship cannot fire any forward-firing weapons,
 torpedoes or ICMs.
 
 An attacker must declare whether his ship is firing at the space
@@ -609,21 +626,17 @@ the station's original hull points. If a ship is destroyed while
 docked, the station takes points of damage equal to one-half of
 the ship's original hull points.
 
-Hull Points: 20 to 200
+* Hull Points: 20 to 200
+* ADF: (0)
+* MR: (0)
+* Weapons: 1 to 3 laser batteries, 2 to 12 rocket batteries
+* Defenses: reflective hull, 1 to 4 masking screens, 2 to 8 ICMs
 
-ADF: (0)
-MR: (0)
-Weapons: 1 to 3 laser batteries, 2 to 12 rocket batteries
-
-Defenses: reflective hull, 1 to 4 masking screens, 2 to 8
-
-ICMs
-
-BASIC GAME SCENARIOS
+### BASIC GAME SCENARIOS
 
 After reading the Basic Game rules, play one of the following
-scenarios. Beginning players should try Scenario 1 first, play-
-ing it several times to become familiar with ship movement
+scenarios. Beginning players should try Scenario 1 first, playing
+it several times to become familiar with ship movement
 and the various weapons and defenses. After players feel
 comfortable with the rules, move on to Scenario 2. This battle
 involves several ships on each side.
@@ -639,7 +652,7 @@ under your control.
 Ships designated UPFS are United Planetary Federation Ships.
 Those designated SAV are Sathar Attack Vessels.
 
-Scenario 1: SURPRISE ATTACK!
+#### Scenario 1: SURPRISE ATTACK!
 
 A pair of UPF Ships—the frigate Z'Gata and the assault scout
 Stiletto—have been dispatched to guard the small space sta-
@@ -662,36 +675,35 @@ In this scenario, the Sathar player is Player A, and moves first.
 The UPF player is Player B and moves second.
 
 UPF Ships
+```
+1.  UPFS Z'Gata     (frigate)           40 Hull Points
+    Weapons: laser cannon, laser battery, 2 torpedoes
+    Defenses: reflective hull, 4 ICMs
+    ADF: 3      MR: 3
 
-1. UPFS Z'Gata (frigate) 40 Hull Points
-Weapons: laser cannon, laser battery, 2 torpedoes
-Defenses: reflective hull, 4 ICMs
-ADF: 3 MR: 3
+2.  UPFS Stiletto   (assault scout)     15 Hull Points
+    Weapons: 4 assault rockets, laser battery
+    Defenses: reflective hull
+    ADF: 5      MR: 4
 
-2. UPFS Stiletto (assault scout) 15 Hull Points
-Weapons: 4 assault rockets, laser battery
-Defenses: reflective hull
-
-ADF: 5 MR: 4
-3. UPFB Doliin Bay (space station) 25 Hull points
-Weapons: laser battery
-Defenses: reflective hull, 6 ICMs
-ADF: O MR: 0
+3.  UPFS Doliin Bay (space station)     25 Hull points
+    Weapons: laser battery
+    Defenses: reflective hull, 6 ICMs
+    ADF: O      MR: 0
+```
 Sathar Ships
-1. SAV Venomous (destroyer) 50 Hull Points
+```
+1.  SAV Venomous    (destroyer)         50 Hull Points
+    Weapons: laser cannon, laser battery, 2 torpedoes
+    Defenses: reflective hull, 2 masking screens
+    ADF: 3      MR: 2
 
-Weapons: laser cannon, laser battery, 2 torpedoes
-Defenses: reflective hull, 2 masking screens
-ADF: 3 MR: 2
-
-2. SAV Perdition (heavy cruiser) 80 Hull Points
-Weapons: 2 laser batteries, 4 rocket batteries,
-
-2 torpedoes
-Defenses: reflective hull, 2 ICMs
-ADF: 1 MR: 1
-
-Setting Up. Both UPF ships are docked at the station, which is
+2. SAV Perdition    (heavy cruiser)     80 Hull Points
+    Weapons: 2 laser batteries, 4 rocket batteries, 2 torpedoes
+    Defenses: reflective hull, 2 ICMs
+    ADF: 1      MR: 1
+```
+**Setting Up**. Both UPF ships are docked at the station, which is
 in orbit around the planet Ken'‘zah Kit. The planet can be placed
 anywhere on the map by the UPF player; somewhere near the
 middle is best.
@@ -703,9 +715,7 @@ hex, but they must be on the same side of the map. They can
 start at any speed the Sathar player wants, but both ships must
 have the same speed.
 
-## PDF Page 77
-
-Evacuating Doliin Bay. The Z'Gata must spend three complete
+**Evacuating Doliin Bay**. The Z'Gata must spend three complete
 game turns docked at Doliin Bay in order for the station's crew
 to get aboard. These three turns need not be consecutive; the
 ship can leave the station after one turn and return later for
@@ -714,11 +724,11 @@ two more turns to rescue the station crew.
 After Doliin Bay has been evacuated, the station's weapons
 cannot be used.
 
-Victory Conditions. If the UPF player evacuates Doliin Bay
+**Victory Conditions**. If the UPF player evacuates Doliin Bay
 and flies the Z'Gata off the map, the UPF has won this battle.
 Any other result is a Sathar victory.
 
-Scenario 2: THE BATTLE OF FORTRESS KDIKIT
+#### Scenario 2: THE BATTLE OF FORTRESS KDIKIT
 
 News of the Sathar invasion has reached all the planets of the
 Frontier. The story always is the same; defeat and retreat.
@@ -735,90 +745,85 @@ The Sathar player is Player A in this scenario, and the UPF
 player is Player B.
 
 UPF Ships
+```
+1.  UPFS Admiral Clinton    (battleship)    Hull Points 120
+    Weapons: 4 laser batteries, 10 rocket batteries, 8 torpedoes
+    Defenses: reflective hull, 4 masking screens, 9 ICMs
+    ADF: 2      MR: 2
 
-1. UPFS Admiral Clinton (battleship) Hull Points 120
-Weapons: 4 laser batteries, 10 rocket batteries,
-8 torpedoes
-Defenses: reflective hull, 4 masking screens, 9 ICMs
-ADF: 2 MR: 2
+2. UPFB Fortress Kdikit     (space station)     Hull Points 100
+    Weapons: 3 laser batteries, 12 rocket batteries
+    Defenses: reflective hull, 2 masking screens, 8 ICMs
+    ADF: 0      MR: O
 
-2. UPFB Fortress Kdikit (space station) Hull Points 100
-Weapons: 3 laser batteries, 12 rocket batteries
-Defenses: reflective hull, 2 masking screens, 8 ICMs
-ADF: 0 MR: O
+The following two fighters are based at Fortress Kdikit.
+a&b. UPFS Fighters      Hull Points 8 each
+    Weapon: 3 assault rockets each
+    Defense: reflective hull
+    ADF: 5      MR: 5
 
-The following two fighters are based at Fortress
-Kdikit.
+3.  UPFS Allison May        (destroyer)     Hull Points: 50
+    Weapons: laser cannon, laser battery, 4 rocket batteries
+    Defenses: reflective hull, 1 masking screen, 2 ICMs
+    ADF: 3      MR: 2
 
-a&b. UPFS Fighters Hull Points 8 each
-Weapon: 3 assault rockets each
-Defense: reflective hull
-ADF: 5 MR: 5
+4.  UPFS Driadia            (frigate)       Hull Points 40
+    Weapons: laser cannon, laser battery, 2 torpedoes
+    Defenses: reflective hull, 2 ICMs
+    ADF: 3      MR: 3
 
-3. UPFS Allison May (destroyer)
-Weapons: laser cannon, laser battery,
-4 rocket batteries
-Defenses: reflective hull, 1 masking screen, 2 ICMs
-ADF: 3 MR: 2
+5. UPFS Dauntless       (assault scout)     Hull Points 15
+    Weapons: 4 assault rockets, laser battery
+    Defenses: reflective hull
+    ADF: 5      MR: 4
 
-Hull Points 50
-
-4. UPFS Driadia (frigate) Hull Points 40
-Weapons: laser cannon, laser battery, 2 torpedoes
-Defenses: reflective hull, 2 ICMs
-ADF: 3 MR: 3
-
-5. UPFS Dauntless (assault scout) Hull Points 15
-Weapons: 4 assault rockets, laser battery
-Defenses: reflective hull
-ADF: 5 MR: 4
-
-6. UPFS Razor (assault scout) Hull Points 15
-Weapons: 4 assault rockets, laser battery.
-Defenses: reflective hull
-ADF: 5 MR: 4
+6. UPFS Razor           (assault scout)     Hull Points 15
+    Weapons: 4 assault rockets, laser battery.
+    Defenses: reflective hull
+    ADF: 5      MR: 4
+```
 
 Sathar Ships
 
-1. SAV Infamous (assault carrier) Hull Points 75
-Weapons: 2 laser batteries, 6 rocket batteries
-Defenses: reflective hull, 4 ICMs
-ADF: 2 MR: 1
+```
+1. SAV Infamous     (assault carrier)       Hull Points 75
+    Weapons: 2 laser batteries, 6 rocket batteries
+    Defenses: reflective hull, 4 ICMs
+    ADF: 2      MR: 1
 
 The following five fighters are based on the Infamous:
+a-e. Sathar Attack Fighters                 Hull Points 8 each
+    Weapons: 3 assault rockets each
+    Defenses: reflective hull
+    ADF: 5      MR: 5
 
-a-e. Sathar Attack Fighters Hull Points 8 each
-Weapons: 3 assault rockets each
-Defenses: reflective hull
-ADF: 5 MR: 5
+2. SAV Star Scourge     (heavy cruiser)     Hull Points 80
+    Weapons: laser cannon, 2 laser batteries, 4 torpedoes, 4 rocket batteries
+    Defenses: reflective hull, 6 ICMs
+A   DF: 1       MR: 1
 
-2. SAV Star Scourge (heavy cruiser) Hull Points 80
-Weapons: laser cannon, 2 laser batteries, 4 torpedoes,
-4 rocket batteries
-Defenses: reflective hull, 6 ICMs
-ADF: 1 MR: 1
+3. SAV Vicious          (destroyer)         Hull Points 50
+    Weapons: laser cannon, laser battery, 2 torpedoes
+    Defenses: reflective hull, 2 masking screens
+    ADF: 3      MR: 2
 
-3. SAV Vicious (destroyer) Hull Points 50
-Weapons: laser cannon, laser battery, 2 torpedoes
-Defenses: reflective hull, 2 masking screens
-ADF: 3 MR: 2
+4. SAV Pestilence       (destroyer)         Hull Points 50
+    Weapons: laser cannon, 4 rocket batteries, 2 torpedoes
+    Defenses: reflective hull, 2 masking screens
+    ADF: 3      MR: 2
 
-4. SAV Pestilence (destroyer) Hull Points 50
-Weapons: laser cannon, 4 rocket batteries, 2 torpedoes
-Defenses: reflective hull, 2 masking screens
-ADF: 3 MR: 2
+5. SAV Doomfist         (destroyer)         Hull Points 50
+    Weapons: laser cannon, laser battery, 2 torpedoes
+    Defenses: reflective hull, 2 masking screens
+    ADF: 3      MR: 2
 
-5. SAV Doomfist (destroyer) Hull Points 50
-Weapons: laser cannon, laser battery, 2 torpedoes
-Defenses: reflective hull, 2 masking screens
-ADF: 3 MR: 2
+6. SAV Stinger          (frigate)           Hull Points 40
+    Weapons: laser cannon, 4 rocket batteries, 1 torpedo
+    Defenses: reflective hull, 1 masking screen, 2 ICMs
+    ADF: 3      MR: 3
+```
 
-6. SAV Stinger (frigate) Hull Points 40
-Weapons: laser cannon, 4 rocket batteries, 1 torpedo
-Defenses: reflective hull, 1 masking screen, 2 ICMs
-ADF: 3 MR: 3
-
-Setting Up. The UPF player sets up his ships first. The planet
+**Setting Up**. The UPF player sets up his ships first. The planet
 Kdikit should be placed at least 15 hexes from any map edge.
 Fortress Kdikit (with its fighters docked) is placed in orbit
 around the planet. The other ships can be placed on the map
@@ -834,7 +839,7 @@ placed on the map, but they can be launched on the first or any
 following turn. All Sathar ships must be traveling at the same
 speed at the beginning of the game.
 
-Victory Conditions. The victory conditions for this scenario
+**Victory Conditions**. The victory conditions for this scenario
 are very simple. This is the UPF's last desperate chance to stop
 the Sathar fleet before it reaches major planets, so the UPF will
 fight to the last ship. Sathar, of course, do not know the mean-
@@ -843,13 +848,60 @@ The space station is considered part of the UPF fleet. If one
 player destroys all of his opponent's ships but has only fighters
 remaining, the game is a draw.
 
-## PDF Page 78
+## ADVANCED GAME
 
+### INTRODUCTION
 
+The Advanced Game expands the Basic Game rules, adding new types of ships, new movement rules, more weapons and defenses, and more detailed damage and repair rules. All of the rules from the Basic Game are used in the Advanced Game, but Advanced Game players have more decisions to make and more options to choose from.
 
-## PDF Page 79
+SEQUENCE OF PLAY
 
-ADVANCED GAME COMBAT
+The turn sequence for the Advanced Game is outlined below.
+
+Side A’s Turn
+1. Movement Phase
+    - activate screens
+    - activate and move seekers
+    - move ships in orbit
+    - move other ships
+2. Combat Phase
+    - roll for fire damage
+    - defensive fire
+    - offensive fire
+
+Side B’s Turn
+1. Movement Phase
+2. Combat Phase
+
+Repair Turn (after every 3 turns)
+
+The only changes are the addition of a Seeker Activation step, a dice roll for damage from fires burning on ships, and a Repair Turn following every three game turns. Seekers are explained under New Weapons; fires are explained under Damage; and Repair Turns are explained under Repairing Damaged Ships.
+
+### ADVANCED GAME MOVEMENT
+
+Three major changes are made to the movement rules in the Advanced Game. First, gravity has a greater effect on ships near planets. Second, ships can move off the map edge without being removed from the game. Third, ships that are damaged in battle can have their MR or ADF reduced (this is explained further under Effects of Damage).
+
+#### Gravity
+
+A ship that is traveling straight toward a planet may get caught in the planet’s gravity well. A planet’s gravity extends into the six hexes surrounding the planet. Any ship that enters one of these hexes by crossing the hexside directly opposite the planet’s surface will be unable to pull away from the planet’s gravity. The ship will crash into the planet and be totally destroyed. This is illustrated in the diagram on this page.
+
+**Moving Through Gravity Wells**. A ship that moves through one of the six hexes surrounding a planet will have its facing changed by the planet’s gravity. The ship’s facing will be changed 60 degrees (one hexside) as the ship passes the planet. This effect is illustrated in the Gravity Diagram.
+
+If a ship uses its MR to make a facing change away from the planet as it flies through the surrounding hexes, it can continue past on a straight course. The maneuver cancels the effect of the planet’s gravity.
+
+[add image]
+
+Ship A entered the planet's gravity well while headed straight toward the planet, even if it turns in hex 2 (the hex right next to the planet), it cannot escape the planet's gravity and will crash into the planet.  Ship B is moving through the planet's gravity well (passing "under" the planet).  The planet's gravity changes the ship's course by turning it one hexside to the left.  If the ship does not counter this by turning to the right, it will continue moving along its new course.
+
+#### Moving Off The Map
+
+At the end of the Campaign Book is a perforated page printed with a hexagon pattern. If a player wants to move a ship off the edge of the map, this perforated page can be placed next to the map so the hex patterns match. Ships can move and maneuver on the page the same as on the map.
+
+This page can be photocopied, so the map can be extended as much as the players want. If a ship keeps moving away from the map, additional pages can be added next to the first.
+
+When only a few ships are in play, a ship leaving the map from one side can move onto the opposite side of the map. Players must remember that the ship moved off the far side of the map, and treat the ship as if it was on a separate map. Also, if a ship is about to move off the map, all counters on the map can be shifted the same number of hexes toward the other side of the map. This will give the ships more room to maneuver, without changing their relative positions.
+
+### ADVANCED GAME COMBAT
 
 The most important change in combat in the Advanced Game is the use of the Damage Table. In the Basic Game, all damage was marked off the ship's hull. The Damage Table spreads damage around, so hits can destroy a ship's weapons, engines or other components. This makes it possible for a ship to be severely damaged with only a few shots, and to be removed from the fight without being destroyed.
 
@@ -859,66 +911,266 @@ New Statistics for Basic Game Weapons
 
 All of the weapons used in the Basic Game can be used in the Advanced Game. The abbreviations that are used are:
 
-FF = Forward Firing
-RD = Range Diffusion
-MPO = Moving Player Only
-LTD = Limited Supply
-RA = Range
-DTM = Damage Table Modifier
-HDR = Hull Damage Rating
+* FF = Forward Firing
+* RD = Range Diffusion
+* MPO = Moving Player Only
+* LTD = Limited Supply
+* RA = Range
+* DTM = Damage Table Modifier
+* HDR = Hull Damage Rating
 
-Laser Cannon — FF / RD / RA 10 / DTM 0 / HDR 2d10
-Laser Battery — RD / RA 9 / DTM 0 / HDR 1d10
-Torpedo — MPO / LTD / RA 4 / DTM -20 / HDR 4d10
-Assault Rocket — FF / MPO / LTD / RA 4 / DTM -10 / HDR 2d10+4
-Rocket Battery — LTD / RA 3 / DTM -10 / HDR 2d10
+| Weapon | Restrictions | Range | DTM | HDR |
+|---|---|---|---|---|
+| Laser Cannon | FF / RD | 10 | 0 | 2d10 |
+| Laser Battery | RD | 9 | 0 |  1d10 |
+| Torpedo | MPO / LTD | 4 | -20 |  4d10 |
+| Assault Rocket | FF / MPO / LTD | 4 | -10 |  2d10+4 |
+| Rocket Battery | LTD | 3 | -10 |  2d10 |
 
-ICMs in the Advanced Game
+#### ICMs in the Advanced Game
 
 In the Basic Game, interceptor missiles could defend only the ship that launched them. In the Advanced Game, ICMs can defend any ship in the same hex as the ship that launched them. For example, an ore carrier in a hex with two destroyers may be attacked with torpedoes or assault rockets. The two destroyers could launch ICMs against the missiles that were aimed at the ore carrier.
 
-New Advanced Game Weapons
+#### New Advanced Game Weapons
 
-Proton Beam Battery — RD / RA 12 / DTM +10 / HDR 1d10
-Electron Beam Battery — RD / RA 12 / DTM +10 / HDR 1d10
-Disruptor Beam Cannon — RD / FF / RA 9 / DTM +20 / HDR 3d10
-Mines — LTD / RA 0 / DTM -20 / HDR 3d10+5
-Seeker Missiles — LTD / DTM -20 / HDR 5d10
+**Proton Beam Battery** — RD / RA 12 / DTM +10 / HDR 1d10
 
-Mines are placed in a hex before the game starts, or dropped from a minelayer during play. When an enemy ship enters the mined hex, the mines detonate automatically at the end of all movement for that turn. If several enemy ships enter or pass through a mined hex on the same turn, all of them are attacked by the mines. After the mines in a hex have exploded, the hex is no longer mined.
+This weapon fires an electrical beam of positively charged
+particles (protons). Like all batteries, it can fire in every
+direction.
 
-Seekers are placed the same way mines are. Once a seeker is placed, it does not move until it is activated. A player can activate a seeker at the beginning of his movement phase on any turn. Once activated, the seeker accelerates by 2 hexes per turn and tracks the nearest ship, changing facing as needed. It detonates when it enters a hex containing a ship, when a ship enters its hex, or automatically on the turn it moves 12 hexes.
+**Electron Beam Battery** — RD / RA 12 / DTM +10 / HDR 1d10
 
-New Advanced Game Defenses
+An electron beam battery fires an electrical beam of negatively
+charged particles (electrons). It can fire in all directions.
 
-None: used for ships with no defensive systems.
-Proton Screen: effective against proton and disruptor beams, but attracts electron beams.
-Electron Screen: effective against electron and disruptor beams, but attracts proton beams.
-Stasis Screen: moderately effective against all electrical beam weapons, but makes missiles and rockets more accurate.
+**Disruptor Beam Cannon** — RD / FF / RA 9 / DTM +20 / HDR 3d10
 
-When using electron, proton or stasis screens, exceptions can arise to the rule that a weapon's chance to hit is determined against the most effective defense in use. Since some defenses actually attract a weapon type, the percentage chance to hit is calculated against the defense that is attracting it, not the defense that is most effective against it.
+This powerful weapon must be mounted on the bow of a
+large spacecraft. It fires an intense beam, alternating protons
+and electrons. Disruptor beams can do heavy damage to a
+ship’s electrical system.
 
-When a player activates a screen, he circles the notation for that screen on his ship roster. No more than one screen can be activated on a ship at one time.
+**Mines** — LTD / RA 0 / DTM -20 / HDR 3d10+5
 
-## PDF Page 80
+The defending player can place mines in a hex before the game
+starts, or either player can drop them from a minelayer during
+the course of play. When a hex is mined, the player that placed
+the mines must record the number of that hex on a sheet of
+paper. When an enemy ship enters that hex, the mines deto-
+nate automatically at the end of all movement for that turn. If
+several enemy ships enter or pass through a mined hex on the
+same turn, all of them will be attacked by the mines (a mine
+pattern involves several hundred individual explosive devices).
+After the mines in a hex have exploded, the hex is no longer
+mined.
+
+**Seeker Missiles** — LTD / DTM -20 / HDR 5d10
+
+Seeker missiles are placed the same way mines are; the
+defending player can put them in a hex before the scenario
+begins, or a ship that carries seekers can drop them at any
+time. Once a seeker missile is placed, it will not move until it is
+activated. The player that placed a seeker can activate it at the
+beginning of his movement phase on any turn.
+
+Immediately after it is activated, the seeker will move two
+hexes toward the closest ship. If the closest ship is more than
+two hexes away, the turn is over for the seeker. On the next
+turn, the seeker will move four hexes toward the closest ship. It
+will continue accelerating at the rate of two hexes per turn (six
+on the third turn, eight on the fourth, etc.), and can make an
+unlimited number of facing changes to keep itself aimed at the
+nearest ship. A seeker can change facing up to three times
+before it moves each turn.
+
+Note that the seeker may change targets many times, because
+a different ship may be closest to it at the beginning of each
+turn. The seeker cannot tell the difference between friendly
+and enemy ships, and will always fly toward the closest ship. If
+two or more ships are an equal distance from the seeker,
+players should roll a die to determine which ship the missile
+will aim at.
+
+A seeker detonates as soon as it enters a hex containing a ship,
+or a ship enters the hex containing the activated seeker. If the
+hex contains more than one ship, the seeker will attack the
+largest. If the two largest ships are the same size, players
+should roll a die to determine which ship the missile attacks.
+When the seeker explodes, the player that placed it rolls one
+attack on the Damage Table.
+
+On the turn that a seeker moves 12 hexes, it will automatically
+detonate. If there is no ship within range at that time, the
+explosion will do no damage. Seekers will not be attracted to
+planets, moons, asteroids or space stations.
+
+#### New Advanced Game Defenses
+
+**None**. This is a category used to describe the many ships
+(usually civilian) that do not have even a reflective hull as a
+means of defense.
+
+**Proton Screen**. This screen is a field of charged particles
+which surrounds a ship. It is effective in blocking proton and
+disruptor beams, but actually attracts electron beams!
+
+**Electron Screen**. This screen is the opposite of a proton
+screen. It blocks electron and disruptor beams, but attracts
+proton beams.
+
+**Stasis Screen**. Astasis screen is moderately effective against
+all electrical beam weapons. It is not as good as a proton or
+electron screen against their respective weapon types, but it
+does not attract any beams. However, the electrical pulse of a
+stasis screen allows missiles and rockets to home in with
+increased accuracy.
+
+NOTE: When using electron, proton or stasis screens,
+exceptions will occasionally arise to the rule that states “A
+weapon’s chance to hit is determined against the most effec-
+tive defense in use.’’ Since some defenses actually attract a
+weapon type, the percentage chance to hit is calculated
+against the defense that is attracting it, not the defense that is
+most effective against it.
+
+When a player activates a screen, he simply circles in pencil
+the notation for that screen on his ship roster. When the
+screen is deactivated, the circle is erased. No more than one
+screen can be activated on a ship at one time.
 
 Combat Table
+The Advanced Game Combat Table is used the same as the
+Basic Game Combat Table. All weapons and defenses used in
+the game are included on the Advanced Game Combat Table.
+Each entry on the Advanced Game Combat Table has two
+percentages; the first is used in the Advanced Game, and the
+shaded number is used with characters who have gunnery
+skills (see Skills in the Campaign Book). Use only the unshaded
+entries for now.
 
-The Advanced Game Combat Table is used the same as the Basic Game Combat Table. All weapons and defenses used in the game are included on the Advanced Game Combat Table. Each entry on the table has two percentages in the original printing; the first is used in the Advanced Game, and the shaded number is used with characters who have gunnery skills. This reconstruction preserves the standard unshaded values.
+<style>
+    .shaded {background-color:#333;}
+</style>
+<table>
+<tr><th colspan="15" style="text-align: center;">COMBAT TABLE</th></tr>
+<tr><td></td><th colspan="13" style="text-align: center;">Defense</th></tr>
+<tr><td>Weapon</td><td colspan="2" style="text-align: center;">None</td><td colspan="2" style="text-align: center;">Reflective Hull</td><td colspan="2" style="text-align: center;">Proton Screen</td><td colspan="2" style="text-align: center;">Electron Screen</td><td colspan="2" style="text-align: center;">Stasis Screen</td><td colspan="2" style="text-align: center;">Masking Screen</td><td>ICM</td><td>HullDamage</td></tr>
+<tr><td>Laser Cannon</td><td>75%</td><td class="shaded">60%</td><td>60%</td><td class="shaded">45%</td><td>75%</td><td class="shaded">60%</td><td>75%</td><td class="shaded">60%</td><td>75%</td><td class="shaded">60%</td><td>25%*</td><td class="shaded">10%*</td><td>—</td><td>2d10</td></tr>
+<tr><td>Laser Battery</td><td>65%</td><td class="shaded">55%</td><td>50%</td><td class="shaded">40%</td><td>65%</td><td class="shaded">55%</td><td>65%</td><td class="shaded">55%</td><td>65%</td><td class="shaded">55%</td><td>20%*</td><td class="shaded">10%*</td><td>—</td><td>1d10</td></tr>
+<tr><td>Proton Beam Battery</td><td>60%</td><td class="shaded">50%</td><td>60%</td><td class="shaded">50%</td><td>25%*</td><td class="shaded">15%*</td><td>70%</td><td class="shaded">60%</td><td>40%</td><td class="shaded">30%</td><td>50%</td><td class="shaded">40%</td><td>—</td><td>1d10</td></tr>
+<tr><td>Electron Beam Battery</td><td>60%</td><td class="shaded">50%</td><td>60%</td><td class="shaded">50%</td><td>70%</td><td class="shaded">60%</td><td>25%*</td><td class="shaded">15%*</td><td>40%</td><td class="shaded">30%</td><td>50%</td><td class="shaded">40%</td><td>—</td><td>1d10</td></tr>
+<tr><td>Disruptor Cannon</td><td>60%</td><td class="shaded">45%</td><td>60%</td><td class="shaded">45%</td><td>50%</td><td class="shaded">35%</td><td>50%</td><td class="shaded">35%</td><td>40%</td><td class="shaded">25%</td><td>50%</td><td class="shaded">35%</td><td>—</td><td>3d10</td></tr>
+<tr><td>Torpedo</td><td>50%</td><td class="shaded">45%</td><td>50%</td><td class="shaded">45%</td><td>50%</td><td class="shaded">45%</td><td>50%</td><td class="shaded">45%</td><td>75%</td><td class="shaded">65%</td><td>50%</td><td class="shaded">40%</td><td>-10/ICM</td><td>4d10</td></tr>
+<tr><td>Assault Rocket</td><td>60%</td><td class="shaded">50%</td><td>60%</td><td class="shaded">50%</td><td>60%</td><td class="shaded">50%</td><td>60%</td><td class="shaded">50%</td><td>60%</td><td class="shaded">50%</td><td>60%</td><td class="shaded">50%</td><td>-5/ICM</td><td>2d10+4</td></tr>
+<tr><td>Rocket Battery</td><td>40%</td><td class="shaded">30%</td><td>40%</td><td class="shaded">30%</td><td>40%</td><td class="shaded">30%</td><td>40%</td><td class="shaded">30%</td><td>40%</td><td class="shaded">30%</td><td>40%</td><td class="shaded">30%</td><td>-3/ICM</td><td>2d10</td></tr>
+<tr><td>Mines</td><td colspan="2" style="text-align: center;">60%</td><td colspan="2" style="text-align: center;">60%</td><td colspan="2" style="text-align: center;">60%</td><td colspan="2" style="text-align: center;">60%</td><td colspan="2" style="text-align: center;">80%</td><td colspan="2" style="text-align: center;">60%</td><td>-5/ICM</td><td>3d10+5</td></tr>
+<tr><td>Seeker Missile</td><td colspan="2" style="text-align: center;">75%</td><td colspan="2" style="text-align: center;">75%</td><td colspan="2" style="text-align: center;">75%</td><td colspan="2" style="text-align: center;">75%</td><td colspan="2" style="text-align: center;">90%</td><td colspan="2" style="text-align: center;">75%</td><td>-8/ICM</td><td>5d10</td></tr>
+</table>
 
-[See formatted combat and damage tables in the document version.]
+#### Damage
 
-Damage
+When a ship is hit, the attacking player must determine what
+damage was caused. The Damage Table lists all the possible
+types of ship damage. The attacking player rolls d100. The
+result of this roll is modified by the weapon’s DTM, and the
+modified result is found on the Damage table. Modifiers for the
+various weapons are listed under Damage Table Modifiers.
+The number listed is added to or subtracted from the die roll.
 
-When a ship is hit, the attacking player determines what damage was caused. The Damage Table lists all possible types of ship damage. The attacking player rolls d100, modifies the result by the weapon's DTM, and then finds the modified result on the Damage Table.
+EXAMPLE: A destroyer is hit by a proton beam battery. The
+modifier for a proton beam battery is +10. The attacking player
+rolls d100 and gets a result of 73. The weapon modifier is
+added, giving a modified result of 83—’’ Defensive Control hit.”
 
-Example: A destroyer is hit by a proton beam battery. The modifier for a proton beam battery is +10. The attacking player rolls d100 and gets 73. The modified result is 83: Defensive Control hit.
+DAMAGE TABLE MODIFIERS
+| | |
+|-|-|
+| Laser Cannon | 0 |
+| Laser Battery | 0 |
+| Proton Beam Battery | +10 |
+| Electron Beam Battery | +10 |
+| Disruptor Beam Cannon | +20 |
+| Assault Rocket | -10 |
+| Rocket Battery | -10 |
+| Torpedo | -20 |
+| Mine | -20 |
+| Seeker Missile | -20 |
 
-## PDF Page 81
 
-[Primarily table/diagram continuation page in the scan. The cleaned text content is incorporated with the Advanced Game combat and damage tables.]
+ADVANCED GAME DAMAGE TABLE
+| Modified <br/>Die Roll | Type of Damage |
+|-|-|
+| -20 — 10 | Hull hit: double normal damage |
+| 11 — 45 | Hull hit: roll normal damage for weapon |
+| 46 — 49 | Drive hit: lose 1 ADF point |
+| 50 — 52 | Drive hit: lose 1/2 total ADF (round up) |
+| 53 | Drive hit: lose entire ADF |
+| 54 — 58 | Steering hit: lose 1 MR point |
+| 59 — 60 | Steering hit: lose entire MR |
+| 61 — 62 | Weapon hit: LC; LB; PB; EB; AR; RB |
+| 63 — 64 | Weapon hit: PB; EB; LB; RB; T; AR |
+| 65 — 66 | Weapon hit: DC; LC; AR; T; LB |
+| 67 — 68 | Weapon hit: T; AR; EB; PB; LB; RB |
+| 69 — 70 | Weapon hit: LB; RB; T; AR; PB; EB; LC |
+| 71 — 74 | Power short circuit: lose all screens and ICMs |
+| 75 — 77 | Defense hit: PS; ES; SS; MS; ICM |
+| 78 — 80 | Defense hit: MS; ICM; SS; PS; ES |
+| 81 — 84 | Defense hit: ICM; SS; PS; ES; MS |
+| 85 — 91 | Combat Control System hit: -10% on all attacks |
+| 92 — 97 | Navigation hit: lose maneuvering control |
+| 98 — 105 | Electrical Fire: roll additional damage at +20 each turn |
+| 106 — 116 | Damage Control hit: DCR cut in half |
+| 117 — 120 | Disastrous Fire: DCR cut in half; lose entire ADF and MR;<br/>-10% on all attacks; roll additional damage at +20 each turn |
 
-## PDF Page 82
+#### Explanation of Results
+
+**Hull Hits.** Hull hits affect the ship's hull points. The player that scored the hull hit rolls the correct number of dice (indicated by the weapon's HDR) and the result is subtracted from the target ship's hull points. If the result indicates "Double Damage," the attacker should roll the dice and multiply the result by 2.
+
+When more than half of the ship's hull points are gone, the ship is severely damaged and there is a chance it will break apart. Whenever a severely damaged ship accelerates, decelerates or turns, the player controlling the ship must complete the following steps to determine if the ship breaks apart:
+
+1. Subtract one-half (rounded down) of the ship's original hull points from the number of points of damage the ship has taken.
+2. Multiply the result from step 1 by the number of ADF and MR points the ship is using this game-turn.
+3. Roll d100. If the number rolled is equal to or less than the result from step 2, the ship breaks apart performing the maneuver. If the number rolled is greater than the result from step 2, the ship completed the maneuver safely.
+
+A ship that is torn apart is completely destroyed.
+
+**EXAMPLE:** A destroyer with 50 hull points has taken 32 points of damage. The player that controls the destroyer wants to get it away from the battle as quickly as possible, so he decides to accelerate and turn one hex side. The destroyer's ADF is 3, and 1 MR point is used to make the turn. Subtracting one-half of the destroyer's original hull points from the ship's damage gives (32-25=) 7. The ship is using (3+1=) 4 ADF and MR points this turn. The chance the ship will break apart is (7x4=) 28%. The player rolls d100 and gets a 29 - the destroyer makes its move successfully! If the player had rolled 28 or less, the ship would have been destroyed.
+
+All weapons cause the same damage when they hit anything other than the hull. The attacker does not roll dice to reduce the ship's hull points unless the result on the Damage Table was a Hull Hit. The number of dice rolled is determined by the weapon that was used.
+
+**Drive Hit.** A drive hit can cause a ship to lose 1 ADF, one-half of its original ADF or all of its ADF. If a ship with 3 ADF loses 1, its ADF is reduced to 2. If it loses one-half of its ADF, its ADF is reduced to 1 (one-half of 3, rounded down). If the ship loses its entire ADF, its ADF is reduced to 0. If a ship has taken some drive damage, and receives a "1/2 ADF" hit, it loses a number of ADF points equal to one-half of its original ADF.
+
+Losing ADFs does not affect the ship's current speed. A ship that loses its entire ADF can turn, but it cannot accelerate or decelerate. The ship may recover ADF during the Repair Turn.
+
+**Steering Hit.** Steering hits reduce a ship's MR. The hit will either lower the ship's MR by 1, or reduce the ship's MR to 0. A ship with an MR of 0 cannot turn or change its facing, even if it stops and remains in a single hex. Damage to a ship's MR can be repaired.
+
+**DRIFTING.** A ship that loses all of both its ADF and MR will drift. A drifting ship travels at the same speed and in the same direction it had before it started drifting. It cannot turn, accelerate or decelerate until repairs are made.
+
+**Weapon System Hit.** If a weapon system is hit, the system that is destroyed is the system that is listed first at that Damage Table result. If the damaged ship does not have that type of system, then the system listed second will be destroyed, and so on. If the ship has none of the listed systems, then treat this result as a hull hit. If an LTD system with no ammunition left is hit, the system is still destroyed.
+
+**EXAMPLE:** A destroyer is damaged in combat. The attacker rolls d100 and gets a 66 - Weapon hit: DC, LC, AR, T, LB. The destroyer does not have a disruptor cannon. The next system listed is a laser cannon. The destroyer does have a laser cannon, so the laser cannon is destroyed.
+
+**Power Short Circuit.** All active defenses on the damaged ship stop working. This includes ICMs and electron, stasis and proton screens, but not reflective hulls and masking screens that have already been launched. No new masking screens can be released, however. Repairing a power short circuit will remove all effects of the hit.
+
+**Defense Hit.** Defense hits are handled the same as weapon system hits, except defensive systems are destroyed instead of weapons.
+
+**Combat Control System Hit.** The ship's automatic targeting devices are damaged. The player must subtract 10% from this ship's chance to hit with any weapon.
+
+**Navigation Hit.** The ship's navigation and steering equipment is damaged. The player controlling the ship must roll 1d10 before the ship moves. If the result is 1-5, the ship must turn to the left in each hex it enters until its MR is used up. If the result is 6-10, the ship must turn to the right. The ship remains out of control until the damage is repaired. If the ship's hull is severely damaged, these turns affect the ship's chance of breaking apart. A stopped ship can ignore a navigation hit.
+
+**Electrical Fire.** Electrical equipment in the ship is burning. Place a "fire" counter on top of the ship's counter. The player must make another damage roll for this ship with a +20 modifier at the start of his opponent's combat step every turn, until the fire is put out. If a fire causes hull damage, it will cause 1d10 points of damage.
+
+**Damage Control Hit.** The ship's DCR is cut in half (round fractions up). This can be repaired, the same as normal damage.
+
+#### Recording Damage
+
+The player that controls a damaged ship must mark the damage on his ship roster. If a weapon or defense system is damaged, then that system is crossed off the roster in pencil. If a torpedo, assault rocket or other LTD weapon is damaged, the entire system is shut down, not just one torpedo or rocket. When a ship's movement ability is damaged, the original ADF or MR is crossed out and the modified number written in pencil. Electrical fires, navigation, combat control and damage control hits are recorded in the box labelled "Damaged Systems" on the Advanced Game ship roster.
+
+Most damage is cumulative. For example, if a ship takes three drive hits and each calls for the ship to lose 1 ADF point, the ship loses 3 ADF points altogether. If the ship had only 1 or 2 ADF points to begin with, then its ADF is brought to 0 and all further drive hits are treated as hull hits. Damage will remain in effect until it is repaired (see Repair).
+
+Combat control system and damage control hits are not cumulative. After one of these systems has been hit, any more hits on that system are considered hull hits. Also, a ship can have only one fire at a time, so a result that would cause a second fire is treated as hull damage.
+
 
 If the damage table indicates a hit on a system that a ship does
 not have (a weapon hit on a civilian ore carrier, for example),
