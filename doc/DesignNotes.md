@@ -905,3 +905,33 @@ cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
 Result: `OK (24 tests)`.
+
+The tactical combat report hit-detail follow-up then documented the richer
+player-facing summary shape used by `FTacticalCombatReportSummary`.
+`include/tactical/FTacticalCombatReport.h` now adds
+`FTacticalHitDetailSummary`, a `showHitDetails` toggle that defaults to `true`,
+and a `hitDetails` collection alongside the existing per-ship rollups. The
+summary builder only appends hit-detail entries for attacks where `hit == true`,
+so reports with misses or report-level immediate events do not invent empty
+detail rows. Each emitted hit detail keeps the attacker ship, weapon, target
+ship, hull damage, and any effect labels/detail text in a player-readable
+`outcome`/`displayLine` form, while the existing ship rollup summaries remain
+the canonical aggregate view for per-ship damage and effects.
+
+The updated tactical regression coverage locks that contract in by checking:
+
+- `FTacticalCombatReportSummary` starts with `showHitDetails == true` and can be
+  toggled off by callers that want to suppress the detail section;
+- hit-detail rows are emitted only for successful attacks and stay empty for
+  no-hit summaries and immediate electrical-fire or mine-damage report shapes;
+- player-readable detail text includes attacker, weapon, target, hull damage,
+  and any internal-effect outcome text; and
+- the existing ship-summary rollup semantics still pass unchanged.
+
+Validation command:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+```
+
+Result: `OK (88 tests)`.
