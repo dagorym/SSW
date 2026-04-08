@@ -1,0 +1,43 @@
+{
+  "agent": "reviewer",
+  "feature": "tactical-results-hit-detail",
+  "plan_path": "plans/tactical-results-hit-detail-plan.md",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/tactical-results-hit-detail-reviewer-20260408",
+  "branch": "tactical-results-hit-detail-reviewer-20260408",
+  "artifact_directory": "artifacts/tactical-results-hit-detail-plan",
+  "outcome": "PASS",
+  "material_gaps_identified": false,
+  "subtasks_reviewed": [
+    {
+      "id": 1,
+      "title": "Extend tactical report summary with hit-detail presentation data and a default-enabled display toggle",
+      "status": "complete"
+    },
+    {
+      "id": 2,
+      "title": "Render the new detail section in the tactical damage summary dialog and add GUI regressions",
+      "status": "complete"
+    }
+  ],
+  "files_reviewed": [
+    "include/tactical/FTacticalCombatReport.h",
+    "include/gui/TacticalDamageSummaryGUI.h",
+    "src/gui/TacticalDamageSummaryGUI.cpp",
+    "tests/tactical/FTacticalCombatReportTest.h",
+    "tests/tactical/FTacticalCombatReportTest.cpp",
+    "tests/tactical/FTacticalDamageSummaryGUITest.h",
+    "tests/tactical/FTacticalDamageSummaryGUITest.cpp",
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "doc/DesignNotes.md"
+  ],
+  "validation": {
+    "commands": [
+      "cd tests/tactical && make && ./TacticalTests && cd ../gui && make && xvfb-run -a ./GuiTests",
+      "cd tests/tactical && ./TacticalTests | tail -n 5 && cd ../gui && xvfb-run -a ./GuiTests | tail -n 8"
+    ],
+    "result": "OK (88 tests) tactical; OK (25 tests) GUI"
+  },
+  "findings": [],
+  "follow_up_feature_requests": [],
+  "commit_status": "committed"
+}
