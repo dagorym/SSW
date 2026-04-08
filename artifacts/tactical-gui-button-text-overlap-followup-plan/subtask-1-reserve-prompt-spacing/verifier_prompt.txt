@@ -1,0 +1,67 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify the `FBattleDisplay` prompt-spacing follow-up: implementation now reserves explicit vertical space between the multi-line tactical prompt block and the movement/defensive-fire/offensive-fire/mine-placement completion buttons, tester coverage locks that geometry and relayout behavior in place, and documentation now records the spacing contract and expanded regression scope in `AGENTS.md`.
+
+Acceptance criteria to verify:
+- In each covered tactical phase, the relevant completion button is rendered below the lowest line of prompt text with no overlap.
+- The action-button row remains to the right of the zoom control.
+- The chosen implementation exposes a stable spacing contract that tests can verify.
+- Existing `Layout()` calls after button `Show()` / `Hide()` remain present where required.
+
+Implementation branch or worktree context:
+- Assigned documenter worktree: `/home/tstephen/repos/SSW-worktrees/tactical-gui-button-text-overlap-followup-subtask-1-documenter-20260408`
+- Assigned branch: `tactical-gui-button-text-overlap-followup-subtask-1-documenter-20260408`
+- Implementer commit: `2530ef1` (`Fix tactical prompt/button vertical spacing`)
+- Tester commits: `b9bd6b3` (`Add tactical prompt spacing regression tests`) and `a975339` (`Add tester artifacts for prompt spacing follow-up`)
+- Documenter documentation commit: `b02edd7` (`Document tactical prompt spacing coverage`)
+- Comparison base assumption: `f213e7a` (`Add plan`), inferred from the branch history immediately before the implementer/tester/documenter commits.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/tactical/FBattleDisplay.h`
+- `src/tactical/FBattleDisplay.cpp`
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `AGENTS.md`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/tester_report.md`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/tester_result.json`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/documenter_report.md`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/documenter_result.json`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests` (baseline)
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (baseline)
+- `cd tests/tactical && make && ./TacticalTests` (post-change)
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (post-change)
+
+Final test outcomes:
+- Baseline tactical suite: `OK (90 tests)`
+- Baseline GUI suite: `OK (26 tests)`
+- Post-change tactical suite: `OK (92 tests)`
+- Post-change GUI suite: `OK (27 tests)`
+- No failing acceptance criteria remained after tester validation.
+
+Plan and review context:
+- Plan source: `plans/tactical-gui-button-text-overlap-followup-plan.md`
+- Repository convention/guidance files: `AGENTS.md` in the repo root and `~/repos/agents/AGENTS_LOOKUP.md`; infer any missing plan-source, convention-file, or comparison-base details from repository context when safe and label those choices as assumptions.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm `AGENTS.md` now accurately reflects the explicit `FBattleDisplay` prompt-spacing constants/helpers and the expanded live/source regression coverage.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
