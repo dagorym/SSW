@@ -1,0 +1,19 @@
+{
+  "status": "success",
+  "subtask": "subtask-2-strengthen-overlap-tests",
+  "branch": "tactical-gui-button-text-overlap-followup-subtask-2-verifier-20260408",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient for the acceptance criteria; the live GUI regression now asserts per-phase prompt-text non-intersection across movement, defensive-fire, offensive-fire, and mine-placement states, while tactical/source-level regressions still lock the shared prompt-spacing seam and relayout behavior.",
+  "documentation_accuracy_summary": "Accurate; AGENTS.md now describes the full instruction-text-block clearance and explicit per-phase prompt-region non-intersection checks without contradicting the shared prompt-spacing contract coverage.",
+  "validation_commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/gui && make && (xvfb-run -a ./GuiTests || ./GuiTests)"
+  ],
+  "artifact_file_paths": [
+    "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/verifier_report.md",
+    "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/verifier_result.json"
+  ]
+}
