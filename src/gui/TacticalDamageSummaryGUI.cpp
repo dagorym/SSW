@@ -53,8 +53,6 @@ TacticalDamageSummaryGUI::TacticalDamageSummaryGUI(
 	SetSizer(rootSizer);
 	Layout();
 	Centre();
-
-	m_closeButton->Bind(wxEVT_BUTTON, &TacticalDamageSummaryGUI::onClose, this);
 }
 
 TacticalDamageSummaryGUI::~TacticalDamageSummaryGUI() {
@@ -131,8 +129,4 @@ wxString TacticalDamageSummaryGUI::buildHitDetailText() const {
 		}
 	}
 	return text;
-}
-
-void TacticalDamageSummaryGUI::onClose(wxCommandEvent & event) {
-	EndModal(wxID_OK);
 }

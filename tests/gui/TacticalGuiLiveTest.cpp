@@ -210,6 +210,58 @@ WXTacticalUI ui(redrawPanel);
 	[&]() { return ui.showDamageSummary(summary); }, wxID_OK, 25);
 	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), damageResult);
 
+	FTacticalCombatReportSummary noDetailSummary = buildSummaryWithLines();
+	noDetailSummary.showHitDetails = false;
+	bool noDetailCloseActionRan = false;
+	bool noDetailDialogFound = false;
+	bool noDetailCloseButtonFound = false;
+	const int noDetailResult = m_harness.runModalFunctionWithAction([&]() {
+		return ui.showDamageSummary(noDetailSummary);
+	}, [&]() {
+		noDetailCloseActionRan = true;
+		wxDialog * modal = m_harness.waitForModalDialog();
+		noDetailDialogFound = (modal != NULL);
+		if (modal != NULL) {
+			wxButton * closeButton = findButtonByLabel(modal, wxT("Close"));
+			noDetailCloseButtonFound = (closeButton != NULL);
+			if (closeButton != NULL) {
+				wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
+				click.SetEventObject(closeButton);
+				closeButton->Command(click);
+			}
+		}
+	}, wxID_CANCEL, 150);
+	CPPUNIT_ASSERT(noDetailCloseActionRan);
+	CPPUNIT_ASSERT(noDetailDialogFound);
+	CPPUNIT_ASSERT(noDetailCloseButtonFound);
+	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), noDetailResult);
+
+	FTacticalCombatReportSummary emptySummary;
+	emptySummary.context.reportType = TRT_None;
+	bool emptyCloseActionRan = false;
+	bool emptyDialogFound = false;
+	bool emptyCloseButtonFound = false;
+	const int emptyResult = m_harness.runModalFunctionWithAction([&]() {
+		return ui.showDamageSummary(emptySummary);
+	}, [&]() {
+		emptyCloseActionRan = true;
+		wxDialog * modal = m_harness.waitForModalDialog();
+		emptyDialogFound = (modal != NULL);
+		if (modal != NULL) {
+			wxButton * closeButton = findButtonByLabel(modal, wxT("Close"));
+			emptyCloseButtonFound = (closeButton != NULL);
+			if (closeButton != NULL) {
+				wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
+				click.SetEventObject(closeButton);
+				closeButton->Command(click);
+			}
+		}
+	}, wxID_CANCEL, 150);
+	CPPUNIT_ASSERT(emptyCloseActionRan);
+	CPPUNIT_ASSERT(emptyDialogFound);
+	CPPUNIT_ASSERT(emptyCloseButtonFound);
+	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), emptyResult);
+
 	FVehicle * attacker = createShip("Destroyer");
 	FVehicle * target = createShip("Destroyer");
 	FVehicle * defender = createShip("Frigate");

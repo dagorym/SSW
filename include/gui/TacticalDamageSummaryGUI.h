@@ -29,7 +29,6 @@ private:
 	wxString buildShipRollupText() const;
 	wxString buildHitDetailText() const;
 	wxString buildSummaryText() const;
-	void onClose(wxCommandEvent & event);
 
 public:
 	TacticalDamageSummaryGUI(

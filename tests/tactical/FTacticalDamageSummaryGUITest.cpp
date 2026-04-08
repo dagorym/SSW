@@ -25,6 +25,12 @@ void assertContains(const std::string & haystack, const std::string & needle) {
 		haystack.find(needle) != std::string::npos);
 }
 
+void assertNotContains(const std::string & haystack, const std::string & needle) {
+	CPPUNIT_ASSERT_MESSAGE(
+		std::string("Expected to not find '") + needle + "' in inspected source",
+		haystack.find(needle) == std::string::npos);
+}
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( FTacticalDamageSummaryGUITest );
@@ -131,6 +137,11 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	assertContains(source, "shipSummary.displayLines[j]");
 	assertContains(source, "shipSummary.ship.shipName");
 	assertContains(source, "m_summary.ships[i]");
+	assertContains(source, "SetAffirmativeId(wxID_OK);");
+	assertContains(source, "SetDefaultItem(m_closeButton);");
+	assertNotContains(source, "m_closeButton->Bind(wxEVT_BUTTON, &TacticalDamageSummaryGUI::onClose, this);");
+	assertNotContains(source, "void TacticalDamageSummaryGUI::onClose(");
+	assertNotContains(source, "EndModal(wxID_OK);");
 }
 
 void FTacticalDamageSummaryGUITest::testBattleScreenEntryPointAndGuiBuildWiringArePresent() {
