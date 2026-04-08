@@ -1,0 +1,29 @@
+{
+  "status": "completed_with_env_blocker",
+  "subtask": "tactical-gui-regressions/subtask-1",
+  "branch": "tactical-gui-regressions-subtask-1-implementer-20260408",
+  "implementation_commit": "417109347f3771234424cdd51cc6812b57d3f836",
+  "changed_files": [
+    "src/tactical/FBattleDisplay.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/gui/TacticalGuiLiveTest.cpp"
+  ],
+  "validation_commands": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests"
+  ],
+  "validation_outcome": {
+    "status": "failed_environment",
+    "details": [
+      "tests/tactical build failed: fatal error: cppunit/extensions/HelperMacros.h: No such file or directory",
+      "tests/gui build failed: fatal error: cppunit/extensions/HelperMacros.h: No such file or directory"
+    ]
+  },
+  "artifacts": {
+    "implementer_report": "artifacts/tactical-gui-regressions/subtask-1/implementer_report.md",
+    "implementer_result": "artifacts/tactical-gui-regressions/subtask-1/implementer_result.json",
+    "tester_prompt": "artifacts/tactical-gui-regressions/subtask-1/tester_prompt.txt"
+  }
+}

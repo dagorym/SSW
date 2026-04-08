@@ -1,0 +1,45 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified and fixed tactical completion-button relayout regression by adding post-show/post-hide `Layout()` in tactical display phase handlers and added regression coverage for source contract + live GUI placement.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Entering movement, defensive-fire, and offensive-fire display states shows the correct completion button in a sizer-laid-out position rather than at `(0,0)` or overlapping the zoom image/prompt text.
+- The relevant show/hide code path performs the necessary relayout after visibility changes.
+- Tests fail if a future change removes the post-show/post-hide relayout behavior for these buttons.
+- Existing spin-control layout assertions still pass.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Implementation context for testing:
+- `FBattleDisplay` now calls `Layout()` immediately after showing and hiding movement/defensive/offensive/mine completion buttons.
+- Tactical source-contract tests now assert `Show();` occurs before `Layout();` in draw paths and `Hide();` occurs before `Layout();` in done handlers.
+- Live GUI test now iterates tactical states/phases and asserts each completion button is shown, sized, x-positioned beyond left-offset (`>= 40`), and not intersecting the zoom area rect.
+- Existing spin-control layout smoke coverage remains in `testWXTacticalUIParentBackedModalAndRedrawPaths`.
+
+Suggested test command(s):
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Known validation blocker observed during implementation:
+- Existing environment issue: missing CppUnit development headers (`cppunit/extensions/HelperMacros.h` not found), causing both tactical and GUI test builds to fail before execution.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-gui-regressions/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
