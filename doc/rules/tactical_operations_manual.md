@@ -83,7 +83,7 @@ of scenarios on their own.
 
 The game is played in a series of game turns. Each game turn is
 divided in half. The first half is Side A's turn and the second
-half is Side B's turn. During Side A's turn, Side Ais the moving
+half is Side B's turn. During Side A's turn, Side A is the moving
 side and Side B is the non-moving side. During Side B's turn,
 Side B is the moving side and Side A is the non-moving side.
 During each side's turn, players do the following things in
@@ -147,7 +147,7 @@ Each ship has a Maneuver Rating (MR). This number tells the
 player how many times the ship can turn during its move.
 
 The bow (front) of a ship always must point at one of the six
-sides of the hex the ship is in. Whena ship moves, it must move
+sides of the hex the ship is in. When a ship moves, it must move
 into the hex it is facing.
 
 A ship can turn after it enters a hex. A ship turns by rotating so
@@ -294,9 +294,9 @@ during both the controlling player's combat phase and during
 his opponent's combat phase. Torpedos and assault rockets
 can be fired only during the controlling player's combat phase.
 A ship with more than one torpedo, assault rocket or rocket
-battery can fire each only once per turn. For example, a ship
+battery can fire each only once per eligible phase. For example, a ship
 with four torpedoes and two rocket batteries can fire only one
-torpedo and one rocket battery per turn.
+torpedo and one rocket battery in the phase they are fired.
 
 #### Automatic Hits and Misses
 
@@ -431,7 +431,7 @@ divided in half (fractions are rounded up). The result is the
 number of damage points inflicted on the target ship.
 
 A masking screen has exactly the same effect on a laser fired
-out of the screen as it does on a laser fired into the screen. I fa
+out of the screen as it does on a laser fired into the screen. If a
 ship surrounded by a masking screen fires its lasers, resolve
 the attack as if the defending ship is masked.
 
@@ -481,7 +481,7 @@ defend only the ship that launched them.
 <tr><td>Torpedo</td><td>70%</td><td>70%</td><td>-10%/ICM</td><td>4d10</td></tr>
 <tr><td>Assault Rocket</td><td>60%</td><td>60%</td><td>-5%/ICM</td><td>2d10 +4</td></tr>
 <tr><td>Rocket Battery</td><td>40%</td><td>40%</td><td>-3%/ICM</td><td>2d10</td></tr>
-<tr><td colspan="5"> *The target ship takes only one-half damage (round fractions down) if it is hit.</td></tr>
+<tr><td colspan="5"> *The target ship takes only one-half damage (round fractions up) if it is hit.</td></tr>
 </table>
 
 
@@ -493,7 +493,7 @@ defend only the ship that launched them.
 <tr><td>Laser Battery</td><td>RD</td><td>9</td></tr>
 <tr><td>Torpedo</td><td>MPO, LTD</td><td>4</td></tr>
 <tr><td>Assault Rocket</td><td>MPO, LTD FF</td><td>4</td></tr>
-<tr><td>Rocket Battery</td><td>LTD</td><td>7</td></tr>
+<tr><td>Rocket Battery</td><td>LTD</td><td>3</td></tr>
 </table>
 
 
@@ -802,7 +802,7 @@ a-e. Sathar Attack Fighters                 Hull Points 8 each
 2. SAV Star Scourge     (heavy cruiser)     Hull Points 80
     Weapons: laser cannon, 2 laser batteries, 4 torpedoes, 4 rocket batteries
     Defenses: reflective hull, 6 ICMs
-A   DF: 1       MR: 1
+    ADF: 1      MR: 1
 
 3. SAV Vicious          (destroyer)         Hull Points 50
     Weapons: laser cannon, laser battery, 2 torpedoes
@@ -871,7 +871,7 @@ Side A’s Turn
     - defensive fire
     - offensive fire
 
-Side B’s Turn
+Side B’s Turn (repeat the same Movement Phase and Combat Phase steps used during Side A's Turn.)
 1. Movement Phase
 2. Combat Phase
 
@@ -933,6 +933,8 @@ All of the weapons used in the Basic Game can be used in the Advanced Game. The 
 
 In the Basic Game, interceptor missiles could defend only the ship that launched them. In the Advanced Game, ICMs can defend any ship in the same hex as the ship that launched them. For example, an ore carrier in a hex with two destroyers may be attacked with torpedoes or assault rockets. The two destroyers could launch ICMs against the missiles that were aimed at the ore carrier.
 
+In the Advanced Game, a docked ship may contribute ICM defense to ships in the same hex if its ICM system is operational, even though it may not launch other restricted weapons while docked.
+
 #### New Advanced Game Weapons
 
 **Proton Beam Battery** — RD / RA 12 / DTM +10 / HDR 1d10
@@ -976,15 +978,16 @@ time. Once a seeker missile is placed, it will not move until it is
 activated. The player that placed a seeker can activate it at the
 beginning of his movement phase on any turn.
 
-Immediately after it is activated, the seeker will move two
-hexes toward the closest ship. If the closest ship is more than
-two hexes away, the turn is over for the seeker. On the next
-turn, the seeker will move four hexes toward the closest ship. It
+Immediately after it is activated, the seeker will move two hexes
+toward the closest ship. If the closest ship is more than two 
+hexes away, the turn is over for the seeker. On the next 
+turn, the seeker will move four hexes toward the closest ship. It 
 will continue accelerating at the rate of two hexes per turn (six
-on the third turn, eight on the fourth, etc.), and can make an
-unlimited number of facing changes to keep itself aimed at the
-nearest ship. A seeker can change facing up to three times
-before it moves each turn.
+on the third turn, eight on the fourth, etc.).  Before moving each 
+turn, the seeker may change its facing up to three hexsides in order 
+to face any desired direction. Once it begins moving, it may turn 
+one hexside after entering each hex, following the normal ship 
+movement rules, but it is not limited by MR while doing so. 
 
 Note that the seeker may change targets many times, because
 a different ship may be closest to it at the beginning of each
@@ -1021,11 +1024,12 @@ disruptor beams, but actually attracts electron beams!
 screen. It blocks electron and disruptor beams, but attracts
 proton beams.
 
-**Stasis Screen**. Astasis screen is moderately effective against
+**Stasis Screen**. A stasis screen is moderately effective against
 all electrical beam weapons. It is not as good as a proton or
 electron screen against their respective weapon types, but it
 does not attract any beams. However, the electrical pulse of a
-stasis screen allows missiles and rockets to home in with
+stasis screen allows certain guided or seeking weapons (torpedos,
+seeker missiles, and mines) to home in with
 increased accuracy.
 
 NOTE: When using electron, proton or stasis screens,
@@ -1048,7 +1052,9 @@ the game are included on the Advanced Game Combat Table.
 Each entry on the Advanced Game Combat Table has two
 percentages; the first is used in the Advanced Game, and the
 shaded number is used with characters who have gunnery
-skills (see Skills in the Campaign Book). Use only the unshaded
+skills (see Skills in the Campaign Book - these lower values will
+be modified by the characters' skill. Average skills are factored
+into the unshaded values). Use only the unshaded
 entries for now.
 
 <style>
@@ -1176,7 +1182,7 @@ EXAMPLE: A destroyer is damaged in combat. The attacker rolls d100 and gets a 66
 
 **Navigation Hit.** The ship's navigation and steering equipment is damaged. The player controlling the ship must roll 1d10 before the ship moves. If the result is 1-5, the ship must turn to the left in each hex it enters until its MR is used up. If the result is 6-10, the ship must turn to the right. The ship remains out of control until the damage is repaired. If the ship's hull is severely damaged, these turns affect the ship's chance of breaking apart. A stopped ship can ignore a navigation hit.
 
-**Electrical Fire.** Electrical equipment in the ship is burning. Place a "fire" counter on top of the ship's counter. The player must make another damage roll for this ship with a +20 modifier at the start of his opponent's combat step every turn, until the fire is put out. If a fire causes hull damage, it will cause 1d10 points of damage.
+**Electrical Fire.** Electrical equipment in the ship is burning. Place a "fire" counter on top of the ship's counter. The ship owner must make another damage roll for this ship with a +20 modifier at the start of his combat phase every turn, until the fire is put out. If a fire causes hull damage, it will cause 1d10 points of damage.
 
 **Damage Control Hit.** The ship's DCR is cut in half (round fractions up). This can be repaired, the same as normal damage.
 
@@ -1373,9 +1379,9 @@ Battleship:         HP 120 / ADF 2 / MR 2 / DCR 200
                     Weapons: DC, LB (x3), PB, EB (x2), S (x4), T (x8), RB (x10)
                     Defenses: RH, ES, PS, SS, ICM (x12)
 
-Space Station:      (Statistics for stations vary with the size and type of station.)
-                    HP 20-300 / ADF 0 / MR 0 / DCR 1/2 HP
-                    Weapons: 1 EB, LB, PB or RB per 50 HP
+Space Station: (Statistics for stations vary with the size, type and mission of the station. The values below are general design guidelines; scenario-specific stations may exceed them.)
+                    HP 20-300 / ADF 0 / MR 0 / DCR usually 1/2 HP
+                    Weapons: typically 1 EB, LB, PB or RB per 50 HP
                     Defenses: RH, all screens, ICM (x4-24)
 ```
 
@@ -1402,7 +1408,7 @@ modern, deadly ships.
 UPFS Courageous (Light Cruiser)
     HP 70   ADF 3   MR 2    DCR 100
     Weapons: DC LB EB PB RB(x6) T(x4)
-    Defenses: RH ES ss ICM(x8)
+    Defenses: RH ES SS ICM(x8)
 
 UPFS Scimitar (Assault Scout)
     HP 15   ADF 5   MR 4    DCR 50
@@ -1424,7 +1430,7 @@ UPFS Megasaurus (Freighter)
 SAV Faminewind (Light Cruiser)
     HP 70   ADF 3   MR 2  DCR 100
     Weapons: DC LB EB PB RB(x6) T(x4)
-    Defenses: RH ES ss ICM(x8)
+    Defenses: RH ES SS ICM(x8)
 
 SAV Nemesis (Destroyer)
     HP 50   ADF 3   MR 3    DCR 75
