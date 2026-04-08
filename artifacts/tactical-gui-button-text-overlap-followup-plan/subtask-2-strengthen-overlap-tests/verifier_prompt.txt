@@ -1,0 +1,66 @@
+You are the Verifier Agent.
+
+Task summary:
+- Implementer strengthened tactical live GUI overlap regression checks so completion buttons must sit below the full instruction-text block, and documentation now records that the live GUI coverage rejects prompt-text intersection rather than only checking reserved prompt-band clearance.
+
+Acceptance criteria to verify:
+- The live GUI test explicitly fails if the completion button intersects the instruction-text region for movement, defensive-fire, offensive-fire, or mine-placement states.
+- Any new implementation seam introduced for prompt spacing is covered by a tactical/source-level regression.
+- Existing speed-control and action-button relayout regressions continue to pass.
+
+Implementation branch or worktree context:
+- Assigned documenter worktree: `/home/tstephen/repos/SSW-worktrees/tactical-gui-button-text-overlap-followup-subtask-2-documenter-20260408`
+- Assigned branch: `tactical-gui-button-text-overlap-followup-subtask-2-documenter-20260408`
+- Tested worktree: `/home/tstephen/repos/SSW-worktrees/tactical-gui-button-text-overlap-followup-subtask-2-tester-20260408`
+- Comparison base assumption: `tactical-gui-regressions-coordination-20260408` at merge-base `4670b6b990835234ec25f59a6e40ae079a77d5fb`
+- Implementer test-change commit: `0ce5e86e37b04aa3148f2cdff5ab19802ab29d72`
+- Implementer artifact commit: `f5496779b8247e08241e10251258e1a53d6cfd2e`
+- Tester test commit: `No Changes Made`
+- Tester artifact commit: `bd2a56213924e915ee0b8e13f3d17986f5a62c30`
+- Documenter documentation commit: `4d487ba` (`Document tactical overlap regression scope`)
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `AGENTS.md`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/implementer_report.md`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/implementer_result.json`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/tester_prompt.txt`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/tester_report.md`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/tester_result.json`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/documenter_prompt.txt`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/documenter_report.md`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/documenter_result.json`
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && (xvfb-run -a ./GuiTests || ./GuiTests)`
+
+Final test outcomes:
+- `TacticalTests`: OK (92 tests)
+- `GuiTests`: OK (27 tests)
+- Total: 119 passed, 0 failed
+- Environment note: `xvfb-run` was unavailable in this environment; direct `./GuiTests` fallback passed.
+
+Plan and review context:
+- Plan source: `plans/tactical-gui-button-text-overlap-followup-plan.md`
+- Repository convention/guidance files: `AGENTS.md` in the repo root and `~/repos/agents/AGENTS_LOOKUP.md`
+- Documentation impact note: the plan said no documentation update was expected, but the shipped diff tightened repository-wide test guidance enough to justify the small `AGENTS.md` clarification.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm `AGENTS.md` now accurately reflects that `TacticalGuiLiveTest` checks the full per-phase instruction-text block for non-intersection while preserving the shared prompt-spacing contract references.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
