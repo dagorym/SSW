@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "task": "tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing",
+  "subtask": "subtask-1-reserve-prompt-spacing",
+  "plan_source": "plans/tactical-gui-button-text-overlap-followup-plan.md",
+  "comparison_base_assumption": "f213e7a",
+  "branch": "tactical-gui-button-text-overlap-followup-subtask-1-verifier-20260408",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient: tactical source-contract tests lock the explicit spacing constants/helpers and Layout sequencing, the live GUI regression verifies prompt clearance across movement/defensive-fire/offensive-fire/mine-placement, and verifier reruns passed with TacticalTests OK (92) and GuiTests OK (27). xvfb-run was unavailable here, so GuiTests ran directly.",
+  "documentation_accuracy_summary": "AGENTS.md matches the explicit ACTION_PROMPT_* spacing contract and the expanded live/source regression scope for keeping tactical action buttons below the prompt block.",
+  "artifact_files_written": [
+    "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/verifier_report.md",
+    "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/verifier_result.json"
+  ]
+}
