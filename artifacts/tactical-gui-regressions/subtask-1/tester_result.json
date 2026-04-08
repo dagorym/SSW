@@ -1,0 +1,34 @@
+{
+  "status": "success",
+  "task": "tactical-gui-regressions/subtask-1",
+  "branch": "tactical-gui-regressions-subtask-1-tester-20260408",
+  "test_commit_hash": "350b9962309e530b00e193fb1c8eb630cd277bb4",
+  "test_files_modified": [
+    "tests/gui/TacticalGuiLiveTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && ./GuiTests",
+    "cd tests/gui && make && ./GuiTests",
+    "cd tests/gui && make && ./GuiTests"
+  ],
+  "pass_fail_totals": {
+    "tactical_tests_passed": 90,
+    "gui_tests_passed": 26,
+    "total_passed": 116,
+    "total_failed": 0,
+    "attempts_completed": 2
+  },
+  "acceptance_criteria_validated": [
+    "Movement, defensive-fire, and offensive-fire completion buttons remain sizer-positioned away from the zoom area/origin.",
+    "Mine-placement completion button follows the same sizer positioning discipline.",
+    "Source-contract regression coverage enforces post-show/post-hide Layout() ordering.",
+    "Existing spin-control layout smoke coverage still passes."
+  ],
+  "artifact_files_written": [
+    "artifacts/tactical-gui-regressions/subtask-1/tester_report.md",
+    "artifacts/tactical-gui-regressions/subtask-1/tester_result.json",
+    "artifacts/tactical-gui-regressions/subtask-1/documenter_prompt.txt"
+  ]
+}

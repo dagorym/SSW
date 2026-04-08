@@ -1,0 +1,58 @@
+You are the Documenter Agent.
+
+Task summary:
+- Verified the tactical completion-button relayout regression fix and corrected the tester's live GUI coverage so it reliably validates sizer-managed placement in the harness.
+
+Acceptance criteria validated:
+- Entering movement, defensive-fire, and offensive-fire display states shows the correct completion button in a sizer-laid-out position rather than at `(0,0)` or overlapping the zoom image/prompt text.
+- The relevant show/hide code path performs the necessary relayout after visibility changes.
+- Tests fail if a future change removes the post-show/post-hide relayout behavior for these buttons.
+- Existing spin-control layout assertions still pass.
+
+Implementation branch or worktree context:
+- Branch: `tactical-gui-regressions-subtask-1-tester-20260408`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/tactical-gui-regressions-subtask-1-tester-20260408`
+- Implementer baseline commit in this line of work: `4171093` (`Fix tactical action button relayout`)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `src/tactical/FBattleDisplay.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+
+Test commit:
+- `350b9962309e530b00e193fb1c8eb630cd277bb4`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` *(environment note: `xvfb-run` was not installed, so this could not run here)*
+- `cd tests/gui && ./GuiTests`
+- `cd tests/gui && make && ./GuiTests`
+- `cd tests/gui && make && ./GuiTests`
+
+Final test outcomes:
+- Tactical tests passed: `OK (90 tests)`
+- GUI tests passed after the tester coverage correction: `OK (26 tests)`
+- Final validated total: 116 passing, 0 failing
+- Tester corrected the live GUI test so it no longer depends on nondeterministic `FBattleScreen` paint timing in the harness; runtime `Show()/Layout()` ordering remains enforced by the tactical source-contract test.
+
+Documentation context:
+- No clear user-facing documentation update is implied.
+- If repository documentation tracks regression coverage details, note that tactical action-button placement is now validated by a combination of source-contract tactical tests and a live GUI geometry check.
+- The live GUI coverage now explicitly documents the harness limitation around deterministic `FBattleScreen` paint timing.
+
+Plan and diff context:
+- Plan path: `/home/tstephen/repos/SSW/plans/tactical-gui-regressions-plan.md`
+- Comparison base: assume `origin/master` / `master` unless repository diff evidence indicates a more specific documentation review base.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-gui-regressions/subtask-1`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
