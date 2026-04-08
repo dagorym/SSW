@@ -224,10 +224,26 @@ struct FTacticalShipReportSummary {
 	}
 };
 
+struct FTacticalHitDetailSummary {
+	FTacticalShipReference attacker;
+	FTacticalWeaponReference weapon;
+	FTacticalShipReference target;
+	int hullDamage;
+	std::vector<std::string> effects;
+	std::string outcome;
+	std::string displayLine;
+
+	FTacticalHitDetailSummary() : hullDamage(0), effects(), outcome(""), displayLine("") {}
+};
+
 struct FTacticalCombatReportSummary {
 	FTacticalCombatReportContext context;
+	bool showHitDetails;
 	std::vector<FTacticalShipReportSummary> ships;
+	std::vector<FTacticalHitDetailSummary> hitDetails;
 	std::vector<std::string> displayLines;
+
+	FTacticalCombatReportSummary() : showHitDetails(true), ships(), hitDetails(), displayLines() {}
 };
 
 struct FTacticalCombatReport {
@@ -351,6 +367,14 @@ inline std::string summarizeEventEffect(const FTacticalReportEvent & event) {
 	}
 }
 
+inline std::string summarizeHitDetailEffect(const FTacticalReportEvent & event) {
+	std::string effect = summarizeEventEffect(event);
+	if (event.detail.size() > 0) {
+		effect += std::string(" (") + event.detail + ")";
+	}
+	return effect;
+}
+
 inline std::string damagedWeaponAbbreviation(const FTacticalReportEvent & event) {
 	switch (event.damagedWeaponType) {
 	case FWeapon::LB:
@@ -444,6 +468,83 @@ inline std::string buildShipSummaryDisplayLine(
 	return os.str();
 }
 
+inline std::string buildShipNameForDisplay(const FTacticalShipReference & ship, const std::string & fallback) {
+	if (ship.shipName.size() > 0) {
+		return ship.shipName;
+	}
+	if (ship.shipID != 0) {
+		std::ostringstream os;
+		os << fallback << " #" << ship.shipID;
+		return os.str();
+	}
+	return fallback;
+}
+
+inline std::string buildWeaponNameForDisplay(const FTacticalWeaponReference & weapon) {
+	if (weapon.weaponName.size() > 0) {
+		return weapon.weaponName;
+	}
+	if (weapon.weaponID != 0) {
+		std::ostringstream os;
+		os << "Weapon #" << weapon.weaponID;
+		return os.str();
+	}
+	return "No weapon";
+}
+
+inline std::string joinHitDetailEffects(const std::vector<std::string> & effects) {
+	std::ostringstream os;
+	for (unsigned int i = 0; i < effects.size(); i++) {
+		if (i > 0) {
+			os << ", ";
+		}
+		os << effects[i];
+	}
+	return os.str();
+}
+
+inline FTacticalHitDetailSummary buildHitDetailSummary(const FTacticalAttackReport & attack) {
+	FTacticalHitDetailSummary detail;
+	detail.attacker = attack.attacker;
+	detail.weapon = attack.weapon;
+	detail.target = attack.target;
+	detail.hullDamage = attack.hullDamage;
+
+	for (unsigned int i = 0; i < attack.internalEvents.size(); i++) {
+		const FTacticalReportEvent & event = attack.internalEvents[i];
+		if (!eventRepresentsDamageEffect(event)) {
+			continue;
+		}
+		detail.effects.push_back(summarizeHitDetailEffect(event));
+	}
+
+	std::ostringstream outcome;
+	if (attack.hullDamage > 0) {
+		outcome << attack.hullDamage << " hull damage";
+	}
+	if (!detail.effects.empty()) {
+		if (outcome.str().size() > 0) {
+			outcome << "; ";
+		}
+		outcome << "effects: " << joinHitDetailEffects(detail.effects);
+	}
+	if (outcome.str().size() == 0) {
+		outcome << "no damage effects";
+	}
+	if (attack.note.size() > 0) {
+		outcome << " (" << attack.note << ")";
+	}
+	detail.outcome = outcome.str();
+
+	std::ostringstream line;
+	line << buildShipNameForDisplay(attack.attacker, "Unknown attacker")
+		 << " [" << buildWeaponNameForDisplay(attack.weapon) << "] -> "
+		 << buildShipNameForDisplay(attack.target, "Unknown target")
+		 << ": " << detail.outcome;
+	detail.displayLine = line.str();
+	return detail;
+}
+
 } // namespace TacticalCombatReportDetail
 
 inline FTacticalCombatReportSummary buildTacticalCombatReportSummary(const FTacticalCombatReport & report) {
@@ -456,6 +557,10 @@ inline FTacticalCombatReportSummary buildTacticalCombatReportSummary(const FTact
 
 	for (unsigned int i = 0; i < report.attacks.size(); i++) {
 		const FTacticalAttackReport & attack = report.attacks[i];
+
+		if (summary.showHitDetails && attack.hit) {
+			summary.hitDetails.push_back(TacticalCombatReportDetail::buildHitDetailSummary(attack));
+		}
 
 		if (attack.attacker.isValid()) {
 			FTacticalShipReportSummary & attackerSummary =

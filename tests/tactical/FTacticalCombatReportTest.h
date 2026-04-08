@@ -19,8 +19,11 @@ class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testReportModelPreservesRawAttackAndImmediateEventData );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryCapturesImmediateElectricalFireAndMineDamageEvents );
 	CPPUNIT_TEST( testReportModelDefinesSeparateShipSummaryRollupTypes );
+	CPPUNIT_TEST( testTacticalCombatReportSummaryHitDetailToggleDefaultsEnabled );
 	CPPUNIT_TEST( testReportModelSupportsAllPlannedReportingModes );
 	CPPUNIT_TEST( testBattleScreenExposesTacticalReportLifecycleApi );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryBuildsHitDetailsForHitAttacksOnly );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryHitDetailsCapturePlayerReadableOutcome );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryWeaponFireAttackShapeDoesNotDoubleCountTargetHullDamage );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryMineDamageAttackShapeDoesNotDoubleCountTargetHullDamage );
@@ -53,8 +56,11 @@ public:
 	void testReportModelPreservesRawAttackAndImmediateEventData();
 	void testBuildTacticalCombatReportSummaryCapturesImmediateElectricalFireAndMineDamageEvents();
 	void testReportModelDefinesSeparateShipSummaryRollupTypes();
+	void testTacticalCombatReportSummaryHitDetailToggleDefaultsEnabled();
 	void testReportModelSupportsAllPlannedReportingModes();
 	void testBattleScreenExposesTacticalReportLifecycleApi();
+	void testBuildTacticalCombatReportSummaryBuildsHitDetailsForHitAttacksOnly();
+	void testBuildTacticalCombatReportSummaryHitDetailsCapturePlayerReadableOutcome();
 	void testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip();
 	void testBuildTacticalCombatReportSummaryWeaponFireAttackShapeDoesNotDoubleCountTargetHullDamage();
 	void testBuildTacticalCombatReportSummaryMineDamageAttackShapeDoesNotDoubleCountTargetHullDamage();

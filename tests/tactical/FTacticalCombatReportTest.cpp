@@ -174,6 +174,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCapturesImme
 	CPPUNIT_ASSERT(summary.context.immediate);
 	CPPUNIT_ASSERT(summary.context.reportType == TRT_ElectricalFire);
 	CPPUNIT_ASSERT(summary.context.phase == 17);
+	CPPUNIT_ASSERT(summary.showHitDetails);
+	CPPUNIT_ASSERT(summary.hitDetails.empty());
 	CPPUNIT_ASSERT(summary.ships.size() == 2);
 	CPPUNIT_ASSERT(summary.displayLines.size() == 2);
 	CPPUNIT_ASSERT(electricalSummary != NULL);
@@ -215,6 +217,13 @@ void FTacticalCombatReportTest::testReportModelDefinesSeparateShipSummaryRollupT
 	CPPUNIT_ASSERT(summary.displayLines[0].find("Cruiser") != std::string::npos);
 }
 
+void FTacticalCombatReportTest::testTacticalCombatReportSummaryHitDetailToggleDefaultsEnabled() {
+	FTacticalCombatReportSummary summary;
+	CPPUNIT_ASSERT(summary.showHitDetails);
+	summary.showHitDetails = false;
+	CPPUNIT_ASSERT(!summary.showHitDetails);
+}
+
 void FTacticalCombatReportTest::testReportModelSupportsAllPlannedReportingModes() {
 	// AC: support defensive fire, offensive fire, electrical fire, and mine damage reporting.
 	CPPUNIT_ASSERT(TRT_DefensiveFire != TRT_None);
@@ -238,6 +247,72 @@ void FTacticalCombatReportTest::testBattleScreenExposesTacticalReportLifecycleAp
 	CPPUNIT_ASSERT(header.find("void clearTacticalReport();") != std::string::npos);
 	CPPUNIT_ASSERT(header.find("const FTacticalCombatReport & getCurrentTacticalReport() const { return m_tacticalReport; }") != std::string::npos);
 	CPPUNIT_ASSERT(header.find("FTacticalCombatReport m_tacticalReport;") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryBuildsHitDetailsForHitAttacksOnly() {
+	FTacticalCombatReport report;
+
+	FTacticalAttackReport hitAttack;
+	hitAttack.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	hitAttack.target = FTacticalShipReference(2, 2, "Frigate");
+	hitAttack.weapon = FTacticalWeaponReference(10, "Laser Battery");
+	hitAttack.hit = true;
+	hitAttack.hullDamage = 4;
+
+	FTacticalAttackReport missAttack;
+	missAttack.attacker = FTacticalShipReference(1, 1, "Destroyer");
+	missAttack.target = FTacticalShipReference(3, 2, "Cruiser");
+	missAttack.weapon = FTacticalWeaponReference(11, "Proton Battery");
+	missAttack.hit = false;
+	missAttack.hullDamage = 0;
+
+	report.attacks.push_back(hitAttack);
+	report.attacks.push_back(missAttack);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	CPPUNIT_ASSERT(summary.showHitDetails);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.hitDetails.size());
+	CPPUNIT_ASSERT(summary.hitDetails[0].attacker.shipName == "Destroyer");
+	CPPUNIT_ASSERT(summary.hitDetails[0].weapon.weaponName == "Laser Battery");
+	CPPUNIT_ASSERT(summary.hitDetails[0].target.shipName == "Frigate");
+	CPPUNIT_ASSERT_EQUAL(4, summary.hitDetails[0].hullDamage);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Destroyer") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Laser Battery") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Frigate") != std::string::npos);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryHitDetailsCapturePlayerReadableOutcome() {
+	FTacticalCombatReport report;
+	report.context.reportType = TRT_OffensiveFire;
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(7, 1, "UPF Assault Scout");
+	attack.target = FTacticalShipReference(8, 2, "Sathar Destroyer");
+	attack.weapon = FTacticalWeaponReference(55, "Laser Cannon");
+	attack.hit = true;
+	attack.hullDamage = 3;
+	attack.note = "rear arc";
+
+	FTacticalReportEvent effect;
+	effect.eventType = TRET_InternalDamage;
+	effect.subject = attack.target;
+	effect.hullDamage = 0;
+	effect.label = "Weapon Hit";
+	effect.detail = "LC disabled";
+	effect.damageEffectType = TDET_WeaponDamaged;
+	attack.internalEvents.push_back(effect);
+
+	report.attacks.push_back(attack);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.hitDetails.size());
+	CPPUNIT_ASSERT(summary.hitDetails[0].outcome.find("3 hull damage") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].outcome.find("Weapon Hit") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].outcome.find("LC disabled") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("UPF Assault Scout") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Laser Cannon") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Sathar Destroyer") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("3 hull damage") != std::string::npos);
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip() {
@@ -613,6 +688,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryOmitsUndamag
 
 	CPPUNIT_ASSERT(summary.ships.empty());
 	CPPUNIT_ASSERT(summary.displayLines.empty());
+	CPPUNIT_ASSERT(summary.hitDetails.empty());
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryUsesStoredShipReferences() {
