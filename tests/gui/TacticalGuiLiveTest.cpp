@@ -84,6 +84,18 @@ return m_grid1->GetCellValue(row, 2);
 
 class FBattleDisplayTestPeer : public FBattleDisplay {
 public:
+static int actionPromptTopMargin() {
+	return ACTION_PROMPT_TOP_MARGIN;
+}
+
+static int actionPromptLineHeight() {
+	return ACTION_PROMPT_LINE_HEIGHT;
+}
+
+static int actionPromptLineY(int lineIndex) {
+	return ACTION_PROMPT_TOP_MARGIN + (lineIndex * ACTION_PROMPT_LINE_HEIGHT);
+}
+
 static int actionPromptReservedBottomY() {
 	return ACTION_PROMPT_TOP_MARGIN
 		+ (ACTION_PROMPT_LINE_HEIGHT * ACTION_PROMPT_MAX_LINES)
@@ -417,17 +429,17 @@ m_harness.cleanupOrphanTopLevels(10);
 
 void TacticalGuiLiveTest::testTacticalActionButtonsStayBelowPromptReservationAcrossPhases() {
 const int expectedLeftOffset = 40;
-const int reservedPromptBottomY = FBattleDisplayTestPeer::actionPromptReservedBottomY();
 
 struct Scenario {
 	int state;
 	int phase;
+	int promptLineCount;
 	wxString label;
 } scenarios[] = {
-	{BS_Battle, PH_MOVE, wxT("Movement Done")},
-	{BS_Battle, PH_DEFENSE_FIRE, wxT("Defensive Fire Done")},
-	{BS_Battle, PH_ATTACK_FIRE, wxT("Offensive Fire Done")},
-	{BS_PlaceMines, PH_NONE, wxT("Mine Placement Done")}
+	{BS_Battle, PH_MOVE, 2, wxT("Movement Done")},
+	{BS_Battle, PH_DEFENSE_FIRE, 3, wxT("Defensive Fire Done")},
+	{BS_Battle, PH_ATTACK_FIRE, 3, wxT("Offensive Fire Done")},
+	{BS_PlaceMines, PH_NONE, 3, wxT("Mine Placement Done")}
 };
 
 for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
@@ -467,9 +479,23 @@ for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
 	CPPUNIT_ASSERT(buttonRect.GetWidth() > 0);
 	CPPUNIT_ASSERT(buttonRect.GetHeight() > 0);
 	CPPUNIT_ASSERT(buttonRect.GetX() >= expectedLeftOffset);
+	const int lastPromptLineIndex = scenarios[i].promptLineCount - 1;
+	const int promptTextBottomY = FBattleDisplayTestPeer::actionPromptLineY(lastPromptLineIndex)
+		+ FBattleDisplayTestPeer::actionPromptLineHeight();
+	const wxRect promptTextRegion(
+		0,
+		FBattleDisplayTestPeer::actionPromptTopMargin(),
+		battleScreen->GetClientSize().GetWidth(),
+		promptTextBottomY - FBattleDisplayTestPeer::actionPromptTopMargin());
+	CPPUNIT_ASSERT_MESSAGE(
+		std::string("Button intersects instruction-text block for label: ") + scenarios[i].label.ToStdString(),
+		!buttonRect.Intersects(promptTextRegion));
 	CPPUNIT_ASSERT_MESSAGE(
 		std::string("Button overlapped prompt reservation for label: ") + scenarios[i].label.ToStdString(),
-		buttonRect.GetTop() >= reservedPromptBottomY);
+		buttonRect.GetTop() >= FBattleDisplayTestPeer::actionPromptReservedBottomY());
+	CPPUNIT_ASSERT_MESSAGE(
+		std::string("Button is not below full instruction-text block for label: ") + scenarios[i].label.ToStdString(),
+		buttonRect.GetTop() >= promptTextBottomY);
 
 	battleScreen->Destroy();
 	m_harness.pumpEvents(3);
