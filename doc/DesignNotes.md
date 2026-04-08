@@ -955,11 +955,23 @@ construction into a `Ship Damage Summary` section and a conditional `Hit
 Details` section. `buildSummaryText()` always renders the ship rollup text
 first, preserves the existing `No ships sustained damage in this report.`
 empty-state when no ship summaries exist, and appends the labeled detail section
-only when `showHitDetails` is enabled and `hitDetails` contains rows. The GUI
-source-inspection regression checks for the dedicated ship-rollup and hit-detail
-builders, while the live modal regression confirms both enabled and disabled
-detail-section behavior and the parent-backed
-`WXTacticalUI::showDamageSummary(...)` smoke path.
+only when `showHitDetails` is enabled and `hitDetails` contains rows.
+
+The close-path hardening follow-up then tightened how that modal dialog is
+dismissed on wxGTK. The `Close` button remains the dialog's affirmative/default
+action, but the manual button callback that also forced `EndModal(wxID_OK)` was
+removed so the dialog closes through one modal-safe path instead of a possible
+double-close pattern. That change specifically covers the previously fragile
+no-detail and fully empty report shapes that can travel through the runtime
+`WXTacticalUI::showDamageSummary(...)` path.
+
+The regression coverage now locks that behavior in at two levels. The tactical
+source-contract test checks for the dedicated ship-rollup and hit-detail
+builders, preserves the direct content assertions, and rejects reintroduction of
+the manual bind-plus-`EndModal(...)` close path. The live GUI regression drives
+the parent-backed `WXTacticalUI::showDamageSummary(...)` flow with populated,
+no-detail, and empty summaries and verifies clean modal return through the real
+`Close` button handling.
 
 Validation command:
 
