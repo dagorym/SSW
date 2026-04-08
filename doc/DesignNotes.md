@@ -475,6 +475,13 @@ offensive-fire completion buttons before delegated fire-phase resolution runs,
 while preserving the existing summary-dialog, cleanup, redraw, and
 phase-advancement lifecycle.
 
+The tactical GUI relayout follow-up now also locks in the sizer-managed action
+button contract that those runtime paths depend on. Source-contract coverage in
+`FTacticalBattleDisplayFireFlowTest` checks that the movement, defensive-fire,
+offensive-fire, and mine-placement completion-button show/hide handlers call
+`Layout()` immediately after toggling visibility, so a future regression that
+leaves those controls at the panel origin is caught before live GUI review.
+
 Validation commands:
 
 ```bash
@@ -902,13 +909,23 @@ parents or dialogs, pumping events, and calling `cleanupOrphanTopLevels(...)`
 so the fixture proves zero orphaned top-level windows before teardown
 completes.
 
+That same fixture now also includes
+`testTacticalActionButtonsRemainSizerPositionedWhenShown`, which checks that
+the live `FBattleScreen` exposes movement, defensive-fire, offensive-fire, and
+mine-placement completion buttons with nonzero geometry to the right of the
+zoom/prompt area after the tactical states are shown. Because the harness does
+not deterministically reproduce `FBattleScreen` paint timing strongly enough to
+prove the runtime `Show()/Layout()` call order by itself, the test documents
+that limitation inline and relies on the tactical source-contract coverage
+above to lock down the post-show/post-hide relayout contract.
+
 Canonical headless GUI validation command:
 
 ```bash
 cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (25 tests)`.
+Result: `OK (26 tests)`.
 
 The tactical combat report hit-detail follow-up then documented the richer
 player-facing summary shape used by `FTacticalCombatReportSummary`.
