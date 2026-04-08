@@ -1,0 +1,60 @@
+You are the Documenter Agent.
+
+Task summary:
+- Hardened tactical damage summary modal close handling by removing the manual `EndModal` close callback path and relying on default affirmative dialog close behavior.
+- Added regression coverage for no-detail and empty summaries through the real `WXTacticalUI::showDamageSummary(...)` modal path.
+- Added tactical source-contract assertions to catch reintroduction of manual bind + `EndModal` double-close patterns.
+- Tester validated all acceptance criteria with tactical and GUI suites; no additional tester test edits were required.
+
+Acceptance criteria validated:
+- Closing an empty/no-detail tactical damage summary no longer crashes.
+- The corrected implementation uses one clear dialog-close path that is safe for modal dialog usage on wxGTK.
+- GUI tests cover at least one empty/no-detail `WXTacticalUI::showDamageSummary(...)` path and verify clean modal return.
+- Tactical/source tests lock in the corrected close-path contract so the prior unsafe pattern is caught if reintroduced.
+- Existing direct dialog content assertions remain valid.
+
+Implementation branch or worktree context:
+- Branch: `tactical-gui-regressions-subtask-2-tester-20260408`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/tactical-gui-regressions-subtask-2-tester-20260408`
+- Implementer change commit: `7a40fba2f1dc7a287c35d1a1595911a9b8a57e92`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/gui/TacticalDamageSummaryGUI.h
+- src/gui/TacticalDamageSummaryGUI.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- artifacts/tactical-gui-regressions/subtask-2/tester_report.md
+- artifacts/tactical-gui-regressions/subtask-2/tester_result.json
+- artifacts/tactical-gui-regressions/subtask-2/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- `cd tests/tactical && ./TacticalTests`
+
+Final test outcomes:
+- Tactical suite passed: 90/90.
+- GUI suite passed: 26/26.
+- No acceptance criteria failures observed.
+
+Documentation context:
+- Likely docs affected: any tactical GUI regression/changelog notes and milestone/testing notes that describe damage-summary modal close-path safety and coverage.
+- Important behavior changes confirmed: manual close callback path removed from `TacticalDamageSummaryGUI`; modal close now relies on default affirmative behavior with explicit regression guards in tactical source-contract tests and live GUI runtime-path tests.
+
+Plan and diff context:
+- Plan path: `/home/tstephen/repos/SSW/plans/tactical-gui-regressions-plan.md`
+- Comparison base guidance (assumption): compare this branch against coordination branch `tactical-gui-regressions-coordination-20260408` or the immediate parent commit before `7a40fba` if branch-based diff is noisy.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-gui-regressions/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
