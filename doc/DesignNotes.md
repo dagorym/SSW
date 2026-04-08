@@ -887,16 +887,20 @@ The tactical follow-up extends that same live-dialog discipline inside
 `GuiTests`. The damage-summary test drives `TacticalDamageSummaryGUI` modally,
 asserts the dialog title plus populated and empty-state report text, verifies
 the rendered report context, and dismisses the real `Close` button through the
-modal harness. It also proves that the dialog still renders prebuilt ship
-rollup lines while those lines now carry enriched weapon-hit text such as
-`Weapon Hit: LB, LB, AR` next to other summarized effects. The ICM test now
-drives `ICMSelectionGUI` modally through row
-selection, spin-control assignment, and the production `Done` completion path,
-then asserts the assigned interceptor count and defender ammo decrements without
-bypassing the dialog's finalization logic. Those direct tactical dialog tests
-finish by destroying any shown parents or dialogs, pumping events, and calling
-`cleanupOrphanTopLevels(...)` so the fixture proves zero orphaned top-level
-windows before teardown completes.
+modal harness. It also proves that the dialog renders a labeled `Ship Damage
+Summary` section for the existing per-ship rollups and, when
+`showHitDetails == true`, a second labeled `Hit Details` section containing the
+player-readable per-hit lines such as `Destroyer Alpha [Laser Battery] ->
+Sathar Frigate: 4 hull damage`. The same live fixture now toggles
+`showHitDetails` to `false` and verifies that the ship rollup still renders
+while the hit-detail section is omitted entirely. The ICM test now drives
+`ICMSelectionGUI` modally through row selection, spin-control assignment, and
+the production `Done` completion path, then asserts the assigned interceptor
+count and defender ammo decrements without bypassing the dialog's finalization
+logic. Those direct tactical dialog tests finish by destroying any shown
+parents or dialogs, pumping events, and calling `cleanupOrphanTopLevels(...)`
+so the fixture proves zero orphaned top-level windows before teardown
+completes.
 
 Canonical headless GUI validation command:
 
@@ -904,7 +908,7 @@ Canonical headless GUI validation command:
 cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (24 tests)`.
+Result: `OK (25 tests)`.
 
 The tactical combat report hit-detail follow-up then documented the richer
 player-facing summary shape used by `FTacticalCombatReportSummary`.
@@ -928,10 +932,22 @@ The updated tactical regression coverage locks that contract in by checking:
   and any internal-effect outcome text; and
 - the existing ship-summary rollup semantics still pass unchanged.
 
+The dialog follow-up then made that summary contract visible to players without
+changing the report model. `TacticalDamageSummaryGUI` now splits its text
+construction into a `Ship Damage Summary` section and a conditional `Hit
+Details` section. `buildSummaryText()` always renders the ship rollup text
+first, preserves the existing `No ships sustained damage in this report.`
+empty-state when no ship summaries exist, and appends the labeled detail section
+only when `showHitDetails` is enabled and `hitDetails` contains rows. The GUI
+source-inspection regression checks for the dedicated ship-rollup and hit-detail
+builders, while the live modal regression confirms both enabled and disabled
+detail-section behavior and the parent-backed
+`WXTacticalUI::showDamageSummary(...)` smoke path.
+
 Validation command:
 
 ```bash
-cd tests/tactical && make && ./TacticalTests
+cd tests/tactical && make && ./TacticalTests && cd ../gui && make && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (88 tests)`.
+Result: `OK (88 tests)` tactical, `OK (25 tests)` GUI.
