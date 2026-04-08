@@ -343,6 +343,60 @@ assertContains(body, "m_first=true;");
 assertBefore(body, "m_parent->completeMovePhase();", "m_buttonMoveDone->Hide();");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractConstantsAndHelpersDefined() {
+// AC: spacing contract constants/helpers are explicitly declared for stable verification.
+const std::string header = readFile(repoFile("include/tactical/FBattleDisplay.h"));
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string ctorBody = extractFunctionBody(
+source,
+"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+const std::string lineYBody = extractFunctionBody(source, "int FBattleDisplay::getActionPromptLineY(int lineIndex) const");
+const std::string spacerBody = extractFunctionBody(source, "int FBattleDisplay::getActionButtonTopSpacerHeight() const");
+
+assertContains(header, "static const int ACTION_PROMPT_TOP_MARGIN = 5;");
+assertContains(header, "static const int ACTION_PROMPT_LINE_HEIGHT = 16;");
+assertContains(header, "static const int ACTION_PROMPT_MAX_LINES = 3;");
+assertContains(header, "static const int ACTION_PROMPT_BUTTON_GAP = 8;");
+assertContains(header, "int getActionPromptLineY(int lineIndex) const;");
+assertContains(header, "int getActionButtonTopSpacerHeight() const;");
+
+assertContains(lineYBody, "return ACTION_PROMPT_TOP_MARGIN + (lineIndex * ACTION_PROMPT_LINE_HEIGHT);");
+assertContains(spacerBody, "return getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_BUTTON_GAP;");
+
+assertContains(ctorBody, "rootSizer->AddSpacer(getActionButtonTopSpacerHeight());");
+assertBefore(ctorBody, "rootSizer->AddSpacer(getActionButtonTopSpacerHeight());", "rootSizer->Add(actionSizer, 0, wxTOP, BORDER);");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractAppliedAcrossActionPhases() {
+// AC: all action prompts route y positioning through helper and keep action row right of zoom column.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string ctorBody = extractFunctionBody(
+source,
+"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
+const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::drawDefensiveFire(wxDC &dc)");
+const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+
+assertContains(ctorBody, "actionSizer->AddSpacer(leftOffset);");
+assertBefore(ctorBody, "actionSizer->AddSpacer(leftOffset);", "actionSizer->Add(m_buttonMoveDone, 0, wxALIGN_CENTER_VERTICAL);");
+
+assertContains(moveBody, "getActionPromptLineY(0)");
+assertContains(moveBody, "getActionPromptLineY(1)");
+
+assertContains(defenseBody, "getActionPromptLineY(0)");
+assertContains(defenseBody, "getActionPromptLineY(1)");
+assertContains(defenseBody, "getActionPromptLineY(2)");
+
+assertContains(attackBody, "getActionPromptLineY(0)");
+assertContains(attackBody, "getActionPromptLineY(1)");
+assertContains(attackBody, "getActionPromptLineY(2)");
+
+assertContains(minesBody, "getActionPromptLineY(0)");
+assertContains(minesBody, "getActionPromptLineY(1)");
+assertContains(minesBody, "getActionPromptLineY(2)");
+}
+
 void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");

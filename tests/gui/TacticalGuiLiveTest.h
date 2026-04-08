@@ -16,6 +16,7 @@ class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
 CPPUNIT_TEST( testWXTacticalUIParentBackedModalAndRedrawPaths );
 CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
+CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
 CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
 CPPUNIT_TEST_SUITE_END();
@@ -29,6 +30,7 @@ void tearDown();
 
 void testWXTacticalUIParentBackedModalAndRedrawPaths();
 void testTacticalActionButtonsRemainSizerPositionedWhenShown();
+void testTacticalActionButtonsStayBelowPromptReservationAcrossPhases();
 void testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior();
 void testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo();
 };

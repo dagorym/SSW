@@ -24,6 +24,7 @@
 #include "gui/WXTacticalUI.h"
 #include "ships/FVehicle.h"
 #include "strategic/FFleet.h"
+#include "tactical/FBattleDisplay.h"
 #include "tactical/FBattleScreen.h"
 #include "tactical/FTacticalCombatReport.h"
 #include "weapons/FWeapon.h"
@@ -79,6 +80,15 @@ return m_grid1->GetCellValue(row, 2);
 		event.SetEventObject(m_button1);
 		finalizeAssignments(event);
 	}
+};
+
+class FBattleDisplayTestPeer : public FBattleDisplay {
+public:
+static int actionPromptReservedBottomY() {
+	return ACTION_PROMPT_TOP_MARGIN
+		+ (ACTION_PROMPT_LINE_HEIGHT * ACTION_PROMPT_MAX_LINES)
+		+ ACTION_PROMPT_BUTTON_GAP;
+}
 };
 
 wxTextCtrl * findFirstTextCtrl(wxWindow * root) {
@@ -395,6 +405,71 @@ for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
 	CPPUNIT_ASSERT(buttonRect.GetX() >= expectedLeftOffset);
 	CPPUNIT_ASSERT(buttonRect.GetY() > 0);
 	CPPUNIT_ASSERT(!buttonRect.Intersects(zoomRect));
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(3);
+	delete attackFleet;
+	delete defendFleet;
+}
+
+m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testTacticalActionButtonsStayBelowPromptReservationAcrossPhases() {
+const int expectedLeftOffset = 40;
+const int reservedPromptBottomY = FBattleDisplayTestPeer::actionPromptReservedBottomY();
+
+struct Scenario {
+	int state;
+	int phase;
+	wxString label;
+} scenarios[] = {
+	{BS_Battle, PH_MOVE, wxT("Movement Done")},
+	{BS_Battle, PH_DEFENSE_FIRE, wxT("Defensive Fire Done")},
+	{BS_Battle, PH_ATTACK_FIRE, wxT("Offensive Fire Done")},
+	{BS_PlaceMines, PH_NONE, wxT("Mine Placement Done")}
+};
+
+for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * setupAttacker = createShip("Destroyer");
+	FVehicle * setupDefender = createShip("Frigate");
+	CPPUNIT_ASSERT(setupAttacker != NULL && setupDefender != NULL);
+	setupAttacker->setOwner(1);
+	setupDefender->setOwner(2);
+	attackFleet->addShip(setupAttacker);
+	defendFleet->addShip(setupDefender);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("Action Prompt Spacing Regression");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+	battleScreen->setState(scenarios[i].state);
+	battleScreen->setPhase(scenarios[i].phase);
+	battleScreen->setMoveComplete(true);
+	battleScreen->reDraw();
+	battleScreen->Layout();
+	m_harness.pumpEvents(5);
+
+	wxButton * actionButton = findButtonByLabel(battleScreen, scenarios[i].label);
+	CPPUNIT_ASSERT(actionButton != NULL);
+	actionButton->Show();
+	actionButton->GetParent()->Layout();
+	battleScreen->Layout();
+	m_harness.pumpEvents(2);
+
+	const wxRect buttonRect = actionButton->GetRect();
+	CPPUNIT_ASSERT(buttonRect.GetWidth() > 0);
+	CPPUNIT_ASSERT(buttonRect.GetHeight() > 0);
+	CPPUNIT_ASSERT(buttonRect.GetX() >= expectedLeftOffset);
+	CPPUNIT_ASSERT_MESSAGE(
+		std::string("Button overlapped prompt reservation for label: ") + scenarios[i].label.ToStdString(),
+		buttonRect.GetTop() >= reservedPromptBottomY);
 
 	battleScreen->Destroy();
 	m_harness.pumpEvents(3);
