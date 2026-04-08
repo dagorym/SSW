@@ -1,0 +1,63 @@
+You are the Verifier Agent.
+
+Task summary:
+- Implemented tactical combat report summary hit-detail support with a default-enabled display toggle and hit-only detail emission while preserving ship rollup semantics, then documented the final behavior in the tactical design notes.
+
+Acceptance criteria to verify:
+- FTacticalCombatReportSummary contains a toggleable control for the hit-detail section and defaults it to true.
+- The summary builder emits detail data only for attacks with hit == true.
+- Detail data is player-readable and captures attacker ship, weapon, target ship, and damage/effect outcome.
+- Existing ship rollup summaries continue to pass their current semantics.
+- Reports with no hit attacks remain valid and do not invent empty detail entries.
+- Immediate/non-weapon report types still build correctly.
+
+Implementation branch or worktree context:
+- Documenter worktree: /home/tstephen/repos/SSW-worktrees/tactical-results-hit-detail-subtask-1-documenter-20260408
+- Documenter branch: tactical-results-hit-detail-subtask-1-documenter-20260408
+- Comparison base: master at cbed3e1 (provided upstream; verify against current repository state and label as an assumption if needed).
+- Include implementer code commit 667f983, tester artifact commit 37d430e, and documentation commit 9e371bbeaaa7549378274406e8ef8d49e3b72033 in the combined review surface.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- doc/DesignNotes.md
+- artifacts/tactical-results-hit-detail-plan/subtask-1/implementer_report.md
+- artifacts/tactical-results-hit-detail-plan/subtask-1/implementer_result.json
+- artifacts/tactical-results-hit-detail-plan/subtask-1/tester_prompt.txt
+- artifacts/tactical-results-hit-detail-plan/subtask-1/tester_report.md
+- artifacts/tactical-results-hit-detail-plan/subtask-1/tester_result.json
+- artifacts/tactical-results-hit-detail-plan/subtask-1/documenter_prompt.txt
+- artifacts/tactical-results-hit-detail-plan/subtask-1/documenter_report.md
+- artifacts/tactical-results-hit-detail-plan/subtask-1/documenter_result.json
+- artifacts/tactical-results-hit-detail-plan/subtask-1/verifier_prompt.txt
+
+Commands executed:
+- git --no-pager diff master...HEAD -- include/tactical/FTacticalCombatReport.h tests/tactical/FTacticalCombatReportTest.h tests/tactical/FTacticalCombatReportTest.cpp
+- cd tests/tactical && make && ./TacticalTests
+
+Final test outcomes:
+- TacticalTests passed with OK (88 tests).
+- Existing rollup semantics, no-hit behavior, and immediate electrical-fire/mine-damage report shapes were validated by tactical coverage; the documenter stage did not modify product code or tests.
+
+Plan and review context:
+- Primary evaluation context: artifacts/tactical-results-hit-detail-plan/subtask-1/documenter_prompt.txt plus the implementer/tester reports and result JSON artifacts in the same directory.
+- Repository guidance: read AGENTS.md in the repository root for project conventions when they affect verification; resolve the named verifier agent per ~/repos/agents/AGENTS_LOOKUP.md and the shared verifier definition if no repository-local verifier definition exists.
+- Documentation-location assumption: this repository records these feature/design notes under doc/, so the documentation update lives in doc/DesignNotes.md instead of a docs/ path.
+
+Documentation files updated:
+- doc/DesignNotes.md
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-results-hit-detail-plan/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
