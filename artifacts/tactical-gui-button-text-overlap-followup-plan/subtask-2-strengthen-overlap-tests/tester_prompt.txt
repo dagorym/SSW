@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Task summary:
+- Implementer strengthened tactical live GUI overlap regression checks so completion buttons must sit below the full instruction-text block (not just outside the zoom rectangle or below y=0).
+
+Modified files:
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The live GUI test explicitly fails if the completion button intersects the instruction-text region for movement, defensive-fire, offensive-fire, or mine-placement states.
+- Any new implementation seam introduced for prompt spacing is covered by a tactical/source-level regression.
+- Existing speed-control and action-button relayout regressions continue to pass.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Implementation context for testing:
+- `testTacticalActionButtonsStayBelowPromptReservationAcrossPhases` now models per-phase prompt line counts (2 for move, 3 for defense/attack/mines), computes prompt text bottom Y, builds a full-width prompt text region, and asserts no intersection with the action button rect.
+- The test also keeps the reservation-seam assertion (`actionPromptReservedBottomY`) for compatibility with Subtask 1 spacing contract.
+- Existing tactical source-contract seam tests for prompt-spacing constants/helpers and relayout ordering remain unchanged and should still pass.
+
+Suggested test command(s):
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (assumption: if `xvfb-run` is unavailable in this environment, use `cd tests/gui && make && ./GuiTests`)
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
