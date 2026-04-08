@@ -1041,7 +1041,7 @@ the notation for that screen on his ship roster. When the
 screen is deactivated, the circle is erased. No more than one
 screen can be activated on a ship at one time.
 
-Combat Table
+#### Combat Table
 The Advanced Game Combat Table is used the same as the
 Basic Game Combat Table. All weapons and defenses used in
 the game are included on the Advanced Game Combat Table.
