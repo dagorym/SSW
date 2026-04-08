@@ -1,0 +1,40 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented tactical combat report summary hit-detail support with a default-enabled display toggle and hit-only detail emission while preserving ship rollup semantics.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- FTacticalCombatReportSummary contains a toggleable control for the hit-detail section and defaults it to true.
+- The summary builder emits detail data only for attacks with hit == true.
+- Detail data is player-readable and captures attacker ship, weapon, target ship, and damage/effect outcome.
+- Existing ship rollup summaries continue to pass their current semantics.
+- Reports with no hit attacks remain valid and do not invent empty detail entries.
+- Immediate/non-weapon report types still build correctly.
+
+Create test files in:
+- /home/tstephen/repos/SSW/tests/tactical/FTacticalCombatReportTest.cpp
+
+Implementation context for testing:
+- `FTacticalCombatReportSummary` now exposes `showHitDetails` (default true) and `hitDetails`.
+- `buildTacticalCombatReportSummary(...)` now adds hit-detail records only when `attack.hit` is true.
+- Hit-detail lines are composed from attack references plus internal-event effect labels/details and hull damage.
+- Ship rollup logic remains unchanged and should still satisfy prior behavior.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-results-hit-detail-plan/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
