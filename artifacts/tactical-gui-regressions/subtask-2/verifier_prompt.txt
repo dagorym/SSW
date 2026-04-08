@@ -1,0 +1,72 @@
+You are the Verifier Agent.
+
+Task summary:
+- Hardened tactical damage summary modal close handling by removing the manual `EndModal` close callback path and relying on the dialog's default affirmative close behavior.
+- Added regression coverage for no-detail and empty summaries through the real `WXTacticalUI::showDamageSummary(...)` modal path.
+- Added tactical source-contract assertions to catch reintroduction of manual bind plus `EndModal` double-close patterns.
+- Documented the close-path hardening and regression scope in existing repository guidance and design notes.
+
+Acceptance criteria to verify:
+- Closing an empty/no-detail tactical damage summary no longer crashes.
+- The corrected implementation uses one clear dialog-close path that is safe for modal dialog usage on wxGTK.
+- GUI tests cover at least one empty/no-detail `WXTacticalUI::showDamageSummary(...)` path and verify clean modal return.
+- Tactical/source tests lock in the corrected close-path contract so the prior unsafe pattern is caught if reintroduced.
+- Existing direct dialog content assertions remain valid.
+
+Implementation branch or worktree context:
+- Current branch: `tactical-gui-regressions-subtask-2-documenter-20260408`
+- Current worktree: `/home/tstephen/repos/SSW-worktrees/tactical-gui-regressions-subtask-2-documenter-20260408`
+- Tester branch/worktree context: `tactical-gui-regressions-subtask-2-tester-20260408` at `/home/tstephen/repos/SSW-worktrees/tactical-gui-regressions-subtask-2-tester-20260408`
+- Implementer change commit: `7a40fba2f1dc7a287c35d1a1595911a9b8a57e92`
+- Documentation commit: `2d93d136ec311d78119eb0b68cdb6a4cf1208152`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/gui/TacticalDamageSummaryGUI.h`
+- `src/gui/TacticalDamageSummaryGUI.cpp`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `tests/tactical/FTacticalDamageSummaryGUITest.cpp`
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+- `artifacts/tactical-gui-regressions/subtask-2/implementer_report.md`
+- `artifacts/tactical-gui-regressions/subtask-2/implementer_result.json`
+- `artifacts/tactical-gui-regressions/subtask-2/tester_prompt.txt`
+- `artifacts/tactical-gui-regressions/subtask-2/tester_report.md`
+- `artifacts/tactical-gui-regressions/subtask-2/tester_result.json`
+- `artifacts/tactical-gui-regressions/subtask-2/documenter_prompt.txt`
+- `artifacts/tactical-gui-regressions/subtask-2/documenter_report.md`
+- `artifacts/tactical-gui-regressions/subtask-2/documenter_result.json`
+- `artifacts/tactical-gui-regressions/subtask-2/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- `cd tests/tactical && ./TacticalTests`
+
+Final test outcomes:
+- Tactical suite passed: 90/90.
+- GUI suite passed: 26/26.
+- No acceptance criteria failures were observed by the Tester.
+
+Plan and review context:
+- Plan path: `/home/tstephen/repos/SSW/plans/tactical-gui-regressions-plan.md`
+- Comparison base assumption: review the story diff against coordination branch `tactical-gui-regressions-coordination-20260408`; if that is noisy, fall back to the immediate parent before implementer commit `7a40fba2f1dc7a287c35d1a1595911a9b8a57e92` and label the choice as an assumption.
+- Convention files: read `AGENTS.md` and `/home/tstephen/repos/agents/agents/documenter.md` as relevant workflow/context guidance, and infer any additional safe repository conventions from local docs when needed.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify the implementation behavior, test coverage, and the updated documentation files together.
+- Confirm the docs match the shipped behavior: default affirmative close handling, no-detail/empty runtime modal coverage, and source-contract protection against reintroducing manual `EndModal(...)` dismissal.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-gui-regressions/subtask-2`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
