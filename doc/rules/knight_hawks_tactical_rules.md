@@ -1135,7 +1135,7 @@ When more than half of the ship's hull points are gone, the ship is severely dam
 
 A ship that is torn apart is completely destroyed.
 
-**EXAMPLE:** A destroyer with 50 hull points has taken 32 points of damage. The player that controls the destroyer wants to get it away from the battle as quickly as possible, so he decides to accelerate and turn one hex side. The destroyer's ADF is 3, and 1 MR point is used to make the turn. Subtracting one-half of the destroyer's original hull points from the ship's damage gives (32-25=) 7. The ship is using (3+1=) 4 ADF and MR points this turn. The chance the ship will break apart is (7x4=) 28%. The player rolls d100 and gets a 29 - the destroyer makes its move successfully! If the player had rolled 28 or less, the ship would have been destroyed.
+EXAMPLE: A destroyer with 50 hull points has taken 32 points of damage. The player that controls the destroyer wants to get it away from the battle as quickly as possible, so he decides to accelerate and turn one hex side. The destroyer's ADF is 3, and 1 MR point is used to make the turn. Subtracting one-half of the destroyer's original hull points from the ship's damage gives (32-25=) 7. The ship is using (3+1=) 4 ADF and MR points this turn. The chance the ship will break apart is (7x4=) 28%. The player rolls d100 and gets a 29 - the destroyer makes its move successfully! If the player had rolled 28 or less, the ship would have been destroyed.
 
 All weapons cause the same damage when they hit anything other than the hull. The attacker does not roll dice to reduce the ship's hull points unless the result on the Damage Table was a Hull Hit. The number of dice rolled is determined by the weapon that was used.
 
@@ -1145,11 +1145,11 @@ Losing ADFs does not affect the ship's current speed. A ship that loses its enti
 
 **Steering Hit.** Steering hits reduce a ship's MR. The hit will either lower the ship's MR by 1, or reduce the ship's MR to 0. A ship with an MR of 0 cannot turn or change its facing, even if it stops and remains in a single hex. Damage to a ship's MR can be repaired.
 
-**DRIFTING.** A ship that loses all of both its ADF and MR will drift. A drifting ship travels at the same speed and in the same direction it had before it started drifting. It cannot turn, accelerate or decelerate until repairs are made.
+DRIFTING. A ship that loses all of both its ADF and MR will drift. A drifting ship travels at the same speed and in the same direction it had before it started drifting. It cannot turn, accelerate or decelerate until repairs are made.
 
 **Weapon System Hit.** If a weapon system is hit, the system that is destroyed is the system that is listed first at that Damage Table result. If the damaged ship does not have that type of system, then the system listed second will be destroyed, and so on. If the ship has none of the listed systems, then treat this result as a hull hit. If an LTD system with no ammunition left is hit, the system is still destroyed.
 
-**EXAMPLE:** A destroyer is damaged in combat. The attacker rolls d100 and gets a 66 - Weapon hit: DC, LC, AR, T, LB. The destroyer does not have a disruptor cannon. The next system listed is a laser cannon. The destroyer does have a laser cannon, so the laser cannon is destroyed.
+EXAMPLE: A destroyer is damaged in combat. The attacker rolls d100 and gets a 66 - Weapon hit: DC, LC, AR, T, LB. The destroyer does not have a disruptor cannon. The next system listed is a laser cannon. The destroyer does have a laser cannon, so the laser cannon is destroyed.
 
 **Power Short Circuit.** All active defenses on the damaged ship stop working. This includes ICMs and electron, stasis and proton screens, but not reflective hulls and masking screens that have already been launched. No new masking screens can be released, however. Repairing a power short circuit will remove all effects of the hit.
 
@@ -1171,7 +1171,6 @@ Most damage is cumulative. For example, if a ship takes three drive hits and eac
 
 Combat control system and damage control hits are not cumulative. After one of these systems has been hit, any more hits on that system are considered hull hits. Also, a ship can have only one fire at a time, so a result that would cause a second fire is treated as hull damage.
 
-
 If the damage table indicates a hit on a system that a ship does
 not have (a weapon hit on a civilian ore carrier, for example),
 the hit is considered as a hull hit. Likewise, if a hit is scored on
@@ -1179,7 +1178,7 @@ a ship's system that has already been destroyed by damage (a
 drive hit on a ship with no ADF left, for example), that hit is
 treated as a hull hit.
 
-Defensive Fire
+#### Defensive Fire
 
 As in the basic game, the non-moving player gets defensive
 fire at the moving player's ships as they move. The moving
@@ -1190,19 +1189,19 @@ the ships have finished moving, however. For example, a ship
 that lost its entire MR at the beginning of its move could still
 maneuver during that turn.
 
-REPAIRS
+### REPAIRS
 
 Each ship in the Advanced Game has a Damage Control Rating
 (DCR). These range from 30 to 200. The DCR is a measure of
 the crew's ability to repair damage to the ship.
 
-Aspecial repair turn takes place after every three turns of play.
+A special repair turn takes place after every three turns of play.
 This is noted on the time record track. A repair turn is not a
 separate measure of time, but represents the efforts of the
 ship's crew to repair damage over the last thirty minutes (three
 turns). Both sides try to make repairs at the same time. After all
 repair attempts have been made, the battle picks up exactly
-where it left off before the repair turn
+where it left off before the repair turn.
 
 All of a ship's DCR points can be allocated during each repair
 turn. The number of points assigned to a specific repair equals
@@ -1219,7 +1218,7 @@ systems as a player wants to repair. However, the more sys-
 tems a player tries to repair, the less likely each attempt is to
 succeed.
 
-Drive and Steering Repairs. When drive or steering damage
+**Drive and Steering Repairs**. When drive or steering damage
 is repaired, only 1 ADF or MR point is restored per repair, even
 if the entire drive or steering system was destroyed with one
 hit. However, players can allocate more than one block of DCR
@@ -1228,25 +1227,22 @@ could be split into three blocks of 30 points each and applied
 toward three Maneuver hits. If all three rolls at 30% are suc-
 cessful, three MR points will be repaired.
 
-Fires. Successfully repairing a fire extinguishes the fire, but
+**Fires**. Successfully repairing a fire extinguishes the fire, but
 does not repair any damage that was caused by the fire. Extin-
 guishing a disastrous fire does not repair the ship's DCR,
 movement or combat control systems.
 
-Hull Repairs. Players can repair hull damage by following the
+**Hull Repairs**. Players can repair hull damage by following the
 usual repair procedure for allotting DCR points and rolling for
 success. If the repair is successful, the player rolls 1d10. The
 result is the number of hull points that are restored to the
 damaged ship.
 
-Automatic Failure. Adamage repair roll of 90 to 00 always is
+**Automatic Failure**. A damage repair roll of 90 to 00 always is
 unsuccessful. If the roll is 99 or 00, the damage is too severe to
-
-14
-
 be repaired in space, and requires the facilities of a station
 airdock. Once a 99 or 00 has been rolled for any system, no
-further attempts can be made to repair that system
+further attempts can be made to repair that system.
 
 EXAMPLE: A battleship with a DCR of 200 has been severely
 pounded during the last three turns. It has lost its entire ADF
@@ -1261,10 +1257,10 @@ continues to burn. The torpedo repair roll is 24, so torpedoes can
 be launched again. The ADF repair rolls are 62 (unsuccessful)
 and 30 (successful), so the ship regains 1 ADF.
 
-ADVANCED GAME SPACESHIPS
-New Types of Ships
+### ADVANCED GAME SPACESHIPS
+#### New Types of Ships
 
-Minelayer. A minelayer is a large, lightly armed ship. Its
+**Minelayer**. A minelayer is a large, lightly armed ship. Its
 purpose is to place defensive mines and seeker missiles
 throughout a section of space. In order to place mines or
 seekers, the minelayer simply passes through the hex where
@@ -1275,21 +1271,21 @@ Mines are activated when an enemy ship enters the hex. A
 seeker can be activated at the start of its movement step on any
 turn. Only one group of mines can be in a hex at a time.
 Another pattern of mines can be placed in a hex after the first
-group deton ates. There is no limit to the number of seekers
+group detonates. There is no limit to the number of seekers
 that can be placed in a hex.
 
-Light Cruiser. A light cruiser is a fast, heavily armed ship.
+**Light Cruiser**. A light cruiser is a fast, heavily armed ship.
 Light cruisers maneuver almost as well as destroyers, but
 carry almost as many weapons as a heavy cruiser.
 
-Civilian. Civilian craft serve a wide range of purposes and vary
+**Civilian**. Civilian craft serve a wide range of purposes and vary
 in size and performance as much as military ships. Some
-standard designs include mining and ore transport ships, pas-
-senger liners, scientific research and exploration ships. In the
-Advanced Game, they are used only as objectives to be pro-
-tected or attacked by warships.
+standard designs include mining and ore transport ships, passenger 
+liners, scientific research and exploration ships. In the
+Advanced Game, they are used only as objectives to be protected 
+or attacked by warships.
 
-Advanced Game Ship Statistics
+#### Advanced Game Ship Statistics
 
 Each type of ship that can be used in the Advanced Game is
 listed in this section. All of the information on weapons, de-
@@ -1299,182 +1295,230 @@ the specifications used in the Advanced Game are different
 from those in the Basic Game.
 
 The format used for each ship will be:
-Ship Type; Hull Points; ADF; MR; Damage Control Rating
-
-Weapons:
-Defenses:
+```
+Ship Type:  Hull Points / ADF / MR / Damage Control Rating
+            Weapons:
+            Defenses:
+```
 
 The following abbreviations are used for weapons:
-
-AR = Assault Rockets M = Mines
-
-DC = Disruptor Beam PB = Proton Beam
-Cannon Battery
-
-EB = Electron Beam Battery RB = _ Rocket Battery
-
-B = Laser Beam Battery S = Seeker Missiles
-
-LC = Laser Beam Cannon T Torpedos
-
-## PDF Page 83
+| | |
+|-|-|
+| AR = Assault Rockets | M = Mines |
+| DC = Disruptor Beam Cannon | PB = Proton Beam Battery|
+| EB = Electron Beam Battery | RB = Rocket Battery |
+| LB = Laser Beam Battery | S = Seeker Missiles |
+| LC = Laser Beam Cannon | T = Torpedos |
 
 Defenses use the following abbreviations:
 
-RH = Reflective Hull
-ES = Electron Screen
-PS = Proton Screen
-SS = Stasis Screen
-MS = Masking Screen
-ICM = Interceptor Missiles
+| | |
+|-|-|
+| RH = Reflective Hull | SS = Stasis Screen |
+| ES = Electron Screen | MS = Masking Screen |
+| PS = Proton Screen | ICM = Interceptor Missiles |
 
-Advanced Game Ship Statistics
 
-Fighter — HP 8 / ADF 5 / MR 5 / DCR 30
-Weapons: AR (x3)
-Defenses: RH
+```
+Fighter:            HP 8 / ADF 5 / MR 5 / DCR 30
+                    Weapons: AR (x3)
+                    Defenses: RH
 
-Assault Scout — HP 15 / ADF 5 / MR 4 / DCR 50
-Weapons: AR (x4), LB
-Defenses: RH
+Assault Scout:      HP 15 / ADF 5 / MR 4 / DCR 50
+                    Weapons: AR (x4), LB
+                    Defenses: RH
 
-Frigate — HP 40 / ADF 4 / MR 3 / DCR 70
-Weapons: LC, RB (x4), LB, T (x2)
-Defenses: RH, MS (x2), ICM (x4)
+Frigate:            HP 40 / ADF 4 / MR 3 / DCR 70
+                    Weapons: LC, RB (x4), LB, T (x2)
+                    Defenses: RH, MS (x2), ICM (x4)
 
-Destroyer — HP 50 / ADF 3 / MR 3 / DCR 75
-Weapons: LC, RB (x4), LB, T (x2), EB
-Defenses: RH, MS (x2), ICM (x5)
+Destroyer:          HP 50 / ADF 3 / MR 3 / DCR 75
+                    Weapons: LC, RB (x4), LB, T (x2), EB
+                    Defenses: RH, MS (x2), ICM (x5)
 
-Minelayer — HP 50 / ADF 1 / MR 2 / DCR 75
-Weapons: M (x20), S (x4), LB (x2)
-Defenses: RH, ICM (x4)
+Minelayer:          HP 50 / ADF 1 / MR 2 / DCR 75
+                    Weapons: M (x20), S (x4), LB (x2)
+                    Defenses: RH, ICM (x4)
 
-Light Cruiser — HP 70 / ADF 3 / MR 2 / DCR 100
-Weapons: DC, LB, EB, PB, RB (x6), T (x4)
-Defenses: RH, ES, SS, ICM (x8)
+Light Cruiser:      HP 70 / ADF 3 / MR 2 / DCR 100
+                    Weapons: DC, LB, EB, PB, RB (x6), T (x4)
+                    Defenses: RH, ES, SS, ICM (x8)
 
-Heavy Cruiser — HP 80 / ADF 2 / MR 1 / DCR 120
-Weapons: LB (x2), PB, EB, DC, S (x2), T (x4), RB (x8)
-Defenses: RH, ES, PS, SS, ICM (x8)
+Heavy Cruiser:      HP 80 / ADF 2 / MR 1 / DCR 120
+                    Weapons: LB (x2), PB, EB, DC, S (x2), T (x4), RB (x8)
+                    Defenses: RH, ES, PS, SS, ICM (x8)
 
-Assault Carrier — HP 75 / ADF 2 / MR 1 / DCR 150
-Weapons: LB, PB, RB (x8), Fighter (x10)
-Defenses: RH, MS (x4), ICM (x10)
+Assault Carrier:    HP 75 / ADF 2 / MR 1 / DCR 150
+                    Weapons: LB, PB, RB (x8), Fighter (x10)
+                    Defenses: RH, MS (x4), ICM (x10)
 
-Battleship — HP 120 / ADF 2 / MR 2 / DCR 200
-Weapons: DC, LB (x3), PB, EB (x2), S (x4), T (x8), RB (x10)
-Defenses: RH, ES, PS, SS, ICM (x12)
+Battleship:         HP 120 / ADF 2 / MR 2 / DCR 200
+                    Weapons: DC, LB (x3), PB, EB (x2), S (x4), T (x8), RB (x10)
+                    Defenses: RH, ES, PS, SS, ICM (x12)
 
-Space Station — HP 20-300 / ADF 0 / MR 0 / DCR 1/2 HP
-Weapons: 1 EB, LB, PB or RB per 50 HP
-Defenses: RH, all screens, ICM (x4-24)
+Space Station:      (Statistics for stations vary with the size and type of station.)
+                    HP 20-300 / ADF 0 / MR 0 / DCR 1/2 HP
+                    Weapons: 1 EB, LB, PB or RB per 50 HP
+                    Defenses: RH, all screens, ICM (x4-24)
+```
 
-ADVANCED GAME SCENARIOS
+### ADVANCED GAME SCENARIOS
 
-The two scenarios described in this section are intended to give players the flavor of Knight Hawks games. Players are encouraged to create their own scenarios after playing these a few times. Both scenarios pit the UPF against the Sathar, though other conflicts involving pirates, rebels, dictators or other interstellar ruffians certainly are possible.
+The two scenarios described in this section are intended to
+give players the ‘flavor’ of Knight Hawks games. Players are
+encouraged to create their own scenarios after playing these a
+few times. Both of these scenarios pit the UPF against the
+Sathar. Other conflicts (involving pirates, rebels, dictators or
+other interstellar ruffians) certainly are possible, and players
+are encouraged to experiment with new forces and situations.
 
-## PDF Page 84
+#### Scenario 1: CLOSE ESCORT
 
-Special Rule. The Megasaurus must travel in a straight line at
+While escorting a heavily laden ore carrier, a UPF light cruiser
+and a pair of assault scouts encounter a Sathar light cruiser
+and destroyer near a major fortified space station. Neither side
+will request or receive mercy, as these sworn enemies meet in
+modern, deadly ships.
+
+##### UPF Ships
+```
+UPFS Courageous (Light Cruiser)
+    HP 70   ADF 3   MR 2    DCR 100
+    Weapons: DC LB EB PB RB(x6) T(x4)
+    Defenses: RH ES ss ICM(x8)
+
+UPFS Scimitar (Assault Scout)
+    HP 15   ADF 5   MR 4    DCR 50
+    Weapons: AR(x4) LB
+    Defenses: RH
+
+UPFS Dagger (Assault Scout)
+    HP 15   ADF 5   MR 4    DCR 50
+    Weapons: AR(x4) LB
+    Defenses: RH
+
+UPFS Megasaurus (Freighter)
+    HP 75   ADF 1   MR 1    DCR 40
+    Weapons: None
+    Defenses: MS(x1)
+```
+##### Sathar Ships
+```
+SAV Faminewind (Light Cruiser)
+    HP 70   ADF 3   MR 2  DCR 100
+    Weapons: DC LB EB PB RB(x6) T(x4)
+    Defenses: RH ES ss ICM(x8)
+
+SAV Nemesis (Destroyer)
+    HP 50   ADF 3   MR 3    DCR 75
+    Weapons: LC RB(x4) LB(x2) EB
+    Defenses: RH MS(x2) ICM(x5)
+```
+
+**Setting Up**. The two forces enter the map from opposite, short
+map edges. The Sathar player can establish whatever speed
+he wants for each of his ships on the previous turn. Because of
+the slow freighter, the UPF ships must begin with a speed of 5.
+After the ships are placed, each player rolls a die. The player
+rolling the higher number is side A, and moves first.
+
+**Special Rule**. The Megasaurus must travel in a straight line at
 a speed of 5 hexes per turn until it has crossed the map. If it has
 not been destroyed by this time, it will leave the map and is
 assumed to have reached the safety of the fortified station as
-the warships resolve the battle
+the warships resolve the battle.
 
-Victory Conditions. The player who destroys all of his oppo-
-nent''s ships is the victor. If the Megasaurus escapes and all of
+**Victory Conditions**. The player who destroys all of his opponent's 
+ships is the victor. If the Megasaurus escapes and all of
 the other UPF ships are destroyed, however, the game is a
 draw.
 
-Scenario 2: THE STAND
+#### Scenario 2: THE STAND
 
 The approach of the Sathar fleet has been observed by the
-residents of the fortified station at Ken‘zah Kit for several days.
-The word has come from fleet headquarters: ‘No reinforce-
-ments available.'' The few UPF ships already at the station are
+residents of the fortified station at Ken'zah Kit for several days.
+The word has come from fleet headquarters: "No reinforce-
+ments available." The few UPF ships already at the station are
 ready for the fight, their officers and crew knowing the fate
 that will fall to the civilians on the station if they fail.
 
 The wait is almost over.
 
-UPF Ships
-
+#####UPF Ships
+```
 UPFB Ken'Zah Station (Space Station)
-
-HP 140 DCR 100
-Weapons: LB (x2) RB (x8)
-Defenses: RH MS (x2) ICM (10)
+    HP 140  DCR 100
+    Weapons: LB(x2) RB(x8)
+    Defenses: RH MS(x2) ICM(10)
 
 The following 5 fighters are based at Ken‘zah Station:
 
 Fighters A-E
-HP 8 ADF 5 MR 5 DCR 30
-Weapons: AR (x3)
-Defenses: RH
+    HP 8    ADF 5   MR 5    DCR 30
+    Weapons: AR(x3)
+    Defenses: RH
+
 UPFS Z'Rak't Zoz (Minelayer)
-HP 50 ADF 1 MR 2 DCR 75
-Weapons: M (x20) S (x4) LB (x2)
-Defenses: RH ICM (x4)
+    HP 50   ADF 1   MR 2    DCR 75
+    Weapons: M(x20) S(x4) LB(x2)
+    Defenses: RH ICM (x4)
+
 UPFS Shimmer (Frigate)
-HP 40 ADF 4 MR 3 DCR 70
-Weapons: LC RB (x4) LB T (x2)
-Defenses: RH MS (x2) ICM (x4)
+    HP 40   ADF 4   MR 3    DCR 70
+    Weapons: LC RB(x4) LB T(x2)
+    Defenses: RH MS(x2) ICM(x4)
+
 UPFS 2z' Nakk'T (Frigate)
-HP 40 ADF 4 MR 3 DCR 70
-Weapons: LC RB (x4) LB T (x2)
-Defenses: RH MS (x2) ICM (x4)
+    HP 40   ADF 4   MR 3    DCR 70
+    Weapons: LC RB(x4) LB T(x2)
+    Defenses: RH MS(x2) ICM(x4)
+
 UPFS Rapier (Assault Scout)
-HP15 ADF 5 MR 4 DCR 50
-Weapons: AR (x4) LB
-Defenses: RH
+    HP 15   ADF 5   MR 4    DCR 50
+    Weapons: AR(x4) LB
+    Defenses: RH
+
 UPFS Lancet (Assault Scout)
-HP 15 ADF 5 MR 4 DCR 50
-Weapons: AR (x4) LB
-
-Defenses: RH
-
-16
-
-Sathar Ships
-
+    HP 15   ADF 5   MR 4    DCR 50
+    Weapons: AR(x4) LB
+    Defenses: RH
+```
+##### Sathar Ships
+```
 SAV Maelstrom (Assault Carrier)
-
-HP 75 ADF 2 MR 1 DCR 150
-Weapons: LB PB RB (x8)
-Defenses: RH MS (x4) ICM (x10)
+    HP 75   ADF 2   MR 1  DCR 150
+    Weapons: LB PB RB  (x8)
+    Defenses: RH MS(x4) ICM(x10)
 
 The following 6 fighters are based aboard the Maelstrom
 
 Fighters A-F
-HP 8 ADF 5 MR 5 DCR 30
-Weapons: AR (x3)
-Defenses: RH
+    HP 8    ADF 5   MR 5    DCR 30
+    Weapons: AR(x3)
+    Defenses: RH
 
 SAV Bludgeon (Destroyer)
-HP 50 ADF 3 MR 3 DCR 75
-Weapons: LC RB (4) LB T (x2) EB
-Defenses: RH MS (x2) ICM (x5)
+    HP 50   ADF 3   MR 3    DCR 75
+    Weapons: LC RB(4) LB T(x2) EB
+    Defenses: RH MS(x2) ICM(x5)
 
 SAV Viper (Destroyer)
-HP 50 ADF 3 MR 3 DCR 75
-Weapons: LC RB (x4) LB T (x2) EB
-Defenses: RH MS (x2) ICM (x5)
+    HP 50   ADF 3   MR 3    DCR 75
+    Weapons: LC RB(x4) LB T(x2) EB
+    Defenses: RH MS(x2) ICM(x5)
 
 SAV Deathstroke (Light Cruiser)
-HP 70 ADF 3 MR 2 DCR 100
-Weapons: DC LB EB PB RB (x6) T (x4)
-Defenses: RH ES SS ICM (x8)
+    HP 70   ADF 3   MR 2    DCR 100
+    Weapons: DC LB EB PB RB(x6) T(x4)
+    Defenses: RH ES SS ICM(x8)
 
 SAV Carrion (Heavy Cruiser)
-HP 80 ADF 2 MR 1 DCR 120
-Weapons: LB (x2) PB EB DC _ RB(x8) S (x2)
+    HP 80   ADF 2   MR 1    DCR 120
+    Weapons: LB (x2) PB EB DC RB(x8) S(x2) T(x4)
+    Defenses: RH ES PS SS ICM (x8)
+```
 
-T (x4)
-
-Defenses: RH ES PS SS ICM (x8)
-
-Setting Up. The planet Ken'zah Kit is placed in the middle of
+**Setting Up**. The planet Ken'zah Kit is placed in the middle of
 the map with the station in orbit around it.
 
 The Sathar will enter the map from one of the narrow edges,
@@ -1487,7 +1531,7 @@ hexes on a piece of paper. The Sathar player then places his
 ships on the map edge. The Sathar are the attackers in this
 scenario, and have the first move.
 
-Victory Conditions. The player who destroys all of his oppo-
+**Victory Conditions**. The player who destroys all of his oppo-
 nent's ships is the victor. The station is considered a ship for
 this purpose. If all of the ships on one side have been destroyed
 and the other side has only fighters remaining, however, the
@@ -1495,24 +1539,36 @@ game is a draw.
 
 ## PDF Page 85
 
-Sample Ship Roster
+[add image of Sample Ship Roster]
 
 A form containing four ship rosters is printed on the inside back cover of the Knight Hawks Campaign Book. This form can be photocopied for personal use during Knight Hawks games.
 
-The sample below shows how the form should be filled out for a typical light cruiser. The boxes can be used to mark off limited-supply weapons. The light cruiser on the sample form carries six rocket batteries, four torpedoes, and eight interceptor missiles. Unused boxes are darkened or crossed off to show that they are not available.
+The sample above shows how the form should be filled out for a typical light cruiser. The boxes can be used to mark off limited-supply weapons. The light cruiser on the sample form carries six rocket batteries, four torpedoes, and eight interceptor missiles. Unused boxes are darkened or crossed off to show that they are not available.
 
 The Damaged Systems box is needed only if players are using the Advanced Game Damage Table.
 
-Playing Knight Hawks with Miniatures
+### Playing Knight Hawks with Miniatures
 
-Players interested in expanding their Knight Hawks games can use miniature metal spaceships instead of the cardboard counters included with the game. Besides being fun to paint and collect, metal miniatures are more interesting and add a new degree of excitement to the game. TSR's STAR FRONTIERS spaceship miniatures were advertised for this purpose.
+Players interested in expanding their Knight Hawks games can
+use miniature metal spaceships instead of the cardboard
+counters included with the game. Besides being fun to paint
+and collect, metal miniatures are more interesting and add a
+new degree of excitement to the game. Be sure to look for
+TSR’s STAR FRONTIERS Spaceship Miniatures, available
+wherever Knight Hawks is sold
 
-If the miniatures are small enough, they can be used directly on the space map. Playing with miniatures is most fun, however, when they are used without a map. To do this, convert all measurements to inches by letting one inch equal 10,000 km, the size of one hex.
+If the miniatures are small enough, they can be used directly
+on the space map. Playing with miniatures is most fun, how
+ever, when they are used without a map. To do this, simply
+convert all measurements to inches by letting one inch equal
+10,000 km (the size of one hex)
 
 For example, a ship moving with a speed of 5 travels five inches. If it has an ADF of 3, it can increase or decrease its movement by three inches per turn. A ship can turn up to 60 degrees when it uses one MR point. This can be measured with a protractor or a cardboard template. A ship can turn less than 60 degrees, but this still uses one whole MR point. For extra realism, players can allow a ship to make several turns that add up to 60 degrees for one MR point.
 
-Planets and moons can be cut out of cardboard and colored however the players like. These planets can be cut to reflect their real size, unlike the counters in the game.
+Planets and moons can be cut out of cardboard and colored
+however the players like. These planets can be cut to reflect
+their real size, unlike the counters in the game. For example,
+the Earth would be 1.3 inches in diameter. The moon would be
+3 inches in diameter, 38 inches away from the Earth.
 
-Advertisements
 
-The original page also contains period advertisements for the RPGA and Amazing Magazine.
