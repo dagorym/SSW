@@ -80,6 +80,15 @@ protected:
 	/// list of active regions for selection of a ship's name
 	std::vector<wxRect> m_shipNameRegions;
 
+	/// top pixel where tactical action prompts begin
+	static const int ACTION_PROMPT_TOP_MARGIN = 5;
+	/// vertical spacing between tactical action prompt lines
+	static const int ACTION_PROMPT_LINE_HEIGHT = 16;
+	/// maximum number of prompt lines above tactical action buttons
+	static const int ACTION_PROMPT_MAX_LINES = 3;
+	/// minimum vertical gap between prompt block and tactical action buttons
+	static const int ACTION_PROMPT_BUTTON_GAP = 8;
+
 	/// Event handler for setting the ship's speed
 	void onSetSpeed( wxCommandEvent& event );
 
@@ -380,6 +389,12 @@ protected:
 	 * @date Last Modified:  Feb 22, 2011
 	 */
 	void checkShipSelection(wxMouseEvent &event);
+
+	/// returns y-position for the indexed action prompt line
+	int getActionPromptLineY(int lineIndex) const;
+
+	/// returns explicit spacer height that keeps action buttons below prompt text
+	int getActionButtonTopSpacerHeight() const;
 };
 
 }

@@ -57,6 +57,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	actionSizer->Add(m_buttonDefensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonOffensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonMinePlacementDone, 0, wxALIGN_CENTER_VERTICAL);
+	rootSizer->AddSpacer(getActionButtonTopSpacerHeight());
 	rootSizer->Add(actionSizer, 0, wxTOP, BORDER);
 	rootSizer->AddStretchSpacer(1);
 	SetSizer(rootSizer);
@@ -73,6 +74,14 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 }
 
 FBattleDisplay::~FBattleDisplay() {
+}
+
+int FBattleDisplay::getActionPromptLineY(int lineIndex) const{
+	return ACTION_PROMPT_TOP_MARGIN + (lineIndex * ACTION_PROMPT_LINE_HEIGHT);
+}
+
+int FBattleDisplay::getActionButtonTopSpacerHeight() const{
+	return getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_BUTTON_GAP;
 }
 
 void FBattleDisplay::draw(wxDC &dc){
@@ -423,9 +432,9 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 	}
 	os << "turn.";
 	dc.SetTextForeground(white);
-	dc.DrawText(os.str(),leftOffset,BORDER);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
 	os.str("Please select a ship to move.");
-	dc.DrawText(os.str(),leftOffset,BORDER+16);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(1));
 		m_buttonMoveDone->Enable(m_parent->isMoveComplete());
 		if (m_first){
 		m_buttonMoveDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
@@ -524,10 +533,10 @@ void FBattleDisplay::drawDefensiveFire(wxDC &dc){
 	std::ostringstream os;
 	os << "The non-moving player may now";
 	dc.SetTextForeground(white);
-	dc.DrawText(os.str(),leftOffset,BORDER);
-	dc.DrawText("declare defensive fire.",leftOffset,BORDER+16);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
+	dc.DrawText("declare defensive fire.",leftOffset,getActionPromptLineY(1));
 	os.str("Please select a ship to fire weapons.");
-	dc.DrawText(os.str(),leftOffset,BORDER+32);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
 	m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
 	if (m_first){
 		m_buttonDefensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
@@ -544,10 +553,10 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 	std::ostringstream os;
 	os << "The moving player may now";
 	dc.SetTextForeground(white);
-	dc.DrawText(os.str(),leftOffset,BORDER);
-	dc.DrawText("declare offensive fire.",leftOffset,BORDER+16);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
+	dc.DrawText("declare offensive fire.",leftOffset,getActionPromptLineY(1));
 	os.str("Please select a ship to fire weapons.");
-	dc.DrawText(os.str(),leftOffset,BORDER+32);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
 	m_buttonOffensiveFireDone->Enable(m_parent->isMoveComplete());
 	if (m_first){
 		m_buttonOffensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
@@ -749,11 +758,11 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	std::ostringstream os;
 	os << "The defensive player may now place";
 	dc.SetTextForeground(white);
-	dc.DrawText(os.str(),leftOffset,BORDER);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
 	os.str("  mines before the attacker");
-	dc.DrawText(os.str(),leftOffset,BORDER+16);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(1));
 	os.str("  sets up their ships.");
-	dc.DrawText(os.str(),leftOffset,BORDER+32);
+	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
 	int lMargin = 310;	// left margin for ship display
 	os.str("");
 	os << "Select a ship from the list below to dispense mines";
