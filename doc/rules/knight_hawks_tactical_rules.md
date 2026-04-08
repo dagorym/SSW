@@ -698,7 +698,7 @@ Sathar Ships
     Defenses: reflective hull, 2 masking screens
     ADF: 3      MR: 2
 
-2. SAV Perdition    (heavy cruiser)     80 Hull Points
+2.  SAV Perdition    (heavy cruiser)     80 Hull Points
     Weapons: 2 laser batteries, 4 rocket batteries, 2 torpedoes
     Defenses: reflective hull, 2 ICMs
     ADF: 1      MR: 1
@@ -757,6 +757,7 @@ UPF Ships
     ADF: 0      MR: O
 
 The following two fighters are based at Fortress Kdikit.
+
 a&b. UPFS Fighters      Hull Points 8 each
     Weapon: 3 assault rockets each
     Defense: reflective hull
@@ -792,6 +793,7 @@ Sathar Ships
     ADF: 2      MR: 1
 
 The following five fighters are based on the Infamous:
+
 a-e. Sathar Attack Fighters                 Hull Points 8 each
     Weapons: 3 assault rockets each
     Defenses: reflective hull
@@ -854,7 +856,7 @@ remaining, the game is a draw.
 
 The Advanced Game expands the Basic Game rules, adding new types of ships, new movement rules, more weapons and defenses, and more detailed damage and repair rules. All of the rules from the Basic Game are used in the Advanced Game, but Advanced Game players have more decisions to make and more options to choose from.
 
-SEQUENCE OF PLAY
+### SEQUENCE OF PLAY
 
 The turn sequence for the Advanced Game is outlined below.
 
@@ -1122,6 +1124,21 @@ ADVANCED GAME DAMAGE TABLE
 | 98 — 105 | Electrical Fire: roll additional damage at +20 each turn |
 | 106 — 116 | Damage Control hit: DCR cut in half |
 | 117 — 120 | Disastrous Fire: DCR cut in half; lose entire ADF and MR;<br/>-10% on all attacks; roll additional damage at +20 each turn |
+
+
+WEAPON RESTRICTIONS TABLE
+| Weapon | Restrictions | Range |
+|-|-|-|
+| Laser Cannon | FF, RD | 10 |
+| Laser Battery | RD | 9 |
+| Torpedo | MPO, LTD | 4 |
+| Assault Rocket | FF, MPO, LTD | 4 |
+| Rocket Battery | LTD | 3 |
+| Proton Beam Battery | RD | 12 |
+| Electron Beam Battery | RD | 12 |
+| Disruptor Beam Cannon | FF, RD | 9 |
+| Mines | LTD | 0 |
+| Seeker Missiles | LTD | unlimited |
 
 #### Explanation of Results
 
