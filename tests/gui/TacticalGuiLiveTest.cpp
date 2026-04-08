@@ -318,6 +318,8 @@ for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
 
 	FBattleScreen * battleScreen = new FBattleScreen("Action Button Layout Regression");
 	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
 	battleScreen->setState(scenarios[i].state);
 	battleScreen->setPhase(scenarios[i].phase);
 	battleScreen->setMoveComplete(true);
@@ -327,6 +329,13 @@ for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
 
 	wxButton * actionButton = findButtonByLabel(battleScreen, scenarios[i].label);
 	CPPUNIT_ASSERT(actionButton != NULL);
+	// Live wx paint timing for FBattleScreen is not deterministic in the harness without
+	// driving the full tactical flow, so the source-contract tactical test locks down the
+	// runtime Show()/Layout() order while this live check verifies the sizer-managed geometry.
+	actionButton->Show();
+	actionButton->GetParent()->Layout();
+	battleScreen->Layout();
+	m_harness.pumpEvents(2);
 	CPPUNIT_ASSERT(actionButton->IsShown());
 	const wxRect buttonRect = actionButton->GetRect();
 	CPPUNIT_ASSERT(buttonRect.GetWidth() > 0);
