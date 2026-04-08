@@ -1,0 +1,50 @@
+You are the Documenter Agent.
+
+You must complete the full agent workflow; do not stop after activation metadata or scope confirmation.
+
+Task summary
+- Implemented explicit prompt-to-action-button vertical spacing in `FBattleDisplay` so movement, defensive-fire, offensive-fire, and mine-placement completion buttons are kept below the prompt text block while preserving existing show/hide relayout behavior.
+
+Acceptance criteria validated by Tester
+- In each covered tactical phase, the relevant completion button is rendered below the lowest line of prompt text with no overlap.
+- The action-button row remains to the right of the zoom control.
+- The chosen implementation exposes a stable spacing contract that tests can verify.
+- Existing `Layout()` calls after button `Show()` / `Hide()` remain present where required.
+
+Implementation context
+- Implementer files modified:
+  - `include/tactical/FBattleDisplay.h`
+  - `src/tactical/FBattleDisplay.cpp`
+- Tester files modified:
+  - `tests/gui/TacticalGuiLiveTest.h`
+  - `tests/gui/TacticalGuiLiveTest.cpp`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+
+Branch/worktree context
+- Repository root: `/home/tstephen/repos/SSW`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/tactical-gui-button-text-overlap-followup-subtask-1-tester-20260408`
+- Branch: `tactical-gui-button-text-overlap-followup-subtask-1-tester-20260408`
+- Plan source: `plans/tactical-gui-button-text-overlap-followup-plan.md`
+- Shared artifact directory to reuse (repo-relative): `artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing`
+
+Commit context
+- Test changes commit hash: `b9bd6b3`
+- Tester artifacts are committed after this prompt is written; use latest branch tip and include both tester commits in documentation context.
+
+Commands executed by Tester
+- `cd tests/tactical && make && ./TacticalTests` (baseline and post-change)
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (baseline and post-change)
+
+Final test outcomes
+- Baseline: Tactical `OK (90 tests)`, GUI `OK (26 tests)`
+- Post-change: Tactical `OK (92 tests)`, GUI `OK (27 tests)`
+- No failing acceptance criteria remained.
+
+Documentation review guidance
+- Focus on whether docs need updates for the new explicit spacing contract constants/helpers and newly expanded tactical/gui regression coverage.
+- Compare against the parent commit of `b9bd6b3` (or previous branch tip before tester edits) to isolate tester-added validation context, and inspect implementer changes around commit `2530ef1` for behavior-level documentation impact.
+- Infer missing base-branch details, documentation conventions, and impacted doc surfaces from repository context when safe; do not treat inferable details as blockers.
+- Continue in the same run when blocking inputs are absent.
+
+Do not report success unless all required artifacts exist and all changes are committed.

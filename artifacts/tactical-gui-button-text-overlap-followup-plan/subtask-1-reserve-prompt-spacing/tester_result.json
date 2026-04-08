@@ -1,0 +1,39 @@
+{
+  "status": "success",
+  "task": "tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing",
+  "plan_source": "plans/tactical-gui-button-text-overlap-followup-plan.md",
+  "branch": "tactical-gui-button-text-overlap-followup-subtask-1-tester-20260408",
+  "test_commit_hash": "b9bd6b3",
+  "test_files_modified": [
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h"
+  ],
+  "implementer_files_modified": [
+    "include/tactical/FBattleDisplay.h",
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests (baseline)",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests (baseline)",
+    "cd tests/tactical && make && ./TacticalTests (post-change)",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests (post-change)"
+  ],
+  "results": {
+    "baseline": {
+      "tactical": { "total": 90, "passed": 90, "failed": 0 },
+      "gui": { "total": 26, "passed": 26, "failed": 0 }
+    },
+    "post_change": {
+      "tactical": { "total": 92, "passed": 92, "failed": 0 },
+      "gui": { "total": 27, "passed": 27, "failed": 0 }
+    }
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/tester_report.md",
+    "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/tester_result.json",
+    "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing/documenter_prompt.txt"
+  ]
+}
