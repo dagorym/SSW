@@ -1,0 +1,48 @@
+You are the Tester Agent.
+
+Task summary:
+- Tactical damage summary dialog now renders a labeled ship-rollup section and conditionally renders a labeled hit-detail section only when `showHitDetails` is enabled and detail rows exist.
+
+Modified files:
+- include/gui/TacticalDamageSummaryGUI.h
+- src/gui/TacticalDamageSummaryGUI.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.h
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The dialog renders the ship rollup section as before.
+- When the toggle is enabled and detail lines exist, the dialog renders a second labeled hit-detail section.
+- When the toggle is disabled, the dialog omits the hit-detail section.
+- Reports with no hit-detail lines still render cleanly.
+- Reports with no damaged ships still show the current empty-state text.
+- Tactical GUI tests cover both enabled and disabled detail-section behavior.
+- Live dialog smoke coverage through WXTacticalUI::showDamageSummary(...) still succeeds.
+
+Create test files in:
+- /home/tstephen/repos/SSW/tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- /home/tstephen/repos/SSW/tests/gui/TacticalGuiLiveTest.cpp
+
+Implementation context for testing:
+- `TacticalDamageSummaryGUI::buildSummaryText()` now composes sectioned output from `buildShipRollupText()` and `buildHitDetailText()`.
+- Hit details are shown only when `m_summary.showHitDetails` is true and `m_summary.hitDetails` is non-empty.
+- Empty-state text (`No ships sustained damage in this report.`) remains unchanged.
+- Close-button default/focus/modal behavior should remain intact.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Existing validations failing only due to intentional behavior change:
+- None.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-results-hit-detail-plan/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
