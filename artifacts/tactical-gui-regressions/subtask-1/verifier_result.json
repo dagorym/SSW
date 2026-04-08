@@ -1,0 +1,34 @@
+{
+  "status": "completed",
+  "subtask": "tactical-gui-regressions/subtask-1",
+  "branch": "tactical-gui-regressions-subtask-1-verifier-20260408",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency": "Sufficient: tactical source-contract coverage enforces the post-show/post-hide Layout() contract and live GUI coverage confirms sizer-managed completion-button geometry; tactical and GUI suites passed.",
+  "documentation_accuracy": "Accurate: AGENTS.md and doc/DesignNotes.md describe the combined source-contract and live-geometry coverage without contradicting implementation behavior.",
+  "acceptance_reference": [
+    "Coordinator verifier handoff prompt for Subtask 1",
+    "/home/tstephen/repos/SSW/plans/tactical-gui-regressions-plan.md"
+  ],
+  "convention_files": [
+    "/home/tstephen/repos/agents/AGENTS_LOOKUP.md",
+    "/home/tstephen/repos/agents/agents/verifier.md",
+    "/home/tstephen/repos/SSW/AGENTS.md"
+  ],
+  "validation": [
+    {
+      "command": "cd tests/tactical && make && ./TacticalTests",
+      "result": "OK (90 tests)"
+    },
+    {
+      "command": "cd tests/gui && make && ./GuiTests",
+      "result": "OK (26 tests)"
+    }
+  ],
+  "artifact_paths": [
+    "artifacts/tactical-gui-regressions/subtask-1/verifier_report.md",
+    "artifacts/tactical-gui-regressions/subtask-1/verifier_result.json"
+  ]
+}
