@@ -1,0 +1,52 @@
+{
+  "status": "success",
+  "subtask": "subtask-2-strengthen-overlap-tests",
+  "branch": "tactical-gui-button-text-overlap-followup-subtask-2-tester-20260408",
+  "test_commit": "No Changes Made",
+  "implementation_commit": "0ce5e86e37b04aa3148f2cdff5ab19802ab29d72",
+  "head_commit_at_test_time": "f5496779b8247e08241e10251258e1a53d6cfd2e",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/gui && make && (xvfb-run -a ./GuiTests || ./GuiTests)"
+  ],
+  "pass_fail_totals": {
+    "total": 119,
+    "passed": 119,
+    "failed": 0,
+    "suite_breakdown": {
+      "TacticalTests": {
+        "passed": 92,
+        "failed": 0
+      },
+      "GuiTests": {
+        "passed": 27,
+        "failed": 0
+      }
+    }
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "Live GUI test fails if completion button intersects instruction-text region for movement/defensive-fire/offensive-fire/mine-placement states.",
+      "status": "met"
+    },
+    {
+      "criterion": "Any new implementation seam introduced for prompt spacing is covered by tactical/source-level regression.",
+      "status": "met"
+    },
+    {
+      "criterion": "Existing speed-control and action-button relayout regressions continue to pass.",
+      "status": "met"
+    }
+  ],
+  "unmet_acceptance_criteria": [],
+  "artifacts": {
+    "tester_report": "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/tester_report.md",
+    "tester_result": "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/tester_result.json",
+    "documenter_prompt": "artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-2-strengthen-overlap-tests/documenter_prompt.txt"
+  },
+  "notes": [
+    "xvfb-run was unavailable in this environment; direct ./GuiTests fallback passed.",
+    "No tester-side test file changes were needed because existing and implementer-updated coverage already satisfied acceptance criteria."
+  ]
+}
