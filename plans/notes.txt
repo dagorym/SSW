@@ -1,0 +1,19 @@
+On the damage dialog, 
+* when there is a weapons hit, it should display what weapon was damaged
+* formatting of output needs cleanup
+
+Add Repair Turn
+Add Seeker missile
+Add Saving during tactical Game
+* battle board only
+* during strategic game
+
+
+Placement of movement done button (both offensive and defensive) regressed and it is now on top of the zoom bar and the text that should be to the right of it.
+When damage results dialog is closed the game crashes with a segfault. (Only seen so far with a no damage result with no detailed damage displayed but need to check all cases.)
+
+﻿Do the following in order and don't start the next numbered step until you finish the previous one. Also don't stop
+after completing any numbered step, you must complete all three.
+1. Read AGENTS.md and print READY!
+2. You are the Coodinator agent.  Read that agent definition and print "READY TO START".
+3. Run the coordinator workflow on the plan at `plans/gui-console-warning-remediation-plan.md` 

@@ -14,7 +14,6 @@ tests/gui/GuiTests
 *.a
 *.so
 .settings
-plans/notes.txt
 
 /.vs/slnx.sqlite
 /.vs/ProjectSettings.json
