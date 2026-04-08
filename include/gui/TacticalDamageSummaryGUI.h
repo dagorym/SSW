@@ -26,6 +26,8 @@ private:
 	wxButton * m_closeButton;
 
 	wxString buildContextText() const;
+	wxString buildShipRollupText() const;
+	wxString buildHitDetailText() const;
 	wxString buildSummaryText() const;
 	void onClose(wxCommandEvent & event);
 

@@ -70,10 +70,21 @@ void FTacticalDamageSummaryGUITest::testReportTypeLabelsAndDialogTitleMapToRepor
 		tacticalCombatReportDialogTitle(phaseContext));
 }
 
-void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupOnlyAndEmptyStateText() {
-	// AC: the modal summary dialog renders only ship rollups and shows a safe empty-state message.
+void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOptionalHitDetailSections() {
+	// AC: the modal summary dialog renders ship rollups and optional hit details while preserving empty-state behavior.
 	FTacticalCombatReport report;
 	FTacticalShipReference target(2002, 2, "Sathar Frigate");
+	FTacticalShipReference attacker(1001, 1, "UPF Destroyer");
+	FTacticalWeaponReference weapon(3003, "Laser Battery");
+
+	FTacticalAttackReport attack;
+	attack.attacker = attacker;
+	attack.target = target;
+	attack.weapon = weapon;
+	attack.hit = true;
+	attack.hullDamage = 3;
+	attack.note = "armor bypassed";
+	report.attacks.push_back(attack);
 
 	FTacticalReportEvent firstWeaponHit;
 	firstWeaponHit.eventType = TRET_InternalDamage;
@@ -99,21 +110,27 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupOnlyA
 
 	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.ships.size());
+	CPPUNIT_ASSERT(summary.showHitDetails);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.hitDetails.size());
 	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Weapon Hit: LB, LB, AR") != std::string::npos);
 	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense damaged") != std::string::npos);
 
 	const std::string source = readFile(repoFile("src/gui/TacticalDamageSummaryGUI.cpp"));
 
 	assertContains(source, "toWxString(tacticalCombatReportDialogTitle(summary.context))");
+	assertContains(source, "buildShipRollupText()");
+	assertContains(source, "buildHitDetailText()");
+	assertContains(source, "Hit Details");
+	assertContains(source, "Ship Damage Summary");
 	assertContains(source, "m_summary.ships.empty()");
 	assertContains(source, "No ships sustained damage in this report.");
+	assertContains(source, "m_summary.showHitDetails");
+	assertContains(source, "m_summary.hitDetails.empty()");
+	assertContains(source, "m_summary.hitDetails[i].displayLine");
 	assertContains(source, "shipSummary.displayLines.empty()");
 	assertContains(source, "shipSummary.displayLines[j]");
 	assertContains(source, "shipSummary.ship.shipName");
 	assertContains(source, "m_summary.ships[i]");
-
-	CPPUNIT_ASSERT(source.find("rawAttacksReceived") == std::string::npos);
-	CPPUNIT_ASSERT(source.find("rawEvents") == std::string::npos);
 }
 
 void FTacticalDamageSummaryGUITest::testBattleScreenEntryPointAndGuiBuildWiringArePresent() {

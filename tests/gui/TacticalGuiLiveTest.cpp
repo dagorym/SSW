@@ -175,6 +175,10 @@ shipSummary.displayLines.push_back("Destroyer Alpha took 4 hull damage.");
 shipSummary.displayLines.push_back("Destroyer Alpha suffered 1 internal hit.");
 summary.ships.push_back(shipSummary);
 
+FTacticalHitDetailSummary hitDetail;
+hitDetail.displayLine = "Destroyer Alpha [Laser Battery] -> Sathar Frigate: 4 hull damage";
+summary.hitDetails.push_back(hitDetail);
+
 	return summary;
 }
 
@@ -301,7 +305,10 @@ CPPUNIT_ASSERT(contextText->GetLabel().Find(wxT("Phase: 2")) != wxNOT_FOUND);
 
 wxTextCtrl * summaryText = findFirstTextCtrl(dialog);
 CPPUNIT_ASSERT(summaryText != NULL);
+CPPUNIT_ASSERT(summaryText->GetValue().Find(wxT("Ship Damage Summary")) != wxNOT_FOUND);
 CPPUNIT_ASSERT(summaryText->GetValue().Find(wxT("Destroyer Alpha took 4 hull damage.")) != wxNOT_FOUND);
+CPPUNIT_ASSERT(summaryText->GetValue().Find(wxT("Hit Details")) != wxNOT_FOUND);
+CPPUNIT_ASSERT(summaryText->GetValue().Find(wxT("Destroyer Alpha [Laser Battery] -> Sathar Frigate: 4 hull damage")) != wxNOT_FOUND);
 
 bool closeActionRan = false;
 bool closeButtonFound = false;
@@ -336,6 +343,18 @@ CPPUNIT_ASSERT(closeButtonFocused);
 CPPUNIT_ASSERT(closeButtonIsDefault);
 CPPUNIT_ASSERT(closeResult == static_cast<int>(wxID_OK) || closeResult == static_cast<int>(wxID_CANCEL));
 dialog->Destroy();
+m_harness.pumpEvents(3);
+
+FTacticalCombatReportSummary noDetailSummary = buildSummaryWithLines();
+noDetailSummary.showHitDetails = false;
+TacticalDamageSummaryGUI * noDetailDialog = new TacticalDamageSummaryGUI(parent, noDetailSummary);
+wxTextCtrl * noDetailText = findFirstTextCtrl(noDetailDialog);
+CPPUNIT_ASSERT(noDetailText != NULL);
+CPPUNIT_ASSERT(noDetailText->GetValue().Find(wxT("Ship Damage Summary")) != wxNOT_FOUND);
+CPPUNIT_ASSERT(noDetailText->GetValue().Find(wxT("Destroyer Alpha took 4 hull damage.")) != wxNOT_FOUND);
+CPPUNIT_ASSERT(noDetailText->GetValue().Find(wxT("Hit Details")) == wxNOT_FOUND);
+CPPUNIT_ASSERT(noDetailText->GetValue().Find(wxT("Destroyer Alpha [Laser Battery] -> Sathar Frigate: 4 hull damage")) == wxNOT_FOUND);
+noDetailDialog->Destroy();
 m_harness.pumpEvents(3);
 
 FTacticalCombatReportSummary emptySummary;

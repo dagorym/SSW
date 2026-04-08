@@ -13,7 +13,7 @@ namespace FrontierTests {
 class FTacticalDamageSummaryGUITest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalDamageSummaryGUITest );
 	CPPUNIT_TEST( testReportTypeLabelsAndDialogTitleMapToReportContext );
-	CPPUNIT_TEST( testDamageSummaryDialogBuildsShipRollupOnlyAndEmptyStateText );
+	CPPUNIT_TEST( testDamageSummaryDialogBuildsShipRollupAndOptionalHitDetailSections );
 	CPPUNIT_TEST( testBattleScreenEntryPointAndGuiBuildWiringArePresent );
 	CPPUNIT_TEST_SUITE_END();
 
@@ -25,7 +25,7 @@ public:
 	void tearDown();
 
 	void testReportTypeLabelsAndDialogTitleMapToReportContext();
-	void testDamageSummaryDialogBuildsShipRollupOnlyAndEmptyStateText();
+	void testDamageSummaryDialogBuildsShipRollupAndOptionalHitDetailSections();
 	void testBattleScreenEntryPointAndGuiBuildWiringArePresent();
 };
 

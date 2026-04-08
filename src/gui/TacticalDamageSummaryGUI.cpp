@@ -71,12 +71,32 @@ wxString TacticalDamageSummaryGUI::buildContextText() const {
 }
 
 wxString TacticalDamageSummaryGUI::buildSummaryText() const {
+	wxString shipRollupText = buildShipRollupText();
+	wxString hitDetailText = buildHitDetailText();
+
+	if (hitDetailText.empty()) {
+		return shipRollupText;
+	}
+
 	wxString text;
+	text << shipRollupText;
+	text << wxT("\n\n");
+	text << wxT("Hit Details\n");
+	text << wxT("-----------\n");
+	text << hitDetailText;
+	return text;
+}
+
+wxString TacticalDamageSummaryGUI::buildShipRollupText() const {
+	wxString text;
+
 	if (m_summary.ships.empty()) {
 		text << wxT("No ships sustained damage in this report.");
 		return text;
 	}
 
+	text << wxT("Ship Damage Summary\n");
+	text << wxT("-------------------\n");
 	for (unsigned int i = 0; i < m_summary.ships.size(); i++) {
 		const FTacticalShipReportSummary & shipSummary = m_summary.ships[i];
 		if (shipSummary.displayLines.empty()) {
@@ -95,6 +115,21 @@ wxString TacticalDamageSummaryGUI::buildSummaryText() const {
 		}
 	}
 
+	return text;
+}
+
+wxString TacticalDamageSummaryGUI::buildHitDetailText() const {
+	if (!m_summary.showHitDetails || m_summary.hitDetails.empty()) {
+		return wxString();
+	}
+
+	wxString text;
+	for (unsigned int i = 0; i < m_summary.hitDetails.size(); i++) {
+		text << toWxString(m_summary.hitDetails[i].displayLine);
+		if (i + 1 < m_summary.hitDetails.size()) {
+			text << wxT("\n");
+		}
+	}
 	return text;
 }
 
