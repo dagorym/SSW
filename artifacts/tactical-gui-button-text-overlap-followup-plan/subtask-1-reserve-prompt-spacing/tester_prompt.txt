@@ -1,0 +1,49 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented explicit prompt-to-action-button vertical spacing in `FBattleDisplay` so movement, defensive-fire, offensive-fire, and mine-placement completion buttons are kept below the prompt text block while preserving existing show/hide relayout behavior.
+
+Modified files:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- In each covered tactical phase, the relevant completion button is rendered below the lowest line of prompt text with no overlap.
+- The action-button row remains to the right of the zoom control.
+- The chosen implementation exposes a stable spacing contract that tests can verify.
+- Existing `Layout()` calls after button `Show()` / `Hide()` remain present where required.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Implementation context for testing:
+- `FBattleDisplay` now defines explicit spacing contract constants:
+  - `ACTION_PROMPT_TOP_MARGIN`
+  - `ACTION_PROMPT_LINE_HEIGHT`
+  - `ACTION_PROMPT_MAX_LINES`
+  - `ACTION_PROMPT_BUTTON_GAP`
+- Prompt line y-coordinates for tactical action phases now flow through `getActionPromptLineY(int)`.
+- Action-row vertical reservation is explicit via `getActionButtonTopSpacerHeight()` and `rootSizer->AddSpacer(...)` before the action sizer.
+- Existing `Layout()` calls after action-button `Show()` / `Hide()` were preserved.
+- Validate overlap behavior specifically for:
+  - movement (`Movement Done`)
+  - defensive fire (`Defensive Fire Done`)
+  - offensive fire (`Offensive Fire Done`)
+  - mine placement (`Mine Placement Done`)
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- Assumption: if `xvfb-run` is unavailable in the current environment, run `cd tests/gui && ./GuiTests` and record that assumption.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-gui-button-text-overlap-followup-plan/subtask-1-reserve-prompt-spacing
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
