@@ -1,0 +1,45 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implemented tactical combat report summary hit-detail support with a default-enabled display toggle and hit-only detail emission while preserving ship rollup semantics.
+
+Acceptance criteria to validate/document:
+- FTacticalCombatReportSummary contains a toggleable control for the hit-detail section and defaults it to true.
+- The summary builder emits detail data only for attacks with hit == true.
+- Detail data is player-readable and captures attacker ship, weapon, target ship, and damage/effect outcome.
+- Existing ship rollup summaries continue to pass their current semantics.
+- Reports with no hit attacks remain valid and do not invent empty detail entries.
+- Immediate/non-weapon report types still build correctly.
+
+Implementation context and branch/worktree:
+- Worktree: /home/tstephen/repos/SSW-worktrees/tactical-results-hit-detail-subtask-1-tester-20260408
+- Branch: tactical-results-hit-detail-subtask-1-tester-20260408
+- Comparison base guidance: compare against master branch tip (currently cbed3e1) and include implementer code commit 667f983 plus downstream tester artifact commit(s).
+
+Files modified by Implementer and Tester that may affect documentation review:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- artifacts/tactical-results-hit-detail-plan/subtask-1/implementer_report.md
+- artifacts/tactical-results-hit-detail-plan/subtask-1/implementer_result.json
+- artifacts/tactical-results-hit-detail-plan/subtask-1/tester_report.md
+- artifacts/tactical-results-hit-detail-plan/subtask-1/tester_result.json
+- artifacts/tactical-results-hit-detail-plan/subtask-1/documenter_prompt.txt
+
+Tester execution evidence:
+- Command executed: cd tests/tactical && make && ./TacticalTests
+- Result: OK (88 tests)
+- Outcome: acceptance criteria validated by existing + implementer-added tactical tests; no additional test-file edits required.
+- Test commit hash: No Changes Made
+
+Plan/story-context guidance:
+- Reuse shared artifact path: artifacts/tactical-results-hit-detail-plan/subtask-1
+- Review implementer artifacts in the same directory for planning rationale and any wording expectations.
+- Focus docs impact on tactical combat report summary data model additions (`showHitDetails`, `hitDetails`, hit-detail line/outcome formatting) and user-facing behavior expectations.
+
+Repo-context inference guidance:
+- If any plan path, doc target location, or comparison base detail is missing, infer safely from repository conventions and existing artifacts.
+- Continue in the same run when blockers are absent; do not stop after scope confirmation, documentation discovery, or diff review.
+
+Explicit completion gate:
+Do not report success unless all required artifacts exist and all changes are committed.
