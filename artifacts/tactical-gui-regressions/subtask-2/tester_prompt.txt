@@ -1,0 +1,46 @@
+You are the Tester Agent.
+
+Task summary:
+- Hardened tactical damage summary modal close handling by removing the manual `EndModal` close callback path and relying on default affirmative dialog close behavior.
+- Added regression coverage for no-detail and empty summaries through the real `WXTacticalUI::showDamageSummary(...)` modal path.
+- Added tactical source-contract assertions to catch reintroduction of manual bind + `EndModal` double-close patterns.
+
+Modified files:
+- include/gui/TacticalDamageSummaryGUI.h
+- src/gui/TacticalDamageSummaryGUI.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Closing an empty/no-detail tactical damage summary no longer crashes.
+- The corrected implementation uses one clear dialog-close path that is safe for modal dialog usage on wxGTK.
+- GUI tests cover at least one empty/no-detail `WXTacticalUI::showDamageSummary(...)` path and verify clean modal return.
+- Tactical/source tests lock in the corrected close-path contract so the prior unsafe pattern is caught if reintroduced.
+- Existing direct dialog content assertions remain valid.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- tests/tactical/WXTacticalUIAdapterTest.cpp (assumption: only if additional source-contract coverage is needed)
+
+Implementation context for testing:
+- `TacticalDamageSummaryGUI` no longer declares/binds `onClose`; no explicit `EndModal(wxID_OK)` call remains in that dialog source.
+- Close behavior now follows default dialog affirmative-button processing (`wxID_OK`/default item path).
+- Live GUI test now drives no-detail and empty summaries via `WXTacticalUI::showDamageSummary(...)` and actively clicks `Close` on the modal dialog.
+- Existing title/context/summary/empty-state direct dialog assertions were intentionally preserved.
+
+Suggested test command(s):
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (assumption: canonical headless command when xvfb-run is available)
+- `cd tests/gui && make && ./GuiTests` (environment fallback used here because xvfb-run was not installed)
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-gui-regressions/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
