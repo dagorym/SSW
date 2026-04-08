@@ -26,6 +26,8 @@ CPPUNIT_TEST( testMinePlacementDisplayUsesModelShipList );
 CPPUNIT_TEST( testDisplayClickFlowUsesModelForwardingApis );
 CPPUNIT_TEST( testMoveDoneDelegatesToBattleScreenCompleteMovePhase );
 CPPUNIT_TEST( testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation );
+CPPUNIT_TEST( testActionButtonShowPathsRelayoutAfterVisibilityChange );
+CPPUNIT_TEST( testActionButtonHidePathsRelayoutAfterVisibilityChange );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -53,6 +55,8 @@ void testMinePlacementDisplayUsesModelShipList();
 void testDisplayClickFlowUsesModelForwardingApis();
 void testMoveDoneDelegatesToBattleScreenCompleteMovePhase();
 void testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation();
+void testActionButtonShowPathsRelayoutAfterVisibilityChange();
+void testActionButtonHidePathsRelayoutAfterVisibilityChange();
 };
 
 }

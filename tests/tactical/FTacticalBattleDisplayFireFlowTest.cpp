@@ -343,4 +343,38 @@ assertContains(body, "m_first=true;");
 assertBefore(body, "m_parent->completeMovePhase();", "m_buttonMoveDone->Hide();");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
+const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::drawDefensiveFire(wxDC &dc)");
+const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+
+assertContains(moveBody, "m_buttonMoveDone->Show();");
+assertBefore(moveBody, "m_buttonMoveDone->Show();", "Layout();");
+assertContains(defenseBody, "m_buttonDefensiveFireDone->Show();");
+assertBefore(defenseBody, "m_buttonDefensiveFireDone->Show();", "Layout();");
+assertContains(attackBody, "m_buttonOffensiveFireDone->Show();");
+assertBefore(attackBody, "m_buttonOffensiveFireDone->Show();", "Layout();");
+assertContains(minesBody, "m_buttonMinePlacementDone->Show();");
+assertBefore(minesBody, "m_buttonMinePlacementDone->Show();", "Layout();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testActionButtonHidePathsRelayoutAfterVisibilityChange() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::onMoveDone( wxCommandEvent& event )");
+const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event )");
+const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event )");
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event )");
+
+assertContains(moveBody, "m_buttonMoveDone->Hide();");
+assertBefore(moveBody, "m_buttonMoveDone->Hide();", "Layout();");
+assertContains(defenseBody, "m_buttonDefensiveFireDone->Hide();");
+assertBefore(defenseBody, "m_buttonDefensiveFireDone->Hide();", "Layout();");
+assertContains(attackBody, "m_buttonOffensiveFireDone->Hide();");
+assertBefore(attackBody, "m_buttonOffensiveFireDone->Hide();", "Layout();");
+assertContains(minesBody, "m_buttonMinePlacementDone->Hide();");
+assertBefore(minesBody, "m_buttonMinePlacementDone->Hide();", "Layout();");
+}
+
 }

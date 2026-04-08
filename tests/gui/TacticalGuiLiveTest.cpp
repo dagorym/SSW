@@ -286,6 +286,64 @@ icmData.push_back(&row);
 	std::cerr << "TACTICAL1:done" << std::endl;
 }
 
+void TacticalGuiLiveTest::testTacticalActionButtonsRemainSizerPositionedWhenShown() {
+const int expectedLeftOffset = 40;
+const wxRect zoomRect(0, 0, 30, 120);
+
+struct Scenario {
+	int state;
+	int phase;
+	wxString label;
+} scenarios[] = {
+	{BS_Battle, PH_MOVE, wxT("Movement Done")},
+	{BS_Battle, PH_DEFENSE_FIRE, wxT("Defensive Fire Done")},
+	{BS_Battle, PH_ATTACK_FIRE, wxT("Offensive Fire Done")},
+	{BS_PlaceMines, PH_NONE, wxT("Mine Placement Done")}
+};
+
+for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * setupAttacker = createShip("Destroyer");
+	FVehicle * setupDefender = createShip("Frigate");
+	CPPUNIT_ASSERT(setupAttacker != NULL && setupDefender != NULL);
+	setupAttacker->setOwner(1);
+	setupDefender->setOwner(2);
+	attackFleet->addShip(setupAttacker);
+	defendFleet->addShip(setupDefender);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("Action Button Layout Regression");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->setState(scenarios[i].state);
+	battleScreen->setPhase(scenarios[i].phase);
+	battleScreen->setMoveComplete(true);
+	battleScreen->reDraw();
+	battleScreen->Layout();
+	m_harness.pumpEvents(5);
+
+	wxButton * actionButton = findButtonByLabel(battleScreen, scenarios[i].label);
+	CPPUNIT_ASSERT(actionButton != NULL);
+	CPPUNIT_ASSERT(actionButton->IsShown());
+	const wxRect buttonRect = actionButton->GetRect();
+	CPPUNIT_ASSERT(buttonRect.GetWidth() > 0);
+	CPPUNIT_ASSERT(buttonRect.GetHeight() > 0);
+	CPPUNIT_ASSERT(buttonRect.GetX() >= expectedLeftOffset);
+	CPPUNIT_ASSERT(buttonRect.GetY() > 0);
+	CPPUNIT_ASSERT(!buttonRect.Intersects(zoomRect));
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(3);
+	delete attackFleet;
+	delete defendFleet;
+}
+
+m_harness.cleanupOrphanTopLevels(10);
+}
+
 void TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior() {
 wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Damage Summary Parent", wxDefaultPosition, wxSize(540, 420));
 parent->Show();

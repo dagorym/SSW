@@ -430,6 +430,7 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 		if (m_first){
 		m_buttonMoveDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
 		m_buttonMoveDone->Show();
+		Layout();
 		m_first=false;
 	}
 
@@ -513,6 +514,7 @@ void FBattleDisplay::onMoveDone( wxCommandEvent& event ){
 //	std::cerr << "Movement Completed" << std::endl;
 	m_parent->completeMovePhase();
 	m_buttonMoveDone->Hide();
+	Layout();
 	m_first=true;
 }
 
@@ -529,7 +531,8 @@ void FBattleDisplay::drawDefensiveFire(wxDC &dc){
 	m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
 	if (m_first){
 		m_buttonDefensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
-			m_buttonDefensiveFireDone->Show();
+		m_buttonDefensiveFireDone->Show();
+		Layout();
 		m_first=false;
 	}
 
@@ -548,7 +551,8 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 	m_buttonOffensiveFireDone->Enable(m_parent->isMoveComplete());
 	if (m_first){
 		m_buttonOffensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
-			m_buttonOffensiveFireDone->Show();
+		m_buttonOffensiveFireDone->Show();
+		Layout();
 		m_first=false;
 	}
 
@@ -559,6 +563,7 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	m_buttonDefensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
 	m_buttonDefensiveFireDone->Enable(false);
 	m_buttonDefensiveFireDone->Hide();
+	Layout();
 	// Fire resolution runs in the model first and captures destroyed-ship IDs.
 	// Screen cleanup then consumes that bookkeeping and clears it at the seam.
 	const FTacticalCombatReportSummary summary = m_parent->resolveCurrentFirePhase();
@@ -573,6 +578,7 @@ void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
 	m_buttonOffensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
 	m_buttonOffensiveFireDone->Enable(false);
 	m_buttonOffensiveFireDone->Hide();
+	Layout();
 	// Keep same lifecycle as defensive fire: model capture first, wx cleanup second.
 	const FTacticalCombatReportSummary summary = m_parent->resolveCurrentFirePhase();
 	m_parent->showTacticalDamageSummaryDialog(summary);
@@ -728,6 +734,7 @@ void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event ){
 	// disconnect the button
 	m_buttonMinePlacementDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
 	m_buttonMinePlacementDone->Hide();
+	Layout();
 	m_parent->completeMinePlacement();
 	m_first=true;
 }
@@ -778,6 +785,7 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	if (m_first){
 		m_buttonMinePlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
 		m_buttonMinePlacementDone->Show();
+		Layout();
 		m_first=false;
 	}
 }
