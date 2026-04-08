@@ -1,0 +1,47 @@
+You are the Documenter Agent.
+
+Task summary:
+- Tactical damage summary dialog now renders a labeled ship-rollup section and conditionally renders a labeled hit-detail section only when `showHitDetails` is enabled and detail rows exist.
+
+Acceptance criteria to validate/document:
+- The dialog renders the ship rollup section as before.
+- When the toggle is enabled and detail lines exist, the dialog renders a second labeled hit-detail section.
+- When the toggle is disabled, the dialog omits the hit-detail section.
+- Reports with no hit-detail lines still render cleanly.
+- Reports with no damaged ships still show the current empty-state text.
+- Tactical GUI tests cover both enabled and disabled detail-section behavior.
+- Live dialog smoke coverage through WXTacticalUI::showDamageSummary(...) still succeeds.
+
+Implementation/test context:
+- Worktree: /home/tstephen/repos/SSW-worktrees/tactical-results-hit-detail-subtask-2-tester-20260408
+- Branch: tactical-results-hit-detail-subtask-2-tester-20260408
+- Implementer commits in this line: `18d905e` (implementation+tests), `d54035c` (implementer artifacts)
+- Tester test commit hash: No Changes Made (existing test updates were already valid)
+
+Files modified by implementer and tester that may affect documentation review:
+- include/gui/TacticalDamageSummaryGUI.h
+- src/gui/TacticalDamageSummaryGUI.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.h
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- artifacts/tactical-results-hit-detail-plan/subtask-2/implementer_report.md
+- artifacts/tactical-results-hit-detail-plan/subtask-2/implementer_result.json
+- artifacts/tactical-results-hit-detail-plan/subtask-2/tester_report.md
+- artifacts/tactical-results-hit-detail-plan/subtask-2/tester_result.json
+
+Commands executed by tester:
+- cd tests/tactical && make && ./TacticalTests && cd ../gui && make && xvfb-run -a ./GuiTests
+- cd tests/tactical && ./TacticalTests | tail -n 20 && cd ../gui && xvfb-run -a ./GuiTests | tail -n 30
+
+Final test outcomes:
+- TacticalTests: OK (88 tests)
+- GuiTests: OK (25 tests)
+
+Plan/story and comparison guidance:
+- Reuse shared artifact directory path: artifacts/tactical-results-hit-detail-plan/subtask-2
+- Use artifacts in that directory (implementer/tester prompts and reports) as story context.
+- Infer missing documentation conventions from repository evidence safely (e.g., existing doc style in doc/).
+- Comparison base guidance: use `master` as the default diff base unless repository evidence indicates a safer branch for this subtask.
+- Continue in the same run when blocking inputs are absent; do not stop after scope confirmation or diff discovery.
+
+Do not report success unless all required artifacts exist and all changes are committed.

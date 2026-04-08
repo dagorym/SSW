@@ -1,0 +1,32 @@
+{
+  "status": "success",
+  "subtask": "tactical-results-hit-detail-subtask-2",
+  "branch": "tactical-results-hit-detail-subtask-2-tester-20260408",
+  "definition_path": "/home/tstephen/repos/agents/agents/tester.yaml",
+  "shared_artifact_dir": "artifacts/tactical-results-hit-detail-plan/subtask-2",
+  "test_commit_hash": "No Changes Made",
+  "test_files_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests && cd ../gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/tactical && ./TacticalTests | tail -n 20 && cd ../gui && xvfb-run -a ./GuiTests | tail -n 30"
+  ],
+  "totals": {
+    "tactical_tests_total": 88,
+    "gui_tests_total": 25,
+    "failed": 0
+  },
+  "acceptance_criteria": {
+    "ship_rollup_section": "pass",
+    "hit_details_enabled_with_rows": "pass",
+    "hit_details_disabled_hidden": "pass",
+    "no_hit_detail_lines_clean_render": "pass",
+    "no_damaged_ships_empty_state": "pass",
+    "tests_cover_enabled_disabled_behavior": "pass",
+    "wxtacticalui_live_smoke": "pass"
+  },
+  "artifact_files_written": [
+    "artifacts/tactical-results-hit-detail-plan/subtask-2/tester_report.md",
+    "artifacts/tactical-results-hit-detail-plan/subtask-2/tester_result.json",
+    "artifacts/tactical-results-hit-detail-plan/subtask-2/documenter_prompt.txt"
+  ]
+}
