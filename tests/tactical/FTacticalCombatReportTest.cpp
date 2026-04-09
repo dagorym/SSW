@@ -262,7 +262,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryBuildsHitDet
 	hitAttack.weapon = FTacticalWeaponReference(10, "Laser Battery");
 	hitAttack.hit = true;
 	hitAttack.hullDamage = 4;
-	hitAttack.note = "Attack hit Target";
+	hitAttack.note = "Attack hit target";
 
 	FTacticalAttackReport missAttack;
 	missAttack.attacker = FTacticalShipReference(1, 1, "Destroyer");
@@ -284,7 +284,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryBuildsHitDet
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Destroyer") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Laser Battery") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Frigate") != std::string::npos);
-	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit Target") == std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit target") == std::string::npos);
 	CPPUNIT_ASSERT_EQUAL(
 		std::string("Destroyer [Laser Battery] -> Frigate: 4 hull damage"),
 		summary.hitDetails[0].displayLine);
@@ -323,7 +323,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryHitDetailsCa
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Sathar Destroyer") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("3 hull damage") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("(rear arc)") != std::string::npos);
-	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit Target") == std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit target") == std::string::npos);
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip() {

@@ -542,7 +542,7 @@ inline std::string joinHitDetailEffects(const std::vector<std::string> & effects
 }
 
 inline bool isRedundantHitDetailNote(const std::string & note) {
-	return note == "Attack hit Target";
+	return note == "Attack hit target";
 }
 
 inline FTacticalHitDetailSummary buildHitDetailSummary(const FTacticalAttackReport & attack) {

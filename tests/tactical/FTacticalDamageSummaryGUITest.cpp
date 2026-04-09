@@ -129,7 +129,7 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Weapon Hit (Weapon: LB)") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Defense damaged") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("armor bypassed") != std::string::npos);
-	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit Target") == std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit target") == std::string::npos);
 
 	const std::string source = readFile(repoFile("src/gui/TacticalDamageSummaryGUI.cpp"));
 
