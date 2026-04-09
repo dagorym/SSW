@@ -1,0 +1,53 @@
+You are the Documenter Agent.
+
+Task summary:
+- Tactical damage summary rollups were verified to show concrete defense names, omit zero-hull clauses for defense-only damage, and suppress duplicate hull-damage effect text while preserving weapon-hit abbreviation behavior.
+
+Acceptance criteria validated:
+- Defense-hit rollups show concrete defense names rather than a generic count/label.
+- Zero-hull-damage summaries omit the hull-damage clause entirely while still reporting non-hull effects.
+- Hull-damage summaries no longer repeat `Hull Damage xN` in the effects section.
+- Weapon-hit rollups still use the existing comma-separated abbreviation list behavior.
+- Tactical regression tests cover defense-only, mixed-effects, and hull-plus-effects rollups.
+
+Implementation branch or worktree context:
+- Branch: tds-updates-subtask-2-tester-20260409
+- Worktree: /home/tstephen/repos/SSW-worktrees/tds-updates-subtask-2-tester-20260409
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- artifacts/tactical-damage-summary-followup/subtask-2/tester_report.md
+- artifacts/tactical-damage-summary-followup/subtask-2/tester_result.json
+- artifacts/tactical-damage-summary-followup/subtask-2/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/tactical && ./TacticalTests
+
+Final test outcomes:
+- Tactical suite passed: 92/92 tests.
+- Acceptance criteria above validated via existing tactical report/damage-summary regression coverage.
+
+Documentation context:
+- Focus documentation updates on tactical damage-summary rollup semantics in any developer-facing notes, changelogs, or tactical report behavior docs.
+- Confirm wording reflects defense-name rollups, zero-hull omission behavior, and hull-effect deduplication while preserving weapon-hit abbreviation formatting.
+
+Plan and diff context:
+- Story context: tactical-damage-summary-followup subtask-2.
+- Comparison base assumption: branch `tds-updates` (infer from branch lineage if a different base is required).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
