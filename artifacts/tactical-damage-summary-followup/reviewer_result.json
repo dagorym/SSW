@@ -1,0 +1,29 @@
+{
+  "status": "completed",
+  "feature": "tactical-damage-summary-followup",
+  "plan_reference": "plans/tactical-damage-summary-followup-plan.md",
+  "artifact_directory": "artifacts/tactical-damage-summary-followup",
+  "outcome": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 1,
+  "note_findings": 1,
+  "tests_rerun": [
+    {
+      "command": "cd tests/tactical && make && ./TacticalTests",
+      "result": "OK (92 tests)"
+    }
+  ],
+  "subtasks_reviewed": [
+    "subtask-1",
+    "subtask-2",
+    "subtask-3"
+  ],
+  "follow_up_feature_requests": [
+    "Refresh doc/DesignNotes.md so the earlier tactical-report section no longer says the current ship-summary defense wording is label/detail-driven and instead matches the final named-defense rollup contract implemented by this feature."
+  ],
+  "summary": "Feature scope is functionally complete across all three subtasks: defense metadata is preserved into report events, ship rollups show only meaningful damage/effects, and hit-detail lines suppress the redundant placeholder suffix. The only remaining issue is a non-blocking internal design-note inconsistency.",
+  "artifacts_written": [
+    "artifacts/tactical-damage-summary-followup/reviewer_report.md",
+    "artifacts/tactical-damage-summary-followup/reviewer_result.json"
+  ]
+}
