@@ -1,0 +1,54 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implemented and validated concise tactical hit-detail formatting that suppresses only the redundant "Attack hit Target" note while preserving hull/effect detail content and meaningful notes.
+
+Acceptance criteria validated:
+- Hit-detail `displayLine` strings no longer include the redundant `(Attack hit Target)` suffix.
+- Hit-detail strings still include hull damage and non-hull effect wording when present.
+- Tactical regression coverage asserts the new hit-detail wording.
+- GUI live-test updates remain expectation-only and were not needed for this change.
+
+Implementation branch or worktree context:
+- Branch: `tds-updates-subtask-3-tester-20260409`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/tds-updates-subtask-3-tester-20260409`
+- Comparison context assumption: review against base branch `tds-updates` and the subtask implementation commit history.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- artifacts/tactical-damage-summary-followup/subtask-3/tester_report.md
+- artifacts/tactical-damage-summary-followup/subtask-3/tester_result.json
+- artifacts/tactical-damage-summary-followup/subtask-3/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/tactical && ./TacticalTests
+
+Final test outcomes:
+- TacticalTests passed: 92/92, 0 failures.
+- Redundant note suppression contract confirmed by tactical regression assertions.
+- Meaningful hit notes/effects remain represented in display-line output.
+
+Documentation context:
+- Likely docs impact: tactical combat report/damage-summary wording expectations where hit-detail output examples are documented.
+- Confirmed behavior: only exact note text "Attack hit Target" is filtered; other note text still appears.
+
+Plan and diff context:
+- Story context: tactical-damage-summary-followup subtask-3 hit-detail wording refinement and regression tightening.
+- Comparison-base assumption: use `tds-updates` as base if no explicit plan path/base branch is provided.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup/subtask-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
