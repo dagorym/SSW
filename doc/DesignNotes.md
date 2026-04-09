@@ -942,6 +942,15 @@ ship, hull damage, and any effect labels/detail text in a player-readable
 `outcome`/`displayLine` form, while the existing ship rollup summaries remain
 the canonical aggregate view for per-ship damage and effects.
 
+That aggregate rollup contract now has a tighter player-facing shape as well.
+Defense-damage entries render concrete defense names in the form `Defense Hit:
+<name-list>` instead of falling back to a generic defense-damaged label, ship
+lines with only non-hull effects omit the old `0 hull damage` clause entirely,
+and hull-damage summaries no longer repeat `Hull Damage xN` inside the effects
+section when the hull-loss total is already shown in the leading damage clause.
+Weapon-damage rollups intentionally keep the prior comma-separated abbreviation
+format such as `Weapon Hit: LB, LB, AR`, preserving duplicates and order.
+
 The updated tactical regression coverage locks that contract in by checking:
 
 - `FTacticalCombatReportSummary` starts with `showHitDetails == true` and can be
@@ -953,7 +962,10 @@ The updated tactical regression coverage locks that contract in by checking:
 - `FTacticalReportEvent` now preserves both weapon and defense damage metadata
   across immediate damage-resolution events and attack-effect construction,
   with source-contract and runtime tactical tests checking those fields directly;
-- the existing ship-summary rollup semantics still pass unchanged.
+- the ship-summary rollups now show named defense hits, retain the existing
+  comma-separated weapon-hit abbreviation list, omit zero-hull clauses for
+  defense-only summaries, and suppress duplicate hull-damage effect text across
+  mixed-effect and hull-plus-effects cases.
 
 The dialog follow-up then made that summary contract visible to players without
 changing the report model. `TacticalDamageSummaryGUI` now splits its text
