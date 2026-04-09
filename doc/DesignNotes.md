@@ -290,12 +290,13 @@ metadata from both attack-generated internal events and standalone immediate
 damage-resolution events. Weapon-hit effects carry `damageEffectType`,
 `damagedWeaponType`, `damagedWeaponID`, and `damagedWeaponName`, while
 defense-hit effects also preserve `damagedDefenseType` and
-`damagedDefenseName`. That defense metadata now travels with the raw report
-events alongside the existing label/detail text, and the player-facing
-ship-summary rollup now uses the structured defense identity to render
-abbreviated defense wording rather than depending on long-form labels/details.
-Repeated weapon hits, defense hits, and other non-weapon effects remain
-separate event entries in the same report path.
+`damagedDefenseName`. The player-facing ship-summary rollup consumes that
+structured defense identity to emit abbreviated defense wording in the form
+`Defense Hit: <abbr-list>` (for example `Defense Hit: MS, PS`) instead of
+depending on long-form label/detail text. Repeated weapon hits, defense hits,
+and other non-weapon effects remain separate event entries in the same report
+path, and hit-detail text suppresses only the redundant lowercase placeholder
+note `Attack hit target` while preserving meaningful notes.
 
 The summary rollup now consumes that structured weapon metadata to emit one
 player-facing weapon effect entry per ship in the form `Weapon Hit:
@@ -940,10 +941,10 @@ summary builder only appends hit-detail entries for attacks where `hit == true`,
 so reports with misses or report-level immediate events do not invent empty
 detail rows. Each emitted hit detail keeps the attacker ship, weapon, target
 ship, hull damage, and any effect labels/detail text in a player-readable
-`outcome`/`displayLine` form, while suppressing only the redundant placeholder
-note `Attack hit target` and preserving other meaningful note text such as
-`rear arc` or `armor bypassed`. The existing ship rollup summaries remain the
-canonical aggregate view for per-ship damage and effects.
+`outcome`/`displayLine` form, while suppressing only the redundant lowercase
+placeholder note `Attack hit target` and preserving other meaningful note text
+such as `rear arc` or `armor bypassed`. The existing ship rollup summaries
+remain the canonical aggregate view for per-ship damage and effects.
 
 That aggregate rollup contract now has a tighter player-facing shape as well.
 Defense-damage entries render defense abbreviations in the form `Defense Hit:
