@@ -120,9 +120,16 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.ships.size());
 	CPPUNIT_ASSERT(summary.showHitDetails);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.hitDetails.size());
-	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Weapon Hit: LB, LB, AR") != std::string::npos);
-	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense Hit: Masking Screen") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(
+		std::string("Sathar Frigate: 3 hull damage from 1 attack; effects: "
+			"Weapon Hit: LB, LB, AR, Defense Hit: Masking Screen"),
+		summary.ships[0].displayLines[0]);
 	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense damaged") == std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("3 hull damage") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Weapon Hit (Weapon: LB)") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Defense damaged") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("armor bypassed") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit Target") == std::string::npos);
 
 	const std::string source = readFile(repoFile("src/gui/TacticalDamageSummaryGUI.cpp"));
 

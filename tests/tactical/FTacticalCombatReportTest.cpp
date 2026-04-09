@@ -262,6 +262,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryBuildsHitDet
 	hitAttack.weapon = FTacticalWeaponReference(10, "Laser Battery");
 	hitAttack.hit = true;
 	hitAttack.hullDamage = 4;
+	hitAttack.note = "Attack hit Target";
 
 	FTacticalAttackReport missAttack;
 	missAttack.attacker = FTacticalShipReference(1, 1, "Destroyer");
@@ -283,6 +284,10 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryBuildsHitDet
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Destroyer") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Laser Battery") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Frigate") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit Target") == std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(
+		std::string("Destroyer [Laser Battery] -> Frigate: 4 hull damage"),
+		summary.hitDetails[0].displayLine);
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryHitDetailsCapturePlayerReadableOutcome() {
@@ -317,6 +322,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryHitDetailsCa
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Laser Cannon") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Sathar Destroyer") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("3 hull damage") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("(rear arc)") != std::string::npos);
+	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit Target") == std::string::npos);
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip() {
@@ -484,11 +491,12 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeR
 	CPPUNIT_ASSERT_EQUAL(4, cruiserSummary->nonHullEffectsTaken);
 	CPPUNIT_ASSERT_EQUAL(5, cruiserSummary->internalEventsTriggered);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), cruiserSummary->rawEvents.size());
-	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Weapon Hit: LB, LB, AR") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(
+		std::string("Sathar Light Cruiser: 5 hull damage from 1 attack; effects: "
+			"Weapon Hit: LB, LB, AR, Defense Hit: Masking Screen, Internal hull hit"),
+		cruiserSummary->displayLines[0]);
 	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Weapon Hit x") == std::string::npos);
-	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Defense Hit: Masking Screen") != std::string::npos);
 	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Defense damaged") == std::string::npos);
-	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Internal hull hit") != std::string::npos);
 	CPPUNIT_ASSERT(cruiserSummary->rawEvents[4].damagedDefenseType == FDefense::MS);
 	CPPUNIT_ASSERT(cruiserSummary->rawEvents[4].damagedDefenseName == "Masking Screen");
 }

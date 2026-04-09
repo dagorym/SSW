@@ -541,6 +541,10 @@ inline std::string joinHitDetailEffects(const std::vector<std::string> & effects
 	return os.str();
 }
 
+inline bool isRedundantHitDetailNote(const std::string & note) {
+	return note == "Attack hit Target";
+}
+
 inline FTacticalHitDetailSummary buildHitDetailSummary(const FTacticalAttackReport & attack) {
 	FTacticalHitDetailSummary detail;
 	detail.attacker = attack.attacker;
@@ -569,7 +573,8 @@ inline FTacticalHitDetailSummary buildHitDetailSummary(const FTacticalAttackRepo
 	if (outcome.str().size() == 0) {
 		outcome << "no damage effects";
 	}
-	if (attack.note.size() > 0) {
+	if (attack.note.size() > 0
+		&& !isRedundantHitDetailNote(attack.note)) {
 		outcome << " (" << attack.note << ")";
 	}
 	detail.outcome = outcome.str();
