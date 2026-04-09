@@ -1,0 +1,64 @@
+You are the Verifier Agent.
+
+Task summary:
+- Tactical damage summary follow-up is complete across implementation, tests, and documentation: runtime behavior and regressions already passed, and `doc/DesignNotes.md` now consistently documents abbreviation-based defense rollups plus suppression of only the redundant lowercase placeholder note text.
+
+Acceptance criteria to verify:
+- The stale earlier design-note wording about defense rollups relying on label/detail text is removed or corrected.
+- The later design-note wording matches the final abbreviation-based defense rollup and lowercase-note suppression contract.
+- `artifacts/tactical-damage-summary-followup/reviewer_report.md` is fully addressed in the updated design notes.
+- All required documenter artifacts exist and both documenter-stage commits are present.
+
+Implementation branch or worktree context:
+- Branch: `tds-updates-subtask-3-documenter-20260409`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/tds-updates-subtask-3-documenter-20260409`
+- Parent tester branch: `tds-updates-subtask-3-tester-20260409`
+- Parent implementation branch: `tds-updates-subtask-3-implementer-20260409`
+- Comparison base: `tds-updates`
+- Assumption: this documenter worktree started from the tester branch unchanged (`HEAD` initially matched `tds-updates-subtask-3-tester-20260409`).
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `doc/DesignNotes.md`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/implementer_report.md`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/implementer_result.json`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/tester_report.md`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/tester_result.json`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/documenter_prompt.txt`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/documenter_report.md`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/documenter_result.json`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/verifier_prompt.txt`
+
+Commands executed:
+- `cd /home/tstephen/repos/SSW-worktrees/tds-updates-subtask-3-documenter-20260409 && git --no-pager diff --name-only tds-updates..HEAD`
+- `cd /home/tstephen/repos/SSW-worktrees/tds-updates-subtask-3-documenter-20260409 && git --no-pager log --oneline --decorate tds-updates-subtask-3-tester-20260409..HEAD`
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && ./TacticalTests | tail -n 20`
+
+Final test outcomes:
+- Tactical regression suite passed: `OK (92 tests)`.
+- Documenter verification confirmed the earlier and later `doc/DesignNotes.md` sections both describe `Defense Hit: <abbr-list>` rollups derived from structured defense identity and suppression of only the redundant lowercase `Attack hit target` note text.
+- No additional documentation edit was needed in this stage beyond preserving the already-correct `doc/DesignNotes.md` update inherited from the tester branch.
+
+Plan and review context:
+- Plan path: `/home/tstephen/repos/SSW/plans/tactical-damage-summary-followup-corrections-plan.md`
+- Review warning source: `artifacts/tactical-damage-summary-followup/reviewer_report.md`
+- Repository guidance: `/home/tstephen/repos/SSW/AGENTS.md`
+- Shared documenter definition used for this stage: `/home/tstephen/repos/agents/agents/documenter.md` (no repository-local override was found)
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Verify the documenter-stage empty documentation commit (`docs: confirm tactical damage summary notes`) and artifact commit both exist, and confirm `documenter_result.json` preserves the documentation commit hash `e5b23b834cd490b17eb7ecd11a47cdad8f295f3f`.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
