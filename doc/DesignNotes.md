@@ -291,10 +291,11 @@ damage-resolution events. Weapon-hit effects carry `damageEffectType`,
 `damagedWeaponType`, `damagedWeaponID`, and `damagedWeaponName`, while
 defense-hit effects also preserve `damagedDefenseType` and
 `damagedDefenseName`. That defense metadata now travels with the raw report
-events alongside the existing label/detail text, even though the current
-player-facing ship-summary rollup still relies on those labels/details for
-defense-effect wording. Repeated weapon hits, defense hits, and other
-non-weapon effects remain separate event entries in the same report path.
+events alongside the existing label/detail text, and the player-facing
+ship-summary rollup now uses the structured defense identity to render
+abbreviated defense wording rather than depending on long-form labels/details.
+Repeated weapon hits, defense hits, and other non-weapon effects remain
+separate event entries in the same report path.
 
 The summary rollup now consumes that structured weapon metadata to emit one
 player-facing weapon effect entry per ship in the form `Weapon Hit:
@@ -945,8 +946,9 @@ note `Attack hit target` and preserving other meaningful note text such as
 canonical aggregate view for per-ship damage and effects.
 
 That aggregate rollup contract now has a tighter player-facing shape as well.
-Defense-damage entries render concrete defense names in the form `Defense Hit:
-<name-list>` instead of falling back to a generic defense-damaged label, ship
+Defense-damage entries render defense abbreviations in the form `Defense Hit:
+<abbr-list>` (for example `Defense Hit: MS, PS`) using structured defense
+identity instead of long-form names or a generic defense-damaged label, ship
 lines with only non-hull effects omit the old `0 hull damage` clause entirely,
 and hull-damage summaries no longer repeat `Hull Damage xN` inside the effects
 section when the hull-loss total is already shown in the leading damage clause.
@@ -965,10 +967,11 @@ The updated tactical regression coverage locks that contract in by checking:
 - `FTacticalReportEvent` now preserves both weapon and defense damage metadata
   across immediate damage-resolution events and attack-effect construction,
   with source-contract and runtime tactical tests checking those fields directly;
-- the ship-summary rollups now show named defense hits, retain the existing
-  comma-separated weapon-hit abbreviation list, omit zero-hull clauses for
-  defense-only summaries, and suppress duplicate hull-damage effect text across
-  mixed-effect and hull-plus-effects cases.
+- the ship-summary rollups now show abbreviated defense hits derived from
+  structured defense identity, retain the existing comma-separated weapon-hit
+  abbreviation list, omit zero-hull clauses for defense-only summaries, and
+  suppress duplicate hull-damage effect text across mixed-effect and
+  hull-plus-effects cases.
 
 The dialog follow-up then made that summary contract visible to players without
 changing the report model. `TacticalDamageSummaryGUI` now splits its text
