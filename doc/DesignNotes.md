@@ -290,10 +290,11 @@ metadata from both attack-generated internal events and standalone immediate
 damage-resolution events. Weapon-hit effects carry `damageEffectType`,
 `damagedWeaponType`, `damagedWeaponID`, and `damagedWeaponName`, while
 defense-hit effects also preserve `damagedDefenseType` and
-`damagedDefenseName`, alongside the existing label/detail text so summary
-formatting can identify the affected weapon or defense system without parsing
-prose. Repeated weapon hits, defense hits, and other non-weapon effects remain
-separate event entries in the same report path.
+`damagedDefenseName`. That defense metadata now travels with the raw report
+events alongside the existing label/detail text, even though the current
+player-facing ship-summary rollup still relies on those labels/details for
+defense-effect wording. Repeated weapon hits, defense hits, and other
+non-weapon effects remain separate event entries in the same report path.
 
 The summary rollup now consumes that structured weapon metadata to emit one
 player-facing weapon effect entry per ship in the form `Weapon Hit:
