@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Task summary:
+- Defensive-hit tactical ship rollups now use defense abbreviations derived from structured defense type identity (e.g., `MS`, `PS`) instead of long-form defense names.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Defensive-hit ship rollups render abbreviations instead of long names.
+- The implementation derives abbreviations from structured defense identity rather than brittle string trimming.
+- Weapon-hit rollups remain unchanged.
+- Tactical regressions cover abbreviation output for multiple defense types, including `MS` and `PS`.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Implementation context for testing:
+- `TacticalEffectSummaryAccumulator` now tracks `defenseHitAbbreviations`.
+- `appendEffectSummary(...)` now maps `damagedDefenseType` through a new `damagedDefenseAbbreviation(...)` function.
+- Defensive rollup strings should include abbreviations (`MS`, `PS`, `RH`) while preserving ordering and duplicates.
+- Weapon-hit rollups remain based on existing weapon abbreviation mapping and should be unchanged.
+
+Suggested test command(s):
+- `cd tests/tactical && make && ./TacticalTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup-corrections/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
