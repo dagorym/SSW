@@ -1,0 +1,51 @@
+You are the Documenter Agent.
+
+Task summary:
+- Documentation-only follow-up validated for tactical damage summary contract consistency in `doc/DesignNotes.md`; earlier and later sections now align with shipped behavior (defense abbreviation rollups and suppression of only the redundant lowercase placeholder note text).
+
+Acceptance criteria validated:
+- The stale earlier design-note wording about defense rollups relying on label/detail text is removed or corrected.
+- The later design-note wording matches the final abbreviation-based defense rollup and lowercase-note suppression contract.
+- `artifacts/tactical-damage-summary-followup/reviewer_report.md` is fully addressed in the updated design notes.
+
+Implementation branch or worktree context:
+- Branch: `tds-updates-subtask-3-tester-20260409`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/tds-updates-subtask-3-tester-20260409`
+- Parent implementation branch: `tds-updates-subtask-3-implementer-20260409`
+- Coordination base branch: `tds-updates`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `doc/DesignNotes.md`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/tester_report.md`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/tester_result.json`
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3/documenter_prompt.txt`
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && ./TacticalTests | tail -n 20`
+
+Final test outcomes:
+- Tactical regression suite passed: `OK (92 tests)`.
+- Documentation acceptance criteria validated against `doc/DesignNotes.md` and reviewer warning context.
+
+Documentation context:
+- Primary review target remains `doc/DesignNotes.md`, specifically the tactical-report metadata wording and tactical-damage-summary contract wording.
+- Confirm docs accurately describe: `Defense Hit: <abbr-list>` rollups derived from structured defense identity and suppression of only redundant lowercase `Attack hit target` note text.
+
+Plan and diff context:
+- Plan path: `/home/tstephen/repos/SSW/plans/tactical-damage-summary-followup-corrections-plan.md`
+- Comparison base guidance: compare this branch against `tds-updates` (explicit coordination base).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-damage-summary-followup-corrections/subtask-3`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
