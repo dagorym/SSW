@@ -1,0 +1,61 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verified lowercase `Attack hit target` suppression in tactical hit-detail output, preserved meaningful note text such as `rear arc` and `armor bypassed`, and updated `doc/DesignNotes.md` to match the tested contract.
+
+Acceptance criteria to verify:
+- `isRedundantHitDetailNote(...)` (or equivalent) suppresses `Attack hit target`.
+- Tactical report and GUI-facing summary tests no longer rely on obsolete `Attack hit Target` spelling.
+- Meaningful note text still appears in hit-detail output.
+- No unrelated hit-detail summary wording changes were introduced.
+- Documentation now describes the lowercase placeholder suppression and preserved meaningful annotations consistently.
+
+Implementation branch or worktree context:
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/tds-updates-subtask-1-documenter-20260409`
+- Required branch: `tds-updates-subtask-1-documenter-20260409`
+- Parent tester branch: `tds-updates-subtask-1-tester-20260409`
+- Parent implementation branch: `tds-updates-subtask-1-implementer-20260409`
+- Comparison base: `tds-updates`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- doc/DesignNotes.md
+- artifacts/tactical-damage-summary-followup-corrections/subtask-1/tester_report.md
+- artifacts/tactical-damage-summary-followup-corrections/subtask-1/tester_result.json
+- artifacts/tactical-damage-summary-followup-corrections/subtask-1/documenter_prompt.txt
+- artifacts/tactical-damage-summary-followup-corrections/subtask-1/documenter_report.md
+- artifacts/tactical-damage-summary-followup-corrections/subtask-1/documenter_result.json
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && ./TacticalTests`
+- `git --no-pager diff -- doc/DesignNotes.md`
+
+Final test outcomes:
+- Tactical suite passed: `OK (92 tests)`.
+- Lowercase placeholder suppression and meaningful-note retention assertions pass in both tactical report and GUI-facing tests.
+- `doc/DesignNotes.md` now uses `Attack hit target` and explicitly preserves meaningful note examples such as `rear arc` and `armor bypassed`.
+- No obsolete `Attack hit Target` references remain under `doc/`.
+
+Plan and review context:
+- Plan path: `/home/tstephen/repos/SSW/plans/tactical-damage-summary-followup-corrections-plan.md`
+- Repository guidance: `AGENTS.md` in the worktree root, with shared Documenter instructions resolved from `/home/tstephen/repos/agents/agents/documenter.md` after `/home/tstephen/repos/agents/AGENTS_LOOKUP.md` confirmed no repository-local agent definition override.
+
+Documentation files updated:
+- doc/DesignNotes.md
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup-corrections/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
