@@ -1,0 +1,38 @@
+You are the Tester Agent.
+
+Task summary:
+- Defense-specific damage metadata is now preserved in tactical report events from both damage-resolution and attack-effect construction paths.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- `FTacticalReportEvent` contains the defense metadata required by summary formatting.
+- `appendTacticalDamageResolutionEvents(...)` and `buildTacticalAttackEvent(...)` populate that defense metadata from the incoming effect objects.
+- Existing weapon metadata propagation remains unchanged.
+- Tactical regression coverage proves the defense metadata is present in the report-event layer.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp (existing tactical regression location already updated).
+
+Implementation context for testing:
+- `FTacticalReportEvent` now has `damagedDefenseType` and `damagedDefenseName` with default values.
+- `src/tactical/FTacticalGame.cpp` now maps `defenseType`/`defenseName` into events in both `appendTacticalDamageResolutionEvents(...)` and `buildTacticalAttackEvent(...)`.
+- Weapon metadata assignments were left intact and should still be present.
+
+Suggested test command(s):
+- `cd tests/tactical && make && ./TacticalTests`
+- If any suspicious runtime instability appears after header-layout edits, rerun with clean rebuild: `cd tests/tactical && make clean && make && ./TacticalTests`.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
