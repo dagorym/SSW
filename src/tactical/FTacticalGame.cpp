@@ -57,6 +57,8 @@ void appendTacticalDamageResolutionEvents(
 		event.damagedWeaponType = itr->weaponType;
 		event.damagedWeaponID = itr->weaponID;
 		event.damagedWeaponName = itr->weaponName;
+		event.damagedDefenseType = itr->defenseType;
+		event.damagedDefenseName = itr->defenseName;
 		event.label = itr->label;
 		event.detail = itr->detail;
 		report.events.push_back(event);
@@ -97,6 +99,8 @@ FTacticalReportEvent buildTacticalAttackEvent(
 	event.damagedWeaponType = effect.weaponType;
 	event.damagedWeaponID = effect.weaponID;
 	event.damagedWeaponName = effect.weaponName;
+	event.damagedDefenseType = effect.defenseType;
+	event.damagedDefenseName = effect.defenseName;
 	event.label = effect.label;
 	event.detail = effect.detail;
 	return event;

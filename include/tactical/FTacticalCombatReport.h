@@ -122,13 +122,16 @@ struct FTacticalReportEvent {
 	int damagedWeaponType;
 	unsigned int damagedWeaponID;
 	std::string damagedWeaponName;
+	int damagedDefenseType;
+	std::string damagedDefenseName;
 	std::string label;
 	std::string detail;
 
 	FTacticalReportEvent()
 		: eventType(TRET_None), damageEffectType(TDET_None), rollValue(-1), hullDamage(0),
 		  attackIndex(-1), immediate(false), damagedWeaponType(FWeapon::NONE), damagedWeaponID(0),
-		  damagedWeaponName(""), label(""), detail("") {}
+		  damagedWeaponName(""), damagedDefenseType(FDefense::UNDEF), damagedDefenseName(""),
+		  label(""), detail("") {}
 };
 
 struct FTacticalAttackReport {

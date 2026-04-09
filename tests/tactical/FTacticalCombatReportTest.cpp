@@ -79,6 +79,8 @@ void FTacticalCombatReportTest::testReportModelPreservesRawAttackAndImmediateEve
 	internalEvent.damagedWeaponType = FWeapon::LB;
 	internalEvent.damagedWeaponID = 91;
 	internalEvent.damagedWeaponName = "Laser Battery";
+	internalEvent.damagedDefenseType = FDefense::UNDEF;
+	internalEvent.damagedDefenseName = "";
 	internalEvent.label = "Engine hit";
 	internalEvent.detail = "ADF reduced";
 
@@ -128,6 +130,8 @@ void FTacticalCombatReportTest::testReportModelPreservesRawAttackAndImmediateEve
 	CPPUNIT_ASSERT(report.attacks[0].internalEvents[0].damagedWeaponType == FWeapon::LB);
 	CPPUNIT_ASSERT(report.attacks[0].internalEvents[0].damagedWeaponID == 91);
 	CPPUNIT_ASSERT(report.attacks[0].internalEvents[0].damagedWeaponName == "Laser Battery");
+	CPPUNIT_ASSERT(report.attacks[0].internalEvents[0].damagedDefenseType == FDefense::UNDEF);
+	CPPUNIT_ASSERT(report.attacks[0].internalEvents[0].damagedDefenseName == "");
 	CPPUNIT_ASSERT(report.attacks[0].internalEvents[0].detail == "ADF reduced");
 	CPPUNIT_ASSERT(report.events[0].immediate);
 	CPPUNIT_ASSERT(report.events[0].detail == "bridge section");
@@ -465,6 +469,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeR
 	defenseEffect.subject = weaponFire.target;
 	defenseEffect.hullDamage = 0;
 	defenseEffect.label = "Defense damaged";
+	defenseEffect.damagedDefenseType = FDefense::MS;
+	defenseEffect.damagedDefenseName = "Masking Screen";
 	defenseEffect.attackIndex = 0;
 	weaponFire.internalEvents.push_back(defenseEffect);
 
@@ -482,6 +488,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeR
 	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Weapon Hit x") == std::string::npos);
 	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Defense damaged") != std::string::npos);
 	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Internal hull hit") != std::string::npos);
+	CPPUNIT_ASSERT(cruiserSummary->rawEvents[4].damagedDefenseType == FDefense::MS);
+	CPPUNIT_ASSERT(cruiserSummary->rawEvents[4].damagedDefenseName == "Masking Screen");
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryDoesNotDoubleCountNestedHullDamageForAttackTarget() {
@@ -852,6 +860,8 @@ void FTacticalCombatReportTest::testBattleScreenElectricalFireEventsPopulateSour
 	CPPUNIT_ASSERT(body.find("event.damagedWeaponType = itr->weaponType;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("event.damagedWeaponID = itr->weaponID;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("event.damagedWeaponName = itr->weaponName;") != std::string::npos);
+	CPPUNIT_ASSERT(body.find("event.damagedDefenseType = itr->defenseType;") != std::string::npos);
+	CPPUNIT_ASSERT(body.find("event.damagedDefenseName = itr->defenseName;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("event.attackIndex = -1;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("report.events.push_back(event);") != std::string::npos);
 }
@@ -888,11 +898,15 @@ void FTacticalCombatReportTest::testVehicleDamageReportingApiCapturesExplicitEff
 	CPPUNIT_ASSERT(reportHeader.find("damagedWeaponType") != std::string::npos);
 	CPPUNIT_ASSERT(reportHeader.find("damagedWeaponID") != std::string::npos);
 	CPPUNIT_ASSERT(reportHeader.find("damagedWeaponName") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("damagedDefenseType") != std::string::npos);
+	CPPUNIT_ASSERT(reportHeader.find("damagedDefenseName") != std::string::npos);
 
 	CPPUNIT_ASSERT(attackBody.find("event.damageEffectType = static_cast<TacticalDamageEffectType>(effect.effectType);") != std::string::npos);
 	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponType = effect.weaponType;") != std::string::npos);
 	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponID = effect.weaponID;") != std::string::npos);
 	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponName = effect.weaponName;") != std::string::npos);
+	CPPUNIT_ASSERT(attackBody.find("event.damagedDefenseType = effect.defenseType;") != std::string::npos);
+	CPPUNIT_ASSERT(attackBody.find("event.damagedDefenseName = effect.defenseName;") != std::string::npos);
 }
 
 }
