@@ -288,10 +288,12 @@ migration milestones can delegate to it incrementally.
 The raw `FTacticalReportEvent` payload now also preserves structured damage
 metadata from both attack-generated internal events and standalone immediate
 damage-resolution events. Weapon-hit effects carry `damageEffectType`,
-`damagedWeaponType`, `damagedWeaponID`, and `damagedWeaponName` alongside the
-existing label/detail text so later summary builders can identify the damaged
-weapon system without parsing prose, while repeated weapon hits and non-weapon
-effects remain separate event entries in the same report path.
+`damagedWeaponType`, `damagedWeaponID`, and `damagedWeaponName`, while
+defense-hit effects also preserve `damagedDefenseType` and
+`damagedDefenseName`, alongside the existing label/detail text so summary
+formatting can identify the affected weapon or defense system without parsing
+prose. Repeated weapon hits, defense hits, and other non-weapon effects remain
+separate event entries in the same report path.
 
 The summary rollup now consumes that structured weapon metadata to emit one
 player-facing weapon effect entry per ship in the form `Weapon Hit:
@@ -947,6 +949,9 @@ The updated tactical regression coverage locks that contract in by checking:
   no-hit summaries and immediate electrical-fire or mine-damage report shapes;
 - player-readable detail text includes attacker, weapon, target, hull damage,
   and any internal-effect outcome text; and
+- `FTacticalReportEvent` now preserves both weapon and defense damage metadata
+  across immediate damage-resolution events and attack-effect construction,
+  with source-contract and runtime tactical tests checking those fields directly;
 - the existing ship-summary rollup semantics still pass unchanged.
 
 The dialog follow-up then made that summary contract visible to players without
