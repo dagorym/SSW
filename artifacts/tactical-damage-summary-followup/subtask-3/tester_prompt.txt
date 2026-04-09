@@ -1,0 +1,41 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented concise tactical hit-detail display formatting by suppressing the redundant "(Attack hit Target)" note while preserving meaningful notes/effects and tightening summary-contract regressions.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Hit-detail `displayLine` strings no longer include the redundant `"(Attack hit Target)"` suffix.
+- Hit-detail strings still include hull damage and non-hull effect wording when present.
+- Tactical regression coverage asserts the new hit-detail wording.
+- GUI live-test updates are limited to expectation changes only if they are actually needed by the new report contract.
+
+Create test files in:
+- No new test files required; validate updates in:
+  - tests/tactical/FTacticalCombatReportTest.cpp
+  - tests/tactical/FTacticalDamageSummaryGUITest.cpp
+  - tests/gui/TacticalGuiLiveTest.cpp only if GUI expectations are changed (assumption: unchanged here).
+
+Implementation context for testing:
+- Hit-detail outcome assembly now filters only the exact redundant note text `Attack hit Target`.
+- Meaningful notes (e.g., "rear arc", "armor bypassed") remain in displayLine output.
+- Ship-summary assertions were tightened to exact expected display-line contracts in tactical tests.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- If GUI expectations changed: cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup/subtask-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
