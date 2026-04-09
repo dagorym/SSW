@@ -1,0 +1,40 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified tactical damage summary rollups now list concrete defense names, omit zero-hull clauses for defense-only damage, and suppress duplicate Hull Damage xN effect text when hull damage is already summarized.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Defense-hit rollups show concrete defense names rather than a generic count/label.
+- Zero-hull-damage summaries omit the hull-damage clause entirely while still reporting non-hull effects.
+- Hull-damage summaries no longer repeat `Hull Damage xN` in the effects section.
+- Weapon-hit rollups still use the existing comma-separated abbreviation list behavior.
+- Tactical regression tests cover defense-only, mixed-effects, and hull-plus-effects rollups.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Implementation context for testing:
+- `TacticalEffectSummaryAccumulator` now tracks `defenseHitNames` and renders `Defense Hit: <name, ...>` alongside existing weapon-hit abbreviation formatting.
+- `buildShipSummaryDisplayLine(...)` now omits the hull-damage clause when `hullDamageTaken == 0` and still renders the effects section.
+- `appendEffectSummary(...)` suppresses effect-count accumulation for `TDET_HullDamage` when hull damage is already represented by the hull-damage clause.
+- Existing weapon-hit abbreviation behavior remains unchanged (`Weapon Hit: LB, ...`).
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
