@@ -940,9 +940,9 @@ so reports with misses or report-level immediate events do not invent empty
 detail rows. Each emitted hit detail keeps the attacker ship, weapon, target
 ship, hull damage, and any effect labels/detail text in a player-readable
 `outcome`/`displayLine` form, while suppressing only the redundant placeholder
-note `Attack hit Target` and preserving other meaningful note text such as
-weapon-facing or arc-specific context. The existing ship rollup summaries remain
-the canonical aggregate view for per-ship damage and effects.
+note `Attack hit target` and preserving other meaningful note text such as
+`rear arc` or `armor bypassed`. The existing ship rollup summaries remain the
+canonical aggregate view for per-ship damage and effects.
 
 That aggregate rollup contract now has a tighter player-facing shape as well.
 Defense-damage entries render concrete defense names in the form `Defense Hit:
@@ -961,7 +961,7 @@ The updated tactical regression coverage locks that contract in by checking:
   no-hit summaries and immediate electrical-fire or mine-damage report shapes;
 - player-readable detail text includes attacker, weapon, target, hull damage,
   any internal-effect outcome text, and meaningful non-placeholder notes while
-  omitting the redundant `Attack hit Target` suffix; and
+  omitting the redundant `Attack hit target` suffix; and
 - `FTacticalReportEvent` now preserves both weapon and defense damage metadata
   across immediate damage-resolution events and attack-effect construction,
   with source-contract and runtime tactical tests checking those fields directly;
