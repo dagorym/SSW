@@ -1,0 +1,61 @@
+You are the Verifier Agent.
+
+Task summary:
+- Tactical damage summary hit-detail display lines now omit the redundant `(Attack hit Target)` suffix while preserving meaningful hull-damage, effect, and contextual note wording, and the documentation now reflects that tested contract.
+
+Acceptance criteria to verify:
+- Hit-detail `displayLine` strings no longer include the redundant `(Attack hit Target)` suffix.
+- Hit-detail strings still include hull damage and non-hull effect wording when present.
+- Tactical regression coverage asserts the new hit-detail wording.
+- GUI live-test updates are limited to expectation changes only if they are actually needed by the new report contract.
+- Documentation no longer implies that Tactical Damage Summary hit-detail output keeps the redundant `(Attack hit Target)` suffix.
+
+Implementation branch or worktree context:
+- Tester branch: `tds-updates-subtask-3-tester-20260409`
+- Documenter branch: `tds-updates-subtask-3-documenter-20260409`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/tds-updates-subtask-3-documenter-20260409`
+- Comparison-base assumption: review against `tds-updates` and the subtask merge-base history.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- doc/DesignNotes.md
+- artifacts/tactical-damage-summary-followup/subtask-3/implementer_report.md
+- artifacts/tactical-damage-summary-followup/subtask-3/implementer_result.json
+- artifacts/tactical-damage-summary-followup/subtask-3/tester_report.md
+- artifacts/tactical-damage-summary-followup/subtask-3/tester_result.json
+- artifacts/tactical-damage-summary-followup/subtask-3/documenter_prompt.txt
+- artifacts/tactical-damage-summary-followup/subtask-3/documenter_report.md
+- artifacts/tactical-damage-summary-followup/subtask-3/documenter_result.json
+- artifacts/tactical-damage-summary-followup/subtask-3/verifier_prompt.txt
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && ./TacticalTests`
+
+Final test outcomes:
+- TacticalTests passed: OK (92 tests).
+- Tester confirmed the redundant-note suppression contract and preservation of meaningful hit-detail wording.
+- No additional tester-authored test edits were required in this run.
+
+Plan and review context:
+- Assumption: `plans/tactical-damage-summary-followup-plan.md` is the story plan/source of acceptance criteria for this follow-up.
+- Convention/reference files: `AGENTS.md`, `~/repos/agents/AGENTS_LOOKUP.md`, and `~/repos/agents/agents/documenter.md`; infer any additional convention-file details from repository context when safe.
+
+Documentation files updated:
+- doc/DesignNotes.md
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup/subtask-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
