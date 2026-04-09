@@ -1,7 +1,8 @@
 You are the Documenter Agent.
 
 Task summary:
-- Tactical damage summary rollups were verified to show concrete defense names, omit zero-hull clauses for defense-only damage, and suppress duplicate hull-damage effect text while preserving weapon-hit abbreviation behavior.
+- Tactical damage summary rollups now render concrete defense names, omit zero-hull clauses for defense-only damage, and suppress duplicate Hull Damage xN effect text when hull damage is already summarized.
+- Tester validated tactical regressions and GUI summary assertions; no additional test edits were required in this run.
 
 Acceptance criteria validated:
 - Defense-hit rollups show concrete defense names rather than a generic count/label.
@@ -13,6 +14,7 @@ Acceptance criteria validated:
 Implementation branch or worktree context:
 - Branch: tds-updates-subtask-2-tester-20260409
 - Worktree: /home/tstephen/repos/SSW-worktrees/tds-updates-subtask-2-tester-20260409
+- Comparison-base guidance (assumption): compare against the branch base used for this subtask handoff.
 
 Files modified by Implementer and Tester to inspect for documentation impact:
 - include/tactical/FTacticalCombatReport.h
@@ -30,16 +32,17 @@ Commands executed:
 - cd tests/tactical && ./TacticalTests
 
 Final test outcomes:
-- Tactical suite passed: 92/92 tests.
-- Acceptance criteria above validated via existing tactical report/damage-summary regression coverage.
+- TacticalTests passed: OK (92 tests)
+- No acceptance-criteria regressions detected.
 
 Documentation context:
-- Focus documentation updates on tactical damage-summary rollup semantics in any developer-facing notes, changelogs, or tactical report behavior docs.
-- Confirm wording reflects defense-name rollups, zero-hull omission behavior, and hull-effect deduplication while preserving weapon-hit abbreviation formatting.
+- Update tactical damage summary behavior notes where rollup wording/format is described.
+- Emphasize defense-hit naming now lists concrete defenses and hull-effect duplication suppression.
+- Confirm any user-facing examples still reflect weapon-hit abbreviation list formatting.
 
 Plan and diff context:
-- Story context: tactical-damage-summary-followup subtask-2.
-- Comparison base assumption: branch `tds-updates` (infer from branch lineage if a different base is required).
+- Story context: tactical-damage-summary-followup subtask-2 acceptance criteria listed above.
+- Base guidance (assumption): use the subtask branch merge base for documentation diff review.
 
 Startup behavior:
 - If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.

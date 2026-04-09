@@ -1,8 +1,9 @@
 {
   "status": "success",
-  "task": "tactical-damage-summary-followup/subtask-2",
+  "subtask": "tactical-damage-summary-followup/subtask-2",
   "branch": "tds-updates-subtask-2-tester-20260409",
   "test_commit_hash": "No Changes Made",
+  "test_files_added": [],
   "test_files_modified": [],
   "commands_run": [
     "cd tests/tactical && make && ./TacticalTests",
@@ -10,9 +11,8 @@
   ],
   "totals": {
     "tests_written": 0,
-    "tests_run": 92,
-    "passed": 92,
-    "failed": 0
+    "tests_passed": 92,
+    "tests_failed": 0
   },
   "unmet_acceptance_criteria": [],
   "artifact_files": [
