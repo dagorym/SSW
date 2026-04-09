@@ -111,10 +111,15 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	defenseEffect.damagedDefenseType = FDefense::MS;
 	defenseEffect.damagedDefenseName = "Masking Screen";
 
+	FTacticalReportEvent protonScreenEffect = defenseEffect;
+	protonScreenEffect.damagedDefenseType = FDefense::PS;
+	protonScreenEffect.damagedDefenseName = "Proton Screen";
+
 	report.events.push_back(firstWeaponHit);
 	report.events.push_back(secondWeaponHit);
 	report.events.push_back(thirdWeaponHit);
 	report.events.push_back(defenseEffect);
+	report.events.push_back(protonScreenEffect);
 
 	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.ships.size());
@@ -122,7 +127,7 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.hitDetails.size());
 	CPPUNIT_ASSERT_EQUAL(
 		std::string("Sathar Frigate: 3 hull damage from 1 attack; effects: "
-			"Weapon Hit: LB, LB, AR, Defense Hit: Masking Screen"),
+			"Weapon Hit: LB, LB, AR, Defense Hit: MS, PS"),
 		summary.ships[0].displayLines[0]);
 	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense damaged") == std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("3 hull damage") != std::string::npos);

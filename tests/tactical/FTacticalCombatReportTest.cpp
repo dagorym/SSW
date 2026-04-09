@@ -481,6 +481,11 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeR
 	defenseEffect.attackIndex = 0;
 	weaponFire.internalEvents.push_back(defenseEffect);
 
+	FTacticalReportEvent protonScreenEffect = defenseEffect;
+	protonScreenEffect.damagedDefenseType = FDefense::PS;
+	protonScreenEffect.damagedDefenseName = "Proton Screen";
+	weaponFire.internalEvents.push_back(protonScreenEffect);
+
 	report.attacks.push_back(weaponFire);
 
 	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
@@ -488,17 +493,19 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeR
 
 	CPPUNIT_ASSERT(cruiserSummary != NULL);
 	CPPUNIT_ASSERT_EQUAL(5, cruiserSummary->hullDamageTaken);
-	CPPUNIT_ASSERT_EQUAL(4, cruiserSummary->nonHullEffectsTaken);
-	CPPUNIT_ASSERT_EQUAL(5, cruiserSummary->internalEventsTriggered);
-	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), cruiserSummary->rawEvents.size());
+	CPPUNIT_ASSERT_EQUAL(5, cruiserSummary->nonHullEffectsTaken);
+	CPPUNIT_ASSERT_EQUAL(6, cruiserSummary->internalEventsTriggered);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), cruiserSummary->rawEvents.size());
 	CPPUNIT_ASSERT_EQUAL(
 		std::string("Sathar Light Cruiser: 5 hull damage from 1 attack; effects: "
-			"Weapon Hit: LB, LB, AR, Defense Hit: Masking Screen, Internal hull hit"),
+			"Weapon Hit: LB, LB, AR, Defense Hit: MS, PS, Internal hull hit"),
 		cruiserSummary->displayLines[0]);
 	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Weapon Hit x") == std::string::npos);
 	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Defense damaged") == std::string::npos);
 	CPPUNIT_ASSERT(cruiserSummary->rawEvents[4].damagedDefenseType == FDefense::MS);
 	CPPUNIT_ASSERT(cruiserSummary->rawEvents[4].damagedDefenseName == "Masking Screen");
+	CPPUNIT_ASSERT(cruiserSummary->rawEvents[5].damagedDefenseType == FDefense::PS);
+	CPPUNIT_ASSERT(cruiserSummary->rawEvents[5].damagedDefenseName == "Proton Screen");
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryDoesNotDoubleCountNestedHullDamageForAttackTarget() {
@@ -625,6 +632,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryRetainsNonHu
 	defenseEffect.subject = attack.target;
 	defenseEffect.hullDamage = 0;
 	defenseEffect.label = "Defense damaged";
+	defenseEffect.damagedDefenseType = FDefense::MS;
 	defenseEffect.damagedDefenseName = "Masking Screen";
 	attack.internalEvents.push_back(defenseEffect);
 
@@ -638,7 +646,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryRetainsNonHu
 	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 2);
 	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 1);
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 2);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Defense Hit: Masking Screen") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Defense Hit: MS") != std::string::npos);
 	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Defense damaged") == std::string::npos);
 	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Hull breach") != std::string::npos);
 }
@@ -701,6 +709,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 	defenseOnlyEffect.subject = defenseOnlyShip;
 	defenseOnlyEffect.hullDamage = 0;
 	defenseOnlyEffect.label = "Defense damaged";
+	defenseOnlyEffect.damagedDefenseType = FDefense::RH;
 	defenseOnlyEffect.damagedDefenseName = "Reflective Hull";
 	defenseOnlyReport.events.push_back(defenseOnlyEffect);
 
@@ -711,7 +720,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 	CPPUNIT_ASSERT(defenseOnlyShipSummary != NULL);
 	CPPUNIT_ASSERT_EQUAL(0, defenseOnlyShipSummary->hullDamageTaken);
 	CPPUNIT_ASSERT(defenseOnlyShipSummary->displayLines[0].find("0 hull damage") == std::string::npos);
-	CPPUNIT_ASSERT(defenseOnlyShipSummary->displayLines[0].find("effects: Defense Hit: Reflective Hull")
+	CPPUNIT_ASSERT(defenseOnlyShipSummary->displayLines[0].find("effects: Defense Hit: RH")
 		!= std::string::npos);
 }
 

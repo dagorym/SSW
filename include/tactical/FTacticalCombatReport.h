@@ -284,7 +284,7 @@ namespace TacticalCombatReportDetail {
 struct TacticalEffectSummaryAccumulator {
 	std::map<std::string, int> effectCounts;
 	std::vector<std::string> weaponHitAbbreviations;
-	std::vector<std::string> defenseHitNames;
+	std::vector<std::string> defenseHitAbbreviations;
 };
 
 struct TacticalShipSummaryKey {
@@ -406,6 +406,27 @@ inline std::string damagedWeaponAbbreviation(const FTacticalReportEvent & event)
 	}
 }
 
+inline std::string damagedDefenseAbbreviation(const FTacticalReportEvent & event) {
+	switch (event.damagedDefenseType) {
+	case FDefense::NONE:
+		return "None";
+	case FDefense::RH:
+		return "RH";
+	case FDefense::MS:
+		return "MS";
+	case FDefense::ICM:
+		return "ICM";
+	case FDefense::SS:
+		return "SS";
+	case FDefense::PS:
+		return "PS";
+	case FDefense::ES:
+		return "ES";
+	default:
+		return "";
+	}
+}
+
 inline void appendEffectSummary(
 	FTacticalShipReportSummary & shipSummary,
 	TacticalEffectSummaryAccumulator & effectSummary,
@@ -428,8 +449,9 @@ inline void appendEffectSummary(
 
 	if (event.eventType == TRET_DefenseEffect
 		|| event.damageEffectType == TDET_DefenseDamaged) {
-		if (event.damagedDefenseName.size() > 0) {
-			effectSummary.defenseHitNames.push_back(event.damagedDefenseName);
+		const std::string abbreviation = damagedDefenseAbbreviation(event);
+		if (abbreviation.size() > 0) {
+			effectSummary.defenseHitAbbreviations.push_back(abbreviation);
 			return;
 		}
 	}
@@ -461,7 +483,7 @@ inline std::string buildShipSummaryDisplayLine(
 
 	if (!effectSummary.effectCounts.empty()
 		|| !effectSummary.weaponHitAbbreviations.empty()
-		|| !effectSummary.defenseHitNames.empty()) {
+		|| !effectSummary.defenseHitAbbreviations.empty()) {
 		if (hasHullDamageClause) {
 			os << "; ";
 		}
@@ -477,16 +499,16 @@ inline std::string buildShipSummaryDisplayLine(
 			}
 			first = false;
 		}
-		if (!effectSummary.defenseHitNames.empty()) {
+		if (!effectSummary.defenseHitAbbreviations.empty()) {
 			if (!first) {
 				os << ", ";
 			}
 			os << "Defense Hit: ";
-			for (unsigned int i = 0; i < effectSummary.defenseHitNames.size(); i++) {
+			for (unsigned int i = 0; i < effectSummary.defenseHitAbbreviations.size(); i++) {
 				if (i > 0) {
 					os << ", ";
 				}
-				os << effectSummary.defenseHitNames[i];
+				os << effectSummary.defenseHitAbbreviations[i];
 			}
 			first = false;
 		}
