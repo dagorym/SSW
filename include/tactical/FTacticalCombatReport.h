@@ -284,6 +284,7 @@ namespace TacticalCombatReportDetail {
 struct TacticalEffectSummaryAccumulator {
 	std::map<std::string, int> effectCounts;
 	std::vector<std::string> weaponHitAbbreviations;
+	std::vector<std::string> defenseHitNames;
 };
 
 struct TacticalShipSummaryKey {
@@ -425,6 +426,18 @@ inline void appendEffectSummary(
 		}
 	}
 
+	if (event.eventType == TRET_DefenseEffect
+		|| event.damageEffectType == TDET_DefenseDamaged) {
+		if (event.damagedDefenseName.size() > 0) {
+			effectSummary.defenseHitNames.push_back(event.damagedDefenseName);
+			return;
+		}
+	}
+
+	if (event.hullDamage > 0 && event.damageEffectType == TDET_HullDamage) {
+		return;
+	}
+
 	effectSummary.effectCounts[summarizeEventEffect(event)]++;
 }
 
@@ -432,18 +445,27 @@ inline std::string buildShipSummaryDisplayLine(
 	const FTacticalShipReportSummary & shipSummary,
 	const TacticalEffectSummaryAccumulator & effectSummary) {
 	std::ostringstream os;
-	os << shipSummary.ship.shipName << ": "
-	   << shipSummary.hullDamageTaken << " hull damage";
+	os << shipSummary.ship.shipName << ": ";
 
-	if (shipSummary.damagingAttacksReceived > 0) {
+	const bool hasHullDamageClause = shipSummary.hullDamageTaken > 0;
+	if (hasHullDamageClause) {
+		os << shipSummary.hullDamageTaken << " hull damage";
+	}
+
+	if (hasHullDamageClause && shipSummary.damagingAttacksReceived > 0) {
 		os << " from " << shipSummary.damagingAttacksReceived << " attack";
 		if (shipSummary.damagingAttacksReceived != 1) {
 			os << "s";
 		}
 	}
 
-	if (!effectSummary.effectCounts.empty() || !effectSummary.weaponHitAbbreviations.empty()) {
-		os << "; effects: ";
+	if (!effectSummary.effectCounts.empty()
+		|| !effectSummary.weaponHitAbbreviations.empty()
+		|| !effectSummary.defenseHitNames.empty()) {
+		if (hasHullDamageClause) {
+			os << "; ";
+		}
+		os << "effects: ";
 		bool first = true;
 		if (!effectSummary.weaponHitAbbreviations.empty()) {
 			os << "Weapon Hit: ";
@@ -452,6 +474,19 @@ inline std::string buildShipSummaryDisplayLine(
 					os << ", ";
 				}
 				os << effectSummary.weaponHitAbbreviations[i];
+			}
+			first = false;
+		}
+		if (!effectSummary.defenseHitNames.empty()) {
+			if (!first) {
+				os << ", ";
+			}
+			os << "Defense Hit: ";
+			for (unsigned int i = 0; i < effectSummary.defenseHitNames.size(); i++) {
+				if (i > 0) {
+					os << ", ";
+				}
+				os << effectSummary.defenseHitNames[i];
 			}
 			first = false;
 		}

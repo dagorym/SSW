@@ -108,6 +108,8 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	defenseEffect.eventType = TRET_DefenseEffect;
 	defenseEffect.subject = target;
 	defenseEffect.label = "Defense damaged";
+	defenseEffect.damagedDefenseType = FDefense::MS;
+	defenseEffect.damagedDefenseName = "Masking Screen";
 
 	report.events.push_back(firstWeaponHit);
 	report.events.push_back(secondWeaponHit);
@@ -119,7 +121,8 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	CPPUNIT_ASSERT(summary.showHitDetails);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.hitDetails.size());
 	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Weapon Hit: LB, LB, AR") != std::string::npos);
-	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense damaged") != std::string::npos);
+	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense Hit: Masking Screen") != std::string::npos);
+	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense damaged") == std::string::npos);
 
 	const std::string source = readFile(repoFile("src/gui/TacticalDamageSummaryGUI.cpp"));
 
