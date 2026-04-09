@@ -1,0 +1,38 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified and locked the redundant tactical hit-detail placeholder suppression to lowercase `Attack hit target`, with tactical report and GUI-facing regressions updated accordingly.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Acceptance criteria to validate (from Planner):
+- `isRedundantHitDetailNote(...)` or its equivalent suppresses `Attack hit target`.
+- Tactical report and GUI-facing summary tests no longer rely on the obsolete `Attack hit Target` spelling.
+- Meaningful note text still appears in hit-detail output.
+- No unrelated hit-detail summary wording changes are introduced.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Implementation context for testing:
+- Hit-detail suppression now compares notes against exact placeholder text `Attack hit target`.
+- Existing regression assertions now enforce lowercase placeholder suppression and preserve meaningful note visibility (`rear arc`, `armor bypassed`).
+- No non-placeholder hit-detail wording behavior was intentionally changed.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup-corrections/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
