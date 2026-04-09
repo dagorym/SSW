@@ -2,7 +2,7 @@
   "status": "success",
   "subtask": "tactical-damage-summary-followup/subtask-1",
   "branch": "tds-updates-subtask-1-documenter-20260409",
-  "commit_hash": "3df2bc5db9af26386aea00c465646601796c4927",
+  "commit_hash": "f9343cdefbf0ecf5b84e98ab20119dedf9f7536d",
   "documentation_files": [
     "doc/DesignNotes.md"
   ],

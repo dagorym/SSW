@@ -1,10 +1,10 @@
 ## Documenter Report
 
 ### Files Updated
-- **`doc/DesignNotes.md`** — Updated the tactical report payload documentation to mention preserved defense metadata alongside existing weapon metadata, and noted the regression coverage that now checks both propagation paths.
+- **`doc/DesignNotes.md`** — Corrected the tactical damage-summary design notes so they no longer overstate current player-facing defense-effect formatting; the doc now distinguishes preserved structured defense metadata from the still label/detail-driven ship-summary wording.
 
 ### Summary
-Updated the tactical damage-summary design notes so the `FTacticalReportEvent` schema now explicitly documents both weapon and defense damage metadata preservation, matching the implemented tactical report changes and their existing regression coverage.
+Updated the tactical damage-summary design notes to match the implemented behavior: `FTacticalReportEvent` preserves defense metadata in raw report events, but the current player-facing ship-summary rollup still relies on existing label/detail text for defense-effect wording.
 
 ### Commit Message
-`Document tactical defense metadata propagation`
+`Clarify tactical defense summary wording`
