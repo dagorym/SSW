@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified documentation-only follow-up for tactical damage summary contract consistency in `doc/DesignNotes.md`, aligning both earlier and later sections with the shipped behavior: defense abbreviation rollups and suppression of redundant lowercase note text.
+
+Modified files:
+- doc/DesignNotes.md
+
+Acceptance criteria to validate (from Planner):
+- The stale earlier design-note wording about defense rollups relying on label/detail text is removed or corrected.
+- The later design-note wording matches the final abbreviation-based defense rollup and lowercase-note suppression contract.
+- `artifacts/tactical-damage-summary-followup/reviewer_report.md` is fully addressed in the updated design notes.
+
+Create test files in:
+- Assumption: No new tester test files are required for this documentation-only follow-up. If orchestration still requires test artifacts, use tactical test conventions under `tests/tactical/`.
+
+Implementation context for testing:
+- Earlier tactical-report metadata section now states rollups use structured defense identity to emit `Defense Hit: <abbr-list>` instead of label/detail-driven wording.
+- Earlier section also now states hit-detail output suppresses only the redundant lowercase placeholder note `Attack hit target`.
+- Later tactical-damage-summary section wording was aligned to the same lowercase placeholder-note suppression language.
+
+Suggested test command(s):
+- `cd tests/tactical && make && ./TacticalTests` (run by implementer; passed `OK (92 tests)`).
+- For doc verification, inspect `doc/DesignNotes.md` sections around the tactical-report metadata and tactical-damage-summary contract text.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-damage-summary-followup-corrections/subtask-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
