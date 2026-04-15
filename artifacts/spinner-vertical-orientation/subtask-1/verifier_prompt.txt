@@ -1,0 +1,49 @@
+You are the Verifier Agent.
+
+Task summary:
+- Tactical speed spinner implementation now explicitly requests vertical arrow orientation in `FBattleDisplay`, tactical regression coverage asserts that style contract, the tactical suite passed, and repository guidance in `AGENTS.md` now records the vertical-spinner convention for wxGTK value-selection `wxSpinCtrl` usage.
+
+Acceptance criteria to verify:
+- The tactical speed control style explicitly includes vertical spinner orientation.
+- Existing layout safeguards for the speed control remain in place.
+- Tactical regression coverage fails if the constructor drops the explicit vertical style in the future.
+
+Implementation branch or worktree context:
+- Implementer branch/worktree: `coord-ui-dialog-sizing-centering-svo-s1-implementer-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s1-implementer-20260415`
+- Tester branch/worktree: `coord-ui-dialog-sizing-centering-svo-s1-tester-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s1-tester-20260415`
+- Documenter branch/worktree: `coord-ui-dialog-sizing-centering-svo-s1-documenter-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s1-documenter-20260415`
+- Comparison base assumption: review against the parent commit of implementer commit `9907a4d4126fb5a0284e870309e15e6afb2ba783`.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/tactical/FBattleDisplay.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `AGENTS.md`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+
+Final test outcomes:
+- Tactical test suite passed: `OK (92 tests)`.
+- Source inspection confirms `FBattleDisplay` constructs the speed spinner with `wxSP_ARROW_KEYS | wxSP_VERTICAL`.
+- Tactical regression coverage now asserts the explicit vertical style token alongside the existing layout contract.
+
+Plan and review context:
+- Plan path: `plans/spinner-vertical-orientation-plan.md`
+- Repository convention guidance: read `AGENTS.md`, including the updated wxGTK `wxSpinCtrl` guidance and tactical test summary, and infer any remaining convention details from repository context when safe.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/spinner-vertical-orientation/subtask-1`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
