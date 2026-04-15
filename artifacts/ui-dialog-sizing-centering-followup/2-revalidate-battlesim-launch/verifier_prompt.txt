@@ -1,0 +1,59 @@
+You are the Verifier Agent.
+
+Task summary:
+- Revalidated the BattleSim launch-path follow-up by rerunning the requested tactical and GUI validation suites in the assigned tester worktree; both passed with no implementation changes required.
+- Added one documentation note in `doc/DesignNotes.md` recording that this subtask remained validation-only and that the canonical tactical and GUI commands passed without further code churn.
+
+Acceptance criteria to verify:
+- The follow-up runs `cd tests/tactical && make && ./TacticalTests`.
+- The follow-up runs `cd tests/gui && make && ./GuiTests`, or clearly documents fallback when needed.
+- Validation confirms that the BattleSim modal-launch lifecycle regression is fixed.
+- Any documentation edits remain narrowly scoped to restored launch contract or exact validation story.
+- Follow-up artifacts capture commands run, results observed, and any remaining non-blocking environment limitations accurately.
+
+Implementation branch or worktree context:
+- Implementer branch: `impl-ui-dialog-sizing-centering-followup-subtask-2`
+- Tester branch/worktree: `test-ui-dialog-sizing-centering-followup-subtask-2` at `/home/tstephen/repos/SSW-worktrees/ui-dialog-sizing-centering-followup-subtask-2-tester`
+- Documenter branch/worktree: `doc-ui-dialog-sizing-centering-followup-subtask-2` at `/home/tstephen/repos/SSW-worktrees/ui-dialog-sizing-centering-followup-subtask-2-documenter`
+- Comparison base: `coord-ui-dialog-sizing-centering` (assumption from branch ancestry)
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- Implementer: no changes made
+- `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/tester_report.md`
+- `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/tester_result.json`
+- `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/documenter_prompt.txt`
+- `doc/DesignNotes.md`
+- `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/documenter_report.md`
+- `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/documenter_result.json`
+- `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && ./GuiTests`
+
+Final test outcomes:
+- Tactical suite passed: `OK (92 tests)`.
+- GUI suite passed: `OK (29 tests)`.
+- Canonical GUI command succeeded directly; no xvfb fallback was needed for this run.
+- Validation-only follow-up found no remaining BattleSim modal-launch lifecycle regression.
+
+Plan and review context:
+- Plan source: `plans/ui-dialog-sizing-centering-followup-plan.md` (safe repository inference; see Subtask 2 follow-up validation section).
+- Relevant repository guidance: `AGENTS.md` and `/home/tstephen/repos/agents/agents/documenter.md`; infer any additional convention-file details from repository context when safe.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

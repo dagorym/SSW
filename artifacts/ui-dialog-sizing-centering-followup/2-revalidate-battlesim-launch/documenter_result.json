@@ -1,0 +1,31 @@
+{
+  "status": "success",
+  "subtask_id": "2-revalidate-battlesim-launch",
+  "branch": "doc-ui-dialog-sizing-centering-followup-subtask-2",
+  "commit_hash": "8ca6844a2b4bedec30222962b3eb663cf0001d6b",
+  "comparison_base": "coord-ui-dialog-sizing-centering (assumption from branch ancestry)",
+  "documentation_files_modified": [
+    "doc/DesignNotes.md"
+  ],
+  "artifact_files": [
+    "artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/documenter_report.md",
+    "artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/documenter_result.json",
+    "artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/verifier_prompt.txt"
+  ],
+  "commands_validated_from_tester": [
+    {
+      "command": "cd tests/tactical && make && ./TacticalTests",
+      "outcome": "pass",
+      "details": "OK (92 tests)"
+    },
+    {
+      "command": "cd tests/gui && make && ./GuiTests",
+      "outcome": "pass",
+      "details": "OK (29 tests)"
+    }
+  ],
+  "notes": [
+    "Documentation scope remained limited to the validation story for the restored BattleSim modal-launch contract.",
+    "Canonical GUI execution succeeded directly in the tester environment; no xvfb fallback was required for this run."
+  ]
+}
