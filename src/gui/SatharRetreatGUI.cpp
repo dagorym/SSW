@@ -49,9 +49,9 @@ SatharRetreatGUI::SatharRetreatGUI( wxWindow* parent, wxWindowID id, const wxStr
 	m_button1 = new wxButton( this, wxID_ANY, wxT("Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer1->Add( m_button1, 0, wxALIGN_RIGHT|wxALL, 5 );
 
-	this->SetSizer( bSizer1 );
-	this->Layout();
-	bSizer1->Fit( this );
+	this->SetSizerAndFit( bSizer1 );
+	this->SetMinSize( this->GetSize() );
+	this->Centre( wxBOTH );
 
 	// Connect Events
 	m_radioBtn1->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( SatharRetreatGUI::OnButtonSelection ), NULL, this );

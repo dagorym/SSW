@@ -41,9 +41,9 @@ TwoPlanetsGUI::TwoPlanetsGUI( wxWindow* parent, FSystem *sys, wxWindowID id, con
 	m_button2 = new wxButton( this, wxID_ANY, msg2, wxDefaultPosition, wxDefaultSize, 0 );
 	fgSizer1->Add( m_button2, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
 
-	this->SetSizer( fgSizer1 );
-	this->Layout();
-	fgSizer1->Fit( this );
+	this->SetSizerAndFit( fgSizer1 );
+	this->SetMinSize( this->GetSize() );
+	this->Centre( wxBOTH );
 
 	// Connect Events
 	m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( TwoPlanetsGUI::OnButton1 ), NULL, this );

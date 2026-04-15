@@ -122,6 +122,15 @@ return true;
 return false;
 }
 
+bool isChildFullyInClientArea(wxWindow * parent, wxWindow * child) {
+	if (parent == NULL || child == NULL) {
+		return false;
+	}
+	const wxRect clientRect(wxPoint(0, 0), parent->GetClientSize());
+	return clientRect.Contains(child->GetRect().GetTopLeft())
+	    && clientRect.Contains(child->GetRect().GetBottomRight());
+}
+
 wxString staticBoxLabelFor(const wxWindow * control) {
 	const wxStaticBox * box = wxDynamicCast(control ? control->GetParent() : NULL, wxStaticBox);
 	return box ? box->GetLabel() : wxString();
@@ -404,6 +413,14 @@ CombatLocationGUITestPeer(wxWindow * parent, FPlanet * planet)
 : CombatLocationGUI(parent, planet) {
 }
 
+wxButton * aroundPlanetButton() const {
+	return m_button1;
+}
+
+wxButton * deepSpaceButton() const {
+	return m_button2;
+}
+
 void clickAroundPlanet() {
 wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, m_button1->GetId());
 OnButton1(event);
@@ -419,6 +436,14 @@ class TwoPlanetsGUITestPeer : public TwoPlanetsGUI {
 public:
 TwoPlanetsGUITestPeer(wxWindow * parent, FSystem * system)
 : TwoPlanetsGUI(parent, system) {
+}
+
+wxButton * planetOneButton() const {
+	return m_button1;
+}
+
+wxButton * planetTwoButton() const {
+	return m_button2;
 }
 
 void clickPlanetOne() {
@@ -438,6 +463,14 @@ SelectResolutionGUITestPeer(wxWindow * parent, FleetList fleets, const std::stri
 : SelectResolutionGUI(parent, fleets, systemName, station) {
 }
 
+wxButton * battleBoardButton() const {
+	return m_button1;
+}
+
+wxButton * manualResultsButton() const {
+	return m_button2;
+}
+
 void clickBattleBoard() {
 wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, m_button1->GetId());
 onBattleBoard(event);
@@ -446,6 +479,17 @@ onBattleBoard(event);
 void clickManualResults() {
 wxCommandEvent event(wxEVT_COMMAND_BUTTON_CLICKED, m_button2->GetId());
 onManualResults(event);
+}
+};
+
+class SatharRetreatGUITestPeer : public SatharRetreatGUI {
+public:
+SatharRetreatGUITestPeer(wxWindow * parent)
+: SatharRetreatGUI(parent) {
+}
+
+wxButton * doneButton() const {
+	return m_button1;
 }
 };
 
@@ -748,8 +792,12 @@ fleet.setName("Test Fleet");
 fleet.setOwner(player.getID());
 fleet.addShip(createShip("AssaultScout"));
 
-SatharRetreatGUI retreatDialog(parent);
-CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL),
+ SatharRetreatGUITestPeer retreatDialog(parent);
+ retreatDialog.Show();
+ m_harness.pumpEvents();
+ CPPUNIT_ASSERT(isChildFullyInClientArea(&retreatDialog, retreatDialog.doneButton()));
+ retreatDialog.Hide();
+ CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL),
                      m_harness.showModalWithAutoDismiss(retreatDialog, wxID_CANCEL, 25));
 
 SystemDialogGUI systemDialog(parent, &system, &map, &player, "System Information");
@@ -1000,11 +1048,21 @@ CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), static_cast<size_t>(selections.GetC
 
 FPlanet planet("Test Planet");
 CombatLocationGUITestPeer locationDialogOne(parent, &planet);
+locationDialogOne.Show();
+m_harness.pumpEvents();
+CPPUNIT_ASSERT(isChildFullyInClientArea(&locationDialogOne, locationDialogOne.aroundPlanetButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(&locationDialogOne, locationDialogOne.deepSpaceButton()));
+locationDialogOne.Hide();
 CPPUNIT_ASSERT_EQUAL(0, m_harness.showModalWithAction(locationDialogOne, [&]() {
 locationDialogOne.clickAroundPlanet();
 }, wxID_CANCEL, 200));
 
 CombatLocationGUITestPeer locationDialogTwo(parent, &planet);
+locationDialogTwo.Show();
+m_harness.pumpEvents();
+CPPUNIT_ASSERT(isChildFullyInClientArea(&locationDialogTwo, locationDialogTwo.aroundPlanetButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(&locationDialogTwo, locationDialogTwo.deepSpaceButton()));
+locationDialogTwo.Hide();
 CPPUNIT_ASSERT_EQUAL(1, m_harness.showModalWithAction(locationDialogTwo, [&]() {
 locationDialogTwo.clickDeepSpace();
 }, wxID_CANCEL, 200));
@@ -1013,11 +1071,21 @@ FSystem dualPlanetSystem("Dual Planet System", 0.0f, 0.0f, 0.0f, player.getID())
 dualPlanetSystem.addPlanet(new FPlanet("Alpha"));
 dualPlanetSystem.addPlanet(new FPlanet("Beta"));
 TwoPlanetsGUITestPeer twoPlanetsDialogOne(parent, &dualPlanetSystem);
+twoPlanetsDialogOne.Show();
+m_harness.pumpEvents();
+CPPUNIT_ASSERT(isChildFullyInClientArea(&twoPlanetsDialogOne, twoPlanetsDialogOne.planetOneButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(&twoPlanetsDialogOne, twoPlanetsDialogOne.planetTwoButton()));
+twoPlanetsDialogOne.Hide();
 CPPUNIT_ASSERT_EQUAL(1, m_harness.showModalWithAction(twoPlanetsDialogOne, [&]() {
 twoPlanetsDialogOne.clickPlanetOne();
 }, wxID_CANCEL, 200));
 
 TwoPlanetsGUITestPeer twoPlanetsDialogTwo(parent, &dualPlanetSystem);
+twoPlanetsDialogTwo.Show();
+m_harness.pumpEvents();
+CPPUNIT_ASSERT(isChildFullyInClientArea(&twoPlanetsDialogTwo, twoPlanetsDialogTwo.planetOneButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(&twoPlanetsDialogTwo, twoPlanetsDialogTwo.planetTwoButton()));
+twoPlanetsDialogTwo.Hide();
 CPPUNIT_ASSERT_EQUAL(2, m_harness.showModalWithAction(twoPlanetsDialogTwo, [&]() {
 twoPlanetsDialogTwo.clickPlanetTwo();
 }, wxID_CANCEL, 200));
@@ -1025,11 +1093,21 @@ twoPlanetsDialogTwo.clickPlanetTwo();
 FleetList resolutionFleets;
 resolutionFleets.push_back(&attacker);
 SelectResolutionGUITestPeer resolutionDialogOne(parent, resolutionFleets, "Prenglar", NULL);
+resolutionDialogOne.Show();
+m_harness.pumpEvents();
+CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogOne, resolutionDialogOne.battleBoardButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogOne, resolutionDialogOne.manualResultsButton()));
+resolutionDialogOne.Hide();
 CPPUNIT_ASSERT_EQUAL(0, m_harness.showModalWithAction(resolutionDialogOne, [&]() {
 resolutionDialogOne.clickBattleBoard();
 }, wxID_CANCEL, 200));
 
 SelectResolutionGUITestPeer resolutionDialogTwo(parent, resolutionFleets, "Prenglar", NULL);
+resolutionDialogTwo.Show();
+m_harness.pumpEvents();
+CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogTwo, resolutionDialogTwo.battleBoardButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogTwo, resolutionDialogTwo.manualResultsButton()));
+resolutionDialogTwo.Hide();
 CPPUNIT_ASSERT_EQUAL(1, m_harness.showModalWithAction(resolutionDialogTwo, [&]() {
 resolutionDialogTwo.clickManualResults();
 }, wxID_CANCEL, 200));

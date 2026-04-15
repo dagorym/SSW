@@ -49,9 +49,9 @@ SelectResolutionGUI::SelectResolutionGUI( wxWindow* parent, FleetList list, std:
 
 	bSizer1->Add( fgSizer1, 1, wxEXPAND, 5 );
 
-	this->SetSizer( bSizer1 );
-	this->Layout();
-	bSizer1->Fit( this );
+	this->SetSizerAndFit( bSizer1 );
+	this->SetMinSize( this->GetSize() );
+	this->Centre( wxBOTH );
 
 	// Connect Events
 	m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SelectResolutionGUI::onBattleBoard ), NULL, this );
