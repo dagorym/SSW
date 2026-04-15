@@ -1,49 +1,74 @@
 You are the Verifier Agent.
 
 Task summary:
-- GUI modal lifecycle instability in strategic live tests was remediated, dialog/frame centering behavior was reinforced across BattleSim, strategic, and tactical adapter launch paths, and repository documentation was updated to match the implemented behavior and validated coverage.
+- Implementer restored tactical live dialog centering verification and normalized parentless centering fallbacks to deterministic screen-centric behavior in tactical and strategic adapters.
+- Tester validated the existing GUI live suites without adding test-source changes.
+- Documenter updated repository guidance and design notes so the shipped placement policy and representative live coverage are documented.
 
 Acceptance criteria to verify:
 - Representative frames open centered on screen.
 - Representative parent-backed dialogs open centered relative to their parent.
 - Parentless modal cases use a deterministic screen-centered fallback.
-- Live GUI regression tests verify the placement policy for at least one frame, one tactical dialog, and one strategic or BattleSim dialog.
-- Documentation reflects the implemented centering policy and the representative live GUI coverage accurately.
+- Live GUI regression tests verify placement policy for at least one frame, one tactical dialog, and one strategic or BattleSim dialog.
 
 Implementation branch or worktree context:
-- Verifying branch/worktree should include implementer lineage `coord-ui-dialog-sizing-centering-implementer-20260415`, tester lineage `coord-ui-dialog-sizing-centering-testerd-20260415`, and documenter branch `coord-ui-dialog-sizing-centering-documenterd-20260415` in worktree `/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-documenterd-20260415`.
-- Assumption: tester branched directly from implementer head and added only shared artifact files before documenter updated docs and wrote handoff artifacts.
+- Documenter branch/worktree: coord-ui-dialog-sizing-centering-documentere-20260415 at /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-documentere-20260415.
+- Tester branch/worktree: coord-ui-dialog-sizing-centering-testere-20260415 at /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testere-20260415.
+- Implementer branch: coord-ui-dialog-sizing-centering-implementer-20260415.
+- Validated implementation artifact commit on tester history: 8e0367c.
+- Assumption: subtask-specific comparison base is commit 0ec0684, the prior checkpoint before the subtask-5 implementation/tester commits; repository default branch remains origin/master.
 
 Files modified by Implementer, Tester, and Documenter to inspect:
-- src/battleSim/BattleSimFrame.cpp
-- src/battleSim/LocalGameDialog.cpp
-- src/battleSim/ScenarioDialog.cpp
-- src/gui/TacticalDamageSummaryGUI.cpp
-- src/gui/WXStrategicUI.cpp
-- src/gui/WXTacticalUI.cpp
-- tests/gui/BattleSimGuiLiveTest.cpp
-- tests/gui/StrategicGuiLiveTest.cpp
-- tests/gui/TacticalGuiLiveTest.cpp
-- AGENTS.md
-- doc/DesignNotes.md
-- artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_report.md
-- artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_result.json
-- artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt
-- artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_report.md
-- artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_result.json
-- artifacts/ui-dialog-sizing-centering/subtask-5-centering/verifier_prompt.txt
+- Implementer/code-and-test scope:
+  - src/gui/TacticalDamageSummaryGUI.cpp
+  - src/gui/WXTacticalUI.cpp
+  - src/gui/WXStrategicUI.cpp
+  - tests/gui/TacticalGuiLiveTest.cpp
+- Tester artifacts:
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_report.md
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_result.json
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt
+- Documenter documentation and artifacts:
+  - AGENTS.md
+  - doc/DesignNotes.md
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_report.md
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_result.json
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/verifier_prompt.txt
+- Additional live-placement files changed earlier in the same subtask branch and relevant to verification scope:
+  - src/battleSim/BattleSimFrame.cpp
+  - src/battleSim/LocalGameDialog.cpp
+  - src/battleSim/ScenarioDialog.cpp
+  - src/battleSim/ScenarioEditorGUI.cpp
+  - src/gui/BattleResultsGUI.cpp
+  - src/gui/CombatFleetsGUI.cpp
+  - src/gui/CombatLocationGUI.cpp
+  - src/gui/ICMSelectionGUI.cpp
+  - src/gui/SatharFleetsGUI.cpp
+  - src/gui/SatharRetreatGUI.cpp
+  - src/gui/SelectCombatGUI.cpp
+  - src/gui/SelectJumpGUI.cpp
+  - src/gui/SelectResolutionGUI.cpp
+  - src/gui/SystemDialogGUI.cpp
+  - src/gui/TransferShipsGUI.cpp
+  - src/gui/TwoPlanetsGUI.cpp
+  - src/gui/UPFUnattachedGUI.cpp
+  - src/gui/ViewFleetGUI.cpp
+  - tests/gui/BattleSimGuiLiveTest.cpp
+  - tests/gui/StrategicGuiLiveTest.cpp
 
 Commands executed:
-- cd /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerd-20260415/tests/gui && make && ./GuiTests
-- cd /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerd-20260415/tests/gui && xvfb-run -a ./GuiTests (environment note: xvfb-run not installed)
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- git diff 0ec0684..coord-ui-dialog-sizing-centering-testere-20260415 -- AGENTS.md doc/DesignNotes.md src/gui/TacticalDamageSummaryGUI.cpp src/gui/WXTacticalUI.cpp src/gui/WXStrategicUI.cpp tests/gui/TacticalGuiLiveTest.cpp tests/gui/BattleSimGuiLiveTest.cpp tests/gui/StrategicGuiLiveTest.cpp
+- git status --short
 
 Final test outcomes:
-- GuiTests completed successfully with OK (29 tests).
-- Existing live GUI regressions validated the centering policy and modal lifecycle behavior with no additional test edits required.
+- GUI live suite outcome from tester stage: OK (29 tests).
+- Tester reported acceptance criteria satisfied with existing TacticalGuiLiveTest, StrategicGuiLiveTest, and BattleSimGuiLiveTest coverage.
+- Documenter stage made documentation-only edits and did not rerun product tests.
 
 Plan and review context:
-- Assumption: use `artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt` plus the accepted task summary and acceptance criteria in the shared artifacts as the story context when no separate plan file exists.
-- Convention guidance: read `AGENTS.md`, resolve named-agent behavior via `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`, and infer any other verifier-specific convention files from repository context when safe.
+- Use the task summary and acceptance criteria provided in artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt as the effective plan-source guidance for this remediation cycle.
+- Use AGENTS.md as the repository convention file; infer any additional plan-source, convention-file, or artifact-path details from repository context when safe and label them as assumptions.
 
 Documentation files updated:
 - AGENTS.md
@@ -51,7 +76,7 @@ Documentation files updated:
 
 Verification scope:
 - Verify implementation behavior, test coverage, and the updated documentation files together.
-- Confirm the artifact JSON still records the documentation commit hash `78afba22227e365344a3fcef38d8f8139516f8f5` rather than the later artifact commit hash.
+- Confirm the documentation matches the implemented centering behavior and the representative live GUI placement checks.
 
 Startup behavior:
 - If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.

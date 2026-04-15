@@ -1,11 +1,11 @@
 ## Documenter Report
 
 ### Files Updated
-- **`AGENTS.md`** — Added repository guidance for deterministic frame/dialog centering and noted the live GUI coverage that locks the placement policy.
-- **`doc/DesignNotes.md`** — Documented the strategic, tactical, and BattleSim centering behavior and refreshed the latest GUI validation result for this story.
+- **`AGENTS.md`** — Clarified that the GUI live suite now asserts parent-relative tactical centering alongside the deterministic parentless fallback and existing strategic/BattleSim placement coverage.
+- **`doc/DesignNotes.md`** — Recorded the placement-policy matrix now covered by the live GUI suite: centered frame, parent-centered dialogs, and deterministic screen-centered parentless fallbacks.
 
 ### Summary
-Updated the repository guidance and design notes to match the implemented centering policy: top-level frames center on screen, parent-backed dialogs center on their parent, parentless modal fallbacks use screen centering, and the existing live GUI suites cover the representative BattleSim, strategic, and tactical launch paths tied to this remediation.
+Updated repository guidance and design notes to match the shipped centering policy and the representative live GUI coverage validated for tactical, strategic, and BattleSim launch flows.
 
 ### Commit Message
-`Document dialog centering policy`
+`Document dialog centering policy coverage`
