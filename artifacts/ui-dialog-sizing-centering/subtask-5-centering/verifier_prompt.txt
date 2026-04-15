@@ -1,0 +1,65 @@
+You are the Verifier Agent.
+
+Task summary:
+- GUI modal lifecycle instability in strategic live tests was remediated, dialog/frame centering behavior was reinforced across BattleSim, strategic, and tactical adapter launch paths, and repository documentation was updated to match the implemented behavior and validated coverage.
+
+Acceptance criteria to verify:
+- Representative frames open centered on screen.
+- Representative parent-backed dialogs open centered relative to their parent.
+- Parentless modal cases use a deterministic screen-centered fallback.
+- Live GUI regression tests verify the placement policy for at least one frame, one tactical dialog, and one strategic or BattleSim dialog.
+- Documentation reflects the implemented centering policy and the representative live GUI coverage accurately.
+
+Implementation branch or worktree context:
+- Verifying branch/worktree should include implementer lineage `coord-ui-dialog-sizing-centering-implementer-20260415`, tester lineage `coord-ui-dialog-sizing-centering-testerd-20260415`, and documenter branch `coord-ui-dialog-sizing-centering-documenterd-20260415` in worktree `/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-documenterd-20260415`.
+- Assumption: tester branched directly from implementer head and added only shared artifact files before documenter updated docs and wrote handoff artifacts.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- src/battleSim/BattleSimFrame.cpp
+- src/battleSim/LocalGameDialog.cpp
+- src/battleSim/ScenarioDialog.cpp
+- src/gui/TacticalDamageSummaryGUI.cpp
+- src/gui/WXStrategicUI.cpp
+- src/gui/WXTacticalUI.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- AGENTS.md
+- doc/DesignNotes.md
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_result.json
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_result.json
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/verifier_prompt.txt
+
+Commands executed:
+- cd /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerd-20260415/tests/gui && make && ./GuiTests
+- cd /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerd-20260415/tests/gui && xvfb-run -a ./GuiTests (environment note: xvfb-run not installed)
+
+Final test outcomes:
+- GuiTests completed successfully with OK (29 tests).
+- Existing live GUI regressions validated the centering policy and modal lifecycle behavior with no additional test edits required.
+
+Plan and review context:
+- Assumption: use `artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt` plus the accepted task summary and acceptance criteria in the shared artifacts as the story context when no separate plan file exists.
+- Convention guidance: read `AGENTS.md`, resolve named-agent behavior via `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`, and infer any other verifier-specific convention files from repository context when safe.
+
+Documentation files updated:
+- AGENTS.md
+- doc/DesignNotes.md
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm the artifact JSON still records the documentation commit hash `78afba22227e365344a3fcef38d8f8139516f8f5` rather than the later artifact commit hash.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
