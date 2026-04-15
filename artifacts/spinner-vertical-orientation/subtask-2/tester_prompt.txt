@@ -1,0 +1,36 @@
+You are the Tester Agent.
+
+Task summary:
+- ICM allocation spinner rebuild now explicitly requests vertical arrows in `ICMSelectionGUI`, and GUI regression coverage now checks both runtime style bits and source-token contract while keeping existing geometry and in-client checks.
+
+Modified files:
+- src/gui/ICMSelectionGUI.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Each rebuilt ICM allocation spinner explicitly includes vertical spinner orientation in its style.
+- The dialog rebuild flow still fits correctly and keeps the controls within the client area.
+- GUI regression coverage fails if the ICM spinner style loses the explicit vertical orientation in the future.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Implementation context for testing:
+- Rebuilt spinner creation in `ICMSelectionGUI::selectWeapon(...)` now uses `wxSP_ARROW_KEYS | wxSP_VERTICAL`.
+- Existing rebuild/fit path remains intact (`m_panel1->Layout()`, `fgSizer3->Fit(m_panel1)`, dialog `Layout()`, `fgSizer1->Fit(this)`, and best-size min/current size update).
+- `testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo()` now asserts runtime style flags (`wxSP_ARROW_KEYS` and `wxSP_VERTICAL`) for rebuilt controls and includes a source-audit assertion for the explicit style token in `../../src/gui/ICMSelectionGUI.cpp`.
+
+Suggested test command(s):
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- Assumption fallback if headless wrapper is unavailable: `cd tests && make gui-tests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/spinner-vertical-orientation/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
