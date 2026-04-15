@@ -1,0 +1,33 @@
+You are the Tester Agent.
+
+Task summary:
+- Repository guidance for wxGTK value-selection `wxSpinCtrl` controls now explicitly documents `wxSP_ARROW_KEYS | wxSP_VERTICAL`, and tactical test-summary text now explicitly reflects the token-level regression assertion in coverage.
+
+Modified files:
+- AGENTS.md
+
+Acceptance criteria to validate (from Planner):
+- `AGENTS.md` records the explicit vertical-spinner convention in a location consistent with the current wxGTK spin-control guidance.
+- Any updated test-summary language remains accurate to the implemented regression coverage.
+
+Create test files in:
+- Assumption: no new tests should be created for this documentation-only subtask.
+
+Implementation context for testing:
+- The wxGTK spin-control guidance now explicitly states value-selection spinners should use `wxSP_ARROW_KEYS | wxSP_VERTICAL`.
+- Tactical test-summary wording now explicitly names the token-level style assertion (`wxSP_ARROW_KEYS | wxSP_VERTICAL`) to align with current tactical source-inspection coverage.
+- GUI summary wording was intentionally unchanged because it already matched current runtime style-bit and source-token assertions in `tests/gui/TacticalGuiLiveTest.cpp`.
+
+Suggested test command(s):
+- Assumption (documentation-only validation): `rg -n "wxSP_ARROW_KEYS \\| wxSP_VERTICAL|value-selection spinner" AGENTS.md tests/gui/TacticalGuiLiveTest.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/spinner-vertical-orientation/subtask-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
