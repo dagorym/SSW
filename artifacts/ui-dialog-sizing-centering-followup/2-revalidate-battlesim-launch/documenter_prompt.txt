@@ -1,0 +1,44 @@
+You are the Documenter Agent.
+
+Task summary:
+- Revalidated BattleSim launch-path follow-up by executing the requested tactical and GUI validation suites in the assigned tester worktree.
+- No implementation code changes were required; requested validations pass as-is.
+
+Acceptance criteria to document against:
+- The follow-up runs `cd tests/tactical && make && ./TacticalTests`.
+- The follow-up runs `cd tests/gui && make && ./GuiTests`, or clearly documents fallback when needed.
+- Validation confirms that the BattleSim modal-launch lifecycle regression is fixed.
+- Any documentation edits remain narrowly scoped to restored launch contract or exact validation story.
+- Follow-up artifacts capture commands run, results observed, and any remaining non-blocking environment limitations accurately.
+
+Implementation/test context:
+- Tester branch: `test-ui-dialog-sizing-centering-followup-subtask-2`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/ui-dialog-sizing-centering-followup-subtask-2-tester`
+- Parent implementer branch: `impl-ui-dialog-sizing-centering-followup-subtask-2`
+- Implementer-reported modified files: none (`No Changes Made`)
+- Tester-modified files relevant to documentation review:
+  - `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/tester_report.md`
+  - `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/tester_result.json`
+  - `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch/documenter_prompt.txt`
+
+Commands executed and outcomes:
+1. `cd tests/tactical && make && ./TacticalTests` → PASS (`OK (92 tests)`)
+2. `cd tests/gui && make && ./GuiTests` → PASS (`OK (29 tests)`)
+- Canonical GUI command succeeded directly; no xvfb fallback was needed for this run.
+
+Test commit status:
+- Test commit hash: `No Changes Made`
+
+Story/context and comparison-base guidance:
+- This is a validation-only follow-up for BattleSim launch-path sizing/centering regression checks.
+- Compare documentation impact against current branch state and implementer artifacts in the shared artifact directory.
+- Infer any missing plan-path/base-branch/documentation-convention details from repository evidence when safe.
+
+Shared artifact directory to reuse (repository-root-relative):
+- `artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch`
+
+Startup behavior:
+- If blocking inputs are present, continue in the same run; do not stop after scope confirmation, documentation discovery, or diff review.
+
+Completion gate:
+Do not report success unless all required artifacts exist and all changes are committed.
