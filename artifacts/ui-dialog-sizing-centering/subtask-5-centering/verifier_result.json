@@ -1,23 +1,28 @@
 {
   "status": "success",
   "subtask": "ui-dialog-sizing-centering/subtask-5-centering",
-  "branch": "coord-ui-dialog-sizing-centering-verifierd-20260415",
-  "review_target_branch": "coord-ui-dialog-sizing-centering-documenterd-20260415",
-  "worktree": "/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-verifierd-20260415",
-  "plan_reference": "artifacts/ui-dialog-sizing-centering/subtask-5-centering/verifier_prompt.txt",
-  "verdict": "FAIL",
-  "blocking_finding_count": 1,
-  "warning_finding_count": 1,
+  "branch": "coord-ui-dialog-sizing-centering-verifiere-20260415",
+  "review_target_branch": "coord-ui-dialog-sizing-centering-documentere-20260415",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-verifiere-20260415",
+  "plan_reference": [
+    "artifacts/ui-dialog-sizing-centering/subtask-5-centering/verifier_prompt.txt",
+    "artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt"
+  ],
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
   "note_finding_count": 0,
-  "test_sufficiency_summary": "Insufficient for acceptance: BattleSim and strategic placement coverage is present, but TacticalGuiLiveTest no longer asserts centering for the representative tactical dialog.",
-  "documentation_accuracy_summary": "Implementation docs are mostly accurate, but tester/documenter handoff artifacts overstate tactical placement coverage after the tactical centering assertions were removed.",
-  "documenter_commit_confirmed": "78afba22227e365344a3fcef38d8f8139516f8f5",
+  "test_sufficiency_summary": "Sufficient: the live GUI suite verifies a centered frame, parent-backed tactical and strategic/BattleSim dialog centering, and representative parentless display-backed fallback behavior; local verifier rerun of ./GuiTests passed with OK (29 tests).",
+  "documentation_accuracy_summary": "Accurate: AGENTS.md and doc/DesignNotes.md match the implemented centering policy and the representative live placement coverage.",
   "artifact_files_written": [
     "artifacts/ui-dialog-sizing-centering/subtask-5-centering/verifier_report.md",
     "artifacts/ui-dialog-sizing-centering/subtask-5-centering/verifier_result.json"
   ],
+  "assumptions": [
+    "Used commit 0ec0684 as the subtask comparison base per the handoff and matching branch history."
+  ],
   "local_verification": {
     "command": "cd tests/gui && make && ./GuiTests",
-    "result": "passed in verifier worktree with OK (29 tests)"
+    "result": "passed with DISPLAY=:0 and OK (29 tests)"
   }
 }
