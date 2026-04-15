@@ -1,26 +1,20 @@
-Items to Add
-* Add Repair Turn
-* Add Seeker missile
-* Add Saving during tactical Game
-    * battle board only
-    * during strategic game
+Add Repair Turn
+Add Seeker missile
+Add Saving during tactical Game
+* battle board only
+* during strategic game
 
-Items to fix
-* Starting window of each applications (SSW and Battlesim) should open centered on the user's screen under the splash screen image
-* Work on formatting of damage summary dialog
-* Hits that damage already damaged systems e.g. ADF hits when ADF is zero are not falling back to hull damage.
-* spinners are horizontal, we want them vertical This seems to be a wxWidgits issue.
+(BattleSim:3531366): Gtk-CRITICAL **: 15:21:40.887: gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkSpinButton
+Opening dialog for Battlesim cut off
+windows opening all over large screens, let's set them all to open centered on the screen or dialogs centered on their window.
+ICM selection dialog not scaled up to make all items visible.
+Work on formatting of damage summary dialog
+Hits that damage already damaged systems e.g. ADF hits when ADF is zero are not falling back to hull damage.
 
 ---
-Prompt to launch on copilot (typically uses 1 premium request unless there are issues)
 
 Do the following in order and don't start the next numbered step until you finish the previous one. Also don't stop
 after completing any numbered step, you must complete all three.
 1. Read AGENTS.md and print READY!
 2. You are the Coodinator agent.  Read that agent definition and print "READY TO START".
 3. Run the coordinator workflow on the plan at `plans/gui-console-warning-remediation-plan.md` 
-
-Running on codex
-data:
- - plan with 3 subtasks used 13% of weekly context
- - generating a plan typically uses 1-3% of weekly context
