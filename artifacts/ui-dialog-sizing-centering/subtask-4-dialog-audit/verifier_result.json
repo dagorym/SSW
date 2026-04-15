@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "subtask": "ui-dialog-sizing-centering/subtask-4-dialog-audit",
+  "branch": "coord-ui-dialog-sizing-centering-verifier-20260414",
+  "review_target_branch": "coord-ui-dialog-sizing-centering-documenter-20260414",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-verifier-20260414",
+  "plan_reference": "plans/ui-dialog-sizing-centering-plan.md",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 1,
+  "test_sufficiency_summary": "Sufficient for scope: live strategic assertions cover the exact four remediated dialogs, and BattleSim additions remain audit-only source-contract checks aligned to the no-churn acceptance criterion.",
+  "documentation_accuracy_summary": "Accurate: AGENTS.md and doc/DesignNotes.md both describe only the four strategic dialog remediations and explicitly record BattleSim as audit-only for this pass.",
+  "documenter_commit_confirmed": "9c82294351f699eb08458edf65b222208ed5d6c5",
+  "artifact_files_written": [
+    "artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/verifier_report.md",
+    "artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/verifier_result.json"
+  ],
+  "local_verification": {
+    "command": "cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi",
+    "result": "failed in verifier environment on tests/gui/TacticalGuiLiveTest.cpp:568 (closeButtonFocused) outside the reviewed Subtask 4 diff"
+  }
+}
