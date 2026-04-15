@@ -896,6 +896,20 @@ compare the final shown top-level count to the pre-launch baseline after
 stabilization and forced-close cleanup passes, so the live suite now proves
 those launch chains return to a zero-residual shown-window state.
 
+The next dialog-sizing audit stayed evidence-driven instead of broadening the
+implementation surface. Four additional strategic dialogs with confirmed
+first-show clipping risk — `SatharRetreatGUI`, `CombatLocationGUI`,
+`TwoPlanetsGUI`, and `SelectResolutionGUI` — now lock their constructor-time
+geometry with `SetSizerAndFit(...)`, `SetMinSize(GetSize())`, and
+`Centre(wxBOTH)`. `StrategicGuiLiveTest` still carries the live in-client
+button-visibility checks for those flows and now also source-audits that those
+four concrete files retain that first-show sizing contract. The paired
+BattleSim follow-up in `BattleSimGuiLiveTest` was deliberately audit-only for
+this subtask: it source-checks that `LocalGameDialog`, `ScenarioDialog`, and
+`ScenarioEditorGUI` still keep their existing `Fit(...)` plus
+`SetMinSize(GetBestSize())` sizing contract, documenting that no additional
+BattleSim implementation churn was part of this pass.
+
 The tactical follow-up extends that same live-dialog discipline inside
 `TacticalGuiLiveTest`, which now registers direct
 `testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior` and
