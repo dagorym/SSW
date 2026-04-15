@@ -17,6 +17,7 @@ class BattleSimGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( BattleSimGuiLiveTest );
 CPPUNIT_TEST( testBattleSimFrameOpensLocalGameDialogAndReturns );
 CPPUNIT_TEST( testLocalGameDialogLaunchesPredefinedAndCustomModalChains );
+CPPUNIT_TEST( testBattleSimLaunchDialogsRetainFirstShowSizingContracts );
 CPPUNIT_TEST( testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage );
 CPPUNIT_TEST( testScenarioEditorStartBattleLaunchesBattleScreenWithLifecycleCoverage );
 CPPUNIT_TEST_SUITE_END();
@@ -31,6 +32,7 @@ public:
 
 	void testBattleSimFrameOpensLocalGameDialogAndReturns();
 	void testLocalGameDialogLaunchesPredefinedAndCustomModalChains();
+	void testBattleSimLaunchDialogsRetainFirstShowSizingContracts();
 	void testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage();
 	void testScenarioEditorStartBattleLaunchesBattleScreenWithLifecycleCoverage();
 };

@@ -13,6 +13,8 @@
 #include <wx/statbox.h>
 #include <wx/toplevel.h>
 #include <cstdlib>
+#include <fstream>
+#include <sstream>
 
 #include "battleSim/BattleSimFrame.h"
 #include "battleSim/LocalGameDialog.h"
@@ -68,6 +70,13 @@ int countShownTopLevels(const WXGuiTestHarness & harness) {
 		}
 	}
 	return shownTopLevels;
+}
+
+std::string readFileText(const std::string & path) {
+	std::ifstream stream(path.c_str());
+	std::ostringstream contents;
+	contents << stream.rdbuf();
+	return contents.str();
 }
 
 void stabilizeTopLevels(WXGuiTestHarness & harness, int attempts = 4) {
@@ -404,6 +413,27 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 	stabilizeTopLevels(m_harness);
 	forceCloseShownTopLevels(m_harness);
 	CPPUNIT_ASSERT_EQUAL(0, countShownTopLevelsNotInBaseline(m_harness, baselineTopLevels));
+}
+
+void BattleSimGuiLiveTest::testBattleSimLaunchDialogsRetainFirstShowSizingContracts() {
+	struct DialogContractCheck {
+		const char * path;
+		const char * fitCall;
+		const char * minSizeCall;
+	};
+
+	const DialogContractCheck checks[] = {
+		{"src/battleSim/LocalGameDialog.cpp", "bSizer1->Fit( this );", "this->SetMinSize( this->GetBestSize() );"},
+		{"src/battleSim/ScenarioDialog.cpp", "fgSizer1->Fit( this );", "this->SetMinSize( this->GetBestSize() );"},
+		{"src/battleSim/ScenarioEditorGUI.cpp", "gSizer1->Fit( this );", "this->SetMinSize( this->GetBestSize() );"}
+	};
+
+	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); ++i) {
+		const std::string contents = readFileText(checks[i].path);
+		CPPUNIT_ASSERT(!contents.empty());
+		CPPUNIT_ASSERT(contents.find(checks[i].fitCall) != std::string::npos);
+		CPPUNIT_ASSERT(contents.find(checks[i].minSizeCall) != std::string::npos);
+	}
 }
 
 void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage() {

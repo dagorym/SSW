@@ -1116,6 +1116,30 @@ parent->Destroy();
 m_harness.pumpEvents(10);
 }
 
+void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContract() {
+	struct DialogContractCheck {
+		const char * path;
+		const char * setSizerAndFitCall;
+		const char * minSizeCall;
+		const char * centerCall;
+	};
+
+	const DialogContractCheck checks[] = {
+		{"../../src/gui/SatharRetreatGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->Centre( wxBOTH );"},
+		{"../../src/gui/CombatLocationGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->Centre( wxBOTH );"},
+		{"../../src/gui/TwoPlanetsGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->Centre( wxBOTH );"},
+		{"../../src/gui/SelectResolutionGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->Centre( wxBOTH );"}
+	};
+
+	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); ++i) {
+		const std::string contents = readFileText(checks[i].path);
+		CPPUNIT_ASSERT(!contents.empty());
+		CPPUNIT_ASSERT(contents.find(checks[i].setSizerAndFitCall) != std::string::npos);
+		CPPUNIT_ASSERT(contents.find(checks[i].minSizeCall) != std::string::npos);
+		CPPUNIT_ASSERT(contents.find(checks[i].centerCall) != std::string::npos);
+	}
+}
+
 void StrategicGuiLiveTest::testBattleResultsDialogUpdatesShipStatistics() {
 wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Battle Results Parent", wxDefaultPosition, wxSize(640, 480));
 parent->Show();
