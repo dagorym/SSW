@@ -1,0 +1,59 @@
+You are the Documenter Agent.
+
+Task summary:
+- GUI modal lifecycle instability in strategic live tests was remediated and dialog/frame centering behavior was reinforced across tactical/strategic adapter launch paths while preserving BattleSim/strategic/tactical placement regression coverage.
+
+Acceptance criteria validated:
+- Representative frames open centered on screen.
+- Representative parent-backed dialogs open centered relative to their parent.
+- Parentless modal cases use a deterministic screen-centered fallback.
+- Live GUI regression tests verify the placement policy for at least one frame, one tactical dialog, and one strategic or BattleSim dialog.
+
+Implementation branch or worktree context:
+- Implementation branch validated: coord-ui-dialog-sizing-centering-implementer-20260415
+- Tester worktree: /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerd-20260415
+- Tester branch: coord-ui-dialog-sizing-centering-testerd-20260415
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/battleSim/BattleSimFrame.cpp
+- src/battleSim/LocalGameDialog.cpp
+- src/battleSim/ScenarioDialog.cpp
+- src/gui/TacticalDamageSummaryGUI.cpp
+- src/gui/WXStrategicUI.cpp
+- src/gui/WXTacticalUI.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_result.json
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/gui && make && ./GuiTests
+- cd tests/gui && xvfb-run -a ./GuiTests (environment note: xvfb-run not installed)
+
+Final test outcomes:
+- GuiTests completed successfully with OK (29 tests).
+- Existing live GUI regressions validated the centering policy and modal lifecycle behavior with no additional test edits required.
+
+Documentation context:
+- Likely impacted docs: GUI test coverage notes, modal/dialog centering behavior references, and any milestone notes describing BattleSim/strategic/tactical dialog launch behavior.
+- Confirm docs reflect that parent-backed dialogs are centered to parent, parentless modal fallback is deterministic screen centering, and representative live tests enforce this policy.
+
+Plan and diff context:
+- Plan path assumption: use the active subtask artifact/story context under artifacts/ui-dialog-sizing-centering/subtask-5-centering if no dedicated plan file is present.
+- Comparison-base assumption: compare tester branch to coord-ui-dialog-sizing-centering-implementer-20260415 and/or shared parent commit where implementer remediation landed.
+
+Startup behavior:
+- If tester branch/worktree context and enough story/diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
