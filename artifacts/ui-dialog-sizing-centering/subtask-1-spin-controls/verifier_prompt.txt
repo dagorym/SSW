@@ -1,0 +1,63 @@
+You are the Verifier Agent.
+
+Task summary:
+- Stabilized wxGTK spin-control sizing for tactical speed setup and dynamic ICM allocation rows by replacing narrow fixed sizes with default-size plus best-size min-size behavior under existing sizer layouts.
+- Tester validated the implementation using `cd tests/tactical && make && ./TacticalTests` and `cd tests/gui && make && xvfb-run -a ./GuiTests`; both suites passed without additional tester-side test changes.
+- Documentation now updates `AGENTS.md` to record the wxGTK `wxSpinCtrl` sizing convention and the related GUI/tactical regression coverage.
+
+Acceptance criteria to verify:
+- Tactical setup speed selection shows a visible spin control with positive width and height.
+- ICM allocation rows show visible spin controls with positive width and height after row selection.
+- The implementation materially reduces the likelihood of collapsed or invalid spin-control geometry on wxGTK.
+- Existing tactical layout behavior outside the spin-control fixes remains stable.
+- GUI regression coverage is updated to exercise both spin-control surfaces.
+
+Implementation branch or worktree context:
+- Documenter branch: `coord-ui-dialog-sizing-centering-documenter-20260414`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-documenter-20260414`
+- Tester branch parent context: `coord-ui-dialog-sizing-centering-tester-20260414`
+- Implementer branch validated by Tester: `coord-ui-dialog-sizing-centering-implementer-20260414`
+- Comparison-base assumption: review the aggregate diff against `coord-ui-dialog-sizing-centering`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/tactical/FBattleDisplay.cpp`
+- `src/gui/ICMSelectionGUI.cpp`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `AGENTS.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/implementer_report.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/implementer_result.json`
+- `artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/tester_report.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/tester_result.json`
+- `artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/documenter_report.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/documenter_result.json`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Final test outcomes:
+- `TacticalTests`: OK (92 tests)
+- `GuiTests`: OK (27 tests)
+- No failing tests were reported; acceptance criteria were validated by the Tester.
+
+Plan and review context:
+- Plan-source assumption: `plans/ui-dialog-sizing-centering-plan.md`, specifically Subtask 1 for spin-control sizing stabilization.
+- Repository convention guidance: read `AGENTS.md`, including the updated testing summary and wxGTK `wxSpinCtrl` sizing note, and infer any remaining convention details from repository context when safe.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
