@@ -923,7 +923,12 @@ BattleSim follow-up in `BattleSimGuiLiveTest` was deliberately audit-only for
 this subtask: it source-checks that `LocalGameDialog`, `ScenarioDialog`, and
 `ScenarioEditorGUI` still keep their existing `Fit(...)` plus
 `SetMinSize(GetBestSize())` sizing contract, documenting that no additional
-BattleSim implementation churn was part of this pass.
+BattleSim implementation churn was part of this pass. A later validation-only
+recheck then reran `cd tests/tactical && make && ./TacticalTests` and
+`cd tests/gui && make && ./GuiTests` without further code changes, confirming
+the restored BattleSim modal-launch lifecycle still passes as `OK (92 tests)`
+for tactical and `OK (29 tests)` for GUI when the canonical GUI command can run
+directly.
 
 The tactical follow-up extends that same live-dialog discipline inside
 `TacticalGuiLiveTest`, which now registers direct
