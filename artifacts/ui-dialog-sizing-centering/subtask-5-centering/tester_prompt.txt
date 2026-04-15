@@ -1,17 +1,12 @@
 You are the Tester Agent.
 
 Task summary:
-- Remediated GUI modal crash/lifecycle instability in strategic live tests and reinforced centering behavior at tactical/strategic adapter modal launch sites while preserving BattleSim/strategic/tactical placement coverage.
+- Restored tactical live dialog centering verification and corrected parentless centering fallbacks to use deterministic screen-centric behavior in tactical/strategic adapters.
 
 Modified files:
-- src/battleSim/BattleSimFrame.cpp
-- src/battleSim/LocalGameDialog.cpp
-- src/battleSim/ScenarioDialog.cpp
 - src/gui/TacticalDamageSummaryGUI.cpp
-- src/gui/WXStrategicUI.cpp
 - src/gui/WXTacticalUI.cpp
-- tests/gui/BattleSimGuiLiveTest.cpp
-- tests/gui/StrategicGuiLiveTest.cpp
+- src/gui/WXStrategicUI.cpp
 - tests/gui/TacticalGuiLiveTest.cpp
 
 Acceptance criteria to validate (from Planner):
@@ -21,23 +16,19 @@ Acceptance criteria to validate (from Planner):
 - Live GUI regression tests verify the placement policy for at least one frame, one tactical dialog, and one strategic or BattleSim dialog.
 
 Create test files in:
-- No new tests expected for this remediation cycle (reuse existing GUI live suites in `tests/gui/` unless a regression requires narrowly-scoped follow-up).
+- No new tests expected for this remediation cycle (reuse existing GUI live suites in tests/gui/ unless a regression requires narrowly-scoped follow-up).
 
 Implementation context for testing:
-- Strategic crash remediation centered on `StrategicGuiLiveTest::testCombatSelectionDialogsReturnCodesAndState` and nearby modal-launch lifecycle handling.
-- Tactical/strategic adapters now explicitly center dialogs before `ShowModal()`:
-  - `src/gui/WXStrategicUI.cpp`
-  - `src/gui/WXTacticalUI.cpp`
-- BattleSim modal chains no longer hide/show parent windows around nested modal launches:
-  - `src/battleSim/BattleSimFrame.cpp`
-  - `src/battleSim/LocalGameDialog.cpp`
-  - `src/battleSim/ScenarioDialog.cpp`
-- Tactical damage summary dialog now uses fit/min-size centering contract and init-dialog default-focus reinforcement.
-- GUI live tests were updated for deterministic headless behavior while retaining representative frame/dialog placement checks.
+- Tactical live centering coverage now includes an explicit parent-backed centering assertion for the tactical damage summary modal in tests/gui/TacticalGuiLiveTest.cpp.
+- Tactical parentless coverage path remains live and now validates deterministic display-backed launch/close behavior.
+- Parentless fallback centering behavior was normalized to screen-centric APIs in:
+  - src/gui/WXTacticalUI.cpp
+  - src/gui/WXStrategicUI.cpp
+- src/gui/TacticalDamageSummaryGUI.cpp now chooses centering branch from the explicit constructor parent argument and enforces screen midpoint positioning for parentless launches.
 
 Suggested test command(s):
-- `cd tests/gui && make && ./GuiTests` (used in this environment)
-- If virtual display tooling is available, also run canonical headless form: `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- cd tests/gui && make && ./GuiTests
+- If virtual display wrapper is required: cd tests/gui && make && xvfb-run -a ./GuiTests
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.

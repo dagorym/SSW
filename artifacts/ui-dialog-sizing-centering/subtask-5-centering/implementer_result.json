@@ -2,16 +2,11 @@
   "status": "success",
   "subtask": "ui-dialog-sizing-centering/subtask-5-centering",
   "branch": "coord-ui-dialog-sizing-centering-implementer-20260415",
-  "implementation_commit_hash": "31c2640a790e622ac64af963fbdf3ef0aba11a87",
+  "implementation_commit_hash": "d4e5871e5ffe238f46a314a9f398b4d9e2eaa78d",
   "changed_files": [
-    "src/battleSim/BattleSimFrame.cpp",
-    "src/battleSim/LocalGameDialog.cpp",
-    "src/battleSim/ScenarioDialog.cpp",
     "src/gui/TacticalDamageSummaryGUI.cpp",
-    "src/gui/WXStrategicUI.cpp",
     "src/gui/WXTacticalUI.cpp",
-    "tests/gui/BattleSimGuiLiveTest.cpp",
-    "tests/gui/StrategicGuiLiveTest.cpp",
+    "src/gui/WXStrategicUI.cpp",
     "tests/gui/TacticalGuiLiveTest.cpp"
   ],
   "validation_commands_run": [

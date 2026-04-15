@@ -3,7 +3,7 @@
 Agent activation:
 - Requested agent: Implementer
 - Repository-local definition found: No
-- Shared definition found: Yes (`/home/tstephen/repos/agents/agents/implementer.md`)
+- Shared definition found: Yes (/home/tstephen/repos/agents/agents/implementer.md)
 - Precedence decision: shared implementer definition applied (no repository-local override found)
 - Workflow obligations followed:
   - Keep edits within allowed files and subtask scope
@@ -12,51 +12,37 @@ Agent activation:
   - Record implementation commit hash in machine-readable result artifact
 
 Preflight scope restatement:
-- Goal: remediate tester-reported GUI crash in `StrategicGuiLiveTest::testCombatSelectionDialogsReturnCodesAndState` and preserve centering policy behavior across BattleSim, tactical adapter, and strategic adapter flows.
-- Allowed files honored: only listed `src/battleSim/*`, `src/gui/*`, and `tests/gui/*` files were modified.
+- Goal: resolve verifier finding by restoring deterministic tactical live placement coverage and keep centering-policy behavior accurate in runtime/adapters.
+- Allowed files honored: only listed src/gui/* and tests/gui/* files were modified.
 - Acceptance criteria targeted:
   - Representative frames centered on screen.
-  - Representative parent-backed dialogs centered on parent with parentless fallback behavior.
-  - Live GUI regression coverage for frame/dialog launch paths.
-- Validation command (smallest relevant existing command): `cd tests/gui && make && ./GuiTests`.
+  - Representative parent-backed dialogs centered on parent with screen-centered fallback for parentless launch paths.
+  - Live GUI coverage includes frame + tactical dialog + strategic/BattleSim dialog placement policy checks.
+- Validation command used: cd tests/gui && make && ./GuiTests.
 
 Implementation summary:
-1. Stabilized strategic live test crash path and dialog lifecycle handling:
-   - Reworked `testCombatSelectionDialogsReturnCodesAndState` and related strategic launch path cleanup in `tests/gui/StrategicGuiLiveTest.cpp` to avoid unsafe modal lifecycle patterns that were triggering segmentation faults under GTK.
-2. Tightened runtime centering behavior at adapter call sites:
-   - Added explicit centering calls before modal display in `src/gui/WXStrategicUI.cpp` and `src/gui/WXTacticalUI.cpp` (parent-centered when parent exists, screen-centered fallback otherwise).
-3. Normalized BattleSim modal-launch behavior to preserve placement context:
-   - Removed parent hide/show wrapping around modal launches in:
-     - `src/battleSim/BattleSimFrame.cpp`
-     - `src/battleSim/LocalGameDialog.cpp`
-     - `src/battleSim/ScenarioDialog.cpp`
-4. Improved tactical damage summary modal setup:
-   - Updated `src/gui/TacticalDamageSummaryGUI.cpp` to use `SetSizerAndFit`, set min size from fitted size, preserve centering, and reinforce default-button/focus setup on dialog init.
-5. Updated representative live GUI coverage for deterministic headless execution:
-   - Adjusted tests in:
-     - `tests/gui/BattleSimGuiLiveTest.cpp`
-     - `tests/gui/StrategicGuiLiveTest.cpp`
-     - `tests/gui/TacticalGuiLiveTest.cpp`
-   - Kept coverage focused on frame/dialog launch policy while removing flaky WM-dependent assumptions and crash-prone modal lifecycles.
+1. Restored tactical live centering assertion coverage in tests/gui/TacticalGuiLiveTest.cpp by adding a deterministic parent-centered assertion for the representative tactical damage summary dialog (assertDialogCenteredOnParent(...) inside the modal interaction path).
+2. Added explicit parentless tactical damage summary modal launch coverage in the same fixture (ensures modal appears on a display and closes through production close path).
+3. Corrected tactical parentless fallback behavior to avoid implicit-parent centering drift:
+   - src/gui/TacticalDamageSummaryGUI.cpp: switched parentless branch to CentreOnScreen(wxBOTH) and applied explicit client-area midpoint positioning.
+   - Used constructor argument (parent) instead of GetParent() when choosing parent-vs-screen centering branch.
+4. Normalized adapter fallback centering semantics to screen in parentless cases:
+   - src/gui/WXTacticalUI.cpp: changed fallback calls to CentreOnScreen(wxBOTH).
+   - src/gui/WXStrategicUI.cpp: changed fallback calls to CentreOnScreen(wxBOTH).
 
 Files changed:
-- src/battleSim/BattleSimFrame.cpp
-- src/battleSim/LocalGameDialog.cpp
-- src/battleSim/ScenarioDialog.cpp
 - src/gui/TacticalDamageSummaryGUI.cpp
-- src/gui/WXStrategicUI.cpp
 - src/gui/WXTacticalUI.cpp
-- tests/gui/BattleSimGuiLiveTest.cpp
-- tests/gui/StrategicGuiLiveTest.cpp
+- src/gui/WXStrategicUI.cpp
 - tests/gui/TacticalGuiLiveTest.cpp
 
 Validation commands run:
-- `cd tests/gui && make && ./GuiTests` (iterative runs during remediation)
-- Final validation: `cd tests/gui && make && ./GuiTests`
+- cd tests/gui && make && ./GuiTests (baseline)
+- cd tests/gui && make && ./GuiTests (iterative remediation runs)
+- cd tests/gui && make && ./GuiTests (final)
 
 Validation outcome:
-- Final run: `OK (29 tests)`
-- Crash condition (`exit code 139` in strategic modal harness path) no longer reproduced.
+- Final run: OK (29 tests)
 
 Implementation/code commit:
-- `31c2640a790e622ac64af963fbdf3ef0aba11a87`
+- d4e5871e5ffe238f46a314a9f398b4d9e2eaa78d
