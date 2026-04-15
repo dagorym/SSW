@@ -1,0 +1,43 @@
+You are the Tester Agent.
+
+Task summary:
+- BattleSim launch frame now uses content-driven initial sizing/min-size hints and is centered on display; live GUI assertions verify launch controls (including Quit) are visible/reachable on first show.
+
+Modified files:
+- include/battleSim/BattleSimFrame.h
+- src/battleSim/BattleSimFrame.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The default BattleSim frame geometry no longer starts undersized relative to its controls.
+- The launch frame shows all three buttons without clipping on first display.
+- Live GUI coverage asserts that the Quit button is visible/reachable.
+- The frame is centered on screen.
+
+Create test files in:
+- /home/tstephen/repos/SSW/tests/gui/BattleSimGuiLiveTest.cpp
+
+Implementation context for testing:
+- BattleSimFrame constructor defaults changed from fixed pos/size to wxDefaultPosition/wxDefaultSize.
+- Constructor now uses sizer Fit + SetSizeHints for content-driven min-size behavior.
+- If an explicit size is passed, frame size is clamped to computed minimum so controls are not clipped.
+- Frame calls Centre(wxBOTH) after sizing.
+- Live test testBattleSimFrameOpensLocalGameDialogAndReturns now asserts all launch buttons exist, Quit button is shown and fully inside client bounds, and frame center is near display center.
+
+Suggested test command(s):
+- Assumption (planner guidance): cd tests/gui && make && xvfb-run -a ./GuiTests
+- Fallback when xvfb-run is unavailable: cd tests/gui && make && ./GuiTests
+
+Existing validation failures caused only by intentional behavior changes:
+- None.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
