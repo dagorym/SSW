@@ -1,0 +1,43 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented BattleSim and ICM dialog sizing fixes so dialogs open content-complete and ICM rebuilds remain properly sized.
+
+Modified files:
+- src/battleSim/LocalGameDialog.cpp
+- src/battleSim/ScenarioDialog.cpp
+- src/battleSim/ScenarioEditorGUI.cpp
+- src/gui/ICMSelectionGUI.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- LocalGameDialog, ScenarioDialog, ScenarioEditorGUI, and ICMSelectionGUI display all controls and action buttons without clipping by default.
+- ICMSelectionGUI remains properly sized after selectWeapon(...) rebuilds its dynamic ship rows.
+- Existing BattleSim modal launch paths continue to work.
+- GUI regression coverage is updated for the affected dialogs where deterministic harness checks are practical.
+
+Create test files in:
+- /home/tstephen/repos/SSW/tests/gui/BattleSimGuiLiveTest.cpp
+- /home/tstephen/repos/SSW/tests/gui/TacticalGuiLiveTest.cpp
+
+Implementation context for testing:
+- Constructors now call best-size min sizing and center on parent/screen for first-show correctness in LocalGameDialog, ScenarioDialog, ScenarioEditorGUI, and ICMSelectionGUI.
+- ICMSelectionGUI selectWeapon(...) now re-fits and sets dialog size/min size to GetBestSize() after rebuilding dynamic ship rows.
+- BattleSim live tests now assert key buttons remain inside dialog client bounds for launched LocalGameDialog, ScenarioDialog, and ScenarioEditorGUI.
+- Tactical live test now verifies ICM dialog initial controls are visible and post-rebuild spin controls remain visible while dialog size stays non-degenerate.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- Assumption fallback when xvfb-run is unavailable in the environment: cd tests/gui && make && ./GuiTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

@@ -1,0 +1,24 @@
+{
+  "status": "success",
+  "subtask_id": "subtask-3-known-dialogs",
+  "branch": "coord-ui-dialog-sizing-centering-implementer-20260414",
+  "implementation_commit": "02c49e5",
+  "changed_files": [
+    "src/battleSim/LocalGameDialog.cpp",
+    "src/battleSim/ScenarioDialog.cpp",
+    "src/battleSim/ScenarioEditorGUI.cpp",
+    "src/gui/ICMSelectionGUI.cpp",
+    "tests/gui/BattleSimGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.cpp"
+  ],
+  "validation_commands": [
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && make && ./GuiTests"
+  ],
+  "validation_outcome": "passed (GuiTests OK (27 tests); xvfb-run unavailable in environment)",
+  "artifacts": [
+    "artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/implementer_report.md",
+    "artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/tester_prompt.txt",
+    "artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/implementer_result.json"
+  ]
+}
