@@ -1,0 +1,41 @@
+You are the Tester Agent.
+
+Task summary:
+- Audited additional strategic/BattleSim launch-flow dialogs for initial clipping risk and remediated four strategic dialogs with first-show fit/min-size/centering hardening; added deterministic regression checks for those remediated dialogs.
+
+Modified files:
+- src/gui/SatharRetreatGUI.cpp
+- src/gui/CombatLocationGUI.cpp
+- src/gui/TwoPlanetsGUI.cpp
+- src/gui/SelectResolutionGUI.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The implementation documents, through code/test changes, which additional dialogs required remediation.
+- Each remediated dialog opens large enough to show its controls and action buttons without clipping.
+- The test coverage added or updated maps to the dialogs actually remediated.
+- The subtask stays evidence-driven and does not broaden into speculative churn.
+
+Create test files in:
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+
+Implementation context for testing:
+- SatharRetreatGUI, CombatLocationGUI, TwoPlanetsGUI, and SelectResolutionGUI now use SetSizerAndFit(), lock minimum size to computed first-show size, and call Centre(wxBOTH).
+- Strategic live tests now assert action buttons are fully inside dialog client area for those remediated dialogs before modal completion actions.
+- No BattleSim source files were modified in this subtask.
+
+Suggested test command(s):
+- Primary (planner guidance): cd tests/gui && make && xvfb-run -a ./GuiTests
+- Environment fallback assumption when xvfb-run is unavailable: cd tests/gui && make && ./GuiTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
