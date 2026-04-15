@@ -1,0 +1,63 @@
+You are the Verifier Agent.
+
+Task summary:
+- Implementer fixed BattleSim and ICM dialog first-show sizing/centering behavior, tester validated the GUI suite, and documenter updated contributor/user documentation to match the shipped behavior.
+
+Acceptance criteria to verify:
+- LocalGameDialog, ScenarioDialog, ScenarioEditorGUI, and ICMSelectionGUI display all controls and action buttons without clipping by default.
+- ICMSelectionGUI remains properly sized after `selectWeapon(...)` rebuilds its dynamic ship rows.
+- Existing BattleSim modal launch paths continue to work.
+- GUI regression coverage is updated for the affected dialogs where deterministic harness checks are practical.
+- Documentation now reflects the implemented dialog sizing/centering behavior and contributor guidance.
+
+Implementation branch or worktree context:
+- Verification branch/worktree should review `coord-ui-dialog-sizing-centering-documenter-20260414` at `/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-documenter-20260414`.
+- Implementer branch: `coord-ui-dialog-sizing-centering-implementer-20260414`.
+- Tester branch/worktree: `coord-ui-dialog-sizing-centering-tester-20260414` at `/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-tester-20260414`.
+- Comparison-base assumption: branch `coord-ui-dialog-sizing-centering` is the common parent for implementer/tester/documenter work.
+- Documentation commit hash: `e577b1703b149603cf6bcffc73891c7514f119dc`.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/battleSim/LocalGameDialog.cpp`
+- `src/battleSim/ScenarioDialog.cpp`
+- `src/battleSim/ScenarioEditorGUI.cpp`
+- `src/gui/ICMSelectionGUI.cpp`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `AGENTS.md`
+- `doc/UsersGuide.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/tester_report.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/tester_result.json`
+- `artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/documenter_report.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/documenter_result.json`
+- `artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Final test outcomes:
+- GuiTests passed: 27 passed, 0 failed.
+- Acceptance criteria were validated by existing/newly-added GUI assertions and runtime execution.
+
+Plan and review context:
+- Assumption: `plans/ui-dialog-sizing-centering-plan.md` is the governing story plan because it matches the task slug and documents the dialog sizing/centering cleanup subtasks.
+- Read repository guidance from `AGENTS.md` and infer any additional convention-file details from repository context when safe.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/UsersGuide.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm the shared artifacts exist, the documentation artifact JSON keeps the documentation commit hash above, and all changes are committed.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

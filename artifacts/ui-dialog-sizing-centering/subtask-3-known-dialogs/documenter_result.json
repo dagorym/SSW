@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "task": "ui-dialog-sizing-centering/subtask-3-known-dialogs",
+  "branch": "coord-ui-dialog-sizing-centering-documenter-20260414",
+  "commit": "e577b1703b149603cf6bcffc73891c7514f119dc",
+  "plan_assumption": "plans/ui-dialog-sizing-centering-plan.md",
+  "documentation_files_modified": [
+    "AGENTS.md",
+    "doc/UsersGuide.md"
+  ],
+  "artifact_files_written": [
+    "artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/documenter_report.md",
+    "artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/documenter_result.json",
+    "artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/verifier_prompt.txt"
+  ],
+  "commands_reviewed": [
+    "cd tests/gui && make && xvfb-run -a ./GuiTests"
+  ],
+  "final_test_outcomes": [
+    "GuiTests passed: 27 passed, 0 failed.",
+    "Acceptance criteria validated by GUI assertions and runtime execution."
+  ]
+}
