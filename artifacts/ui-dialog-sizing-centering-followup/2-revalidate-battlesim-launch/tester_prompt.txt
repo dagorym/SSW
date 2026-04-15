@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Task summary:
+- Revalidated BattleSim launch-path follow-up by executing the requested tactical and GUI validation suites in the assigned implementer worktree.
+- No implementation code changes were required because restored behavior already passed the requested validations.
+
+Modified files:
+- None (No Changes Made)
+
+Acceptance criteria to validate (from Planner):
+- The follow-up runs `cd tests/tactical && make && ./TacticalTests`.
+- The follow-up runs `cd tests/gui && make && ./GuiTests`, or clearly documents the closest supported fallback command when environment display constraints prevent the canonical command.
+- Validation confirms that the BattleSim modal-launch lifecycle regression is fixed.
+- Any documentation edits remain narrowly scoped to the restored launch contract or the exact validation story.
+- Follow-up artifacts capture commands run, results observed, and any remaining non-blocking environment limitations accurately.
+
+Create test files in:
+- Assumption: No new test files are required for this follow-up because scope is validation-only and existing suites already cover the target behavior.
+
+Implementation context for testing:
+- Validation executed in branch `impl-ui-dialog-sizing-centering-followup-subtask-2` under worktree `/home/tstephen/repos/SSW-worktrees/ui-dialog-sizing-centering-followup-subtask-2-implementer`.
+- Tactical suite passed: `OK (92 tests)`.
+- GUI live suite passed: `OK (29 tests)`.
+- Canonical GUI command succeeded directly (`./GuiTests`), so no xvfb fallback assumption was needed for this run.
+
+Suggested test command(s):
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && ./GuiTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering-followup/2-revalidate-battlesim-launch
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
