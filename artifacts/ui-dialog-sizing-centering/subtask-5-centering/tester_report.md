@@ -1,48 +1,37 @@
-### Final Test Report
+# Tester Report
 
-**Agent activation**
-- Requested agent: Tester
-- Repository-local definition found: No
-- Shared definition found: Yes (/home/tstephen/repos/agents/agents/tester.md)
-- Precedence decision: shared tester definition applied (no repository-local override found)
-- Governing workflow obligations followed:
-  - Audit existing GUI live tests before adding new tests
-  - Validate acceptance criteria in assigned worktree/branch without implementation edits
-  - Execute relevant existing test commands and report evidence
-  - Produce required tester artifacts in shared artifact directory
-  - Commit required artifact changes
+## Scope
+Validated tactical/strategic dialog centering remediation on branch coord-ui-dialog-sizing-centering-testere-20260415 against acceptance criteria for frame centering, parent-backed dialog centering, and deterministic parentless fallback behavior.
 
-**Worktree/branch confirmation**
-- Worktree: /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerd-20260415
-- Branch: coord-ui-dialog-sizing-centering-testerd-20260415
+## Assumptions
+- Used repository-standard GUI live suite command as the smallest relevant command: cd tests/gui && make && xvfb-run -a ./GuiTests.
+- Existing live GUI tests already cover this remediation cycle; no new tests were needed.
 
-**Testing scope restatement**
-- Validate GUI centering/lifecycle remediation using existing tests/gui live suite coverage for representative frame placement, parent-backed dialog centering, and parentless modal fallback behavior.
+## Acceptance Criteria Traceability
+1. Representative frames open centered on screen — Covered by BattleSimGuiLiveTest (assertFrameCenteredOnDisplay, assertTopLevelCenteredOnDisplay); passed.
+2. Representative parent-backed dialogs open centered relative to their parent — Covered by TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior (assertDialogCenteredOnParent) and existing strategic/battlesim parent-backed dialog checks; passed.
+3. Parentless modal cases use deterministic screen-centered fallback — Covered by parentless tactical and BattleSim top-level display assertions (wxDisplay::GetFromWindow plus display-center assertions where applicable); passed.
+4. Live GUI regression tests verify frame + tactical dialog + strategic/BattleSim dialog placement policy — Covered by existing TacticalGuiLiveTest, StrategicGuiLiveTest, and BattleSimGuiLiveTest; passed.
 
-**Assumptions applied**
-- Existing tests/gui/GuiTests is the smallest relevant command covering all acceptance criteria.
-- Canonical xvfb-run form is optional and only run if the tool is available.
+## Commands Run
+- cd tests/gui && make && xvfb-run -a ./GuiTests
 
-**Attempts completed:** 1/3  
-**Total tests written:** 0 (existing tests reused)  
-**Tests passed:** 29  
-**Tests failed:** 0
+## Results
+- Total tests written: 0
+- Existing tests executed: 29
+- Tests passed: 29
+- Tests failed: 0
 
-#### Acceptance criteria status
-- PASS: Representative frames open centered on screen.
-- PASS: Representative parent-backed dialogs open centered relative to their parent.
-- PASS: Parentless modal cases use deterministic screen-centered fallback.
-- PASS: Live GUI regression tests verify placement policy for representative frame + tactical dialog + strategic/BattleSim dialog.
+## File Changes
+- Test files added/modified: none
+- Artifact files added:
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_report.md
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_result.json
+  - artifacts/ui-dialog-sizing-centering/subtask-5-centering/documenter_prompt.txt
 
-#### Commands executed
-1. cd /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerd-20260415/tests/gui && make && ./GuiTests
-2. cd /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerd-20260415/tests/gui && xvfb-run -a ./GuiTests (failed: xvfb-run: command not found)
+## Commit Decision
+- Test-file commit: No Changes Made (no test edits required)
+- Artifact commit: pending in this stage and included after artifact generation.
 
-#### Key evidence
-- GuiTests completed successfully with OK (29 tests).
-- No implementation or test-source modifications were required.
-
-#### Commit decision
-- Test-file commit: No Changes Made (no test files added/modified)
-- Artifact files written: tester_report.md, tester_result.json, documenter_prompt.txt
-- Temporary byproducts: none retained
+## Cleanup
+- No temporary non-handoff byproducts were created.
