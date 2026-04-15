@@ -1,0 +1,60 @@
+You are the Verifier Agent.
+
+Task summary:
+- BattleSim launch frame now uses content-driven initial sizing and minimum-size hints so its three launcher buttons render unclipped on first display, and the frame centers on screen; existing live GUI coverage already validates that behavior, and documentation has been updated to match the shipped implementation.
+
+Acceptance criteria to verify:
+- The default BattleSim frame geometry no longer starts undersized relative to its controls.
+- The launch frame shows all three buttons without clipping on first display.
+- Live GUI coverage asserts that the Quit button is visible and reachable.
+- The frame is centered on screen.
+
+Implementation branch or worktree context:
+- Implementation branch: coord-ui-dialog-sizing-centering-implementer-20260414
+- Tester branch/worktree: coord-ui-dialog-sizing-centering-tester-20260414 at /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-tester-20260414
+- Documenter branch/worktree: coord-ui-dialog-sizing-centering-documenter-20260414 at /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-documenter-20260414
+- Comparison-base assumption: evaluate the combined tester/documenter diff against coord-ui-dialog-sizing-centering.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- include/battleSim/BattleSimFrame.h
+- src/battleSim/BattleSimFrame.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- AGENTS.md
+- doc/DesignNotes.md
+- artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame/tester_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame/tester_result.json
+- artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame/documenter_prompt.txt
+- artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame/documenter_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame/documenter_result.json
+- artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame/verifier_prompt.txt
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests (failed: xvfb-run not installed)
+- cd tests/gui && ./GuiTests (passed: OK (27 tests))
+
+Final test outcomes:
+- GUI suite passed (27/27).
+- Existing live BattleSim GUI coverage asserts button visibility and reachability, unclipped first-show launch controls, and display centering.
+- No unmet acceptance criteria were reported by the tester.
+
+Plan and review context:
+- Assumption: no story-specific plan file for ui-dialog-sizing-centering/subtask-2-battlesim-frame was present under plans/ in this worktree, so review scope should be inferred from the implemented/tested diff and the acceptance criteria above.
+- Convention guidance: use AGENTS.md plus /home/tstephen/repos/agents/AGENTS_LOOKUP.md for repository and named-agent workflow requirements.
+
+Documentation files updated:
+- AGENTS.md
+- doc/DesignNotes.md
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
