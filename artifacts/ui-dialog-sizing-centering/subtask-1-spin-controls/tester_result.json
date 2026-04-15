@@ -1,0 +1,46 @@
+{
+  "status": "success",
+  "task": "ui-dialog-sizing-centering",
+  "subtask": "subtask-1-spin-controls",
+  "branch": "coord-ui-dialog-sizing-centering-tester-20260414",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-tester-20260414",
+  "test_commit_hash": "No Changes Made",
+  "test_files_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "tests_passed": 119,
+    "tests_failed": 0
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "Tactical setup speed selection shows a visible spin control with positive width and height.",
+      "status": "pass"
+    },
+    {
+      "criterion": "ICM allocation rows show visible spin controls with positive width and height after row selection.",
+      "status": "pass"
+    },
+    {
+      "criterion": "Implementation materially reduces likelihood of collapsed or invalid spin-control geometry on wxGTK.",
+      "status": "pass"
+    },
+    {
+      "criterion": "Existing tactical layout behavior outside spin-control fixes remains stable.",
+      "status": "pass"
+    },
+    {
+      "criterion": "GUI regression coverage is updated to exercise both spin-control surfaces.",
+      "status": "pass"
+    }
+  ],
+  "unmet_acceptance_criteria": [],
+  "artifact_files": [
+    "artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/tester_report.md",
+    "artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/tester_result.json",
+    "artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/documenter_prompt.txt"
+  ]
+}

@@ -1,0 +1,59 @@
+You are the Documenter Agent.
+
+Task summary:
+- Stabilized wxGTK spin-control sizing for tactical speed setup and dynamic ICM allocation rows by replacing narrow fixed sizes with default-size plus best-size min-size behavior under existing sizer layouts.
+- Tester validated the implementation using tactical and GUI regression suites; no additional tester-side test code changes were required.
+
+Acceptance criteria validated:
+- Tactical setup speed selection shows a visible spin control with positive width and height.
+- ICM allocation rows show visible spin controls with positive width and height after row selection.
+- The implementation materially reduces the likelihood of collapsed or invalid spin-control geometry on wxGTK.
+- Existing tactical layout behavior outside the spin-control fixes remains stable.
+- GUI regression coverage is updated to exercise both spin-control surfaces.
+
+Implementation branch or worktree context:
+- Tester branch: coord-ui-dialog-sizing-centering-tester-20260414
+- Tester worktree: /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-tester-20260414
+- Implementation branch validated: coord-ui-dialog-sizing-centering-implementer-20260414
+- Most likely comparison base (assumption): coord-ui-dialog-sizing-centering (or master ancestor if needed for full history context).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleDisplay.cpp
+- src/gui/ICMSelectionGUI.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/tester_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/tester_result.json
+- artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Final test outcomes:
+- TacticalTests: OK (92 tests)
+- GuiTests: OK (27 tests)
+- No failing tests; acceptance criteria validated.
+
+Documentation context:
+- Likely documentation impact: tactical GUI sizing behavior notes and GUI/tactical regression coverage descriptions where spin-control geometry guarantees are discussed.
+- Confirmed behavior: tactical speed spin control and dynamic ICM row spin controls maintain positive, visible geometry under sizer-managed layout on wxGTK-targeted flows.
+
+Plan and diff context:
+- Story context: ui-dialog-sizing-centering / subtask-1-spin-controls.
+- Plan path guidance (assumption): review repo artifacts/plans related to ui-dialog-sizing-centering for traceability.
+- Comparison-base guidance: diff tester/implementer branch against coord-ui-dialog-sizing-centering first; fall back to master if needed to capture full aggregate change context.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
