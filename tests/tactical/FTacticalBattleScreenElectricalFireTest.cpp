@@ -179,9 +179,25 @@ assertAppearsInOrder(customBody, std::vector<std::string>(1, "ScenarioEditorGUI 
 assertAppearsInOrder(customBody, std::vector<std::string>(1, "d.ShowModal();"));
 CPPUNIT_ASSERT(customBody.find("new ScenarioEditorGUI(") == std::string::npos);
 
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "Hide();"));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "Show();"));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4), countOccurrences(scenarioDialogSource, "bb.ShowModal();"));
+const char * scenarioSignatures[] = {
+"void ScenarioDialog::onScenario1( wxCommandEvent& event )",
+"void ScenarioDialog::onScenario2( wxCommandEvent& event )",
+"void ScenarioDialog::onScenario3( wxCommandEvent& event )",
+"void ScenarioDialog::onScenario4( wxCommandEvent& event )"
+};
+for (size_t i = 0; i < sizeof(scenarioSignatures) / sizeof(scenarioSignatures[0]); ++i) {
+const std::string scenarioBody = extractFunctionBody(scenarioDialogSource, scenarioSignatures[i]);
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(scenarioBody, "Hide();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(scenarioBody, "bb.ShowModal();"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(scenarioBody, "Show();"));
+std::vector<std::string> scenarioSequence;
+scenarioSequence.push_back("Hide();");
+scenarioSequence.push_back("bb.ShowModal();");
+scenarioSequence.push_back("Show();");
+assertAppearsInOrder(scenarioBody, scenarioSequence);
+CPPUNIT_ASSERT(scenarioBody.find("bb.Show();") == std::string::npos);
+}
+
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(scenarioEditorSource, "bb.ShowModal();"));
 CPPUNIT_ASSERT(scenarioEditorSource.find("bb.Show();") == std::string::npos);
 }

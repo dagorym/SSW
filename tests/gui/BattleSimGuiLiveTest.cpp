@@ -483,6 +483,9 @@ void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWit
 	FBattleScreen::resetLifecycleCounters();
 	{
 		ScenarioDialogTestPeer * dialog = new ScenarioDialogTestPeer(parent);
+		dialog->Show();
+		m_harness.pumpEvents();
+		CPPUNIT_ASSERT(dialog->IsShown());
 		bool launchedTopLevelPresented = false;
 		m_harness.runVoidFunctionWithAction([&]() {
 			dialog->clickScenario1();
@@ -493,6 +496,7 @@ void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWit
 			launchedTopLevelPresented = (launchedTopLevel != NULL);
 		}, 0, 200);
 		CPPUNIT_ASSERT(launchedTopLevelPresented);
+		CPPUNIT_ASSERT(dialog->IsShown());
 		if (dialog->IsShown()) {
 			dialog->Hide();
 		}
