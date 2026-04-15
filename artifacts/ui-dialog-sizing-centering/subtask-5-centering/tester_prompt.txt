@@ -1,0 +1,66 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented a unified centering policy: BattleSim frame centers on screen; relevant BattleSim/strategic/tactical dialogs center on parent when present and use screen-centered fallback when parentless; live GUI tests now assert representative placement behavior.
+
+Modified files:
+- src/battleSim/BattleSimFrame.cpp
+- src/battleSim/LocalGameDialog.cpp
+- src/battleSim/ScenarioDialog.cpp
+- src/battleSim/ScenarioEditorGUI.cpp
+- src/gui/BattleResultsGUI.cpp
+- src/gui/CombatFleetsGUI.cpp
+- src/gui/CombatLocationGUI.cpp
+- src/gui/ICMSelectionGUI.cpp
+- src/gui/SatharFleetsGUI.cpp
+- src/gui/SatharRetreatGUI.cpp
+- src/gui/SelectCombatGUI.cpp
+- src/gui/SelectJumpGUI.cpp
+- src/gui/SelectResolutionGUI.cpp
+- src/gui/SystemDialogGUI.cpp
+- src/gui/TacticalDamageSummaryGUI.cpp
+- src/gui/TransferShipsGUI.cpp
+- src/gui/TwoPlanetsGUI.cpp
+- src/gui/UPFUnattachedGUI.cpp
+- src/gui/ViewFleetGUI.cpp
+- src/gui/WXStrategicUI.cpp
+- src/gui/WXTacticalUI.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Representative frames open centered on screen.
+- Representative parent-backed dialogs open centered relative to their parent.
+- Parentless modal cases use a deterministic screen-centered fallback.
+- Live GUI regression tests verify the placement policy for at least one frame, one tactical dialog, and one strategic or BattleSim dialog.
+
+Create test files in:
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Implementation context for testing:
+- Constructor-level centering was normalized in BattleSim and strategic/tactical dialog classes by using CentreOnParent(wxBOTH) when GetParent()!=NULL, otherwise Centre(wxBOTH).
+- BattleSim frame now uses CentreOnScreen(wxBOTH).
+- WXStrategicUI now allows parentless modal construction for dialog-launching methods (still guards null model inputs).
+- WXTacticalUI showDamageSummary and runICMSelection now allow null parent and rely on dialog fallback centering.
+- Live test changes add geometric centering assertions for frame/dialog center points (with tolerance).
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- If xvfb is unavailable, treat that as environment setup gap and provision equivalent virtual display before final verdict.
+
+Existing validation failures to account for:
+- In implementer run: xvfb-run was missing in environment; direct headless ./GuiTests crashed without virtual display. No known intentional behavior-change failures were observed.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-5-centering
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
