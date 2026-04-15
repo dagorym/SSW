@@ -1,0 +1,53 @@
+You are the Verifier Agent.
+
+Task summary:
+- Repository guidance for wxGTK value-selection `wxSpinCtrl` controls explicitly documents `wxSP_ARROW_KEYS | wxSP_VERTICAL`, and the tactical test-summary text explicitly reflects the token-level regression assertion already present in coverage. The documenter review confirmed the existing `AGENTS.md` wording already matched the implemented and tested state, so no further repository documentation edit was required in this stage.
+
+Acceptance criteria to verify:
+- `AGENTS.md` records the explicit vertical-spinner convention in a location consistent with the current wxGTK spin-control guidance.
+- Any updated test-summary language remains accurate to the implemented regression coverage.
+
+Implementation branch or worktree context:
+- Implementer branch/worktree: `coord-ui-dialog-sizing-centering-svo-s3-implementer-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s3-implementer-20260415`
+- Tester branch/worktree: `coord-ui-dialog-sizing-centering-svo-s3-tester-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s3-tester-20260415`
+- Documenter branch/worktree: `coord-ui-dialog-sizing-centering-svo-s3-documenter-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s3-documenter-20260415`
+- Comparison base assumption: review against the parent of implementer commit `09732f2c41adc44fc63ab141444bffc221dcd85c`, which resolves to `a047d2f35d305dfcfa1558abca272c24bb8d7b68`.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `AGENTS.md`
+- `artifacts/spinner-vertical-orientation/subtask-3/tester_report.md`
+- `artifacts/spinner-vertical-orientation/subtask-3/tester_result.json`
+- `artifacts/spinner-vertical-orientation/subtask-3/documenter_report.md`
+- `artifacts/spinner-vertical-orientation/subtask-3/documenter_result.json`
+- `artifacts/spinner-vertical-orientation/subtask-3/verifier_prompt.txt`
+
+Commands executed:
+- `rg -n "wxSP_ARROW_KEYS \\| wxSP_VERTICAL|value-selection spinner" AGENTS.md tests/gui/TacticalGuiLiveTest.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `rg -n "wxSP_VERTICAL|wxSP_ARROW_KEYS" tests/gui/TacticalGuiLiveTest.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+
+Final test outcomes:
+- Documentation and source-contract validation passed with no failures in the tester stage.
+- `AGENTS.md` explicitly documents `wxSP_ARROW_KEYS | wxSP_VERTICAL` in wxGTK value-selection spinner guidance.
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp` still asserts the token-level style contract.
+- `tests/gui/TacticalGuiLiveTest.cpp` still asserts runtime style bits and the same source token for the explicit vertical style.
+
+Plan and review context:
+- Plan path: `plans/spinner-vertical-orientation-plan.md`
+- Convention guidance: read `AGENTS.md`, especially the wxGTK `wxSpinCtrl` guidance and the GUI/tactical test summaries, and confirm they still align with the implemented regression sources.
+
+Documentation files updated:
+- `AGENTS.md` was the implemented documentation target for this subtask; this documenter pass made no further repository-doc edits because the wording was already accurate.
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/spinner-vertical-orientation/subtask-3`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
