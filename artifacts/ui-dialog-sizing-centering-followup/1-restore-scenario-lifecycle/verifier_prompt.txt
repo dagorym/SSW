@@ -1,0 +1,59 @@
+You are the Verifier Agent.
+
+Task summary:
+- Restored `ScenarioDialog` predefined-scenario modal lifecycle so each handler hides the dialog before launching stack-owned modal `FBattleScreen bb;` and shows it again afterward.
+- Tester validated the tightened tactical source-contract assertions and BattleSim GUI lifecycle regression behavior.
+- Documentation now records the shipped BattleSim launch-path lifecycle contract and the aligned tactical/live GUI coverage.
+
+Acceptance criteria to verify:
+- All four `ScenarioDialog` tactical launch handlers hide the dialog before `bb.ShowModal()` and show it again afterward.
+- The implementation keeps `FBattleScreen bb;` on the stack and does not introduce `new FBattleScreen(...)`, `bb.Show()`, or other ownership-pattern changes.
+- `ScenarioDialog` still retains its current first-show sizing contract (`Fit(...)` plus `SetMinSize(GetBestSize())`) and centering behavior.
+- The tactical launch-path regression in `FTacticalBattleScreenElectricalFireTest` remains aligned with the restored modal contract.
+- Any GUI lifecycle assertion changes remain scoped to this BattleSim launch path and do not broaden the story.
+- The updated documentation accurately reflects the shipped BattleSim modal-launch contract and supporting regression coverage.
+
+Implementation branch or worktree context:
+- Documenter branch/worktree: `doc-ui-dialog-sizing-centering-followup-subtask-1` at `/home/tstephen/repos/SSW-worktrees/ui-dialog-sizing-centering-followup-subtask-1-documenter`
+- Tester branch: `test-ui-dialog-sizing-centering-followup-subtask-1`
+- Implementer branch: `impl-ui-dialog-sizing-centering-followup-subtask-1`
+- Assumption: compare the tested/documented story against `impl-ui-dialog-sizing-centering-followup-subtask-1` first, then repository integration context as needed.
+- Documentation commit: `f6b7dc4dd55b8987eda07847cf9afd48863cbdad`
+- Tester commit: `657cec5b2ff059b64b6ac597a0ca6e934b3fb1e5`
+- Implementer commit: `8d7c3a55c47e5cbcf73de59222f411e40dbd5f31`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/battleSim/ScenarioDialog.cpp`
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+- `doc/DesignNotes.md`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && ./GuiTests`
+
+Final test outcomes:
+- Tactical suite passed: `OK (92 tests)`.
+- GUI suite passed: `OK (29 tests)`.
+- No unmet acceptance criteria were reported by the tester.
+
+Plan and review context:
+- Assumption: use `plans/ui-dialog-sizing-centering-followup-plan.md` as the story plan source because it names subtask `1-restore-scenario-lifecycle` and matches the provided acceptance criteria.
+- Repository guidance files to consult: `AGENTS.md` and the updated `doc/DesignNotes.md`.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
