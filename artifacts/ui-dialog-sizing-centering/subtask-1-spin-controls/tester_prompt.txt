@@ -1,0 +1,43 @@
+You are the Tester Agent.
+
+Task summary:
+- Stabilized wxGTK spin-control sizing for tactical speed setup and dynamic ICM allocation rows by removing narrow hard-coded widths and enforcing best-size min-size behavior under existing sizer layouts.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- src/gui/ICMSelectionGUI.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Tactical setup speed selection shows a visible spin control with positive width and height.
+- ICM allocation rows show visible spin controls with positive width and height after row selection.
+- The implementation materially reduces the likelihood of collapsed or invalid spin-control geometry on wxGTK.
+- Existing tactical layout behavior outside the spin-control fixes remains stable.
+- GUI regression coverage is updated to exercise both spin-control surfaces.
+
+Create test files in:
+- /home/tstephen/repos/SSW/tests/gui/TacticalGuiLiveTest.cpp
+- /home/tstephen/repos/SSW/tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Implementation context for testing:
+- FBattleDisplay speed selector now uses wxDefaultSize plus SetMinSize(GetBestSize()) while preserving existing prompt/action-button layout paths.
+- ICMSelectionGUI dynamically created allocation spin controls now use wxDefaultSize plus SetMinSize(GetBestSize()) and remain grid-sizer managed.
+- TacticalGuiLiveTest now asserts positive geometry for dynamic ICM spin controls after selecting a weapon row.
+- FTacticalBattleDisplayFireFlowTest source-contract assertions now require the speed spin-control min-size line and reject the old wxSize(50,-1) constructor path.
+
+Suggested test command(s):
+- cd tests/gui && make && ./GuiTests
+- cd tests/tactical && make && ./TacticalTests
+- Assumption: if the execution environment is headless and xvfb-run exists, use cd tests/gui && make && xvfb-run -a ./GuiTests.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
