@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Task summary:
+- Restored ScenarioDialog modal lifecycle in predefined scenario launch handlers so the ScenarioDialog hides before launching modal FBattleScreen and is shown again afterward.
+
+Modified files:
+- src/battleSim/ScenarioDialog.cpp
+
+Acceptance criteria to validate (from Planner):
+- All four `ScenarioDialog` tactical launch handlers hide the dialog before `bb.ShowModal()` and show it again afterward.
+- The implementation keeps `FBattleScreen bb;` on the stack and does not introduce `new FBattleScreen(...)`, `bb.Show()`, or other ownership-pattern changes.
+- `ScenarioDialog` still retains its current first-show sizing contract (`Fit(...)` plus `SetMinSize(GetBestSize())`) and centering behavior.
+- The tactical launch-path regression in `FTacticalBattleScreenElectricalFireTest` remains aligned with the restored modal contract.
+- Any GUI lifecycle assertion changes remain scoped to this BattleSim launch path and do not broaden the story.
+
+Create test files in:
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+
+Implementation context for testing:
+- Entry points changed: `ScenarioDialog::onScenario1`, `onScenario2`, `onScenario3`, `onScenario4` in `src/battleSim/ScenarioDialog.cpp`.
+- Each handler still uses caller-owned stack `FBattleScreen bb;` and now wraps modal launch with `Hide(); bb.ShowModal(); Show();`.
+- Constructor sizing/centering path in ScenarioDialog was intentionally untouched.
+- No other modules or ownership patterns changed.
+
+Suggested test command(s):
+- `cd tests/tactical && make && ./TacticalTests` (exact required acceptance validation command)
+- Assumption for optional broader validation when display is available: `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

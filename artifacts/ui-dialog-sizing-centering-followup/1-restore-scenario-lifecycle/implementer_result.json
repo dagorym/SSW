@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "subtask_id": "1-restore-scenario-lifecycle",
+  "branch": "impl-ui-dialog-sizing-centering-followup-subtask-1",
+  "implementation_commit": "8d7c3a55c47e5cbcf73de59222f411e40dbd5f31",
+  "changed_files": [
+    "src/battleSim/ScenarioDialog.cpp"
+  ],
+  "validation_commands": [
+    "cd tests/tactical && make && ./TacticalTests"
+  ],
+  "validation_outcome": "pass (post-change tactical suite: OK (92 tests)); baseline pre-change run showed expected lifecycle-regression failure",
+  "artifacts": [
+    "artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle/implementer_report.md",
+    "artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle/tester_prompt.txt",
+    "artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle/implementer_result.json"
+  ]
+}
