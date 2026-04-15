@@ -6,11 +6,13 @@
 #include "BattleSimGuiLiveTest.h"
 
 #include <wx/button.h>
+#include <wx/display.h>
 #include <wx/dialog.h>
 #include <wx/filename.h>
 #include <wx/frame.h>
 #include <wx/statbox.h>
 #include <wx/toplevel.h>
+#include <cstdlib>
 
 #include "battleSim/BattleSimFrame.h"
 #include "battleSim/LocalGameDialog.h"
@@ -119,6 +121,20 @@ int countShownTopLevelsNotInBaseline(const WXGuiTestHarness & harness,
 		}
 	}
 	return shownTopLevels;
+}
+
+void assertFrameCenteredOnDisplay(wxFrame * frame) {
+	CPPUNIT_ASSERT(frame != NULL);
+	const int displayIndex = wxDisplay::GetFromWindow(frame);
+	CPPUNIT_ASSERT(displayIndex != wxNOT_FOUND);
+	const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
+	const wxRect frameBounds = frame->GetScreenRect();
+	const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
+	                            displayBounds.GetY() + (displayBounds.GetHeight() / 2));
+	const wxPoint frameCenter(frameBounds.GetX() + (frameBounds.GetWidth() / 2),
+	                          frameBounds.GetY() + (frameBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(displayCenter.x - frameCenter.x) <= 80);
+	CPPUNIT_ASSERT(std::abs(displayCenter.y - frameCenter.y) <= 80);
 }
 
 class LocalGameDialogTestPeer : public LocalGameDialog {
@@ -260,11 +276,22 @@ void BattleSimGuiLiveTest::tearDown() {
 
 void BattleSimGuiLiveTest::testBattleSimFrameOpensLocalGameDialogAndReturns() {
 	const std::vector<wxTopLevelWindow *> baselineTopLevels = m_harness.getTopLevelWindows(false);
-	BattleSimFrame frame("BattleSim Test Frame", wxDefaultPosition, wxSize(360, 240));
+	BattleSimFrame frame("BattleSim Test Frame");
 	frame.Show();
 	m_harness.pumpEvents();
 
 	wxButton * localButton = findButtonByLabel(&frame, wxT("Play a Local Game"));
+	wxButton * networkButton = findButtonByLabel(&frame, wxT("Play a Network Game"));
+	wxButton * quitButton = findButtonByLabel(&frame, wxT("Quit"));
+	CPPUNIT_ASSERT(localButton != NULL);
+	CPPUNIT_ASSERT(networkButton != NULL);
+	CPPUNIT_ASSERT(quitButton != NULL);
+	CPPUNIT_ASSERT(quitButton->IsShownOnScreen());
+	const wxRect clientRect(wxPoint(0, 0), frame.GetClientSize());
+	CPPUNIT_ASSERT(clientRect.Contains(quitButton->GetRect().GetTopLeft()));
+	CPPUNIT_ASSERT(clientRect.Contains(quitButton->GetRect().GetBottomRight()));
+	assertFrameCenteredOnDisplay(&frame);
+
 	bool localDialogWindowPresented = false;
 	m_harness.runVoidFunctionWithAction([&]() {
 		clickButton(&frame, localButton);

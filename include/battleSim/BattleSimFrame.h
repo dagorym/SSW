@@ -40,7 +40,7 @@ class BattleSimFrame : public wxFrame
 		
 	
 	public:
-		BattleSimFrame( const wxString& title = wxT("Star Frontiers Tactical Combat Simulator"), const wxPoint& pos = wxPoint(50,50), const wxSize& size = wxSize( 335,200 ), long style = wxCAPTION|wxTAB_TRAVERSAL );
+		BattleSimFrame( const wxString& title = wxT("Star Frontiers Tactical Combat Simulator"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxTAB_TRAVERSAL );
 		~BattleSimFrame();
 		/// Event table constuction
 		DECLARE_EVENT_TABLE()
