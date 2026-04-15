@@ -37,7 +37,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_zoomImage.LoadFile(gc.getBasePath()+"data/zoom.png");
 
 	/// set up tactical controls using sizer-based layout to keep spin control sizing stable
-	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 55, 10 );
+	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS | wxSP_VERTICAL, 0, 55, 10 );
 	m_spinCtrl1->SetMinSize(m_spinCtrl1->GetBestSize());
 	m_button1 = new wxButton( this, wxID_ANY, wxT("Set Speed"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMoveDone = new wxButton( this, wxID_ANY, wxT("Movement Done"), wxDefaultPosition, wxDefaultSize, 0 );

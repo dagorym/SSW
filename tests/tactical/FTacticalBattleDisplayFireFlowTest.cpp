@@ -196,6 +196,7 @@ assertContains(drawBody, "if (m_parent->getPhase()==PH_NONE)");
 assertContains(drawBody, "drawPlaceMines(dc);");
 assertContains(onPaintBody, "draw(dc);");
 assertContains(ctorBody, "new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition");
+assertContains(ctorBody, "wxSP_ARROW_KEYS | wxSP_VERTICAL");
 assertContains(ctorBody, "m_spinCtrl1->SetMinSize(m_spinCtrl1->GetBestSize());");
 assertContains(ctorBody, "SetSizer(rootSizer);");
 assertNotContains(ctorBody, "wxSize( 50,-1 )");
