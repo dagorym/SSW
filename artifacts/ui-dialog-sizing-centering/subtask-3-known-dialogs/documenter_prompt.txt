@@ -1,0 +1,57 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implementer applied BattleSim/ICM dialog sizing + centering fixes and added GUI regression assertions; tester validated by running the GUI suite with all tests passing.
+
+Acceptance criteria validated:
+- LocalGameDialog, ScenarioDialog, ScenarioEditorGUI, and ICMSelectionGUI display all controls and action buttons without clipping by default.
+- ICMSelectionGUI remains properly sized after selectWeapon(...) rebuilds its dynamic ship rows.
+- Existing BattleSim modal launch paths continue to work.
+- GUI regression coverage is updated for the affected dialogs where deterministic harness checks are practical.
+
+Implementation branch or worktree context:
+- Implementer branch: coord-ui-dialog-sizing-centering-implementer-20260414
+- Tester branch/worktree: coord-ui-dialog-sizing-centering-tester-20260414 at /home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-tester-20260414
+- Comparison-base assumption: branch coord-ui-dialog-sizing-centering (common parent for implementer/tester branches)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/battleSim/LocalGameDialog.cpp
+- src/battleSim/ScenarioDialog.cpp
+- src/battleSim/ScenarioEditorGUI.cpp
+- src/gui/ICMSelectionGUI.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/tester_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/tester_result.json
+- artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Final test outcomes:
+- GuiTests passed: 27 passed, 0 failed.
+- Acceptance criteria validated by existing/newly-added GUI assertions and runtime execution.
+
+Documentation context:
+- Dialog constructors now enforce best-size minimum sizing and center on parent/screen for first show.
+- ICM selection rebuild path now re-fits and sets both min/current dialog size after dynamic row reconstruction.
+- Live GUI regression coverage explicitly validates in-client visibility for relevant controls/buttons.
+
+Plan and diff context:
+- Story context: UI dialog sizing/centering subtask for known dialogs and ICM rebuild behavior.
+- Diff context: compare tester/implementer branches against coord-ui-dialog-sizing-centering.
+- If a specific plan path is needed and not explicit, infer from repository artifacts/plans directory and label assumption.
+
+Startup behavior:
+- If branch/worktree context plus this diff/testing context is sufficient, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository evidence when safe, and label those choices as assumptions.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
