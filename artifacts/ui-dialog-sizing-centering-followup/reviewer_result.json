@@ -1,0 +1,41 @@
+{
+  "status": "completed",
+  "outcome": "PASS",
+  "feature_plan": "plans/ui-dialog-sizing-centering-followup-plan.md",
+  "artifact_directory": "artifacts/ui-dialog-sizing-centering-followup",
+  "review_scope": {
+    "feature_level": true,
+    "read_only_except_artifacts": true,
+    "subtasks_reviewed": [
+      "1-restore-scenario-lifecycle",
+      "2-revalidate-battlesim-launch"
+    ],
+    "files_reviewed": [
+      "src/battleSim/ScenarioDialog.cpp",
+      "tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp",
+      "tests/gui/BattleSimGuiLiveTest.cpp",
+      "doc/DesignNotes.md"
+    ]
+  },
+  "reviewer_validation": {
+    "commands": [
+      {
+        "command": "cd tests/tactical && make && ./TacticalTests",
+        "outcome": "pass",
+        "details": "OK (92 tests)"
+      },
+      {
+        "command": "cd tests/gui && make && ./GuiTests",
+        "outcome": "pass",
+        "details": "OK (29 tests)"
+      }
+    ]
+  },
+  "findings": {
+    "blocking": [],
+    "warning": [],
+    "note": []
+  },
+  "follow_up_feature_requests": [],
+  "summary": "Feature delivery matches the plan: ScenarioDialog lifecycle restoration, regression coverage, validation reruns, and documentation alignment are complete with no remaining feature-level gaps."
+}
