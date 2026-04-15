@@ -1,4 +1,5 @@
 #include "gui/TacticalDamageSummaryGUI.h"
+#include <wx/display.h>
 
 namespace {
 
@@ -52,10 +53,21 @@ TacticalDamageSummaryGUI::TacticalDamageSummaryGUI(
 
 	SetSizerAndFit(rootSizer);
 	SetMinSize(GetSize());
-	if (GetParent() != NULL) {
+	if (parent != NULL) {
 		CentreOnParent(wxBOTH);
 	} else {
-		Centre(wxBOTH);
+		CentreOnScreen(wxBOTH);
+		int displayIndex = wxDisplay::GetFromWindow(this);
+		if (displayIndex == wxNOT_FOUND && wxDisplay::GetCount() > 0) {
+			displayIndex = 0;
+		}
+		if (displayIndex != wxNOT_FOUND) {
+			const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
+			const wxSize dialogSize = GetSize();
+			SetPosition(wxPoint(
+				displayBounds.GetX() + ((displayBounds.GetWidth() - dialogSize.GetWidth()) / 2),
+				displayBounds.GetY() + ((displayBounds.GetHeight() - dialogSize.GetHeight()) / 2)));
+		}
 	}
 	Bind(wxEVT_INIT_DIALOG, [this](wxInitDialogEvent & event) {
 		if (m_closeButton != NULL) {

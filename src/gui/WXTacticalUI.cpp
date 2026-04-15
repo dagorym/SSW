@@ -64,7 +64,7 @@ int WXTacticalUI::showDamageSummary(const FTacticalCombatReportSummary& summary)
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
   } else {
-    dialog.Centre(wxBOTH);
+    dialog.CentreOnScreen(wxBOTH);
   }
   return dialog.ShowModal();
 }
@@ -79,7 +79,7 @@ int WXTacticalUI::runICMSelection(std::vector<ICMData*>& icmData,
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
   } else {
-    dialog.Centre(wxBOTH);
+    dialog.CentreOnScreen(wxBOTH);
   }
   return dialog.ShowModal();
 }

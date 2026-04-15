@@ -68,7 +68,7 @@ int WXStrategicUI::selectRetreatCondition() {
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
   } else {
-    dialog.Centre(wxBOTH);
+    dialog.CentreOnScreen(wxBOTH);
   }
   return dialog.ShowModal();
 }
@@ -81,7 +81,7 @@ int WXStrategicUI::runUPFUnattachedSetup(FPlayer* player, FMap* map) {
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
   } else {
-    dialog.Centre(wxBOTH);
+    dialog.CentreOnScreen(wxBOTH);
   }
   return dialog.ShowModal();
 }
@@ -96,7 +96,7 @@ int WXStrategicUI::runSatharFleetSetup(FPlayer* player,
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
   } else {
-    dialog.Centre(wxBOTH);
+    dialog.CentreOnScreen(wxBOTH);
   }
   return dialog.ShowModal();
 }
@@ -110,7 +110,7 @@ void WXStrategicUI::showSystemDialog(FSystem* sys, FMap* map, FPlayer* player) {
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
   } else {
-    dialog.Centre(wxBOTH);
+    dialog.CentreOnScreen(wxBOTH);
   }
   dialog.ShowModal();
 }
@@ -125,7 +125,7 @@ void WXStrategicUI::showFleetDialog(FFleet* fleet,
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
   } else {
-    dialog.Centre(wxBOTH);
+    dialog.CentreOnScreen(wxBOTH);
   }
   dialog.ShowModal();
 }
@@ -145,7 +145,7 @@ int WXStrategicUI::selectCombat(FSystem* sys,
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
   } else {
-    dialog.Centre(wxBOTH);
+    dialog.CentreOnScreen(wxBOTH);
   }
   return dialog.ShowModal();
 }

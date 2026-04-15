@@ -191,6 +191,19 @@ return found;
 return NULL;
 }
 
+void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 120) {
+	CPPUNIT_ASSERT(dialog != NULL);
+	CPPUNIT_ASSERT(parent != NULL);
+	const wxRect parentBounds = parent->GetScreenRect();
+	const wxRect dialogBounds = dialog->GetScreenRect();
+	const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
+	                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
+	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(parentCenter.x - dialogCenter.x) <= tolerance);
+	CPPUNIT_ASSERT(std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+}
+
 FTacticalCombatReportSummary buildSummaryWithLines() {
 FTacticalCombatReportSummary summary;
 summary.context.reportType = TRT_OffensiveFire;
@@ -581,6 +594,7 @@ const int closeResult = m_harness.runModalFunctionWithAction([&]() {
 	return dialog->ShowModal();
 }, [&]() {
 	closeActionRan = true;
+	assertDialogCenteredOnParent(dialog, parent, 200);
 	wxButton * closeButton = findButtonByLabel(dialog, wxT("Close"));
 	closeButtonFound = (closeButton != NULL);
 	if (closeButton != NULL) {
@@ -643,6 +657,28 @@ CPPUNIT_ASSERT(emptyCloseActionRan);
 CPPUNIT_ASSERT(emptyCloseButtonFound);
 CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), emptyCloseResult);
 emptyDialog->Destroy();
+m_harness.pumpEvents(3);
+
+TacticalDamageSummaryGUI * parentlessDialog = new TacticalDamageSummaryGUI(NULL, summary);
+bool parentlessCloseActionRan = false;
+bool parentlessCloseButtonFound = false;
+const int parentlessCloseResult = m_harness.runModalFunctionWithAction([&]() {
+	return parentlessDialog->ShowModal();
+}, [&]() {
+	parentlessCloseActionRan = true;
+	CPPUNIT_ASSERT(wxDisplay::GetFromWindow(parentlessDialog) != wxNOT_FOUND);
+	wxButton * closeButton = findButtonByLabel(parentlessDialog, wxT("Close"));
+	parentlessCloseButtonFound = (closeButton != NULL);
+	if (closeButton != NULL) {
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
+		click.SetEventObject(closeButton);
+		closeButton->Command(click);
+	}
+}, wxID_CANCEL, 150);
+CPPUNIT_ASSERT(parentlessCloseActionRan);
+CPPUNIT_ASSERT(parentlessCloseButtonFound);
+CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), parentlessCloseResult);
+parentlessDialog->Destroy();
 m_harness.pumpEvents(3);
 
 parent->Destroy();
