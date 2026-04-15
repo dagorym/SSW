@@ -1,0 +1,15 @@
+{
+  "status": "completed",
+  "subtask_id": "1-restore-scenario-lifecycle",
+  "branch": "verify-ui-dialog-sizing-centering-followup-subtask-1",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient: tactical source-contract coverage locks per-handler Hide/ShowModal/Show ordering and ownership, live BattleSim GUI coverage verifies the shown ScenarioDialog lifecycle, and reruns passed with OK (92 tests) and OK (29 tests).",
+  "documentation_accuracy_summary": "Accurate: DesignNotes records the restored ScenarioDialog modal-launch contract and the aligned tactical/live GUI regression coverage without broadening the story.",
+  "artifact_files": [
+    "artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle/verifier_report.md",
+    "artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle/verifier_result.json"
+  ]
+}
