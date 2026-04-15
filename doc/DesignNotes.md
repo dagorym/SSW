@@ -1028,6 +1028,12 @@ the parent-backed `WXTacticalUI::showDamageSummary(...)` flow with populated,
 no-detail, and empty summaries and verifies clean modal return through the real
 `Close` button handling, while the no-parent tactical adapter path now remains a
 deterministic top-level modal on an active display for the same summary dialog.
+Together with the strategic and BattleSim live fixtures, that leaves the GUI
+suite covering the full placement policy matrix for this remediation cycle: a
+representative top-level frame centered on the active display, representative
+parent-backed tactical and strategic/BattleSim dialogs centered on their owning
+window, and deterministic screen-centered fallback behavior for representative
+parentless modal launches.
 
 Validation command:
 
