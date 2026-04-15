@@ -280,8 +280,9 @@ void ICMSelectionGUI::selectWeapon(int row){
 			gSizer1->Add( m_ICMsAvailable[count], 0, wxALIGN_CENTER|wxALL, 5 );
 
 			// add in the spinner control
-			m_ICMsApplied.push_back(new wxSpinCtrl( m_panel1, count, wxEmptyString, wxDefaultPosition, wxSize( 50,-1 ), wxSP_ARROW_KEYS, 0, maxICMs, ICMdata->getICMsAllocatedToWeapon(m_currentRowData->weapon) ));
-			gSizer1->Add( m_ICMsApplied[count], 0, wxALIGN_CENTER, 5 );
+			m_ICMsApplied.push_back(new wxSpinCtrl( m_panel1, count, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, maxICMs, ICMdata->getICMsAllocatedToWeapon(m_currentRowData->weapon) ));
+			m_ICMsApplied[count]->SetMinSize(m_ICMsApplied[count]->GetBestSize());
+			gSizer1->Add( m_ICMsApplied[count], 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 			m_ICMsApplied[count]->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( ICMSelectionGUI::updateICMCount ), NULL, this );
 			count++;
 		}

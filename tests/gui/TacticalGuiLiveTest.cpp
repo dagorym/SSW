@@ -62,6 +62,12 @@ size_t appliedControlCount() const {
 return m_ICMsApplied.size();
 }
 
+wxSpinCtrl * appliedControl(int index) const {
+CPPUNIT_ASSERT(index >= 0);
+CPPUNIT_ASSERT(static_cast<size_t>(index) < m_ICMsApplied.size());
+return m_ICMsApplied[index];
+}
+
 void setAppliedICMValue(int index, int value) {
 CPPUNIT_ASSERT(index >= 0);
 CPPUNIT_ASSERT(static_cast<size_t>(index) < m_ICMsApplied.size());
@@ -643,6 +649,8 @@ const int defenderBStartingAmmo = defenderB->getDefense(defenseIndexB)->getAmmo(
 
 ICMSelectionGUITestPeer * dialog = new ICMSelectionGUITestPeer(NULL, &icmRows);
 size_t appliedControlCount = 0;
+wxSize firstAppliedControlSize;
+wxSize secondAppliedControlSize;
 wxString assignedCountText;
 bool modalActionRan = false;
 const int modalResult = m_harness.runModalFunctionWithAction([&]() {
@@ -651,6 +659,10 @@ const int modalResult = m_harness.runModalFunctionWithAction([&]() {
 	modalActionRan = true;
 	dialog->selectWeaponRow(0);
 	appliedControlCount = dialog->appliedControlCount();
+	dialog->Layout();
+	dialog->Update();
+	firstAppliedControlSize = dialog->appliedControl(0)->GetSize();
+	secondAppliedControlSize = dialog->appliedControl(1)->GetSize();
 	dialog->setAppliedICMValue(0, 2);
 	dialog->setAppliedICMValue(1, 1);
 	assignedCountText = dialog->assignedCellText(0);
@@ -659,6 +671,10 @@ const int modalResult = m_harness.runModalFunctionWithAction([&]() {
 
 CPPUNIT_ASSERT(modalActionRan);
 CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), appliedControlCount);
+CPPUNIT_ASSERT(firstAppliedControlSize.GetWidth() > 0);
+CPPUNIT_ASSERT(firstAppliedControlSize.GetHeight() > 0);
+CPPUNIT_ASSERT(secondAppliedControlSize.GetWidth() > 0);
+CPPUNIT_ASSERT(secondAppliedControlSize.GetHeight() > 0);
 CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("3"), assignedCountText);
 CPPUNIT_ASSERT_EQUAL(0, modalResult);
 CPPUNIT_ASSERT_EQUAL(defenderAStartingAmmo - 2, defenderA->getDefense(defenseIndexA)->getAmmo());
