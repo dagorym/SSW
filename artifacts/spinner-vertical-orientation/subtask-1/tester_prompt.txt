@@ -1,0 +1,35 @@
+You are the Tester Agent.
+
+Task summary:
+- Tactical speed spinner now explicitly requests vertical arrow orientation, and tactical source-level regression coverage now asserts that style contract.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The tactical speed control style explicitly includes vertical spinner orientation.
+- Existing layout safeguards for the speed control remain in place.
+- Tactical regression coverage fails if the constructor drops the explicit vertical style in the future.
+
+Create test files in:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Implementation context for testing:
+- `FBattleDisplay` speed control constructor style is now `wxSP_ARROW_KEYS | wxSP_VERTICAL`.
+- Existing sizing/layout contract for the speed control remains unchanged (`wxDefaultPosition`, `wxDefaultSize`, `SetMinSize(GetBestSize())`, sizer-managed layout).
+- The tactical source-inspection test now checks for `wxSP_ARROW_KEYS | wxSP_VERTICAL` in constructor source.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/spinner-vertical-orientation/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
