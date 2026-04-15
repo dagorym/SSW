@@ -902,7 +902,14 @@ The BattleSim scenario-launch paths also preserve `FBattleScreen` lifecycle
 accounting, explicitly hide and destroy shown parents before pumping events, and
 compare the final shown top-level count to the pre-launch baseline after
 stabilization and forced-close cleanup passes, so the live suite now proves
-those launch chains return to a zero-residual shown-window state.
+those launch chains return to a zero-residual shown-window state. The restored
+`ScenarioDialog` predefined-scenario contract now keeps stack-owned
+`FBattleScreen bb;` launch sites, hides the dialog before `bb.ShowModal()`, and
+calls `Show()` after the modal battle closes instead of switching to heap
+ownership or `bb.Show()`. The paired tactical source-contract test now checks
+that `Hide()` → `bb.ShowModal()` → `Show()` ordering per handler, while the
+live BattleSim fixture launches from a shown `ScenarioDialog` and verifies the
+dialog is visible again after the battle window closes.
 
 The next dialog-sizing audit stayed evidence-driven instead of broadening the
 implementation surface. Four additional strategic dialogs with confirmed
