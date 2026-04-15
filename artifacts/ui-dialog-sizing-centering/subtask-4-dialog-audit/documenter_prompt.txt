@@ -1,0 +1,60 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implementer hardened four strategic dialogs (`SatharRetreatGUI`, `CombatLocationGUI`, `TwoPlanetsGUI`, `SelectResolutionGUI`) for first-show sizing/centering; tester validated behavior and added source-contract regression tests in strategic and BattleSim GUI live suites.
+
+Acceptance criteria validated:
+- The implementation documents, through code/test changes, which additional dialogs required remediation.
+- Each remediated dialog opens large enough to show its controls and action buttons without clipping.
+- The test coverage added or updated maps to the dialogs actually remediated.
+- The subtask stays evidence-driven and does not broaden into speculative churn.
+
+Implementation branch or worktree context:
+- Implementer branch: `coord-ui-dialog-sizing-centering-implementer-20260414`
+- Tester branch/worktree: `coord-ui-dialog-sizing-centering-tester-20260414` at `/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-tester-20260414`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/gui/SatharRetreatGUI.cpp
+- src/gui/CombatLocationGUI.cpp
+- src/gui/TwoPlanetsGUI.cpp
+- src/gui/SelectResolutionGUI.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.h
+- artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/implementer_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/implementer_result.json
+- artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/tester_report.md
+- artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/tester_result.json
+
+Test commit:
+- 388fbf3f466fe7add128aa6e3d85b6849df7b426
+
+Commands executed:
+- cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi (baseline pass: OK 27 tests)
+- cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi (post-change attempt 1 fail: path assumption in new test)
+- cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi (post-change attempt 2 pass: OK 29 tests)
+
+Final test outcomes:
+- Final status: PASS
+- GUI suite result: OK (29 tests)
+- Added deterministic source-contract checks for remediated strategic dialogs and retained BattleSim launch-dialog sizing contracts.
+
+Documentation context:
+- Likely impacted docs: AGENTS.md testing coverage summary for strategic/BattleSim live dialog sizing checks, and any milestone/subtask notes describing dialog sizing hardening coverage.
+- Confirm documentation reflects that this subtask remediated only strategic dialogs, while BattleSim remained audit-only for this pass.
+
+Plan and diff context:
+- Story context: UI dialog sizing/centering subtask 4 dialog audit.
+- Comparison base assumption: compare tester branch against `coord-ui-dialog-sizing-centering-implementer-20260414` for tester-only changes, and against `coord-ui-dialog-sizing-centering` or `master` as needed for full narrative.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

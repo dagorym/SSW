@@ -1,0 +1,47 @@
+{
+  "status": "success",
+  "subtask": "ui-dialog-sizing-centering/subtask-4-dialog-audit",
+  "branch": "coord-ui-dialog-sizing-centering-tester-20260414",
+  "test_commit_hash": "388fbf3f466fe7add128aa6e3d85b6849df7b426",
+  "test_files_modified": [
+    "tests/gui/StrategicGuiLiveTest.h",
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/BattleSimGuiLiveTest.h",
+    "tests/gui/BattleSimGuiLiveTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi",
+    "cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi",
+    "cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi"
+  ],
+  "attempts": 2,
+  "totals": {
+    "tests_written": 2,
+    "tests_passed": 29,
+    "tests_failed": 0
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "The implementation documents, through code/test changes, which additional dialogs required remediation.",
+      "status": "pass"
+    },
+    {
+      "criterion": "Each remediated dialog opens large enough to show its controls and action buttons without clipping.",
+      "status": "pass"
+    },
+    {
+      "criterion": "The test coverage added or updated maps to the dialogs actually remediated.",
+      "status": "pass"
+    },
+    {
+      "criterion": "The subtask stays evidence-driven and does not broaden into speculative churn.",
+      "status": "pass"
+    }
+  ],
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/tester_report.md",
+    "artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/tester_result.json",
+    "artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/documenter_prompt.txt"
+  ]
+}
