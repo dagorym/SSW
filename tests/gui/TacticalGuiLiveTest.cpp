@@ -18,7 +18,9 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include "gui/ICMSelectionGUI.h"
@@ -189,6 +191,23 @@ return found;
 }
 }
 return NULL;
+}
+
+bool sourceContainsLineToken(const std::vector<std::string> & candidatePaths, const std::string & token) {
+for (std::vector<std::string>::const_iterator itr = candidatePaths.begin(); itr != candidatePaths.end(); ++itr) {
+std::ifstream source((*itr).c_str());
+if (!source.is_open()) {
+continue;
+}
+
+std::string line;
+while (std::getline(source, line)) {
+if (line.find(token) != std::string::npos) {
+return true;
+}
+}
+}
+return false;
 }
 
 void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 120) {
@@ -723,10 +742,17 @@ ICMSelectionGUITestPeer * dialog = new ICMSelectionGUITestPeer(NULL, &icmRows);
 size_t appliedControlCount = 0;
 wxSize firstAppliedControlSize;
 wxSize secondAppliedControlSize;
+long firstAppliedControlStyle = 0;
+long secondAppliedControlStyle = 0;
 wxSize initialDialogSize;
 wxSize postRebuildDialogSize;
 wxString assignedCountText;
 bool modalActionRan = false;
+CPPUNIT_ASSERT_MESSAGE(
+	"ICMSelectionGUI spinner constructor must keep explicit vertical style token.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/gui/ICMSelectionGUI.cpp"),
+		"wxSP_ARROW_KEYS | wxSP_VERTICAL"));
 const int modalResult = m_harness.runModalFunctionWithAction([&]() {
 	return dialog->ShowModal();
 }, [&]() {
@@ -744,6 +770,8 @@ const int modalResult = m_harness.runModalFunctionWithAction([&]() {
 	postRebuildDialogSize = dialog->GetSize();
 	firstAppliedControlSize = dialog->appliedControl(0)->GetSize();
 	secondAppliedControlSize = dialog->appliedControl(1)->GetSize();
+	firstAppliedControlStyle = dialog->appliedControl(0)->GetWindowStyleFlag();
+	secondAppliedControlStyle = dialog->appliedControl(1)->GetWindowStyleFlag();
 	const wxRect rebuiltClientRect(wxPoint(0, 0), dialog->GetClientSize());
 	CPPUNIT_ASSERT(rebuiltClientRect.Contains(dialog->appliedControl(0)->GetRect().GetTopLeft()));
 	CPPUNIT_ASSERT(rebuiltClientRect.Contains(dialog->appliedControl(0)->GetRect().GetBottomRight()));
@@ -761,6 +789,10 @@ CPPUNIT_ASSERT(firstAppliedControlSize.GetWidth() > 0);
 CPPUNIT_ASSERT(firstAppliedControlSize.GetHeight() > 0);
 CPPUNIT_ASSERT(secondAppliedControlSize.GetWidth() > 0);
 CPPUNIT_ASSERT(secondAppliedControlSize.GetHeight() > 0);
+CPPUNIT_ASSERT((firstAppliedControlStyle & wxSP_ARROW_KEYS) != 0);
+CPPUNIT_ASSERT((firstAppliedControlStyle & wxSP_VERTICAL) != 0);
+CPPUNIT_ASSERT((secondAppliedControlStyle & wxSP_ARROW_KEYS) != 0);
+CPPUNIT_ASSERT((secondAppliedControlStyle & wxSP_VERTICAL) != 0);
 CPPUNIT_ASSERT(initialDialogSize.GetWidth() > 0);
 CPPUNIT_ASSERT(initialDialogSize.GetHeight() > 0);
 CPPUNIT_ASSERT(postRebuildDialogSize.GetWidth() >= initialDialogSize.GetWidth());
