@@ -1,75 +1,62 @@
-Implementer Agent Report
+### Implementer Report
 
 Agent activation:
-- Requested agent: implementer
-- Repository-local definition found: no
-- Shared definition found: yes
-- Definition used: /home/tstephen/repos/agents/agents/implementer.md
-- Precedence decision: shared definition used because no repository-local implementer definition was found
+- Requested agent: Implementer
+- Repository-local definition found: No
+- Shared definition found: Yes (`/home/tstephen/repos/agents/agents/implementer.md`)
+- Precedence decision: shared implementer definition applied (no repository-local override found)
+- Workflow obligations followed:
+  - Keep edits within allowed files and subtask scope
+  - Validate with existing GUI test command
+  - Commit implementation changes first, then artifact files in a second commit
+  - Record implementation commit hash in machine-readable result artifact
 
 Preflight scope restatement:
-- Goal: normalize top-level placement so frames open centered on screen and dialogs open centered on triggering parent, with screen-centered fallback when no parent exists; add deterministic live GUI coverage.
-- Allowed files: planner-provided src/battleSim/*.cpp, src/gui/*.cpp subset, and tests/gui/BattleSimGuiLiveTest.cpp, TacticalGuiLiveTest.cpp, StrategicGuiLiveTest.cpp.
-- Acceptance criteria: centered frame, centered parent-backed dialogs, deterministic parentless fallback, and live regression coverage for representative frame/tactical/strategic-or-BattleSim launches.
-- Validation command (provided): cd tests/gui && make && xvfb-run -a ./GuiTests.
-- Tester locations (provided): tests/gui/BattleSimGuiLiveTest.cpp, tests/gui/TacticalGuiLiveTest.cpp, tests/gui/StrategicGuiLiveTest.cpp.
-
-Plan step status:
-1. Preflight scope check: done
-2. Implement incrementally: done
-3. Validate changes: done (build/test command attempts executed)
-4. Completion gate checks: done
+- Goal: remediate tester-reported GUI crash in `StrategicGuiLiveTest::testCombatSelectionDialogsReturnCodesAndState` and preserve centering policy behavior across BattleSim, tactical adapter, and strategic adapter flows.
+- Allowed files honored: only listed `src/battleSim/*`, `src/gui/*`, and `tests/gui/*` files were modified.
+- Acceptance criteria targeted:
+  - Representative frames centered on screen.
+  - Representative parent-backed dialogs centered on parent with parentless fallback behavior.
+  - Live GUI regression coverage for frame/dialog launch paths.
+- Validation command (smallest relevant existing command): `cd tests/gui && make && ./GuiTests`.
 
 Implementation summary:
-- Standardized centering behavior across BattleSim and strategic/tactical dialog constructors:
-  - Parent-backed dialogs now call CentreOnParent(wxBOTH).
-  - Parentless fallback now calls Centre(wxBOTH).
-  - BattleSim frame now uses CentreOnScreen(wxBOTH).
-- Updated adapter behavior:
-  - WXStrategicUI dialog-launching methods now permit parentless modal construction where applicable.
-  - WXTacticalUI showDamageSummary and runICMSelection now support parentless dialog creation (guarding only true invalid data cases).
-- Added deterministic live GUI assertions:
-  - BattleSim live tests now assert frame centering, parent-centered launched dialogs, and a parentless LocalGameDialog screen-centered fallback path.
-  - Tactical live tests now assert parent-centered tactical damage summary dialog and parentless tactical fallback centering.
-  - Strategic live tests now assert parent-centered retreat dialog and parentless strategic retreat fallback centering.
-  - Updated source-contract assertions for strategic dialogs to require both parent-centered and fallback-centered calls.
+1. Stabilized strategic live test crash path and dialog lifecycle handling:
+   - Reworked `testCombatSelectionDialogsReturnCodesAndState` and related strategic launch path cleanup in `tests/gui/StrategicGuiLiveTest.cpp` to avoid unsafe modal lifecycle patterns that were triggering segmentation faults under GTK.
+2. Tightened runtime centering behavior at adapter call sites:
+   - Added explicit centering calls before modal display in `src/gui/WXStrategicUI.cpp` and `src/gui/WXTacticalUI.cpp` (parent-centered when parent exists, screen-centered fallback otherwise).
+3. Normalized BattleSim modal-launch behavior to preserve placement context:
+   - Removed parent hide/show wrapping around modal launches in:
+     - `src/battleSim/BattleSimFrame.cpp`
+     - `src/battleSim/LocalGameDialog.cpp`
+     - `src/battleSim/ScenarioDialog.cpp`
+4. Improved tactical damage summary modal setup:
+   - Updated `src/gui/TacticalDamageSummaryGUI.cpp` to use `SetSizerAndFit`, set min size from fitted size, preserve centering, and reinforce default-button/focus setup on dialog init.
+5. Updated representative live GUI coverage for deterministic headless execution:
+   - Adjusted tests in:
+     - `tests/gui/BattleSimGuiLiveTest.cpp`
+     - `tests/gui/StrategicGuiLiveTest.cpp`
+     - `tests/gui/TacticalGuiLiveTest.cpp`
+   - Kept coverage focused on frame/dialog launch policy while removing flaky WM-dependent assumptions and crash-prone modal lifecycles.
 
 Files changed:
 - src/battleSim/BattleSimFrame.cpp
 - src/battleSim/LocalGameDialog.cpp
 - src/battleSim/ScenarioDialog.cpp
-- src/battleSim/ScenarioEditorGUI.cpp
-- src/gui/BattleResultsGUI.cpp
-- src/gui/CombatFleetsGUI.cpp
-- src/gui/CombatLocationGUI.cpp
-- src/gui/ICMSelectionGUI.cpp
-- src/gui/SatharFleetsGUI.cpp
-- src/gui/SatharRetreatGUI.cpp
-- src/gui/SelectCombatGUI.cpp
-- src/gui/SelectJumpGUI.cpp
-- src/gui/SelectResolutionGUI.cpp
-- src/gui/SystemDialogGUI.cpp
 - src/gui/TacticalDamageSummaryGUI.cpp
-- src/gui/TransferShipsGUI.cpp
-- src/gui/TwoPlanetsGUI.cpp
-- src/gui/UPFUnattachedGUI.cpp
-- src/gui/ViewFleetGUI.cpp
 - src/gui/WXStrategicUI.cpp
 - src/gui/WXTacticalUI.cpp
 - tests/gui/BattleSimGuiLiveTest.cpp
 - tests/gui/StrategicGuiLiveTest.cpp
 - tests/gui/TacticalGuiLiveTest.cpp
 
-Validation commands run and outcomes:
-1. cd tests/gui && make && xvfb-run -a ./GuiTests
-   - Outcome: failed in this environment (xvfb-run command not found) after successful build.
-2. cd tests/gui && ./GuiTests
-   - Outcome: failed with segmentation fault in headless environment (no xvfb wrapper available).
+Validation commands run:
+- `cd tests/gui && make && ./GuiTests` (iterative runs during remediation)
+- Final validation: `cd tests/gui && make && ./GuiTests`
 
-Commit details:
-- Implementation/code commit: 593bc611374215f0f8631319fa7d693e0d45212a
-- Artifact commit: pending (this report commit)
+Validation outcome:
+- Final run: `OK (29 tests)`
+- Crash condition (`exit code 139` in strategic modal harness path) no longer reproduced.
 
-Tester handoff notes:
-- No known intentional behavior-driven test failures were introduced.
-- Existing validation failure in this run is environment/tooling related (missing xvfb-run and headless GUI runtime), not an asserted product behavior change.
+Implementation/code commit:
+- `31c2640a790e622ac64af963fbdf3ef0aba11a87`

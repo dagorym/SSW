@@ -1,28 +1,13 @@
 You are the Tester Agent.
 
 Task summary:
-- Implemented a unified centering policy: BattleSim frame centers on screen; relevant BattleSim/strategic/tactical dialogs center on parent when present and use screen-centered fallback when parentless; live GUI tests now assert representative placement behavior.
+- Remediated GUI modal crash/lifecycle instability in strategic live tests and reinforced centering behavior at tactical/strategic adapter modal launch sites while preserving BattleSim/strategic/tactical placement coverage.
 
 Modified files:
 - src/battleSim/BattleSimFrame.cpp
 - src/battleSim/LocalGameDialog.cpp
 - src/battleSim/ScenarioDialog.cpp
-- src/battleSim/ScenarioEditorGUI.cpp
-- src/gui/BattleResultsGUI.cpp
-- src/gui/CombatFleetsGUI.cpp
-- src/gui/CombatLocationGUI.cpp
-- src/gui/ICMSelectionGUI.cpp
-- src/gui/SatharFleetsGUI.cpp
-- src/gui/SatharRetreatGUI.cpp
-- src/gui/SelectCombatGUI.cpp
-- src/gui/SelectJumpGUI.cpp
-- src/gui/SelectResolutionGUI.cpp
-- src/gui/SystemDialogGUI.cpp
 - src/gui/TacticalDamageSummaryGUI.cpp
-- src/gui/TransferShipsGUI.cpp
-- src/gui/TwoPlanetsGUI.cpp
-- src/gui/UPFUnattachedGUI.cpp
-- src/gui/ViewFleetGUI.cpp
 - src/gui/WXStrategicUI.cpp
 - src/gui/WXTacticalUI.cpp
 - tests/gui/BattleSimGuiLiveTest.cpp
@@ -36,23 +21,23 @@ Acceptance criteria to validate (from Planner):
 - Live GUI regression tests verify the placement policy for at least one frame, one tactical dialog, and one strategic or BattleSim dialog.
 
 Create test files in:
-- tests/gui/BattleSimGuiLiveTest.cpp
-- tests/gui/TacticalGuiLiveTest.cpp
-- tests/gui/StrategicGuiLiveTest.cpp
+- No new tests expected for this remediation cycle (reuse existing GUI live suites in `tests/gui/` unless a regression requires narrowly-scoped follow-up).
 
 Implementation context for testing:
-- Constructor-level centering was normalized in BattleSim and strategic/tactical dialog classes by using CentreOnParent(wxBOTH) when GetParent()!=NULL, otherwise Centre(wxBOTH).
-- BattleSim frame now uses CentreOnScreen(wxBOTH).
-- WXStrategicUI now allows parentless modal construction for dialog-launching methods (still guards null model inputs).
-- WXTacticalUI showDamageSummary and runICMSelection now allow null parent and rely on dialog fallback centering.
-- Live test changes add geometric centering assertions for frame/dialog center points (with tolerance).
+- Strategic crash remediation centered on `StrategicGuiLiveTest::testCombatSelectionDialogsReturnCodesAndState` and nearby modal-launch lifecycle handling.
+- Tactical/strategic adapters now explicitly center dialogs before `ShowModal()`:
+  - `src/gui/WXStrategicUI.cpp`
+  - `src/gui/WXTacticalUI.cpp`
+- BattleSim modal chains no longer hide/show parent windows around nested modal launches:
+  - `src/battleSim/BattleSimFrame.cpp`
+  - `src/battleSim/LocalGameDialog.cpp`
+  - `src/battleSim/ScenarioDialog.cpp`
+- Tactical damage summary dialog now uses fit/min-size centering contract and init-dialog default-focus reinforcement.
+- GUI live tests were updated for deterministic headless behavior while retaining representative frame/dialog placement checks.
 
 Suggested test command(s):
-- cd tests/gui && make && xvfb-run -a ./GuiTests
-- If xvfb is unavailable, treat that as environment setup gap and provision equivalent virtual display before final verdict.
-
-Existing validation failures to account for:
-- In implementer run: xvfb-run was missing in environment; direct headless ./GuiTests crashed without virtual display. No known intentional behavior-change failures were observed.
+- `cd tests/gui && make && ./GuiTests` (used in this environment)
+- If virtual display tooling is available, also run canonical headless form: `cd tests/gui && make && xvfb-run -a ./GuiTests`
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
