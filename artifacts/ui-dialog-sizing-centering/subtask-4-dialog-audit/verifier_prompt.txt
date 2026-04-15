@@ -1,0 +1,71 @@
+You are the Verifier Agent.
+
+Task summary:
+- Implementer hardened four additional strategic dialogs for first-show sizing/centering, tester validated the final GUI suite and added source-contract checks, and documenter updated contributor/design documentation to reflect that subtask 4 remediated only strategic dialogs while BattleSim remained audit-only.
+
+Acceptance criteria to verify:
+- The implementation documents, through code/test changes, which additional dialogs required remediation.
+- Each remediated dialog opens large enough to show its controls and action buttons without clipping.
+- The test coverage added or updated maps to the dialogs actually remediated.
+- The subtask stays evidence-driven and does not broaden into speculative churn.
+- Documentation reflects that this pass remediated only the four strategic dialogs and that BattleSim coverage remained audit-only.
+
+Implementation branch or worktree context:
+- Verification branch/worktree should review `coord-ui-dialog-sizing-centering-documenter-20260414` at `/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-documenter-20260414`.
+- Implementer branch: `coord-ui-dialog-sizing-centering-implementer-20260414`.
+- Tester branch/worktree: `coord-ui-dialog-sizing-centering-tester-20260414` at `/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-tester-20260414`.
+- Documentation commit hash: `9c82294351f699eb08458edf65b222208ed5d6c5`.
+- Comparison-base assumptions: compare tester vs implementer for tester-only changes, and compare the full story against `master` or `coord-ui-dialog-sizing-centering` as repository context warrants.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/gui/SatharRetreatGUI.cpp`
+- `src/gui/CombatLocationGUI.cpp`
+- `src/gui/TwoPlanetsGUI.cpp`
+- `src/gui/SelectResolutionGUI.cpp`
+- `tests/gui/StrategicGuiLiveTest.h`
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.h`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/implementer_report.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/implementer_result.json`
+- `artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/tester_report.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/tester_result.json`
+- `artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/documenter_report.md`
+- `artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/documenter_result.json`
+- `artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi` (baseline pass: OK 27 tests)
+- `cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi` (post-change attempt 1 fail: path assumption in new test)
+- `cd tests/gui && make && if command -v xvfb-run >/dev/null 2>&1; then xvfb-run -a ./GuiTests; else ./GuiTests; fi` (post-change attempt 2 pass: OK 29 tests)
+
+Final test outcomes:
+- Final status: PASS.
+- GUI suite result: `OK (29 tests)`.
+- Strategic source-contract coverage enumerates the four remediated strategic dialogs.
+- BattleSim additions remained audit-only source checks that its launch dialogs preserved their existing sizing contract.
+
+Plan and review context:
+- Assumption: `plans/ui-dialog-sizing-centering-plan.md` is the governing story plan because it contains the Subtask 4 dialog-audit prompt and matches the task slug.
+- Read repository guidance from `AGENTS.md`; infer any additional convention-file details from repository context when safe.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm the artifact JSON keeps the documentation commit hash `9c82294351f699eb08458edf65b222208ed5d6c5` and that all required artifact files exist.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
