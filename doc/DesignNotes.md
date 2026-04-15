@@ -852,7 +852,12 @@ auto-dismiss closes the window. That live GUI suite now confirms that:
 The Subtask 2 remediation follow-up preserved that coverage but changed the
 parent-backed informational message path inside `src/gui/WXStrategicUI.cpp`:
 `WXStrategicUI::showMessage(...)` now uses `wxGenericMessageDialog` so the live
-GUI harness can auto-dismiss those modal dialogs without hanging. That keeps
+GUI harness can auto-dismiss those modal dialogs without hanging. The later
+centering pass then normalized the rest of the strategic adapter launch surface:
+`showRetreatConditions`, UPF/Sathar setup dialogs, system/fleet dialogs, and
+combat selection now explicitly center on their parent window when one exists
+and fall back to deterministic screen centering when they are launched without a
+parent. That keeps
 `StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths`
 covering `showMessage`, `notifyFailedJump`, `notifyVictory`, and
 `showRetreatConditions` on the wx-owned GUI side while leaving the
@@ -875,7 +880,10 @@ launching dialog. The same live fixture now also treats the launcher geometry as
 part of the shipped contract: the default `BattleSimFrame` must content-fit its
 three launch buttons on first show, keep the `Quit` button fully inside client
 bounds, and appear centered on the active display even when callers do not
-provide an explicit starting size. `FBattleScreen` continues to expose
+provide an explicit starting size. `LocalGameDialog` and `ScenarioDialog`
+likewise preserve parent-relative centering for real launch chains while using a
+deterministic screen-centered fallback when they are constructed without a
+parent. `FBattleScreen` continues to expose
 constructor/destructor/live-instance counters that those GUI tests use to
 assert real launch ownership and deterministic teardown rather than relying on
 source-structure checks alone.
@@ -1006,7 +1014,11 @@ action, but the manual button callback that also forced `EndModal(wxID_OK)` was
 removed so the dialog closes through one modal-safe path instead of a possible
 double-close pattern. That change specifically covers the previously fragile
 no-detail and fully empty report shapes that can travel through the runtime
-`WXTacticalUI::showDamageSummary(...)` path.
+`WXTacticalUI::showDamageSummary(...)` path. The same remediation also locks the
+dialog's first-show geometry with `SetSizerAndFit(...)` plus `SetMinSize(...)`,
+then centers the dialog on its parent battle window when one exists and falls
+back to screen centering when it is launched parentless through the tactical UI
+adapter.
 
 The regression coverage now locks that behavior in at two levels. The tactical
 source-contract test checks for the dedicated ship-rollup and hit-detail
@@ -1014,7 +1026,8 @@ builders, preserves the direct content assertions, and rejects reintroduction of
 the manual bind-plus-`EndModal(...)` close path. The live GUI regression drives
 the parent-backed `WXTacticalUI::showDamageSummary(...)` flow with populated,
 no-detail, and empty summaries and verifies clean modal return through the real
-`Close` button handling.
+`Close` button handling, while the no-parent tactical adapter path now remains a
+deterministic top-level modal on an active display for the same summary dialog.
 
 Validation command:
 
@@ -1022,4 +1035,4 @@ Validation command:
 cd tests/tactical && make && ./TacticalTests && cd ../gui && make && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (88 tests)` tactical, `OK (25 tests)` GUI.
+Result: `OK (88 tests)` tactical, `OK (29 tests)` GUI.
