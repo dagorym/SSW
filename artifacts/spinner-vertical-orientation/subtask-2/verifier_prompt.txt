@@ -1,0 +1,50 @@
+You are the Verifier Agent.
+
+Task summary:
+- ICM allocation spinner rebuild in `ICMSelectionGUI` now explicitly requests vertical arrows, GUI regression coverage checks both runtime style bits and a source-token contract while preserving the existing geometry and in-client assertions, and `AGENTS.md` now records that the GUI fixture enforces this rebuilt-spinner style contract.
+
+Acceptance criteria to verify:
+- Each rebuilt ICM allocation spinner explicitly includes vertical spinner orientation in its style.
+- The dialog rebuild flow still fits correctly and keeps the controls within the client area.
+- GUI regression coverage fails if the ICM spinner style loses the explicit vertical orientation in the future.
+
+Implementation branch or worktree context:
+- Implementer branch/worktree: `coord-ui-dialog-sizing-centering-svo-s2-implementer-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s2-implementer-20260415`
+- Tester branch/worktree: `coord-ui-dialog-sizing-centering-svo-s2-tester-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s2-tester-20260415`
+- Documenter branch/worktree: `coord-ui-dialog-sizing-centering-svo-s2-documenter-20260415` at `/tmp/ssw-worktrees/coord-ui-dialog-sizing-centering-svo-s2-documenter-20260415`
+- Comparison base assumption: review against the parent of implementer commit `a3409155b3c1bd3f017b02ed2a83033b5b3c1b79`.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/gui/ICMSelectionGUI.cpp`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `AGENTS.md`
+
+Commands executed:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (failed: `xvfb-run: command not found`)
+- `cd tests && make gui-tests` (passed fallback)
+
+Final test outcomes:
+- GUI test target built successfully in fallback mode.
+- Source inspection confirms rebuilt spinner style token `wxSP_ARROW_KEYS | wxSP_VERTICAL`.
+- GUI fixture assertions include runtime style-bit checks and a source-token regression lock for rebuilt ICM allocation spinner orientation.
+
+Plan and review context:
+- Plan path: `plans/spinner-vertical-orientation-plan.md`
+- Convention guidance: read `AGENTS.md`, including the wxGTK `wxSpinCtrl` guidance and the updated GUI test summary, and infer any remaining convention details from repository context when safe.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/spinner-vertical-orientation/subtask-2`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
