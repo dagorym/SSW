@@ -148,6 +148,11 @@ ViewFleetGUI::ViewFleetGUI( wxWindow* parent, FFleet * fleet, FSystem * sys, FSy
 	this->SetSizer( bSizer1 );
 	this->Layout();
 	bSizer1->Fit( this );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent( wxBOTH );
+	} else {
+		this->Centre( wxBOTH );
+	}
 
 	// Connect Events
 	m_listBox1->Connect( wxEVT_LEFT_UP, wxMouseEventHandler( ViewFleetGUI::onSelectShip ), NULL, this );

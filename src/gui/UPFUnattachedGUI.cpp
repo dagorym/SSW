@@ -150,6 +150,11 @@ UPFUnattachedGUI::UPFUnattachedGUI( wxWindow* parent, FPlayer * player, FMap * m
 	this->SetSizer( bSizer1 );
 	this->Layout();
 	bSizer1->Fit( this );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent( wxBOTH );
+	} else {
+		this->Centre( wxBOTH );
+	}
 
 	// Connect Events
 	m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( UPFUnattachedGUI::onAddShip ), NULL, this );

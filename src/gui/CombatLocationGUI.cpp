@@ -38,7 +38,11 @@ CombatLocationGUI::CombatLocationGUI( wxWindow* parent, FPlanet *p, wxWindowID i
 
 	this->SetSizerAndFit( fgSizer1 );
 	this->SetMinSize( this->GetSize() );
-	this->Centre( wxBOTH );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent( wxBOTH );
+	} else {
+		this->Centre( wxBOTH );
+	}
 
 	// Connect Events
 	m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CombatLocationGUI::OnButton1 ), NULL, this );

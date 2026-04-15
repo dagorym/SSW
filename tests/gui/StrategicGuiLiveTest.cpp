@@ -6,11 +6,13 @@
 #include "StrategicGuiLiveTest.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <functional>
 #include <sstream>
 
 #include <wx/dcmemory.h>
+#include <wx/display.h>
 #include <wx/filename.h>
 #include <wx/panel.h>
 #include <wx/toplevel.h>
@@ -129,6 +131,33 @@ bool isChildFullyInClientArea(wxWindow * parent, wxWindow * child) {
 	const wxRect clientRect(wxPoint(0, 0), parent->GetClientSize());
 	return clientRect.Contains(child->GetRect().GetTopLeft())
 	    && clientRect.Contains(child->GetRect().GetBottomRight());
+}
+
+void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 80) {
+	CPPUNIT_ASSERT(dialog != NULL);
+	CPPUNIT_ASSERT(parent != NULL);
+	const wxRect parentBounds = parent->GetScreenRect();
+	const wxRect dialogBounds = dialog->GetScreenRect();
+	const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
+	                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
+	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(parentCenter.x - dialogCenter.x) <= tolerance);
+	CPPUNIT_ASSERT(std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+}
+
+void assertDialogCenteredOnDisplay(wxDialog * dialog, int tolerance = 80) {
+	CPPUNIT_ASSERT(dialog != NULL);
+	const int displayIndex = wxDisplay::GetFromWindow(dialog);
+	CPPUNIT_ASSERT(displayIndex != wxNOT_FOUND);
+	const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
+	const wxRect dialogBounds = dialog->GetScreenRect();
+	const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
+	                            displayBounds.GetY() + (displayBounds.GetHeight() / 2));
+	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(displayCenter.x - dialogCenter.x) <= tolerance);
+	CPPUNIT_ASSERT(std::abs(displayCenter.y - dialogCenter.y) <= tolerance);
 }
 
 wxString staticBoxLabelFor(const wxWindow * control) {
@@ -880,8 +909,14 @@ fleet.addShip(createShip("AssaultScout"));
 
 WXStrategicUI ui(redrawPanel);
 
-const int retreatResult = m_harness.runModalFunctionWithAutoDismiss(
-[&]() { return ui.selectRetreatCondition(); }, wxID_CANCEL, 25);
+const int retreatResult = m_harness.runModalFunctionWithAction([&]() {
+	return ui.selectRetreatCondition();
+}, [&]() {
+	wxDialog * modal = m_harness.waitForModalDialog();
+	CPPUNIT_ASSERT(modal != NULL);
+	assertDialogCenteredOnParent(modal, redrawPanel);
+	modal->EndModal(wxID_CANCEL);
+}, wxID_CANCEL, 200);
 CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL), retreatResult);
 
 m_harness.runVoidFunctionWithAutoDismiss(
@@ -896,6 +931,17 @@ m_harness.runVoidFunctionWithAutoDismiss(
 [&]() { ui.notifyVictory(1); }, wxID_OK, 25);
 m_harness.runVoidFunctionWithAutoDismiss(
 [&]() { ui.showRetreatConditions("Retreat when conditions are met."); }, wxID_OK, 25);
+
+WXStrategicUI noParentUI(NULL);
+const int noParentRetreatResult = m_harness.runModalFunctionWithAction([&]() {
+	return noParentUI.selectRetreatCondition();
+}, [&]() {
+	wxDialog * modal = m_harness.waitForModalDialog();
+	CPPUNIT_ASSERT(modal != NULL);
+	assertDialogCenteredOnDisplay(modal);
+	modal->EndModal(wxID_CANCEL);
+}, wxID_CANCEL, 200);
+CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL), noParentRetreatResult);
 
 ui.requestRedraw();
 redrawPanel->Update();
@@ -1121,14 +1167,15 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 		const char * path;
 		const char * setSizerAndFitCall;
 		const char * minSizeCall;
-		const char * centerCall;
+		const char * centerOnParentCall;
+		const char * centerFallbackCall;
 	};
 
 	const DialogContractCheck checks[] = {
-		{"../../src/gui/SatharRetreatGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->Centre( wxBOTH );"},
-		{"../../src/gui/CombatLocationGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->Centre( wxBOTH );"},
-		{"../../src/gui/TwoPlanetsGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->Centre( wxBOTH );"},
-		{"../../src/gui/SelectResolutionGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->Centre( wxBOTH );"}
+		{"../../src/gui/SatharRetreatGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
+		{"../../src/gui/CombatLocationGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
+		{"../../src/gui/TwoPlanetsGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
+		{"../../src/gui/SelectResolutionGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"}
 	};
 
 	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); ++i) {
@@ -1136,7 +1183,8 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 		CPPUNIT_ASSERT(!contents.empty());
 		CPPUNIT_ASSERT(contents.find(checks[i].setSizerAndFitCall) != std::string::npos);
 		CPPUNIT_ASSERT(contents.find(checks[i].minSizeCall) != std::string::npos);
-		CPPUNIT_ASSERT(contents.find(checks[i].centerCall) != std::string::npos);
+		CPPUNIT_ASSERT(contents.find(checks[i].centerOnParentCall) != std::string::npos);
+		CPPUNIT_ASSERT(contents.find(checks[i].centerFallbackCall) != std::string::npos);
 	}
 }
 

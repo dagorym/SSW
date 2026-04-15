@@ -83,7 +83,7 @@ ScenarioDialog::ScenarioDialog( wxWindow* parent, wxWindowID id, const wxString&
 	if (this->GetParent() != NULL) {
 		this->CentreOnParent();
 	} else {
-		this->Centre();
+		this->Centre( wxBOTH );
 	}
 	
 	// Connect Events

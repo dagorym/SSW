@@ -39,7 +39,7 @@ LocalGameDialog::LocalGameDialog( wxWindow* parent, wxWindowID id, const wxStrin
 	if (this->GetParent() != NULL) {
 		this->CentreOnParent();
 	} else {
-		this->Centre();
+		this->Centre( wxBOTH );
 	}
 	
 	// Connect Events

@@ -102,6 +102,11 @@ SelectJumpGUI::SelectJumpGUI( wxWindow* parent, FFleet * fleet, FMap * map, std:
 	this->SetSizer( bSizer1 );
 	this->Layout();
 	bSizer1->Fit( this );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent( wxBOTH );
+	} else {
+		this->Centre( wxBOTH );
+	}
 
 	// Connect Events
 	m_listBox1->Connect( wxEVT_LEFT_UP, wxMouseEventHandler( SelectJumpGUI::onSelectJump ), NULL, this );

@@ -226,7 +226,7 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	if (this->GetParent() != NULL) {
 		this->CentreOnParent();
 	} else {
-		this->Centre();
+		this->Centre( wxBOTH );
 	}
 	
 	// Connect Events

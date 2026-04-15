@@ -6,6 +6,7 @@
 #include "TacticalGuiLiveTest.h"
 
 #include <wx/button.h>
+#include <wx/display.h>
 #include <wx/dialog.h>
 #include <wx/panel.h>
 #include <wx/spinctrl.h>
@@ -16,6 +17,7 @@
 #include <wx/window.h>
 
 #include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <vector>
 
@@ -189,6 +191,33 @@ return found;
 return NULL;
 }
 
+void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 80) {
+	CPPUNIT_ASSERT(dialog != NULL);
+	CPPUNIT_ASSERT(parent != NULL);
+	const wxRect parentBounds = parent->GetScreenRect();
+	const wxRect dialogBounds = dialog->GetScreenRect();
+	const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
+	                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
+	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(parentCenter.x - dialogCenter.x) <= tolerance);
+	CPPUNIT_ASSERT(std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+}
+
+void assertDialogCenteredOnDisplay(wxDialog * dialog, int tolerance = 80) {
+	CPPUNIT_ASSERT(dialog != NULL);
+	const int displayIndex = wxDisplay::GetFromWindow(dialog);
+	CPPUNIT_ASSERT(displayIndex != wxNOT_FOUND);
+	const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
+	const wxRect dialogBounds = dialog->GetScreenRect();
+	const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
+	                            displayBounds.GetY() + (displayBounds.GetHeight() / 2));
+	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(displayCenter.x - dialogCenter.x) <= tolerance);
+	CPPUNIT_ASSERT(std::abs(displayCenter.y - dialogCenter.y) <= tolerance);
+}
+
 FTacticalCombatReportSummary buildSummaryWithLines() {
 FTacticalCombatReportSummary summary;
 summary.context.reportType = TRT_OffensiveFire;
@@ -234,8 +263,18 @@ WXTacticalUI ui(redrawPanel);
 	const FTacticalCombatReportSummary summary = buildSummaryWithLines();
 
 	std::cerr << "TACTICAL1:damage" << std::endl;
-	const int damageResult = m_harness.runModalFunctionWithAutoDismiss(
-	[&]() { return ui.showDamageSummary(summary); }, wxID_OK, 25);
+	const int damageResult = m_harness.runModalFunctionWithAction([&]() {
+		return ui.showDamageSummary(summary);
+	}, [&]() {
+		wxDialog * modal = m_harness.waitForModalDialog();
+		CPPUNIT_ASSERT(modal != NULL);
+		assertDialogCenteredOnParent(modal, redrawPanel);
+		wxButton * closeButton = findButtonByLabel(modal, wxT("Close"));
+		CPPUNIT_ASSERT(closeButton != NULL);
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
+		click.SetEventObject(closeButton);
+		closeButton->Command(click);
+	}, wxID_CANCEL, 150);
 	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), damageResult);
 
 	FTacticalCombatReportSummary noDetailSummary = buildSummaryWithLines();
@@ -289,6 +328,21 @@ WXTacticalUI ui(redrawPanel);
 	CPPUNIT_ASSERT(emptyDialogFound);
 	CPPUNIT_ASSERT(emptyCloseButtonFound);
 	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), emptyResult);
+
+	WXTacticalUI noParentUI(NULL);
+	const int parentlessResult = m_harness.runModalFunctionWithAction([&]() {
+		return noParentUI.showDamageSummary(summary);
+	}, [&]() {
+		wxDialog * modal = m_harness.waitForModalDialog();
+		CPPUNIT_ASSERT(modal != NULL);
+		assertDialogCenteredOnDisplay(modal);
+		wxButton * closeButton = findButtonByLabel(modal, wxT("Close"));
+		CPPUNIT_ASSERT(closeButton != NULL);
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
+		click.SetEventObject(closeButton);
+		closeButton->Command(click);
+	}, wxID_CANCEL, 150);
+	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), parentlessResult);
 
 	FVehicle * attacker = createShip("Destroyer");
 	FVehicle * target = createShip("Destroyer");

@@ -63,15 +63,12 @@ void WXStrategicUI::notifyVictory(int result) {
 }
 
 int WXStrategicUI::selectRetreatCondition() {
-  if (m_parent == NULL) {
-    return 1;
-  }
   SatharRetreatGUI dialog(m_parent);
   return dialog.ShowModal();
 }
 
 int WXStrategicUI::runUPFUnattachedSetup(FPlayer* player, FMap* map) {
-  if (m_parent == NULL || player == NULL || map == NULL) {
+  if (player == NULL || map == NULL) {
     return 1;
   }
   UPFUnattachedGUI dialog(m_parent, player, map);
@@ -81,7 +78,7 @@ int WXStrategicUI::runUPFUnattachedSetup(FPlayer* player, FMap* map) {
 int WXStrategicUI::runSatharFleetSetup(FPlayer* player,
                                        FMap* map,
                                        bool isInitialSetup) {
-  if (m_parent == NULL || player == NULL || map == NULL) {
+  if (player == NULL || map == NULL) {
     return 1;
   }
   SatharFleetsGUI dialog(m_parent, player, map, isInitialSetup);
@@ -89,7 +86,7 @@ int WXStrategicUI::runSatharFleetSetup(FPlayer* player,
 }
 
 void WXStrategicUI::showSystemDialog(FSystem* sys, FMap* map, FPlayer* player) {
-  if (m_parent == NULL || sys == NULL || map == NULL || player == NULL) {
+  if (sys == NULL || map == NULL || player == NULL) {
     return;
   }
   std::string title = sys->getName() + " System Information";
@@ -100,7 +97,7 @@ void WXStrategicUI::showSystemDialog(FSystem* sys, FMap* map, FPlayer* player) {
 void WXStrategicUI::showFleetDialog(FFleet* fleet,
                                     FSystem* location,
                                     FSystem* destination) {
-  if (m_parent == NULL || fleet == NULL || location == NULL) {
+  if (fleet == NULL || location == NULL) {
     return;
   }
   ViewFleetGUI dialog(m_parent, fleet, location, destination);
@@ -115,7 +112,7 @@ int WXStrategicUI::selectCombat(FSystem* sys,
                                 FleetList defenders,
                                 FleetList attackers,
                                 PlayerList* players) {
-  if (m_parent == NULL || sys == NULL || players == NULL) {
+  if (sys == NULL || players == NULL) {
     return 1;
   }
   SelectCombatGUI dialog(m_parent, sys, defenders, attackers, players);

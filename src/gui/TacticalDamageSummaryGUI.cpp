@@ -52,7 +52,11 @@ TacticalDamageSummaryGUI::TacticalDamageSummaryGUI(
 
 	SetSizer(rootSizer);
 	Layout();
-	Centre();
+	if (GetParent() != NULL) {
+		CentreOnParent(wxBOTH);
+	} else {
+		Centre(wxBOTH);
+	}
 }
 
 TacticalDamageSummaryGUI::~TacticalDamageSummaryGUI() {

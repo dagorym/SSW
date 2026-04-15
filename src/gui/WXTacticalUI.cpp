@@ -59,18 +59,13 @@ void WXTacticalUI::showMessage(const std::string& title,
 }
 
 int WXTacticalUI::showDamageSummary(const FTacticalCombatReportSummary& summary) {
-  if (m_parent == NULL) {
-    return 1;
-  }
-
   TacticalDamageSummaryGUI dialog(m_parent, summary);
   return dialog.ShowModal();
 }
 
 int WXTacticalUI::runICMSelection(std::vector<ICMData*>& icmData,
                                   VehicleList* defenders) {
-  if (m_parent == NULL || defenders == NULL || defenders->size() == 0 ||
-      icmData.size() == 0) {
+  if (defenders == NULL || defenders->size() == 0 || icmData.size() == 0) {
     return 1;
   }
 

@@ -51,7 +51,11 @@ SelectResolutionGUI::SelectResolutionGUI( wxWindow* parent, FleetList list, std:
 
 	this->SetSizerAndFit( bSizer1 );
 	this->SetMinSize( this->GetSize() );
-	this->Centre( wxBOTH );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent( wxBOTH );
+	} else {
+		this->Centre( wxBOTH );
+	}
 
 	// Connect Events
 	m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SelectResolutionGUI::onBattleBoard ), NULL, this );

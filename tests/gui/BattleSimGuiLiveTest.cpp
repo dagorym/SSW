@@ -146,6 +146,33 @@ void assertFrameCenteredOnDisplay(wxFrame * frame) {
 	CPPUNIT_ASSERT(std::abs(displayCenter.y - frameCenter.y) <= 80);
 }
 
+void assertTopLevelCenteredOnDisplay(wxTopLevelWindow * window, int tolerance = 80) {
+	CPPUNIT_ASSERT(window != NULL);
+	const int displayIndex = wxDisplay::GetFromWindow(window);
+	CPPUNIT_ASSERT(displayIndex != wxNOT_FOUND);
+	const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
+	const wxRect windowBounds = window->GetScreenRect();
+	const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
+	                            displayBounds.GetY() + (displayBounds.GetHeight() / 2));
+	const wxPoint windowCenter(windowBounds.GetX() + (windowBounds.GetWidth() / 2),
+	                           windowBounds.GetY() + (windowBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(displayCenter.x - windowCenter.x) <= tolerance);
+	CPPUNIT_ASSERT(std::abs(displayCenter.y - windowCenter.y) <= tolerance);
+}
+
+void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 80) {
+	CPPUNIT_ASSERT(dialog != NULL);
+	CPPUNIT_ASSERT(parent != NULL);
+	const wxRect parentBounds = parent->GetScreenRect();
+	const wxRect dialogBounds = dialog->GetScreenRect();
+	const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
+	                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
+	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(parentCenter.x - dialogCenter.x) <= tolerance);
+	CPPUNIT_ASSERT(std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+}
+
 bool isChildFullyInClientArea(wxWindow * parent, wxWindow * child) {
 	if (parent == NULL || child == NULL) {
 		return false;
@@ -315,10 +342,11 @@ void BattleSimGuiLiveTest::testBattleSimFrameOpensLocalGameDialogAndReturns() {
 		clickButton(&frame, localButton);
 	}, [&]() {
 		wxDialog * launchedDialog = m_harness.waitForModalDialog(200, 5);
-		LocalGameDialog * localDialog = dynamic_cast<LocalGameDialog *>(launchedDialog);
-		localDialogWindowPresented = (localDialog != NULL && localDialog->GetParent() == &frame);
-		if (localDialog != NULL) {
-			wxButton * loadButton = findButtonByLabel(localDialog, wxT("Load an Existing Game"));
+			LocalGameDialog * localDialog = dynamic_cast<LocalGameDialog *>(launchedDialog);
+			localDialogWindowPresented = (localDialog != NULL && localDialog->GetParent() == &frame);
+			if (localDialog != NULL) {
+				assertDialogCenteredOnParent(localDialog, &frame);
+				wxButton * loadButton = findButtonByLabel(localDialog, wxT("Load an Existing Game"));
 			wxButton * customButton = findButtonByLabel(localDialog, wxT("Create a New Custom Game"));
 			wxButton * predefinedButton = findButtonByLabel(localDialog, wxT("Play a Predefined Scenario"));
 			wxButton * backButton = findButtonByLabel(localDialog, wxT("Back"));
@@ -362,6 +390,7 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 			scenarioDialogPresented =
 			        (scenarioDialog != NULL && scenarioDialog->GetParent() == predefinedDialog);
 			if (scenarioDialog != NULL) {
+				assertDialogCenteredOnParent(scenarioDialog, predefinedDialog);
 				wxButton * playButton = findButtonByLabel(scenarioDialog, wxT("Play"));
 				wxButton * doneButton = findButtonByLabel(scenarioDialog, wxT("Done"));
 				CPPUNIT_ASSERT(playButton != NULL);
@@ -376,6 +405,14 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 		}
 		predefinedDialog->Destroy();
 		m_harness.pumpEvents(5);
+	}
+
+	{
+		LocalGameDialogTestPeer parentlessDialog(NULL);
+		parentlessDialog.Show();
+		m_harness.pumpEvents();
+		assertTopLevelCenteredOnDisplay(&parentlessDialog);
+		parentlessDialog.Hide();
 	}
 
 	{

@@ -38,7 +38,7 @@ BattleSimFrame::BattleSimFrame( const wxString& title, const wxPoint& pos, const
 		        wxSize(size.GetWidth() < minimumSize.GetWidth() ? minimumSize.GetWidth() : size.GetWidth(),
 		               size.GetHeight() < minimumSize.GetHeight() ? minimumSize.GetHeight() : size.GetHeight()));
 	}
-	this->Centre(wxBOTH);
+	this->CentreOnScreen(wxBOTH);
 	// Connect Events
 //	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( BattleSimFrame::onQuit ), NULL, this );
 	m_localGame->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BattleSimFrame::onPlayLocal ), NULL, this );

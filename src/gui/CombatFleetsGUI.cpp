@@ -60,6 +60,11 @@ CombatFleetsGUI::CombatFleetsGUI( wxWindow* parent, FSystem *sys, FleetList fLis
 	this->SetSizer( fgSizer1 );
 	this->Layout();
 	fgSizer1->Fit( this );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent( wxBOTH );
+	} else {
+		this->Centre( wxBOTH );
+	}
 
 	// Connect Events
 	m_listBox1->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( CombatFleetsGUI::onListSelect ), NULL, this );

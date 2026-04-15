@@ -51,7 +51,11 @@ SatharRetreatGUI::SatharRetreatGUI( wxWindow* parent, wxWindowID id, const wxStr
 
 	this->SetSizerAndFit( bSizer1 );
 	this->SetMinSize( this->GetSize() );
-	this->Centre( wxBOTH );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent( wxBOTH );
+	} else {
+		this->Centre( wxBOTH );
+	}
 
 	// Connect Events
 	m_radioBtn1->Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler( SatharRetreatGUI::OnButtonSelection ), NULL, this );
