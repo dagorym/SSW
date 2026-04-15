@@ -79,6 +79,12 @@ ScenarioDialog::ScenarioDialog( wxWindow* parent, wxWindowID id, const wxString&
 	this->SetSizer( fgSizer1 );
 	this->Layout();
 	fgSizer1->Fit( this );
+	this->SetMinSize( this->GetBestSize() );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent();
+	} else {
+		this->Centre();
+	}
 	
 	// Connect Events
 	m_scenario1Button->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ScenarioDialog::onScenario1 ), NULL, this );

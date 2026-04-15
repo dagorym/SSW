@@ -137,6 +137,15 @@ void assertFrameCenteredOnDisplay(wxFrame * frame) {
 	CPPUNIT_ASSERT(std::abs(displayCenter.y - frameCenter.y) <= 80);
 }
 
+bool isChildFullyInClientArea(wxWindow * parent, wxWindow * child) {
+	if (parent == NULL || child == NULL) {
+		return false;
+	}
+	const wxRect clientRect(wxPoint(0, 0), parent->GetClientSize());
+	return clientRect.Contains(child->GetRect().GetTopLeft())
+	    && clientRect.Contains(child->GetRect().GetBottomRight());
+}
+
 class LocalGameDialogTestPeer : public LocalGameDialog {
 public:
 LocalGameDialogTestPeer(wxWindow * parent)
@@ -299,6 +308,20 @@ void BattleSimGuiLiveTest::testBattleSimFrameOpensLocalGameDialogAndReturns() {
 		wxDialog * launchedDialog = m_harness.waitForModalDialog(200, 5);
 		LocalGameDialog * localDialog = dynamic_cast<LocalGameDialog *>(launchedDialog);
 		localDialogWindowPresented = (localDialog != NULL && localDialog->GetParent() == &frame);
+		if (localDialog != NULL) {
+			wxButton * loadButton = findButtonByLabel(localDialog, wxT("Load an Existing Game"));
+			wxButton * customButton = findButtonByLabel(localDialog, wxT("Create a New Custom Game"));
+			wxButton * predefinedButton = findButtonByLabel(localDialog, wxT("Play a Predefined Scenario"));
+			wxButton * backButton = findButtonByLabel(localDialog, wxT("Back"));
+			CPPUNIT_ASSERT(loadButton != NULL);
+			CPPUNIT_ASSERT(customButton != NULL);
+			CPPUNIT_ASSERT(predefinedButton != NULL);
+			CPPUNIT_ASSERT(backButton != NULL);
+			CPPUNIT_ASSERT(isChildFullyInClientArea(localDialog, loadButton));
+			CPPUNIT_ASSERT(isChildFullyInClientArea(localDialog, customButton));
+			CPPUNIT_ASSERT(isChildFullyInClientArea(localDialog, predefinedButton));
+			CPPUNIT_ASSERT(isChildFullyInClientArea(localDialog, backButton));
+		}
 	}, 0, 200);
 
 	CPPUNIT_ASSERT(localDialogWindowPresented);
@@ -329,6 +352,14 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 			ScenarioDialog * scenarioDialog = dynamic_cast<ScenarioDialog *>(launchedDialog);
 			scenarioDialogPresented =
 			        (scenarioDialog != NULL && scenarioDialog->GetParent() == predefinedDialog);
+			if (scenarioDialog != NULL) {
+				wxButton * playButton = findButtonByLabel(scenarioDialog, wxT("Play"));
+				wxButton * doneButton = findButtonByLabel(scenarioDialog, wxT("Done"));
+				CPPUNIT_ASSERT(playButton != NULL);
+				CPPUNIT_ASSERT(doneButton != NULL);
+				CPPUNIT_ASSERT(isChildFullyInClientArea(scenarioDialog, playButton));
+				CPPUNIT_ASSERT(isChildFullyInClientArea(scenarioDialog, doneButton));
+			}
 		}, 0, 200);
 		CPPUNIT_ASSERT(scenarioDialogPresented);
 		if (predefinedDialog->IsShown()) {
@@ -348,6 +379,14 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 			ScenarioEditorGUI * scenarioEditorDialog = dynamic_cast<ScenarioEditorGUI *>(launchedDialog);
 			scenarioEditorPresented =
 			        (scenarioEditorDialog != NULL && scenarioEditorDialog->GetParent() == customDialog);
+			if (scenarioEditorDialog != NULL) {
+				wxButton * cancelButton = findButtonByLabel(scenarioEditorDialog, wxT("Cancel"));
+				wxButton * startButton = findButtonByLabel(scenarioEditorDialog, wxT("Start Battle!"));
+				CPPUNIT_ASSERT(cancelButton != NULL);
+				CPPUNIT_ASSERT(startButton != NULL);
+				CPPUNIT_ASSERT(isChildFullyInClientArea(scenarioEditorDialog, cancelButton));
+				CPPUNIT_ASSERT(isChildFullyInClientArea(scenarioEditorDialog, startButton));
+			}
 		}, 0, 200);
 		CPPUNIT_ASSERT(scenarioEditorPresented);
 		if (customDialog->IsShown()) {

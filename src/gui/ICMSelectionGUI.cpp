@@ -151,6 +151,12 @@ ICMSelectionGUI::ICMSelectionGUI( wxWindow* parent, std::vector<ICMData *> *ICMD
 	this->SetSizer( fgSizer1 );
 	this->Layout();
 	fgSizer1->Fit( this );
+	this->SetMinSize( this->GetBestSize() );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent();
+	} else {
+		this->Centre();
+	}
 	
 	// Connect Events
 	m_grid1->Connect( wxEVT_GRID_LABEL_LEFT_CLICK, wxGridEventHandler( ICMSelectionGUI::onPickRow ), NULL, this );
@@ -294,6 +300,9 @@ void ICMSelectionGUI::selectWeapon(int row){
 	this->SetSizer( fgSizer1 );
 	this->Layout();
 	fgSizer1->Fit( this );
+	const wxSize bestSize = this->GetBestSize();
+	this->SetMinSize(bestSize);
+	this->SetSize(bestSize);
 	Refresh();
 
 }

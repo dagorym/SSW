@@ -35,6 +35,12 @@ LocalGameDialog::LocalGameDialog( wxWindow* parent, wxWindowID id, const wxStrin
 	this->SetSizer( bSizer1 );
 	this->Layout();
 	bSizer1->Fit( this );
+	this->SetMinSize( this->GetBestSize() );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent();
+	} else {
+		this->Centre();
+	}
 	
 	// Connect Events
 	m_loadButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( LocalGameDialog::onLoad ), NULL, this );

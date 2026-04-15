@@ -222,6 +222,12 @@ ScenarioEditorGUI::ScenarioEditorGUI( wxWindow* parent, wxWindowID id, const wxS
 	this->SetSizer( gSizer1 );
 	this->Layout();
 	gSizer1->Fit( this );
+	this->SetMinSize( this->GetBestSize() );
+	if (this->GetParent() != NULL) {
+		this->CentreOnParent();
+	} else {
+		this->Centre();
+	}
 	
 	// Connect Events
 	m_defenderTeam->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( ScenarioEditorGUI::onSelectDefenderTeam ), NULL, this );
