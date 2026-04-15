@@ -1,0 +1,65 @@
+{
+  "status": "completed",
+  "outcome": "CONDITIONAL PASS",
+  "requested_agent": "reviewer",
+  "agent_definition": {
+    "repository_local_found": false,
+    "shared_found": true,
+    "path_used": "/home/tstephen/repos/agents/agents/reviewer.md",
+    "precedence_decision": "shared definition used because no repository-local reviewer definition was found"
+  },
+  "assigned_worktree": "/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-reviewer-20260415",
+  "assigned_branch": "coord-ui-dialog-sizing-centering-reviewer-20260415",
+  "review_target_branch": "coord-ui-dialog-sizing-centering",
+  "review_target_commit": "73188e6",
+  "feature_plan": "plans/ui-dialog-sizing-centering-plan.md",
+  "artifacts_reviewed": [
+    "artifacts/ui-dialog-sizing-centering/subtask-1-spin-controls",
+    "artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame",
+    "artifacts/ui-dialog-sizing-centering/subtask-3-known-dialogs",
+    "artifacts/ui-dialog-sizing-centering/subtask-4-dialog-audit",
+    "artifacts/ui-dialog-sizing-centering/subtask-5-centering"
+  ],
+  "overall_feature_completeness": "Substantially complete on sizing, centering, tests, and documentation, but not yet fully complete because ScenarioDialog no longer preserves the expected BattleSim modal hide/show lifecycle and the tactical regression suite fails.",
+  "findings": {
+    "blocking": [
+      {
+        "title": "ScenarioDialog tactical launches dropped the expected hide/show modal lifecycle",
+        "references": [
+          "src/battleSim/ScenarioDialog.cpp:129-131",
+          "src/battleSim/ScenarioDialog.cpp:202-204",
+          "src/battleSim/ScenarioDialog.cpp:246-248",
+          "src/battleSim/ScenarioDialog.cpp:329-330",
+          "tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp:159-185"
+        ],
+        "why_it_matters": "Subtask 3 required preserving existing modal ownership/lifecycle behavior while fixing sizing. The merged branch removed the Hide()/Show() contract around the four FBattleScreen modal launches, and reviewer validation showed this now breaks TacticalTests.",
+        "validation_evidence": "cd tests/tactical && make && ./TacticalTests -> FAIL (1 failure): FrontierTests::FTacticalBattleScreenElectricalFireTest::testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen"
+      }
+    ],
+    "warning": [],
+    "note": [
+      {
+        "title": "BattleSimFrame now ignores explicit caller-provided position in practice",
+        "references": [
+          "artifacts/ui-dialog-sizing-centering/subtask-2-battlesim-frame/verifier_report.md:32-38"
+        ],
+        "why_it_matters": "This is not a blocker for the planned default launch behavior, but it is a small constructor-semantic change future callers should be aware of."
+      }
+    ]
+  },
+  "follow_up_feature_requests": [
+    "Restore and revalidate the BattleSim scenario modal lifecycle while keeping the new sizing/centering behavior: preserve (or consistently replace across code and tests) the intended parent hide/show contract for all four ScenarioDialog tactical launches, then rerun TacticalTests and GuiTests and update any affected documentation/artifacts."
+  ],
+  "commands_run": [
+    "cd tests/gui && make && ./GuiTests",
+    "cd tests/tactical && make && ./TacticalTests"
+  ],
+  "validation_summary": {
+    "gui_tests": "PASS - OK (29 tests)",
+    "tactical_tests": "FAIL - Run: 92, Failures: 1, Errors: 0"
+  },
+  "artifact_files_written": [
+    "artifacts/ui-dialog-sizing-centering/reviewer_report.md",
+    "artifacts/ui-dialog-sizing-centering/reviewer_result.json"
+  ]
+}
