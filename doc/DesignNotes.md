@@ -871,7 +871,11 @@ tests now wait for newly launched top-level or modal windows so they can prove
 that `BattleSimFrame` really presented a `LocalGameDialog` parented by the
 frame and that each `LocalGameDialog` button path really presented the concrete
 downstream modal type (`ScenarioDialog` or `ScenarioEditorGUI`) owned by the
-launching dialog. `FBattleScreen` continues to expose
+launching dialog. The same live fixture now also treats the launcher geometry as
+part of the shipped contract: the default `BattleSimFrame` must content-fit its
+three launch buttons on first show, keep the `Quit` button fully inside client
+bounds, and appear centered on the active display even when callers do not
+provide an explicit starting size. `FBattleScreen` continues to expose
 constructor/destructor/live-instance counters that those GUI tests use to
 assert real launch ownership and deterministic teardown rather than relying on
 source-structure checks alone.
