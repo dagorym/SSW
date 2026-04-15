@@ -1,0 +1,33 @@
+{
+  "status": "success",
+  "subtask": "1-restore-scenario-lifecycle",
+  "branch": "test-ui-dialog-sizing-centering-followup-subtask-1",
+  "test_commit_hash": "657cec5b2ff059b64b6ac597a0ca6e934b3fb1e5",
+  "test_files_modified": [
+    "tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp",
+    "tests/gui/BattleSimGuiLiveTest.cpp"
+  ],
+  "implementation_files_modified": [
+    "src/battleSim/ScenarioDialog.cpp"
+  ],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/gui && make && ./GuiTests"
+  ],
+  "totals": {
+    "tactical_tests": {
+      "passed": 92,
+      "failed": 0
+    },
+    "gui_tests": {
+      "passed": 29,
+      "failed": 0
+    }
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle/tester_report.md",
+    "artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle/tester_result.json",
+    "artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle/documenter_prompt.txt"
+  ]
+}

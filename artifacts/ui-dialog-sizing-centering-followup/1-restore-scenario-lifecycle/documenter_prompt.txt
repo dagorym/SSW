@@ -1,0 +1,53 @@
+You are the Documenter Agent.
+
+Task summary:
+- Restored ScenarioDialog modal lifecycle in predefined scenario launch handlers so ScenarioDialog hides before launching modal FBattleScreen and is shown again afterward.
+- Tester validated modal ordering/ownership contract coverage and BattleSim launch-path GUI regression behavior.
+
+Acceptance criteria validated:
+- All four `ScenarioDialog` tactical launch handlers hide the dialog before `bb.ShowModal()` and show it again afterward.
+- The implementation keeps `FBattleScreen bb;` on the stack and does not introduce `new FBattleScreen(...)`, `bb.Show()`, or other ownership-pattern changes.
+- `ScenarioDialog` still retains its current first-show sizing contract (`Fit(...)` plus `SetMinSize(GetBestSize())`) and centering behavior.
+- The tactical launch-path regression in `FTacticalBattleScreenElectricalFireTest` remains aligned with the restored modal contract.
+- Any GUI lifecycle assertion changes remain scoped to this BattleSim launch path and do not broaden the story.
+
+Implementation branch or worktree context:
+- Tester branch: `test-ui-dialog-sizing-centering-followup-subtask-1`
+- Parent implementer branch: `impl-ui-dialog-sizing-centering-followup-subtask-1`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/ui-dialog-sizing-centering-followup-subtask-1-tester`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `src/battleSim/ScenarioDialog.cpp`
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+
+Test commit:
+- `657cec5b2ff059b64b6ac597a0ca6e934b3fb1e5`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/gui && make && ./GuiTests`
+
+Final test outcomes:
+- Tactical suite passed: `OK (92 tests)`.
+- GUI suite passed: `OK (29 tests)`.
+- No unmet acceptance criteria.
+
+Documentation context:
+- Likely update BattleSim/GUI lifecycle notes where ScenarioDialog predefined scenario launch behavior is described.
+- Ensure tactical launch-path regression documentation references per-handler Hide/ShowModal/Show ordering and unchanged stack ownership contract.
+
+Plan and diff context:
+- Story context: `ui-dialog-sizing-centering-followup` / subtask `1-restore-scenario-lifecycle`.
+- Comparison-base guidance (assumption): diff against `impl-ui-dialog-sizing-centering-followup-subtask-1` first, then against integration base if required by repository workflow.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/ui-dialog-sizing-centering-followup/1-restore-scenario-lifecycle`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
