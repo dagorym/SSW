@@ -1,0 +1,40 @@
+{
+  "status": "failure",
+  "subtask": "ui-dialog-sizing-centering/subtask-5-centering",
+  "branch": "coord-ui-dialog-sizing-centering-testerc-20260415",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/coord-ui-dialog-sizing-centering-testerc-20260415",
+  "implementation_branch_validated": "coord-ui-dialog-sizing-centering-implementer-20260415",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/gui && make && ./GuiTests",
+    "cd tests/gui && ./GuiTests",
+    "cd tests/gui && gdb -batch -ex run -ex bt ./GuiTests",
+    "cd tests/gui && ./GuiTests"
+  ],
+  "attempts": 3,
+  "pass_fail_totals": {
+    "observed_progress_output": "..........F...",
+    "completed_suite_totals_available": false
+  },
+  "unmet_acceptance_criteria": [
+    "Representative frames open centered on screen (not fully runtime-validated due suite failure)",
+    "Representative parent-backed dialogs open centered relative to parent (not fully runtime-validated due suite failure)",
+    "Parentless modal cases use deterministic screen-centered fallback (not fully runtime-validated due suite failure)",
+    "Live GUI regression tests verify representative placement policy runtime behavior (suite terminated before completion)"
+  ],
+  "key_failures": [
+    {
+      "test_name": "Unknown (summary interrupted)",
+      "expected": "GuiTests should complete and emit full pass/fail summary",
+      "actual": "GuiTests exits with segmentation fault after partial progress output",
+      "error": "Segmentation fault (core dumped), exit code 139"
+    }
+  ],
+  "crash_backtrace_context": "StrategicGuiLiveTest::testCombatSelectionDialogsReturnCodesAndState via WXGuiTestHarness::showModalWithAction",
+  "artifacts_written": [
+    "artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_report.md",
+    "artifacts/ui-dialog-sizing-centering/subtask-5-centering/tester_result.json"
+  ],
+  "documenter_prompt_written": false
+}
