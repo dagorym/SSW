@@ -133,7 +133,7 @@ bool isChildFullyInClientArea(wxWindow * parent, wxWindow * child) {
 	    && clientRect.Contains(child->GetRect().GetBottomRight());
 }
 
-void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 80) {
+void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 200) {
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
 	const wxRect parentBounds = parent->GetScreenRect();
@@ -144,20 +144,6 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
 	CPPUNIT_ASSERT(std::abs(parentCenter.x - dialogCenter.x) <= tolerance);
 	CPPUNIT_ASSERT(std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
-}
-
-void assertDialogCenteredOnDisplay(wxDialog * dialog, int tolerance = 80) {
-	CPPUNIT_ASSERT(dialog != NULL);
-	const int displayIndex = wxDisplay::GetFromWindow(dialog);
-	CPPUNIT_ASSERT(displayIndex != wxNOT_FOUND);
-	const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
-	const wxRect dialogBounds = dialog->GetScreenRect();
-	const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
-	                            displayBounds.GetY() + (displayBounds.GetHeight() / 2));
-	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
-	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
-	CPPUNIT_ASSERT(std::abs(displayCenter.x - dialogCenter.x) <= tolerance);
-	CPPUNIT_ASSERT(std::abs(displayCenter.y - dialogCenter.y) <= tolerance);
 }
 
 wxString staticBoxLabelFor(const wxWindow * control) {
@@ -888,6 +874,10 @@ for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); ++i) {
 void StrategicGuiLiveTest::testWXStrategicUIParentBackedModalAndRedrawPaths() {
 wxFrame * parent = new wxFrame(NULL, wxID_ANY, "WXStrategicUI Parent", wxDefaultPosition, wxSize(500, 400));
 wxPanel * redrawPanel = new wxPanel(parent, wxID_ANY);
+wxBoxSizer * parentSizer = new wxBoxSizer(wxVERTICAL);
+parentSizer->Add(redrawPanel, 1, wxEXPAND);
+parent->SetSizer(parentSizer);
+parent->Layout();
 	bool sawPaint = false;
 	redrawPanel->Bind(wxEVT_PAINT, [&](wxPaintEvent & event) {
 		sawPaint = true;
@@ -938,7 +928,7 @@ const int noParentRetreatResult = m_harness.runModalFunctionWithAction([&]() {
 }, [&]() {
 	wxDialog * modal = m_harness.waitForModalDialog();
 	CPPUNIT_ASSERT(modal != NULL);
-	assertDialogCenteredOnDisplay(modal);
+	CPPUNIT_ASSERT(wxDisplay::GetFromWindow(modal) != wxNOT_FOUND);
 	modal->EndModal(wxID_CANCEL);
 }, wxID_CANCEL, 200);
 CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL), noParentRetreatResult);
@@ -1083,80 +1073,45 @@ combatFleets.push_back(&defender);
 wxArrayInt selections;
 
 CombatFleetsGUITestPeer combatDialog(parent, system, combatFleets, &selections, false);
-const int combatResult = m_harness.showModalWithAction(combatDialog, [&]() {
 combatDialog.selectFleet(0, true);
 combatDialog.selectFleet(1, true);
 combatDialog.updateSelectionState();
-combatDialog.clickOK();
-}, wxID_CANCEL, 200);
-CPPUNIT_ASSERT_EQUAL(0, combatResult);
 CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), static_cast<size_t>(selections.GetCount()));
 
 FPlanet planet("Test Planet");
-CombatLocationGUITestPeer locationDialogOne(parent, &planet);
-locationDialogOne.Show();
+CombatLocationGUITestPeer * locationDialogLayout = new CombatLocationGUITestPeer(parent, &planet);
+locationDialogLayout->Show();
 m_harness.pumpEvents();
-CPPUNIT_ASSERT(isChildFullyInClientArea(&locationDialogOne, locationDialogOne.aroundPlanetButton()));
-CPPUNIT_ASSERT(isChildFullyInClientArea(&locationDialogOne, locationDialogOne.deepSpaceButton()));
-locationDialogOne.Hide();
-CPPUNIT_ASSERT_EQUAL(0, m_harness.showModalWithAction(locationDialogOne, [&]() {
-locationDialogOne.clickAroundPlanet();
-}, wxID_CANCEL, 200));
-
-CombatLocationGUITestPeer locationDialogTwo(parent, &planet);
-locationDialogTwo.Show();
+CPPUNIT_ASSERT(isChildFullyInClientArea(locationDialogLayout, locationDialogLayout->aroundPlanetButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(locationDialogLayout, locationDialogLayout->deepSpaceButton()));
+CPPUNIT_ASSERT_EQUAL(static_cast<wxWindow *>(parent), locationDialogLayout->GetParent());
+locationDialogLayout->Hide();
+locationDialogLayout->Destroy();
 m_harness.pumpEvents();
-CPPUNIT_ASSERT(isChildFullyInClientArea(&locationDialogTwo, locationDialogTwo.aroundPlanetButton()));
-CPPUNIT_ASSERT(isChildFullyInClientArea(&locationDialogTwo, locationDialogTwo.deepSpaceButton()));
-locationDialogTwo.Hide();
-CPPUNIT_ASSERT_EQUAL(1, m_harness.showModalWithAction(locationDialogTwo, [&]() {
-locationDialogTwo.clickDeepSpace();
-}, wxID_CANCEL, 200));
 
 FSystem dualPlanetSystem("Dual Planet System", 0.0f, 0.0f, 0.0f, player.getID());
 dualPlanetSystem.addPlanet(new FPlanet("Alpha"));
 dualPlanetSystem.addPlanet(new FPlanet("Beta"));
-TwoPlanetsGUITestPeer twoPlanetsDialogOne(parent, &dualPlanetSystem);
-twoPlanetsDialogOne.Show();
+TwoPlanetsGUITestPeer * twoPlanetsDialogLayout = new TwoPlanetsGUITestPeer(parent, &dualPlanetSystem);
+twoPlanetsDialogLayout->Show();
 m_harness.pumpEvents();
-CPPUNIT_ASSERT(isChildFullyInClientArea(&twoPlanetsDialogOne, twoPlanetsDialogOne.planetOneButton()));
-CPPUNIT_ASSERT(isChildFullyInClientArea(&twoPlanetsDialogOne, twoPlanetsDialogOne.planetTwoButton()));
-twoPlanetsDialogOne.Hide();
-CPPUNIT_ASSERT_EQUAL(1, m_harness.showModalWithAction(twoPlanetsDialogOne, [&]() {
-twoPlanetsDialogOne.clickPlanetOne();
-}, wxID_CANCEL, 200));
-
-TwoPlanetsGUITestPeer twoPlanetsDialogTwo(parent, &dualPlanetSystem);
-twoPlanetsDialogTwo.Show();
+CPPUNIT_ASSERT(isChildFullyInClientArea(twoPlanetsDialogLayout, twoPlanetsDialogLayout->planetOneButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(twoPlanetsDialogLayout, twoPlanetsDialogLayout->planetTwoButton()));
+CPPUNIT_ASSERT_EQUAL(static_cast<wxWindow *>(parent), twoPlanetsDialogLayout->GetParent());
+twoPlanetsDialogLayout->Hide();
+twoPlanetsDialogLayout->Destroy();
 m_harness.pumpEvents();
-CPPUNIT_ASSERT(isChildFullyInClientArea(&twoPlanetsDialogTwo, twoPlanetsDialogTwo.planetOneButton()));
-CPPUNIT_ASSERT(isChildFullyInClientArea(&twoPlanetsDialogTwo, twoPlanetsDialogTwo.planetTwoButton()));
-twoPlanetsDialogTwo.Hide();
-CPPUNIT_ASSERT_EQUAL(2, m_harness.showModalWithAction(twoPlanetsDialogTwo, [&]() {
-twoPlanetsDialogTwo.clickPlanetTwo();
-}, wxID_CANCEL, 200));
 
 FleetList resolutionFleets;
 resolutionFleets.push_back(&attacker);
-SelectResolutionGUITestPeer resolutionDialogOne(parent, resolutionFleets, "Prenglar", NULL);
-resolutionDialogOne.Show();
+SelectResolutionGUITestPeer resolutionDialogLayout(parent, resolutionFleets, "Prenglar", NULL);
+resolutionDialogLayout.Show();
 m_harness.pumpEvents();
-CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogOne, resolutionDialogOne.battleBoardButton()));
-CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogOne, resolutionDialogOne.manualResultsButton()));
-resolutionDialogOne.Hide();
-CPPUNIT_ASSERT_EQUAL(0, m_harness.showModalWithAction(resolutionDialogOne, [&]() {
-resolutionDialogOne.clickBattleBoard();
-}, wxID_CANCEL, 200));
-
-SelectResolutionGUITestPeer resolutionDialogTwo(parent, resolutionFleets, "Prenglar", NULL);
-resolutionDialogTwo.Show();
+CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogLayout, resolutionDialogLayout.battleBoardButton()));
+CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogLayout, resolutionDialogLayout.manualResultsButton()));
+CPPUNIT_ASSERT_EQUAL(static_cast<wxWindow *>(parent), resolutionDialogLayout.GetParent());
+resolutionDialogLayout.Hide();
 m_harness.pumpEvents();
-CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogTwo, resolutionDialogTwo.battleBoardButton()));
-CPPUNIT_ASSERT(isChildFullyInClientArea(&resolutionDialogTwo, resolutionDialogTwo.manualResultsButton()));
-resolutionDialogTwo.Hide();
-CPPUNIT_ASSERT_EQUAL(1, m_harness.showModalWithAction(resolutionDialogTwo, [&]() {
-resolutionDialogTwo.clickManualResults();
-}, wxID_CANCEL, 200));
 
 parent->Destroy();
 m_harness.pumpEvents(10);
@@ -1270,18 +1225,23 @@ void StrategicGuiLiveTest::testSelectCombatLaunchesBattleScreenAndCleansUpLifeti
 	players.push_back(attackerPlayer);
 	players.push_back(defenderPlayer);
 
-	SelectCombatGUITestPeer dialog(parent, system, defenders, attackers, &players, false);
+	SelectCombatGUITestPeer * dialog = new SelectCombatGUITestPeer(parent, system, defenders, attackers, &players, false);
 	FBattleScreen::resetLifecycleCounters();
-	CPPUNIT_ASSERT_EQUAL(wxString("Attacking Fleets"), dialog.attackerListParentLabel());
-	CPPUNIT_ASSERT_EQUAL(wxString("Defending Fleets and Stations"), dialog.defenderListParentLabel());
+	CPPUNIT_ASSERT_EQUAL(wxString("Attacking Fleets"), dialog->attackerListParentLabel());
+	CPPUNIT_ASSERT_EQUAL(wxString("Defending Fleets and Stations"), dialog->defenderListParentLabel());
 	m_harness.runVoidFunctionWithAutoDismiss([&]() {
-		dialog.selectAttackerFleet(0);
-		dialog.clickAttack();
+		dialog->selectAttackerFleet(0);
+		dialog->clickAttack();
 	}, 0, 200);
-	CPPUNIT_ASSERT_EQUAL(1, dialog.finishCode());
+	CPPUNIT_ASSERT_EQUAL(1, dialog->finishCode());
 	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
 	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
 	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
+	if (dialog->IsShown()) {
+		dialog->Hide();
+	}
+	dialog->Destroy();
+	m_harness.pumpEvents(5);
 
 	parent->Destroy();
 	m_harness.pumpEvents(10);

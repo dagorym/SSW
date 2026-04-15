@@ -57,8 +57,6 @@ BattleSimFrame::~BattleSimFrame()
 
 void BattleSimFrame::onPlayLocal( wxCommandEvent& event ){
 	LocalGameDialog d(this);
-	Hide();
 	d.ShowModal();
-	Show();
 	event.Skip();
 }

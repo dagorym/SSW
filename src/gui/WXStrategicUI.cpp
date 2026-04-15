@@ -26,6 +26,7 @@ void WXStrategicUI::showMessage(const std::string& title,
   if (m_parent != NULL) {
     wxGenericMessageDialog dialog(m_parent, body, title,
                                   wxOK | wxICON_INFORMATION);
+    dialog.CentreOnParent(wxBOTH);
     dialog.ShowModal();
     return;
   }
@@ -64,6 +65,11 @@ void WXStrategicUI::notifyVictory(int result) {
 
 int WXStrategicUI::selectRetreatCondition() {
   SatharRetreatGUI dialog(m_parent);
+  if (m_parent != NULL) {
+    dialog.CentreOnParent(wxBOTH);
+  } else {
+    dialog.Centre(wxBOTH);
+  }
   return dialog.ShowModal();
 }
 
@@ -72,6 +78,11 @@ int WXStrategicUI::runUPFUnattachedSetup(FPlayer* player, FMap* map) {
     return 1;
   }
   UPFUnattachedGUI dialog(m_parent, player, map);
+  if (m_parent != NULL) {
+    dialog.CentreOnParent(wxBOTH);
+  } else {
+    dialog.Centre(wxBOTH);
+  }
   return dialog.ShowModal();
 }
 
@@ -82,6 +93,11 @@ int WXStrategicUI::runSatharFleetSetup(FPlayer* player,
     return 1;
   }
   SatharFleetsGUI dialog(m_parent, player, map, isInitialSetup);
+  if (m_parent != NULL) {
+    dialog.CentreOnParent(wxBOTH);
+  } else {
+    dialog.Centre(wxBOTH);
+  }
   return dialog.ShowModal();
 }
 
@@ -91,6 +107,11 @@ void WXStrategicUI::showSystemDialog(FSystem* sys, FMap* map, FPlayer* player) {
   }
   std::string title = sys->getName() + " System Information";
   SystemDialogGUI dialog(m_parent, sys, map, player, title);
+  if (m_parent != NULL) {
+    dialog.CentreOnParent(wxBOTH);
+  } else {
+    dialog.Centre(wxBOTH);
+  }
   dialog.ShowModal();
 }
 
@@ -101,6 +122,11 @@ void WXStrategicUI::showFleetDialog(FFleet* fleet,
     return;
   }
   ViewFleetGUI dialog(m_parent, fleet, location, destination);
+  if (m_parent != NULL) {
+    dialog.CentreOnParent(wxBOTH);
+  } else {
+    dialog.Centre(wxBOTH);
+  }
   dialog.ShowModal();
 }
 
@@ -116,6 +142,11 @@ int WXStrategicUI::selectCombat(FSystem* sys,
     return 1;
   }
   SelectCombatGUI dialog(m_parent, sys, defenders, attackers, players);
+  if (m_parent != NULL) {
+    dialog.CentreOnParent(wxBOTH);
+  } else {
+    dialog.Centre(wxBOTH);
+  }
   return dialog.ShowModal();
 }
 

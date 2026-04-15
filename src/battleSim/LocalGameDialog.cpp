@@ -60,16 +60,12 @@ LocalGameDialog::~LocalGameDialog()
 
 void LocalGameDialog::onPlayPredefined( wxCommandEvent& event ){
 	ScenarioDialog d(this);
-	Hide();
 	d.ShowModal();
-	Show();
 //	event.Skip();
 }
 
 void LocalGameDialog::onCreateNew( wxCommandEvent& event ){
 	ScenarioEditorGUI d(this);
-	Hide();
 	d.ShowModal();
-	Show();
 //	event.Skip();
 }

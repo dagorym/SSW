@@ -50,13 +50,21 @@ TacticalDamageSummaryGUI::TacticalDamageSummaryGUI(
 	SetDefaultItem(m_closeButton);
 	m_closeButton->SetFocus();
 
-	SetSizer(rootSizer);
-	Layout();
+	SetSizerAndFit(rootSizer);
+	SetMinSize(GetSize());
 	if (GetParent() != NULL) {
 		CentreOnParent(wxBOTH);
 	} else {
 		Centre(wxBOTH);
 	}
+	Bind(wxEVT_INIT_DIALOG, [this](wxInitDialogEvent & event) {
+		if (m_closeButton != NULL) {
+			m_closeButton->SetDefault();
+			SetDefaultItem(m_closeButton);
+			m_closeButton->SetFocus();
+		}
+		event.Skip();
+	});
 }
 
 TacticalDamageSummaryGUI::~TacticalDamageSummaryGUI() {

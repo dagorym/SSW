@@ -128,9 +128,7 @@ void ScenarioDialog::onScenario1( wxCommandEvent& event ){
 	aList.push_back(f);
 	bb.setupFleets(&aList,&dList,true,st);
 
-	Hide();
 	bb.ShowModal();
-	Show();
 
 //	event.Skip();
 }
@@ -203,9 +201,7 @@ void ScenarioDialog::onScenario2( wxCommandEvent& event ){
 	aList.push_back(f);
 	bb.setupFleets(&aList,&dList,true,st);
 
-	Hide();
 	bb.ShowModal();
-	Show();
 
 //	event.Skip();
 }
@@ -249,9 +245,7 @@ void ScenarioDialog::onScenario3( wxCommandEvent& event ){
 	aList.push_back(f);
 	bb.setupFleets(&aList,&dList,false,NULL);
 
-	Hide();
 	bb.ShowModal();
-	Show();
 
 //	event.Skip();
 }
@@ -333,9 +327,7 @@ void ScenarioDialog::onScenario4( wxCommandEvent& event ){
 	aList.push_back(f);
 	bb.setupFleets(&aList,&dList,true,st);
 
-	Hide();
 	bb.ShowModal();
-	Show();
 
 //	event.Skip();
 }

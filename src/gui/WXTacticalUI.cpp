@@ -44,6 +44,7 @@ void WXTacticalUI::showMessage(const std::string& title,
     };
 
     wxGenericMessageDialog dialog(m_parent, body, title, wxOK | wxICON_INFORMATION);
+    dialog.CentreOnParent(wxBOTH);
     ModalAutoDismissTimer* autoDismiss = NULL;
     if (s_modalAutoDismissMs > 0) {
       autoDismiss = new ModalAutoDismissTimer(&dialog);
@@ -60,6 +61,11 @@ void WXTacticalUI::showMessage(const std::string& title,
 
 int WXTacticalUI::showDamageSummary(const FTacticalCombatReportSummary& summary) {
   TacticalDamageSummaryGUI dialog(m_parent, summary);
+  if (m_parent != NULL) {
+    dialog.CentreOnParent(wxBOTH);
+  } else {
+    dialog.Centre(wxBOTH);
+  }
   return dialog.ShowModal();
 }
 
@@ -70,6 +76,11 @@ int WXTacticalUI::runICMSelection(std::vector<ICMData*>& icmData,
   }
 
   ICMSelectionGUI dialog(m_parent, &icmData);
+  if (m_parent != NULL) {
+    dialog.CentreOnParent(wxBOTH);
+  } else {
+    dialog.Centre(wxBOTH);
+  }
   return dialog.ShowModal();
 }
 
