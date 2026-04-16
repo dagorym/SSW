@@ -770,6 +770,12 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 8);
 	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 7);
 	CPPUNIT_ASSERT_EQUAL(std::string("Frigate:"), shipSummary->displayLines[0]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - 5 hull damage from 1 attack"), shipSummary->displayLines[1]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - ADF (-3)"), shipSummary->displayLines[2]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - MR (-1)"), shipSummary->displayLines[3]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - Weapon Hit: LB"), shipSummary->displayLines[4]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - Defense Hit: MS, PS"), shipSummary->displayLines[5]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - Electrical fire"), shipSummary->displayLines[6]);
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - 5 hull damage from 1 attack"));
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - ADF (-3)"));
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - MR (-1)"));

@@ -158,6 +158,14 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Defense damaged") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("armor bypassed") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Attack hit target") == std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), summary.ships[0].displayLines.size());
+	CPPUNIT_ASSERT_EQUAL(std::string("Sathar Frigate:"), summary.ships[0].displayLines[0]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - 3 hull damage from 1 attack"), summary.ships[0].displayLines[1]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - ADF (-2)"), summary.ships[0].displayLines[2]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - MR (-1)"), summary.ships[0].displayLines[3]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - Weapon Hit: LB, LB, AR"), summary.ships[0].displayLines[4]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - Defense Hit: MS, PS"), summary.ships[0].displayLines[5]);
+	CPPUNIT_ASSERT_EQUAL(summary.ships[0].displayLines, summary.displayLines);
 
 	const std::string source = readFile(repoFile("src/gui/TacticalDamageSummaryGUI.cpp"));
 
