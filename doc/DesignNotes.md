@@ -290,13 +290,15 @@ metadata from both attack-generated internal events and standalone immediate
 damage-resolution events. Weapon-hit effects carry `damageEffectType`,
 `damagedWeaponType`, `damagedWeaponID`, and `damagedWeaponName`, while
 defense-hit effects also preserve `damagedDefenseType` and
-`damagedDefenseName`. The player-facing ship-summary rollup consumes that
-structured defense identity to emit abbreviated defense wording in the form
-`Defense Hit: <abbr-list>` (for example `Defense Hit: MS, PS`) instead of
-depending on long-form label/detail text. Repeated weapon hits, defense hits,
-and other non-weapon effects remain separate event entries in the same report
-path, and hit-detail text suppresses only the redundant lowercase placeholder
-note `Attack hit target` while preserving meaningful notes.
+`damagedDefenseName`. Quantitative effect events also retain `amount`,
+`previousValue`, and `newValue` so later summary formatting can use numeric
+state changes instead of re-parsing label text. The player-facing ship-summary
+rollup consumes that structured defense identity to emit abbreviated defense
+wording in the form `Defense Hit: <abbr-list>` (for example `Defense Hit: MS,
+PS`) instead of depending on long-form label/detail text. Repeated weapon hits,
+defense hits, and other non-weapon effects remain separate event entries in the
+same report path, and hit-detail text suppresses only the redundant lowercase
+placeholder note `Attack hit target` while preserving meaningful notes.
 
 The summary rollup now consumes that structured weapon metadata to emit one
 player-facing weapon effect entry per ship in the form `Weapon Hit:
@@ -306,7 +308,10 @@ header followed by one ` - ...` bullet per aggregate summary item, so grouped
 weapon, defense, and other effect wording no longer has to share a single flat
 display line. `TacticalDamageSummaryGUI` continues to render the prebuilt
 `FTacticalShipReportSummary::displayLines` without inspecting raw attack or
-event collections itself.
+event collections itself. ADF-loss and MR-loss events now use the same
+structured payload to accumulate exact point-loss totals per summarized ship
+scope and emit dedicated bullets such as ` - ADF (-3)` and ` - MR (-1)`,
+rather than echoing label-only text like `ADF reduced` or `MR reduced`.
 
 Milestone 6 adds the tactical UI boundary alongside that model-only work:
 `ITacticalUI` now defines the non-wx tactical callback surface and
