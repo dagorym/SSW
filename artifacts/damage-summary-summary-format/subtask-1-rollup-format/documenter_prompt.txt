@@ -1,0 +1,51 @@
+You are the Documenter Agent.
+
+Task summary:
+- Subtask 1 updated tactical ship-summary rollups to a multiline format (header line plus bullet lines) and tester validated/updated affected tactical tests.
+
+Acceptance criteria validated:
+- Ship rollups no longer use a single flat `Ship: ...; effects: ...` line when multiple summary items exist.
+- Hull damage totals remain aggregated correctly and still include attack counts.
+- Grouped effect categories still aggregate correctly after the formatting change.
+- Existing ship-summary model tests are updated or extended to lock the new multi-line output contract.
+
+Implementation branch or worktree context:
+- Branch: `damage-summary-summary-format-subtask-1-tester-20260416`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-1-tester-20260416`
+- Parent implementer branch: `damage-summary-summary-format-subtask-1-implementer-20260416`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `include/tactical/FTacticalCombatReport.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `tests/tactical/FTacticalMineDamageReportSummaryTest.cpp`
+
+Test commit:
+- `6bef8a2`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && make >/dev/null && set -o pipefail && ./TacticalTests 2>&1 | tail -n 200`
+- `cd tests/tactical && make >/dev/null && set -o pipefail && ./TacticalTests 2>&1 | tail -n 120`
+
+Final test outcomes:
+- Final tactical suite result: `OK (92 tests)`.
+- Two mine-damage summary tests were updated to match the new multiline rollup contract and now pass.
+
+Documentation context:
+- Update documentation that describes tactical damage-summary output formatting to reflect ship header + bullet rollups.
+- Preserve notes about grouped hull totals, grouped weapon/defense hit abbreviations, and grouped effect counts.
+
+Plan and diff context:
+- Plan path: `/home/tstephen/repos/SSW/plans/damage-summary-summary-format-plan.md`
+- Comparison base assumption: compare tester branch against `master` and review implementer delta from `damage-summary-summary-format-subtask-1-implementer-20260416`.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/damage-summary-summary-format/subtask-1-rollup-format`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

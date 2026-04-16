@@ -1,0 +1,26 @@
+{
+  "status": "success",
+  "subtask": "damage-summary-summary-format/subtask-1-rollup-format",
+  "branch": "damage-summary-summary-format-subtask-1-tester-20260416",
+  "test_commit_hash": "6bef8a2",
+  "test_files_modified": [
+    "tests/tactical/FTacticalMineDamageReportSummaryTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/tactical && make >/dev/null && set -o pipefail && ./TacticalTests 2>&1 | tail -n 200",
+    "cd tests/tactical && make >/dev/null && set -o pipefail && ./TacticalTests 2>&1 | tail -n 120"
+  ],
+  "totals": {
+    "tests_run": 92,
+    "passed": 92,
+    "failed": 0,
+    "errors": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/damage-summary-summary-format/subtask-1-rollup-format/tester_report.md",
+    "artifacts/damage-summary-summary-format/subtask-1-rollup-format/tester_result.json",
+    "artifacts/damage-summary-summary-format/subtask-1-rollup-format/documenter_prompt.txt"
+  ]
+}
