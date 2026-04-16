@@ -1,0 +1,15 @@
+{
+  "status": "completed",
+  "subtask": "damage-summary-summary-format-subtask-2",
+  "branch": "damage-summary-summary-format-subtask-2-verifier-20260416",
+  "verdict": "FAIL",
+  "blocking_finding_count": 1,
+  "warning_finding_count": 2,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "TacticalTests passed, but the new regression only covers synthetic FTacticalReportEvent input and misses the live FTacticalGame event-construction path where numeric ADF/MR payload is dropped.",
+  "documentation_accuracy_summary": "DesignNotes.md describes exact structured-data ADF/MR rollups, but runtime FTacticalGame event conversion does not yet copy amount/previousValue/newValue into FTacticalReportEvent.",
+  "artifact_files_written": [
+    "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/verifier_report.md",
+    "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/verifier_result.json"
+  ]
+}
