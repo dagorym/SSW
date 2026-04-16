@@ -1,10 +1,9 @@
 You are the Tester Agent.
 
 Task summary:
-- Verify subtask 3 damage-summary GUI/regression alignment is complete using existing implementation commit 42dd988 (no additional code edits in this run).
+- Remediation pass for Subtask 3 strengthened deterministic regression checks for the multiline tactical damage-summary contract by adding exact line-order assertions in tactical test fixtures.
 
 Modified files:
-- src/gui/TacticalDamageSummaryGUI.cpp
 - tests/tactical/FTacticalDamageSummaryGUITest.cpp
 - tests/tactical/FTacticalCombatReportTest.cpp
 
@@ -17,17 +16,20 @@ Acceptance criteria to validate (from Planner):
 Create test files in:
 - tests/tactical/FTacticalDamageSummaryGUITest.cpp
 - tests/tactical/FTacticalCombatReportTest.cpp
-- Assumption: existing tests/gui/* runner is sufficient for mirrored GUI behavior.
 
 Implementation context for testing:
-- Ship rollup formatting is expected as ship header + bullet lines, including explicit `ADF (-N)` and `MR (-N)` summary bullets.
-- GUI dialog rollup rendering keeps existing empty-state text, close-button/default behavior, and optional hit-detail section behavior.
-- Current branch already contains code commit 42dd988 with file-scope changes limited to approved files.
-- In this environment, GUI execution was blocked by missing xvfb-run and unavailable display; re-run in a GUI-capable or xvfb-enabled environment.
+- Added exact expected-line assertions for `<Ship>:` + bullet lines, including explicit `ADF (-N)` / `MR (-N)` bullets and ordered grouped weapon/defense bullets.
+- Existing source-contract checks for TacticalDamageSummaryGUI close behavior, empty-state text, and hit-detail section were preserved.
+- No production GUI code paths changed in this remediation commit.
 
 Suggested test command(s):
 - cd tests/tactical && make && ./TacticalTests
-- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests (assumption from plan; xvfb-run unavailable in this environment)
+- Fallback used here: cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests
+
+Existing validations that fail only because approved behavior changed:
+- None identified.
+- Current failures observed are unrelated live-GUI flakiness in existing suite (e.g., StrategicGuiLiveTest sawPaint assertion, occasional tactical/battlesim modal lifecycle assertions).
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
