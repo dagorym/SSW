@@ -1,0 +1,26 @@
+{
+  "status": "completed",
+  "task": "damage-summary-summary-format",
+  "subtask": "subtask-1-rollup-format",
+  "branch": "damage-summary-summary-format-subtask-1-verifier-20260416",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-1-verifier-20260416",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency": "Sufficient. `cd tests/tactical && make && ./TacticalTests` passed with OK (92 tests), and updated tactical tests cover the multiline ship-rollup contract, hull aggregation, grouped effect bullets, and mine-damage summary expectations.",
+  "documentation_accuracy": "Accurate. `doc/DesignNotes.md` matches the shipped multiline ship-rollup contract without overstating behavior.",
+  "acceptance_criteria_source": [
+    "documenter handoff prompt for Subtask 1",
+    "plans/damage-summary-summary-format-plan.md"
+  ],
+  "convention_files": [
+    "/home/tstephen/repos/SSW/AGENTS.md",
+    "/home/tstephen/repos/agents/AGENTS_LOOKUP.md",
+    "/home/tstephen/repos/agents/agents/verifier.md"
+  ],
+  "artifact_paths": [
+    "artifacts/damage-summary-summary-format/subtask-1-rollup-format/verifier_report.md",
+    "artifacts/damage-summary-summary-format/subtask-1-rollup-format/verifier_result.json"
+  ]
+}
