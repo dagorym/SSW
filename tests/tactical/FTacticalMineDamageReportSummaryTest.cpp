@@ -63,7 +63,7 @@ void FTacticalMineDamageReportSummaryTest::testMineDamageReportSummaryPreservesI
 	CPPUNIT_ASSERT_EQUAL(std::string("Tactical Damage Summary - Mine Damage"), tacticalCombatReportDialogTitle(summary.context));
 	CPPUNIT_ASSERT_EQUAL(std::string("Mine Damage"), tacticalCombatReportTypeLabel(TRT_MineDamage));
 	CPPUNIT_ASSERT(summary.ships.size() == 1);
-	CPPUNIT_ASSERT(summary.displayLines.size() == 1);
+	CPPUNIT_ASSERT(summary.displayLines.size() == 2);
 	CPPUNIT_ASSERT(shipSummary != NULL);
 	CPPUNIT_ASSERT_EQUAL(std::string("Scout"), shipSummary->ship.shipName);
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 1);
@@ -71,8 +71,11 @@ void FTacticalMineDamageReportSummaryTest::testMineDamageReportSummaryPreservesI
 	CPPUNIT_ASSERT_EQUAL(1, shipSummary->nonHullEffectsTaken);
 	CPPUNIT_ASSERT_EQUAL(0, shipSummary->hullDamageTaken);
 	CPPUNIT_ASSERT(shipSummary->hasSustainedDamage());
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Mine damage") != std::string::npos);
-	CPPUNIT_ASSERT(summary.displayLines[0].find("Mine damage") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 2);
+	CPPUNIT_ASSERT_EQUAL(std::string("Scout:"), shipSummary->displayLines[0]);
+	CPPUNIT_ASSERT(shipSummary->displayLines[1].find("Mine damage") != std::string::npos);
+	CPPUNIT_ASSERT(summary.displayLines[0] == shipSummary->displayLines[0]);
+	CPPUNIT_ASSERT(summary.displayLines[1] == shipSummary->displayLines[1]);
 }
 
 void FTacticalMineDamageReportSummaryTest::testMineDamageSummaryKeepsNestedRawDetailWithoutDoubleCountingTargetHullDamage() {
@@ -113,8 +116,10 @@ void FTacticalMineDamageReportSummaryTest::testMineDamageSummaryKeepsNestedRawDe
 	CPPUNIT_ASSERT(shipSummary->rawEvents[0].eventType == TRET_MineDamage);
 	CPPUNIT_ASSERT_EQUAL(0, shipSummary->rawEvents[0].attackIndex);
 	CPPUNIT_ASSERT_EQUAL(std::string("Secondary blast details"), shipSummary->rawEvents[0].detail);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Destroyer: 5 hull damage from 1 attack") != std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Mine explosion") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 3);
+	CPPUNIT_ASSERT_EQUAL(std::string("Destroyer:"), shipSummary->displayLines[0]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - 5 hull damage from 1 attack"), shipSummary->displayLines[1]);
+	CPPUNIT_ASSERT(shipSummary->displayLines[2].find("Mine explosion") != std::string::npos);
 }
 
 }
