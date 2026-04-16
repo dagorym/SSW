@@ -6,6 +6,7 @@
   "comparison_base": "Assumption: compare tester/documenter-stage changes against damage-summary-summary-format-subtask-3-implementer-20260416 while reviewing the shipped direct-dialog stabilization already present in branch history at commit af74d1a.",
   "plan_context": "Assumption: the tester handoff prompt and existing subtask-3 artifact history remain the authoritative evaluation context for this validation-only documentation pass.",
   "documentation_files": [
+    "AGENTS.md",
     "doc/DesignNotes.md"
   ],
   "artifact_files": [

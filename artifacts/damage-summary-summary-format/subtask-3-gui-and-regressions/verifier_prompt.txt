@@ -18,6 +18,7 @@ Files modified by Implementer, Tester, and Documenter to inspect:
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt`
+- `AGENTS.md`
 - `doc/DesignNotes.md`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_report.md`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_result.json`
@@ -39,6 +40,7 @@ Plan and review context:
 - Repository guidance to consult: `AGENTS.md`, `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`, and the shared verifier instructions resolved from `/home/tstephen/repos/agents/agents/verifier.md` if no repository-local verifier definition exists.
 
 Documentation files updated:
+- `AGENTS.md`
 - `doc/DesignNotes.md`
 
 Verification scope:
