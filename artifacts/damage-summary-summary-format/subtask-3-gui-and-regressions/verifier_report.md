@@ -1,14 +1,13 @@
 Verifier Report
 
 Scope reviewed:
-- Combined implementer/tester/documenter work for `damage-summary-summary-format/subtask-3-gui-and-regressions` on verifier branch `damage-summary-summary-format-subtask-3-verifier-20260416`.
-- Implementer diff: `d6f3b0f` (`tests/gui/BattleSimGuiLiveTest.cpp`, `tests/gui/TacticalGuiLiveTest.cpp`, `tests/gui/StrategicGuiLiveTest.cpp`).
-- Tester artifacts: `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md` and `tester_result.json`.
-- Documenter update: `AGENTS.md` plus `documenter_report.md`, `documenter_result.json`, and `verifier_prompt.txt`.
+- Implementer-stage live-test remediation in `tests/gui/TacticalGuiLiveTest.cpp` from commit `e97d774`.
+- Tester/documenter-stage artifacts and documentation updates in `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/*` and `doc/DesignNotes.md` relative to `damage-summary-summary-format-subtask-3-implementer-20260416`.
+- Verifier reruns of `cd tests/tactical && make && ./TacticalTests`, `cd tests/tactical && ./TacticalTests | tail -n 40`, and repeated `cd tests/gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests | tail -n 30; done` in this worktree.
 
 Acceptance criteria / plan reference:
-- Primary evaluation source: verifier handoff acceptance criteria in `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/verifier_prompt.txt`.
-- Assumption for background policy context: `plans/ui-dialog-sizing-centering-plan.md` is the nearest related plan, but the review was anchored to the shipped diff and stated acceptance criteria.
+- Assumption: the tester handoff prompt plus the existing subtask-3 artifact history in `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions` are the authoritative acceptance context for this validation-only pass.
+- Verified criteria: repeated parent-backed `TacticalDamageSummaryGUI` centering stability, preserved parent-relative intent with only owning-top-level fallback, minimal test-only scope, and matching documentation narrative.
 
 Convention files considered:
 - `AGENTS.md`
@@ -18,26 +17,28 @@ Convention files considered:
 Findings
 
 BLOCKING
-- `tests/gui/TacticalGuiLiveTest.cpp:214-244`, `tests/gui/TacticalGuiLiveTest.cpp:633-637` - The tactical damage-summary centering assertion is still intermittent under the required verifier command.
-  The updated helper increased retries and added display fallback, but my independent rerun of `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests` failed on the third pass with `FrontierTests::TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior` asserting `centered` at line 244. Because the parent-backed direct `TacticalDamageSummaryGUI` path at line 637 still flakes, acceptance criterion 1 (robust against short-lived geometry-settle timing) is not met, and criterion 3 cannot be treated as satisfied either.
+- `tests/gui/TacticalGuiLiveTest.cpp:214-244` - The centering helper still flakes under repeated GUI reruns, so the primary acceptance criterion is not actually satisfied.
+  The verifier reran `GDK_BACKEND=x11 ./GuiTests` repeatedly in `tests/gui` and reproduced `FrontierTests::TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior` failures on the helper's `CPPUNIT_ASSERT(centered)` at line 244 in 2 of 3 consecutive runs (and again in a 5-run sample). That means the shipped remediation is still intermittent in the exact parent-backed damage-summary path this subtask was supposed to stabilize.
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md:18-27` and `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json:12-22` - The tester artifacts report three clean GUI passes and no unmet acceptance criteria, but verifier reruns contradicted that evidence.
+  These files currently claim `GuiTests` runs 1-3 all passed and that AC1-AC3 were met. Because the verifier reproduced the target tactical damage-summary flake during repeated reruns, the machine-readable and human-readable tester artifacts are not reliable evidence for this stage and the task contract cannot be marked complete.
 
 WARNING
-- None.
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_report.md:7` - The documenter summary says the modal-settle guard was added "to deflake wxGTK runs," but the verifier still reproduced the targeted flake.
+  `doc/DesignNotes.md` accurately documents the intended parent-relative/top-level-parent fallback semantics, but this handoff summary overstates the verified outcome and should not describe the remediation as having deflaked the runs while the tactical live test remains intermittent.
 
 NOTE
 - None.
 
 Security assessment:
-- No security-sensitive changes or vulnerabilities were identified in the reviewed diff. The change set is test/doc focused.
+- No security-sensitive changes were in scope, and no security findings were identified in the reviewed test/doc-only diffs.
 
 Test sufficiency assessment:
-- Coverage depth is good for the intended scope: the changed fixtures exercise parent-backed and parentless BattleSim, strategic, and tactical modal placement paths, and the tester ran tactical plus three consecutive GUI passes.
-- However, verifier reruns showed the direct parent-backed `TacticalDamageSummaryGUI` centering check is still flaky. The existing tests are sufficient to expose the problem; the implementation is what remains insufficiently stabilized.
-- Verifier results: `tests/tactical` passed (`92/92`), one verifier execution of the prescribed three-pass GUI command failed on pass 3 with the tactical centering assertion above, and later reruns passed, confirming intermittent behavior rather than deterministic success.
+- Coverage intent is appropriate: the live tactical GUI test still exercises the parent-backed damage-summary modal and the verifier tactical reruns remained green (`OK (92 tests)`).
+- However, sufficiency is undermined by instability: repeated GUI reruns still intermittently fail on the targeted centering assertion, so the acceptance claim of stable repeated validation is not met.
 
 Documentation accuracy assessment:
-- The `AGENTS.md` update matches the intended stabilization strategy (short retry loops, narrow fallback targets, selective timeout increases).
-- But because the direct tactical damage-summary centering assertion still fails intermittently in verification, the documentation cannot yet be considered fully validated against actual shipped behavior.
+- `doc/DesignNotes.md:1059-1066` matches the implemented fallback semantics and still describes the parent-relative centering contract accurately.
+- The documenter handoff summary does not fully match verified behavior because it claims the wxGTK runs were deflaked even though verifier reruns reproduced the flake.
 
 Verdict:
 - FAIL
