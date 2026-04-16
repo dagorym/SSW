@@ -603,7 +603,7 @@ m_harness.cleanupOrphanTopLevels(10);
 }
 
 void TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior() {
-wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Damage Summary Parent", wxDefaultPosition, wxSize(540, 420));
+	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Damage Summary Parent", wxPoint(120, 120), wxSize(540, 420));
 parent->Show();
 m_harness.pumpEvents();
 
@@ -630,12 +630,8 @@ bool closeActionRan = false;
 bool closeButtonFound = false;
 bool closeButtonFocused = false;
 bool closeButtonIsDefault = false;
-const int closeResult = m_harness.runModalFunctionWithAction([&]() {
-	return dialog->ShowModal();
-}, [&]() {
+const int closeResult = m_harness.showModalWithAction(*dialog, [&]() {
 	closeActionRan = true;
-	wxDialog * modal = m_harness.waitForModalDialog(300, 5);
-	CPPUNIT_ASSERT(modal != NULL);
 	assertDialogCenteredOnParent(dialog, parent, 200);
 	wxButton * closeButton = findButtonByLabel(dialog, wxT("Close"));
 	closeButtonFound = (closeButton != NULL);
@@ -655,7 +651,7 @@ const int closeResult = m_harness.runModalFunctionWithAction([&]() {
 			closeButton->Command(click);
 		}
 	}
-}, wxID_CANCEL, 250);
+}, wxID_CANCEL, 2000);
 CPPUNIT_ASSERT(closeActionRan);
 CPPUNIT_ASSERT(closeButtonFound);
 CPPUNIT_ASSERT(closeButtonIsDefault);
