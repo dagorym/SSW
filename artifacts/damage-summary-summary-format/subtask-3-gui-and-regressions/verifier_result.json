@@ -1,20 +1,15 @@
 {
-  "status": "completed",
-  "subtask": "damage-summary-summary-format/subtask-3-gui-and-regressions",
+  "status": "success",
+  "subtask": "damage-summary-summary-format-subtask-3",
   "branch": "damage-summary-summary-format-subtask-3-verifier-20260416",
-  "verdict": "FAIL",
-  "blocking_finding_count": 2,
-  "warning_finding_count": 1,
-  "note_finding_count": 0,
-  "test_sufficiency_summary": "Targeted tactical coverage exists and TacticalTests still pass, but repeated GUI reruns still intermittently fail on TacticalGuiLiveTest centering, so stable repeated validation was not achieved.",
-  "documentation_accuracy_summary": "DesignNotes.md matches the intended parent-relative fallback semantics, but documenter_report.md overstates the remediation as having deflaked wxGTK runs.",
-  "artifact_files_written": [
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 1,
+  "test_sufficiency_summary": "Verified the test-only direct-dialog stabilization in tests/gui/TacticalGuiLiveTest.cpp, confirmed the parent-relative centering helper still only permits owning-top-level fallback, reran TacticalTests successfully (OK (92 tests)), and reran GuiTests successfully three consecutive times under GDK_BACKEND=x11 (OK (29 tests) each).",
+  "documentation_accuracy_summary": "doc/DesignNotes.md now matches the shipped direct-dialog stabilization and the repeated GUI validation story without contradicting the implemented parent-relative centering behavior.",
+  "artifact_files": [
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/verifier_report.md",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/verifier_result.json"
-  ],
-  "commands_verified": [
-    "cd tests/tactical && make && ./TacticalTests",
-    "cd tests/tactical && ./TacticalTests | tail -n 40",
-    "cd tests/gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests | tail -n 30; done"
   ]
 }
