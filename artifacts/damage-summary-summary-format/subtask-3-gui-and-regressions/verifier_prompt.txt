@@ -1,52 +1,49 @@
 You are the Verifier Agent.
 
 Task summary:
-- Implementer stabilized intermittent GUI live-test centering assertions for BattleSim and tactical damage-summary modal flows by extending geometry-settle retries, allowing explicit fallback centering targets in transient windows, and increasing the affected tactical modal timeout where the empty-state close path settled slowly.
-- Tester validated the implementation with tactical and repeated GUI live-test runs.
-- Documenter updated repository guidance so AGENTS.md reflects the new GUI centering-test stability semantics.
+- Verify the subtask 3 tactical damage-summary centering-flake remediation end-to-end: the shipped live-test fix remains test-only, the tester reran tactical and GUI suites successfully, and the documenter updated repository notes so the validation narrative matches the implemented behavior.
 
 Acceptance criteria to verify:
-- Parent-centering assertions are robust against short-lived geometry-settle timing.
-- Tests still verify centering behavior relative to parent or a valid transient fallback target where appropriate.
-- Changes are minimal, test-focused, and the documentation now matches the tested behavior.
+- Parent-backed TacticalDamageSummaryGUI centering assertion no longer flakes in repeated GUI runs.
+- Centering check intent is preserved by validating parent-relative placement, with only the owning top-level parent accepted as a brief wxGTK settle fallback.
+- Fix remains minimal and test-focused, and the updated documentation matches the implemented/tested behavior.
 
 Implementation branch or worktree context:
-- Verifier should review branch `damage-summary-summary-format-subtask-3-documenter-20260416` in worktree `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-3-documenter-20260416`.
-- Comparison base assumption: `damage-summary-summary-format-subtask-3-implementer-20260416`.
-- Parent tester branch: `damage-summary-summary-format-subtask-3-tester-20260416`.
+- Branch: `damage-summary-summary-format-subtask-3-documenter-20260416`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-3-documenter-20260416`
+- Comparison assumption: compare tester/documenter-stage changes against `damage-summary-summary-format-subtask-3-implementer-20260416`, while inspecting the shipped live-test remediation already present in this branch's history at commit `e97d774`.
 
 Files modified by Implementer, Tester, and Documenter to inspect:
-- `tests/gui/BattleSimGuiLiveTest.cpp`
 - `tests/gui/TacticalGuiLiveTest.cpp`
-- `tests/gui/StrategicGuiLiveTest.cpp`
-- `AGENTS.md`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt`
+- `doc/DesignNotes.md`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_report.md`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_result.json`
 - `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/verifier_prompt.txt`
 
 Commands executed:
 - `cd tests/tactical && make && ./TacticalTests`
-- `cd tests/tactical && ./TacticalTests | tail -n 30`
-- `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests`
+- `cd tests/tactical && ./TacticalTests | tail -n 40`
+- `cd tests/gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests | tail -n 30; done`
+- `git --no-pager show e97d774 -- tests/gui/TacticalGuiLiveTest.cpp`
+- `git --no-pager diff 54fe170..HEAD -- tests/gui/TacticalGuiLiveTest.cpp doc/DesignNotes.md`
 
 Final test outcomes:
-- Tactical tests: 92/92 passed.
-- GUI live tests: 29/29 passed across three consecutive runs.
-- Documenter did not rerun tests after the documentation-only change.
+- Tactical regression suite passed: `OK (92 tests)`.
+- GUI live suite passed three consecutive runs: `OK (29 tests)` each run.
+- Tester confirmed no additional test-file changes were required during rerun validation.
 
 Plan and review context:
-- Story context: `damage-summary-summary-format/subtask-3-gui-and-regressions`.
-- Assumption: `plans/ui-dialog-sizing-centering-plan.md` is the nearest plan source for centering-policy background; verify against the actual diff first.
-- Read repository guidance in `AGENTS.md` and the shared agent instructions in `/home/tstephen/repos/agents/AGENTS_LOOKUP.md` plus `/home/tstephen/repos/agents/agents/documenter.md` as needed for convention context.
+- Assumption: the tester handoff prompt plus existing subtask-3 artifact history in `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions` are the authoritative story/acceptance context for this validation-only pass.
+- Repository guidance to consult: `AGENTS.md`, `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`, and the shared verifier instructions resolved from `/home/tstephen/repos/agents/agents/verifier.md` if no repository-local verifier definition exists.
 
 Documentation files updated:
-- `AGENTS.md`
+- `doc/DesignNotes.md`
 
 Verification scope:
-- Verify the implementation behavior, test coverage, and the updated documentation files together.
+- Verify implementation behavior, test coverage, and the updated documentation files together.
 
 Startup behavior:
 - If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.

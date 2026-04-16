@@ -2,11 +2,11 @@
   "status": "success",
   "subtask": "damage-summary-summary-format/subtask-3-gui-and-regressions",
   "branch": "damage-summary-summary-format-subtask-3-documenter-20260416",
-  "commit": "d5f2e7b98a8faa329c02b348c69c23ba9206f998",
-  "comparison_base": "damage-summary-summary-format-subtask-3-implementer-20260416",
-  "plan_context": "Assumption: plans/ui-dialog-sizing-centering-plan.md provided the nearest centering-policy background; the final documentation update followed the tested diff rather than the plan text.",
+  "commit": "ded513815316bab683644987d0d86c143dfebe04",
+  "comparison_base": "Assumption: compare the documenter branch against damage-summary-summary-format-subtask-3-implementer-20260416 for tester/documenter-stage changes, while reviewing the shipped live-test remediation already present in branch history at commit e97d774.",
+  "plan_context": "Assumption: the tester handoff prompt and existing subtask-3 artifact history are the authoritative evaluation context for this validation-only documentation pass.",
   "documentation_files": [
-    "AGENTS.md"
+    "doc/DesignNotes.md"
   ],
   "artifact_files": [
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_report.md",

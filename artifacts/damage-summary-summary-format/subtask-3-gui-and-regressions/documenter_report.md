@@ -1,10 +1,10 @@
 ## Documenter Report
 
 ### Files Updated
-- **`AGENTS.md`** — Recorded that live GUI centering assertions now allow brief geometry-settle retries, narrow fallback centering targets for transient windows, and selectively longer modal fallback timeouts where wxGTK close paths settle slowly.
+- **`doc/DesignNotes.md`** — Clarified that the tactical damage-summary live regression still enforces parent-relative centering, now waits for the modal to exist before checking placement, and only tolerates owning-top-level-parent fallback during the brief wxGTK geometry-settle window.
 
 ### Summary
-Updated the repository guidance for GUI live-test coverage so the documented regression contract matches the shipped test helpers: centering checks remain enforced, but they now tolerate short geometry-settle races and explicit transient fallback targets instead of failing intermittently. The documentation also notes that modal fallback timeouts should only be increased where repository evidence shows the close path settles slowly.
+Updated the design notes to match the shipped subtask-3 live-test remediation: the centering check remains parent-focused, rejects generic display-centered acceptance for parent-backed launches, and documents the modal-settle timing guard added to deflake wxGTK runs. Documenter handoff artifacts were refreshed for verifier review against the passing tester evidence.
 
 ### Commit Message
-`docs: capture GUI centering test stability guidance`
+`docs: capture damage summary centering validation`
