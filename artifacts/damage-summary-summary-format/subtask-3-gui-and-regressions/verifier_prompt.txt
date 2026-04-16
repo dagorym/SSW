@@ -1,7 +1,7 @@
 You are the Verifier Agent.
 
 Task summary:
-- Verify the subtask 3 tactical damage-summary centering-flake remediation end-to-end: the shipped live-test fix remains test-only, the tester reran tactical and GUI suites successfully, and the documenter updated repository notes so the validation narrative matches the implemented behavior.
+- Verify the final subtask 3 tactical damage-summary centering-flake remediation end-to-end: the shipped live-test fix remains test-only, the tester reran tactical and GUI suites successfully, and the documenter updated repository notes so the validation narrative matches the implemented behavior.
 
 Acceptance criteria to verify:
 - Parent-backed TacticalDamageSummaryGUI centering assertion no longer flakes in repeated GUI runs.
@@ -11,7 +11,7 @@ Acceptance criteria to verify:
 Implementation branch or worktree context:
 - Branch: `damage-summary-summary-format-subtask-3-documenter-20260416`
 - Worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-3-documenter-20260416`
-- Comparison assumption: compare tester/documenter-stage changes against `damage-summary-summary-format-subtask-3-implementer-20260416`, while inspecting the shipped live-test remediation already present in this branch's history at commit `e97d774`.
+- Comparison assumption: compare tester/documenter-stage changes against `damage-summary-summary-format-subtask-3-implementer-20260416`, while inspecting the shipped direct-dialog stabilization already present in this branch's history at commit `af74d1a`.
 
 Files modified by Implementer, Tester, and Documenter to inspect:
 - `tests/gui/TacticalGuiLiveTest.cpp`
@@ -25,10 +25,9 @@ Files modified by Implementer, Tester, and Documenter to inspect:
 
 Commands executed:
 - `cd tests/tactical && make && ./TacticalTests`
-- `cd tests/tactical && ./TacticalTests | tail -n 40`
-- `cd tests/gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests | tail -n 30; done`
-- `git --no-pager show e97d774 -- tests/gui/TacticalGuiLiveTest.cpp`
-- `git --no-pager diff 54fe170..HEAD -- tests/gui/TacticalGuiLiveTest.cpp doc/DesignNotes.md`
+- `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests`
+- `git --no-pager show af74d1a -- tests/gui/TacticalGuiLiveTest.cpp`
+- `git --no-pager diff 7a94c9c..HEAD -- tests/gui/TacticalGuiLiveTest.cpp doc/DesignNotes.md`
 
 Final test outcomes:
 - Tactical regression suite passed: `OK (92 tests)`.

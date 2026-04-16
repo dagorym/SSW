@@ -2,9 +2,9 @@
   "status": "success",
   "subtask": "damage-summary-summary-format/subtask-3-gui-and-regressions",
   "branch": "damage-summary-summary-format-subtask-3-documenter-20260416",
-  "commit": "ded513815316bab683644987d0d86c143dfebe04",
-  "comparison_base": "Assumption: compare the documenter branch against damage-summary-summary-format-subtask-3-implementer-20260416 for tester/documenter-stage changes, while reviewing the shipped live-test remediation already present in branch history at commit e97d774.",
-  "plan_context": "Assumption: the tester handoff prompt and existing subtask-3 artifact history are the authoritative evaluation context for this validation-only documentation pass.",
+  "commit": "62b4f3ce1aa3bb5cda9a089438b121ec81426c73",
+  "comparison_base": "Assumption: compare tester/documenter-stage changes against damage-summary-summary-format-subtask-3-implementer-20260416 while reviewing the shipped direct-dialog stabilization already present in branch history at commit af74d1a.",
+  "plan_context": "Assumption: the tester handoff prompt and existing subtask-3 artifact history remain the authoritative evaluation context for this validation-only documentation pass.",
   "documentation_files": [
     "doc/DesignNotes.md"
   ],
