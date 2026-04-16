@@ -1,0 +1,53 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate Subtask 2 implementation that carries exact ADF/MR point-loss totals into tactical ship-summary rollups and emits dedicated summary bullets from structured event data.
+- Tester validated acceptance criteria coverage and tactical test pass state; no additional tester test-file changes were needed.
+
+Acceptance criteria validated:
+- ADF loss is represented in the ship summary with the exact total number of ADF points lost for the summarized report scope.
+- MR loss is represented in the ship summary with the exact total number of MR points lost for the summarized report scope.
+- The new ADF/MR bullets coexist correctly with hull-damage bullets, grouped defense-hit bullets, and other effects.
+- Tactical model tests cover at least one ship-summary case matching requested ADF/MR point-loss behavior.
+
+Implementation branch or worktree context:
+- Tester branch: damage-summary-summary-format-subtask-2-tester-20260416
+- Tester worktree: /home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-2-tester-20260416
+- Parent implementer branch: damage-summary-summary-format-subtask-2-implementer-20260416
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_report.md
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_result.json
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/tactical && ./TacticalTests | tail -n 40
+
+Final test outcomes:
+- PASS: TacticalTests reports OK (92 tests).
+- Existing regression test `testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects` confirms ` - ADF (-3)` and ` - MR (-1)` lines, coexisting with hull/weapon/effect lines, and verifies legacy label-only ADF/MR lines are suppressed.
+
+Documentation context:
+- Likely documentation impact: tactical combat report summary formatting and event-data semantics (`amount`, `previousValue`, `newValue`) for ADF/MR loss aggregation.
+- Ensure docs reflect that ADF/MR summary bullets are numeric rollups, not label echoes.
+
+Plan and diff context:
+- Plan path: /home/tstephen/repos/SSW/plans/damage-summary-summary-format-plan.md
+- Comparison base guidance (assumption): compare tester branch against `ds-update` and review implementer commit `c7d41ce6b4bffc8e8f97d58e760a5ff806122d35` for Subtask 2 code/test deltas.
+
+Startup behavior:
+- If tester branch/worktree context and enough story/diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when evidence is sufficient, and label those choices as assumptions instead of blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
