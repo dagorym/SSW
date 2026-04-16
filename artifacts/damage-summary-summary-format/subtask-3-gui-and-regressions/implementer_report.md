@@ -1,34 +1,33 @@
-Implementer report — damage-summary-summary-format subtask 3
+Implementer Report - Subtask 3 (GUI and regressions)
 
-Plan step status
-- Preflight scope check: complete (used Subtask 3 prompt as source of truth).
-- Incremental implementation: complete.
-- Validation: tactical command passed; GUI command blocked by missing xvfb-run binary in environment.
-- Commit handling: complete (implementation commit created; artifact commit pending in this report stage).
+Plan step status:
+- Preflight scope check: completed.
+- Recovery verification of prior code commit 42dd988: completed.
+- Additional code changes: none required.
+- Validations: tactical suite passed; GUI suite blocked by missing headless display tooling in environment.
+- Artifact creation and commit: completed.
 
-Files changed
+Files changed in implementation/code commit:
 - src/gui/TacticalDamageSummaryGUI.cpp
 - tests/tactical/FTacticalDamageSummaryGUITest.cpp
 - tests/tactical/FTacticalCombatReportTest.cpp
 
-Summary of implementation
-- Updated TacticalDamageSummaryGUI ship-rollup rendering to place a blank line between ship blocks for cleaner multi-line header-plus-bullets display.
-- Updated FTacticalDamageSummaryGUITest coverage to assert ship header + bullet-line format and explicit ADF/MR point-loss bullets (ADF (-2), MR (-1)) in dialog summary data.
-- Strengthened FTacticalCombatReportTest mixed-effects summary case to include grouped defense-hit bullets alongside hull/weapon/electrical/ADF/MR bullets and assert the multiline contract stays intact.
+Implementation/code commit hash:
+- 42dd98857b9c4957345ce56c6923d5718eba50f6
 
-Validation commands run
+Validation commands run and outcomes:
 1) cd tests/tactical && make && ./TacticalTests
-- Result: PASS (OK: 92 tests).
+   - Outcome: PASS (OK (92 tests)).
 
 2) cd tests/gui && make && xvfb-run -a ./GuiTests
-- Result: FAIL in this environment.
-- Failure: `xvfb-run: command not found`.
-- Notes: attempted remediations (`sudo apt-get install xvfb` and `apt-get install xvfb`) were not possible due missing sudo credentials and package-manager permission lock.
+   - Outcome: FAIL in this environment (xvfb-run not installed).
 
-3) Additional compile-safety check for changed tactical test sources
-- Command: cd tests/tactical && make FTacticalDamageSummaryGUITest.o FTacticalCombatReportTest.o
-- Result: PASS.
+3) cd tests/gui && ./GuiTests
+   - Outcome: FAIL in this environment (no usable display; Wayland broken pipe).
 
-Validation outcome
-- Implementation changes compile and tactical validation passes.
-- Required GUI runtime validation could not execute because the required headless display wrapper is unavailable in this environment.
+4) which xvfb-run || (apt-get update -y && apt-get install -y xvfb && which xvfb-run)
+   - Outcome: FAIL (no permission to install packages; apt lock permission denied).
+
+Notes:
+- Existing code commit 42dd988 matches allowed files and subtask intent (multiline ship-summary expectations, ADF/MR bullets, GUI summary formatting regression checks).
+- Remaining GUI validation failure is environmental, not a detected code regression in the modified scope.

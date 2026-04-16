@@ -1,7 +1,7 @@
 You are the Tester Agent.
 
 Task summary:
-- Verified and updated Subtask 3 damage-summary GUI/regression coverage for the multiline ship summary contract, including explicit ADF/MR point-loss bullets, and a small GUI readability tweak for spacing between ship blocks.
+- Verify subtask 3 damage-summary GUI/regression alignment is complete using existing implementation commit 42dd988 (no additional code edits in this run).
 
 Modified files:
 - src/gui/TacticalDamageSummaryGUI.cpp
@@ -17,20 +17,17 @@ Acceptance criteria to validate (from Planner):
 Create test files in:
 - tests/tactical/FTacticalDamageSummaryGUITest.cpp
 - tests/tactical/FTacticalCombatReportTest.cpp
-- Assumption: if GUI suite mirrors this dialog behavior elsewhere, existing tests/gui/* runner is sufficient with no new fixture.
+- Assumption: existing tests/gui/* runner is sufficient for mirrored GUI behavior.
 
 Implementation context for testing:
-- TacticalDamageSummaryGUI now inserts a blank line between per-ship summary blocks while still rendering prepared `displayLines` data directly.
-- FTacticalDamageSummaryGUITest now checks header-plus-bullets ship-summary format and asserts explicit `ADF (-2)` / `MR (-1)` bullets in the summary rollup scenario.
-- FTacticalCombatReportTest mixed-effects summary scenario now includes grouped defense-hit bullets (`Defense Hit: MS, PS`) alongside hull, weapon, electrical-fire, and ADF/MR bullets.
-- Existing empty-state/close-button/hit-detail source contracts were preserved.
+- Ship rollup formatting is expected as ship header + bullet lines, including explicit `ADF (-N)` and `MR (-N)` summary bullets.
+- GUI dialog rollup rendering keeps existing empty-state text, close-button/default behavior, and optional hit-detail section behavior.
+- Current branch already contains code commit 42dd988 with file-scope changes limited to approved files.
+- In this environment, GUI execution was blocked by missing xvfb-run and unavailable display; re-run in a GUI-capable or xvfb-enabled environment.
 
 Suggested test command(s):
 - cd tests/tactical && make && ./TacticalTests
 - cd tests/gui && make && xvfb-run -a ./GuiTests
-
-Existing validation that currently fails:
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` fails in this environment with `xvfb-run: command not found` (environment dependency issue, not an intentional behavior-change consequence).
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.

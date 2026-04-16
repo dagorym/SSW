@@ -1,24 +1,23 @@
 {
-  "status": "blocked",
-  "task": "damage-summary-summary-format subtask-3-gui-and-regressions",
+  "status": "completed_with_environment_blocker",
+  "subtask": "damage-summary-summary-format-subtask-3",
   "branch": "damage-summary-summary-format-subtask-3-implementer-20260416",
-  "implementation_commit": "42dd98857b9c4957345ce56c6923d5718eba50f6",
+  "implementation_commit_hash": "42dd98857b9c4957345ce56c6923d5718eba50f6",
   "changed_files": [
     "src/gui/TacticalDamageSummaryGUI.cpp",
     "tests/tactical/FTacticalDamageSummaryGUITest.cpp",
     "tests/tactical/FTacticalCombatReportTest.cpp"
   ],
-  "validation_commands": [
+  "validation_commands_run": [
     "cd tests/tactical && make && ./TacticalTests",
     "cd tests/gui && make && xvfb-run -a ./GuiTests",
-    "cd tests/tactical && make FTacticalDamageSummaryGUITest.o FTacticalCombatReportTest.o"
+    "cd tests/gui && ./GuiTests"
   ],
   "validation_outcome": {
-    "tactical": "pass",
-    "gui": "blocked: xvfb-run command not found",
-    "targeted_compile": "pass"
+    "tactical_tests": "pass",
+    "gui_tests": "blocked_environment_missing_xvfb_or_display"
   },
-  "artifact_paths": [
+  "artifact_files_written": [
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/implementer_report.md",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_prompt.txt",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/implementer_result.json"
