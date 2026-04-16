@@ -1,35 +1,26 @@
 {
   "status": "success",
-  "subtask": "damage-summary-summary-format/subtask-3-gui-and-regressions",
+  "task": "damage-summary-summary-format-subtask-3",
   "branch": "damage-summary-summary-format-subtask-3-tester-20260416",
   "test_commit_hash": "No Changes Made",
   "test_files_added_or_modified": [],
   "commands_run": [
     "cd tests/tactical && make && ./TacticalTests",
-    "cd tests/tactical && ./TacticalTests | tail -n 30",
-    "cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests"
+    "cd tests/tactical && ./TacticalTests | tail -n 40",
+    "cd tests/gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests | tail -n 30; done"
   ],
   "pass_fail_totals": {
-    "total_tests": 179,
-    "passed": 179,
-    "failed": 0
+    "suite_runs_passed": 4,
+    "suite_runs_failed": 0,
+    "tactical_tests": { "passed": 92, "failed": 0 },
+    "gui_tests_per_run": [
+      { "run": 1, "passed": 29, "failed": 0 },
+      { "run": 2, "passed": 29, "failed": 0 },
+      { "run": 3, "passed": 29, "failed": 0 }
+    ]
   },
-  "acceptance_criteria": [
-    {
-      "criterion": "Parent-centering assertions are robust against short-lived geometry-settle timing.",
-      "status": "met"
-    },
-    {
-      "criterion": "Tests still verify centering behavior relative to parent (or valid display/top-level fallback where appropriate).",
-      "status": "met"
-    },
-    {
-      "criterion": "Changes are minimal and test-focused.",
-      "status": "met"
-    }
-  ],
   "unmet_acceptance_criteria": [],
-  "artifact_paths": [
+  "artifact_files": [
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt"

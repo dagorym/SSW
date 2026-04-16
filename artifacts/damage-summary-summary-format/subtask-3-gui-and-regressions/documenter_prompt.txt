@@ -1,47 +1,44 @@
 You are the Documenter Agent.
 
 Task summary:
-- Implementer stabilized intermittent GUI live-test centering assertions for BattleSim and tactical damage-summary modal flows by extending geometry-settle retries, allowing explicit fallback centering targets in transient windows, and increasing modal action timeouts in affected live tests.
-- Tester validated the implementation using tactical and repeated GUI live-test runs; no additional test modifications were required.
+- Verify and document subtask 3 tactical damage-summary centering-flake remediation validation results. Existing tests were re-run end-to-end and passed without needing additional test code changes.
 
 Acceptance criteria validated:
-- Parent-centering assertions are robust against short-lived geometry-settle timing.
-- Tests still verify centering behavior relative to parent (or valid display/top-level fallback where appropriate).
-- Changes are minimal and test-focused.
+- Parent-backed TacticalDamageSummaryGUI centering assertion no longer flakes in repeated GUI runs.
+- Centering check intent is preserved (still validates parent-relative centering behavior).
+- Fix remains minimal and test-focused.
 
 Implementation branch or worktree context:
 - Branch: `damage-summary-summary-format-subtask-3-tester-20260416`
 - Worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-3-tester-20260416`
-- Parent implementer branch: `damage-summary-summary-format-subtask-3-implementer-20260416`
+- Comparison assumption: review changes on this branch relative to its immediate ancestor/base used in prior subtask-3 handoffs.
 
 Files modified by Implementer and Tester to inspect for documentation impact:
-- tests/gui/BattleSimGuiLiveTest.cpp
-- tests/gui/TacticalGuiLiveTest.cpp
-- tests/gui/StrategicGuiLiveTest.cpp
-- artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md
-- artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json
-- artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt
+- `tests/gui/TacticalGuiLiveTest.cpp` (implementer test-only remediation target)
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md`
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json`
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt`
 
 Test commit:
 - No Changes Made
 
 Commands executed:
-- cd tests/tactical && make && ./TacticalTests
-- cd tests/tactical && ./TacticalTests | tail -n 30
-- cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && ./TacticalTests | tail -n 40`
+- `cd tests/gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests | tail -n 30; done`
 
 Final test outcomes:
-- Tactical tests: 92/92 passed.
-- GUI live tests: 29/29 passed across three consecutive runs.
-- No failing acceptance criteria.
+- Tactical regression suite passed: `OK (92 tests)`.
+- GUI live suite passed three consecutive runs: `OK (29 tests)` each run.
+- Acceptance criteria above are all met.
 
 Documentation context:
-- Primary impact is test-regression documentation and artifact trail updates for GUI centering stability assertions.
-- Confirm whether milestone/task records or testing notes should capture the expanded centering fallback semantics and timeout/retry stabilization behavior in live GUI tests.
+- Primary change is a tactical GUI live-test stabilization, not production runtime behavior.
+- Confirm docs/notes that discuss tactical damage-summary centering and GUI flake remediation remain accurate.
 
 Plan and diff context:
-- Use the subtask story context: `damage-summary-summary-format/subtask-3-gui-and-regressions`.
-- Assume comparison base is `damage-summary-summary-format-subtask-3-implementer-20260416` unless repository history indicates a more specific base commit for documentation diffing.
+- Story context: subtask 3 tactical damage-summary centering-flake remediation validation.
+- Base guidance assumption: use the branch baseline from existing subtask-3 artifact history in this same artifact directory.
 
 Startup behavior:
 - If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
@@ -49,7 +46,7 @@ Startup behavior:
 - Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
 
 Shared artifact directory:
-- artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions`
 
 Completion gate:
 - Do not report success unless all required artifacts exist and all changes are committed.
