@@ -1,0 +1,68 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify Subtask 2 implementation, tester validation, and documentation update for tactical ship-summary ADF/MR point-loss rollups.
+- Confirm exact ADF/MR totals are preserved from structured event data, tactical regression coverage remains valid, and documentation now reflects the shipped summary-format behavior.
+
+Acceptance criteria to verify:
+- ADF loss is represented in the ship summary with the exact total number of ADF points lost for the summarized report scope.
+- MR loss is represented in the ship summary with the exact total number of MR points lost for the summarized report scope.
+- The new ADF/MR bullets coexist correctly with hull-damage bullets, grouped defense-hit bullets, and other effects.
+- Tactical model tests cover at least one ship-summary case matching requested ADF/MR point-loss behavior.
+- Documentation reflects that ADF/MR summary bullets are numeric rollups derived from structured event data rather than label-only echoes.
+
+Implementation branch or worktree context:
+- Documenter branch: damage-summary-summary-format-subtask-2-documenter-20260416
+- Documenter worktree: /home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-2-documenter-20260416
+- Tester branch: damage-summary-summary-format-subtask-2-tester-20260416
+- Tester worktree: /home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-2-tester-20260416
+- Parent implementer branch: damage-summary-summary-format-subtask-2-implementer-20260416
+- Comparison base (assumption): ds-update
+- Documentation commit hash: 2ed327bf38d642c6e26f45b3c4025200c3bbf377
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- doc/DesignNotes.md
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/implementer_report.md
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/implementer_result.json
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_prompt.txt
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_report.md
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_result.json
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_prompt.txt
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_report.md
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_result.json
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/verifier_prompt.txt
+
+Commands executed:
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/tactical && ./TacticalTests | tail -n 40
+- git --no-pager diff ds-update...HEAD -- include/tactical/FTacticalCombatReport.h tests/tactical/FTacticalCombatReportTest.cpp
+- git --no-pager diff -- doc/DesignNotes.md
+
+Final test outcomes:
+- PASS: TacticalTests reports OK (92 tests).
+- Existing regression test `testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects` confirms ` - ADF (-3)` and ` - MR (-1)` lines, coexisting with hull/weapon/effect lines, and verifies legacy label-only ADF/MR lines are suppressed.
+- Documentation update in `doc/DesignNotes.md` now states that `FTacticalReportEvent` preserves `amount`, `previousValue`, and `newValue`, and that ship-summary rollups emit exact aggregated ADF/MR bullets from that structured data.
+
+Plan and review context:
+- Plan path: /home/tstephen/repos/SSW/plans/damage-summary-summary-format-plan.md
+- Relevant repository guidance: /home/tstephen/repos/SSW/AGENTS.md and shared lookup guidance /home/tstephen/repos/agents/AGENTS_LOOKUP.md
+- Review implementer commit c7d41ce6b4bffc8e8f97d58e760a5ff806122d35 for the core Subtask 2 code/test delta when helpful.
+
+Documentation files updated:
+- doc/DesignNotes.md
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
