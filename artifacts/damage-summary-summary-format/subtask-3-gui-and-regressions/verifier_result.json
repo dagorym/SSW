@@ -1,19 +1,34 @@
 {
-  "status": "success",
-  "subtask": "damage-summary-summary-format-subtask-3",
+  "status": "completed",
+  "subtask": "damage-summary-summary-format/subtask-3-gui-and-regressions",
   "branch": "damage-summary-summary-format-subtask-3-verifier-20260416",
-  "verdict": "PASS",
-  "blocking_finding_count": 0,
-  "warning_finding_count": 1,
+  "verdict": "FAIL",
+  "blocking_finding_count": 1,
+  "warning_finding_count": 0,
   "note_finding_count": 0,
-  "test_sufficiency_summary": "Tactical coverage is sufficient for the changed behavior and TacticalTests passed locally; tester artifacts document a passing GuiTests run, while verifier reruns in this environment remained flaky on unrelated live-GUI assertions.",
-  "documentation_accuracy_summary": "AGENTS.md and doc/DesignNotes.md match the implemented multiline ship-summary contract, exact ADF/MR bullets, and preserved hit-detail/empty-state behavior.",
-  "artifact_file_paths_written": [
+  "acceptance_criteria_met": false,
+  "acceptance_criteria_summary": {
+    "parent_centering_robust": "not met",
+    "valid_fallback_targets": "partially met",
+    "minimal_test_focused_and_documented": "partially met"
+  },
+  "test_sufficiency_summary": "Coverage is strong enough to expose the issue, but verifier reruns reproduced an intermittent failure in TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior during the required three-pass GUI command.",
+  "documentation_accuracy_summary": "AGENTS.md reflects the intended centering-stability policy, but the remaining tactical flake means the documented behavior is not yet fully verified in practice.",
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/tactical && ./TacticalTests | tail -n 30",
+    "cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests",
+    "cd tests/gui && GDK_BACKEND=x11 ./GuiTests || true && echo \"--- rerun ---\" && GDK_BACKEND=x11 ./GuiTests || true",
+    "cd tests/gui && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests"
+  ],
+  "observed_results": {
+    "tactical_tests": "92/92 passed",
+    "gui_verifier_run_1": "two passes succeeded and third pass failed in TacticalGuiLiveTest centering assertion",
+    "gui_verifier_rerun": "two single reruns passed",
+    "gui_verifier_run_2": "29/29 passed across three consecutive runs"
+  },
+  "artifact_file_paths": [
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/verifier_report.md",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/verifier_result.json"
-  ],
-  "assumptions": [
-    "Used verifier_prompt.txt plus plans/damage-summary-summary-format-plan.md Subtask 3 as the governing evaluation sources.",
-    "Treated the tester's recorded GUI pass as valid acceptance evidence even though verifier reruns were unstable in the current display environment."
   ]
 }
