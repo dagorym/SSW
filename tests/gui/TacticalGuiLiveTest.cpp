@@ -227,16 +227,16 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 		                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
 		const bool centeredOnParent = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
 		                           && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
-		bool centeredOnDisplay = false;
-		const int displayIndex = wxDisplay::GetFromWindow(dialog);
-		if (displayIndex != wxNOT_FOUND) {
-			const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
-			const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
-			                           displayBounds.GetY() + (displayBounds.GetHeight() / 2));
-			centeredOnDisplay = (std::abs(displayCenter.x - dialogCenter.x) <= tolerance)
-			                 && (std::abs(displayCenter.y - dialogCenter.y) <= tolerance);
+		bool centeredOnTopLevelParent = false;
+		wxTopLevelWindow * topLevelParent = wxDynamicCast(wxGetTopLevelParent(parent), wxTopLevelWindow);
+		if (topLevelParent != NULL && topLevelParent != parent) {
+			const wxRect topLevelBounds = topLevelParent->GetScreenRect();
+			const wxPoint topLevelCenter(topLevelBounds.GetX() + (topLevelBounds.GetWidth() / 2),
+			                            topLevelBounds.GetY() + (topLevelBounds.GetHeight() / 2));
+			centeredOnTopLevelParent = (std::abs(topLevelCenter.x - dialogCenter.x) <= tolerance)
+			                        && (std::abs(topLevelCenter.y - dialogCenter.y) <= tolerance);
 		}
-		centered = centeredOnParent || centeredOnDisplay;
+		centered = centeredOnParent || centeredOnTopLevelParent;
 		if (!centered) {
 			wxMilliSleep(5);
 		}
@@ -634,6 +634,8 @@ const int closeResult = m_harness.runModalFunctionWithAction([&]() {
 	return dialog->ShowModal();
 }, [&]() {
 	closeActionRan = true;
+	wxDialog * modal = m_harness.waitForModalDialog(300, 5);
+	CPPUNIT_ASSERT(modal != NULL);
 	assertDialogCenteredOnParent(dialog, parent, 200);
 	wxButton * closeButton = findButtonByLabel(dialog, wxT("Close"));
 	closeButtonFound = (closeButton != NULL);
