@@ -1,0 +1,37 @@
+You are the Tester Agent.
+
+Task summary:
+- Subtask 1 implemented: tactical ship-summary rollups now use a header line plus bullet lines in the model summary output.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Ship rollups no longer use a single flat `Ship: ...; effects: ...` line when multiple summary items exist.
+- Hull damage totals remain aggregated correctly and still include attack counts.
+- Grouped effect categories still aggregate correctly after the formatting change.
+- Existing ship-summary model tests are updated or extended to lock the new multi-line output contract.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp (already updated; no new files expected)
+
+Implementation context for testing:
+- `buildShipSummaryDisplayLine(...)` was replaced by `buildShipSummaryDisplayLines(...)` in the tactical report model helper section.
+- Summary assembly now appends all per-ship display lines (header + bullets) to both `shipSummary.displayLines` and top-level `summary.displayLines`.
+- Grouping semantics were preserved: hull summary with attack counts, grouped weapon hit abbreviations, grouped defense hit abbreviations, and counted distinct effects.
+- Regression checks now assert no fallback to legacy `effects:` flat summary formatting.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/damage-summary-summary-format/subtask-1-rollup-format
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
