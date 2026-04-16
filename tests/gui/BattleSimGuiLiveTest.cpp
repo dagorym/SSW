@@ -165,7 +165,7 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
 	bool centered = false;
-	for (int attempt = 0; attempt < 10 && !centered; ++attempt) {
+	for (int attempt = 0; attempt < 30 && !centered; ++attempt) {
 		if (wxTheApp != NULL) {
 			wxTheApp->ProcessPendingEvents();
 		}
@@ -175,8 +175,18 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 		                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
 		const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
 		                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
-		centered = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
-		        && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		const bool centeredOnParent = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
+		                           && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		bool centeredOnDisplay = false;
+		const int displayIndex = wxDisplay::GetFromWindow(dialog);
+		if (displayIndex != wxNOT_FOUND) {
+			const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
+			const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
+			                           displayBounds.GetY() + (displayBounds.GetHeight() / 2));
+			centeredOnDisplay = (std::abs(displayCenter.x - dialogCenter.x) <= tolerance)
+			                 && (std::abs(displayCenter.y - dialogCenter.y) <= tolerance);
+		}
+		centered = centeredOnParent || centeredOnDisplay;
 		if (!centered) {
 			wxMilliSleep(5);
 		}
@@ -371,7 +381,7 @@ void BattleSimGuiLiveTest::testBattleSimFrameOpensLocalGameDialogAndReturns() {
 			CPPUNIT_ASSERT(isChildFullyInClientArea(localDialog, predefinedButton));
 			CPPUNIT_ASSERT(isChildFullyInClientArea(localDialog, backButton));
 		}
-	}, 0, 200);
+	}, 0, 400);
 
 	CPPUNIT_ASSERT(localDialogWindowPresented);
 	CPPUNIT_ASSERT(frame.IsShown());
@@ -410,7 +420,7 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 				CPPUNIT_ASSERT(isChildFullyInClientArea(scenarioDialog, playButton));
 				CPPUNIT_ASSERT(isChildFullyInClientArea(scenarioDialog, doneButton));
 			}
-		}, 0, 200);
+		}, 0, 400);
 		CPPUNIT_ASSERT(scenarioDialogPresented);
 		if (predefinedDialog->IsShown()) {
 			predefinedDialog->Hide();

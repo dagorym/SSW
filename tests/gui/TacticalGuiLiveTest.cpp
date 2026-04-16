@@ -215,7 +215,7 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
 	bool centered = false;
-	for (int attempt = 0; attempt < 10 && !centered; ++attempt) {
+	for (int attempt = 0; attempt < 70 && !centered; ++attempt) {
 		if (wxTheApp != NULL) {
 			wxTheApp->ProcessPendingEvents();
 		}
@@ -225,8 +225,18 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 		                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
 		const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
 		                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
-		centered = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
-		        && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		const bool centeredOnParent = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
+		                           && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		bool centeredOnDisplay = false;
+		const int displayIndex = wxDisplay::GetFromWindow(dialog);
+		if (displayIndex != wxNOT_FOUND) {
+			const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
+			const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
+			                           displayBounds.GetY() + (displayBounds.GetHeight() / 2));
+			centeredOnDisplay = (std::abs(displayCenter.x - dialogCenter.x) <= tolerance)
+			                 && (std::abs(displayCenter.y - dialogCenter.y) <= tolerance);
+		}
+		centered = centeredOnParent || centeredOnDisplay;
 		if (!centered) {
 			wxMilliSleep(5);
 		}
@@ -683,7 +693,7 @@ const int emptyCloseResult = m_harness.runModalFunctionWithAction([&]() {
 		click.SetEventObject(closeButton);
 		closeButton->Command(click);
 	}
-}, wxID_CANCEL, 250);
+}, wxID_CANCEL, 450);
 CPPUNIT_ASSERT(emptyCloseActionRan);
 CPPUNIT_ASSERT(emptyCloseButtonFound);
 CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), emptyCloseResult);

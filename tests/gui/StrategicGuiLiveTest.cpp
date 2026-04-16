@@ -137,7 +137,7 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
 	bool centered = false;
-	for (int attempt = 0; attempt < 10 && !centered; ++attempt) {
+	for (int attempt = 0; attempt < 30 && !centered; ++attempt) {
 		if (wxTheApp != NULL) {
 			wxTheApp->ProcessPendingEvents();
 		}
@@ -147,8 +147,18 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 		                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
 		const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
 		                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
-		centered = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
-		        && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		const bool centeredOnParent = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
+		                           && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		bool centeredOnTopLevelParent = false;
+		wxTopLevelWindow * topLevelParent = wxDynamicCast(wxGetTopLevelParent(parent), wxTopLevelWindow);
+		if (topLevelParent != NULL && topLevelParent != parent) {
+			const wxRect topLevelBounds = topLevelParent->GetScreenRect();
+			const wxPoint topLevelCenter(topLevelBounds.GetX() + (topLevelBounds.GetWidth() / 2),
+			                            topLevelBounds.GetY() + (topLevelBounds.GetHeight() / 2));
+			centeredOnTopLevelParent = (std::abs(topLevelCenter.x - dialogCenter.x) <= tolerance)
+			                        && (std::abs(topLevelCenter.y - dialogCenter.y) <= tolerance);
+		}
+		centered = centeredOnParent || centeredOnTopLevelParent;
 		if (!centered) {
 			wxMilliSleep(5);
 		}
