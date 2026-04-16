@@ -946,10 +946,11 @@ The tactical follow-up extends that same live-dialog discipline inside
 `TacticalGuiLiveTest`, which now registers direct
 `testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior` and
 `testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo` coverage under
-`GuiTests`. The damage-summary test drives `TacticalDamageSummaryGUI` modally,
-asserts the dialog title plus populated and empty-state report text, verifies
-the rendered report context, and dismisses the real `Close` button through the
-modal harness. It also proves that the dialog renders a labeled `Ship Damage
+`GuiTests`. The damage-summary test drives `TacticalDamageSummaryGUI` through
+`showModalWithAction(...)`, asserts the dialog title plus populated and
+empty-state report text, verifies the rendered report context, and dismisses
+the real `Close` button through the dialog-owned modal harness instead of an
+app-level callback race. It also proves that the dialog renders a labeled `Ship Damage
 Summary` section for the existing per-ship rollups and, when
 `showHitDetails == true`, a second labeled `Hit Details` section containing the
 player-readable per-hit lines such as `Destroyer Alpha [Laser Battery] ->
@@ -1057,15 +1058,18 @@ builders, preserves direct content assertions for the `<Ship Name>:` plus
 ` - ...` multiline summary contract (including grouped `Weapon Hit: ...`,
 `Defense Hit: ...`, and exact `ADF (-N)` / `MR (-N)` bullets), and rejects
 reintroduction of the manual bind-plus-`EndModal(...)` close path. The live GUI
-regression drives the parent-backed `WXTacticalUI::showDamageSummary(...)` flow
-with populated, no-detail, and empty summaries, waits for the modal to exist
-before checking placement, and still treats parent-relative centering as the
-target contract. The wxGTK-flake remediation only widens the acceptable
-parent-backed geometry to the owning top-level parent during the brief
-first-show settle window, so the test no longer falls back to generic
-display-centered acceptance for parent-backed launches. The no-parent tactical
-adapter path still remains a deterministic top-level modal on an active display
-for the same summary dialog.
+regression drives both the parent-backed `WXTacticalUI::showDamageSummary(...)`
+flow and the direct parent-backed `TacticalDamageSummaryGUI` path with
+populated, no-detail, and empty summaries. The direct modal path now routes
+through `WXGuiTestHarness::showModalWithAction(...)`, pins the parent frame to a
+deterministic starting position for the centering assertion, and gives the
+close-button action a longer fallback timeout so the real Enter-key/default-
+button interaction can complete without racing the harness auto-dismiss. The
+placement contract still targets parent-relative centering, with the owning
+top-level parent accepted only during the brief wxGTK first-show settle window,
+so the test no longer falls back to generic display-centered acceptance for
+parent-backed launches. The no-parent tactical adapter path still remains a
+deterministic top-level modal on an active display for the same summary dialog.
 Together with the strategic and BattleSim live fixtures, that leaves the GUI
 suite covering the full placement policy matrix for this remediation cycle: a
 representative top-level frame centered on the active display, representative
