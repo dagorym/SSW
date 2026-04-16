@@ -1,24 +1,27 @@
 {
-  "status": "success",
-  "subtask": "damage-summary-summary-format-subtask-3",
+  "status": "failure",
+  "subtask": "damage-summary-summary-format/subtask-3-gui-and-regressions",
   "branch": "damage-summary-summary-format-subtask-3-tester-20260416",
-  "test_commit_hash": "No Changes Made",
-  "test_files_added_or_modified": [],
+  "test_commit": "No Changes Made",
+  "test_files_modified": [],
   "commands_run": [
     "cd tests/tactical && make && ./TacticalTests",
-    "cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests",
+    "cd tests/gui && make && for i in 1 2 3; do xvfb-run -a env GDK_BACKEND=x11 ./GuiTests; done",
+    "cd tests/gui && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests; done",
+    "cd tests/gui && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests || exit 1; done",
     "cd tests/gui && GDK_BACKEND=x11 ./GuiTests"
   ],
-  "totals": {
-    "tests_written": 0,
-    "tests_run": 121,
-    "passed": 121,
-    "failed": 0
+  "pass_fail_totals": {
+    "tactical_tests": {"run": 92, "failures": 0, "errors": 0},
+    "gui_tests_latest_run": {"run": 29, "failures": 0, "errors": 0},
+    "gui_intermittent_failures_observed": 2
   },
-  "unmet_acceptance_criteria": [],
-  "artifact_paths": [
+  "unmet_acceptance_criteria": [
+    "Stabilize flaky live GUI assertion for BattleSim parent-centering assertion",
+    "Stabilize tactical intermittent around damage-summary close-flow assertions"
+  ],
+  "artifact_files_written": [
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md",
-    "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json",
-    "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt"
+    "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json"
   ]
 }
