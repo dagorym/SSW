@@ -1,0 +1,44 @@
+You are the Tester Agent.
+
+Task summary:
+- Verified and updated Subtask 3 damage-summary GUI/regression coverage for the multiline ship summary contract, including explicit ADF/MR point-loss bullets, and a small GUI readability tweak for spacing between ship blocks.
+
+Modified files:
+- src/gui/TacticalDamageSummaryGUI.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- GUI regression tests assert the new multi-line ship-summary output rather than the old single-line `effects:` format.
+- Tactical model regression tests include examples equivalent to the requested summary-format cases.
+- The dialog continues to render the summary and hit-detail sections without regressing the current empty-state behavior.
+- GUI-specific validation passes in the existing tactical GUI test runner.
+
+Create test files in:
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- tests/tactical/FTacticalCombatReportTest.cpp
+- Assumption: if GUI suite mirrors this dialog behavior elsewhere, existing tests/gui/* runner is sufficient with no new fixture.
+
+Implementation context for testing:
+- TacticalDamageSummaryGUI now inserts a blank line between per-ship summary blocks while still rendering prepared `displayLines` data directly.
+- FTacticalDamageSummaryGUITest now checks header-plus-bullets ship-summary format and asserts explicit `ADF (-2)` / `MR (-1)` bullets in the summary rollup scenario.
+- FTacticalCombatReportTest mixed-effects summary scenario now includes grouped defense-hit bullets (`Defense Hit: MS, PS`) alongside hull, weapon, electrical-fire, and ADF/MR bullets.
+- Existing empty-state/close-button/hit-detail source contracts were preserved.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Existing validation that currently fails:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` fails in this environment with `xvfb-run: command not found` (environment dependency issue, not an intentional behavior-change consequence).
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
