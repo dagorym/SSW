@@ -1058,10 +1058,14 @@ builders, preserves direct content assertions for the `<Ship Name>:` plus
 `Defense Hit: ...`, and exact `ADF (-N)` / `MR (-N)` bullets), and rejects
 reintroduction of the manual bind-plus-`EndModal(...)` close path. The live GUI
 regression drives the parent-backed `WXTacticalUI::showDamageSummary(...)` flow
-with populated, no-detail, and empty summaries and verifies clean modal return
-through the real `Close` button handling, while the no-parent tactical adapter
-path now remains a deterministic top-level modal on an active display for the
-same summary dialog.
+with populated, no-detail, and empty summaries, waits for the modal to exist
+before checking placement, and still treats parent-relative centering as the
+target contract. The wxGTK-flake remediation only widens the acceptable
+parent-backed geometry to the owning top-level parent during the brief
+first-show settle window, so the test no longer falls back to generic
+display-centered acceptance for parent-backed launches. The no-parent tactical
+adapter path still remains a deterministic top-level modal on an active display
+for the same summary dialog.
 Together with the strategic and BattleSim live fixtures, that leaves the GUI
 suite covering the full placement policy matrix for this remediation cycle: a
 representative top-level frame centered on the active display, representative
