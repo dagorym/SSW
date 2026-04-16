@@ -5,6 +5,7 @@
 
 #include "FTacticalDamageSummaryGUITest.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iterator>
 
@@ -29,6 +30,10 @@ void assertNotContains(const std::string & haystack, const std::string & needle)
 	CPPUNIT_ASSERT_MESSAGE(
 		std::string("Expected to not find '") + needle + "' in inspected source",
 		haystack.find(needle) == std::string::npos);
+}
+
+bool containsLine(const std::vector<std::string> & lines, const std::string & expectedLine) {
+	return std::find(lines.begin(), lines.end(), expectedLine) != lines.end();
 }
 
 }
@@ -115,21 +120,39 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	protonScreenEffect.damagedDefenseType = FDefense::PS;
 	protonScreenEffect.damagedDefenseName = "Proton Screen";
 
+	FTacticalReportEvent adfLoss;
+	adfLoss.eventType = TRET_InternalDamage;
+	adfLoss.damageEffectType = TDET_ADFLoss;
+	adfLoss.subject = target;
+	adfLoss.label = "ADF reduced";
+	adfLoss.amount = 2;
+
+	FTacticalReportEvent mrLoss;
+	mrLoss.eventType = TRET_InternalDamage;
+	mrLoss.damageEffectType = TDET_MRLoss;
+	mrLoss.subject = target;
+	mrLoss.label = "MR reduced";
+	mrLoss.amount = 1;
+
 	report.events.push_back(firstWeaponHit);
 	report.events.push_back(secondWeaponHit);
 	report.events.push_back(thirdWeaponHit);
 	report.events.push_back(defenseEffect);
 	report.events.push_back(protonScreenEffect);
+	report.events.push_back(adfLoss);
+	report.events.push_back(mrLoss);
 
 	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.ships.size());
 	CPPUNIT_ASSERT(summary.showHitDetails);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.hitDetails.size());
-	CPPUNIT_ASSERT_EQUAL(
-		std::string("Sathar Frigate: 3 hull damage from 1 attack; effects: "
-			"Weapon Hit: LB, LB, AR, Defense Hit: MS, PS"),
-		summary.ships[0].displayLines[0]);
-	CPPUNIT_ASSERT(summary.ships[0].displayLines[0].find("Defense damaged") == std::string::npos);
+	CPPUNIT_ASSERT(containsLine(summary.ships[0].displayLines, "Sathar Frigate:"));
+	CPPUNIT_ASSERT(containsLine(summary.ships[0].displayLines, " - 3 hull damage from 1 attack"));
+	CPPUNIT_ASSERT(containsLine(summary.ships[0].displayLines, " - ADF (-2)"));
+	CPPUNIT_ASSERT(containsLine(summary.ships[0].displayLines, " - MR (-1)"));
+	CPPUNIT_ASSERT(containsLine(summary.ships[0].displayLines, " - Weapon Hit: LB, LB, AR"));
+	CPPUNIT_ASSERT(containsLine(summary.ships[0].displayLines, " - Defense Hit: MS, PS"));
+	CPPUNIT_ASSERT(!containsLine(summary.ships[0].displayLines, "Defense damaged"));
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("3 hull damage") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Weapon Hit (Weapon: LB)") != std::string::npos);
 	CPPUNIT_ASSERT(summary.hitDetails[0].displayLine.find("Defense damaged") != std::string::npos);

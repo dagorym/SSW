@@ -739,6 +739,18 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 	mrLoss.amount = 1;
 	report.events.push_back(mrLoss);
 
+	FTacticalReportEvent defenseHitOne;
+	defenseHitOne.eventType = TRET_DefenseEffect;
+	defenseHitOne.damageEffectType = TDET_DefenseDamaged;
+	defenseHitOne.subject = attack.target;
+	defenseHitOne.label = "Defense damaged";
+	defenseHitOne.damagedDefenseType = FDefense::MS;
+	report.events.push_back(defenseHitOne);
+
+	FTacticalReportEvent defenseHitTwo = defenseHitOne;
+	defenseHitTwo.damagedDefenseType = FDefense::PS;
+	report.events.push_back(defenseHitTwo);
+
 	FTacticalReportEvent hullDamageEffect;
 	hullDamageEffect.eventType = TRET_InternalDamage;
 	hullDamageEffect.damageEffectType = TDET_HullDamage;
@@ -752,16 +764,17 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 
 	CPPUNIT_ASSERT(shipSummary != NULL);
 	CPPUNIT_ASSERT(shipSummary->hullDamageTaken == 4);
-	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 5);
-	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 5);
+	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 7);
+	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 7);
 	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.size() == 1);
-	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 6);
-	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 6);
+	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 8);
+	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 7);
 	CPPUNIT_ASSERT_EQUAL(std::string("Frigate:"), shipSummary->displayLines[0]);
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - 5 hull damage from 1 attack"));
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - ADF (-3)"));
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - MR (-1)"));
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Weapon Hit: LB"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Defense Hit: MS, PS"));
 	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "Weapon Hit x"));
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Electrical fire"));
 	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "ADF reduced"));

@@ -133,7 +133,7 @@ wxString TacticalDamageSummaryGUI::buildShipRollupText() const {
 			}
 		}
 		if (i + 1 < m_summary.ships.size()) {
-			text << wxT("\n");
+			text << wxT("\n\n");
 		}
 	}
 
