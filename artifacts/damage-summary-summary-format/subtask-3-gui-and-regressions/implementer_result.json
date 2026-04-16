@@ -1,23 +1,20 @@
 {
   "status": "success",
-  "subtask": "damage-summary-summary-format-subtask-3",
+  "subtask": "damage-summary-summary-format/subtask-3-gui-and-regressions",
   "branch": "damage-summary-summary-format-subtask-3-implementer-20260416",
-  "implementation_commit": "a2543d3c3c8a037f7980d5561c7dcebc41c1aad4",
+  "implementation_commit": "6023c03",
   "changed_files": [
-    "tests/tactical/FTacticalDamageSummaryGUITest.cpp",
-    "tests/tactical/FTacticalCombatReportTest.cpp"
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/BattleSimGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.cpp"
   ],
   "validation_commands": [
     "cd tests/tactical && make && ./TacticalTests",
-    "cd tests/gui && make && xvfb-run -a ./GuiTests",
-    "cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests (fallback)"
+    "cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests",
+    "cd tests/tactical && make && ./TacticalTests && cd ../gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests; done"
   ],
-  "validation_outcome": {
-    "tactical": "pass",
-    "gui_xvfb": "not_run_missing_xvfb-run",
-    "gui_x11": "fail_unrelated_flaky_live_gui_assertions"
-  },
-  "artifact_file_paths_written": [
+  "validation_outcome": "pass",
+  "artifacts": [
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/implementer_report.md",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_prompt.txt",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/implementer_result.json"

@@ -1,32 +1,67 @@
-Implementer Report
+# Implementer Report
 
-Subtask: damage-summary-summary-format-subtask-3 (remediation cycle)
-Branch: damage-summary-summary-format-subtask-3-implementer-20260416
+## Agent Activation and Preflight
+- Requested agent: implementer
+- Repository-local definition: not found
+- Shared definition used: `/home/tstephen/repos/agents/agents/implementer.md`
+- Precedence decision: shared definition used because no repository-local implementer definition existed.
+- Working directory and branch validated in assigned worktree:
+  - Worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-3-implementer-20260416`
+  - Branch: `damage-summary-summary-format-subtask-3-implementer-20260416`
 
-Plan step status:
-1. Preflight scope check - completed
-   - Goal: improve repeatability for the shipped multiline damage-summary contract within Subtask 3 scope.
-   - Allowed code files honored: src/gui/TacticalDamageSummaryGUI.cpp, tests/tactical/FTacticalDamageSummaryGUITest.cpp, tests/tactical/FTacticalCombatReportTest.cpp.
-   - Shared artifact directory used: artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions.
-2. Incremental implementation - completed
-   - Strengthened deterministic multiline assertions in:
-     - tests/tactical/FTacticalDamageSummaryGUITest.cpp
-     - tests/tactical/FTacticalCombatReportTest.cpp
-   - No GUI runtime logic change was required.
-3. Validation - completed
-   - cd tests/tactical && make && ./TacticalTests
-     - Result: PASS (OK (92 tests)).
-   - cd tests/gui && make && xvfb-run -a ./GuiTests
-     - Result: could not run in this environment (xvfb-run not installed).
-   - cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests
-     - Result: FAILED due unrelated live-GUI instability (StrategicGuiLiveTest.cpp:939 sawPaint); retry attempts also showed intermittent unrelated Tactical/BattleSim live-GUI failures.
+## Scope Restatement
+- Goal: stabilize unrelated flaky live GUI tests blocking coordinator completion while preserving accepted damage-summary behavior and prior subtask-3 tactical regression changes.
+- Allowed edits (approved scope broadening):
+  - `tests/gui/StrategicGuiLiveTest.cpp`
+  - `tests/gui/BattleSimGuiLiveTest.cpp`
+  - `tests/gui/TacticalGuiLiveTest.cpp` only if required by same root cause
+  - shared GUI test helpers only if required by same root cause
+- Acceptance criteria:
+  - Address flakes tied to:
+    - `StrategicGuiLiveTest.cpp:939` (`CPPUNIT_ASSERT(sawPaint)`)
+    - `BattleSimGuiLiveTest.cpp` centering tolerance assertion in `testBattleSimFrameOpensLocalGameDialogAndReturns()`
+    - prior intermittent at `TacticalGuiLiveTest.cpp:677`
+  - Keep changes minimal and avoid gratuitous test loosening.
+  - Preserve previously accepted damage-summary behavior.
+- Required validation targets:
+  - `cd tests/tactical && make && ./TacticalTests`
+  - `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests`
 
-Acceptance criteria status:
-- GUI regression tests assert multiline ship-summary behavior instead of legacy effects format: satisfied (targeted tactical GUI contract test strengthened).
-- Tactical model regression tests include requested summary-format examples including ADF/MR bullets: satisfied (exact line-order assertions added).
-- Dialog summary/hit-detail/empty-state behavior preserved: satisfied (existing coverage retained; no dialog behavior regressions introduced).
-- GUI-specific runner pass: not reproducible in this environment due pre-existing unrelated live-GUI flakiness; documented with failing assertions outside changed surface.
+## Plan Step Status
+1. **Preflight scope check** — completed.
+2. **Implement incrementally** — completed with focused GUI live-test stabilization edits.
+3. **Validate after each change** — completed; iterated on centering timing stability.
+4. **Completion gate** — completed with code commit and separate artifact commit.
 
-Files changed in code commit:
-- tests/tactical/FTacticalDamageSummaryGUITest.cpp
-- tests/tactical/FTacticalCombatReportTest.cpp
+## Files Changed
+- `tests/gui/StrategicGuiLiveTest.cpp`
+  - Made parent-centering assertion retry for geometry settling.
+  - Stabilized redraw paint assertion by forcing refresh and polling event pumps until paint is observed.
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+  - Made parent-centering assertion retry for geometry settling.
+  - Added a short event-pump settle before local-dialog centering assertion.
+- `tests/gui/TacticalGuiLiveTest.cpp`
+  - Made parent-centering assertion retry for geometry settling.
+  - Increased empty damage-summary modal action timeout and pumped events before close click to reduce fallback-race intermittency.
+
+## Validation Commands and Outcomes
+### Baseline / initial checks
+- `cd tests/tactical && make && ./TacticalTests` — **PASS** (92 tests)
+- `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests` — **PASS** (29 tests)
+
+### Post-change checks
+- `cd tests/tactical && make && ./TacticalTests` — **PASS** (92 tests)
+- `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests` — initially failed once during iteration with strategic centering assertion; fixed with centering-settle retries.
+- `cd tests/tactical && make && ./TacticalTests && cd ../gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests; done` — **PASS**
+  - Tactical: 92/92 passing
+  - GUI run 1: 29/29 passing
+  - GUI run 2: 29/29 passing
+  - GUI run 3: 29/29 passing
+
+## Validation Conclusion
+- No remaining known validation failures.
+- Required tactical and GUI targets pass, and GUI suite was repeated for confidence under `GDK_BACKEND=x11`.
+
+## Implementation Commit
+- Code-change commit hash: `6023c03`
+
