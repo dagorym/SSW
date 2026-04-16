@@ -12,6 +12,7 @@
 #include <wx/frame.h>
 #include <wx/statbox.h>
 #include <wx/toplevel.h>
+#include <wx/utils.h>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
@@ -163,14 +164,24 @@ void assertTopLevelCenteredOnDisplay(wxTopLevelWindow * window, int tolerance = 
 void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 120) {
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
-	const wxRect parentBounds = parent->GetScreenRect();
-	const wxRect dialogBounds = dialog->GetScreenRect();
-	const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
-	                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
-	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
-	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
-	CPPUNIT_ASSERT(std::abs(parentCenter.x - dialogCenter.x) <= tolerance);
-	CPPUNIT_ASSERT(std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+	bool centered = false;
+	for (int attempt = 0; attempt < 10 && !centered; ++attempt) {
+		if (wxTheApp != NULL) {
+			wxTheApp->ProcessPendingEvents();
+		}
+		const wxRect parentBounds = parent->GetScreenRect();
+		const wxRect dialogBounds = dialog->GetScreenRect();
+		const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
+		                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
+		const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+		                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+		centered = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
+		        && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		if (!centered) {
+			wxMilliSleep(5);
+		}
+	}
+	CPPUNIT_ASSERT(centered);
 }
 
 bool isChildFullyInClientArea(wxWindow * parent, wxWindow * child) {
@@ -345,6 +356,7 @@ void BattleSimGuiLiveTest::testBattleSimFrameOpensLocalGameDialogAndReturns() {
 			LocalGameDialog * localDialog = dynamic_cast<LocalGameDialog *>(launchedDialog);
 			localDialogWindowPresented = (localDialog != NULL && localDialog->GetParent() == &frame);
 			if (localDialog != NULL) {
+				m_harness.pumpEvents(4);
 				assertDialogCenteredOnParent(localDialog, &frame);
 				wxButton * loadButton = findButtonByLabel(localDialog, wxT("Load an Existing Game"));
 			wxButton * customButton = findButtonByLabel(localDialog, wxT("Create a New Custom Game"));

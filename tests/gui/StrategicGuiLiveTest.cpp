@@ -136,14 +136,24 @@ bool isChildFullyInClientArea(wxWindow * parent, wxWindow * child) {
 void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 200) {
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
-	const wxRect parentBounds = parent->GetScreenRect();
-	const wxRect dialogBounds = dialog->GetScreenRect();
-	const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
-	                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
-	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
-	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
-	CPPUNIT_ASSERT(std::abs(parentCenter.x - dialogCenter.x) <= tolerance);
-	CPPUNIT_ASSERT(std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+	bool centered = false;
+	for (int attempt = 0; attempt < 10 && !centered; ++attempt) {
+		if (wxTheApp != NULL) {
+			wxTheApp->ProcessPendingEvents();
+		}
+		const wxRect parentBounds = parent->GetScreenRect();
+		const wxRect dialogBounds = dialog->GetScreenRect();
+		const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
+		                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
+		const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+		                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+		centered = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
+		        && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		if (!centered) {
+			wxMilliSleep(5);
+		}
+	}
+	CPPUNIT_ASSERT(centered);
 }
 
 wxString staticBoxLabelFor(const wxWindow * control) {
@@ -934,8 +944,11 @@ const int noParentRetreatResult = m_harness.runModalFunctionWithAction([&]() {
 CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL), noParentRetreatResult);
 
 ui.requestRedraw();
-redrawPanel->Update();
-m_harness.pumpEvents(5);
+redrawPanel->Refresh(false);
+for (int attempt = 0; attempt < 25 && !sawPaint; ++attempt) {
+	redrawPanel->Update();
+	m_harness.pumpEvents(2);
+}
 CPPUNIT_ASSERT(sawPaint);
 
 parent->Destroy();

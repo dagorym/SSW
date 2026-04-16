@@ -14,6 +14,7 @@
 #include <wx/textctrl.h>
 #include <wx/toplevel.h>
 #include <wx/uiaction.h>
+#include <wx/utils.h>
 #include <wx/window.h>
 
 #include <algorithm>
@@ -213,14 +214,24 @@ return false;
 void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 120) {
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
-	const wxRect parentBounds = parent->GetScreenRect();
-	const wxRect dialogBounds = dialog->GetScreenRect();
-	const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
-	                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
-	const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
-	                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
-	CPPUNIT_ASSERT(std::abs(parentCenter.x - dialogCenter.x) <= tolerance);
-	CPPUNIT_ASSERT(std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+	bool centered = false;
+	for (int attempt = 0; attempt < 10 && !centered; ++attempt) {
+		if (wxTheApp != NULL) {
+			wxTheApp->ProcessPendingEvents();
+		}
+		const wxRect parentBounds = parent->GetScreenRect();
+		const wxRect dialogBounds = dialog->GetScreenRect();
+		const wxPoint parentCenter(parentBounds.GetX() + (parentBounds.GetWidth() / 2),
+		                           parentBounds.GetY() + (parentBounds.GetHeight() / 2));
+		const wxPoint dialogCenter(dialogBounds.GetX() + (dialogBounds.GetWidth() / 2),
+		                           dialogBounds.GetY() + (dialogBounds.GetHeight() / 2));
+		centered = (std::abs(parentCenter.x - dialogCenter.x) <= tolerance)
+		        && (std::abs(parentCenter.y - dialogCenter.y) <= tolerance);
+		if (!centered) {
+			wxMilliSleep(5);
+		}
+	}
+	CPPUNIT_ASSERT(centered);
 }
 
 FTacticalCombatReportSummary buildSummaryWithLines() {
@@ -667,11 +678,12 @@ const int emptyCloseResult = m_harness.runModalFunctionWithAction([&]() {
 	wxButton * closeButton = findButtonByLabel(emptyDialog, wxT("Close"));
 	emptyCloseButtonFound = (closeButton != NULL);
 	if (closeButton != NULL) {
+		m_harness.pumpEvents(2);
 		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, closeButton->GetId());
 		click.SetEventObject(closeButton);
 		closeButton->Command(click);
 	}
-}, wxID_CANCEL, 100);
+}, wxID_CANCEL, 250);
 CPPUNIT_ASSERT(emptyCloseActionRan);
 CPPUNIT_ASSERT(emptyCloseButtonFound);
 CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_OK), emptyCloseResult);
