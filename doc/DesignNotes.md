@@ -287,12 +287,17 @@ migration milestones can delegate to it incrementally.
 
 The raw `FTacticalReportEvent` payload now also preserves structured damage
 metadata from both attack-generated internal events and standalone immediate
-damage-resolution events. Weapon-hit effects carry `damageEffectType`,
-`damagedWeaponType`, `damagedWeaponID`, and `damagedWeaponName`, while
-defense-hit effects also preserve `damagedDefenseType` and
-`damagedDefenseName`. Quantitative effect events also retain `amount`,
-`previousValue`, and `newValue` so later summary formatting can use numeric
-state changes instead of re-parsing label text. The player-facing ship-summary
+damage-resolution events. The two live conversion seams in
+`src/tactical/FTacticalGame.cpp`—`buildTacticalAttackEvent(...)` for attack
+effects and `appendTacticalDamageResolutionEvents(...)` for immediate
+resolution events—both copy `previousValue`, `newValue`, and `amount` into the
+report event so the runtime tactical flow retains exact numeric state changes.
+Weapon-hit effects carry `damageEffectType`, `damagedWeaponType`,
+`damagedWeaponID`, and `damagedWeaponName`, while defense-hit effects also
+preserve `damagedDefenseType` and `damagedDefenseName`. Quantitative effect
+events therefore retain `amount`, `previousValue`, and `newValue` so later
+summary formatting can use numeric state changes instead of re-parsing label
+text. The player-facing ship-summary
 rollup consumes that structured defense identity to emit abbreviated defense
 wording in the form `Defense Hit: <abbr-list>` (for example `Defense Hit: MS,
 PS`) instead of depending on long-form label/detail text. Repeated weapon hits,
@@ -1016,8 +1021,9 @@ The updated tactical regression coverage locks that contract in by checking:
   any internal-effect outcome text, and meaningful non-placeholder notes while
   omitting the redundant `Attack hit target` suffix; and
 - `FTacticalReportEvent` now preserves both weapon and defense damage metadata
-  across immediate damage-resolution events and attack-effect construction,
-  with source-contract and runtime tactical tests checking those fields directly;
+  across immediate damage-resolution events and attack-effect construction, and
+  both runtime conversion seams keep `previousValue`, `newValue`, and `amount`
+  so exact ADF/MR point-loss totals survive into the ship-summary rollup;
 - the ship-summary rollups now use a `<Ship Name>:` header plus one ` - ...`
   bullet per grouped summary item, show abbreviated defense hits derived from
   structured defense identity, retain the existing comma-separated weapon-hit
