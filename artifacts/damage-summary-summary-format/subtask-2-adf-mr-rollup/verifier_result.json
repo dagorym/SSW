@@ -2,12 +2,12 @@
   "status": "completed",
   "subtask": "damage-summary-summary-format-subtask-2",
   "branch": "damage-summary-summary-format-subtask-2-verifier-20260416",
-  "verdict": "FAIL",
-  "blocking_finding_count": 1,
-  "warning_finding_count": 2,
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
   "note_finding_count": 0,
-  "test_sufficiency_summary": "TacticalTests passed, but the new regression only covers synthetic FTacticalReportEvent input and misses the live FTacticalGame event-construction path where numeric ADF/MR payload is dropped.",
-  "documentation_accuracy_summary": "DesignNotes.md describes exact structured-data ADF/MR rollups, but runtime FTacticalGame event conversion does not yet copy amount/previousValue/newValue into FTacticalReportEvent.",
+  "test_sufficiency_summary": "Sufficient: the mixed ship-summary regression asserts exact ADF/MR bullets alongside hull and other effects, source-contract tests lock both FTacticalGame conversion seams, and an independent verifier rerun of TacticalTests passed OK (92 tests).",
+  "documentation_accuracy_summary": "Accurate: DesignNotes.md names both runtime conversion seams and their preserved previousValue/newValue/amount payload, matching FTacticalGame.cpp and enabling exact ADF/MR aggregate bullets.",
   "artifact_files_written": [
     "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/verifier_report.md",
     "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/verifier_result.json"
