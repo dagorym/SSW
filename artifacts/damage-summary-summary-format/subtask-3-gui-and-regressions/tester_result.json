@@ -1,0 +1,25 @@
+{
+  "status": "blocked",
+  "subtask": "damage-summary-summary-format-subtask-3",
+  "branch": "damage-summary-summary-format-subtask-3-tester-20260416",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make clean && make && ./TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests/gui && ./GuiTests"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "tests_run": 92,
+    "passed": 92,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [
+    "GUI-specific validation pass in tests/gui runner could not be completed in this environment (missing xvfb-run and no stable display session)."
+  ],
+  "artifact_paths": [
+    "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md",
+    "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json"
+  ]
+}
