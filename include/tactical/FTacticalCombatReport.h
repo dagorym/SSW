@@ -463,69 +463,60 @@ inline void appendEffectSummary(
 	effectSummary.effectCounts[summarizeEventEffect(event)]++;
 }
 
-inline std::string buildShipSummaryDisplayLine(
+inline std::vector<std::string> buildShipSummaryDisplayLines(
 	const FTacticalShipReportSummary & shipSummary,
 	const TacticalEffectSummaryAccumulator & effectSummary) {
-	std::ostringstream os;
-	os << shipSummary.ship.shipName << ": ";
+	std::vector<std::string> lines;
+	lines.push_back(shipSummary.ship.shipName + ":");
 
 	const bool hasHullDamageClause = shipSummary.hullDamageTaken > 0;
 	if (hasHullDamageClause) {
-		os << shipSummary.hullDamageTaken << " hull damage";
-	}
-
-	if (hasHullDamageClause && shipSummary.damagingAttacksReceived > 0) {
-		os << " from " << shipSummary.damagingAttacksReceived << " attack";
-		if (shipSummary.damagingAttacksReceived != 1) {
-			os << "s";
-		}
-	}
-
-	if (!effectSummary.effectCounts.empty()
-		|| !effectSummary.weaponHitAbbreviations.empty()
-		|| !effectSummary.defenseHitAbbreviations.empty()) {
-		if (hasHullDamageClause) {
-			os << "; ";
-		}
-		os << "effects: ";
-		bool first = true;
-		if (!effectSummary.weaponHitAbbreviations.empty()) {
-			os << "Weapon Hit: ";
-			for (unsigned int i = 0; i < effectSummary.weaponHitAbbreviations.size(); i++) {
-				if (i > 0) {
-					os << ", ";
-				}
-				os << effectSummary.weaponHitAbbreviations[i];
+		std::ostringstream os;
+		os << " - " << shipSummary.hullDamageTaken << " hull damage";
+		if (shipSummary.damagingAttacksReceived > 0) {
+			os << " from " << shipSummary.damagingAttacksReceived << " attack";
+			if (shipSummary.damagingAttacksReceived != 1) {
+				os << "s";
 			}
-			first = false;
 		}
-		if (!effectSummary.defenseHitAbbreviations.empty()) {
-			if (!first) {
+		lines.push_back(os.str());
+	}
+
+	if (!effectSummary.weaponHitAbbreviations.empty()) {
+		std::ostringstream os;
+		os << " - Weapon Hit: ";
+		for (unsigned int i = 0; i < effectSummary.weaponHitAbbreviations.size(); i++) {
+			if (i > 0) {
 				os << ", ";
 			}
-			os << "Defense Hit: ";
-			for (unsigned int i = 0; i < effectSummary.defenseHitAbbreviations.size(); i++) {
-				if (i > 0) {
-					os << ", ";
-				}
-				os << effectSummary.defenseHitAbbreviations[i];
-			}
-			first = false;
+			os << effectSummary.weaponHitAbbreviations[i];
 		}
-		for (std::map<std::string, int>::const_iterator itr = effectSummary.effectCounts.begin();
-			 itr != effectSummary.effectCounts.end(); ++itr) {
-			if (!first) {
-				os << ", ";
-			}
-			first = false;
-			os << itr->first;
-			if (itr->second > 1) {
-				os << " x" << itr->second;
-			}
-		}
+		lines.push_back(os.str());
 	}
 
-	return os.str();
+	if (!effectSummary.defenseHitAbbreviations.empty()) {
+		std::ostringstream os;
+		os << " - Defense Hit: ";
+		for (unsigned int i = 0; i < effectSummary.defenseHitAbbreviations.size(); i++) {
+			if (i > 0) {
+				os << ", ";
+			}
+			os << effectSummary.defenseHitAbbreviations[i];
+		}
+		lines.push_back(os.str());
+	}
+
+	for (std::map<std::string, int>::const_iterator itr = effectSummary.effectCounts.begin();
+		 itr != effectSummary.effectCounts.end(); ++itr) {
+		std::ostringstream os;
+		os << " - " << itr->first;
+		if (itr->second > 1) {
+			os << " x" << itr->second;
+		}
+		lines.push_back(os.str());
+	}
+
+	return lines;
 }
 
 inline std::string buildShipNameForDisplay(const FTacticalShipReference & ship, const std::string & fallback) {
@@ -697,10 +688,12 @@ inline FTacticalCombatReportSummary buildTacticalCombatReportSummary(const FTact
 			continue;
 		}
 
-		const std::string displayLine =
-			TacticalCombatReportDetail::buildShipSummaryDisplayLine(shipSummary, effectSummaries[key]);
-		shipSummary.displayLines.push_back(displayLine);
-		summary.displayLines.push_back(displayLine);
+		const std::vector<std::string> displayLines =
+			TacticalCombatReportDetail::buildShipSummaryDisplayLines(shipSummary, effectSummaries[key]);
+		for (unsigned int j = 0; j < displayLines.size(); j++) {
+			shipSummary.displayLines.push_back(displayLines[j]);
+			summary.displayLines.push_back(displayLines[j]);
+		}
 		summary.ships.push_back(shipSummary);
 	}
 

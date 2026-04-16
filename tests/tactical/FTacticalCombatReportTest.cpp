@@ -27,6 +27,28 @@ const FTacticalShipReportSummary * findShipSummary(
 	return NULL;
 }
 
+bool hasDisplayLineContaining(
+	const FTacticalShipReportSummary & shipSummary,
+	const std::string & text) {
+	for (unsigned int i = 0; i < shipSummary.displayLines.size(); i++) {
+		if (shipSummary.displayLines[i].find(text) != std::string::npos) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool hasSummaryLineContaining(
+	const FTacticalCombatReportSummary & summary,
+	const std::string & text) {
+	for (unsigned int i = 0; i < summary.displayLines.size(); i++) {
+		if (summary.displayLines[i].find(text) != std::string::npos) {
+			return true;
+		}
+	}
+	return false;
+}
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( FTacticalCombatReportTest );
@@ -181,19 +203,21 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCapturesImme
 	CPPUNIT_ASSERT(summary.showHitDetails);
 	CPPUNIT_ASSERT(summary.hitDetails.empty());
 	CPPUNIT_ASSERT(summary.ships.size() == 2);
-	CPPUNIT_ASSERT(summary.displayLines.size() == 2);
+	CPPUNIT_ASSERT(summary.displayLines.size() == 4);
 	CPPUNIT_ASSERT(electricalSummary != NULL);
 	CPPUNIT_ASSERT(mineSummary != NULL);
 	CPPUNIT_ASSERT(electricalSummary->hullDamageTaken == 0);
 	CPPUNIT_ASSERT(electricalSummary->nonHullEffectsTaken == 1);
 	CPPUNIT_ASSERT(electricalSummary->rawEvents.size() == 1);
 	CPPUNIT_ASSERT(electricalSummary->rawEvents[0].eventType == TRET_ElectricalFire);
-	CPPUNIT_ASSERT(electricalSummary->displayLines[0].find("Electrical fire") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Electrical Target:"), electricalSummary->displayLines[0]);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*electricalSummary, " - Electrical fire"));
 	CPPUNIT_ASSERT(mineSummary->hullDamageTaken == 0);
 	CPPUNIT_ASSERT(mineSummary->nonHullEffectsTaken == 1);
 	CPPUNIT_ASSERT(mineSummary->rawEvents.size() == 1);
 	CPPUNIT_ASSERT(mineSummary->rawEvents[0].eventType == TRET_MineDamage);
-	CPPUNIT_ASSERT(mineSummary->displayLines[0].find("Mine damage") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Mine Target:"), mineSummary->displayLines[0]);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*mineSummary, " - Mine damage"));
 }
 
 void FTacticalCombatReportTest::testReportModelDefinesSeparateShipSummaryRollupTypes() {
@@ -348,13 +372,15 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAggregatesMu
 
 	CPPUNIT_ASSERT(shipSummary != NULL);
 	CPPUNIT_ASSERT(summary.ships.size() == 1);
-	CPPUNIT_ASSERT(summary.displayLines.size() == 1);
+	CPPUNIT_ASSERT(summary.displayLines.size() == 2);
 	CPPUNIT_ASSERT(shipSummary->attacksReceived == 2);
 	CPPUNIT_ASSERT(shipSummary->hitsTaken == 2);
 	CPPUNIT_ASSERT(shipSummary->damagingAttacksReceived == 2);
 	CPPUNIT_ASSERT(shipSummary->hullDamageTaken == 5);
-	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 1);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 5 hull damage from 2 attacks") != std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 2);
+	CPPUNIT_ASSERT_EQUAL(std::string("Frigate:"), shipSummary->displayLines[0]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - 5 hull damage from 2 attacks"), shipSummary->displayLines[1]);
+	CPPUNIT_ASSERT(hasSummaryLineContaining(summary, " - 5 hull damage from 2 attacks"));
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryWeaponFireAttackShapeDoesNotDoubleCountTargetHullDamage() {
@@ -392,7 +418,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryWeaponFireAt
 	CPPUNIT_ASSERT_EQUAL(1, frigateSummary->internalEventsTriggered);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), frigateSummary->rawAttacksReceived.size());
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), frigateSummary->rawEvents.size());
-	CPPUNIT_ASSERT(frigateSummary->displayLines[0].find("Sathar Frigate: 6 hull damage from 1 attack") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Sathar Frigate:"), frigateSummary->displayLines[0]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - 6 hull damage from 1 attack"), frigateSummary->displayLines[1]);
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryMineDamageAttackShapeDoesNotDoubleCountTargetHullDamage() {
@@ -431,7 +458,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryMineDamageAt
 	CPPUNIT_ASSERT_EQUAL(1, destroyerSummary->internalEventsTriggered);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), destroyerSummary->rawAttacksReceived.size());
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), destroyerSummary->rawEvents.size());
-	CPPUNIT_ASSERT(destroyerSummary->displayLines[0].find("Sathar Destroyer: 4 hull damage from 1 attack") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Sathar Destroyer:"), destroyerSummary->displayLines[0]);
+	CPPUNIT_ASSERT_EQUAL(std::string(" - 4 hull damage from 1 attack"), destroyerSummary->displayLines[1]);
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeRetainsNonHullInternalEffects() {
@@ -496,12 +524,13 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryAttackShapeR
 	CPPUNIT_ASSERT_EQUAL(5, cruiserSummary->nonHullEffectsTaken);
 	CPPUNIT_ASSERT_EQUAL(6, cruiserSummary->internalEventsTriggered);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), cruiserSummary->rawEvents.size());
-	CPPUNIT_ASSERT_EQUAL(
-		std::string("Sathar Light Cruiser: 5 hull damage from 1 attack; effects: "
-			"Weapon Hit: LB, LB, AR, Defense Hit: MS, PS, Internal hull hit"),
-		cruiserSummary->displayLines[0]);
-	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Weapon Hit x") == std::string::npos);
-	CPPUNIT_ASSERT(cruiserSummary->displayLines[0].find("Defense damaged") == std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Sathar Light Cruiser:"), cruiserSummary->displayLines[0]);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*cruiserSummary, " - 5 hull damage from 1 attack"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*cruiserSummary, " - Weapon Hit: LB, LB, AR"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*cruiserSummary, " - Defense Hit: MS, PS"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*cruiserSummary, " - Internal hull hit"));
+	CPPUNIT_ASSERT(!hasDisplayLineContaining(*cruiserSummary, "Weapon Hit x"));
+	CPPUNIT_ASSERT(!hasDisplayLineContaining(*cruiserSummary, "Defense damaged"));
 	CPPUNIT_ASSERT(cruiserSummary->rawEvents[4].damagedDefenseType == FDefense::MS);
 	CPPUNIT_ASSERT(cruiserSummary->rawEvents[4].damagedDefenseName == "Masking Screen");
 	CPPUNIT_ASSERT(cruiserSummary->rawEvents[5].damagedDefenseType == FDefense::PS);
@@ -537,8 +566,9 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryDoesNotDoubl
 	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.size() == 1);
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 1);
 	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 0);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 4 hull damage from 1 attack") != std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Hull breach") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Frigate:"), shipSummary->displayLines[0]);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - 4 hull damage from 1 attack"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Hull breach"));
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsStandaloneReportLevelHullDamageEvents() {
@@ -562,7 +592,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsStanda
 	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.empty());
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 1);
 	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 0);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Frigate: 3 hull damage") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Frigate:"), shipSummary->displayLines[0]);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - 3 hull damage"));
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsStandaloneHullDamageWhileSuppressingMatchingNestedAttackEvent() {
@@ -646,9 +677,9 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryRetainsNonHu
 	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 2);
 	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 1);
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 2);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Defense Hit: MS") != std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Defense damaged") == std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Hull breach") != std::string::npos);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Defense Hit: MS"));
+	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "Defense damaged"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Hull breach"));
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects() {
@@ -695,12 +726,14 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 2);
 	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.size() == 1);
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 3);
-	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 1);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("5 hull damage") != std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Weapon Hit: LB") != std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Weapon Hit x") == std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Electrical fire") != std::string::npos);
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Hull Damage x") == std::string::npos);
+	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 4);
+	CPPUNIT_ASSERT_EQUAL(std::string("Frigate:"), shipSummary->displayLines[0]);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - 5 hull damage from 1 attack"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Weapon Hit: LB"));
+	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "Weapon Hit x"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Electrical fire"));
+	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "Hull Damage x"));
+	CPPUNIT_ASSERT(!hasSummaryLineContaining(summary, "effects:"));
 
 	FTacticalCombatReport defenseOnlyReport;
 	FTacticalShipReference defenseOnlyShip(45, 2, "Defense-only Frigate");
@@ -720,8 +753,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 	CPPUNIT_ASSERT(defenseOnlyShipSummary != NULL);
 	CPPUNIT_ASSERT_EQUAL(0, defenseOnlyShipSummary->hullDamageTaken);
 	CPPUNIT_ASSERT(defenseOnlyShipSummary->displayLines[0].find("0 hull damage") == std::string::npos);
-	CPPUNIT_ASSERT(defenseOnlyShipSummary->displayLines[0].find("effects: Defense Hit: RH")
-		!= std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Defense-only Frigate:"), defenseOnlyShipSummary->displayLines[0]);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*defenseOnlyShipSummary, " - Defense Hit: RH"));
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryOmitsUndamagedShips() {
@@ -775,7 +808,7 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryUsesStoredSh
 	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived[0].target.shipID == 77);
 	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 1);
 	CPPUNIT_ASSERT(shipSummary->rawEvents[0].subject.shipName == "Destroyed Frigate");
-	CPPUNIT_ASSERT(shipSummary->displayLines[0].find("Destroyed Frigate") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Destroyed Frigate:"), shipSummary->displayLines[0]);
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsNestedHullDamageForOtherShips() {
@@ -809,7 +842,8 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsNested
 	CPPUNIT_ASSERT_EQUAL(1, escortSummary->internalEventsTriggered);
 	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), escortSummary->rawEvents.size());
 	CPPUNIT_ASSERT_EQUAL(0, escortSummary->rawEvents[0].attackIndex);
-	CPPUNIT_ASSERT(escortSummary->displayLines[0].find("Escort: 2 hull damage") != std::string::npos);
+	CPPUNIT_ASSERT_EQUAL(std::string("Escort:"), escortSummary->displayLines[0]);
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*escortSummary, " - 2 hull damage"));
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsNestedHullDamageWhenOwnerDiffersFromAttackTarget() {
