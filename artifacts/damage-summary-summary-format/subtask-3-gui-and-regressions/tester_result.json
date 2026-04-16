@@ -1,23 +1,20 @@
 {
   "status": "success",
-  "task": "damage-summary-summary-format-subtask-3",
+  "subtask": "damage-summary-summary-format-subtask-3",
   "branch": "damage-summary-summary-format-subtask-3-tester-20260416",
   "test_commit_hash": "No Changes Made",
-  "test_files_added_or_modified": [],
+  "test_files_added": [],
+  "test_files_modified": [],
   "commands_run": [
     "cd tests/tactical && make && ./TacticalTests",
-    "cd tests/tactical && ./TacticalTests | tail -n 40",
-    "cd tests/gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests | tail -n 30; done"
+    "cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests"
   ],
   "pass_fail_totals": {
-    "suite_runs_passed": 4,
-    "suite_runs_failed": 0,
-    "tactical_tests": { "passed": 92, "failed": 0 },
-    "gui_tests_per_run": [
-      { "run": 1, "passed": 29, "failed": 0 },
-      { "run": 2, "passed": 29, "failed": 0 },
-      { "run": 3, "passed": 29, "failed": 0 }
-    ]
+    "tactical_tests": "OK (92 tests)",
+    "gui_tests_run_1": "OK (29 tests)",
+    "gui_tests_run_2": "OK (29 tests)",
+    "gui_tests_run_3": "OK (29 tests)",
+    "failed_commands": 0
   },
   "unmet_acceptance_criteria": [],
   "artifact_files": [

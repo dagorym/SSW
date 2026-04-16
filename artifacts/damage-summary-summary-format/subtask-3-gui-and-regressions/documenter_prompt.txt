@@ -1,44 +1,46 @@
 You are the Documenter Agent.
 
 Task summary:
-- Verify and document subtask 3 tactical damage-summary centering-flake remediation validation results. Existing tests were re-run end-to-end and passed without needing additional test code changes.
+- Stabilized the direct parent-backed `TacticalDamageSummaryGUI` live test path by removing the app-level modal action race and preserving parent-relative centering plus real close-button behavior checks.
+- Tester validation confirmed tactical regressions and repeated GUI reruns pass without flake in required runs.
 
 Acceptance criteria validated:
-- Parent-backed TacticalDamageSummaryGUI centering assertion no longer flakes in repeated GUI runs.
-- Centering check intent is preserved (still validates parent-relative centering behavior).
-- Fix remains minimal and test-focused.
+- Stabilize the direct parent-backed `TacticalDamageSummaryGUI` live test so repeated GUI reruns stop flaking.
+- Preserve the centering semantic check (parent-relative with owning-top-level fallback behavior) and real close-button behavior verification.
+- Keep the fix minimal and test-focused unless tightly coupled production code is required.
+- Required validation target passed:
+  - `cd tests/tactical && make && ./TacticalTests`
+  - `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests`
 
 Implementation branch or worktree context:
 - Branch: `damage-summary-summary-format-subtask-3-tester-20260416`
 - Worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-3-tester-20260416`
-- Comparison assumption: review changes on this branch relative to its immediate ancestor/base used in prior subtask-3 handoffs.
 
 Files modified by Implementer and Tester to inspect for documentation impact:
-- `tests/gui/TacticalGuiLiveTest.cpp` (implementer test-only remediation target)
-- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md`
-- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json`
-- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt`
+- `tests/gui/TacticalGuiLiveTest.cpp` (Implementer)
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md` (Tester)
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json` (Tester)
+- `artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt` (Tester)
 
 Test commit:
 - No Changes Made
 
 Commands executed:
 - `cd tests/tactical && make && ./TacticalTests`
-- `cd tests/tactical && ./TacticalTests | tail -n 40`
-- `cd tests/gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests | tail -n 30; done`
+- `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests`
 
 Final test outcomes:
-- Tactical regression suite passed: `OK (92 tests)`.
-- GUI live suite passed three consecutive runs: `OK (29 tests)` each run.
-- Acceptance criteria above are all met.
+- Tactical regressions passed: `OK (92 tests)`.
+- GUI live suite passed 3 consecutive runs under x11 backend: each `OK (29 tests)`.
+- No tester-side test edits were needed; validation-only stage.
 
 Documentation context:
-- Primary change is a tactical GUI live-test stabilization, not production runtime behavior.
-- Confirm docs/notes that discuss tactical damage-summary centering and GUI flake remediation remain accurate.
+- Likely docs impacted: GUI/tactical testing notes where deterministic modal behavior and parent-centered placement checks are described.
+- Confirmed behavior: direct parent-backed damage-summary modal path remains centered on parent and validates real close-button Enter/close behavior while avoiding modal action race flakiness.
 
 Plan and diff context:
-- Story context: subtask 3 tactical damage-summary centering-flake remediation validation.
-- Base guidance assumption: use the branch baseline from existing subtask-3 artifact history in this same artifact directory.
+- Use shared task context for `damage-summary-summary-format` Subtask 3; infer exact planner path from repository artifacts when needed.
+- Comparison base assumption: branch diff against the corresponding implementer/verifier lineage for this subtask if an explicit base is not supplied.
 
 Startup behavior:
 - If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
