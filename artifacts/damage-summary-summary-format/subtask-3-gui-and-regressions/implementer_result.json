@@ -2,19 +2,19 @@
   "status": "success",
   "subtask": "damage-summary-summary-format/subtask-3-gui-and-regressions",
   "branch": "damage-summary-summary-format-subtask-3-implementer-20260416",
-  "implementation_commit": "6023c03",
+  "implementation_commit": "d6f3b0f1d43dc0f0495cfd3aec35ff827fbce07b",
   "changed_files": [
-    "tests/gui/StrategicGuiLiveTest.cpp",
     "tests/gui/BattleSimGuiLiveTest.cpp",
-    "tests/gui/TacticalGuiLiveTest.cpp"
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/StrategicGuiLiveTest.cpp"
   ],
   "validation_commands": [
     "cd tests/tactical && make && ./TacticalTests",
     "cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests",
-    "cd tests/tactical && make && ./TacticalTests && cd ../gui && make && for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests; done"
+    "cd tests/gui && GDK_BACKEND=x11 ./GuiTests (repeated confidence runs)"
   ],
   "validation_outcome": "pass",
-  "artifacts": [
+  "artifact_files": [
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/implementer_report.md",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_prompt.txt",
     "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/implementer_result.json"

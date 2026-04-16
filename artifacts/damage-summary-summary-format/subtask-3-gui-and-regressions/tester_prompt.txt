@@ -1,34 +1,31 @@
 You are the Tester Agent.
 
 Task summary:
-- Stabilized flaky live GUI assertions in strategic, tactical, and BattleSim live GUI tests by adding bounded geometry-settle retries for parent-centering assertions, hardening the strategic redraw paint wait path, and reducing one modal-close race in tactical damage-summary live coverage.
+- Stabilize intermittent GUI live-test centering assertions for BattleSim and tactical damage-summary modal flows without weakening intent.
 
 Modified files:
-- tests/gui/StrategicGuiLiveTest.cpp
 - tests/gui/BattleSimGuiLiveTest.cpp
 - tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
 
 Acceptance criteria to validate (from Planner):
-- Stabilize flaky assertions tied to:
-  - `tests/gui/StrategicGuiLiveTest.cpp:939` (`CPPUNIT_ASSERT(sawPaint)`)
-  - `tests/gui/BattleSimGuiLiveTest.cpp` parent-centering assertion in `testBattleSimFrameOpensLocalGameDialogAndReturns()`
-  - prior intermittent around `tests/gui/TacticalGuiLiveTest.cpp:677`
-- Keep stabilization changes minimal and avoid gratuitous loosening.
-- Preserve already-accepted tactical damage-summary behavior and prior subtask-3 tactical regression changes.
+- Parent-centering assertions are robust against short-lived geometry-settle timing.
+- Tests still verify centering behavior relative to parent (or valid display/top-level fallback where appropriate).
+- Changes are minimal and test-focused.
 
 Create test files in:
-- Assumption: no new tests required for this handoff; validate using existing suites under `tests/tactical` and `tests/gui`.
+- No new test files required (assumption based on scope). Validate existing suites under tests/gui and tests/tactical.
 
 Implementation context for testing:
-- Strategic live UI smoke path now explicitly refreshes and polls event pumps before asserting paint observation after `requestRedraw()`.
-- Strategic, Tactical, and BattleSim parent-centering checks now use short bounded retry loops to allow wx/x11 geometry settling before asserting tolerance.
-- Tactical damage-summary empty-summary modal close action now has a slightly longer fallback window and a short pre-click pump to reduce intermittent fallback-close races.
-- No production runtime behavior changes were made; edits are confined to GUI live-test code.
+- Centering helper retries were expanded to allow additional geometry-settle time.
+- Tactical/BattleSim helpers now accept centered-on-display fallback during transient placement windows.
+- Strategic helper now allows top-level-parent centering when a panel parent is supplied.
+- Modal action timeout windows in affected BattleSim/Tactical live tests were increased to avoid premature fallback closure while centering checks execute.
 
 Suggested test command(s):
-- `cd tests/tactical && make && ./TacticalTests`
-- `cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests`
-- Assumption for flake confidence: repeat GUI suite multiple times, e.g. `for i in 1 2 3; do GDK_BACKEND=x11 ./GuiTests; done`
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests
+- Repeat: cd tests/gui && GDK_BACKEND=x11 ./GuiTests (multiple iterations for flake confidence)
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
