@@ -1,10 +1,10 @@
 ## Documenter Report
 
 ### Files Updated
-- **`doc/DesignNotes.md`** — Documented that tactical report events preserve numeric `amount`/`previousValue`/`newValue` fields and that ship-summary rollups emit exact aggregated `ADF (-N)` and `MR (-N)` bullets instead of label-only echoes.
+- **`doc/DesignNotes.md`** — Clarified that both live `FTacticalGame.cpp` report-conversion seams now preserve `previousValue`, `newValue`, and `amount`, so runtime ship-summary rollups keep exact aggregated `ADF (-N)` and `MR (-N)` bullets.
 
 ### Summary
-Updated the tactical design notes so the documented combat-report summary contract matches Subtask 2's implemented behavior: structured event data now carries numeric point-loss fields, and the ship-summary rollup uses those values to produce exact ADF/MR loss bullets alongside existing hull, weapon, defense, and other effect bullets.
+Updated the tactical design notes to match the shipped Subtask 2 remediation: `FTacticalReportEvent` numeric payload propagation is now documented at the runtime conversion-seam level, and the ship-summary rollup is documented as using those preserved fields for exact ADF/MR loss totals in live tactical damage summaries.
 
 ### Commit Message
-`docs: document ADF/MR summary rollups`
+`docs: note ADF/MR payload propagation seams`

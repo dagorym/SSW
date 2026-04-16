@@ -1,57 +1,54 @@
 You are the Verifier Agent.
 
 Task summary:
-- Verify Subtask 2 implementation, tester validation, and documentation update for tactical ship-summary ADF/MR point-loss rollups.
-- Confirm exact ADF/MR totals are preserved from structured event data, tactical regression coverage remains valid, and documentation now reflects the shipped summary-format behavior.
+- Validate Subtask 2 remediation that restores runtime propagation of `previousValue`, `newValue`, and `amount` into tactical report events so ship-summary rollups preserve exact `ADF (-N)` / `MR (-N)` totals in the live tactical flow.
+- Verify the tester-passed tactical regression coverage and the documentation update that now names both runtime conversion seams and their effect on exact ADF/MR summary bullets.
 
 Acceptance criteria to verify:
-- ADF loss is represented in the ship summary with the exact total number of ADF points lost for the summarized report scope.
-- MR loss is represented in the ship summary with the exact total number of MR points lost for the summarized report scope.
-- The new ADF/MR bullets coexist correctly with hull-damage bullets, grouped defense-hit bullets, and other effects.
-- Tactical model tests cover at least one ship-summary case matching requested ADF/MR point-loss behavior.
-- Documentation reflects that ADF/MR summary bullets are numeric rollups derived from structured event data rather than label-only echoes.
+- ADF loss is represented in the ship summary with the exact total ADF points lost for the summarized scope.
+- MR loss is represented in the ship summary with the exact total MR points lost for the summarized scope.
+- New ADF/MR bullets coexist with hull-damage bullets, grouped defense-hit bullets, and other effects.
+- Tactical model tests cover at least one ship-summary case matching requested ADF/MR loss behavior.
+- Documentation reflects that both runtime conversion seams preserve `previousValue`, `newValue`, and `amount`, enabling exact ADF/MR aggregate bullets.
 
 Implementation branch or worktree context:
-- Documenter branch: damage-summary-summary-format-subtask-2-documenter-20260416
-- Documenter worktree: /home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-2-documenter-20260416
-- Tester branch: damage-summary-summary-format-subtask-2-tester-20260416
-- Tester worktree: /home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-2-tester-20260416
-- Parent implementer branch: damage-summary-summary-format-subtask-2-implementer-20260416
-- Comparison base (assumption): ds-update
-- Documentation commit hash: 2ed327bf38d642c6e26f45b3c4025200c3bbf377
+- Documenter branch: `damage-summary-summary-format-subtask-2-documenter-20260416`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-2-documenter-20260416`
+- Tester branch: `damage-summary-summary-format-subtask-2-tester-20260416`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-2-tester-20260416`
+- Parent implementer branch: `damage-summary-summary-format-subtask-2-implementer-20260416`
+- Runtime remediation commit in branch history: `f28324e257e365e90d20abec086efcf0082b0d29`
+- Documentation commit: `1a05a1d1ba4ab1519681d2a7f5fa33e3e88284cc`
 
 Files modified by Implementer, Tester, and Documenter to inspect:
-- include/tactical/FTacticalCombatReport.h
-- tests/tactical/FTacticalCombatReportTest.cpp
-- doc/DesignNotes.md
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/implementer_report.md
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/implementer_result.json
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_prompt.txt
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_report.md
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_result.json
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_prompt.txt
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_report.md
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_result.json
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/verifier_prompt.txt
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_report.md`
+- `artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_result.json`
+- `artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_prompt.txt`
+- `doc/DesignNotes.md`
+- `artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_report.md`
+- `artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_result.json`
+- `artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/verifier_prompt.txt`
 
 Commands executed:
-- cd tests/tactical && make && ./TacticalTests
-- cd tests/tactical && ./TacticalTests | tail -n 40
-- git --no-pager diff ds-update...HEAD -- include/tactical/FTacticalCombatReport.h tests/tactical/FTacticalCombatReportTest.cpp
-- git --no-pager diff -- doc/DesignNotes.md
+- `cd tests/tactical && make clean && make && ./TacticalTests`
+- `cd tests/tactical && ./TacticalTests`
+- `git --no-pager diff 2ed327b..f28324e -- src/tactical/FTacticalGame.cpp tests/tactical/FTacticalCombatReportTest.cpp`
+- `git --no-pager diff -- doc/DesignNotes.md`
 
 Final test outcomes:
-- PASS: TacticalTests reports OK (92 tests).
-- Existing regression test `testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects` confirms ` - ADF (-3)` and ` - MR (-1)` lines, coexisting with hull/weapon/effect lines, and verifies legacy label-only ADF/MR lines are suppressed.
-- Documentation update in `doc/DesignNotes.md` now states that `FTacticalReportEvent` preserves `amount`, `previousValue`, and `newValue`, and that ship-summary rollups emit exact aggregated ADF/MR bullets from that structured data.
+- Tactical suite passed: `OK (92 tests)`.
+- Source-contract and ship-summary assertions confirm numeric payload propagation and exact ADF/MR rollup formatting behavior.
+- Documentation now explicitly states that `buildTacticalAttackEvent(...)` and `appendTacticalDamageResolutionEvents(...)` preserve `previousValue`, `newValue`, and `amount` for the runtime tactical flow.
 
 Plan and review context:
-- Plan path: /home/tstephen/repos/SSW/plans/damage-summary-summary-format-plan.md
-- Relevant repository guidance: /home/tstephen/repos/SSW/AGENTS.md and shared lookup guidance /home/tstephen/repos/agents/AGENTS_LOOKUP.md
-- Review implementer commit c7d41ce6b4bffc8e8f97d58e760a5ff806122d35 for the core Subtask 2 code/test delta when helpful.
+- Plan path: `/home/tstephen/repos/SSW/plans/damage-summary-summary-format-plan.md`
+- Relevant repository instruction files: `/home/tstephen/repos/SSW/AGENTS.md` and shared lookup guidance `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`
+- Assumption: `doc/DesignNotes.md` is the canonical existing tactical-reporting note, so documentation review should focus there rather than creating or expecting a separate release-note file.
 
 Documentation files updated:
-- doc/DesignNotes.md
+- `doc/DesignNotes.md`
 
 Verification scope:
 - Verify implementation behavior, test coverage, and the updated documentation files together.
@@ -62,7 +59,7 @@ Startup behavior:
 - Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
 
 Shared artifact directory:
-- artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup
+- `artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup`
 
 Completion gate:
 - Do not report success unless all required artifacts exist and all changes are committed.

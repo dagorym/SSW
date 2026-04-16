@@ -2,11 +2,11 @@
   "status": "success",
   "subtask": "damage-summary-summary-format-subtask-2",
   "branch": "damage-summary-summary-format-subtask-2-documenter-20260416",
-  "commit": "2ed327bf38d642c6e26f45b3c4025200c3bbf377",
+  "commit": "1a05a1d1ba4ab1519681d2a7f5fa33e3e88284cc",
   "documentation_files": [
     "doc/DesignNotes.md"
   ],
-  "artifact_files": [
+  "artifact_paths": [
     "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_report.md",
     "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/documenter_result.json",
     "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/verifier_prompt.txt"
