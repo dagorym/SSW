@@ -1,0 +1,24 @@
+{
+  "status": "success",
+  "subtask": "damage-summary-summary-format-subtask-3",
+  "branch": "damage-summary-summary-format-subtask-3-tester-20260416",
+  "test_commit_hash": "No Changes Made",
+  "test_files_added_or_modified": [],
+  "commands_run": [
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests",
+    "cd tests/gui && GDK_BACKEND=x11 ./GuiTests"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "tests_run": 121,
+    "passed": 121,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_paths": [
+    "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_report.md",
+    "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/tester_result.json",
+    "artifacts/damage-summary-summary-format/subtask-3-gui-and-regressions/documenter_prompt.txt"
+  ]
+}

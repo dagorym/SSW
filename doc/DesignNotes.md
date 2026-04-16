@@ -1053,12 +1053,15 @@ adapter.
 
 The regression coverage now locks that behavior in at two levels. The tactical
 source-contract test checks for the dedicated ship-rollup and hit-detail
-builders, preserves the direct content assertions, and rejects reintroduction of
-the manual bind-plus-`EndModal(...)` close path. The live GUI regression drives
-the parent-backed `WXTacticalUI::showDamageSummary(...)` flow with populated,
-no-detail, and empty summaries and verifies clean modal return through the real
-`Close` button handling, while the no-parent tactical adapter path now remains a
-deterministic top-level modal on an active display for the same summary dialog.
+builders, preserves direct content assertions for the `<Ship Name>:` plus
+` - ...` multiline summary contract (including grouped `Weapon Hit: ...`,
+`Defense Hit: ...`, and exact `ADF (-N)` / `MR (-N)` bullets), and rejects
+reintroduction of the manual bind-plus-`EndModal(...)` close path. The live GUI
+regression drives the parent-backed `WXTacticalUI::showDamageSummary(...)` flow
+with populated, no-detail, and empty summaries and verifies clean modal return
+through the real `Close` button handling, while the no-parent tactical adapter
+path now remains a deterministic top-level modal on an active display for the
+same summary dialog.
 Together with the strategic and BattleSim live fixtures, that leaves the GUI
 suite covering the full placement policy matrix for this remediation cycle: a
 representative top-level frame centered on the active display, representative
