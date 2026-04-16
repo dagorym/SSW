@@ -974,6 +974,9 @@ void FTacticalCombatReportTest::testBattleScreenElectricalFireEventsPopulateSour
 	CPPUNIT_ASSERT(body.find("event.source = event.subject;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("event.target = event.subject;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("event.damageEffectType = itr->effectType;") != std::string::npos);
+	CPPUNIT_ASSERT(body.find("event.previousValue = itr->previousValue;") != std::string::npos);
+	CPPUNIT_ASSERT(body.find("event.newValue = itr->newValue;") != std::string::npos);
+	CPPUNIT_ASSERT(body.find("event.amount = itr->amount;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("event.damagedWeaponType = itr->weaponType;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("event.damagedWeaponID = itr->weaponID;") != std::string::npos);
 	CPPUNIT_ASSERT(body.find("event.damagedWeaponName = itr->weaponName;") != std::string::npos);
@@ -1019,6 +1022,9 @@ void FTacticalCombatReportTest::testVehicleDamageReportingApiCapturesExplicitEff
 	CPPUNIT_ASSERT(reportHeader.find("damagedDefenseName") != std::string::npos);
 
 	CPPUNIT_ASSERT(attackBody.find("event.damageEffectType = static_cast<TacticalDamageEffectType>(effect.effectType);") != std::string::npos);
+	CPPUNIT_ASSERT(attackBody.find("event.previousValue = effect.previousValue;") != std::string::npos);
+	CPPUNIT_ASSERT(attackBody.find("event.newValue = effect.newValue;") != std::string::npos);
+	CPPUNIT_ASSERT(attackBody.find("event.amount = effect.amount;") != std::string::npos);
 	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponType = effect.weaponType;") != std::string::npos);
 	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponID = effect.weaponID;") != std::string::npos);
 	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponName = effect.weaponName;") != std::string::npos);

@@ -51,6 +51,9 @@ void appendTacticalDamageResolutionEvents(
 		event.source = event.subject;
 		event.target = event.subject;
 		event.rollValue = itr->rollValue;
+		event.previousValue = itr->previousValue;
+		event.newValue = itr->newValue;
+		event.amount = itr->amount;
 		event.hullDamage = itr->hullDamageApplied;
 		event.attackIndex = -1;
 		event.immediate = true;
@@ -93,6 +96,9 @@ FTacticalReportEvent buildTacticalAttackEvent(
 	event.source = report.attacker;
 	event.target = report.target;
 	event.rollValue = effect.rollValue;
+	event.previousValue = effect.previousValue;
+	event.newValue = effect.newValue;
+	event.amount = effect.amount;
 	event.hullDamage = effect.hullDamageApplied;
 	event.attackIndex = -1;
 	event.immediate = report.immediate;
