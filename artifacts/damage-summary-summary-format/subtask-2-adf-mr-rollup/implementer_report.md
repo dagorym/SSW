@@ -1,25 +1,27 @@
-Implementer report - Subtask 2 (ADF/MR rollup)
+Implementer report - Subtask 2 remediation (ADF/MR rollup)
 
 Plan step status:
-- Preflight scope check: completed (task, allowed files, AC, validation command confirmed)
+- Preflight scope check: completed (agent protocol, assigned worktree/branch, verifier findings, plan AC, validation command)
 - Incremental implementation: completed
 - Validation: completed
-- Completion gate: code commit + artifact commit completed
+- Completion gate: pending artifact commit
 
 Files changed:
-- include/tactical/FTacticalCombatReport.h
+- src/tactical/FTacticalGame.cpp
 - tests/tactical/FTacticalCombatReportTest.cpp
 
 Implementation summary:
-- Extended tactical report event data with numeric meter fields (`previousValue`, `newValue`, `amount`) so summary rollups can read point-loss values from structured event data.
-- Extended summary accumulator with `adfLossTotal` and `mrLossTotal`.
-- Updated rollup aggregation to sum ADF/MR loss totals from event numeric fields (preferring `amount`, fallback to `previousValue - newValue`).
-- Added dedicated ship-summary bullets ` - ADF (-N)` and ` - MR (-N)`.
-- Updated tactical model regression coverage in `FTacticalCombatReportTest` to validate aggregated ADF/MR bullets alongside hull damage, grouped weapon hits, grouped defense hits, and other effects.
+- Fixed runtime tactical event conversion to copy numeric payload fields (`previousValue`, `newValue`, `amount`) from structured damage/effect data into `FTacticalReportEvent` in both conversion paths:
+  - `appendTacticalDamageResolutionEvents(...)`
+  - `buildTacticalAttackEvent(...)`
+- Extended tactical model source-contract regression assertions to lock those assignments so ADF/MR total rollups continue receiving exact numeric deltas from live conversion paths.
 
 Validation commands run:
 1. `cd tests/tactical && make && ./TacticalTests` (baseline before edits) -> PASS (92 tests)
-2. `cd tests/tactical && make && ./TacticalTests` (after edits) -> PASS (92 tests)
+2. `cd tests/tactical && make && ./TacticalTests` (after edits) -> FAIL (segmentation fault due stale tactical object/header ABI mismatch in incremental build)
+3. `cd src/tactical && make clean && make` -> PASS
+4. `cd tests/tactical && make clean && make && ./TacticalTests` -> PASS (92 tests)
 
 Validation outcome:
-- PASS. No remaining known failures.
+- PASS after clean rebuild confirmed runtime and regression coverage behavior.
+- No remaining known failures.

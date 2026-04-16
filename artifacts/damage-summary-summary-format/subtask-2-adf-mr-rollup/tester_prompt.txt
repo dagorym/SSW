@@ -1,10 +1,10 @@
 You are the Tester Agent.
 
 Task summary:
-- Validate Subtask 2 changes that carry exact ADF/MR point-loss totals into tactical ship-summary rollups and emit dedicated bullets (` - ADF (-N)`, ` - MR (-N)`) from structured event data.
+- Validate Subtask 2 remediation that restores runtime propagation of ADF/MR numeric payload fields into tactical report events so ship-summary rollups keep exact totals (` - ADF (-N)`, ` - MR (-N)`) in live tactical flow.
 
 Modified files:
-- include/tactical/FTacticalCombatReport.h
+- src/tactical/FTacticalGame.cpp
 - tests/tactical/FTacticalCombatReportTest.cpp
 
 Acceptance criteria to validate (from Planner):
@@ -17,16 +17,14 @@ Create test files in:
 - tests/tactical/FTacticalCombatReportTest.cpp (existing fixture; no new test file expected)
 
 Implementation context for testing:
-- `TacticalEffectSummaryAccumulator` now tracks `adfLossTotal`/`mrLossTotal`.
-- `appendEffectSummary(...)` now aggregates ADF/MR from `FTacticalReportEvent` numeric fields (`amount`, fallback `previousValue - newValue`) and emits dedicated bullets in `buildShipSummaryDisplayLines(...)`.
-- `FTacticalReportEvent` now includes `previousValue`, `newValue`, and `amount` to carry numeric meter deltas in event data.
-- Regression case in `testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects` asserts:
-  - combined hull and grouped effect lines still exist,
-  - ` - ADF (-3)` and ` - MR (-1)` appear,
-  - old label-only ADF/MR lines are suppressed.
+- `FTacticalGame.cpp` now copies `previousValue`, `newValue`, and `amount` into `FTacticalReportEvent` in both runtime conversion paths used by live tactical flow:
+  - `appendTacticalDamageResolutionEvents(...)`
+  - `buildTacticalAttackEvent(...)`
+- Ship-summary ADF/MR rollup logic in `FTacticalCombatReport.h` depends on those numeric fields for exact totals; this remediation restores that end-to-end data path.
+- Regression source-contract assertions in `FTacticalCombatReportTest` now require those assignments in both conversion functions.
 
 Suggested test command(s):
-- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && make clean && make && ./TacticalTests`
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.

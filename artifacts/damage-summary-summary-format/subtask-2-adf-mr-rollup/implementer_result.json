@@ -2,17 +2,19 @@
   "status": "success",
   "subtask": "damage-summary-summary-format-subtask-2",
   "branch": "damage-summary-summary-format-subtask-2-implementer-20260416",
-  "implementation_commit": "c7d41ce6b4bffc8e8f97d58e760a5ff806122d35",
+  "implementation_commit": "f28324e257e365e90d20abec086efcf0082b0d29",
   "changed_files": [
-    "include/tactical/FTacticalCombatReport.h",
+    "src/tactical/FTacticalGame.cpp",
     "tests/tactical/FTacticalCombatReportTest.cpp"
   ],
   "validation_commands": [
     "cd tests/tactical && make && ./TacticalTests",
-    "cd tests/tactical && make && ./TacticalTests"
+    "cd tests/tactical && make && ./TacticalTests",
+    "cd src/tactical && make clean && make",
+    "cd tests/tactical && make clean && make && ./TacticalTests"
   ],
   "validation_outcome": "pass",
-  "artifacts": [
+  "artifact_files_written": [
     "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/implementer_report.md",
     "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/tester_prompt.txt",
     "artifacts/damage-summary-summary-format/subtask-2-adf-mr-rollup/implementer_result.json"
