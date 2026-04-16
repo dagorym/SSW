@@ -1,0 +1,56 @@
+You are the Verifier Agent.
+
+Task summary:
+- Subtask 1 changed tactical ship-summary rollups from the old flat `Ship: ...; effects: ...` wording to a multiline model-owned format with a `<Ship Name>:` header plus bullet lines, tester updated the affected tactical expectations, and documentation now reflects that shipped rollup contract.
+
+Acceptance criteria to verify:
+- Ship rollups no longer use a single flat `Ship: ...; effects: ...` line when multiple summary items exist.
+- Hull damage totals remain aggregated correctly and still include attack counts.
+- Grouped effect categories still aggregate correctly after the formatting change.
+- Existing ship-summary model tests are updated or extended to lock the new multi-line output contract.
+
+Implementation branch or worktree context:
+- Documenter branch: `damage-summary-summary-format-subtask-1-documenter-20260416`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/damage-summary-summary-format-subtask-1-documenter-20260416`
+- Parent tester branch: `damage-summary-summary-format-subtask-1-tester-20260416`
+- Parent implementer branch: `damage-summary-summary-format-subtask-1-implementer-20260416`
+- Comparison base assumption: compare the tester/documenter branch stack against `master`.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/tactical/FTacticalCombatReport.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `tests/tactical/FTacticalMineDamageReportSummaryTest.cpp`
+- `doc/DesignNotes.md`
+
+Commands executed:
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests/tactical && make >/dev/null && set -o pipefail && ./TacticalTests 2>&1 | tail -n 200`
+- `cd tests/tactical && make >/dev/null && set -o pipefail && ./TacticalTests 2>&1 | tail -n 120`
+
+Final test outcomes:
+- Final tactical suite result: `OK (92 tests)`.
+- Two mine-damage summary tests were updated to match the new multiline rollup contract and now pass.
+- Documentation commit for the rollup-format update: `292d9a100ec5966b2ee485ec204842446d3c6feb` (`docs: document multiline damage summary rollups`).
+
+Plan and review context:
+- Plan path: `/home/tstephen/repos/SSW/plans/damage-summary-summary-format-plan.md`
+- Relevant repository guidance: `AGENTS.md` and `doc/DesignNotes.md`
+- Assumption: `doc/DesignNotes.md` is the correct single documentation source because it already owns the tactical damage-summary rollup contract and `doc/` has no separate user-facing format reference.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm `doc/DesignNotes.md` now matches the shipped multiline ship-rollup contract without overstating any unimplemented behavior.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/damage-summary-summary-format/subtask-1-rollup-format`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

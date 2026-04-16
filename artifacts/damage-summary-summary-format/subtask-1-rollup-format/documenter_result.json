@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "subtask": "damage-summary-summary-format/subtask-1-rollup-format",
+  "branch": "damage-summary-summary-format-subtask-1-documenter-20260416",
+  "commit": "292d9a100ec5966b2ee485ec204842446d3c6feb",
+  "documentation_files": [
+    "doc/DesignNotes.md"
+  ],
+  "artifact_files": [
+    "artifacts/damage-summary-summary-format/subtask-1-rollup-format/documenter_report.md",
+    "artifacts/damage-summary-summary-format/subtask-1-rollup-format/documenter_result.json",
+    "artifacts/damage-summary-summary-format/subtask-1-rollup-format/verifier_prompt.txt"
+  ]
+}
