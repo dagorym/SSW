@@ -709,6 +709,36 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 	fireEvent.label = "Electrical fire";
 	report.events.push_back(fireEvent);
 
+	FTacticalReportEvent adfLossPrimary;
+	adfLossPrimary.eventType = TRET_InternalDamage;
+	adfLossPrimary.damageEffectType = TDET_ADFLoss;
+	adfLossPrimary.subject = attack.target;
+	adfLossPrimary.label = "ADF reduced";
+	adfLossPrimary.previousValue = 5;
+	adfLossPrimary.newValue = 3;
+	adfLossPrimary.amount = 2;
+	report.events.push_back(adfLossPrimary);
+
+	FTacticalReportEvent adfLossSecondary;
+	adfLossSecondary.eventType = TRET_InternalDamage;
+	adfLossSecondary.damageEffectType = TDET_ADFLoss;
+	adfLossSecondary.subject = attack.target;
+	adfLossSecondary.label = "ADF reduced";
+	adfLossSecondary.previousValue = 3;
+	adfLossSecondary.newValue = 2;
+	adfLossSecondary.amount = 0;
+	report.events.push_back(adfLossSecondary);
+
+	FTacticalReportEvent mrLoss;
+	mrLoss.eventType = TRET_InternalDamage;
+	mrLoss.damageEffectType = TDET_MRLoss;
+	mrLoss.subject = attack.target;
+	mrLoss.label = "MR reduced";
+	mrLoss.previousValue = 4;
+	mrLoss.newValue = 3;
+	mrLoss.amount = 1;
+	report.events.push_back(mrLoss);
+
 	FTacticalReportEvent hullDamageEffect;
 	hullDamageEffect.eventType = TRET_InternalDamage;
 	hullDamageEffect.damageEffectType = TDET_HullDamage;
@@ -722,16 +752,20 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummarySummarizesHu
 
 	CPPUNIT_ASSERT(shipSummary != NULL);
 	CPPUNIT_ASSERT(shipSummary->hullDamageTaken == 4);
-	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 2);
-	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 2);
+	CPPUNIT_ASSERT(shipSummary->nonHullEffectsTaken == 5);
+	CPPUNIT_ASSERT(shipSummary->internalEventsTriggered == 5);
 	CPPUNIT_ASSERT(shipSummary->rawAttacksReceived.size() == 1);
-	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 3);
-	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 4);
+	CPPUNIT_ASSERT(shipSummary->rawEvents.size() == 6);
+	CPPUNIT_ASSERT(shipSummary->displayLines.size() == 6);
 	CPPUNIT_ASSERT_EQUAL(std::string("Frigate:"), shipSummary->displayLines[0]);
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - 5 hull damage from 1 attack"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - ADF (-3)"));
+	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - MR (-1)"));
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Weapon Hit: LB"));
 	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "Weapon Hit x"));
 	CPPUNIT_ASSERT(hasDisplayLineContaining(*shipSummary, " - Electrical fire"));
+	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "ADF reduced"));
+	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "MR reduced"));
 	CPPUNIT_ASSERT(!hasDisplayLineContaining(*shipSummary, "Hull Damage x"));
 	CPPUNIT_ASSERT(!hasSummaryLineContaining(summary, "effects:"));
 

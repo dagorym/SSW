@@ -116,6 +116,9 @@ struct FTacticalReportEvent {
 	FTacticalShipReference source;
 	FTacticalShipReference target;
 	int rollValue;
+	int previousValue;
+	int newValue;
+	int amount;
 	int hullDamage;
 	int attackIndex;
 	bool immediate;
@@ -128,7 +131,8 @@ struct FTacticalReportEvent {
 	std::string detail;
 
 	FTacticalReportEvent()
-		: eventType(TRET_None), damageEffectType(TDET_None), rollValue(-1), hullDamage(0),
+		: eventType(TRET_None), damageEffectType(TDET_None), rollValue(-1),
+		  previousValue(0), newValue(0), amount(0), hullDamage(0),
 		  attackIndex(-1), immediate(false), damagedWeaponType(FWeapon::NONE), damagedWeaponID(0),
 		  damagedWeaponName(""), damagedDefenseType(FDefense::UNDEF), damagedDefenseName(""),
 		  label(""), detail("") {}
@@ -285,6 +289,11 @@ struct TacticalEffectSummaryAccumulator {
 	std::map<std::string, int> effectCounts;
 	std::vector<std::string> weaponHitAbbreviations;
 	std::vector<std::string> defenseHitAbbreviations;
+	int adfLossTotal;
+	int mrLossTotal;
+
+	TacticalEffectSummaryAccumulator() : effectCounts(), weaponHitAbbreviations(),
+		defenseHitAbbreviations(), adfLossTotal(0), mrLossTotal(0) {}
 };
 
 struct TacticalShipSummaryKey {
@@ -379,6 +388,16 @@ inline std::string summarizeHitDetailEffect(const FTacticalReportEvent & event) 
 	return effect;
 }
 
+inline int summarizePointLoss(const FTacticalReportEvent & event) {
+	if (event.amount > 0) {
+		return event.amount;
+	}
+	if (event.previousValue > event.newValue) {
+		return event.previousValue - event.newValue;
+	}
+	return 0;
+}
+
 inline std::string damagedWeaponAbbreviation(const FTacticalReportEvent & event) {
 	switch (event.damagedWeaponType) {
 	case FWeapon::LB:
@@ -456,6 +475,16 @@ inline void appendEffectSummary(
 		}
 	}
 
+	if (event.damageEffectType == TDET_ADFLoss) {
+		effectSummary.adfLossTotal += summarizePointLoss(event);
+		return;
+	}
+
+	if (event.damageEffectType == TDET_MRLoss) {
+		effectSummary.mrLossTotal += summarizePointLoss(event);
+		return;
+	}
+
 	if (event.hullDamage > 0 && event.damageEffectType == TDET_HullDamage) {
 		return;
 	}
@@ -479,6 +508,18 @@ inline std::vector<std::string> buildShipSummaryDisplayLines(
 				os << "s";
 			}
 		}
+		lines.push_back(os.str());
+	}
+
+	if (effectSummary.adfLossTotal > 0) {
+		std::ostringstream os;
+		os << " - ADF (-" << effectSummary.adfLossTotal << ")";
+		lines.push_back(os.str());
+	}
+
+	if (effectSummary.mrLossTotal > 0) {
+		std::ostringstream os;
+		os << " - MR (-" << effectSummary.mrLossTotal << ")";
 		lines.push_back(os.str());
 	}
 
