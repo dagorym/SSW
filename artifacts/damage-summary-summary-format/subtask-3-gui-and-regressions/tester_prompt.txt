@@ -1,31 +1,27 @@
 You are the Tester Agent.
 
 Task summary:
-- Stabilize intermittent GUI live-test centering assertions for BattleSim and tactical damage-summary modal flows without weakening intent.
+- Verify the tactical damage-summary centering flake remediation for subtask 3, focused on parent-backed `TacticalDamageSummaryGUI` live coverage stability under repeated GUI runs.
 
 Modified files:
-- tests/gui/BattleSimGuiLiveTest.cpp
 - tests/gui/TacticalGuiLiveTest.cpp
-- tests/gui/StrategicGuiLiveTest.cpp
 
 Acceptance criteria to validate (from Planner):
-- Parent-centering assertions are robust against short-lived geometry-settle timing.
-- Tests still verify centering behavior relative to parent (or valid display/top-level fallback where appropriate).
-- Changes are minimal and test-focused.
+- Parent-backed TacticalDamageSummaryGUI centering assertion no longer flakes in repeated GUI runs.
+- Centering check intent is preserved (still validates parent-relative centering behavior).
+- Fix remains minimal and test-focused.
 
 Create test files in:
-- No new test files required (assumption based on scope). Validate existing suites under tests/gui and tests/tactical.
+- No new test files required (assumption). Validate existing suites under `tests/tactical` and `tests/gui`.
 
 Implementation context for testing:
-- Centering helper retries were expanded to allow additional geometry-settle time.
-- Tactical/BattleSim helpers now accept centered-on-display fallback during transient placement windows.
-- Strategic helper now allows top-level-parent centering when a panel parent is supplied.
-- Modal action timeout windows in affected BattleSim/Tactical live tests were increased to avoid premature fallback closure while centering checks execute.
+- Tactical centering helper now accepts center-on-parent OR center-on-top-level-parent (matching strategic helper semantics) and no longer passes on center-of-display fallback.
+- The affected tactical modal test now waits for an active modal dialog before running centering and close-button interaction assertions.
+- Production GUI code was not changed.
 
 Suggested test command(s):
 - cd tests/tactical && make && ./TacticalTests
-- cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests
-- Repeat: cd tests/gui && GDK_BACKEND=x11 ./GuiTests (multiple iterations for flake confidence)
+- cd tests/gui && make && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests && GDK_BACKEND=x11 ./GuiTests
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
