@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "subtask": "startup-splash-frame-centering/subtask-1",
+  "branch": "window-centering-subtask-1-documenter-20260416",
+  "commit_hash": "f69af6e67ad4e2266ce8e390c64f33ca1c8ae327",
+  "documentation_files": [
+    "AGENTS.md"
+  ],
+  "artifact_files": [
+    "artifacts/startup-splash-frame-centering/subtask-1/documenter_report.md",
+    "artifacts/startup-splash-frame-centering/subtask-1/documenter_result.json",
+    "artifacts/startup-splash-frame-centering/subtask-1/verifier_prompt.txt"
+  ],
+  "summary": "Documented the shared wx startup splash/frame launch seam in AGENTS.md; no user-facing documentation change was needed for this extraction-only subtask."
+}

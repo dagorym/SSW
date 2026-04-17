@@ -1,0 +1,68 @@
+You are the Verifier Agent.
+
+Task summary:
+- Plan subtask 1 extracted startup splash/frame creation into shared helper seam `createStartupSplashAndFrame(wxApp&, FStartupFrameFactory, int)`, added source-contract GUI coverage for both startup paths, and documented the new contributor-facing startup seam guidance.
+
+Acceptance criteria to verify:
+- The SSW app startup path uses an extracted, testable seam for splash and initial-frame creation.
+- The BattleSim app startup path uses an extracted, testable seam for splash and initial-frame creation.
+- `FApp::OnInit()` and `FBattleSimApp::OnInit()` delegate to the extracted seam instead of duplicating startup creation logic inline.
+- The extracted seam preserves concurrent splash/frame startup behavior.
+
+Implementation branch or worktree context:
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-1-documenter-20260416`
+- Documenter branch: `window-centering-subtask-1-documenter-20260416`
+- Tester worktree/branch context: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-1-tester-20260416`, `window-centering-subtask-1-tester-20260416`
+- Parent implementer branch: `window-centering-subtask-1-implementer-20260416`
+- Comparison base: `7ca5137` (master baseline in this worktree history)
+- Exact narrative commits: implementer `950b687`, tester `752f085`, documenter documentation commit `f69af6e67ad4e2266ce8e390c64f33ca1c8ae327`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/gui/WXStartupLaunch.h`
+- `src/FApp.cpp`
+- `src/FBattleSimApp.cpp`
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+- `AGENTS.md`
+- `artifacts/startup-splash-frame-centering/subtask-1/implementer_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-1/implementer_result.json`
+- `artifacts/startup-splash-frame-centering/subtask-1/tester_prompt.txt`
+- `artifacts/startup-splash-frame-centering/subtask-1/tester_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-1/tester_result.json`
+- `artifacts/startup-splash-frame-centering/subtask-1/documenter_prompt.txt`
+- `artifacts/startup-splash-frame-centering/subtask-1/documenter_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-1/documenter_result.json`
+- `artifacts/startup-splash-frame-centering/subtask-1/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/gui && make && (xvfb-run -a ./GuiTests || ./GuiTests)`
+  - `xvfb-run` was unavailable in the environment, so the fallback `./GuiTests` run completed successfully.
+- `git diff --stat 7ca5137..HEAD`
+- `git diff 7ca5137..HEAD -- include/gui/WXStartupLaunch.h src/FApp.cpp src/FBattleSimApp.cpp tests/gui/StrategicGuiLiveTest.cpp tests/gui/BattleSimGuiLiveTest.cpp`
+
+Final test outcomes:
+- GUI suite result: `OK (29 tests)`.
+- Tester-added source-contract assertions verified both app startup paths delegate to `createStartupSplashAndFrame(...)` and that the shared helper keeps splash creation before frame creation/show and `SetTopWindow(...)`.
+- Documentation outcome: `AGENTS.md` now records the shared startup launch seam as contributor guidance; no product/user-guide doc change was needed because the subtask changed startup structure and testability rather than user-visible behavior.
+
+Plan and review context:
+- Primary plan source: `plans/startup-splash-frame-centering-plan.md`, subtask 1.
+- Use the actual diff from `7ca5137..window-centering-subtask-1-documenter-20260416` plus implementer commit `950b687` and tester commit `752f085` as the source of truth; treat plan documentation impact notes as hints only.
+- Convention guidance: review updated repository guidance in `AGENTS.md`; if more context is needed, infer remaining convention-file details from repository context when safe.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/startup-splash-frame-centering/subtask-1`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
