@@ -1,0 +1,46 @@
+You are the Tester Agent.
+
+Task summary:
+- Added focused FGameConfig regression coverage that locks in executable-parent fallback behavior in resolveAssetPath(...), so asset lookup does not regress toward executable-location assumptions.
+- Tactical zoom-image and WXIconCache resolver protections remain in place; validate they still prevent raw getBasePath()+"..." concatenation regressions.
+
+Modified files:
+- tests/core/FGameConfigTest.h
+- tests/core/FGameConfigTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Regression coverage proves the new FGameConfig asset resolver can locate a known repo asset without assuming the executable already lives at the repo root.
+- Regression coverage protects the tactical zoom-image fix from reverting to raw getBasePath()+"data/zoom.png" concatenation.
+- If WXIconCache changed, its tests remain aligned with the shared resolver behavior.
+- The new coverage remains focused and does not depend on a new broad end-to-end harness.
+
+Create test files in:
+- tests/core/FGameConfigTest.h
+- tests/core/FGameConfigTest.cpp
+- tests/core/WXIconCacheTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp (only if needed)
+- tests/gui/BattleSimGuiLiveTest.cpp (only if needed)
+
+Implementation context for testing:
+- New test added: testResolveAssetPathIncludesExecutableParentFallbackContract.
+- It source-inspects src/core/FGameConfig.cpp to assert executable-parent fallback candidate logic remains present.
+- Existing runtime resolver tests still verify real asset resolution for data/zoom.png and normalized path variants.
+- Existing tactical source-contract test already checks FBattleDisplay constructor uses gc.resolveAssetPath("data/zoom.png") and rejects raw/base-path concatenation.
+- Existing WXIconCache tests already verify shared resolver use and no getBasePath()+filename fallback.
+
+Suggested test command(s):
+- cd tests && make && ./SSWTests
+- cd tests/tactical && make && ./TacticalTests
+- Assumption: GUI suite not required unless you add/modify gui live fixtures.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/asset-path-resolution/ap-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
