@@ -1020,6 +1020,79 @@ parent->Destroy();
 m_harness.pumpEvents(10);
 }
 
+void StrategicGuiLiveTest::testWXStrategicUISourceGuardsRuntimeAndPreservesParentlessFlow() {
+	const std::string source = readFileText("../../src/gui/WXStrategicUI.cpp");
+	CPPUNIT_ASSERT(!source.empty());
+	const std::string runtimeGuard = "if (!hasUsableWxUIRuntime()) {";
+	const std::string cancelReturn = "return cancelResult();";
+	const std::string voidReturn = "return;";
+	const std::string centerOnParent = "dialog.CentreOnParent(wxBOTH);";
+	const std::string centerOnScreen = "dialog.CentreOnScreen(wxBOTH);";
+
+	const size_t retreatFn = source.find("int WXStrategicUI::selectRetreatCondition()");
+	const size_t upfFn = source.find("int WXStrategicUI::runUPFUnattachedSetup");
+	const size_t satharFn = source.find("int WXStrategicUI::runSatharFleetSetup");
+	const size_t combatFn = source.find("int WXStrategicUI::selectCombat(");
+	const size_t systemFn = source.find("void WXStrategicUI::showSystemDialog");
+	const size_t fleetFn = source.find("void WXStrategicUI::showFleetDialog");
+	CPPUNIT_ASSERT(retreatFn != std::string::npos);
+	CPPUNIT_ASSERT(upfFn != std::string::npos);
+	CPPUNIT_ASSERT(satharFn != std::string::npos);
+	CPPUNIT_ASSERT(combatFn != std::string::npos);
+	CPPUNIT_ASSERT(systemFn != std::string::npos);
+	CPPUNIT_ASSERT(fleetFn != std::string::npos);
+
+	const size_t retreatGuard = source.find(runtimeGuard, retreatFn);
+	const size_t upfGuard = source.find(runtimeGuard, upfFn);
+	const size_t satharGuard = source.find(runtimeGuard, satharFn);
+	const size_t combatGuard = source.find(runtimeGuard, combatFn);
+	const size_t systemGuard = source.find(runtimeGuard, systemFn);
+	const size_t fleetGuard = source.find(runtimeGuard, fleetFn);
+	CPPUNIT_ASSERT(retreatGuard != std::string::npos);
+	CPPUNIT_ASSERT(upfGuard != std::string::npos);
+	CPPUNIT_ASSERT(satharGuard != std::string::npos);
+	CPPUNIT_ASSERT(combatGuard != std::string::npos);
+	CPPUNIT_ASSERT(systemGuard != std::string::npos);
+	CPPUNIT_ASSERT(fleetGuard != std::string::npos);
+
+	CPPUNIT_ASSERT(source.find("bool hasUsableWxUIRuntime()") != std::string::npos);
+	CPPUNIT_ASSERT(source.find("return wxTheApp != NULL;") != std::string::npos);
+	const size_t retreatCancel = source.find(cancelReturn, retreatGuard);
+	const size_t retreatDialog = source.find("SatharRetreatGUI dialog", retreatGuard);
+	const size_t upfCancel = source.find(cancelReturn, upfGuard);
+	const size_t upfDialog = source.find("UPFUnattachedGUI dialog", upfGuard);
+	const size_t satharCancel = source.find(cancelReturn, satharGuard);
+	const size_t satharDialog = source.find("SatharFleetsGUI dialog", satharGuard);
+	const size_t combatCancel = source.find(cancelReturn, combatGuard);
+	const size_t combatDialog = source.find("SelectCombatGUI dialog", combatGuard);
+	const size_t systemReturn = source.find(voidReturn, systemGuard);
+	const size_t systemDialog = source.find("SystemDialogGUI dialog", systemGuard);
+	const size_t fleetReturn = source.find(voidReturn, fleetGuard);
+	const size_t fleetDialog = source.find("ViewFleetGUI dialog", fleetGuard);
+	CPPUNIT_ASSERT(retreatCancel != std::string::npos);
+	CPPUNIT_ASSERT(retreatDialog != std::string::npos);
+	CPPUNIT_ASSERT(upfCancel != std::string::npos);
+	CPPUNIT_ASSERT(upfDialog != std::string::npos);
+	CPPUNIT_ASSERT(satharCancel != std::string::npos);
+	CPPUNIT_ASSERT(satharDialog != std::string::npos);
+	CPPUNIT_ASSERT(combatCancel != std::string::npos);
+	CPPUNIT_ASSERT(combatDialog != std::string::npos);
+	CPPUNIT_ASSERT(systemReturn != std::string::npos);
+	CPPUNIT_ASSERT(systemDialog != std::string::npos);
+	CPPUNIT_ASSERT(fleetReturn != std::string::npos);
+	CPPUNIT_ASSERT(fleetDialog != std::string::npos);
+	CPPUNIT_ASSERT(retreatCancel < retreatDialog);
+	CPPUNIT_ASSERT(upfCancel < upfDialog);
+	CPPUNIT_ASSERT(satharCancel < satharDialog);
+	CPPUNIT_ASSERT(combatCancel < combatDialog);
+	CPPUNIT_ASSERT(systemReturn < systemDialog);
+	CPPUNIT_ASSERT(fleetReturn < fleetDialog);
+	CPPUNIT_ASSERT(source.find("if (m_parent != NULL && hasUsableWxUIRuntime())")
+	               != std::string::npos);
+	CPPUNIT_ASSERT(source.find(centerOnParent, retreatFn) != std::string::npos);
+	CPPUNIT_ASSERT(source.find(centerOnScreen, retreatFn) != std::string::npos);
+}
+
 void StrategicGuiLiveTest::testUPFAndSatharFleetDialogsMutateModelState() {
 wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Fleet Dialog Parent", wxDefaultPosition, wxSize(640, 480));
 parent->Show();

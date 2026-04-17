@@ -19,6 +19,7 @@ CPPUNIT_TEST( testGamePanelPaintTracksParentSize );
 CPPUNIT_TEST( testStrategicDialogsCloseModallyWithoutInput );
 CPPUNIT_TEST( testStrategicDialogsUseStaticBoxChildParents );
 CPPUNIT_TEST( testWXStrategicUIParentBackedModalAndRedrawPaths );
+CPPUNIT_TEST( testWXStrategicUISourceGuardsRuntimeAndPreservesParentlessFlow );
 CPPUNIT_TEST( testUPFAndSatharFleetDialogsMutateModelState );
 CPPUNIT_TEST( testTransferShipsDialogMovesShipsAndUpdatesFleets );
 CPPUNIT_TEST( testCombatSelectionDialogsReturnCodesAndState );
@@ -46,6 +47,7 @@ public:
 	void testStrategicDialogsCloseModallyWithoutInput();
 	void testStrategicDialogsUseStaticBoxChildParents();
 	void testWXStrategicUIParentBackedModalAndRedrawPaths();
+	void testWXStrategicUISourceGuardsRuntimeAndPreservesParentlessFlow();
 	void testUPFAndSatharFleetDialogsMutateModelState();
 	void testTransferShipsDialogMovesShipsAndUpdatesFleets();
 	void testCombatSelectionDialogsReturnCodesAndState();
