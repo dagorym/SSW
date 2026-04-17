@@ -1,0 +1,46 @@
+You are the Tester Agent.
+
+Task summary:
+- AP-02 migrated tactical/startup direct image loads to `FGameConfig::resolveAssetPath(...)` and aligned `WXIconCache` to the shared resolver seam.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FBattleScreen.cpp
+- include/gui/WXStartupLaunch.h
+- src/gui/WXIconCache.cpp
+
+Acceptance criteria to validate (from Planner):
+- `FBattleDisplay` uses the shared resolver for `data/zoom.png`.
+- `FBattleBoard`, `FBattleScreen`, and `WXStartupLaunch` no longer depend on raw executable-relative asset concatenation for direct image loads.
+- `WXIconCache` follows the same underlying asset-resolution policy, or equivalent behavior is preserved through a clearly shared seam.
+- No affected call site uses a hardcoded absolute machine path.
+
+Create test files in:
+- tests/core/WXIconCacheTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp (likely live/startup/icon-path coverage)
+- tests/gui/BattleSimGuiLiveTest.cpp (likely startup path coverage)
+
+Implementation context for testing:
+- Tactical zoom image load now uses `gc.resolveAssetPath("data/zoom.png")`.
+- Tactical masking screen and planet setup images now use `resolveAssetPath("icons/...")`.
+- Shared startup splash load now uses `resolveAssetPath("data/splash.png")`.
+- `WXIconCache` now computes a single resolved path through `FGameConfig::resolveAssetPath(filename)` instead of hand-rolled `getBasePath()` plus `../` fallback concatenation.
+- Existing `SSWTests` currently contain a source-inspection assertion for legacy `WXIconCache` text and will fail until tester updates expectations to the approved shared-resolver behavior.
+
+Suggested test command(s):
+- `cd tests && make && ./SSWTests`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- Optional GUI smoke when practical: `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/asset-path-resolution/ap-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
