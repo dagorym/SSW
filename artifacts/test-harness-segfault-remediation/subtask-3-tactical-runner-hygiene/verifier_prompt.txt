@@ -1,0 +1,65 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate Subtask 3 tactical runner build hygiene in `tests/Makefile`: the top-level `tactical-tests` target should force a clean tactical runner rebuild before execution.
+- Tester confirmed the target behavior and runner execution using existing test commands only, and Documenter updated contributor guidance in `AGENTS.md` to reflect the new top-level tactical rebuild command.
+
+Acceptance criteria to verify:
+- The top-level tests makefile exposes a tactical-runner build target that rebuilds `tests/tactical/TacticalTests`.
+- The target produces a fresh tactical runner binary from current sources and linked libraries.
+- Running the freshly rebuilt tactical runner completes successfully in the current tree.
+- The existing top-level `SSWTests` build path remains intact.
+- Repository documentation accurately reflects the implemented tactical runner hygiene command without contradicting existing test guidance.
+
+Implementation branch or worktree context:
+- Documenter branch: `test-fixes-subtask-3-documenter-20260417`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/test-fixes-subtask-3-documenter-20260417`
+- Tester branch/worktree source: `test-fixes-subtask-3-tester-20260417` at `/home/tstephen/repos/SSW-worktrees/test-fixes-subtask-3-tester-20260417`
+- Comparison context assumption: compare against `test-fixes` lineage for the subtask-series review.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/Makefile`
+- `AGENTS.md`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/implementer_report.md`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/implementer_result.json`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/tester_prompt.txt`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/tester_report.md`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/tester_result.json`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/documenter_prompt.txt`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/documenter_report.md`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/documenter_result.json`
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make -n tactical-tests`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && make tactical-tests` with TacticalTests mtime verification
+- `cd tests && ./tactical/TacticalTests` (summary: `OK (92 tests)`)
+- `cd tests && make && ./SSWTests` (summary: `OK (162 tests)`)
+
+Final test outcomes:
+- PASS: all tactical runner hygiene acceptance criteria were met in the tester worktree.
+- `tactical-tests` runs `cd tactical; make clean TacticalTests`, removing stale tactical runner artifacts before relinking the standalone tactical runner.
+- Freshly rebuilt `./tactical/TacticalTests` completed with `OK (92 tests)`.
+- Top-level `make` and `./SSWTests` remained intact and completed with `OK (162 tests)`.
+
+Plan and review context:
+- No separate plan file was provided; use the upstream coordinator handoff prompt plus the implementer/tester artifacts as the evaluation source. Treat the `test-fixes` comparison base as an assumption inferred from the subtask branch lineage.
+- Follow repository guidance in `AGENTS.md`; if verifier-specific convention files or agent definitions are not explicit in-repo, infer them from repository context and the shared agent lookup rules.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
