@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "task": "startup-splash-frame-centering",
+  "subtask": "subtask-2",
+  "branch": "window-centering-subtask-2-verifier-20260416",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "plan_reference": "plans/startup-splash-frame-centering-plan.md (subtask 2; assumed from repository context and verifier prompt)",
+  "test_sufficiency_summary": "Sufficient. Reviewed live GUI centering coverage plus shared-helper source-contract assertions, and reran `cd tests/gui && make && DISPLAY=:99 ./GuiTests` under Xvfb with result `OK (29 tests)`.",
+  "documentation_accuracy_summary": "Accurate. AGENTS.md, doc/UsersGuide.md, and doc/DesignNotes.md match the implemented deterministic startup centering and splash/frame overlap behavior.",
+  "artifact_files_written": [
+    "artifacts/startup-splash-frame-centering/subtask-2/verifier_report.md",
+    "artifacts/startup-splash-frame-centering/subtask-2/verifier_result.json"
+  ]
+}
