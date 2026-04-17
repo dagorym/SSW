@@ -1,17 +1,21 @@
 {
   "status": "success",
-  "subtask_id": "AP-01",
+  "task_id": "ap-01",
   "branch": "asset-path-resolution-ap-01-implementer-20260417",
-  "implementation_commit": "bd9710bbbd20dbd8da196741472f409452243a30",
+  "implementation_commit_hash": "86db68eae6a20a3f1cb951ebd0179f95c1630cdf",
   "changed_files": [
-    "include/core/FGameConfig.h",
     "src/core/FGameConfig.cpp"
   ],
-  "validation_commands": [
-    "cd tests/core && make",
+  "validation_commands_run": [
+    "cd tests/core && make && ./CoreTests",
+    "cd tests && make && ./SSWTests",
     "cd tests && make && ./SSWTests"
   ],
-  "validation_outcome": "passed",
+  "validation_outcome": {
+    "baseline": "1 failing test before remediation",
+    "post_fix": "all tests passed (OK 165 tests)",
+    "notes": "tests/core runner binary not present; used top-level SSWTests as smallest equivalent existing runner"
+  },
   "artifact_files": [
     "artifacts/asset-path-resolution/ap-01/implementer_report.md",
     "artifacts/asset-path-resolution/ap-01/tester_prompt.txt",
