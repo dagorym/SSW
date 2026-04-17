@@ -1,0 +1,43 @@
+You are the Tester Agent.
+
+Task summary:
+- Added a reusable `FGameConfig::resolveAssetPath(...)` API for repo-relative assets (e.g., `data/zoom.png`, `icons/MaskingScreen.png`) while preserving singleton/getBasePath lifecycle behavior.
+
+Modified files:
+- include/core/FGameConfig.h
+- src/core/FGameConfig.cpp
+
+Acceptance criteria to validate (from Planner):
+- FGameConfig exposes a public resolver suitable for direct asset-loading callers.
+- The resolver can return a usable path to repo-root assets even when the executable lives under tests/.
+- The implementation does not rely on any machine-specific absolute path.
+- Existing singleton and getBasePath() behavior remain intact.
+
+Create test files in:
+- tests/core/FGameConfigTest.h
+- tests/core/FGameConfigTest.cpp
+
+Implementation context for testing:
+- New public API: `std::string resolveAssetPath(const std::string &assetPath) const`.
+- Resolver behavior:
+  - returns input unchanged for empty or absolute paths;
+  - normalizes leading `./` and path separators for repo-relative input;
+  - probes candidate locations in order: `getBasePath()+asset`, `executableDir+asset`, `executableDir+../+asset`, `getBasePath()+../+asset`;
+  - returns first existing candidate, else falls back to `getBasePath()+asset`.
+- `getBasePath()` constructor lifecycle remains unchanged; singleton create/get/reset contract untouched.
+
+Suggested test command(s):
+- Assumption (smallest existing runnable command in this repo): `cd tests && make && ./SSWTests`
+- Supporting command for core module build signal: `cd tests/core && make`
+- Note: planner guidance listed `cd tests/core && make && ./CoreTests`; this repo’s `tests/core/Makefile` builds `libcoreTests.a` and does not emit `CoreTests`.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/asset-path-resolution/ap-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
