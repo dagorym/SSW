@@ -133,6 +133,20 @@ bool isChildFullyInClientArea(wxWindow * parent, wxWindow * child) {
 	    && clientRect.Contains(child->GetRect().GetBottomRight());
 }
 
+void assertTopLevelCenteredOnDisplay(wxTopLevelWindow * window, int tolerance = 80) {
+	CPPUNIT_ASSERT(window != NULL);
+	const int displayIndex = wxDisplay::GetFromWindow(window);
+	CPPUNIT_ASSERT(displayIndex != wxNOT_FOUND);
+	const wxRect displayBounds = wxDisplay(static_cast<unsigned int>(displayIndex)).GetClientArea();
+	const wxRect windowBounds = window->GetScreenRect();
+	const wxPoint displayCenter(displayBounds.GetX() + (displayBounds.GetWidth() / 2),
+	                            displayBounds.GetY() + (displayBounds.GetHeight() / 2));
+	const wxPoint windowCenter(windowBounds.GetX() + (windowBounds.GetWidth() / 2),
+	                           windowBounds.GetY() + (windowBounds.GetHeight() / 2));
+	CPPUNIT_ASSERT(std::abs(displayCenter.x - windowCenter.x) <= tolerance);
+	CPPUNIT_ASSERT(std::abs(displayCenter.y - windowCenter.y) <= tolerance);
+}
+
 void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 200) {
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
@@ -653,6 +667,7 @@ void StrategicGuiLiveTest::testMainFrameBuildsExpectedInitialUI() {
 FMainFrame * frame = new FMainFrame("FMainFrame Test", wxDefaultPosition, wxSize(800, 600));
 frame->Show();
 m_harness.pumpEvents();
+assertTopLevelCenteredOnDisplay(frame);
 
 wxWindow * mapPanel = frame->FindWindow("MapPanel");
 CPPUNIT_ASSERT(mapPanel != NULL);
@@ -1171,23 +1186,37 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 	CPPUNIT_ASSERT(appContents.find("return new FMainFrame(") != std::string::npos);
 	CPPUNIT_ASSERT(appContents.find("wxSplashScreen") == std::string::npos);
 	CPPUNIT_ASSERT(appContents.find("bitmap.LoadFile") == std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("wxDefaultPosition") != std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("wxPoint(50,50)") == std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("wxPoint(50, 50)") == std::string::npos);
 
 	const std::string launchHelperContents = readFileText("../../include/gui/WXStartupLaunch.h");
 	CPPUNIT_ASSERT(!launchHelperContents.empty());
 	CPPUNIT_ASSERT(launchHelperContents.find("wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("wxFRAME_NO_TASKBAR") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("wxSTAY_ON_TOP") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("wxSIMPLE_BORDER | wxSTAY_ON_TOP") == std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("frame->CentreOnScreen(wxBOTH);") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("frame->Show(true);") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("app.SetTopWindow(frame);") != std::string::npos);
 	const size_t splashCreatePos = launchHelperContents.find("new wxSplashScreen");
 	const size_t frameCreatePos = launchHelperContents.find("wxFrame *frame = createFrame();");
+	const size_t frameCenterPos = launchHelperContents.find("frame->CentreOnScreen(wxBOTH);");
 	const size_t frameShowPos = launchHelperContents.find("frame->Show(true);");
 	const size_t setTopWindowPos = launchHelperContents.find("app.SetTopWindow(frame);");
 	CPPUNIT_ASSERT(splashCreatePos != std::string::npos);
 	CPPUNIT_ASSERT(frameCreatePos != std::string::npos);
+	CPPUNIT_ASSERT(frameCenterPos != std::string::npos);
 	CPPUNIT_ASSERT(frameShowPos != std::string::npos);
 	CPPUNIT_ASSERT(setTopWindowPos != std::string::npos);
 	CPPUNIT_ASSERT(splashCreatePos < frameCreatePos);
-	CPPUNIT_ASSERT(frameCreatePos < frameShowPos);
+	CPPUNIT_ASSERT(frameCreatePos < frameCenterPos);
+	CPPUNIT_ASSERT(frameCenterPos < frameShowPos);
 	CPPUNIT_ASSERT(frameShowPos < setTopWindowPos);
+
+	const std::string mainFrameContents = readFileText("../../src/FMainFrame.cpp");
+	CPPUNIT_ASSERT(!mainFrameContents.empty());
+	CPPUNIT_ASSERT(mainFrameContents.find("CentreOnScreen(wxBOTH);") != std::string::npos);
 }
 
 void StrategicGuiLiveTest::testBattleResultsDialogUpdatesShipStatistics() {

@@ -505,8 +505,23 @@ void BattleSimGuiLiveTest::testBattleSimLaunchDialogsRetainFirstShowSizingContra
 	CPPUNIT_ASSERT(!launchHelperContents.empty());
 	CPPUNIT_ASSERT(launchHelperContents.find("if (createFrame == nullptr)") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("wxFRAME_NO_TASKBAR") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("wxSTAY_ON_TOP") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("wxSIMPLE_BORDER | wxSTAY_ON_TOP") == std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("frame->CentreOnScreen(wxBOTH);") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("frame->Show(true);") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("app.SetTopWindow(frame);") != std::string::npos);
+	const size_t splashCreatePos = launchHelperContents.find("new wxSplashScreen");
+	const size_t frameCreatePos = launchHelperContents.find("wxFrame *frame = createFrame();");
+	const size_t frameCenterPos = launchHelperContents.find("frame->CentreOnScreen(wxBOTH);");
+	const size_t frameShowPos = launchHelperContents.find("frame->Show(true);");
+	CPPUNIT_ASSERT(splashCreatePos != std::string::npos);
+	CPPUNIT_ASSERT(frameCreatePos != std::string::npos);
+	CPPUNIT_ASSERT(frameCenterPos != std::string::npos);
+	CPPUNIT_ASSERT(frameShowPos != std::string::npos);
+	CPPUNIT_ASSERT(splashCreatePos < frameCreatePos);
+	CPPUNIT_ASSERT(frameCreatePos < frameCenterPos);
+	CPPUNIT_ASSERT(frameCenterPos < frameShowPos);
 }
 
 void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage() {
