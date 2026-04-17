@@ -12,10 +12,22 @@
 #include "gui/UPFUnattachedGUI.h"
 #include "gui/ViewFleetGUI.h"
 
+#include <wx/app.h>
 #include <wx/generic/msgdlgg.h>
 #include <wx/window.h>
 
 namespace Frontier {
+namespace {
+
+bool hasUsableWxUIRuntime() {
+  return wxTheApp != NULL;
+}
+
+int cancelResult() {
+  return wxID_CANCEL;
+}
+
+}  // namespace
 
 WXStrategicUI::WXStrategicUI(wxWindow* parent) : m_parent(parent) {}
 
@@ -23,7 +35,7 @@ WXStrategicUI::~WXStrategicUI() {}
 
 void WXStrategicUI::showMessage(const std::string& title,
                                 const std::string& body) {
-  if (m_parent != NULL) {
+  if (m_parent != NULL && hasUsableWxUIRuntime()) {
     wxGenericMessageDialog dialog(m_parent, body, title,
                                   wxOK | wxICON_INFORMATION);
     dialog.CentreOnParent(wxBOTH);
@@ -64,6 +76,9 @@ void WXStrategicUI::notifyVictory(int result) {
 }
 
 int WXStrategicUI::selectRetreatCondition() {
+  if (!hasUsableWxUIRuntime()) {
+    return cancelResult();
+  }
   SatharRetreatGUI dialog(m_parent);
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
@@ -76,6 +91,9 @@ int WXStrategicUI::selectRetreatCondition() {
 int WXStrategicUI::runUPFUnattachedSetup(FPlayer* player, FMap* map) {
   if (player == NULL || map == NULL) {
     return 1;
+  }
+  if (!hasUsableWxUIRuntime()) {
+    return cancelResult();
   }
   UPFUnattachedGUI dialog(m_parent, player, map);
   if (m_parent != NULL) {
@@ -92,6 +110,9 @@ int WXStrategicUI::runSatharFleetSetup(FPlayer* player,
   if (player == NULL || map == NULL) {
     return 1;
   }
+  if (!hasUsableWxUIRuntime()) {
+    return cancelResult();
+  }
   SatharFleetsGUI dialog(m_parent, player, map, isInitialSetup);
   if (m_parent != NULL) {
     dialog.CentreOnParent(wxBOTH);
@@ -103,6 +124,9 @@ int WXStrategicUI::runSatharFleetSetup(FPlayer* player,
 
 void WXStrategicUI::showSystemDialog(FSystem* sys, FMap* map, FPlayer* player) {
   if (sys == NULL || map == NULL || player == NULL) {
+    return;
+  }
+  if (!hasUsableWxUIRuntime()) {
     return;
   }
   std::string title = sys->getName() + " System Information";
@@ -119,6 +143,9 @@ void WXStrategicUI::showFleetDialog(FFleet* fleet,
                                     FSystem* location,
                                     FSystem* destination) {
   if (fleet == NULL || location == NULL) {
+    return;
+  }
+  if (!hasUsableWxUIRuntime()) {
     return;
   }
   ViewFleetGUI dialog(m_parent, fleet, location, destination);
@@ -140,6 +167,9 @@ int WXStrategicUI::selectCombat(FSystem* sys,
                                 PlayerList* players) {
   if (sys == NULL || players == NULL) {
     return 1;
+  }
+  if (!hasUsableWxUIRuntime()) {
+    return cancelResult();
   }
   SelectCombatGUI dialog(m_parent, sys, defenders, attackers, players);
   if (m_parent != NULL) {
