@@ -1,0 +1,47 @@
+You are the Documenter Agent.
+
+Task context:
+- Repository root: /home/tstephen/repos/SSW
+- Coordination base branch: image-path
+- Tester worktree: /home/tstephen/repos/SSW-worktrees/asset-path-resolution-ap-03-tester-20260417
+- Tester branch: asset-path-resolution-ap-03-tester-20260417
+- Parent implementer branch: asset-path-resolution-ap-03-implementer-20260417
+- Shared artifact directory (repo-root-relative): artifacts/asset-path-resolution/ap-03
+
+Original task summary:
+- Added focused FGameConfig regression coverage that locks in executable-parent fallback behavior in resolveAssetPath(...), so asset lookup does not regress toward executable-location assumptions.
+- Tactical zoom-image and WXIconCache resolver protections remain in place; validate they still prevent raw getBasePath()+"..." concatenation regressions.
+
+Acceptance criteria to document against:
+1. Regression coverage proves the new FGameConfig asset resolver can locate a known repo asset without assuming the executable already lives at the repo root.
+2. Regression coverage protects the tactical zoom-image fix from reverting to raw getBasePath()+"data/zoom.png" concatenation.
+3. If WXIconCache changed, its tests remain aligned with the shared resolver behavior.
+4. The new coverage remains focused and does not depend on a new broad end-to-end harness.
+
+Files modified by Implementer and/or Tester that may affect documentation review:
+- tests/core/FGameConfigTest.h (implementer)
+- tests/core/FGameConfigTest.cpp (implementer)
+- artifacts/asset-path-resolution/ap-03/tester_report.md (tester)
+- artifacts/asset-path-resolution/ap-03/tester_result.json (tester)
+- artifacts/asset-path-resolution/ap-03/documenter_prompt.txt (tester)
+
+Testing performed by Tester:
+- cd tests && make && ./SSWTests  -> OK (166 tests)
+- cd tests && make tactical-tests && ./tactical/TacticalTests -> OK (94 tests)
+
+Final test outcome:
+- All acceptance criteria validated via existing + implementer-added focused tests.
+- No tester-side test file edits were required.
+
+Commit context:
+- Test-change commit hash: No Changes Made
+- Artifact commit hash: infer from current branch HEAD after tester artifact commit
+
+Guidance for your workflow:
+- Reuse shared artifact directory exactly as: artifacts/asset-path-resolution/ap-03
+- Infer missing plan-path, story context, or documentation-convention details from repository evidence when safe; label assumptions explicitly.
+- Use image-path as comparison base guidance unless repository context indicates a narrower branch comparison is needed.
+- Do not stop after activation metadata, scope restatement, documentation-target discovery, or diff review when blocking inputs are present.
+
+Completion gate (mandatory):
+- Do not report success unless all required artifacts exist in artifacts/asset-path-resolution/ap-03 and all changes are committed.
