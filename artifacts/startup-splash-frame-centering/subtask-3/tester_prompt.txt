@@ -1,0 +1,45 @@
+You are the Tester Agent.
+
+Task summary:
+- Implementer added live startup-seam GUI regression coverage for both SSW and BattleSim startup paths.
+- New tests assert splash and startup frame are both created and shown, both centered on display, and that splash remains above frame while both are visible via live `wxSTAY_ON_TOP` style + simultaneous visibility checks.
+
+Modified files:
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.h
+- tests/gui/BattleSimGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- GuiTests includes startup-path coverage for SSW using the extracted startup seam.
+- GuiTests includes startup-path coverage for BattleSim using the extracted startup seam.
+- The startup tests verify display centering for both splash and startup frame in each app.
+- The startup tests verify, using the narrowest reliable observable assertion available, that the splash remains above the frame while both are visible.
+- The GUI test target still builds and runs successfully with the new startup coverage.
+
+Create test files in:
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+(Assumption: no new test files needed; validate in-place additions.)
+
+Implementation context for testing:
+- Strategic suite added `testStartupLaunchCreatesCenteredSplashAndMainFrame`.
+- BattleSim suite added `testStartupLaunchCreatesCenteredSplashAndBattleSimFrame`.
+- Both tests execute `createStartupSplashAndFrame(...)` directly with app-specific frame factories.
+- Tests discover newly created `wxSplashScreen` at runtime, verify splash/frame visibility and centering, then assert splash `wxSTAY_ON_TOP` style to validate above-frame behavior while visible.
+- Tests ensure splash image availability for harness runtime by copying/removing splash asset only when required for the expected startup path.
+
+Suggested test command(s):
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- If `xvfb-run` is unavailable: `cd tests/gui && make && ./GuiTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/startup-splash-frame-centering/subtask-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
