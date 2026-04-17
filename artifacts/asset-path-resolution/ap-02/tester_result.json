@@ -1,0 +1,33 @@
+{
+  "status": "success",
+  "task": "AP-02 asset-path-resolution",
+  "branch": "asset-path-resolution-ap-02-tester-20260417",
+  "base_branch": "image-path",
+  "test_commit": "60c82ba318759a12af5de670969808ece6740722",
+  "test_files_modified": [
+    "tests/core/WXIconCacheTest.h",
+    "tests/core/WXIconCacheTest.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/BattleSimGuiLiveTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests && make && ./SSWTests",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && make && ./SSWTests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && ./SSWTests && ./tactical/TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests (attempted optional; timed out and stopped)"
+  ],
+  "totals": {
+    "sswtests_passed": 165,
+    "tacticaltests_passed": 94,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts": [
+    "artifacts/asset-path-resolution/ap-02/tester_report.md",
+    "artifacts/asset-path-resolution/ap-02/tester_result.json",
+    "artifacts/asset-path-resolution/ap-02/documenter_prompt.txt"
+  ]
+}

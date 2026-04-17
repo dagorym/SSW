@@ -1,0 +1,65 @@
+You are the Documenter Agent.
+
+Task summary:
+- AP-02 migrated tactical/startup direct image loads to `FGameConfig::resolveAssetPath(...)` and aligned `WXIconCache` to the shared resolver seam.
+- Tester validated these changes with updated source-contract and runtime-path tests.
+
+Acceptance criteria validated:
+- `FBattleDisplay` uses the shared resolver for `data/zoom.png`.
+- `FBattleBoard`, `FBattleScreen`, and `WXStartupLaunch` no longer depend on raw executable-relative asset concatenation for direct image loads.
+- `WXIconCache` follows the same underlying asset-resolution policy through `FGameConfig::resolveAssetPath(...)`.
+- No affected call site uses a hardcoded absolute machine path.
+
+Implementation branch or worktree context:
+- Coordination base branch: `image-path`
+- Implementer branch: `asset-path-resolution-ap-02-implementer-20260417`
+- Tester branch/worktree: `asset-path-resolution-ap-02-tester-20260417` at `/home/tstephen/repos/SSW-worktrees/asset-path-resolution-ap-02-tester-20260417`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- Implementer-modified:
+  - `src/tactical/FBattleDisplay.cpp`
+  - `src/tactical/FBattleBoard.cpp`
+  - `src/tactical/FBattleScreen.cpp`
+  - `include/gui/WXStartupLaunch.h`
+  - `src/gui/WXIconCache.cpp`
+- Tester-modified:
+  - `tests/core/WXIconCacheTest.h`
+  - `tests/core/WXIconCacheTest.cpp`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+  - `tests/gui/StrategicGuiLiveTest.cpp`
+  - `tests/gui/BattleSimGuiLiveTest.cpp`
+
+Test commit:
+- `60c82ba318759a12af5de670969808ece6740722`
+
+Commands executed:
+- `cd tests && make && ./SSWTests` (baseline caught legacy expectation)
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && make && ./SSWTests && make tactical-tests && ./tactical/TacticalTests` (post-change pass)
+- `cd tests && ./SSWTests && ./tactical/TacticalTests` (pass-summary confirmation)
+- Optional GUI smoke attempted: `cd tests/gui && make && xvfb-run -a ./GuiTests` (timed out in environment)
+
+Final test outcomes:
+- `SSWTests`: `OK (165 tests)`
+- `TacticalTests`: `OK (94 tests)`
+- Acceptance criteria listed above are validated by updated tests.
+
+Documentation context:
+- Likely documentation impact: developer/testing notes around shared asset resolution seam and updated test coverage expectations for startup splash/icon loading.
+- Confirmed behavior changes: tactical/startup/icon path loads now consistently route through `FGameConfig::resolveAssetPath(...)`.
+
+Plan and diff context:
+- Story context: asset-path-resolution AP-02 implementer/tester workflow artifacts in `artifacts/asset-path-resolution/ap-02`.
+- Comparison base guidance: use `image-path` as the most likely review base (explicitly provided by coordinator).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/asset-path-resolution/ap-02`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
