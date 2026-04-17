@@ -1,0 +1,56 @@
+{
+  "status": "success",
+  "task": "asset-path-resolution",
+  "branch": "image-path-reviewer-20260417",
+  "review_target_branch": "image-path",
+  "plan_path": "plans/asset-path-resolution-plan.md",
+  "reviewer_definition": "/home/tstephen/repos/agents/agents/reviewer.md",
+  "outcome": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 1,
+  "feature_completeness_summary": "AP-01 added a shared asset resolver in FGameConfig, AP-02 migrated the targeted tactical/startup/icon-loading call sites to it, and AP-03 locked the resolver and zoom-image regression coverage without leaving plan gaps.",
+  "findings": [
+    {
+      "severity": "NOTE",
+      "summary": "GuiTests hit an environment-specific Wayland/Xvfb connection reset during reviewer reruns; non-GUI validation and focused source/runtime coverage still support the feature verdict."
+    }
+  ],
+  "follow_up_feature_requests": [],
+  "inputs_reviewed": [
+    "artifacts/asset-path-resolution/ap-01",
+    "artifacts/asset-path-resolution/ap-02",
+    "artifacts/asset-path-resolution/ap-03",
+    "include/core/FGameConfig.h",
+    "src/core/FGameConfig.cpp",
+    "src/tactical/FBattleDisplay.cpp",
+    "src/tactical/FBattleBoard.cpp",
+    "src/tactical/FBattleScreen.cpp",
+    "include/gui/WXStartupLaunch.h",
+    "src/gui/WXIconCache.cpp",
+    "tests/core/FGameConfigTest.h",
+    "tests/core/FGameConfigTest.cpp",
+    "tests/core/WXIconCacheTest.h",
+    "tests/core/WXIconCacheTest.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/BattleSimGuiLiveTest.cpp",
+    "AGENTS.md",
+    "doc/DesignNotes.md"
+  ],
+  "validation_commands": [
+    "cd tests && ./SSWTests",
+    "cd tests && ./SSWTests",
+    "cd tests && make tactical-tests >/dev/null && ./tactical/TacticalTests",
+    "cd tests/gui && xvfb-run -a ./GuiTests"
+  ],
+  "artifact_files_written": [
+    "artifacts/asset-path-resolution/reviewer_report.md",
+    "artifacts/asset-path-resolution/reviewer_result.json"
+  ],
+  "assumptions": [
+    "The shared reviewer definition at /home/tstephen/repos/agents/agents/reviewer.md governs because no repository-local reviewer definition was provided in the assigned worktree.",
+    "Root-executable asset resolution is adequately covered by the delivered resolver logic and focused regression/tests even though reviewer reruns exercised test-tree binaries."
+  ]
+}
