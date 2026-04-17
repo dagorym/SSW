@@ -1090,10 +1090,13 @@ window-manager-dependent placement. On the SSW side, `FApp::OnInit()` now uses
 `wxDefaultPosition` instead of the old hard-coded startup coordinates and
 `FMainFrame` also centers itself during construction, so both the shared helper
 contract and the strategic frame constructor reinforce deterministic startup
-placement. The paired GUI regression updates lock this down by source-auditing
-the helper ordering/style tokens for both apps and by asserting live display
-centering for the strategic startup frame alongside the existing BattleSim
-launch-centering coverage.
+placement. The paired GUI regression updates now cover both startup seams
+directly: `StrategicGuiLiveTest` and `BattleSimGuiLiveTest` each call
+`createStartupSplashAndFrame(...)`, assert that the splash and startup frame
+exist and remain visible together, verify display centering for both windows,
+and treat the splash window's `wxSTAY_ON_TOP` style bit as the narrowest
+reliable observable that the splash remains above the frame while it is still
+shown.
 
 Validation command:
 
