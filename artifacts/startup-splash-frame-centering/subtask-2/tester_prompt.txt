@@ -1,0 +1,46 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented startup placement fixes so splash and initial frame center deterministically in both SSW and BattleSim, removed legacy fixed SSW startup position, and restored splash default taskbar/top-level semantics.
+
+Modified files:
+- include/gui/WXStartupLaunch.h
+- src/FApp.cpp
+- src/FMainFrame.cpp
+
+Acceptance criteria to validate (from Planner):
+- SSW startup centers the splash on screen and opens the initial `FMainFrame` centered on screen.
+- BattleSim startup centers the splash on screen and opens the initial `BattleSimFrame` centered on screen.
+- The splash and startup frame may coexist, with the splash remaining above the frame while visible.
+- `FMainFrame` no longer relies on the old fixed startup position.
+- The splash style no longer strips away wx splash-window default behavior needed for expected top-level/taskbar handling.
+- Startup placement is deterministic for both apps.
+
+Create test files in:
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+
+Implementation context for testing:
+- `src/FApp.cpp`: `FMainFrame` startup construction changed from `wxPoint(50,50)` to `wxDefaultPosition`.
+- `src/FMainFrame.cpp`: constructor now calls `CentreOnScreen(wxBOTH)` after layout setup.
+- `include/gui/WXStartupLaunch.h`:
+  - splash style changed from `wxSIMPLE_BORDER | wxSTAY_ON_TOP` to `wxSIMPLE_BORDER | wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP`.
+  - startup helper now explicitly calls `frame->CentreOnScreen(wxBOTH)` before `frame->Show(true)`.
+- Splash/frame coexistence behavior is preserved by keeping splash creation before frame creation/show and maintaining `wxSTAY_ON_TOP`.
+
+Suggested test command(s):
+- Primary: `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- Environment fallback used during implementation (assumption when `xvfb-run` is unavailable):
+  - `cd tests/gui && Xvfb :99 -screen 0 1400x900x24 >/dev/null 2>&1 &`
+  - `cd tests/gui && DISPLAY=:99 ./GuiTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/startup-splash-frame-centering/subtask-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
