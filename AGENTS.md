@@ -124,6 +124,12 @@ Main test runner: `tests/SSWTests.cpp`
 
 The top-level `tests/Makefile` now bootstraps the required `../src/*` model/gui libraries before linking `SSWTests`, so `cd tests && make` is expected to work from a clean repository state without a separate root build first.
 
+When you need a fresh top-level rebuild of the tactical standalone runner before executing it, use:
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+```
+That target runs the tactical module clean step before relinking `tests/tactical/TacticalTests`, which is the preferred hygiene path from the top-level `tests/` makefile when validating tactical-only changes.
+
 To run a **single module's tests**, each module under `tests/` also has its own standalone runner:
 ```bash
 cd tests/tactical && make && ./TacticalTests   # tactical module only
