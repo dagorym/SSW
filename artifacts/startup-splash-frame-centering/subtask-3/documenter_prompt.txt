@@ -1,0 +1,56 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate and document startup splash/frame centering coverage updates for both SSW and BattleSim startup paths.
+- Implementer added live startup-seam GUI regression tests to verify startup splash + startup frame creation, visibility overlap, display centering, and splash-above-frame behavior via `wxSTAY_ON_TOP`.
+
+Acceptance criteria:
+- GuiTests includes startup-path coverage for SSW using the extracted startup seam.
+- GuiTests includes startup-path coverage for BattleSim using the extracted startup seam.
+- The startup tests verify display centering for both splash and startup frame in each app.
+- The startup tests verify, using the narrowest reliable observable assertion available, that the splash remains above the frame while both are visible.
+- The GUI test target still builds and runs successfully with the new startup coverage.
+
+Implementation and tester context:
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-3-tester-20260416`
+- Tester branch: `window-centering-subtask-3-tester-20260416`
+- Parent implementer branch: `window-centering-subtask-3-implementer-20260416`
+- Assumption: compare documentation-relevant changes against the parent implementer branch (or mainline equivalent if your workflow standard differs).
+
+Files modified by Implementer and Tester that may affect documentation review:
+- Implementer-modified test files:
+  - `tests/gui/StrategicGuiLiveTest.h`
+  - `tests/gui/StrategicGuiLiveTest.cpp`
+  - `tests/gui/BattleSimGuiLiveTest.h`
+  - `tests/gui/BattleSimGuiLiveTest.cpp`
+- Tester artifact files:
+  - `artifacts/startup-splash-frame-centering/subtask-3/tester_report.md`
+  - `artifacts/startup-splash-frame-centering/subtask-3/tester_result.json`
+  - `artifacts/startup-splash-frame-centering/subtask-3/documenter_prompt.txt`
+
+Test commands executed:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (failed only because `xvfb-run` is not installed)
+- `cd tests/gui && ./GuiTests` (passed)
+
+Final test outcomes:
+- `GuiTests`: **OK (31 tests)**
+- Acceptance criteria status from tester validation: all criteria **MET**.
+
+Commit context:
+- Tester test commit hash: `No Changes Made` (no tester-side test edits were required; implementer tests were already valid and passing).
+- Artifact commit follows this prompt creation.
+
+Plan/story guidance:
+- Subtask: startup splash/frame centering, plan subtask 3 tester stage.
+- Review startup-seam coverage and any docs that describe GUI startup behavior, centering expectations, and regression-test scope.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/startup-splash-frame-centering/subtask-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
