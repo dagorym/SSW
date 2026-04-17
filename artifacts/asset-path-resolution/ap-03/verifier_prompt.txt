@@ -1,0 +1,64 @@
+You are the Verifier Agent.
+
+Task summary:
+- Focused `FGameConfig` regression coverage now locks in repo-asset lookup plus executable-parent fallback behavior in `resolveAssetPath(...)`.
+- Existing tactical and `WXIconCache` source-contract tests still guard against raw `getBasePath()+...` asset loading regressions.
+- Documentation was updated in `AGENTS.md` so contributor guidance reflects the shipped focused coverage rather than a broader harness.
+
+Acceptance criteria to verify:
+- Regression coverage proves the new `FGameConfig` asset resolver can locate a known repo asset without assuming the executable already lives at the repo root.
+- Regression coverage protects the tactical zoom-image fix from reverting to raw `getBasePath()+"data/zoom.png"` concatenation.
+- If `WXIconCache` changed, its tests remain aligned with the shared resolver behavior.
+- The new coverage remains focused and does not depend on a new broad end-to-end harness.
+
+Implementation branch or worktree context:
+- Base branch: `image-path`
+- Tester branch/worktree: `asset-path-resolution-ap-03-tester-20260417` at `/home/tstephen/repos/SSW-worktrees/asset-path-resolution-ap-03-tester-20260417`
+- Documenter branch/worktree: `asset-path-resolution-ap-03-documenter-20260417` at `/home/tstephen/repos/SSW-worktrees/asset-path-resolution-ap-03-documenter-20260417`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/core/FGameConfigTest.h`
+- `tests/core/FGameConfigTest.cpp`
+- `AGENTS.md`
+- `artifacts/asset-path-resolution/ap-03/implementer_report.md`
+- `artifacts/asset-path-resolution/ap-03/implementer_result.json`
+- `artifacts/asset-path-resolution/ap-03/tester_prompt.txt`
+- `artifacts/asset-path-resolution/ap-03/tester_report.md`
+- `artifacts/asset-path-resolution/ap-03/tester_result.json`
+- `artifacts/asset-path-resolution/ap-03/documenter_prompt.txt`
+- `artifacts/asset-path-resolution/ap-03/documenter_report.md`
+- `artifacts/asset-path-resolution/ap-03/documenter_result.json`
+- `artifacts/asset-path-resolution/ap-03/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make && ./SSWTests`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `git --no-pager diff --name-only image-path...HEAD`
+- `git --no-pager diff -- AGENTS.md`
+
+Final test outcomes:
+- Tester validated all acceptance criteria with focused existing plus implementer-added coverage.
+- `cd tests && make && ./SSWTests` -> OK (`166/166`)
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` -> OK (`94/94`)
+- No tester-side test file edits were required.
+
+Plan and review context:
+- Assumption: no separate story plan path was required for verification because the tester handoff prompt and acceptance criteria in `artifacts/asset-path-resolution/ap-03/documenter_prompt.txt` fully scoped this focused test-and-doc change.
+- Review repository guidance from `AGENTS.md`; if any plan-source or convention detail seems missing, infer it from repository context when safe and label the choice as an assumption.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/asset-path-resolution/ap-03`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
