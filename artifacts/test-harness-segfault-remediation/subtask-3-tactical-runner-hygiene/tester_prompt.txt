@@ -1,0 +1,37 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate Subtask 3 tactical runner build hygiene: top-level tests makefile now includes a `tactical-tests` target that forces a clean rebuild of `tests/tactical/TacticalTests` before execution.
+
+Modified files:
+- tests/Makefile
+
+Acceptance criteria to validate (from Planner):
+- The top-level tests makefile exposes a tactical-runner build target that rebuilds `tests/tactical/TacticalTests`.
+- The target produces a fresh tactical runner binary from current sources and linked libraries.
+- Running the freshly rebuilt tactical runner completes successfully in the current tree.
+- The existing top-level `SSWTests` build path remains intact.
+
+Create test files in:
+- No new tester-owned source files are expected (planner guidance).
+- Assumption: validation should remain command-based, focused on existing make/test runners under `tests/` and `tests/tactical/`.
+
+Implementation context for testing:
+- Added `tactical-tests` target in `tests/Makefile`.
+- Target command is `cd tactical; make clean TacticalTests` to avoid stale standalone tactical runner binaries.
+- Default `tests` top-level build path for `SSWTests` was intentionally left unchanged.
+
+Suggested test command(s):
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && make && ./SSWTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
