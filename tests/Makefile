@@ -65,6 +65,9 @@ model-deps:
 gui-tests: model-deps
 	@ cd gui; $(MAKE) all
 
+tactical-tests:
+	@ cd tactical; $(MAKE) clean TacticalTests
+
 libcoreTests.a:
 	@ cd core; $(MAKE) $@
 	
