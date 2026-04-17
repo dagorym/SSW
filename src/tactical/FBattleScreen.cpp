@@ -183,11 +183,11 @@ int FBattleScreen::setupFleets(FleetList *aList, FleetList *dList, bool planet, 
 	if(planet){
 		FGameConfig &gc = FGameConfig::create();
 		ImageList iList;
-		wxImage p0(gc.getBasePath()+"icons/planet_01.png");
+		wxImage p0(gc.resolveAssetPath("icons/planet_01.png"));
 		iList.push_back(p0);
-		wxImage p1(gc.getBasePath()+"icons/planet_02.png");
+		wxImage p1(gc.resolveAssetPath("icons/planet_02.png"));
 		iList.push_back(p1);
-		wxImage p2(gc.getBasePath()+"icons/planet_03.png");
+		wxImage p2(gc.resolveAssetPath("icons/planet_03.png"));
 		iList.push_back(p2);
 		m_display->setImageList(iList);
 		m_map->setPlanetImages(iList);

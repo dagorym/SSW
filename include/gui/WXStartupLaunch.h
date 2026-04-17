@@ -22,7 +22,7 @@ inline wxFrame* createStartupSplashAndFrame(wxApp& app,
 			const int splashTimeout = 2000) {
 	wxBitmap bitmap;
 	FGameConfig &gc = FGameConfig::create();
-	if (bitmap.LoadFile(gc.getBasePath() + "data/splash.png", wxBITMAP_TYPE_PNG)) {
+	if (bitmap.LoadFile(gc.resolveAssetPath("data/splash.png"), wxBITMAP_TYPE_PNG)) {
 		wxSplashScreen* splash = new wxSplashScreen(bitmap,
 				wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT,
 				splashTimeout,

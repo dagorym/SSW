@@ -24,7 +24,7 @@ m_nRow = 39;
 setConstants(1.0);
 computeCenters();
 FGameConfig &gc = FGameConfig::create();
-m_maskingScreenIcon = new wxImage(gc.getBasePath()+"icons/MaskingScreen.png");
+	m_maskingScreenIcon = new wxImage(gc.resolveAssetPath("icons/MaskingScreen.png"));
 
 SetScrollRate( (int)(2*m_d), (int)(3*m_a) );
 SetVirtualSize(m_width,m_height);

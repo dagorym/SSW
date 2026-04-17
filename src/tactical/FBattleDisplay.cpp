@@ -34,7 +34,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	SetMinSize( wxSize( -1,120 ) );
 	FGameConfig &gc = FGameConfig::create();
 
-	m_zoomImage.LoadFile(gc.getBasePath()+"data/zoom.png");
+	m_zoomImage.LoadFile(gc.resolveAssetPath("data/zoom.png"));
 
 	/// set up tactical controls using sizer-based layout to keep spin control sizing stable
 	m_spinCtrl1 = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS | wxSP_VERTICAL, 0, 55, 10 );

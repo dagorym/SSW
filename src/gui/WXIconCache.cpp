@@ -21,15 +21,8 @@ const wxImage & WXIconCache::get(const std::string & filename) {
         return it->second;
     }
     FGameConfig & gc = FGameConfig::getGameConfig();
-    std::string fullPath = gc.getBasePath() + filename;
+    std::string fullPath = gc.resolveAssetPath(filename);
     wxImage img(fullPath);
-    if (!img.IsOk()) {
-        std::string fallbackPath = gc.getBasePath() + "../" + filename;
-        wxImage fallback(fallbackPath);
-        if (fallback.IsOk()) {
-            img = fallback;
-        }
-    }
     if (!img.IsOk()) {
         wxLogWarning("WXIconCache: failed to load image '%s'", fullPath.c_str());
         m_cache[filename] = wxImage();
