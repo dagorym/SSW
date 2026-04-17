@@ -66,12 +66,12 @@ Installing the simulation is quite simple, just unpack the zip file (if on a Win
 
 # Starting Up the Simulator
 Starting up the simulator is quite easy.  Simply execute the SSW (or SSW.exe) program in the bin directory where you installed it or click on the desktop icon you created during installation.  This will launch the program.
-Upon startup the simulator will display the splash screen shown in figure 1 while it initializes the system.  The splash screen disappears after about three seconds leaving you with just the main simulation window.
+Upon startup the simulator will display the splash screen shown in figure 1 centered on the active display while it initializes the system.  The main simulation window also opens centered on screen, and on some systems it may appear briefly while the splash is still visible above it.  The splash screen disappears after about three seconds leaving you with just the main simulation window.
 ![Frame1](images/figure28.png)
 *Figure 1:   The splash screen for the Second Sathar War Simulator displayed at startup.*
 
 # The Main Window
-Once started you will be presented with a mostly empty main window as shown in figure 2.  Once a game is underway, the main window will be filled with a strategic map of the Frontier showing all the star systems and jump routes between those systems.  However, initially it is blank with only the menu bar at the top and the status bar at the bottom.
+Once started you will be presented with a mostly empty main window as shown in figure 2.  The startup window opens centered on screen.  Once a game is underway, the main window will be filled with a strategic map of the Frontier showing all the star systems and jump routes between those systems.  However, initially it is blank with only the menu bar at the top and the status bar at the bottom.
 The main window contains four top level menus (File, Show, Turn and Help).  Each of these menus are described in the subsections below.
 
 ## File Menu

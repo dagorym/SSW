@@ -1077,6 +1077,24 @@ parent-backed tactical and strategic/BattleSim dialogs centered on their owning
 window, and deterministic screen-centered fallback behavior for representative
 parentless modal launches.
 
+The startup-splash centering follow-up extended that deterministic placement
+policy to the first top-level window shown by each application. The shared
+`createStartupSplashAndFrame(...)` helper in `include/gui/WXStartupLaunch.h`
+still owns the common wx startup flow for both `FApp` and `FBattleSimApp`, but
+it now centers the created frame on screen before `Show(true)` and keeps the
+splash on the framework-supported style path by combining
+`wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP` with the centered splash timeout mode.
+That preserves the intended "splash may coexist with the startup frame, but the
+splash stays above it while visible" behavior without falling back to
+window-manager-dependent placement. On the SSW side, `FApp::OnInit()` now uses
+`wxDefaultPosition` instead of the old hard-coded startup coordinates and
+`FMainFrame` also centers itself during construction, so both the shared helper
+contract and the strategic frame constructor reinforce deterministic startup
+placement. The paired GUI regression updates lock this down by source-auditing
+the helper ordering/style tokens for both apps and by asserting live display
+centering for the strategic startup frame alongside the existing BattleSim
+launch-centering coverage.
+
 Validation command:
 
 ```bash
