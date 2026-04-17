@@ -1,0 +1,55 @@
+You are the Documenter Agent.
+
+Task summary:
+- Plan subtask 1: startup splash/frame creation was extracted into shared helper seam `createStartupSplashAndFrame(wxApp&, FStartupFrameFactory, int)` and both startup paths now delegate to it.
+
+Acceptance criteria to document against:
+- The SSW app startup path uses an extracted, testable seam for splash and initial-frame creation.
+- The BattleSim app startup path uses an extracted, testable seam for splash and initial-frame creation.
+- `FApp::OnInit()` and `FBattleSimApp::OnInit()` delegate to the extracted seam instead of duplicating startup creation logic inline.
+- The extracted seam preserves concurrent splash/frame startup behavior.
+
+Implementation context:
+- Worktree: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-1-tester-20260416`
+- Branch: `window-centering-subtask-1-tester-20260416`
+- Parent implementer branch: `window-centering-subtask-1-implementer-20260416`
+- Shared artifact directory (repo-relative): `artifacts/startup-splash-frame-centering/subtask-1`
+
+Files modified by Implementer:
+- `include/gui/WXStartupLaunch.h`
+- `src/FApp.cpp`
+- `src/FBattleSimApp.cpp`
+- `artifacts/startup-splash-frame-centering/subtask-1/implementer_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-1/implementer_result.json`
+
+Files modified by Tester:
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+- `artifacts/startup-splash-frame-centering/subtask-1/tester_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-1/tester_result.json`
+- `artifacts/startup-splash-frame-centering/subtask-1/documenter_prompt.txt`
+
+Tester commit hash (test changes):
+- `752f085f168e658312ce16ba1bd36b94967b410d`
+
+Commands executed:
+- `cd tests/gui && make && (xvfb-run -a ./GuiTests || ./GuiTests)`
+  - `xvfb-run` unavailable in environment, fallback `./GuiTests` executed successfully.
+
+Final test outcomes:
+- GUI suite result: `OK (29 tests)`
+- Added source-contract assertions proving startup delegation and helper behavior/order.
+
+Plan/story guidance:
+- This is testing/documentation follow-through for startup splash/frame centering plan subtask 1.
+- Focus docs on extraction seam intent, dual-app delegation, and preserved startup behavior.
+
+Comparison-base guidance:
+- Use `7ca5137` (`master` baseline shown in this worktree history) as the primary pre-change comparison point.
+- Also review implementer commit `950b687` and tester commit `752f085` for the exact narrative.
+
+Process requirements:
+- Continue through the full documenter workflow in the same run when blocking inputs are present.
+- Infer missing plan/base/artifact/doc-convention details from repository context when safe instead of treating them as blockers.
+- Reuse the same shared artifact directory: `artifacts/startup-splash-frame-centering/subtask-1`.
+- Do not report success unless all required artifacts exist and all changes are committed.

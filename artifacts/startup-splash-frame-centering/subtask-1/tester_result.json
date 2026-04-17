@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "subtask": "startup-splash-frame-centering/subtask-1",
+  "branch": "window-centering-subtask-1-tester-20260416",
+  "test_commit_hash": "752f085f168e658312ce16ba1bd36b94967b410d",
+  "test_files_modified": [
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/BattleSimGuiLiveTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests/gui && make && (xvfb-run -a ./GuiTests || ./GuiTests)"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "existing_tests_modified": 2,
+    "tests_passed": 29,
+    "tests_failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/startup-splash-frame-centering/subtask-1/tester_report.md",
+    "artifacts/startup-splash-frame-centering/subtask-1/tester_result.json",
+    "artifacts/startup-splash-frame-centering/subtask-1/documenter_prompt.txt"
+  ]
+}
