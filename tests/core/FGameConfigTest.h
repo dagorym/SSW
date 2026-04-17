@@ -27,6 +27,7 @@ class FGameConfigTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testResolveAssetPathReturnsUnchangedForEmptyAndAbsolutePaths );
 	CPPUNIT_TEST( testResolveAssetPathFindsRepoAssetWhenRunningFromTests );
 	CPPUNIT_TEST( testResolveAssetPathNormalizesLeadingDotSlashAndSeparators );
+	CPPUNIT_TEST( testResolveAssetPathIncludesExecutableParentFallbackContract );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -46,6 +47,7 @@ public:
 	void testResolveAssetPathReturnsUnchangedForEmptyAndAbsolutePaths();
 	void testResolveAssetPathFindsRepoAssetWhenRunningFromTests();
 	void testResolveAssetPathNormalizesLeadingDotSlashAndSeparators();
+	void testResolveAssetPathIncludesExecutableParentFallbackContract();
 };
 
 }

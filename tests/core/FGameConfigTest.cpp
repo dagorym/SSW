@@ -8,6 +8,7 @@
 #include "FGameConfigTest.h"
 #include <cstdio>
 #include <fstream>
+#include <iterator>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -18,6 +19,21 @@ bool pathExists(const std::string &path)
 {
 	std::ifstream stream(path.c_str(), std::ios::binary);
 	return stream.good();
+}
+
+std::string readFile(const std::string &path)
+{
+	std::ifstream stream(path.c_str(), std::ios::binary);
+	CPPUNIT_ASSERT_MESSAGE(path, stream.good());
+	return std::string((std::istreambuf_iterator<char>(stream)),
+			std::istreambuf_iterator<char>());
+}
+
+void assertContains(const std::string &haystack, const std::string &needle)
+{
+	CPPUNIT_ASSERT_MESSAGE(
+			std::string("Expected to find '") + needle + "' in inspected source",
+			haystack.find(needle) != std::string::npos);
 }
 }
 
@@ -160,6 +176,20 @@ void FGameConfigTest::testResolveAssetPathNormalizesLeadingDotSlashAndSeparators
 	const std::string resolved = m_c1->resolveAssetPath("./data\\zoom.png");
 	CPPUNIT_ASSERT(!resolved.empty());
 	CPPUNIT_ASSERT(pathExists(resolved));
+}
+
+void FGameConfigTest::testResolveAssetPathIncludesExecutableParentFallbackContract(){
+	// AC: resolver keeps executable-parent fallback so binaries in child dirs still find repo assets.
+	const std::string sourcePath =
+			std::string(CORE_TEST_REPO_ROOT) + "/src/core/FGameConfig.cpp";
+	const std::string source = readFile(sourcePath);
+
+	assertContains(source,
+			"const std::string executableParentCandidate =");
+	assertContains(source,
+			"joinPath(m_executablePath, std::string(\"../\") + normalizedAssetPath);");
+	assertContains(source, "if (pathExists(executableParentCandidate)) {");
+	assertContains(source, "return executableParentCandidate;");
 }
 
 }
