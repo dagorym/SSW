@@ -1,0 +1,67 @@
+You are the Verifier Agent.
+
+Task summary:
+- Strategic adapter regression coverage now clearly separates `WXStrategicUI`'s safe no-runtime guard behavior from the valid parentless retreat-modal path under a live wx runtime.
+- Tester rebuilt and reran the required regression suites successfully, and documentation was updated to record the distinction in repository guidance.
+
+Acceptance criteria to verify:
+- Core strategic adapter tests explicitly cover the safe no-runtime failure path.
+- Live GUI tests still cover the parentless retreat-dialog path in a valid wx runtime.
+- The coverage makes the distinction between “null parent” and “no usable UI context” obvious to future maintainers.
+- Freshly rebuilt `SSWTests` passes without crashing.
+- Repository documentation now reflects the null-parent versus no-runtime distinction for strategic adapter regression coverage.
+
+Implementation branch or worktree context:
+- Branch: `test-fixes-subtask-2-documenter-20260417`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/test-fixes-subtask-2-documenter-20260417`
+- Comparison base assumption: `test-fixes` merge-base `a441f16dd57dbac098c47161371b3cc347086856`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/core/WXStrategicUITest.h`
+- `tests/core/WXStrategicUITest.cpp`
+- `tests/gui/StrategicGuiLiveTest.h`
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `AGENTS.md`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/implementer_report.md`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/implementer_result.json`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/tester_prompt.txt`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/tester_report.md`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/tester_result.json`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/documenter_prompt.txt`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/documenter_report.md`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/documenter_result.json`
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make && ./SSWTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Final test outcomes:
+- `SSWTests` passed: 162/162.
+- `GuiTests` passed: 33/33.
+- No crashes observed.
+- Runtime-guard distinction validated: no-runtime path safely returns cancel/no-op regardless of parent pointer; valid runtime still supports the parentless retreat modal flow.
+
+Plan and review context:
+- Story context: Coordinator-managed Subtask 2 for test-harness segfault remediation strategic adapter tests.
+- Assumption: use the `test-fixes` merge-base plus commit `8760deb` (`Tighten strategic adapter runtime guard coverage`) as the primary diff/review anchor for implementation intent.
+- Repository guidance file: `AGENTS.md`.
+- Agent-resolution guidance is available from `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`; infer any additional convention-file details from repository context when safe.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation file together.
+- Confirm `AGENTS.md` now makes the null-parent versus no-usable-runtime distinction obvious without contradicting the implemented tests.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
