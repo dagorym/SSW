@@ -1164,6 +1164,30 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 		CPPUNIT_ASSERT(contents.find(checks[i].centerOnParentCall) != std::string::npos);
 		CPPUNIT_ASSERT(contents.find(checks[i].centerFallbackCall) != std::string::npos);
 	}
+
+	const std::string appContents = readFileText("../../src/FApp.cpp");
+	CPPUNIT_ASSERT(!appContents.empty());
+	CPPUNIT_ASSERT(appContents.find("createStartupSplashAndFrame(") != std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("return new FMainFrame(") != std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("wxSplashScreen") == std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("bitmap.LoadFile") == std::string::npos);
+
+	const std::string launchHelperContents = readFileText("../../include/gui/WXStartupLaunch.h");
+	CPPUNIT_ASSERT(!launchHelperContents.empty());
+	CPPUNIT_ASSERT(launchHelperContents.find("wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("frame->Show(true);") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("app.SetTopWindow(frame);") != std::string::npos);
+	const size_t splashCreatePos = launchHelperContents.find("new wxSplashScreen");
+	const size_t frameCreatePos = launchHelperContents.find("wxFrame *frame = createFrame();");
+	const size_t frameShowPos = launchHelperContents.find("frame->Show(true);");
+	const size_t setTopWindowPos = launchHelperContents.find("app.SetTopWindow(frame);");
+	CPPUNIT_ASSERT(splashCreatePos != std::string::npos);
+	CPPUNIT_ASSERT(frameCreatePos != std::string::npos);
+	CPPUNIT_ASSERT(frameShowPos != std::string::npos);
+	CPPUNIT_ASSERT(setTopWindowPos != std::string::npos);
+	CPPUNIT_ASSERT(splashCreatePos < frameCreatePos);
+	CPPUNIT_ASSERT(frameCreatePos < frameShowPos);
+	CPPUNIT_ASSERT(frameShowPos < setTopWindowPos);
 }
 
 void StrategicGuiLiveTest::testBattleResultsDialogUpdatesShipStatistics() {

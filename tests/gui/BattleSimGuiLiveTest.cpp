@@ -493,6 +493,20 @@ void BattleSimGuiLiveTest::testBattleSimLaunchDialogsRetainFirstShowSizingContra
 		CPPUNIT_ASSERT(contents.find(checks[i].fitCall) != std::string::npos);
 		CPPUNIT_ASSERT(contents.find(checks[i].minSizeCall) != std::string::npos);
 	}
+
+	const std::string appContents = readFileText("src/FBattleSimApp.cpp");
+	CPPUNIT_ASSERT(!appContents.empty());
+	CPPUNIT_ASSERT(appContents.find("createStartupSplashAndFrame(") != std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("return new BattleSimFrame();") != std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("wxSplashScreen") == std::string::npos);
+	CPPUNIT_ASSERT(appContents.find("bitmap.LoadFile") == std::string::npos);
+
+	const std::string launchHelperContents = readFileText("include/gui/WXStartupLaunch.h");
+	CPPUNIT_ASSERT(!launchHelperContents.empty());
+	CPPUNIT_ASSERT(launchHelperContents.find("if (createFrame == nullptr)") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("frame->Show(true);") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("app.SetTopWindow(frame);") != std::string::npos);
 }
 
 void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage() {
