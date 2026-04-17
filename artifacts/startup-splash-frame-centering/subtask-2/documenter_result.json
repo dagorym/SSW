@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "task": "startup-splash-frame-centering",
+  "subtask": "subtask-2",
+  "branch": "window-centering-subtask-2-documenter-20260416",
+  "commit_hash": "4fa1f89add61ea063e63916cb3a420d7ec0451aa",
+  "documentation_files": [
+    "AGENTS.md",
+    "doc/UsersGuide.md",
+    "doc/DesignNotes.md"
+  ],
+  "artifact_files": [
+    "artifacts/startup-splash-frame-centering/subtask-2/documenter_report.md",
+    "artifacts/startup-splash-frame-centering/subtask-2/documenter_result.json",
+    "artifacts/startup-splash-frame-centering/subtask-2/verifier_prompt.txt"
+  ],
+  "summary": "Documented the deterministic startup centering and splash-style behavior for SSW and BattleSim in contributor, design, and user-facing docs while preserving the documentation commit hash from the first commit."
+}

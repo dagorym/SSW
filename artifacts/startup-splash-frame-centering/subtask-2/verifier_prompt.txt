@@ -1,0 +1,79 @@
+You are the Verifier Agent.
+
+Task summary:
+- Startup placement fixes were implemented so SSW and BattleSim startup splash/frame placement is deterministic.
+- Legacy fixed SSW startup position was removed.
+- Splash style was updated to preserve expected splash/top-level behavior while remaining above startup frame during splash visibility.
+- Documentation was updated to record the shared startup seam contract, the deterministic startup placement behavior, and the user-visible SSW startup-window behavior.
+
+Acceptance criteria to verify:
+- SSW startup centers splash on screen and opens initial `FMainFrame` centered on screen.
+- BattleSim startup centers splash on screen and opens initial `BattleSimFrame` centered on screen.
+- Splash and startup frame may coexist, with splash remaining above frame while visible.
+- `FMainFrame` no longer relies on old fixed startup position.
+- Splash style no longer strips away wx splash-window default behavior needed for expected top-level/taskbar handling.
+- Startup placement is deterministic for both apps.
+
+Implementation branch or worktree context:
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-2-documenter-20260416`
+- Documenter branch: `window-centering-subtask-2-documenter-20260416`
+- Tester worktree/branch context: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-2-tester-20260416`, `window-centering-subtask-2-tester-20260416`
+- Parent implementer branch: `window-centering-subtask-2-implementer-20260416`
+- Assumed comparison context from repository history: implementer behavior commit `a5b065e7cac7deb0951ebd3c65b150beb3ff4bc4`, tester coverage commit `4e7ebf46534c9a1a71892af1476951d1a6640975`, documentation commit `4fa1f89add61ea063e63916cb3a420d7ec0451aa`, all on top of the `window-centering` line.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/gui/WXStartupLaunch.h`
+- `src/FApp.cpp`
+- `src/FMainFrame.cpp`
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+- `AGENTS.md`
+- `doc/UsersGuide.md`
+- `doc/DesignNotes.md`
+- `artifacts/startup-splash-frame-centering/subtask-2/implementer_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-2/implementer_result.json`
+- `artifacts/startup-splash-frame-centering/subtask-2/tester_prompt.txt`
+- `artifacts/startup-splash-frame-centering/subtask-2/tester_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-2/tester_result.json`
+- `artifacts/startup-splash-frame-centering/subtask-2/documenter_prompt.txt`
+- `artifacts/startup-splash-frame-centering/subtask-2/documenter_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-2/documenter_result.json`
+- `artifacts/startup-splash-frame-centering/subtask-2/verifier_prompt.txt`
+
+Commands executed:
+- `git --no-pager show a5b065e -- include/gui/WXStartupLaunch.h src/FApp.cpp src/FMainFrame.cpp`
+- `git --no-pager diff window-centering-subtask-2-implementer-20260416..window-centering-subtask-2-tester-20260416 -- tests/gui/StrategicGuiLiveTest.cpp tests/gui/BattleSimGuiLiveTest.cpp`
+- `git --no-pager diff -- AGENTS.md doc/UsersGuide.md doc/DesignNotes.md`
+- Tester validation already completed with:
+  - `cd tests/gui && make`
+  - `cd tests/gui && ./GuiTests`
+  - `cd tests/gui && make && ./GuiTests`
+
+Final test outcomes:
+- GUI suite passed (`OK (29 tests)`).
+- Tester-added source-contract assertions verify startup helper ordering, splash style tokens, removal of `wxPoint(50,50)`, and startup centering for SSW/BattleSim coverage.
+- Documentation outcome: contributor guidance, design notes, and the SSW user guide now reflect deterministic startup centering and splash/frame overlap behavior.
+
+Plan and review context:
+- Primary plan source (assumption confirmed from repository context): `plans/startup-splash-frame-centering-plan.md`, subtask 2.
+- Use the actual branch history and diffs as the source of truth over plan prose: implementation commit `a5b065e...`, tester commit `4e7ebf4...`, and documentation commit `4fa1f89...`.
+- Convention-file guidance: review `AGENTS.md` plus the shared named-agent resolution notes in `/home/tstephen/repos/agents/AGENTS_LOOKUP.md` if more workflow context is needed.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/UsersGuide.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/startup-splash-frame-centering/subtask-2`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
