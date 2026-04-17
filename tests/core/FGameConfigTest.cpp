@@ -12,6 +12,15 @@
 namespace FrontierTests {
 using namespace Frontier;
 
+namespace
+{
+bool pathExists(const std::string &path)
+{
+	std::ifstream stream(path.c_str(), std::ios::binary);
+	return stream.good();
+}
+}
+
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( FGameConfigTest );
 
@@ -128,6 +137,29 @@ void FGameConfigTest::testMultipleResetAndRecreateCyclesRemainFunctional(){
 
 		FGameConfig::reset();
 	}
+}
+
+void FGameConfigTest::testResolveAssetPathReturnsUnchangedForEmptyAndAbsolutePaths(){
+	// AC: resolver should pass empty and absolute paths through unchanged.
+	const std::string empty;
+	CPPUNIT_ASSERT(m_c1->resolveAssetPath(empty).empty());
+
+	const std::string absolutePath = "/abs/path/to/asset.png";
+	CPPUNIT_ASSERT(m_c1->resolveAssetPath(absolutePath) == absolutePath);
+}
+
+void FGameConfigTest::testResolveAssetPathFindsRepoAssetWhenRunningFromTests(){
+	// AC: repo-relative assets resolve to a usable existing path.
+	const std::string resolved = m_c1->resolveAssetPath("data/zoom.png");
+	CPPUNIT_ASSERT(!resolved.empty());
+	CPPUNIT_ASSERT(pathExists(resolved));
+}
+
+void FGameConfigTest::testResolveAssetPathNormalizesLeadingDotSlashAndSeparators(){
+	// AC: resolver should normalize ./ prefixes and path separators.
+	const std::string resolved = m_c1->resolveAssetPath("./data\\zoom.png");
+	CPPUNIT_ASSERT(!resolved.empty());
+	CPPUNIT_ASSERT(pathExists(resolved));
 }
 
 }

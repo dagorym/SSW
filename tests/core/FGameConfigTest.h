@@ -24,6 +24,9 @@ class FGameConfigTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testBasePathConsistentForProductionCallers );
 	CPPUNIT_TEST( testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls );
 	CPPUNIT_TEST( testMultipleResetAndRecreateCyclesRemainFunctional );
+	CPPUNIT_TEST( testResolveAssetPathReturnsUnchangedForEmptyAndAbsolutePaths );
+	CPPUNIT_TEST( testResolveAssetPathFindsRepoAssetWhenRunningFromTests );
+	CPPUNIT_TEST( testResolveAssetPathNormalizesLeadingDotSlashAndSeparators );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -40,6 +43,9 @@ public:
 	void testBasePathConsistentForProductionCallers();
 	void testCreateAndGetReturnExistingSingletonAcrossRepeatedCalls();
 	void testMultipleResetAndRecreateCyclesRemainFunctional();
+	void testResolveAssetPathReturnsUnchangedForEmptyAndAbsolutePaths();
+	void testResolveAssetPathFindsRepoAssetWhenRunningFromTests();
+	void testResolveAssetPathNormalizesLeadingDotSlashAndSeparators();
 };
 
 }
