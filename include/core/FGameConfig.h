@@ -94,6 +94,18 @@ public:
 	/// returns the base path for the game installation
 	std::string getBasePath() { return m_basePath; }
 
+	/**
+	 * @brief Resolve a repository-relative asset path to a usable file path.
+	 *
+	 * This keeps existing getBasePath() behavior intact while allowing callers
+	 * to request paths such as data/zoom.png and icons/MaskingScreen.png in a
+	 * way that works for binaries started from different output directories.
+	 *
+	 * @param assetPath repository-relative path (for example data/splash.png)
+	 * @return resolved path candidate suitable for asset loading
+	 */
+	std::string resolveAssetPath(const std::string &assetPath) const;
+
 private:
 	/// Static instance of the FGameConfig class
 	static FGameConfig * m_config;
@@ -119,6 +131,9 @@ protected:
 
 	/// string to store games base directory in
 	std::string m_basePath;
+
+	/// string to store executable directory in
+	std::string m_executablePath;
 
 
 
