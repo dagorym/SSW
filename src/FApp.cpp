@@ -23,7 +23,7 @@ bool FApp::OnInit() {
 			*this,
 			[]() -> wxFrame* {
 				return new FMainFrame("Frontier - Second Sathar War",
-						wxPoint(50, 50),
+						wxDefaultPosition,
 						wxSize(760, 800));
 			}));
 	if (frame == nullptr) {

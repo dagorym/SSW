@@ -31,7 +31,7 @@ inline wxFrame* createStartupSplashAndFrame(wxApp& app,
 				wxID_ANY,
 				wxDefaultPosition,
 				wxDefaultSize,
-				wxSIMPLE_BORDER | wxSTAY_ON_TOP);
+				wxSIMPLE_BORDER | wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP);
 		splash->GetTimeout();
 	}
 
@@ -44,6 +44,7 @@ inline wxFrame* createStartupSplashAndFrame(wxApp& app,
 		return nullptr;
 	}
 
+	frame->CentreOnScreen(wxBOTH);
 	frame->Show(true);
 	app.SetTopWindow(frame);
 	return frame;

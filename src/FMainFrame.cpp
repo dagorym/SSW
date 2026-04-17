@@ -81,8 +81,9 @@ FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& 
     m_drawingPanel->Bind(wxEVT_LEFT_UP,&FMainFrame::onLeftUp,this);
     wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(m_drawingPanel, 1, wxEXPAND);
-    SetSizer(sizer);
-    SetAutoLayout(true);
+	SetSizer(sizer);
+	SetAutoLayout(true);
+	CentreOnScreen(wxBOTH);
 
 
 }
