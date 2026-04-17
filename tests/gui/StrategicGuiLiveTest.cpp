@@ -12,9 +12,11 @@
 #include <sstream>
 
 #include <wx/dcmemory.h>
+#include <wx/filefn.h>
 #include <wx/display.h>
 #include <wx/filename.h>
 #include <wx/panel.h>
+#include <wx/splash.h>
 #include <wx/toplevel.h>
 #include <wx/window.h>
 
@@ -36,6 +38,7 @@
 #include "gui/WXIconCache.h"
 #include "gui/WXMapDisplay.h"
 #include "gui/WXPlayerDisplay.h"
+#include "gui/WXStartupLaunch.h"
 #include "gui/UPFUnattachedGUI.h"
 #include "gui/ViewFleetGUI.h"
 #include "gui/WXStrategicUI.h"
@@ -178,6 +181,43 @@ void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tole
 		}
 	}
 	CPPUNIT_ASSERT(centered);
+}
+
+bool wasTopLevelPresent(const std::vector<wxTopLevelWindow *> & existingTopLevels, wxTopLevelWindow * candidate) {
+	for (std::vector<wxTopLevelWindow *>::const_iterator itr = existingTopLevels.begin();
+	     itr != existingTopLevels.end();
+	     ++itr) {
+		if (*itr == candidate) {
+			return true;
+		}
+	}
+	return false;
+}
+
+wxString findRepositorySplashPath() {
+	if (wxFileExists(wxT("data/splash.png"))) {
+		return wxT("data/splash.png");
+	}
+	if (wxFileExists(wxT("../../data/splash.png"))) {
+		return wxT("../../data/splash.png");
+	}
+	return wxString();
+}
+
+wxString ensureExpectedStartupSplashPath() {
+	const wxString expectedSplashPath =
+	        wxString::FromUTF8((FGameConfig::create().getBasePath() + "data/splash.png").c_str());
+	if (wxFileExists(expectedSplashPath)) {
+		return wxString();
+	}
+
+	const wxString sourceSplashPath = findRepositorySplashPath();
+	CPPUNIT_ASSERT(!sourceSplashPath.IsEmpty());
+	const wxFileName expectedFile(expectedSplashPath);
+	CPPUNIT_ASSERT(wxFileName::Mkdir(expectedFile.GetPath(), 0777, wxPATH_MKDIR_FULL)
+	               || wxDirExists(expectedFile.GetPath()));
+	CPPUNIT_ASSERT(wxCopyFile(sourceSplashPath, expectedSplashPath, true));
+	return expectedSplashPath;
 }
 
 wxString staticBoxLabelFor(const wxWindow * control) {
@@ -1217,6 +1257,60 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 	const std::string mainFrameContents = readFileText("../../src/FMainFrame.cpp");
 	CPPUNIT_ASSERT(!mainFrameContents.empty());
 	CPPUNIT_ASSERT(mainFrameContents.find("CentreOnScreen(wxBOTH);") != std::string::npos);
+}
+
+void StrategicGuiLiveTest::testStartupLaunchCreatesCenteredSplashAndMainFrame() {
+	const std::vector<wxTopLevelWindow *> baselineTopLevels = m_harness.getTopLevelWindows(false);
+	const wxString copiedSplashPath = ensureExpectedStartupSplashPath();
+
+	wxFrame * frame = createStartupSplashAndFrame(*wxTheApp,
+			[]() -> wxFrame* {
+				return new FMainFrame("Frontier - Startup Seam Test",
+						wxDefaultPosition,
+						wxSize(760, 800));
+			},
+			5000);
+	CPPUNIT_ASSERT(frame != NULL);
+	m_harness.pumpEvents(20);
+
+	wxSplashScreen * splash = NULL;
+	const std::vector<wxTopLevelWindow *> topLevels = m_harness.getTopLevelWindows(false);
+	for (std::vector<wxTopLevelWindow *>::const_iterator itr = topLevels.begin();
+	     itr != topLevels.end();
+	     ++itr) {
+		if (wasTopLevelPresent(baselineTopLevels, *itr)) {
+			continue;
+		}
+		wxSplashScreen * candidateSplash = dynamic_cast<wxSplashScreen *>(*itr);
+		if (candidateSplash != NULL) {
+			splash = candidateSplash;
+			break;
+		}
+	}
+
+	CPPUNIT_ASSERT(splash != NULL);
+	CPPUNIT_ASSERT(splash->IsShown());
+	CPPUNIT_ASSERT(frame->IsShown());
+	assertTopLevelCenteredOnDisplay(splash);
+	assertTopLevelCenteredOnDisplay(frame);
+	CPPUNIT_ASSERT((splash->GetWindowStyleFlag() & wxSTAY_ON_TOP) != 0);
+
+	if (splash->IsShown()) {
+		splash->Hide();
+	}
+	splash->Destroy();
+	if (wxTheApp != NULL) {
+		wxTheApp->SetTopWindow(NULL);
+	}
+	if (frame->IsShown()) {
+		frame->Hide();
+	}
+	frame->Destroy();
+	m_harness.pumpEvents(20);
+
+	if (!copiedSplashPath.IsEmpty() && wxFileExists(copiedSplashPath)) {
+		wxRemoveFile(copiedSplashPath);
+	}
 }
 
 void StrategicGuiLiveTest::testBattleResultsDialogUpdatesShipStatistics() {

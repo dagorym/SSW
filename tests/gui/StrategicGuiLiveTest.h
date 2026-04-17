@@ -23,6 +23,7 @@ CPPUNIT_TEST( testUPFAndSatharFleetDialogsMutateModelState );
 CPPUNIT_TEST( testTransferShipsDialogMovesShipsAndUpdatesFleets );
 CPPUNIT_TEST( testCombatSelectionDialogsReturnCodesAndState );
 CPPUNIT_TEST( testRemediatedStrategicDialogsUseFirstShowSizingContract );
+CPPUNIT_TEST( testStartupLaunchCreatesCenteredSplashAndMainFrame );
 CPPUNIT_TEST( testSelectCombatLaunchesBattleScreenAndCleansUpLifetime );
 CPPUNIT_TEST( testBattleResultsDialogUpdatesShipStatistics );
 CPPUNIT_TEST( testWXMapDisplayOffscreenRendering );
@@ -49,6 +50,7 @@ public:
 	void testTransferShipsDialogMovesShipsAndUpdatesFleets();
 	void testCombatSelectionDialogsReturnCodesAndState();
 	void testRemediatedStrategicDialogsUseFirstShowSizingContract();
+	void testStartupLaunchCreatesCenteredSplashAndMainFrame();
 	void testSelectCombatLaunchesBattleScreenAndCleansUpLifetime();
 	void testBattleResultsDialogUpdatesShipStatistics();
 };

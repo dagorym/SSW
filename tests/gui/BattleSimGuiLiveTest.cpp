@@ -8,8 +8,10 @@
 #include <wx/button.h>
 #include <wx/display.h>
 #include <wx/dialog.h>
+#include <wx/filefn.h>
 #include <wx/filename.h>
 #include <wx/frame.h>
+#include <wx/splash.h>
 #include <wx/statbox.h>
 #include <wx/toplevel.h>
 #include <wx/utils.h>
@@ -22,6 +24,7 @@
 #include "battleSim/ScenarioDialog.h"
 #include "battleSim/ScenarioEditorGUI.h"
 #include "core/FGameConfig.h"
+#include "gui/WXStartupLaunch.h"
 #include "tactical/FBattleScreen.h"
 
 wxBEGIN_EVENT_TABLE(BattleSimFrame, wxFrame)
@@ -116,6 +119,32 @@ bool wasTopLevelPresent(const std::vector<wxTopLevelWindow *> & existingTopLevel
 		}
 	}
 	return false;
+}
+
+wxString findRepositorySplashPath() {
+	if (wxFileExists(wxT("data/splash.png"))) {
+		return wxT("data/splash.png");
+	}
+	if (wxFileExists(wxT("../../data/splash.png"))) {
+		return wxT("../../data/splash.png");
+	}
+	return wxString();
+}
+
+wxString ensureExpectedStartupSplashPath() {
+	const wxString expectedSplashPath =
+	        wxString::FromUTF8((FGameConfig::create().getBasePath() + "data/splash.png").c_str());
+	if (wxFileExists(expectedSplashPath)) {
+		return wxString();
+	}
+
+	const wxString sourceSplashPath = findRepositorySplashPath();
+	CPPUNIT_ASSERT(!sourceSplashPath.IsEmpty());
+	const wxFileName expectedFile(expectedSplashPath);
+	CPPUNIT_ASSERT(wxFileName::Mkdir(expectedFile.GetPath(), 0777, wxPATH_MKDIR_FULL)
+	               || wxDirExists(expectedFile.GetPath()));
+	CPPUNIT_ASSERT(wxCopyFile(sourceSplashPath, expectedSplashPath, true));
+	return expectedSplashPath;
 }
 
 int countShownTopLevelsNotInBaseline(const WXGuiTestHarness & harness,
@@ -522,6 +551,58 @@ void BattleSimGuiLiveTest::testBattleSimLaunchDialogsRetainFirstShowSizingContra
 	CPPUNIT_ASSERT(splashCreatePos < frameCreatePos);
 	CPPUNIT_ASSERT(frameCreatePos < frameCenterPos);
 	CPPUNIT_ASSERT(frameCenterPos < frameShowPos);
+}
+
+void BattleSimGuiLiveTest::testStartupLaunchCreatesCenteredSplashAndBattleSimFrame() {
+	const std::vector<wxTopLevelWindow *> baselineTopLevels = m_harness.getTopLevelWindows(false);
+	const wxString copiedSplashPath = ensureExpectedStartupSplashPath();
+
+	wxFrame * frame = createStartupSplashAndFrame(*wxTheApp,
+			[]() -> wxFrame* {
+				return new BattleSimFrame();
+			},
+			5000);
+	CPPUNIT_ASSERT(frame != NULL);
+	m_harness.pumpEvents(20);
+
+	wxSplashScreen * splash = NULL;
+	const std::vector<wxTopLevelWindow *> topLevels = m_harness.getTopLevelWindows(false);
+	for (std::vector<wxTopLevelWindow *>::const_iterator itr = topLevels.begin();
+	     itr != topLevels.end();
+	     ++itr) {
+		if (wasTopLevelPresent(baselineTopLevels, *itr)) {
+			continue;
+		}
+		wxSplashScreen * candidateSplash = dynamic_cast<wxSplashScreen *>(*itr);
+		if (candidateSplash != NULL) {
+			splash = candidateSplash;
+			break;
+		}
+	}
+
+	CPPUNIT_ASSERT(splash != NULL);
+	CPPUNIT_ASSERT(splash->IsShown());
+	CPPUNIT_ASSERT(frame->IsShown());
+	assertTopLevelCenteredOnDisplay(splash);
+	assertFrameCenteredOnDisplay(dynamic_cast<wxFrame *>(frame));
+	CPPUNIT_ASSERT((splash->GetWindowStyleFlag() & wxSTAY_ON_TOP) != 0);
+
+	if (splash->IsShown()) {
+		splash->Hide();
+	}
+	splash->Destroy();
+	if (wxTheApp != NULL) {
+		wxTheApp->SetTopWindow(NULL);
+	}
+	if (frame->IsShown()) {
+		frame->Hide();
+	}
+	frame->Destroy();
+	m_harness.pumpEvents(20);
+
+	if (!copiedSplashPath.IsEmpty() && wxFileExists(copiedSplashPath)) {
+		wxRemoveFile(copiedSplashPath);
+	}
 }
 
 void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage() {
