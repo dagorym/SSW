@@ -14,6 +14,8 @@ namespace FrontierTests {
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
 CPPUNIT_TEST( testDrawAndOnPaintUseBattleScreenStateAccessors );
+CPPUNIT_TEST( testZoomImageLoadUsesResolveAssetPath );
+CPPUNIT_TEST( testBattleBoardAndBattleScreenUseResolveAssetPathForTacticalImages );
 CPPUNIT_TEST( testLegacyFireAllWeaponsHelperRemoved );
 CPPUNIT_TEST( testDefensiveFireDoneDelegatesToModelFirePhaseResolution );
 CPPUNIT_TEST( testOffensiveFireDoneDelegatesToModelFirePhaseResolution );
@@ -45,6 +47,8 @@ void setUp();
 void tearDown();
 
 void testDrawAndOnPaintUseBattleScreenStateAccessors();
+void testZoomImageLoadUsesResolveAssetPath();
+void testBattleBoardAndBattleScreenUseResolveAssetPathForTacticalImages();
 void testLegacyFireAllWeaponsHelperRemoved();
 void testDefensiveFireDoneDelegatesToModelFirePhaseResolution();
 void testOffensiveFireDoneDelegatesToModelFirePhaseResolution();

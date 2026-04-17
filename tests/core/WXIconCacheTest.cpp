@@ -48,16 +48,18 @@ std::string WXIconCacheTest::readFile(const std::string & path) {
 		std::istreambuf_iterator<char>());
 }
 
-void WXIconCacheTest::testGetResolvesFilenameAgainstGameBasePathBeforeImageLoad() {
-	// AC1: get() prepends FGameConfig base path before constructing wxImage.
+void WXIconCacheTest::testGetResolvesFilenameThroughSharedAssetResolver() {
+	// AC1: get() resolves icon paths through FGameConfig::resolveAssetPath before image load.
 	const std::string source = readFile(repoFile("src/gui/WXIconCache.cpp"));
 	assertContains(source, "FGameConfig & gc = FGameConfig::getGameConfig();");
-	assertContains(source, "std::string fullPath = gc.getBasePath() + filename;");
+	assertContains(source, "std::string fullPath = gc.resolveAssetPath(filename);");
 	assertContains(source, "wxImage img(fullPath);");
 	assertContains(source, "wxLogWarning(\"WXIconCache: failed to load image '%s'\", fullPath.c_str());");
+	CPPUNIT_ASSERT(source.find("gc.getBasePath() + filename;") == std::string::npos);
 
 	FGameConfig & gc = FGameConfig::getGameConfig();
-	const std::string resolvedPath = gc.getBasePath() + "icons/UPFFighter.png";
+	const std::string resolvedPath = gc.resolveAssetPath("icons/UPFFighter.png");
+	CPPUNIT_ASSERT(!resolvedPath.empty());
 	wxImage directLoad(resolvedPath);
 	CPPUNIT_ASSERT_MESSAGE(
 		std::string("Expected image to load from resolved path: ") + resolvedPath,
@@ -65,7 +67,7 @@ void WXIconCacheTest::testGetResolvesFilenameAgainstGameBasePathBeforeImageLoad(
 }
 
 void WXIconCacheTest::testCacheKeyRemainsOriginalFilename() {
-	// AC2: cache key remains original short filename while loading uses base path.
+	// AC2: cache key remains original short filename while loading uses resolved asset path.
 	WXIconCache & cache = WXIconCache::instance();
 	const std::string shortFilename = "icons/UPFFighter.png";
 

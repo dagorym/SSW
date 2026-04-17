@@ -206,7 +206,7 @@ wxString findRepositorySplashPath() {
 
 wxString ensureExpectedStartupSplashPath() {
 	const wxString expectedSplashPath =
-	        wxString::FromUTF8((FGameConfig::create().getBasePath() + "data/splash.png").c_str());
+	        wxString::FromUTF8(FGameConfig::create().resolveAssetPath("data/splash.png").c_str());
 	if (wxFileExists(expectedSplashPath)) {
 		return wxString();
 	}
@@ -1305,10 +1305,13 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 	CPPUNIT_ASSERT(launchHelperContents.find("wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("wxFRAME_NO_TASKBAR") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("wxSTAY_ON_TOP") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("bitmap.LoadFile(gc.resolveAssetPath(\"data/splash.png\"), wxBITMAP_TYPE_PNG)") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("gc.getBasePath() + \"data/splash.png\"") == std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("wxSIMPLE_BORDER | wxSTAY_ON_TOP") == std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("frame->CentreOnScreen(wxBOTH);") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("frame->Show(true);") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("app.SetTopWindow(frame);") != std::string::npos);
+	CPPUNIT_ASSERT(launchHelperContents.find("/home/") == std::string::npos);
 	const size_t splashCreatePos = launchHelperContents.find("new wxSplashScreen");
 	const size_t frameCreatePos = launchHelperContents.find("wxFrame *frame = createFrame();");
 	const size_t frameCenterPos = launchHelperContents.find("frame->CentreOnScreen(wxBOTH);");

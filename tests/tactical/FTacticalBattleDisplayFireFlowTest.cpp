@@ -203,6 +203,34 @@ assertNotContains(ctorBody, "wxSize( 50,-1 )");
 assertNotContains(ctorBody, "wxPoint(leftOffset,3*BORDER+2)");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testZoomImageLoadUsesResolveAssetPath() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string ctorBody = extractFunctionBody(
+source,
+"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+
+assertContains(ctorBody, "m_zoomImage.LoadFile(gc.resolveAssetPath(\"data/zoom.png\"));");
+assertNotContains(ctorBody, "m_zoomImage.LoadFile(\"data/zoom.png\")");
+assertNotContains(ctorBody, "gc.getBasePath() + \"data/zoom.png\"");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testBattleBoardAndBattleScreenUseResolveAssetPathForTacticalImages() {
+const std::string boardSource = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+
+assertContains(boardSource, "m_maskingScreenIcon = new wxImage(gc.resolveAssetPath(\"icons/MaskingScreen.png\"));");
+assertNotContains(boardSource, "gc.getBasePath() + \"icons/");
+assertNotContains(boardSource, "../icons/");
+assertNotContains(boardSource, "/home/");
+
+assertContains(screenSource, "wxImage p0(gc.resolveAssetPath(\"icons/planet_01.png\"));");
+assertContains(screenSource, "wxImage p1(gc.resolveAssetPath(\"icons/planet_02.png\"));");
+assertContains(screenSource, "wxImage p2(gc.resolveAssetPath(\"icons/planet_03.png\"));");
+assertNotContains(screenSource, "gc.getBasePath() + \"icons/");
+assertNotContains(screenSource, "../icons/");
+assertNotContains(screenSource, "/home/");
+}
+
 void FTacticalBattleDisplayFireFlowTest::testLegacyFireAllWeaponsHelperRemoved() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string header = readFile(repoFile("include/tactical/FBattleDisplay.h"));

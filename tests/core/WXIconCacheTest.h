@@ -13,7 +13,7 @@ namespace FrontierTests {
 
 class WXIconCacheTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( WXIconCacheTest );
-	CPPUNIT_TEST( testGetResolvesFilenameAgainstGameBasePathBeforeImageLoad );
+	CPPUNIT_TEST( testGetResolvesFilenameThroughSharedAssetResolver );
 	CPPUNIT_TEST( testCacheKeyRemainsOriginalFilename );
 	CPPUNIT_TEST_SUITE_END();
 
@@ -24,7 +24,7 @@ public:
 	void setUp();
 	void tearDown();
 
-	void testGetResolvesFilenameAgainstGameBasePathBeforeImageLoad();
+	void testGetResolvesFilenameThroughSharedAssetResolver();
 	void testCacheKeyRemainsOriginalFilename();
 };
 
