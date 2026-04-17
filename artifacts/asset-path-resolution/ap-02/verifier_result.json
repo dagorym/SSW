@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "subtask_id": "AP-02",
+  "task": "AP-02 asset-path-resolution",
+  "branch": "asset-path-resolution-ap-02-verifier-20260417",
+  "base_branch": "image-path",
+  "reviewed_head": "4fc0c33e49b3459b6b4f98b7f9b89506654d9726",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient for the scoped acceptance criteria; rerun SSWTests and TacticalTests passed, and updated source/runtime assertions cover the resolver policy at the affected call sites.",
+  "documentation_accuracy_summary": "Updated documentation matches the implemented shared asset-resolution seam and the added regression coverage expectations.",
+  "artifact_file_paths": [
+    "artifacts/asset-path-resolution/ap-02/verifier_report.md",
+    "artifacts/asset-path-resolution/ap-02/verifier_result.json"
+  ]
+}
