@@ -1,0 +1,56 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate Subtask 3 tactical runner build hygiene in `tests/Makefile`: top-level `tactical-tests` target should force a clean tactical runner rebuild before execution.
+- Tester confirmed target behavior and runner execution using existing test commands only; no test source edits were needed.
+
+Acceptance criteria validated:
+- The top-level tests makefile exposes a tactical-runner build target that rebuilds `tests/tactical/TacticalTests`.
+- The target produces a fresh tactical runner binary from current sources and linked libraries.
+- Running the freshly rebuilt tactical runner completes successfully in the current tree.
+- The existing top-level `SSWTests` build path remains intact.
+
+Implementation branch or worktree context:
+- Branch: `test-fixes-subtask-3-tester-20260417`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/test-fixes-subtask-3-tester-20260417`
+- Comparison context assumption: compare against `test-fixes` lineage for subtask-series review.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `tests/Makefile` (Implementer)
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/tester_report.md` (Tester)
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/tester_result.json` (Tester)
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene/documenter_prompt.txt` (Tester)
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- `cd tests && make -n tactical-tests`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && make tactical-tests` with TacticalTests mtime check
+- `cd tests && ./tactical/TacticalTests` (summary: `OK (92 tests)`)
+- `cd tests && make && ./SSWTests` (summary: `OK (162 tests)`)
+
+Final test outcomes:
+- PASS: all acceptance criteria met.
+- Tactical target runs `cd tactical; make clean TacticalTests`, removes stale tactical runner artifacts, rebuilds linked libs, and relinks `TacticalTests`.
+- Fresh tactical runner and top-level runner both execute successfully in this tree.
+
+Documentation context:
+- Likely docs impacted: testing/build command references that describe top-level module-target usage (especially guidance for tactical-only runner rebuilds).
+- Confirmed behavior change: top-level `tests/Makefile` now supports tactical runner hygiene via `tactical-tests` clean rebuild target.
+
+Plan and diff context:
+- Story context: Coordinator-managed Subtask 3 (tactical runner hygiene).
+- Base comparison assumption: `test-fixes` (or nearest common ancestor for the subtask branch series).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
