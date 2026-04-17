@@ -1,0 +1,53 @@
+{
+  "status": "completed",
+  "requested_agent": "reviewer",
+  "definition_path": "/home/tstephen/repos/agents/agents/reviewer.md",
+  "repository_local_definition_found": false,
+  "shared_definition_found": true,
+  "precedence_decision": "shared reviewer definition applies because no repository-local reviewer override exists",
+  "plan_path": "plans/test-harness-segfault-remediation-plan.md",
+  "artifact_directory": "artifacts/test-harness-segfault-remediation",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/test-fixes-reviewer-20260417",
+  "branch": "test-fixes-reviewer-20260417",
+  "subtasks_reviewed": [
+    "artifacts/test-harness-segfault-remediation/subtask-1-strategic-dialog-guard",
+    "artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests",
+    "artifacts/test-harness-segfault-remediation/subtask-3-tactical-runner-hygiene"
+  ],
+  "files_reviewed": [
+    "AGENTS.md",
+    "src/gui/WXStrategicUI.cpp",
+    "tests/core/WXStrategicUITest.h",
+    "tests/core/WXStrategicUITest.cpp",
+    "tests/gui/StrategicGuiLiveTest.h",
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/Makefile",
+    "tests/tactical/Makefile"
+  ],
+  "validation_commands": [
+    "cd tests && make && ./SSWTests",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests"
+  ],
+  "validation_results": {
+    "SSWTests": "OK (162 tests)",
+    "TacticalTests": "OK (92 tests)",
+    "GuiTests": "OK (33 tests)"
+  },
+  "overall_feature_completeness": "Feature matches the governing plan across all three subtasks, with aligned implementation, regression coverage, documentation, and verifier evidence.",
+  "findings": {
+    "blocking": [],
+    "warning": [],
+    "note": [
+      "No confirmed feature-level omissions were found; an upstream note about unrelated BattleSim GUI flake did not reproduce during reviewer reruns and is outside this feature plan."
+    ]
+  },
+  "missed_functionality": [],
+  "follow_up_feature_requests": [],
+  "agents_md_accuracy": "accurate",
+  "outcome": "PASS",
+  "artifact_files": [
+    "artifacts/test-harness-segfault-remediation/reviewer_report.md",
+    "artifacts/test-harness-segfault-remediation/reviewer_result.json"
+  ]
+}
