@@ -997,17 +997,6 @@ m_harness.runVoidFunctionWithAutoDismiss(
 m_harness.runVoidFunctionWithAutoDismiss(
 [&]() { ui.showRetreatConditions("Retreat when conditions are met."); }, wxID_OK, 25);
 
-WXStrategicUI noParentUI(NULL);
-const int noParentRetreatResult = m_harness.runModalFunctionWithAction([&]() {
-	return noParentUI.selectRetreatCondition();
-}, [&]() {
-	wxDialog * modal = m_harness.waitForModalDialog();
-	CPPUNIT_ASSERT(modal != NULL);
-	CPPUNIT_ASSERT(wxDisplay::GetFromWindow(modal) != wxNOT_FOUND);
-	modal->EndModal(wxID_CANCEL);
-}, wxID_CANCEL, 200);
-CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL), noParentRetreatResult);
-
 ui.requestRedraw();
 redrawPanel->Refresh(false);
 for (int attempt = 0; attempt < 25 && !sawPaint; ++attempt) {
@@ -1018,6 +1007,19 @@ CPPUNIT_ASSERT(sawPaint);
 
 parent->Destroy();
 m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testWXStrategicUIParentlessRetreatModalPathWithRuntime() {
+	WXStrategicUI noParentUI(NULL);
+	const int noParentRetreatResult = m_harness.runModalFunctionWithAction([&]() {
+		return noParentUI.selectRetreatCondition();
+	}, [&]() {
+		wxDialog * modal = m_harness.waitForModalDialog();
+		CPPUNIT_ASSERT(modal != NULL);
+		CPPUNIT_ASSERT(wxDisplay::GetFromWindow(modal) != wxNOT_FOUND);
+		modal->EndModal(wxID_CANCEL);
+	}, wxID_CANCEL, 200);
+	CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL), noParentRetreatResult);
 }
 
 void StrategicGuiLiveTest::testWXStrategicUISourceGuardsRuntimeAndPreservesParentlessFlow() {

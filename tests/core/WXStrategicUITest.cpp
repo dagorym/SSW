@@ -15,6 +15,7 @@
 
 #include <wx/app.h>
 #include <wx/defs.h>
+#include <wx/window.h>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -52,6 +53,33 @@ void WXStrategicUITest::testGuardedDialogMethodsReturnCancelForValidInputsWithou
   FMap& map = FMap::create(false, playerIDs);
   FSystem system("Test System", 0.0f, 0.0f, 0.0f, player.getID());
   FSystem destination("Test Destination", 1.0f, 0.0f, 0.0f, player.getID());
+  FFleet fleet;
+  PlayerList players;
+
+  CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL), ui.selectRetreatCondition());
+  CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL),
+                       ui.runUPFUnattachedSetup(&player, &map));
+  CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL),
+                       ui.runSatharFleetSetup(&player, &map, true));
+  CPPUNIT_ASSERT_EQUAL(static_cast<int>(wxID_CANCEL),
+                       ui.selectCombat(&system, FleetList(), FleetList(), &players));
+
+  ui.showSystemDialog(&system, &map, &player);
+  ui.showFleetDialog(&fleet, &system, &destination);
+}
+
+void WXStrategicUITest::testGuardedDialogMethodsIgnoreParentWhenNoWxRuntime() {
+  // AC: no-runtime behavior is distinct from null-parent behavior.
+  CPPUNIT_ASSERT(wxTheApp == NULL);
+
+  WXStrategicUI ui(reinterpret_cast<wxWindow*>(1));
+  FPlayer player;
+  std::vector<unsigned int> playerIDs;
+  playerIDs.push_back(player.getID());
+  playerIDs.push_back(player.getID() + 1);
+  FMap& map = FMap::create(false, playerIDs);
+  FSystem system("No Runtime System", 0.0f, 0.0f, 0.0f, player.getID());
+  FSystem destination("No Runtime Destination", 1.0f, 0.0f, 0.0f, player.getID());
   FFleet fleet;
   PlayerList players;
 
