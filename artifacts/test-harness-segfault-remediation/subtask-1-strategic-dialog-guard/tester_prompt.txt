@@ -1,0 +1,39 @@
+You are the Tester Agent.
+
+Task summary:
+- Implementer guarded WXStrategicUI modal entry points so no dialog is constructed when no usable wx runtime exists, while preserving parentless live-wx behavior when runtime is active.
+
+Modified files:
+- src/gui/WXStrategicUI.cpp
+
+Acceptance criteria to validate (from Planner):
+- WXStrategicUI::selectRetreatCondition() returns a non-zero cancel-style result instead of constructing a dialog when no usable wx runtime exists.
+- Any other reachable WXStrategicUI modal entry points that share the same unsafe assumption are guarded consistently where needed.
+- Parentless live-wx dialog behavior is preserved.
+- cd tests && make && ./SSWTests no longer segfaults in the strategic adapter path.
+
+Create test files in:
+- tests/core/WXStrategicUITest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Implementation context for testing:
+- Runtime guard helper now checks wx runtime availability (wxTheApp != NULL).
+- Modal-return methods return wxID_CANCEL when runtime is unavailable: selectRetreatCondition, runUPFUnattachedSetup, runSatharFleetSetup, selectCombat.
+- Void modal methods return early when runtime is unavailable: showSystemDialog, showFleetDialog.
+- showMessage only shows modal dialog when parent exists and runtime is usable; otherwise falls back to message output path.
+- Parentless behavior remains active when runtime exists because guard does not treat NULL parent as runtime failure.
+
+Suggested test command(s):
+- cd tests && make && ./SSWTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/test-harness-segfault-remediation/subtask-1-strategic-dialog-guard
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
