@@ -12,7 +12,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS = `wx-config --libs`
 
@@ -33,7 +36,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -43,13 +46,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FVehicleTest.o FTacticalAttackIntegrationTest.o FArmedStationTest.o FAssaultCarrierTest.o \
-       FAssaultScoutTest.o FBattleshipTest.o FDestroyerTest.o \
-       FFighterTest.o FFortifiedStationTest.o FFortressTest.o \
-       FFrigateTest.o FHvCruiserTest.o FLtCruiserTest.o \
-       FMinelayerTest.o
+SRCS = $(filter-out test_template.cpp,$(wildcard *.cpp))
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
        
 TARGET = libshipsTests.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -63,66 +66,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-FArmedStationTest.o: FArmedStationTest.h ../../include/ships/FArmedStation.h
-FArmedStationTest.o: ../../include/ships/FVehicle.h
-FArmedStationTest.o: ../../include/core/FPObject.h
-FArmedStationTest.o: ../../include/core/FObject.h
-FArmedStationTest.o: ../../include/weapons/FWeapon.h
-FAssaultCarrierTest.o: FAssaultCarrierTest.h
-FAssaultCarrierTest.o: ../../include/ships/FAssaultCarrier.h
-FAssaultCarrierTest.o: ../../include/ships/FVehicle.h
-FAssaultCarrierTest.o: ../../include/core/FPObject.h
-FAssaultCarrierTest.o: ../../include/core/FObject.h
-FAssaultCarrierTest.o: ../../include/weapons/FWeapon.h
-FAssaultScoutTest.o: FAssaultScoutTest.h ../../include/ships/FAssaultScout.h
-FAssaultScoutTest.o: ../../include/ships/FVehicle.h
-FAssaultScoutTest.o: ../../include/core/FPObject.h
-FAssaultScoutTest.o: ../../include/core/FObject.h
-FAssaultScoutTest.o: ../../include/weapons/FWeapon.h
-FBattleshipTest.o: FBattleshipTest.h ../../include/ships/FBattleship.h
-FBattleshipTest.o: ../../include/ships/FVehicle.h
-FBattleshipTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FBattleshipTest.o: ../../include/weapons/FWeapon.h
-FDestroyerTest.o: FDestroyerTest.h ../../include/ships/FDestroyer.h
-FDestroyerTest.o: ../../include/ships/FVehicle.h
-FDestroyerTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FDestroyerTest.o: ../../include/weapons/FWeapon.h
-FFighterTest.o: FFighterTest.h ../../include/ships/FFighter.h
-FFighterTest.o: ../../include/ships/FVehicle.h ../../include/core/FPObject.h
-FFighterTest.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
-FFortifiedStationTest.o: FFortifiedStationTest.h
-FFortifiedStationTest.o: ../../include/ships/FFortifiedStation.h
-FFortifiedStationTest.o: ../../include/ships/FVehicle.h
-FFortifiedStationTest.o: ../../include/core/FPObject.h
-FFortifiedStationTest.o: ../../include/core/FObject.h
-FFortifiedStationTest.o: ../../include/weapons/FWeapon.h
-FFortressTest.o: FFortressTest.h ../../include/ships/FFortress.h
-FFortressTest.o: ../../include/ships/FVehicle.h ../../include/core/FPObject.h
-FFortressTest.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
-FFrigateTest.o: FFrigateTest.h ../../include/ships/FFrigate.h
-FFrigateTest.o: ../../include/ships/FVehicle.h ../../include/core/FPObject.h
-FFrigateTest.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
-FHvCruiserTest.o: FHvCruiserTest.h ../../include/ships/FHvCruiser.h
-FHvCruiserTest.o: ../../include/ships/FVehicle.h
-FHvCruiserTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FHvCruiserTest.o: ../../include/weapons/FWeapon.h
-FLtCruiserTest.o: FLtCruiserTest.h ../../include/ships/FLtCruiser.h
-FLtCruiserTest.o: ../../include/ships/FVehicle.h
-FLtCruiserTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FLtCruiserTest.o: ../../include/weapons/FWeapon.h
-FMinelayerTest.o: FMinelayerTest.h ../../include/ships/FMinelayer.h
-FMinelayerTest.o: ../../include/ships/FVehicle.h
-FMinelayerTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FMinelayerTest.o: ../../include/weapons/FWeapon.h
-FVehicleTest.o: FVehicleTest.h ../../include/ships/FVehicle.h
-FVehicleTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FVehicleTest.o: ../../include/weapons/FWeapon.h
-FTacticalAttackIntegrationTest.o: FTacticalAttackIntegrationTest.h ../../include/weapons/FWeapon.h
-FTacticalAttackIntegrationTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FTacticalAttackIntegrationTest.o: ../../include/ships/FVehicle.h
+-include $(DEPS)

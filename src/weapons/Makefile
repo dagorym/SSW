@@ -12,7 +12,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS =
 
@@ -33,7 +36,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -43,12 +46,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FWeapon.o \
-       FLaserBattery.o FLaserCannon.o FProtonBattery.o FElectronBattery.o \
-       FDisruptorCannon.o FRocketBattery.o FAssaultRocket.o FTorpedo.o \
-       FSeekerMissileLauncher.o FMineLauncher.o
+SRCS = $(wildcard *.cpp)
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 TARGET = libweapons.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -60,56 +64,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-FAssaultRocket.o: ../../include/weapons/FAssaultRocket.h
-FAssaultRocket.o: ../../include/weapons/FWeapon.h
-FAssaultRocket.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FDisruptorCannon.o: ../../include/weapons/FDisruptorCannon.h
-FDisruptorCannon.o: ../../include/weapons/FWeapon.h
-FDisruptorCannon.o: ../../include/core/FPObject.h
-FDisruptorCannon.o: ../../include/core/FObject.h
-FElectronBattery.o: ../../include/weapons/FElectronBattery.h
-FElectronBattery.o: ../../include/weapons/FWeapon.h
-FElectronBattery.o: ../../include/core/FPObject.h
-FElectronBattery.o: ../../include/core/FObject.h
-FLaserBattery.o: ../../include/weapons/FLaserBattery.h
-FLaserBattery.o: ../../include/weapons/FWeapon.h
-FLaserBattery.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FLaserCannon.o: ../../include/weapons/FLaserCannon.h
-FLaserCannon.o: ../../include/weapons/FWeapon.h ../../include/core/FPObject.h
-FLaserCannon.o: ../../include/core/FObject.h
-FMineLauncher.o: ../../include/weapons/FMineLauncher.h
-FMineLauncher.o: ../../include/weapons/FWeapon.h
-FMineLauncher.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FProtonBattery.o: ../../include/weapons/FProtonBattery.h
-FProtonBattery.o: ../../include/weapons/FWeapon.h
-FProtonBattery.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FRocketBattery.o: ../../include/weapons/FRocketBattery.h
-FRocketBattery.o: ../../include/weapons/FWeapon.h
-FRocketBattery.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FSeekerMissileLauncher.o: ../../include/weapons/FSeekerMissileLauncher.h
-FSeekerMissileLauncher.o: ../../include/weapons/FWeapon.h
-FSeekerMissileLauncher.o: ../../include/core/FPObject.h
-FSeekerMissileLauncher.o: ../../include/core/FObject.h
-FTorpedo.o: ../../include/weapons/FTorpedo.h ../../include/weapons/FWeapon.h
-FTorpedo.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FWeapon.o: ../../include/weapons/FWeapon.h ../../include/core/FPObject.h
-FWeapon.o: ../../include/core/FObject.h ../../include/weapons/weapons.h
-FWeapon.o: ../../include/weapons/FLaserBattery.h
-FWeapon.o: ../../include/weapons/FLaserCannon.h
-FWeapon.o: ../../include/weapons/FElectronBattery.h
-FWeapon.o: ../../include/weapons/FProtonBattery.h
-FWeapon.o: ../../include/weapons/FRocketBattery.h
-FWeapon.o: ../../include/weapons/FDisruptorCannon.h
-FWeapon.o: ../../include/weapons/FTorpedo.h
-FWeapon.o: ../../include/weapons/FAssaultRocket.h
-FWeapon.o: ../../include/weapons/FSeekerMissileLauncher.h
-FWeapon.o: ../../include/weapons/FMineLauncher.h
-FWeapon.o: ../../include/ships/FVehicle.h ../../include/core/FGameConfig.h
-FWeapon.o: ../../include/defenses/FDefense.h ../../include/Frontier.h
-FWeapon.o: ../../include/wxWidgets.h
+-include $(DEPS)

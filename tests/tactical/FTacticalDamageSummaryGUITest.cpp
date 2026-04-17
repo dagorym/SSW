@@ -165,7 +165,7 @@ void FTacticalDamageSummaryGUITest::testDamageSummaryDialogBuildsShipRollupAndOp
 	CPPUNIT_ASSERT_EQUAL(std::string(" - MR (-1)"), summary.ships[0].displayLines[3]);
 	CPPUNIT_ASSERT_EQUAL(std::string(" - Weapon Hit: LB, LB, AR"), summary.ships[0].displayLines[4]);
 	CPPUNIT_ASSERT_EQUAL(std::string(" - Defense Hit: MS, PS"), summary.ships[0].displayLines[5]);
-	CPPUNIT_ASSERT_EQUAL(summary.ships[0].displayLines, summary.displayLines);
+	CPPUNIT_ASSERT(summary.ships[0].displayLines == summary.displayLines);
 
 	const std::string source = readFile(repoFile("src/gui/TacticalDamageSummaryGUI.cpp"));
 

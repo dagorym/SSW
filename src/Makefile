@@ -4,7 +4,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS = -Lstrategic -lstrategic -Lships -lships -Ltactical -ltactical \
 	-Lweapons -lweapons -Ldefenses -ldefenses -Lcore -lcore -Lgui -lgui \
@@ -26,7 +29,7 @@ BS_LIBS = -LbattleSim -lbattleSim -Lstrategic -lstrategic -Lships -lships -Ltact
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -37,6 +40,7 @@ BS_LIBS = -LbattleSim -lbattleSim -Lstrategic -lstrategic -Lships -lships -Ltact
 ############################# Paths #################################
 
 OBJS = FApp.o Frontier.o FMainFrame.o FGamePanel.o
+DEPS = $(OBJS:.o=.d) $(BS_OBJS:.o=.d)
 
 OBJ_LIBS = libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libdefenses.a libships.a
 
@@ -47,6 +51,8 @@ BS_OBJ_LIBS = libcore.a libgui.a libstrategic.a libtactical.a libweapons.a libde
 TARGET = SSW
 
 BS_TARGET=BattleSim
+
+$(OBJS) $(BS_OBJS): Makefile
 
 all: SSW BattleSim
 
@@ -95,66 +101,15 @@ all_clean:
 	@ cd weapons; ${MAKE} clean
 	@ cd defenses; ${MAKE} clean
 	@ cd battleSim; ${MAKE} clean
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f  $(TARGET)
 	rm -f $(BS_OBJS)
 	rm -f $(BS_TARGET)
 	
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 	rm -f $(BS_OBJS)
 	rm -f $(BS_TARGET)
 
-# DO NOT DELETE
-
-BattleSim.o: ../include/FBattleSimApp.h ../include/core/FObject.h
-BattleSim.o: ../include/BattleSim.h ../include/wxWidgets.h
-BattleSim.o: ../include/battleSim/BattleSimFrame.h
-FApp.o: ../include/FApp.h ../include/core/FObject.h ../include/FMainFrame.h
-FApp.o: ../include/strategic/FGame.h ../include/core/FPObject.h
-FApp.o: ../include/core/FObject.h ../include/strategic/FPlayer.h
-FApp.o: ../include/strategic/FFleet.h ../include/ships/FVehicle.h
-FApp.o: ../include/core/FGameConfig.h ../include/weapons/FWeapon.h
-FApp.o: ../include/defenses/FDefense.h ../include/strategic/FMap.h
-FApp.o: ../include/strategic/FSystem.h ../include/strategic/FPlanet.h
-FApp.o: ../include/strategic/FAstroBody.h ../include/strategic/FJumpRoute.h
-FApp.o: ../include/FGamePanel.h
-FBattleSimApp.o: ../include/FBattleSimApp.h ../include/core/FObject.h
-FBattleSimApp.o: ../include/battleSim/BattleSimFrame.h
-FBattleSimApp.o: ../include/core/FGameConfig.h ../include/core/FPObject.h
-FBattleSimApp.o: ../include/core/FObject.h
-FGamePanel.o: ../include/FGamePanel.h ../include/strategic/FGame.h
-FGamePanel.o: ../include/core/FPObject.h ../include/core/FObject.h
-FGamePanel.o: ../include/strategic/FPlayer.h ../include/strategic/FFleet.h
-FGamePanel.o: ../include/ships/FVehicle.h ../include/core/FGameConfig.h
-FGamePanel.o: ../include/weapons/FWeapon.h ../include/defenses/FDefense.h
-FGamePanel.o: ../include/strategic/FMap.h ../include/strategic/FSystem.h
-FGamePanel.o: ../include/strategic/FPlanet.h
-FGamePanel.o: ../include/strategic/FAstroBody.h
-FGamePanel.o: ../include/strategic/FJumpRoute.h
-FMainFrame.o: ../include/FMainFrame.h ../include/strategic/FGame.h
-FMainFrame.o: ../include/core/FPObject.h ../include/core/FObject.h
-FMainFrame.o: ../include/strategic/FPlayer.h ../include/strategic/FFleet.h
-FMainFrame.o: ../include/ships/FVehicle.h ../include/core/FGameConfig.h
-FMainFrame.o: ../include/weapons/FWeapon.h ../include/defenses/FDefense.h
-FMainFrame.o: ../include/strategic/FMap.h ../include/strategic/FSystem.h
-FMainFrame.o: ../include/strategic/FPlanet.h
-FMainFrame.o: ../include/strategic/FAstroBody.h
-FMainFrame.o: ../include/strategic/FJumpRoute.h ../include/FGamePanel.h
-FMainFrame.o: ../include/Frontier.h ../include/wxWidgets.h
-FMainFrame.o: ../include/tactical/FBattleScreen.h
-FMainFrame.o: ../include/tactical/FBattleBoard.h
-FMainFrame.o: ../include/strategic/FFleet.h ../include/core/FPoint.h
-FMainFrame.o: ../include/core/FHexPath.h ../include/core/FHexMap.h
-FMainFrame.o: ../include/tactical/FBattleDisplay.h
-Frontier.o: ../include/FApp.h ../include/core/FObject.h
-Frontier.o: ../include/FMainFrame.h ../include/strategic/FGame.h
-Frontier.o: ../include/core/FPObject.h ../include/core/FObject.h
-Frontier.o: ../include/strategic/FPlayer.h ../include/strategic/FFleet.h
-Frontier.o: ../include/ships/FVehicle.h ../include/core/FGameConfig.h
-Frontier.o: ../include/weapons/FWeapon.h ../include/defenses/FDefense.h
-Frontier.o: ../include/strategic/FMap.h ../include/strategic/FSystem.h
-Frontier.o: ../include/strategic/FPlanet.h ../include/strategic/FAstroBody.h
-Frontier.o: ../include/strategic/FJumpRoute.h ../include/FGamePanel.h
-Frontier.o: ../include/Frontier.h ../include/wxWidgets.h
+-include $(DEPS)

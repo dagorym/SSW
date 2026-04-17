@@ -12,7 +12,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../../include -I../../../src/include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) -DCORE_TEST_REPO_ROOT=\"$(CURDIR)/../..\"
+DEPFLAGS = -MMD -MP
 
 LIBS = `wx-config --libs` -lcppunit 
 
@@ -33,7 +36,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -43,9 +46,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FPointTest.o FObjectTest.o FGameConfigTest.o FHexPathTest.o WXIconCacheTest.o WXStrategicUIUnderTest.o WXStrategicUITest.o #FPObject.o 
+SRCS = $(filter-out test_template.cpp,$(wildcard *.cpp))
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 TARGET = libcoreTests.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -59,13 +66,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-FGameConfigTest.o: FGameConfigTest.h ../../include/core/FGameConfig.h
-FGameConfigTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FObjectTest.o: FObjectTest.h ../../include/core/FObject.h
-FPointTest.o: FPointTest.h ../../include/core/FPoint.h
+-include $(DEPS)

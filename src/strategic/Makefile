@@ -12,7 +12,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS =
 
@@ -33,7 +36,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -43,11 +46,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FFleet.o \
-       FPlayer.o FAstroBody.o FPlanet.o FSystem.o FJumpRoute.o FMap.o \
-       FGame.o 
+SRCS = $(wildcard *.cpp)
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 TARGET = libstrategic.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -61,61 +66,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-FAstroBody.o: ../../include/strategic/FAstroBody.h
-FAstroBody.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FFleet.o: ../../include/strategic/FFleet.h ../../include/core/FPObject.h
-FFleet.o: ../../include/core/FObject.h ../../include/ships/FVehicle.h
-FFleet.o: ../../include/core/FGameConfig.h ../../include/weapons/FWeapon.h
-FFleet.o: ../../include/defenses/FDefense.h ../../include/Frontier.h
-FFleet.o: ../../include/wxWidgets.h ../../include/strategic/FJumpRoute.h
-FFleet.o: ../../include/strategic/FSystem.h ../../include/strategic/FPlanet.h
-FFleet.o: ../../include/strategic/FAstroBody.h
-FFleet.o: ../../include/strategic/FFleet.h ../../include/strategic/FSystem.h
-FGame.o: ../../include/strategic/FGame.h ../../include/core/FPObject.h
-FGame.o: ../../include/core/FObject.h ../../include/strategic/FPlayer.h
-FGame.o: ../../include/strategic/FFleet.h ../../include/strategic/FMap.h
-FGame.o: ../../include/strategic/FSystem.h ../../include/strategic/FPlanet.h
-FGame.o: ../../include/strategic/FAstroBody.h ../../include/ships/FVehicle.h
-FGame.o: ../../include/core/FGameConfig.h ../../include/weapons/FWeapon.h
-FGame.o: ../../include/defenses/FDefense.h
-FGame.o: ../../include/strategic/FJumpRoute.h
-FGame.o: ../../include/strategic/FFleet.h ../../include/gui/SystemDialogGUI.h
-FGame.o: ../../include/strategic/FMap.h ../../include/strategic/FPlayer.h
-FGame.o: ../../include/Frontier.h ../../include/wxWidgets.h
-FGame.o: ../../include/gui/UPFUnattachedGUI.h
-FGame.o: ../../include/gui/SatharFleetsGUI.h ../../include/gui/ViewFleetGUI.h
-FGame.o: ../../include/strategic/FSystem.h
-FGame.o: ../../include/gui/SatharRetreatGUI.h
-FGame.o: ../../include/gui/SelectCombatGUI.h
-FGame.o: ../../include/gui/WXGameDisplay.h ../../include/gui/WXMapDisplay.h
-FGame.o: ../../include/gui/WXPlayerDisplay.h
-FJumpRoute.o: ../../include/strategic/FJumpRoute.h
-FJumpRoute.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FJumpRoute.o: ../../include/strategic/FSystem.h
-FJumpRoute.o: ../../include/strategic/FPlanet.h
-FJumpRoute.o: ../../include/strategic/FAstroBody.h
-FJumpRoute.o: ../../include/ships/FVehicle.h ../../include/core/FGameConfig.h
-FJumpRoute.o: ../../include/weapons/FWeapon.h
-FJumpRoute.o: ../../include/defenses/FDefense.h
-FJumpRoute.o: ../../include/strategic/FFleet.h
-FMap.o: ../../include/strategic/FMap.h
-FPlanet.o: ../../include/strategic/FPlanet.h
-FPlanet.o: ../../include/strategic/FAstroBody.h ../../include/core/FPObject.h
-FPlanet.o: ../../include/core/FObject.h ../../include/ships/FVehicle.h
-FPlanet.o: ../../include/core/FGameConfig.h ../../include/weapons/FWeapon.h
-FPlanet.o: ../../include/defenses/FDefense.h
-FPlayer.o: ../../include/strategic/FPlayer.h
-FPlayer.o: ../../include/strategic/FJumpRoute.h ../../include/core/FPObject.h
-FPlayer.o: ../../include/core/FObject.h ../../include/strategic/FSystem.h
-FPlayer.o: ../../include/strategic/FPlanet.h
-FPlayer.o: ../../include/strategic/FAstroBody.h
-FPlayer.o: ../../include/ships/FVehicle.h ../../include/core/FGameConfig.h
-FPlayer.o: ../../include/weapons/FWeapon.h ../../include/defenses/FDefense.h
-FPlayer.o: ../../include/strategic/FFleet.h ../../include/gui/WXMapDisplay.h
-FSystem.o: ../../include/strategic/FSystem.h
+-include $(DEPS)

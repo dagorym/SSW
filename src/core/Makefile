@@ -12,7 +12,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS =
 
@@ -33,7 +36,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -43,9 +46,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FObject.o FPObject.o FPoint.o FGameConfig.o FHexMap.o FHexPath.o
+SRCS = $(wildcard *.cpp)
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 TARGET = libcore.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -59,24 +66,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-FGameConfig.o: ../../include/core/FGameConfig.h ../../include/core/FPObject.h
-FGameConfig.o: ../../include/core/FObject.h
-FHexMap.o: ../../include/Frontier.h ../../include/wxWidgets.h
-FHexMap.o: ../../include/core/FHexMap.h ../../include/core/FPObject.h
-FHexMap.o: ../../include/core/FObject.h ../../include/core/FPoint.h
-FHexMap.o: ../../include/ships/FVehicle.h ../../include/core/FGameConfig.h
-FHexMap.o: ../../include/weapons/FWeapon.h ../../include/defenses/FDefense.h
-FHexPath.o: ../../include/core/FHexPath.h ../../include/core/FPObject.h
-FHexPath.o: ../../include/core/FObject.h ../../include/core/FPoint.h
-FHexPath.o: ../../include/core/FHexMap.h ../../include/ships/FVehicle.h
-FHexPath.o: ../../include/core/FGameConfig.h ../../include/weapons/FWeapon.h
-FHexPath.o: ../../include/defenses/FDefense.h
-FObject.o: ../../include/core/FObject.h
-FPObject.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FPoint.o: ../../include/core/FPoint.h
+-include $(DEPS)

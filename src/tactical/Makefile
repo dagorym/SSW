@@ -12,8 +12,11 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 WX_CXXFLAGS ?= -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread
 CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) $(WX_CXXFLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS =
 
@@ -34,7 +37,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -44,9 +47,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FBattleBoard.o FBattleScreen.o FBattleDisplay.o FTacticalGame.o
+SRCS = $(wildcard *.cpp)
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 TARGET = libtactical.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -60,55 +67,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-FBattleBoard.o: ../../include/Frontier.h ../../include/wxWidgets.h
-FBattleBoard.o: ../../include/tactical/FBattleScreen.h
-FBattleBoard.o: ../../include/tactical/FBattleBoard.h
-FBattleBoard.o: ../../include/strategic/FFleet.h
-FBattleBoard.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FBattleBoard.o: ../../include/ships/FVehicle.h
-FBattleBoard.o: ../../include/core/FGameConfig.h
-FBattleBoard.o: ../../include/weapons/FWeapon.h
-FBattleBoard.o: ../../include/defenses/FDefense.h ../../include/core/FPoint.h
-FBattleBoard.o: ../../include/core/FHexPath.h ../../include/core/FHexMap.h
-FBattleBoard.o: ../../include/tactical/FBattleDisplay.h
-FBattleBoard.o: ../../include/gui/ICMSelectionGUI.h
-FBattleBoard.o: ../../include/gui/AssignedICMData.h
-FBattleDisplay.o: ../../include/Frontier.h ../../include/wxWidgets.h
-FBattleDisplay.o: ../../include/tactical/FBattleScreen.h
-FBattleDisplay.o: ../../include/tactical/FBattleBoard.h
-FBattleDisplay.o: ../../include/strategic/FFleet.h
-FBattleDisplay.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FBattleDisplay.o: ../../include/ships/FVehicle.h
-FBattleDisplay.o: ../../include/core/FGameConfig.h
-FBattleDisplay.o: ../../include/weapons/FWeapon.h
-FBattleDisplay.o: ../../include/defenses/FDefense.h
-FBattleDisplay.o: ../../include/core/FPoint.h ../../include/core/FHexPath.h
-FBattleDisplay.o: ../../include/core/FHexMap.h
-FBattleDisplay.o: ../../include/tactical/FBattleDisplay.h
-FBattleScreen.o: ../../include/tactical/FBattleScreen.h
-FBattleScreen.o: ../../include/Frontier.h ../../include/wxWidgets.h
-FBattleScreen.o: ../../include/tactical/FBattleBoard.h
-FBattleScreen.o: ../../include/strategic/FFleet.h
-FBattleScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FBattleScreen.o: ../../include/ships/FVehicle.h
-FBattleScreen.o: ../../include/core/FGameConfig.h
-FBattleScreen.o: ../../include/weapons/FWeapon.h
-FBattleScreen.o: ../../include/defenses/FDefense.h
-FBattleScreen.o: ../../include/core/FPoint.h ../../include/core/FHexPath.h
-FBattleScreen.o: ../../include/core/FHexMap.h
-FBattleScreen.o: ../../include/tactical/FBattleDisplay.h
-FBattleScreen.o: ../../include/gui/ICMSelectionGUI.h
-FBattleScreen.o: ../../include/gui/AssignedICMData.h
-FBattleScreen.o: ../../include/gui/WXTacticalUI.h
-FBattleScreen.o: ../../include/tactical/FTacticalGame.h
-FTacticalGame.o: ../../include/tactical/FTacticalGame.h
-FTacticalGame.o: ../../include/strategic/FFleet.h
-FTacticalGame.o: ../../include/ships/FVehicle.h
-FTacticalGame.o: ../../include/weapons/FWeapon.h
-FTacticalGame.o: ../../include/tactical/FTacticalAttackResult.h
+-include $(DEPS)

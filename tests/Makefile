@@ -4,7 +4,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../include  -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS = -L./strategic -lstrategicTests -L./ships -lshipsTests \
 	-L./tactical -ltacticalTests \
@@ -28,7 +31,7 @@ LIBS = -L./strategic -lstrategicTests -L./ships -lshipsTests \
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -39,8 +42,11 @@ LIBS = -L./strategic -lstrategicTests -L./ships -lshipsTests \
 ############################# Paths #################################
 
 OBJS = SSWTests.o #FApp.o Frontier.o FMainFrameTest.o 
+DEPS = $(OBJS:.o=.d)
 
 OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a libshipsTests.a libtacticalTests.a #libguiTests.a
+
+$(OBJS): Makefile
 
 TARGET = SSWTests
 
@@ -90,57 +96,11 @@ all_clean:
 	@ cd strategic; ${MAKE} clean
 	@ cd tactical; ${MAKE} clean
 	@ cd weapons; ${MAKE} clean
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS) $(DEPS)
+	rm -f $(TARGET)
 	
 clean:
-	rm $(OBJS)
-	rm $(TARGET)
+	rm -f $(OBJS) $(DEPS)
+	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-SSWTests.o: core/FPointTest.h ../include/core/FPoint.h core/FObjectTest.h
-SSWTests.o: ../include/core/FObject.h core/FGameConfigTest.h
-SSWTests.o: ../include/core/FGameConfig.h ../include/core/FPObject.h
-SSWTests.o: ../include/core/FObject.h weapons/FWeaponTest.h
-SSWTests.o: ../include/weapons/FWeapon.h weapons/FAssaultRocketTest.h
-SSWTests.o: ../include/weapons/FAssaultRocket.h
-SSWTests.o: weapons/FDisruptorCannonTest.h
-SSWTests.o: ../include/weapons/FDisruptorCannon.h
-SSWTests.o: weapons/FElectronBatteryTest.h
-SSWTests.o: ../include/weapons/FElectronBattery.h weapons/FLaserBatteryTest.h
-SSWTests.o: ../include/weapons/FLaserBattery.h weapons/FLaserCannonTest.h
-SSWTests.o: ../include/weapons/FLaserCannon.h weapons/FMineLauncherTest.h
-SSWTests.o: ../include/weapons/FMineLauncher.h weapons/FProtonBatteryTest.h
-SSWTests.o: ../include/weapons/FProtonBattery.h weapons/FRocketBatteryTest.h
-SSWTests.o: ../include/weapons/FRocketBattery.h
-SSWTests.o: weapons/FSeekerMissileLauncherTest.h
-SSWTests.o: ../include/weapons/FSeekerMissileLauncher.h
-SSWTests.o: weapons/FTorpedoTest.h ../include/weapons/FTorpedo.h
-SSWTests.o: ships/FVehicleTest.h ../include/ships/FVehicle.h
-SSWTests.o: ships/FAssaultScoutTest.h ../include/ships/FAssaultScout.h
-SSWTests.o: ../include/ships/FVehicle.h ships/FArmedStationTest.h
-SSWTests.o: ../include/ships/FArmedStation.h ships/FAssaultCarrierTest.h
-SSWTests.o: ../include/ships/FAssaultCarrier.h ships/FBattleshipTest.h
-SSWTests.o: ../include/ships/FBattleship.h ships/FDestroyerTest.h
-SSWTests.o: ../include/ships/FDestroyer.h ships/FFighterTest.h
-SSWTests.o: ../include/ships/FFighter.h ships/FFortifiedStationTest.h
-SSWTests.o: ../include/ships/FFortifiedStation.h ships/FFortressTest.h
-SSWTests.o: ../include/ships/FFortress.h ships/FFrigateTest.h
-SSWTests.o: ../include/ships/FFrigate.h ships/FHvCruiserTest.h
-SSWTests.o: ../include/ships/FHvCruiser.h ships/FLtCruiserTest.h
-SSWTests.o: ../include/ships/FLtCruiser.h ships/FMinelayerTest.h
-SSWTests.o: ../include/ships/FMinelayer.h strategic/FGameTest.h
-SSWTests.o: strategic/FGameHeaderDependencyTest.h
-SSWTests.o: ../include/strategic/FGame.h ../include/strategic/FPlayer.h
-SSWTests.o: ../include/strategic/FFleet.h ../include/strategic/FMap.h
-SSWTests.o: ../include/strategic/FSystem.h ../include/strategic/FPlanet.h
-SSWTests.o: ../include/strategic/FAstroBody.h
-SSWTests.o: ../include/strategic/FJumpRoute.h strategic/FPlanetTest.h
-SSWTests.o: ../include/strategic/FPlanet.h strategic/FFleetTest.h
-SSWTests.o: ../include/strategic/FFleet.h strategic/FJumpRouteTest.h
-SSWTests.o: ../include/strategic/FJumpRoute.h strategic/FSystemTest.h
-SSWTests.o: ../include/strategic/FSystem.h strategic/FMapTest.h
-SSWTests.o: ../include/strategic/FMap.h strategic/FPlayerTest.h
-SSWTests.o: ../include/strategic/FPlayer.h
+-include $(DEPS)

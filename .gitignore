@@ -1,5 +1,6 @@
 *.gcno
 *.gcda
+*.d
 *.o
 *.bak
 BattleSim

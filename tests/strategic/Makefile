@@ -12,7 +12,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS = `wx-config --libs`
 
@@ -33,7 +36,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -43,11 +46,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FGameTest.o FGameHeaderDependencyTest.o FGameMockStrategicUITest.o FPlanetTest.o FFleetTest.o FJumpRouteTest.o \
-       FSystemTest.o FMapTest.o FPlayerTest.o \
-       #FGame.o FAstroBodyTest.o 
+SRCS = $(filter-out test_template.cpp,$(wildcard *.cpp))
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 TARGET = libstrategicTests.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -61,61 +66,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-FFleetTest.o: FFleetTest.h ../../include/strategic/FFleet.h
-FFleetTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FFleetTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
-FFleetTest.o: ../../include/strategic/FSystem.h
-FFleetTest.o: ../../include/strategic/FPlanet.h
-FFleetTest.o: ../../include/strategic/FAstroBody.h
-FFleetTest.o: ../../include/strategic/FFleet.h
-FGameTest.o: FGameTest.h ../../include/strategic/FGame.h
-FGameTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FGameTest.o: ../../include/strategic/FPlayer.h
-FGameTest.o: ../../include/strategic/FFleet.h ../../include/strategic/FMap.h
-FGameTest.o: ../../include/strategic/FSystem.h
-FGameTest.o: ../../include/strategic/FPlanet.h
-FGameTest.o: ../../include/strategic/FAstroBody.h
-FGameTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
-FGameTest.o: ../../include/strategic/FJumpRoute.h
-FJumpRouteTest.o: FJumpRouteTest.h ../../include/strategic/FJumpRoute.h
-FJumpRouteTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FJumpRouteTest.o: ../../include/strategic/FSystem.h
-FJumpRouteTest.o: ../../include/strategic/FPlanet.h
-FJumpRouteTest.o: ../../include/strategic/FAstroBody.h
-FJumpRouteTest.o: ../../include/ships/FVehicle.h
-FJumpRouteTest.o: ../../include/weapons/FWeapon.h
-FJumpRouteTest.o: ../../include/strategic/FFleet.h
-FJumpRouteTest.o: ../../include/strategic/FSystem.h
-FMapTest.o: FMapTest.h ../../include/strategic/FMap.h
-FMapTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FMapTest.o: ../../include/strategic/FSystem.h
-FMapTest.o: ../../include/strategic/FPlanet.h
-FMapTest.o: ../../include/strategic/FAstroBody.h
-FMapTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
-FMapTest.o: ../../include/strategic/FFleet.h
-FMapTest.o: ../../include/strategic/FJumpRoute.h
-FPlanetTest.o: FPlanetTest.h ../../include/strategic/FPlanet.h
-FPlanetTest.o: ../../include/strategic/FAstroBody.h
-FPlanetTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FPlanetTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
-FPlayerTest.o: FPlayerTest.h ../../include/strategic/FPlayer.h
-FPlayerTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FPlayerTest.o: ../../include/strategic/FFleet.h
-FPlayerTest.o: ../../include/strategic/FMap.h
-FPlayerTest.o: ../../include/strategic/FSystem.h
-FPlayerTest.o: ../../include/strategic/FPlanet.h
-FPlayerTest.o: ../../include/strategic/FAstroBody.h
-FPlayerTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
-FPlayerTest.o: ../../include/strategic/FJumpRoute.h
-FSystemTest.o: FSystemTest.h ../../include/strategic/FSystem.h
-FSystemTest.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FSystemTest.o: ../../include/strategic/FPlanet.h
-FSystemTest.o: ../../include/strategic/FAstroBody.h
-FSystemTest.o: ../../include/ships/FVehicle.h ../../include/weapons/FWeapon.h
-FSystemTest.o: ../../include/strategic/FFleet.h
+-include $(DEPS)

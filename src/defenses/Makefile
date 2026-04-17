@@ -12,7 +12,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS =
 
@@ -33,7 +36,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -43,10 +46,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = FDefense.o FNone.o FReflectiveHull.o FMaskingScreen.o FICM.o \
-       FStasisScreen.o FProtonScreen.o FElectronScreen.o
+SRCS = $(wildcard *.cpp)
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 TARGET = libdefenses.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -58,43 +64,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-# DO NOT DELETE
-
-FDefense.o: ../../include/defenses/FDefense.h ../../include/core/FPObject.h
-FDefense.o: ../../include/core/FObject.h ../../include/weapons/FWeapon.h
-FDefense.o: ../../include/defenses/defenses.h ../../include/defenses/FNone.h
-FDefense.o: ../../include/defenses/FReflectiveHull.h
-FDefense.o: ../../include/defenses/FMaskingScreen.h
-FDefense.o: ../../include/defenses/FICM.h
-FDefense.o: ../../include/defenses/FStasisScreen.h
-FDefense.o: ../../include/defenses/FProtonScreen.h
-FDefense.o: ../../include/defenses/FElectronScreen.h
-FElectronScreen.o: ../../include/defenses/FElectronScreen.h
-FElectronScreen.o: ../../include/defenses/FDefense.h
-FElectronScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FElectronScreen.o: ../../include/weapons/FWeapon.h
-FICM.o: ../../include/defenses/FICM.h ../../include/defenses/FDefense.h
-FICM.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FICM.o: ../../include/weapons/FWeapon.h
-FMaskingScreen.o: ../../include/defenses/FMaskingScreen.h
-FMaskingScreen.o: ../../include/defenses/FDefense.h
-FMaskingScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FMaskingScreen.o: ../../include/weapons/FWeapon.h
-FNone.o: ../../include/defenses/FNone.h ../../include/defenses/FDefense.h
-FNone.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FNone.o: ../../include/weapons/FWeapon.h
-FProtonScreen.o: ../../include/defenses/FProtonScreen.h
-FProtonScreen.o: ../../include/defenses/FDefense.h
-FProtonScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FProtonScreen.o: ../../include/weapons/FWeapon.h
-FReflectiveHull.o: ../../include/defenses/FReflectiveHull.h
-FReflectiveHull.o: ../../include/defenses/FDefense.h
-FReflectiveHull.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FReflectiveHull.o: ../../include/weapons/FWeapon.h
-FStasisScreen.o: ../../include/defenses/FStasisScreen.h
-FStasisScreen.o: ../../include/defenses/FDefense.h
-FStasisScreen.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-FStasisScreen.o: ../../include/weapons/FWeapon.h
+-include $(DEPS)

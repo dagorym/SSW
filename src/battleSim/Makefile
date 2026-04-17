@@ -12,7 +12,10 @@ else
 COVERAGE_FLAGS =
 endif
 
+.DEFAULT_GOAL := all
+
 CXXFLAGS = -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS)
+DEPFLAGS = -MMD -MP
 
 LIBS = `wx-config --libs`
 
@@ -33,7 +36,7 @@ PICFLAGS = -fPIC -DPIC
 	$(CC) -c $(CFLAGS) $(PICFLAGS) -o $@ $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEPFLAGS) $(PICFLAGS) -o $@ $<
 
 .cxx.o:
 	$(CXX) -c $(CXXFLAGS) $(PICFLAGS) -o $@ $<
@@ -43,9 +46,13 @@ PICFLAGS = -fPIC -DPIC
 
 ############################# Paths #################################
 
-OBJS = BattleSimFrame.o LocalGameDialog.o ScenarioDialog.o ScenarioEditorGUI.o
+SRCS = $(wildcard *.cpp)
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 TARGET = libbattleSim.a
+
+$(OBJS): Makefile
 
 all $(TARGET): $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
@@ -58,48 +65,7 @@ objs: $(OBJS)
 
 .PHONY:
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)
 
-
-# DO NOT DELETE
-
-BattleSimFrame.o: ../../include/battleSim/BattleSimFrame.h
-BattleSimFrame.o: ../../include/battleSim/LocalGameDialog.h
-LocalGameDialog.o: ../../include/battleSim/LocalGameDialog.h
-LocalGameDialog.o: ../../include/battleSim/ScenarioDialog.h
-LocalGameDialog.o: ../../include/battleSim/ScenarioEditorGUI.h
-LocalGameDialog.o: ../../include/strategic/FFleet.h
-LocalGameDialog.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-LocalGameDialog.o: ../../include/ships/FVehicle.h
-LocalGameDialog.o: ../../include/core/FGameConfig.h
-LocalGameDialog.o: ../../include/weapons/FWeapon.h
-LocalGameDialog.o: ../../include/defenses/FDefense.h
-ScenarioDialog.o: ../../include/battleSim/ScenarioDialog.h
-ScenarioDialog.o: ../../include/tactical/FBattleScreen.h
-ScenarioDialog.o: ../../include/Frontier.h ../../include/wxWidgets.h
-ScenarioDialog.o: ../../include/tactical/FBattleBoard.h
-ScenarioDialog.o: ../../include/strategic/FFleet.h
-ScenarioDialog.o: ../../include/core/FPObject.h ../../include/core/FObject.h
-ScenarioDialog.o: ../../include/ships/FVehicle.h
-ScenarioDialog.o: ../../include/core/FGameConfig.h
-ScenarioDialog.o: ../../include/weapons/FWeapon.h
-ScenarioDialog.o: ../../include/defenses/FDefense.h
-ScenarioDialog.o: ../../include/core/FPoint.h ../../include/core/FHexPath.h
-ScenarioDialog.o: ../../include/core/FHexMap.h
-ScenarioDialog.o: ../../include/tactical/FBattleDisplay.h
-ScenarioEditorGUI.o: ../../include/battleSim/ScenarioEditorGUI.h
-ScenarioEditorGUI.o: ../../include/strategic/FFleet.h
-ScenarioEditorGUI.o: ../../include/core/FPObject.h
-ScenarioEditorGUI.o: ../../include/core/FObject.h
-ScenarioEditorGUI.o: ../../include/ships/FVehicle.h
-ScenarioEditorGUI.o: ../../include/core/FGameConfig.h
-ScenarioEditorGUI.o: ../../include/weapons/FWeapon.h
-ScenarioEditorGUI.o: ../../include/defenses/FDefense.h
-ScenarioEditorGUI.o: ../../include/tactical/FBattleScreen.h
-ScenarioEditorGUI.o: ../../include/Frontier.h ../../include/wxWidgets.h
-ScenarioEditorGUI.o: ../../include/tactical/FBattleBoard.h
-ScenarioEditorGUI.o: ../../include/core/FPoint.h
-ScenarioEditorGUI.o: ../../include/core/FHexPath.h
-ScenarioEditorGUI.o: ../../include/core/FHexMap.h
-ScenarioEditorGUI.o: ../../include/tactical/FBattleDisplay.h
+-include $(DEPS)
