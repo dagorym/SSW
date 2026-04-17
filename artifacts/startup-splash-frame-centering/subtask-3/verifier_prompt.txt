@@ -1,0 +1,63 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate startup splash/frame centering coverage updates for both SSW and BattleSim startup paths, plus the documentation updates that now describe the new startup-seam GUI regression coverage.
+
+Acceptance criteria to verify:
+- GuiTests includes startup-path coverage for SSW using the extracted startup seam.
+- GuiTests includes startup-path coverage for BattleSim using the extracted startup seam.
+- The startup tests verify display centering for both splash and startup frame in each app.
+- The startup tests verify, using the narrowest reliable observable assertion available, that the splash remains above the frame while both are visible.
+- The GUI test target still builds and runs successfully with the new startup coverage.
+- Documentation accurately reflects the implemented startup-seam coverage updates without drifting beyond the shipped behavior.
+
+Implementation branch or worktree context:
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-3-documenter-20260416`
+- Documenter branch: `window-centering-subtask-3-documenter-20260416`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-3-tester-20260416`
+- Tester branch: `window-centering-subtask-3-tester-20260416`
+- Parent implementer branch: `window-centering-subtask-3-implementer-20260416`
+- Assumption: compare the subtask diff against `window-centering`, since branch history shows the startup-centering subtask stack based there and the tester branch added only handoff artifacts for subtask 3.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/gui/StrategicGuiLiveTest.h`
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.h`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+- `artifacts/startup-splash-frame-centering/subtask-3/tester_report.md`
+- `artifacts/startup-splash-frame-centering/subtask-3/tester_result.json`
+- `artifacts/startup-splash-frame-centering/subtask-3/documenter_prompt.txt`
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Commands executed:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` *(failed only because `xvfb-run` is not installed in this environment)*
+- `cd tests/gui && ./GuiTests` *(fallback command; passed)*
+- `git --no-pager diff window-centering...HEAD -- AGENTS.md doc/DesignNotes.md tests/gui`
+
+Final test outcomes:
+- `GuiTests`: **OK (31 tests)**
+- Tester acceptance-criteria status: **all MET**
+
+Plan and review context:
+- Plan source: `plans/startup-splash-frame-centering-plan.md` (Subtask 3)
+- Convention guidance: read repository `AGENTS.md`; named-agent resolution guidance lives in `~/repos/agents/AGENTS_LOOKUP.md`.
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/startup-splash-frame-centering/subtask-3`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
