@@ -21,8 +21,8 @@ FMainFrame::~FMainFrame() {
 		delete m_game;
 	}
 	delete m_strategicUI;
-	delete m_drawingPanel;
-	delete m_gameConfig;
+	// m_drawingPanel is a wx child window owned by the frame.
+	// m_gameConfig points at the process-global FGameConfig singleton.
 }
 
 FMainFrame::FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& size)

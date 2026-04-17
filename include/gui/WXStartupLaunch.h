@@ -18,9 +18,8 @@ namespace Frontier {
 typedef wxFrame* (*FStartupFrameFactory)();
 
 inline wxFrame* createStartupSplashAndFrame(wxApp& app,
-		FStartupFrameFactory createFrame,
-		const int splashTimeout = 2000) {
-	wxInitAllImageHandlers();
+			FStartupFrameFactory createFrame,
+			const int splashTimeout = 2000) {
 	wxBitmap bitmap;
 	FGameConfig &gc = FGameConfig::create();
 	if (bitmap.LoadFile(gc.getBasePath() + "data/splash.png", wxBITMAP_TYPE_PNG)) {

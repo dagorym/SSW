@@ -8,6 +8,7 @@
 #include <wx/app.h>
 #include <wx/debug.h>
 #include <wx/dialog.h>
+#include <wx/log.h>
 #include <wx/toplevel.h>
 #include <wx/timer.h>
 #include <wx/utils.h>
@@ -133,6 +134,10 @@ bool WXGuiTestHarness::bootstrap() {
 		wxEntryCleanup();
 		return false;
 	}
+
+	// Keep GUI test output focused on assertion results rather than wx debug noise
+	// such as duplicate image-handler registration messages from the toolkit.
+	wxLog::SetLogLevel(wxLOG_Warning);
 
 	m_bootstrapped = true;
 	m_startedWx = true;

@@ -693,11 +693,6 @@ void StrategicGuiLiveTest::setUp() {
 	CPPUNIT_ASSERT(m_harness.bootstrap());
 	FGameConfig::reset();
 	FGameConfig::create();
-	static bool handlersInitialized = false;
-	if (!handlersInitialized) {
-		wxInitAllImageHandlers();
-		handlersInitialized = true;
-	}
 }
 
 void StrategicGuiLiveTest::tearDown() {
