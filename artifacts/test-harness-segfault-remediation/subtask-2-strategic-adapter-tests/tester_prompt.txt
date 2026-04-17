@@ -1,0 +1,40 @@
+You are the Tester Agent.
+
+Task summary:
+- Strategic adapter regression coverage was tightened to explicitly distinguish safe no-runtime behavior from parentless-in-runtime behavior for WXStrategicUI.
+
+Modified files:
+- tests/core/WXStrategicUITest.h
+- tests/core/WXStrategicUITest.cpp
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Core strategic adapter tests explicitly cover the safe no-runtime failure path.
+- Live GUI tests still cover the parentless retreat-dialog path in a valid wx runtime.
+- The coverage makes the distinction between “null parent” and “no usable UI context” obvious to future maintainers.
+- Freshly rebuilt SSWTests passes without crashing.
+
+Create test files in:
+- tests/core/WXStrategicUITest.cpp
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Implementation context for testing:
+- Added testGuardedDialogMethodsIgnoreParentWhenNoWxRuntime() in core WXStrategicUITest.
+- Added dedicated live test testWXStrategicUIParentlessRetreatModalPathWithRuntime() and kept parent-backed modal/redraw test.
+- The key regression contract is: no wx runtime should return/cancel safely without dialog construction regardless of parent pointer state; parentless flow should still show modal in valid wx runtime.
+
+Suggested test command(s):
+- cd tests && make && ./SSWTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/test-harness-segfault-remediation/subtask-2-strategic-adapter-tests
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
