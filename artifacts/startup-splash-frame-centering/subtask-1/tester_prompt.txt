@@ -1,0 +1,46 @@
+You are the Tester Agent.
+
+Task summary:
+- Implementer extracted startup splash/frame creation into a shared helper seam and updated both app startup paths to delegate to that seam.
+
+Modified files:
+- include/gui/WXStartupLaunch.h
+- src/FApp.cpp
+- src/FBattleSimApp.cpp
+
+Acceptance criteria to validate (from Planner):
+- The SSW app startup path uses an extracted, testable seam for splash and initial-frame creation.
+- The BattleSim app startup path uses an extracted, testable seam for splash and initial-frame creation.
+- `FApp::OnInit()` and `FBattleSimApp::OnInit()` delegate to the extracted seam instead of duplicating startup creation logic inline.
+- The extracted seam preserves concurrent splash/frame startup behavior.
+
+Create test files in:
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/Makefile
+
+Implementation context for testing:
+- New helper seam: `Frontier::createStartupSplashAndFrame(wxApp&, FStartupFrameFactory, int)` in `include/gui/WXStartupLaunch.h`.
+- Both `FApp::OnInit()` and `FBattleSimApp::OnInit()` now call that helper with app-specific frame factories.
+- Helper behavior: initialize image handlers, attempt splash image load (`data/splash.png`), create splash with timeout when available, create initial frame, show frame, and set app top window.
+- `FApp` exit-menu binding remains in place after delegation.
+- No intended behavioral change beyond extraction and improved seam testability.
+
+Suggested test command(s):
+- Assumption (from repo guidance): `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- Environment fallback (xvfb unavailable): `cd tests/gui && make && ./GuiTests`
+
+Existing validation outcomes from implementer run:
+- `cd src && make`: pass
+- `cd tests/gui && make && (xvfb-run -a ./GuiTests || ./GuiTests)`: pass via fallback `./GuiTests` (`OK (29 tests)`)
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/startup-splash-frame-centering/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
