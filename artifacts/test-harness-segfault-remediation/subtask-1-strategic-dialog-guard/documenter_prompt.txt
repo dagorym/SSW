@@ -1,0 +1,57 @@
+You are the Documenter Agent.
+
+Task summary:
+- Implementer added wx runtime guards in `WXStrategicUI` to prevent modal dialog construction when no usable wx runtime exists while preserving parentless live-wx behavior.
+- Tester added and executed regression tests that validate runtime-absent cancel behavior and guard consistency across strategic modal/void entry points.
+
+Acceptance criteria validated:
+- WXStrategicUI::selectRetreatCondition() returns a non-zero cancel-style result instead of constructing a dialog when no usable wx runtime exists.
+- Any other reachable WXStrategicUI modal entry points that share the same unsafe assumption are guarded consistently where needed.
+- Parentless live-wx dialog behavior is preserved.
+- cd tests && make && ./SSWTests no longer segfaults in the strategic adapter path.
+
+Implementation branch or worktree context:
+- Branch: `test-fixes-subtask-1-tester-20260417`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/test-fixes-subtask-1-tester-20260417`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/gui/WXStrategicUI.cpp
+- tests/core/WXStrategicUITest.h
+- tests/core/WXStrategicUITest.cpp
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Test commit:
+- 47b67b776607eda4d241d4c6ecd1de647b44626f
+
+Commands executed:
+- cd tests && make && ./SSWTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests && make && ./SSWTests && cd gui && make && xvfb-run -a ./GuiTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests && make && ./SSWTests
+
+Final test outcomes:
+- SSWTests: OK (161 tests)
+- GuiTests: OK (32 tests)
+- Combined validated pass count: 193
+- No unmet acceptance criteria.
+
+Documentation context:
+- Update documentation where strategic UI runtime-guard behavior is described, especially around non-wx fallback behavior and modal construction preconditions.
+- Confirm any milestone or architecture notes that discuss strategic UI adapter assumptions remain accurate with wx runtime guard semantics.
+
+Plan and diff context:
+- Story context: Subtask 1 strategic dialog guard remediation under `artifacts/test-harness-segfault-remediation/subtask-1-strategic-dialog-guard`.
+- Comparison base assumption: use the branch merge-base against main (or repo default branch) to summarize documentation-impacting deltas if no explicit base is provided.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/test-harness-segfault-remediation/subtask-1-strategic-dialog-guard
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
