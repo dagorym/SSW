@@ -1098,6 +1098,20 @@ and treat the splash window's `wxSTAY_ON_TOP` style bit as the narrowest
 reliable observable that the splash remains above the frame while it is still
 shown.
 
+The AP-02 asset-path follow-up then aligned the remaining direct wx image loads
+with the same resolver seam. `FBattleDisplay` now loads `data/zoom.png` through
+`FGameConfig::resolveAssetPath(...)`, `FBattleBoard` resolves
+`icons/MaskingScreen.png`, `FBattleScreen` resolves the tactical planet icon
+set through the same helper, and `createStartupSplashAndFrame(...)` resolves
+`data/splash.png` without reintroducing executable-relative concatenation. The
+same follow-up also simplified `WXIconCache` so it now delegates to
+`FGameConfig::resolveAssetPath(...)` instead of maintaining its own `../`
+fallback path. The paired regression updates lock that policy down with
+source-contract coverage in `FTacticalBattleDisplayFireFlowTest` and
+`WXIconCacheTest`, plus startup helper assertions in `StrategicGuiLiveTest` and
+`BattleSimGuiLiveTest` that reject hard-coded `/home/...` machine paths at the
+affected call sites.
+
 Validation command:
 
 ```bash
