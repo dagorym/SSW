@@ -1,0 +1,34 @@
+{
+  "status": "success",
+  "task": "startup-splash-frame-centering",
+  "subtask": "subtask-2",
+  "branch": "window-centering-subtask-2-tester-20260416",
+  "parent_implementer_branch": "window-centering-subtask-2-implementer-20260416",
+  "test_commit_hash": "4e7ebf46534c9a1a71892af1476951d1a6640975",
+  "test_files_modified": [
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/BattleSimGuiLiveTest.cpp"
+  ],
+  "implementer_files_modified": [
+    "include/gui/WXStartupLaunch.h",
+    "src/FApp.cpp",
+    "src/FMainFrame.cpp"
+  ],
+  "commands_run": [
+    "cd tests/gui && make",
+    "cd tests/gui && ./GuiTests",
+    "cd tests/gui && make && ./GuiTests"
+  ],
+  "totals": {
+    "tests_written": 0,
+    "tests_modified": 2,
+    "suite_passed": 29,
+    "suite_failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/startup-splash-frame-centering/subtask-2/tester_report.md",
+    "artifacts/startup-splash-frame-centering/subtask-2/tester_result.json",
+    "artifacts/startup-splash-frame-centering/subtask-2/documenter_prompt.txt"
+  ]
+}

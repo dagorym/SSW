@@ -1,0 +1,57 @@
+You are the Documenter Agent.
+
+Task summary:
+- Startup placement fixes were implemented so SSW and BattleSim startup splash/frame placement is deterministic.
+- Legacy fixed SSW startup position was removed.
+- Splash style was updated to preserve expected splash/top-level behavior while remaining above startup frame during splash visibility.
+
+Acceptance criteria to document against:
+- SSW startup centers splash on screen and opens initial `FMainFrame` centered on screen.
+- BattleSim startup centers splash on screen and opens initial `BattleSimFrame` centered on screen.
+- Splash and startup frame may coexist, with splash remaining above frame while visible.
+- `FMainFrame` no longer relies on old fixed startup position.
+- Splash style no longer strips away wx splash-window default behavior needed for expected top-level/taskbar handling.
+- Startup placement is deterministic for both apps.
+
+Worktree/branch context:
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/window-centering-subtask-2-tester-20260416`
+- Tester branch: `window-centering-subtask-2-tester-20260416`
+- Parent implementer branch: `window-centering-subtask-2-implementer-20260416`
+- Shared artifact directory (repository-root-relative): `artifacts/startup-splash-frame-centering/subtask-2`
+
+Implementer-modified files:
+- `include/gui/WXStartupLaunch.h`
+- `src/FApp.cpp`
+- `src/FMainFrame.cpp`
+
+Tester-modified files:
+- `tests/gui/StrategicGuiLiveTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+
+Tester commit hash (test changes commit):
+- `4e7ebf46534c9a1a71892af1476951d1a6640975`
+
+Commands executed by tester:
+- `cd tests/gui && make`
+- `cd tests/gui && ./GuiTests`
+- `cd tests/gui && make && ./GuiTests`
+
+Final test outcome:
+- GUI suite passed (`OK (29 tests)`).
+- Added source-contract and live-centering assertions for startup helper/order/style and strategic frame centering.
+
+Documentation focus guidance:
+- Update any startup/GUI behavior docs that mention frame positioning, splash behavior, or startup window style/ordering.
+- Confirm references to old fixed SSW startup coordinates are removed or revised.
+- Ensure deterministic centering behavior is reflected for both SSW and BattleSim startup flows.
+
+Comparison-base guidance:
+- Review tester and implementer branch diffs against the parent plan line (e.g., `window-centering` or repository default branch as appropriate).
+- At minimum, inspect diff from `window-centering-subtask-2-implementer-20260416` to `window-centering-subtask-2-tester-20260416` for test-only changes and from its parent for implementation changes.
+
+Execution guidance:
+- If plan path/base-branch/documentation-convention inputs are missing, infer safely from repository context and state assumptions explicitly.
+- Continue through the full documentation workflow in the same run when blockers are absent; do not stop after scope confirmation, doc discovery, or diff review.
+
+Completion gate:
+Do not report success unless all required artifacts exist and all changes are committed.
