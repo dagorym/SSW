@@ -46,6 +46,11 @@ bool pathExists(const std::string &path)
 std::string normalizeAssetPath(const std::string &assetPath)
 {
 	std::string normalized = assetPath;
+	for (size_t i = 0; i < normalized.size(); ++i) {
+		if (normalized[i] == '\\') {
+			normalized[i] = kPathSeparator;
+		}
+	}
 	while (normalized.size() >= 2 && normalized[0] == '.' &&
 			(normalized[1] == '/' || normalized[1] == '\\')) {
 		normalized = normalized.substr(2);
