@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "subtask_id": "AP-02",
+  "task": "AP-02 asset-path-resolution",
+  "branch": "asset-path-resolution-ap-02-documenter-20260417",
+  "base_branch": "image-path",
+  "commit_hash": "97115f0b527a05eade645ca1f401dbfc96f1a53c",
+  "documentation_files": [
+    "AGENTS.md",
+    "doc/DesignNotes.md"
+  ],
+  "artifact_file_paths": [
+    "artifacts/asset-path-resolution/ap-02/documenter_report.md",
+    "artifacts/asset-path-resolution/ap-02/documenter_result.json",
+    "artifacts/asset-path-resolution/ap-02/verifier_prompt.txt"
+  ]
+}

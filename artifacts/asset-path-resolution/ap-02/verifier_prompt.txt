@@ -1,0 +1,74 @@
+You are the Verifier Agent.
+
+Task summary:
+- AP-02 migrated tactical/startup direct image loads to `FGameConfig::resolveAssetPath(...)`, aligned `WXIconCache` to the same shared resolver seam, and updated documentation to reflect the final implementation and tests.
+- Tester validated the implementation with updated source-contract and runtime-path tests; Documenter updated contributor/design guidance to match the shipped behavior.
+
+Acceptance criteria to verify:
+- `FBattleDisplay` uses the shared resolver for `data/zoom.png`.
+- `FBattleBoard`, `FBattleScreen`, and `WXStartupLaunch` no longer depend on raw executable-relative asset concatenation for direct image loads.
+- `WXIconCache` follows the same underlying asset-resolution policy through `FGameConfig::resolveAssetPath(...)`.
+- No affected call site uses a hardcoded absolute machine path.
+- Documentation now reflects the shared asset-resolution seam and the updated regression coverage expectations.
+
+Implementation branch or worktree context:
+- Coordination base branch: `image-path`
+- Implementer branch: `asset-path-resolution-ap-02-implementer-20260417`
+- Tester branch/worktree: `asset-path-resolution-ap-02-tester-20260417` at `/home/tstephen/repos/SSW-worktrees/asset-path-resolution-ap-02-tester-20260417`
+- Documenter branch/worktree: `asset-path-resolution-ap-02-documenter-20260417` at `/home/tstephen/repos/SSW-worktrees/asset-path-resolution-ap-02-documenter-20260417`
+- Documentation commit: `97115f0b527a05eade645ca1f401dbfc96f1a53c`
+- Test commit: `60c82ba318759a12af5de670969808ece6740722`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- Implementer-modified:
+  - `src/tactical/FBattleDisplay.cpp`
+  - `src/tactical/FBattleBoard.cpp`
+  - `src/tactical/FBattleScreen.cpp`
+  - `include/gui/WXStartupLaunch.h`
+  - `src/gui/WXIconCache.cpp`
+- Tester-modified:
+  - `tests/core/WXIconCacheTest.h`
+  - `tests/core/WXIconCacheTest.cpp`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+  - `tests/gui/StrategicGuiLiveTest.cpp`
+  - `tests/gui/BattleSimGuiLiveTest.cpp`
+- Documenter-modified:
+  - `AGENTS.md`
+  - `doc/DesignNotes.md`
+
+Commands executed:
+- `cd tests && make && ./SSWTests` (baseline caught legacy expectation)
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && make && ./SSWTests && make tactical-tests && ./tactical/TacticalTests` (post-change pass)
+- `cd tests && ./SSWTests && ./tactical/TacticalTests` (pass-summary confirmation)
+- Optional GUI smoke attempted: `cd tests/gui && make && xvfb-run -a ./GuiTests` (timed out in environment)
+
+Final test outcomes:
+- `SSWTests`: `OK (165 tests)`
+- `TacticalTests`: `OK (94 tests)`
+- Optional `GuiTests` smoke did not complete within the environment timeout.
+- Acceptance criteria listed above are validated by the updated tests.
+
+Plan and review context:
+- Primary evaluation source: the coordinator handoff plus `artifacts/asset-path-resolution/ap-02/documenter_prompt.txt` and prior stage artifacts in `artifacts/asset-path-resolution/ap-02`.
+- Comparison base: `image-path` (explicitly provided by the coordinator).
+- Relevant repository guidance: `AGENTS.md`; infer any remaining convention-file or plan-path details from repository context when safe and label those choices as assumptions.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/asset-path-resolution/ap-02`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
