@@ -130,6 +130,7 @@ When you need a fresh top-level rebuild of the tactical standalone runner before
 cd tests && make tactical-tests && ./tactical/TacticalTests
 ```
 That target runs the tactical module clean step before relinking `tests/tactical/TacticalTests`, which is the preferred hygiene path from the top-level `tests/` makefile when validating tactical-only changes.
+Since TACTICAL-RUNNER-001, that standalone runner also registers and executes `FTacticalCombatReportTest`, `FTacticalDamageSummaryGUITest`, and `WXTacticalUIAdapterTest`; before that wiring fix those fixtures were compiled into the tactical test binary but omitted from `runner.addTest(...)`, so enabling them can now surface pre-existing fixture/source expectation failures instead of silently skipping the suites.
 
 To run a **single module's tests**, each module under `tests/` also has its own standalone runner:
 ```bash
