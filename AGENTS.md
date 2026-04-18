@@ -65,8 +65,9 @@ All game code lives in `namespace Frontier`. GUI classes (inheriting from wxWidg
 
 From repo root:
 ```bash
-make              # Build both SSW and BattleSim
-make clean        # Remove executables
+make              # Build the main executables and the top-level test targets
+make tests        # Build the test suites from the repo root
+make clean        # Clean both src/ and tests/ outputs
 make all_clean    # Deep clean all modules
 make docs         # Generate Doxygen documentation
 ```
@@ -116,13 +117,13 @@ Unit tests use **CppUnit** and are organized under `tests/` by module:
 From `tests/`:
 
 ```bash
-make              # Builds SSWTests executable and all test libraries
+make              # Builds SSWTests, the GUI test runner, and the linked test libraries
 ./SSWTests        # Run all tests
 ```
 
 Main test runner: `tests/SSWTests.cpp`
 
-The top-level `tests/Makefile` now bootstraps the required `../src/*` model/gui libraries before linking `SSWTests`, so `cd tests && make` is expected to work from a clean repository state without a separate root build first.
+The top-level `tests/Makefile` now bootstraps the required `../src/*` model/gui libraries before linking `SSWTests`, and its default `all` target also builds `tests/gui/GuiTests`, so `cd tests && make` is expected to work from a clean repository state without a separate root build first.
 
 When you need a fresh top-level rebuild of the tactical standalone runner before executing it, use:
 ```bash
@@ -142,6 +143,7 @@ To build only the GUI test module from the top-level tests makefile without runn
 ```bash
 cd tests && make gui-tests
 ```
+That target delegates to `tests/gui`, which now builds both `libguiTests.a` and the `GuiTests` runner after bootstrapping the needed `../../src/*` libraries, including `src/battleSim`.
 
 GUI test execution requires an X display. Run `./GuiTests` directly when a display session is already available; in headless automation, ensure `xvfb-run` (or an equivalent virtual-display wrapper) is installed and run the suite under it, for example `xvfb-run -a ./GuiTests`.
 
