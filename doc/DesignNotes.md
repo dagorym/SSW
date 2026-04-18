@@ -1000,17 +1000,24 @@ remain the canonical aggregate view for per-ship damage and effects.
 That aggregate rollup contract now has a tighter player-facing shape as well.
 Each summarized ship starts with a `<Ship Name>:` header line, then emits one
 ` - ...` bullet per grouped summary item. Hull-loss bullets keep the aggregated
-total and attack count wording (for example ` - 5 hull damage from 1 attack`),
-defense-damage entries render defense abbreviations in the form `Defense Hit:
-<abbr-list>` (for example `Defense Hit: MS, PS`) using structured defense
-identity instead of long-form names or a generic defense-damaged label, ship
-summaries with only non-hull effects omit the old `0 hull damage` clause
-entirely, and hull-damage summaries no longer repeat `Hull Damage xN` inside
-the effect bullets when the hull-loss total is already shown in the dedicated
-hull bullet. Weapon-damage rollups intentionally keep the prior
-comma-separated abbreviation format such as `Weapon Hit: LB, LB, AR`,
-preserving duplicates and order, while repeated non-hull effect categories
-continue to aggregate onto a single bullet with `xN` counts.
+total and attack count wording (for example the corrected
+` - 4 hull damage from 1 attack` scenario), with attack-level hull damage
+remaining the canonical player-facing total for the attacked ship. Standalone
+report-level `TDET_HullDamage` events still stay in the raw report capture, but
+the summary builder now suppresses them from the displayed hull total when that
+ship already has `damagingAttacksReceived > 0`, preventing the old duplicate
+`5 hull damage from 1 attack` inflation while still letting standalone hull
+damage count for ships that were only touched by events. Defense-damage entries
+render defense abbreviations in the form `Defense Hit: <abbr-list>` (for
+example `Defense Hit: MS, PS`) using structured defense identity instead of
+long-form names or a generic defense-damaged label, ship summaries with only
+non-hull effects omit the old `0 hull damage` clause entirely, and hull-damage
+summaries no longer repeat `Hull Damage xN` inside the effect bullets when the
+hull-loss total is already shown in the dedicated hull bullet. Weapon-damage
+rollups intentionally keep the prior comma-separated abbreviation format such
+as `Weapon Hit: LB, LB, AR`, preserving duplicates and order, while repeated
+non-hull effect categories continue to aggregate onto a single bullet with `xN`
+counts.
 
 The updated tactical regression coverage locks that contract in by checking:
 
@@ -1029,8 +1036,11 @@ The updated tactical regression coverage locks that contract in by checking:
   bullet per grouped summary item, show abbreviated defense hits derived from
   structured defense identity, retain the existing comma-separated weapon-hit
   abbreviation list, omit zero-hull clauses for defense-only summaries,
-  preserve grouped non-hull effect counts, and suppress duplicate hull-damage
-  effect text across mixed-effect and hull-plus-effects cases.
+  preserve grouped non-hull effect counts, suppress duplicate hull-damage
+  effect text across mixed-effect and hull-plus-effects cases, keep the exposed
+  hull-loss scenario at `4` instead of `5` damage, and leave `rawEvents` /
+  `internalEventsTriggered` available for detail/debugging even when the
+  player-facing hull total suppresses duplicate standalone hull additions.
 
 The dialog follow-up then made that summary contract visible to players without
 changing the report model. `TacticalDamageSummaryGUI` now splits its text
