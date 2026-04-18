@@ -1,0 +1,61 @@
+You are the Verifier Agent.
+
+Task summary:
+- Wired the tactical module runner so previously compiled-but-unregistered fixtures are now registered/executed: `WXTacticalUIAdapterTest`, `FTacticalCombatReportTest`, and `FTacticalDamageSummaryGUITest`.
+- Documented the runner-registration change in `AGENTS.md` as an execution-surface expansion from compiled-but-unregistered suites to registered/executed suites.
+
+Acceptance criteria to verify:
+- `tests/tactical/TacticalTests.cpp` includes `WXTacticalUIAdapterTest.h`, `FTacticalCombatReportTest.h`, and `FTacticalDamageSummaryGUITest.h`.
+- `tests/tactical/TacticalTests.cpp` registers `WXTacticalUIAdapterTest::suite()`, `FTacticalCombatReportTest::suite()`, and `FTacticalDamageSummaryGUITest::suite()` with the tactical `CppUnit` runner.
+- The tactical runner can be built and run with those suites enabled.
+- Final implementation notes clearly distinguish pre-fix compiled-but-unregistered state from post-fix registered/executed state.
+- Repository documentation now reflects that the tactical standalone runner executes those three suites and may expose downstream fixture/source expectation failures that were previously hidden by missing registration.
+
+Implementation branch or worktree context:
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/test-fixes-tactical-runner-001-documenter-20260418`
+- Documenter branch: `test-fixes-tactical-runner-001-documenter-20260418`
+- Tester branch/worktree context: `test-fixes-tactical-runner-001-tester-20260418` at `/home/tstephen/repos/SSW-worktrees/test-fixes-tactical-runner-001-tester-20260418`
+- Implementer commit: `40a49fe677bba89494aaa59ef8da8e7a02612518`
+- Documentation commit: `dcec9eccf83e55e3a21a668f276b70396a15dd2d`
+- Comparison-base assumption: use repository history around `40a49fe677bba89494aaa59ef8da8e7a02612518` with `57a60c1` (`origin/master`) as the likely base for the feature diff.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/tactical/TacticalTests.cpp`
+- `AGENTS.md`
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/implementer_report.md`
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/implementer_result.json`
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/tester_report.md`
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/tester_result.json`
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/documenter_prompt.txt`
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/documenter_report.md`
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/documenter_result.json`
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `git diff 57a60c1..HEAD -- tests/tactical/TacticalTests.cpp`
+
+Final test outcomes:
+- Tactical runner built successfully and executed 131 tests with the newly registered suites active.
+- 11 failures surfaced in the newly enabled suites; these reflect fixture/source expectation mismatches now exposed by registration, not runner wiring breakage.
+
+Plan and review context:
+- Assumption: no explicit story plan path was provided; use the handoff artifacts under `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/` plus repository history around commit `40a49fe677bba89494aaa59ef8da8e7a02612518` as the evaluation context.
+- Convention guidance: read `AGENTS.md` and the shared Documenter/Tester handoff artifacts for repository testing/documentation expectations.
+
+Documentation files updated:
+- `AGENTS.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
