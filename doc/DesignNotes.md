@@ -1137,3 +1137,34 @@ cd tests/tactical && make && ./TacticalTests && cd ../gui && make && xvfb-run -a
 ```
 
 Result: `OK (88 tests)` tactical, `OK (29 tests)` GUI.
+
+The TACTICAL-FAIL-003 follow-up finished moving the remaining `WXTacticalUI`
+adapter expectations onto stable behavioral seams. `WXTacticalUIAdapterTest`
+in the tactical runner now stays focused on what the non-GUI adapter contract
+can prove safely without inspecting implementation text: the adapter is usable
+through `ITacticalUI`, null-parent redraw and message/winner paths remain safe,
+and `runICMSelection(...)` still rejects unusable inputs. The stale runtime
+"not rewired to `WXTacticalUI`" assertion was removed with the same cleanup so
+the tactical runner no longer encodes architecture guesses that are outside the
+fixture's real behavioral surface.
+
+The live wx ownership checks for the remaining modal paths now live where the
+runtime behavior actually occurs: `TacticalGuiLiveTest` under `GuiTests`.
+That fixture drives parent-backed `WXTacticalUI::runICMSelection(...)` through
+the modal `Done` path, asserts `showMessage(...)` title/body text from the live
+dialog, and verifies `notifyWinner(true/false)` content for both Sathar and UPF
+winner cases before dismissing the modal `OK` button. Together, those GUI
+checks replace the stale tactical adapter source-token expectations with live
+modal verification while preserving the standalone tactical runner for the
+non-wx behavioral guardrails.
+
+Validation commands:
+
+```bash
+cd tests/gui && make && xvfb-run -a ./GuiTests
+cd tests && make gui-tests
+cd tests && make tactical-tests gui-tests && ./tactical/TacticalTests
+cd tests && ./tactical/TacticalTests
+```
+
+Result: `OK (33 tests)` GUI, `OK (125 tests)` tactical.
