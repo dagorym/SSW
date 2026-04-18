@@ -1,0 +1,74 @@
+You are the Verifier Agent.
+
+Task summary:
+- Stale source-inspection assertions were removed from tactical `WXTacticalUIAdapterTest` and replaced with stable non-token adapter checks.
+- `TacticalGuiLiveTest` now validates live `WXTacticalUI` modal behavior for ICM selection, message dialogs, and winner notifications.
+- The stale runtime tactical non-rewire assertion was removed.
+- Documentation now records that the modal `WXTacticalUI` verification moved into `GuiTests` while the tactical runner keeps stable behavioral adapter checks.
+
+Acceptance criteria to verify:
+- GUI behavior tests cover the current `WXTacticalUI` modal and winner paths.
+- The stale runtime-non-rewire tactical assertion is removed.
+- Tactical runner failures caused by adapter source-token expectations are eliminated.
+- Runner wiring and makefiles execute the moved coverage in `GuiTests`.
+- Documentation accurately reflects the shipped adapter/test coverage split.
+
+Implementation branch or worktree context:
+- Implementer branch: `tactical-runner-failing-tests-remediation-tactical-fail-003-implementer-20260418`
+- Tester branch: `tactical-runner-failing-tests-remediation-tactical-fail-003-tester-20260418`
+- Documenter branch: `tactical-runner-failing-tests-remediation-tactical-fail-003-documenter-20260418`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/tactical-runner-failing-tests-remediation-tactical-fail-003-tester-20260418`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/tactical-runner-failing-tests-remediation-tactical-fail-003-documenter-20260418`
+- Documentation commit: `abf3e3666e3250a8896eb1d44569ed26cd8929c1`
+- Assumption: compare the implementation/test/documentation surface against `test-fixes`, because repository history shows commit `abdb18a` as the merge base immediately before the TACTICAL-FAIL-003 branch stack.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/tactical/WXTacticalUIAdapterTest.h`
+- `tests/tactical/WXTacticalUIAdapterTest.cpp`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/implementer_report.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/implementer_result.json`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/tester_prompt.txt`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/tester_report.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/tester_result.json`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/documenter_prompt.txt`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/documenter_report.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/documenter_result.json`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- `cd tests && make gui-tests`
+- `cd tests && make tactical-tests gui-tests && ./tactical/TacticalTests`
+- `cd tests && ./tactical/TacticalTests`
+- `git --no-pager diff abdb18a..HEAD -- tests/tactical/WXTacticalUIAdapterTest.h tests/tactical/WXTacticalUIAdapterTest.cpp tests/gui/TacticalGuiLiveTest.cpp`
+
+Final test outcomes:
+- GuiTests: PASS (`OK (33 tests)`).
+- TacticalTests: PASS (`OK (125 tests)`).
+- Acceptance criteria status from tester artifacts: all PASS.
+
+Plan and review context:
+- Evaluation source: the upstream TACTICAL-FAIL-003 documenter prompt plus the implementer/tester artifacts in `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003`; no separate story plan path was provided, so treat those artifacts plus the `test-fixes` comparison-base assumption as the bounded review context.
+- Convention files: review repository `AGENTS.md`, `doc/DesignNotes.md`, and the shared agent definitions in `/home/tstephen/repos/agents/AGENTS_LOOKUP.md` and `/home/tstephen/repos/agents/agents/documenter.yaml`; infer any additional plan-source, convention-file, or artifact-path details from repository context when evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm `WXTacticalUIAdapterTest` now stays on stable behavioral null-parent and interface/guard checks, while `TacticalGuiLiveTest` covers the live `WXTacticalUI` modal ICM-selection, message-dialog, and winner paths executed by `GuiTests`.
+
+Shared artifact directory:
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003`
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, convention discovery, or diff inspection when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
