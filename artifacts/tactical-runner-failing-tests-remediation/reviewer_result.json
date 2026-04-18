@@ -1,0 +1,36 @@
+{
+  "status": "completed",
+  "feature": "tactical-runner-failing-tests-remediation",
+  "plan_path": "plans/tactical-runner-failing-tests-remediation-plan.md",
+  "branch": "tactical-runner-failing-tests-remediation-reviewer-20260418",
+  "coordination_base_branch": "test-fixes",
+  "review_mode": "feature-level-read-only",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 1,
+  "summary": "Merged test-fixes state satisfies the three-subtask remediation plan: canonical hull aggregation is fixed, tactical lifecycle/damage-summary coverage is behavioral, GUI modal adapter coverage moved to GuiTests, docs match the final testing boundary, and reviewer reruns passed TacticalTests (125) and GuiTests (33).",
+  "subtasks_reviewed": [
+    "TACTICAL-FAIL-001",
+    "TACTICAL-FAIL-002",
+    "TACTICAL-FAIL-003"
+  ],
+  "artifact_directories_reviewed": [
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001",
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002",
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003"
+  ],
+  "validation_commands": [
+    "cd tests && make tactical-tests >/dev/null && ./tactical/TacticalTests",
+    "cd tests && make gui-tests >/dev/null && cd gui && xvfb-run -a ./GuiTests"
+  ],
+  "validation_results": {
+    "tactical_tests": "OK (125 tests)",
+    "gui_tests": "OK (33 tests)"
+  },
+  "artifact_files_written": [
+    "artifacts/tactical-runner-failing-tests-remediation/reviewer_report.md",
+    "artifacts/tactical-runner-failing-tests-remediation/reviewer_result.json"
+  ],
+  "follow_up_feature_requests": []
+}
