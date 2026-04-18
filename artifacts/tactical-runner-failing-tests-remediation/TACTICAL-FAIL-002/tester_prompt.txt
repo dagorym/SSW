@@ -1,0 +1,47 @@
+You are the Tester Agent.
+
+Task summary:
+- Tactical report lifecycle/normalization source-inspection checks were replaced with behavioral FTacticalGame API tests (the public lifecycle used by FBattleScreen).
+- Tactical damage-summary hit-detail assertions now validate only per-attack internal-event details.
+- Non-convertible tactical source-inspection checks in the touched fixtures were removed.
+
+Modified files:
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.h
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Acceptance criteria to validate (from Planner):
+- Behavioral tests cover the report-lifecycle and normalization semantics through public APIs instead of source-token inspection.
+- Hit-detail expectations align with the chosen rule that only per-attack internal events appear in hit details.
+- Tactical source-inspection assertions that are architecture-coupled and non-convertible are removed.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+
+Implementation context for testing:
+- FTacticalCombatReportTest now validates begin/append/build/clear lifecycle and normalization behavior directly through FTacticalGame public APIs (the behavior FBattleScreen delegates to).
+- Summary-generation verification now compares FTacticalGame::buildCurrentTacticalReportSummary() with buildTacticalCombatReportSummary(getCurrentTacticalReport()).
+- Damage-summary coverage seeds attack.internalEvents for hit-detail expectations; report-level events remain rollup-focused.
+- Removed source-token checks that depended on specific implementation text for lifecycle/normalization and stale GUI wiring snippets.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Existing validations that fail only because of pre-existing unrelated behavior:
+- WXTacticalUIAdapterTest::testShowMessageMatchesRepositoryInformationalPattern
+- WXTacticalUIAdapterTest::testDamageSummaryAndICMSelectionWrapDialogsWithGuards
+- WXTacticalUIAdapterTest::testNotifyWinnerPreservesBattleScreenWinnerMessageSemantics
+- WXTacticalUIAdapterTest::testRuntimeTacticalCallersNotRewiredToAdapter
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
