@@ -359,6 +359,24 @@ inline bool shouldCountInternalEventHullDamage(
 	return true;
 }
 
+inline bool shouldCountStandaloneEventHullDamage(
+	const FTacticalShipReportSummary & shipSummary,
+	const FTacticalReportEvent & event) {
+	if (event.hullDamage <= 0) {
+		return false;
+	}
+
+	// Attack-level hull damage remains canonical for ships that already have
+	// damaging attacks in this report; report-level standalone hull-damage
+	// effects still remain available as raw event detail.
+	if (event.damageEffectType == TDET_HullDamage
+		&& shipSummary.damagingAttacksReceived > 0) {
+		return false;
+	}
+
+	return true;
+}
+
 inline std::string summarizeEventEffect(const FTacticalReportEvent & event) {
 	if (event.label.size() > 0) {
 		return event.label;
@@ -715,7 +733,7 @@ inline FTacticalCombatReportSummary buildTacticalCombatReportSummary(const FTact
 			TacticalCombatReportDetail::ensureShipSummary(summaryMap, summaryOrder, event.subject);
 		eventSummary.internalEventsTriggered++;
 		eventSummary.rawEvents.push_back(event);
-		if (event.hullDamage > 0) {
+		if (TacticalCombatReportDetail::shouldCountStandaloneEventHullDamage(eventSummary, event)) {
 			eventSummary.hullDamageTaken += event.hullDamage;
 		}
 		TacticalCombatReportDetail::appendEffectSummary(
