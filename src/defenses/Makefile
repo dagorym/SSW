@@ -8,8 +8,10 @@
 
 ifeq ($(COVERAGE),1)
 COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+COVERAGE_PREP = coverage-clean
 else
 COVERAGE_FLAGS =
+COVERAGE_PREP =
 endif
 
 .DEFAULT_GOAL := all
@@ -54,7 +56,7 @@ TARGET = libdefenses.a
 
 $(OBJS): Makefile
 
-all $(TARGET): $(OBJS)
+all $(TARGET): $(COVERAGE_PREP) $(OBJS)
 	ar rcs $(TARGET) $(OBJS)
 
 objs: $(OBJS)
@@ -62,7 +64,13 @@ objs: $(OBJS)
 	rm  -f*.gcov
 	rm -f *.gcno
 
-.PHONY:
+.PHONY: coverage-clean
+coverage-clean:
+	rm -f $(OBJS) $(DEPS)
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
+
 clean:
 	rm -f $(OBJS) $(DEPS)
 	rm -f $(TARGET)

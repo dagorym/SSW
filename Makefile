@@ -1,12 +1,18 @@
-default: all tests
+.PHONY: default all clean objs all_clean docs tests
 
-all clean objs all_clean:
-	@ cd src; ${MAKE} $@
-	@ cd tests; ${MAKE} $@
+default: all
+
+all:
+	@ $(MAKE) -C src all
+	@ $(MAKE) -C tests all SKIP_MODEL_DEPS=1
+
+clean objs all_clean:
+	@ $(MAKE) -C src $@
+	@ $(MAKE) -C tests $@
 	
 docs:
-	@ cd doc; ${MAKE} $@
+	@ $(MAKE) -C doc $@
 
 tests:
-	@ cd tests; ${MAKE} $@
+	@ $(MAKE) -C tests all SKIP_MODEL_DEPS=1
 

@@ -1,7 +1,9 @@
 ifeq ($(COVERAGE),1)
 COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+COVERAGE_PREP = coverage-clean
 else
 COVERAGE_FLAGS =
+COVERAGE_PREP =
 endif
 
 .DEFAULT_GOAL := all
@@ -44,16 +46,19 @@ LIBS = -L./strategic -lstrategicTests -L./ships -lshipsTests \
 OBJS = SSWTests.o #FApp.o Frontier.o FMainFrameTest.o 
 DEPS = $(OBJS:.o=.d)
 
-OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a libshipsTests.a libtacticalTests.a #libguiTests.a
+OBJ_LIBS = libcoreTests.a libweaponsTests.a libstrategicTests.a libshipsTests.a #libguiTests.a
 
 $(OBJS): Makefile
 
 TARGET = SSWTests
 
-all: model-deps $(OBJ_LIBS) $(OBJS) gui-tests
+all: $(COVERAGE_PREP) model-deps $(OBJ_LIBS) $(OBJS) gui-tests tactical-tests
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
 
 model-deps:
+ifeq ($(SKIP_MODEL_DEPS),1)
+	@ :
+else
 	$(MAKE) -C ../src/core
 	$(MAKE) -C ../src/strategic
 	$(MAKE) -C ../src/ships
@@ -61,12 +66,13 @@ model-deps:
 	$(MAKE) -C ../src/weapons
 	$(MAKE) -C ../src/tactical
 	$(MAKE) -C ../src/gui
+endif
 
 gui-tests: model-deps
-	@ cd gui; $(MAKE) all
+	@ $(MAKE) -C gui all SKIP_MODEL_DEPS=$(SKIP_MODEL_DEPS)
 
-tactical-tests:
-	@ cd tactical; $(MAKE) clean TacticalTests
+tactical-tests: model-deps
+	@ $(MAKE) -C tactical all SKIP_MODEL_DEPS=$(SKIP_MODEL_DEPS)
 
 libcoreTests.a:
 	@ cd core; $(MAKE) $@
@@ -91,7 +97,13 @@ objs: $(OBJS)
 	rm *.gcov
 	rm *.gcno
 
-.PHONY:
+.PHONY: coverage-clean
+coverage-clean:
+	rm -f $(OBJS) $(DEPS)
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
+
 all_clean:
 	@ cd core; ${MAKE} clean
 	@ cd gui; ${MAKE} clean

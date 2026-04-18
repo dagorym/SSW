@@ -1,7 +1,9 @@
 ifeq ($(COVERAGE),1)
 COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+COVERAGE_PREP = coverage-clean
 else
 COVERAGE_FLAGS =
+COVERAGE_PREP =
 endif
 
 .DEFAULT_GOAL := all
@@ -54,7 +56,7 @@ BS_TARGET=BattleSim
 
 $(OBJS) $(BS_OBJS): Makefile
 
-all: SSW BattleSim
+all: $(COVERAGE_PREP) SSW BattleSim
 
 SSW: $(OBJ_LIBS) $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
@@ -91,7 +93,14 @@ objs: $(OBJS)
 	rm *.gcov
 	rm *.gcno
 
-.PHONY:
+coverage-clean:
+	rm -f $(OBJS) $(DEPS)
+	rm -f $(BS_OBJS)
+	rm -f *.gcda
+	rm -f *.gcov
+	rm -f *.gcno
+
+.PHONY: coverage-clean
 all_clean:
 	@ cd core; ${MAKE} clean
 	@ cd gui; ${MAKE} clean

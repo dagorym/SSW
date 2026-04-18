@@ -1,5 +1,6 @@
 *.gcno
 *.gcda
+*.gcov
 *.d
 *.o
 *.bak
@@ -15,6 +16,7 @@ tests/gui/GuiTests
 *.a
 *.so
 .settings
+doc/coverage
 
 /.vs/slnx.sqlite
 /.vs/ProjectSettings.json

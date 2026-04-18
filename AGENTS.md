@@ -158,6 +158,15 @@ For deterministic strategic rendering coverage in headless runs, prefer offscree
 
 Test makefiles include `-fprofile-arcs -ftest-coverage` for gcov coverage analysis. Enable coverage reporting with `make COVERAGE=1`.
 
+To generate a browsable HTML coverage report with `gcovr`, rebuild and run the covered test binaries first, then emit the report from the repo root:
+```bash
+make all_clean
+make COVERAGE=1 tests
+cd tests && ./SSWTests
+gcovr --root . --html-nested coverage/index.html
+```
+If you need GUI coverage included in the report, also run the GUI suite before invoking `gcovr`, for example `cd tests/gui && xvfb-run -a ./GuiTests`, then rerun the `gcovr` command from the repository root.
+
 Milestone 10 note: there is no fully automated end-to-end wx GUI playback system in this repository. Milestone acceptance relies on model/interface regression coverage (including mock `IStrategicUI` and mock `ITacticalUI` seams) plus existing build/test validation; the absence of full GUI automation is expected and does not block Milestone 10 completion.
 
 ### Adding New Tests

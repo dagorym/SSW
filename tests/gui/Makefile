@@ -1,8 +1,10 @@
 .RECIPEPREFIX = >
 ifeq ($(COVERAGE),1)
 COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
+COVERAGE_PREP = coverage-clean
 else
 COVERAGE_FLAGS =
+COVERAGE_PREP =
 endif
 
 .DEFAULT_GOAL := all
@@ -39,9 +41,12 @@ RUNNER = GuiTests
 
 $(OBJS): Makefile
 
-all: model-deps $(TARGET) $(RUNNER)
+all: $(COVERAGE_PREP) model-deps $(TARGET) $(RUNNER)
 
 model-deps:
+ifeq ($(SKIP_MODEL_DEPS),1)
+> @true
+else
 >$(MAKE) -C ../../src/core
 >$(MAKE) -C ../../src/strategic
 >$(MAKE) -C ../../src/ships
@@ -50,6 +55,7 @@ model-deps:
 >$(MAKE) -C ../../src/tactical
 >$(MAKE) -C ../../src/gui
 >$(MAKE) -C ../../src/battleSim
+endif
 
 $(TARGET): $(LIB_OBJS)
 >ar rcs $(TARGET) $(LIB_OBJS)
@@ -68,7 +74,13 @@ objs: $(OBJS)
 >rm -f *.gcov
 >rm -f *.gcno
 
-.PHONY:
+.PHONY: coverage-clean
+coverage-clean:
+>rm -f $(OBJS) $(DEPS)
+>rm -f *.gcda
+>rm -f *.gcov
+>rm -f *.gcno
+
 clean:
 >rm -f $(OBJS) $(DEPS)
 >rm -f $(TARGET)
