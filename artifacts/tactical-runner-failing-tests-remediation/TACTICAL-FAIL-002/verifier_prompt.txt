@@ -1,0 +1,72 @@
+You are the Verifier Agent.
+
+Task summary:
+- Tactical report lifecycle/normalization source-inspection checks were replaced with behavioral `FTacticalGame` API tests.
+- Tactical damage-summary hit-detail assertions now align with the rule that only per-attack internal events appear in hit details.
+- Non-convertible tactical source-inspection checks in the touched tactical fixtures were removed.
+- Documentation now records the behavioral test coverage shift, the hit-detail semantics, and the removal of the architecture-coupled source-inspection assertions.
+
+Acceptance criteria to verify:
+- Behavioral tests cover report-lifecycle and normalization semantics through public APIs instead of source-token inspection.
+- Hit-detail expectations align with the rule that only per-attack internal events appear in hit details.
+- Tactical source-inspection assertions that are architecture-coupled and non-convertible are removed.
+- Documentation accurately reflects the shipped behavioral coverage and hit-detail semantics.
+
+Implementation branch or worktree context:
+- Implementer branch: `tactical-runner-failing-tests-remediation-tactical-fail-002-implementer-20260418`
+- Tester branch: `tactical-runner-failing-tests-remediation-tactical-fail-002-tester-20260418`
+- Documenter branch: `tactical-runner-failing-tests-remediation-tactical-fail-002-documenter-20260418`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/tactical-runner-failing-tests-remediation-tactical-fail-002-tester-20260418`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/tactical-runner-failing-tests-remediation-tactical-fail-002-documenter-20260418`
+- Documentation commit: `67d41ed0c9f0c042a86c692ffcc5593caad254fd`
+- Assumption: compare the implementation/test/documentation surface against `test-fixes`, because repository history shows `test-fixes` as the merge base for the tester/documenter branch stack.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/tactical/FTacticalCombatReportTest.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `tests/tactical/FTacticalDamageSummaryGUITest.h`
+- `tests/tactical/FTacticalDamageSummaryGUITest.cpp`
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/tester_report.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/tester_result.json`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/documenter_prompt.txt`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/documenter_report.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/documenter_result.json`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && make tactical-tests >/dev/null && set -o pipefail && ./tactical/TacticalTests 2>&1 | grep -E '!!!FAILURES!!!|Run:|Failures:|WXTacticalUIAdapterTest::' ; echo EXIT_CODE:$?`
+
+Final test outcomes:
+- Tactical runner executed 128 tests: 124 passed, 4 failed, 0 errors.
+- The only failures are the known unrelated pre-existing failures in:
+  - `WXTacticalUIAdapterTest::testShowMessageMatchesRepositoryInformationalPattern`
+  - `WXTacticalUIAdapterTest::testDamageSummaryAndICMSelectionWrapDialogsWithGuards`
+  - `WXTacticalUIAdapterTest::testNotifyWinnerPreservesBattleScreenWinnerMessageSemantics`
+  - `WXTacticalUIAdapterTest::testRuntimeTacticalCallersNotRewiredToAdapter`
+- Acceptance criteria for TACTICAL-FAIL-002 are met.
+
+Plan and review context:
+- Evaluation source: upstream TACTICAL-FAIL-002 documenter prompt plus tester artifacts in `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002`; no separate plan path was provided, so treat `test-fixes` comparison plus those artifacts as the bounded review context.
+- Convention files: review `AGENTS.md`, `doc/DesignNotes.md`, and repository `AGENTS.md`; infer any additional plan-source, convention-file, or artifact-path details from repository context when evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+
+Documentation files updated:
+- `AGENTS.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm the behavioral tests, hit-detail expectations, and documentation all agree that only per-attack internal events contribute hit-detail lines while standalone immediate events remain outside that detail section.
+
+Shared artifact directory:
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002`
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, convention discovery, or diff inspection when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
