@@ -1,0 +1,42 @@
+You are the Tester Agent.
+
+Task summary:
+- Implemented TACTICAL-FAIL-001 by preventing standalone report-level TDET_HullDamage events from double-counting player-facing hull totals when attack-level hull damage is already canonical for the attacked ship.
+- Updated affected FTacticalCombatReportTest expectations for the exposed scenario.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- The canonical hull total for the target ship remains the attack-level hull damage in the exposed failing scenario.
+- The corrected summary for that scenario reports `4` hull damage, not `5`.
+- Non-hull standalone effects remain summarized correctly.
+- Existing raw report data remains preserved.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.cpp (existing targeted tactical fixture; no new test file required)
+
+Implementation context for testing:
+- `buildTacticalCombatReportSummary(...)` now calls `shouldCountStandaloneEventHullDamage(...)` for report-level events.
+- Guard behavior: if event is standalone with `damageEffectType == TDET_HullDamage` and ship already has `damagingAttacksReceived > 0`, hull damage is not added again to `hullDamageTaken`.
+- Raw data remains preserved: report events are still appended to `rawEvents`, and `internalEventsTriggered` still reflects all captured events.
+- Updated summary expectation line in the affected scenario from `5` to `4` hull damage and aligned event-count expectation to raw-event reality.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- Focused iteration command: cd tests/tactical && make && ./TacticalTests
+
+Existing validations that fail only outside this subtask scope:
+- Tactical runner still has 10 pre-existing failures in FBattleScreen source-contract and WXTacticalUI/GUI adapter assertions unrelated to this hull aggregation fix.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
