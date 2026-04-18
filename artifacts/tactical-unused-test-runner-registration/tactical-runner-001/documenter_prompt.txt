@@ -1,0 +1,52 @@
+You are the Documenter Agent.
+
+Task summary:
+- Wired the tactical module runner so previously compiled-but-unregistered fixtures are now registered/executed: `WXTacticalUIAdapterTest`, `FTacticalCombatReportTest`, and `FTacticalDamageSummaryGUITest`.
+
+Acceptance criteria validated:
+- `tests/tactical/TacticalTests.cpp` includes `WXTacticalUIAdapterTest.h`, `FTacticalCombatReportTest.h`, and `FTacticalDamageSummaryGUITest.h`.
+- `tests/tactical/TacticalTests.cpp` registers `WXTacticalUIAdapterTest::suite()`, `FTacticalCombatReportTest::suite()`, and `FTacticalDamageSummaryGUITest::suite()` with the tactical `CppUnit` runner.
+- The tactical runner can be built and run with those suites enabled.
+- Final implementation notes clearly distinguish pre-fix compiled-but-unregistered state from post-fix registered/executed state.
+
+Implementation branch or worktree context:
+- Worktree: `/home/tstephen/repos/SSW-worktrees/test-fixes-tactical-runner-001-tester-20260418`
+- Branch: `test-fixes-tactical-runner-001-tester-20260418`
+- Implementer commit: `40a49fe677bba89494aaa59ef8da8e7a02612518`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `tests/tactical/TacticalTests.cpp` (Implementer)
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/implementer_report.md` (Implementer)
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/implementer_result.json` (Implementer)
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/tester_report.md` (Tester)
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/tester_result.json` (Tester)
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/documenter_prompt.txt` (Tester)
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+
+Final test outcomes:
+- Tactical runner built successfully and executed 131 tests with newly registered suites active.
+- 11 failures surfaced in newly enabled suites; these are fixture/source expectation mismatches now exposed by registration, not runner wiring breakage.
+
+Documentation context:
+- Document the runner-registration change as execution-surface expansion (compiled-but-unregistered -> registered/executed).
+- Preserve distinction between task success criteria (runner wiring) and newly exposed downstream fixture failures.
+
+Plan and diff context:
+- Use repository history around commit `40a49fe677bba89494aaa59ef8da8e7a02612518` as primary comparison context.
+- If explicit plan path is missing, infer from `artifacts/tactical-unused-test-runner-registration/tactical-runner-001/` artifacts and label as assumption.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-unused-test-runner-registration/tactical-runner-001`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
