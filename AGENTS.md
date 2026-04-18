@@ -163,7 +163,7 @@ To generate a browsable HTML coverage report with `gcovr`, rebuild and run the c
 make all_clean
 make COVERAGE=1 tests
 cd tests && ./SSWTests
-gcovr --root . --html-nested coverage/index.html
+gcovr --root . --html-nested doc/coverage/index.html
 ```
 If you need GUI coverage included in the report, also run the GUI suite before invoking `gcovr`, for example `cd tests/gui && xvfb-run -a ./GuiTests`, then rerun the `gcovr` command from the repository root.
 
