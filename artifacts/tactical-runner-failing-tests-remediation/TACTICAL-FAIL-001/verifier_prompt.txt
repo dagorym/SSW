@@ -1,0 +1,67 @@
+You are the Verifier Agent.
+
+Task summary:
+- TACTICAL-FAIL-001 remediates tactical summary double-counting where a standalone report-level `TDET_HullDamage` event could add player-facing hull totals on top of canonical attack-level hull damage for the same attacked ship.
+- The shipped behavior keeps the canonical hull total at the attack-level damage in the exposed scenario, so the corrected summary now reports `4` hull damage instead of `5`.
+- Non-hull standalone effects still summarize correctly, and raw report data remains preserved for detail/debugging use.
+- Documentation now records the standalone-event hull aggregation guard and the expectation shift in `doc/DesignNotes.md`.
+
+Acceptance criteria to verify:
+- The canonical hull total for the target ship remains the attack-level hull damage in the exposed failing scenario.
+- The corrected summary for that scenario reports `4` hull damage, not `5`.
+- Non-hull standalone effects remain summarized correctly.
+- Existing raw report data remains preserved.
+- Documentation accurately reflects the shipped standalone-event hull aggregation behavior and the preserved raw-event/internal-event capture.
+
+Implementation branch or worktree context:
+- Implementer branch: `tactical-runner-failing-tests-remediation-tactical-fail-001-implementer-20260418`
+- Tester branch: `tactical-runner-failing-tests-remediation-tactical-fail-001-tester-20260418`
+- Documenter branch: `tactical-runner-failing-tests-remediation-tactical-fail-001-documenter-20260418`
+- Documenter worktree: `/home/tstephen/repos/SSW-worktrees/tactical-runner-failing-tests-remediation-tactical-fail-001-documenter-20260418`
+- Implementer commit under review: `572b8459bd6c09d0d95ce65691a981de69f6ec57`
+- Documentation commit: `e224afbb440a5be74bb99857ea9d8008fcd6c690`
+- Assumption: the primary behavior diff basis is `572b8459bd6c09d0d95ce65691a981de69f6ec57^..572b8459bd6c09d0d95ce65691a981de69f6ec57` per the upstream comparison guidance, with tester-branch follow-up limited to artifact additions.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/tactical/FTacticalCombatReport.h`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `doc/DesignNotes.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/implementer_report.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/implementer_result.json`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/tester_prompt.txt`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/tester_report.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/tester_result.json`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/documenter_prompt.txt`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/documenter_report.md`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/documenter_result.json`
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+
+Final test outcomes:
+- Tactical runner: Run 131, Failures 10, Errors 0.
+- The 10 failures are pre-existing out-of-scope `FBattleScreen` / tactical GUI-adapter source-contract failures already called out in tester handoff context.
+- No acceptance-criterion failure was found for TACTICAL-FAIL-001.
+
+Plan and review context:
+- Plan source: `plans/tactical-runner-failing-tests-remediation-plan.md` (`TACTICAL-FAIL-001` section and Documentation Impact note).
+- Convention files: review `AGENTS.md` and `doc/DesignNotes.md`; no repository-wide guidance update was needed beyond the tactical design-note correction.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation files together.
+- Confirm the documentation matches the shipped guard that suppresses standalone `TDET_HullDamage` counting when `damagingAttacksReceived > 0` for the same ship, while preserving `rawEvents` and `internalEventsTriggered` for detail/debugging use.
+
+Shared artifact directory:
+- `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001`
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Do not stop after activation, scope confirmation, convention discovery, or diff inspection when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
