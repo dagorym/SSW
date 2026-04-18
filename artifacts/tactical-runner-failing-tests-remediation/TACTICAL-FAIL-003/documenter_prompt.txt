@@ -1,0 +1,56 @@
+You are the Documenter Agent.
+
+Task summary:
+- Stale source-inspection assertions were removed from tactical `WXTacticalUIAdapterTest` and replaced with stable non-token adapter checks.
+- `TacticalGuiLiveTest` now validates live `WXTacticalUI` modal behavior for ICM selection, message dialogs, and winner notifications.
+- The stale runtime tactical non-rewire assertion was removed.
+
+Acceptance criteria:
+- GUI behavior tests cover the current `WXTacticalUI` modal and winner paths.
+- The stale runtime-non-rewire tactical assertion is removed.
+- Tactical runner failures caused by adapter source-token expectations are eliminated.
+- Runner wiring and makefiles execute the moved coverage in `GuiTests`.
+
+Execution context:
+- Repository: `/home/tstephen/repos/SSW`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/tactical-runner-failing-tests-remediation-tactical-fail-003-tester-20260418`
+- Tester branch: `tactical-runner-failing-tests-remediation-tactical-fail-003-tester-20260418`
+- Parent implementer branch: `tactical-runner-failing-tests-remediation-tactical-fail-003-implementer-20260418`
+- Shared artifact directory (repository-root-relative, reuse exactly): `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003`
+
+Files modified by Implementer and Tester that may affect documentation review:
+- Implementer:
+  - `tests/tactical/WXTacticalUIAdapterTest.h`
+  - `tests/tactical/WXTacticalUIAdapterTest.cpp`
+  - `tests/gui/TacticalGuiLiveTest.cpp`
+  - `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/implementer_report.md`
+  - `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/implementer_result.json`
+  - `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/tester_prompt.txt`
+- Tester:
+  - `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/tester_report.md`
+  - `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/tester_result.json`
+  - `artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003/documenter_prompt.txt`
+
+Commit context:
+- Implementer/test surface commit history at tester start:
+  - `39653e3` tests: replace stale tactical adapter source assertions
+  - `3d0dd8f` artifacts: record TACTICAL-FAIL-003 implementer handoff
+- Tester test commit hash: `No Changes Made` (no additional test edits required)
+
+Commands executed by Tester:
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- `cd tests && make gui-tests`
+- `cd tests && make tactical-tests gui-tests && ./tactical/TacticalTests`
+- `cd tests && ./tactical/TacticalTests`
+
+Final test outcomes:
+- GuiTests: PASS (33 tests)
+- TacticalTests: PASS (125 tests)
+- Acceptance criteria status: all PASS
+
+Documentation guidance:
+- Infer missing plan-path, story context, comparison base, artifact-path handling, and documentation conventions from repository evidence when safe.
+- Review both behavior-facing test updates and artifact outputs in the shared directory.
+- Continue through documentation workflow in the same run when blocking inputs are present; do not stop after scope confirmation, doc discovery, or diff review.
+
+Do not report success unless all required artifacts exist and all changes are committed.
