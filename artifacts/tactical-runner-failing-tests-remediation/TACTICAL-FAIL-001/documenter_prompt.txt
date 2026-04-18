@@ -1,0 +1,54 @@
+You are the Documenter Agent.
+
+Task summary:
+- TACTICAL-FAIL-001 remediates tactical summary double-counting where a standalone report-level TDET_HullDamage event could add player-facing hull totals on top of canonical attack-level hull damage for the same attacked ship.
+- Summary expectation in FTacticalCombatReportTest was aligned from 5 to 4 hull damage in the exposed scenario, and raw-event/internal-event expectations were aligned to observed raw capture behavior.
+
+Acceptance criteria:
+- The canonical hull total for the target ship remains the attack-level hull damage in the exposed failing scenario.
+- The corrected summary for that scenario reports `4` hull damage, not `5`.
+- Non-hull standalone effects remain summarized correctly.
+- Existing raw report data remains preserved.
+
+Implementation and tester context:
+- Repository: /home/tstephen/repos/SSW-worktrees/tactical-runner-failing-tests-remediation-tactical-fail-001-tester-20260418
+- Implementer branch: tactical-runner-failing-tests-remediation-tactical-fail-001-implementer-20260418
+- Tester branch: tactical-runner-failing-tests-remediation-tactical-fail-001-tester-20260418
+- Implementer commit: 572b8459bd6c09d0d95ce65691a981de69f6ec57
+- Tester test commit hash: No Changes Made
+
+Files modified by Implementer and Tester that may affect documentation review:
+- include/tactical/FTacticalCombatReport.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/implementer_report.md
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/implementer_result.json
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/tester_prompt.txt
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/tester_report.md
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/tester_result.json
+
+Commands executed by Tester:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Final test outcomes:
+- Tactical runner: Run 131, Failures 10, Errors 0.
+- The 10 failures are pre-existing out-of-scope FBattleScreen / tactical GUI-adapter source-contract failures already called out in tester handoff context.
+- No acceptance-criterion failure was found for TACTICAL-FAIL-001.
+
+Documentation guidance:
+- Focus documentation updates on FTacticalCombatReport standalone-event hull aggregation behavior, specifically the guard that suppresses standalone TDET_HullDamage counting when damagingAttacksReceived > 0 for the ship.
+- Ensure wording clarifies that raw events/internal event counters are preserved even when player-facing hull totals suppress duplicate standalone hull additions.
+- Include test expectation shift from `5` to `4` hull damage in the exposed scenario and why that is correct.
+- If plan-path, story context, or documentation-convention details are missing, infer them safely from repository context (AGENTS.md, existing artifacts, and nearby tactical docs/tests) instead of blocking.
+
+Comparison-base guidance:
+- Primary code diff: compare implementer commit 572b8459bd6c09d0d95ce65691a981de69f6ec57 against its parent.
+- For full handoff lineage, also review tester-branch commits after implementer commit for artifact additions.
+
+Shared artifact directory to reuse (repository-root-relative):
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001
+
+Execution rule for Documenter:
+- Continue through the full documenter workflow in the same run when blockers are absent; do not stop after scope confirmation, documentation discovery, or diff review.
+
+Completion gate:
+Do not report success unless all required artifacts exist and all changes are committed.
