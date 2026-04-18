@@ -50,7 +50,7 @@ $(OBJS): Makefile
 
 TARGET = SSWTests
 
-all: model-deps $(OBJ_LIBS) $(OBJS)
+all: model-deps $(OBJ_LIBS) $(OBJS) gui-tests
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
 
 model-deps:
