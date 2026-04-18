@@ -1,0 +1,45 @@
+You are the Tester Agent.
+
+Task summary:
+- Stale source-inspection assertions were removed from tactical `WXTacticalUIAdapterTest` and replaced with stable non-token adapter checks.
+- `TacticalGuiLiveTest` now validates live `WXTacticalUI` modal behavior for ICM selection, message dialogs, and winner notifications.
+- The stale runtime tactical non-rewire assertion was removed.
+
+Modified files:
+- tests/tactical/WXTacticalUIAdapterTest.h
+- tests/tactical/WXTacticalUIAdapterTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- GUI behavior tests cover the current `WXTacticalUI` modal and winner paths.
+- The stale runtime-non-rewire tactical assertion is removed.
+- Tactical runner failures caused by adapter source-token expectations are eliminated.
+- Runner wiring and makefiles execute the moved coverage in `GuiTests`.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/WXTacticalUIAdapterTest.cpp
+
+Implementation context for testing:
+- Tactical-side adapter checks now focus on stable behavior: interface construction, redraw safety with null parent, guarded invalid-input handling for ICM selection, and fallback winner/message calls without source-token coupling.
+- GUI-side live test `testWXTacticalUIParentBackedModalAndRedrawPaths` now asserts modal interaction for:
+  - `runICMSelection(...)` valid path (Done button closes modal with success),
+  - `showMessage(...)` title/body correctness and modal close,
+  - `notifyWinner(true/false)` title and winner-body text correctness for Sathar/UPF.
+- Existing tactical and GUI test runner wiring remains in place; updated coverage executes through current suites.
+
+Suggested test command(s):
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests && make gui-tests
+- cd tests && make tactical-tests gui-tests && ./tactical/TacticalTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-003
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
