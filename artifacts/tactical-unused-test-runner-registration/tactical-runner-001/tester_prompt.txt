@@ -1,0 +1,41 @@
+You are the Tester Agent.
+
+Task summary:
+- Wired the tactical module runner so previously compiled-but-unregistered fixtures are now registered/executed: `WXTacticalUIAdapterTest`, `FTacticalCombatReportTest`, and `FTacticalDamageSummaryGUITest`.
+
+Modified files:
+- tests/tactical/TacticalTests.cpp
+
+Acceptance criteria to validate (from Planner):
+- `tests/tactical/TacticalTests.cpp` includes `WXTacticalUIAdapterTest.h`, `FTacticalCombatReportTest.h`, and `FTacticalDamageSummaryGUITest.h`.
+- `tests/tactical/TacticalTests.cpp` registers `WXTacticalUIAdapterTest::suite()`, `FTacticalCombatReportTest::suite()`, and `FTacticalDamageSummaryGUITest::suite()` with the tactical `CppUnit` runner.
+- The tactical runner can be built and run with those suites enabled.
+- The final implementation notes clearly distinguish the pre-fix state (“compiled but not registered/executed”) from the post-fix state.
+
+Create test files in:
+- Assumption: no new tests are required for this subtask; verify existing runner wiring under `tests/tactical/TacticalTests.cpp` and existing fixtures at:
+  - `tests/tactical/WXTacticalUIAdapterTest.cpp`
+  - `tests/tactical/FTacticalCombatReportTest.cpp`
+  - `tests/tactical/FTacticalDamageSummaryGUITest.cpp`
+
+Implementation context for testing:
+- Runner-only scope change in `tests/tactical/TacticalTests.cpp`.
+- Added missing includes for the three existing fixture headers.
+- Added missing `runner.addTest(...)` calls for the three existing suites.
+- Pre-fix baseline executed 94 tests; post-fix runner executes 131 tests and surfaces 11 failures in the newly enabled suites.
+- Existing post-fix failures appear to be pre-existing fixture/source expectation mismatches now exposed by registration, not build/link breakage.
+
+Suggested test command(s):
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- Optional narrower command: `cd tests/tactical && make && ./TacticalTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-unused-test-runner-registration/tactical-runner-001
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
