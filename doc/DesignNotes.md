@@ -1023,11 +1023,15 @@ The updated tactical regression coverage locks that contract in by checking:
 
 - `FTacticalCombatReportSummary` starts with `showHitDetails == true` and can be
   toggled off by callers that want to suppress the detail section;
+- `FTacticalGame` lifecycle APIs now carry the report activation, summary
+  generation, nested-event normalization, and standalone immediate-event
+  detachment coverage behaviorally through public state instead of tactical
+  source-token inspection;
 - hit-detail rows are emitted only for successful attacks and stay empty for
   no-hit summaries and immediate electrical-fire or mine-damage report shapes;
 - player-readable detail text includes attacker, weapon, target, hull damage,
-  any internal-effect outcome text, and meaningful non-placeholder notes while
-  omitting the redundant `Attack hit target` suffix; and
+  any per-attack internal-effect outcome text, and meaningful non-placeholder
+  notes while omitting the redundant `Attack hit target` suffix; and
 - `FTacticalReportEvent` now preserves both weapon and defense damage metadata
   across immediate damage-resolution events and attack-effect construction, and
   both runtime conversion seams keep `previousValue`, `newValue`, and `amount`
@@ -1040,7 +1044,10 @@ The updated tactical regression coverage locks that contract in by checking:
   effect text across mixed-effect and hull-plus-effects cases, keep the exposed
   hull-loss scenario at `4` instead of `5` damage, and leave `rawEvents` /
   `internalEventsTriggered` available for detail/debugging even when the
-  player-facing hull total suppresses duplicate standalone hull additions.
+  player-facing hull total suppresses duplicate standalone hull additions; and
+- the touched tactical-runner fixtures no longer depend on architecture-coupled,
+  non-convertible source-inspection assertions for report lifecycle,
+  normalization, or damage-summary text wiring.
 
 The dialog follow-up then made that summary contract visible to players without
 changing the report model. `TacticalDamageSummaryGUI` now splits its text
@@ -1063,15 +1070,16 @@ back to screen centering when it is launched parentless through the tactical UI
 adapter.
 
 The regression coverage now locks that behavior in at two levels. The tactical
-source-contract test checks for the dedicated ship-rollup and hit-detail
-builders, preserves direct content assertions for the `<Ship Name>:` plus
-` - ...` multiline summary contract (including grouped `Weapon Hit: ...`,
-`Defense Hit: ...`, and exact `ADF (-N)` / `MR (-N)` bullets), and rejects
-reintroduction of the manual bind-plus-`EndModal(...)` close path. The live GUI
-regression drives both the parent-backed `WXTacticalUI::showDamageSummary(...)`
-flow and the direct parent-backed `TacticalDamageSummaryGUI` path with
-populated, no-detail, and empty summaries. The direct modal path now routes
-through `WXGuiTestHarness::showModalWithAction(...)`, pins the parent frame to a
+runner coverage checks the built summary output directly, preserving content
+assertions for the `<Ship Name>:` plus ` - ...` multiline summary contract
+(including grouped `Weapon Hit: ...`, `Defense Hit: ...`, and exact `ADF (-N)` /
+`MR (-N)` bullets), limiting hit-detail rows to per-attack internal events, and
+keeping the empty-state path intact without reintroducing brittle
+`TacticalDamageSummaryGUI.cpp` source-token checks. The live GUI regression
+drives both the parent-backed `WXTacticalUI::showDamageSummary(...)` flow and
+the direct parent-backed `TacticalDamageSummaryGUI` path with populated,
+no-detail, and empty summaries. The direct modal path now routes through
+`WXGuiTestHarness::showModalWithAction(...)`, pins the parent frame to a
 deterministic starting position for the centering assertion, and gives the
 close-button action a longer fallback timeout so the real Enter-key/default-
 button interaction can complete without racing the harness auto-dismiss. The
