@@ -1,0 +1,27 @@
+{
+  "status": "completed",
+  "subtask_id": "TACTICAL-FAIL-001",
+  "branch": "tactical-runner-failing-tests-remediation-tactical-fail-001-verifier-20260418",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency_summary": "Sufficient: the updated tactical summary test covers the exposed hull-double-count scenario, confirms the corrected 4-damage rollup, preserves non-hull effect rollups, and retains raw event/internal-event capture; rerun of cd tests && make tactical-tests && ./tactical/TacticalTests finished at Run 131, Failures 10, Errors 0 with only documented out-of-scope failures.",
+  "documentation_accuracy_summary": "Accurate: doc/DesignNotes.md matches the standalone-event hull aggregation guard, the corrected 4-damage player-facing summary, and preserved rawEvents/internalEventsTriggered detail capture.",
+  "artifact_files_written": [
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/verifier_report.md",
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-001/verifier_result.json"
+  ],
+  "reviewed_commits": {
+    "implementer": "572b8459bd6c09d0d95ce65691a981de69f6ec57",
+    "documenter": "e224afbb440a5be74bb99857ea9d8008fcd6c690",
+    "verifier_base": "fe1b7794c7c4c8c21d5fe04d2f3415340eb9e1b6"
+  },
+  "verification_command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+  "verification_outcome": {
+    "run": 131,
+    "failures": 10,
+    "errors": 0,
+    "notes": "Failures match the pre-existing out-of-scope FBattleScreen / tactical GUI-adapter source-contract failures documented in tester artifacts; no TACTICAL-FAIL-001 acceptance-criterion failure observed."
+  }
+}
