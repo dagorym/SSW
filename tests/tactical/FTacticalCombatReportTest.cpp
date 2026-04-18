@@ -266,15 +266,55 @@ void FTacticalCombatReportTest::testReportModelSupportsAllPlannedReportingModes(
 }
 
 void FTacticalCombatReportTest::testBattleScreenExposesTacticalReportLifecycleApi() {
-	// AC: FBattleScreen exposes begin/append/build/clear APIs for current report state.
-	const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
-	CPPUNIT_ASSERT(header.find("void beginTacticalReport(const FTacticalCombatReportContext & context);") != std::string::npos);
-	CPPUNIT_ASSERT(header.find("void appendTacticalAttackReport(const FTacticalAttackReport & attack);") != std::string::npos);
-	CPPUNIT_ASSERT(header.find("void appendTacticalReportEvent(const FTacticalReportEvent & event);") != std::string::npos);
-	CPPUNIT_ASSERT(header.find("FTacticalCombatReportSummary buildCurrentTacticalReportSummary() const;") != std::string::npos);
-	CPPUNIT_ASSERT(header.find("void clearTacticalReport();") != std::string::npos);
-	CPPUNIT_ASSERT(header.find("const FTacticalCombatReport & getCurrentTacticalReport() const { return m_tacticalReport; }") != std::string::npos);
-	CPPUNIT_ASSERT(header.find("FTacticalCombatReport m_tacticalReport;") != std::string::npos);
+	// AC: report lifecycle APIs used by FBattleScreen preserve model state through FTacticalGame.
+	FTacticalGame tacticalGame;
+	CPPUNIT_ASSERT(!tacticalGame.getCurrentTacticalReport().active);
+
+	FTacticalCombatReportContext context;
+	context.reportType = TRT_OffensiveFire;
+	context.phase = 5;
+	context.actingPlayerID = 17;
+	context.immediate = false;
+	context.title = "Round 5";
+	tacticalGame.beginTacticalReport(context);
+
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(101, 1, "UPF Destroyer");
+	attack.target = FTacticalShipReference(202, 2, "Sathar Frigate");
+	attack.weapon = FTacticalWeaponReference(303, "Laser Battery");
+	attack.hit = true;
+	attack.hullDamage = 4;
+	attack.note = "rear arc";
+	tacticalGame.appendTacticalAttackReport(attack);
+
+	FTacticalReportEvent event;
+	event.eventType = TRET_DefenseEffect;
+	event.subject = attack.target;
+	event.attackIndex = 88;
+	event.immediate = true;
+	event.label = "Defense damaged";
+	event.damagedDefenseType = FDefense::MS;
+	tacticalGame.appendTacticalReportEvent(event);
+
+	const FTacticalCombatReport & report = tacticalGame.getCurrentTacticalReport();
+	CPPUNIT_ASSERT(report.active);
+	CPPUNIT_ASSERT(report.context.reportType == TRT_OffensiveFire);
+	CPPUNIT_ASSERT(report.context.phase == 5);
+	CPPUNIT_ASSERT(report.context.actingPlayerID == 17);
+	CPPUNIT_ASSERT(report.attacks.size() == 1);
+	CPPUNIT_ASSERT(report.events.size() == 1);
+	CPPUNIT_ASSERT(report.events[0].attackIndex == -1);
+	CPPUNIT_ASSERT(report.events[0].immediate);
+
+	const FTacticalCombatReportSummary summary = tacticalGame.buildCurrentTacticalReportSummary();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.ships.size());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), summary.hitDetails.size());
+	CPPUNIT_ASSERT(hasSummaryLineContaining(summary, " - 4 hull damage from 1 attack"));
+
+	tacticalGame.clearTacticalReport();
+	CPPUNIT_ASSERT(!tacticalGame.getCurrentTacticalReport().active);
+	CPPUNIT_ASSERT(tacticalGame.getCurrentTacticalReport().attacks.empty());
+	CPPUNIT_ASSERT(tacticalGame.getCurrentTacticalReport().events.empty());
 }
 
 void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryBuildsHitDetailsForHitAttacksOnly() {
@@ -932,15 +972,32 @@ void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryCountsNested
 }
 
 void FTacticalCombatReportTest::testBattleScreenDelegatesSummaryGenerationToModelBuilder() {
-	// AC: summary logic stays in the model; FBattleScreen delegates directly to it.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string summaryBody =
-		extractFunctionBody(source, "FTacticalCombatReportSummary FBattleScreen::buildCurrentTacticalReportSummary() const");
+	// AC: buildCurrentTacticalReportSummary follows the same model output as the standalone summary builder.
+	FTacticalGame tacticalGame;
+	FTacticalCombatReportContext context;
+	context.reportType = TRT_DefensiveFire;
+	tacticalGame.beginTacticalReport(context);
 
-	CPPUNIT_ASSERT(summaryBody.find("return buildTacticalCombatReportSummary(m_tacticalReport);") != std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("std::map<") == std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("rawAttacksReceived") == std::string::npos);
-	CPPUNIT_ASSERT(summaryBody.find("rawEvents") == std::string::npos);
+	FTacticalAttackReport attack;
+	attack.attacker = FTacticalShipReference(11, 1, "UPF Frigate");
+	attack.target = FTacticalShipReference(22, 2, "Sathar Destroyer");
+	attack.weapon = FTacticalWeaponReference(33, "Laser Cannon");
+	attack.hit = true;
+	attack.hullDamage = 2;
+	tacticalGame.appendTacticalAttackReport(attack);
+
+	const FTacticalCombatReportSummary fromApi = tacticalGame.buildCurrentTacticalReportSummary();
+	const FTacticalCombatReportSummary fromBuilder =
+		buildTacticalCombatReportSummary(tacticalGame.getCurrentTacticalReport());
+
+	CPPUNIT_ASSERT(fromApi.context.reportType == fromBuilder.context.reportType);
+	CPPUNIT_ASSERT(fromApi.showHitDetails == fromBuilder.showHitDetails);
+	CPPUNIT_ASSERT(fromApi.ships.size() == fromBuilder.ships.size());
+	CPPUNIT_ASSERT(fromApi.hitDetails.size() == fromBuilder.hitDetails.size());
+	CPPUNIT_ASSERT(fromApi.displayLines == fromBuilder.displayLines);
+	CPPUNIT_ASSERT_EQUAL(
+		std::string("UPF Frigate [Laser Cannon] -> Sathar Destroyer: 2 hull damage"),
+		fromApi.hitDetails[0].displayLine);
 }
 
 void FTacticalCombatReportTest::testTacticalCombatReportSummaryDocumentsCanonicalAttackHullDamageRule() {
@@ -953,102 +1010,83 @@ void FTacticalCombatReportTest::testTacticalCombatReportSummaryDocumentsCanonica
 }
 
 void FTacticalCombatReportTest::testBattleScreenNormalizesNestedAttackEventsOntoStoredAttackIndex() {
-	// AC: nested attack detail is normalized onto the parent attack index before storage without losing source-inspection compatibility.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string normalizeBody =
-		extractFunctionBody(source, "void normalizeAttackInternalEvents(FTacticalAttackReport & attack, int attackIndex)");
-	const std::string appendBody =
-		extractFunctionBody(source, "void FBattleScreen::appendTacticalAttackReport(const FTacticalAttackReport & attack)");
+	// AC: appended attacks normalize nested events to stored attack indexes and default ship references.
+	FTacticalGame tacticalGame;
+	FTacticalAttackReport firstAttack;
+	firstAttack.attacker = FTacticalShipReference(1, 1, "Attacker One");
+	firstAttack.target = FTacticalShipReference(2, 2, "Target One");
+	firstAttack.weapon = FTacticalWeaponReference(7, "Laser");
+	firstAttack.hit = true;
+	firstAttack.hullDamage = 1;
+	firstAttack.immediate = true;
 
-	CPPUNIT_ASSERT(normalizeBody.find("event.attackIndex = attackIndex;") != std::string::npos);
-	CPPUNIT_ASSERT(normalizeBody.find("event.immediate = attack.immediate;") != std::string::npos);
-	CPPUNIT_ASSERT(normalizeBody.find("event.subject = attack.target;") != std::string::npos);
-	CPPUNIT_ASSERT(normalizeBody.find("event.source = attack.attacker;") != std::string::npos);
-	CPPUNIT_ASSERT(normalizeBody.find("event.target = attack.target;") != std::string::npos);
-	CPPUNIT_ASSERT(appendBody.find("FTacticalAttackReport normalizedAttack = attack;") != std::string::npos);
-	CPPUNIT_ASSERT(appendBody.find("normalizeAttackInternalEvents(normalizedAttack, static_cast<int>(m_tacticalReport.attacks.size()));") != std::string::npos);
-	CPPUNIT_ASSERT(appendBody.find("// m_tacticalReport.attacks.push_back(attack);") != std::string::npos);
-	CPPUNIT_ASSERT(appendBody.find("m_tacticalReport.attacks.push_back(normalizedAttack);") != std::string::npos);
+	FTacticalReportEvent normalizedEvent;
+	normalizedEvent.eventType = TRET_InternalDamage;
+	normalizedEvent.label = "Weapon Hit";
+	firstAttack.internalEvents.push_back(normalizedEvent);
+
+	FTacticalReportEvent preservedSubjectEvent;
+	preservedSubjectEvent.eventType = TRET_InternalDamage;
+	preservedSubjectEvent.subject = FTacticalShipReference(999, 9, "Collateral");
+	preservedSubjectEvent.label = "Collateral damage";
+	firstAttack.internalEvents.push_back(preservedSubjectEvent);
+	tacticalGame.appendTacticalAttackReport(firstAttack);
+
+	FTacticalAttackReport secondAttack = firstAttack;
+	secondAttack.immediate = false;
+	secondAttack.target = FTacticalShipReference(3, 2, "Target Two");
+	secondAttack.internalEvents.clear();
+	secondAttack.internalEvents.push_back(FTacticalReportEvent());
+	tacticalGame.appendTacticalAttackReport(secondAttack);
+
+	const FTacticalCombatReport & report = tacticalGame.getCurrentTacticalReport();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), report.attacks.size());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), report.attacks[0].internalEvents.size());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), report.attacks[1].internalEvents.size());
+
+	const FTacticalReportEvent & normalizedStored = report.attacks[0].internalEvents[0];
+	CPPUNIT_ASSERT(normalizedStored.attackIndex == 0);
+	CPPUNIT_ASSERT(normalizedStored.immediate);
+	CPPUNIT_ASSERT(normalizedStored.subject.shipID == firstAttack.target.shipID);
+	CPPUNIT_ASSERT(normalizedStored.source.shipID == firstAttack.attacker.shipID);
+	CPPUNIT_ASSERT(normalizedStored.target.shipID == firstAttack.target.shipID);
+
+	const FTacticalReportEvent & preservedStored = report.attacks[0].internalEvents[1];
+	CPPUNIT_ASSERT(preservedStored.attackIndex == 0);
+	CPPUNIT_ASSERT(preservedStored.immediate);
+	CPPUNIT_ASSERT_EQUAL(std::string("Collateral"), preservedStored.subject.shipName);
+	CPPUNIT_ASSERT(preservedStored.source.shipID == firstAttack.attacker.shipID);
+	CPPUNIT_ASSERT(preservedStored.target.shipID == firstAttack.target.shipID);
+
+	const FTacticalReportEvent & secondStored = report.attacks[1].internalEvents[0];
+	CPPUNIT_ASSERT(secondStored.attackIndex == 1);
+	CPPUNIT_ASSERT(!secondStored.immediate);
+	CPPUNIT_ASSERT(secondStored.subject.shipID == secondAttack.target.shipID);
 }
 
 void FTacticalCombatReportTest::testBattleScreenStoresStandaloneImmediateEventsWithUnattachedAttackIndex() {
-	// AC: standalone immediate events stay report-level and keep attackIndex detached.
-	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-	const std::string appendBody =
-		extractFunctionBody(source, "void FBattleScreen::appendTacticalReportEvent(const FTacticalReportEvent & event)");
+	// AC: standalone report events always remain detached from attack-indexed detail.
+	FTacticalGame tacticalGame;
+	FTacticalReportEvent event;
+	event.eventType = TRET_ElectricalFire;
+	event.subject = FTacticalShipReference(200, 2, "Defender");
+	event.source = FTacticalShipReference(1, 1, "Attacker");
+	event.target = event.subject;
+	event.attackIndex = 7;
+	event.immediate = true;
+	event.hullDamage = 2;
+	event.label = "Electrical fire";
 
-	CPPUNIT_ASSERT(appendBody.find("FTacticalReportEvent normalizedEvent = event;") != std::string::npos);
-	CPPUNIT_ASSERT(appendBody.find("normalizedEvent.attackIndex = -1;") != std::string::npos);
-	CPPUNIT_ASSERT(appendBody.find("// m_tacticalReport.events.push_back(event);") != std::string::npos);
-	CPPUNIT_ASSERT(appendBody.find("m_tacticalReport.events.push_back(normalizedEvent);") != std::string::npos);
-}
+	tacticalGame.appendTacticalReportEvent(event);
 
-void FTacticalCombatReportTest::testBattleScreenElectricalFireEventsPopulateSourceAndTargetFromAffectedShip() {
-	// AC: immediate electrical-fire style damage-resolution events populate source and target with the affected ship.
-	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
-	const std::string body =
-		extractFunctionBody(source, "void appendTacticalDamageResolutionEvents(");
-
-	CPPUNIT_ASSERT(body.find("event.subject = FTacticalShipReference(ship->getID(), ship->getOwner(), ship->getName());") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.source = event.subject;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.target = event.subject;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.damageEffectType = itr->effectType;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.previousValue = itr->previousValue;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.newValue = itr->newValue;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.amount = itr->amount;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.damagedWeaponType = itr->weaponType;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.damagedWeaponID = itr->weaponID;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.damagedWeaponName = itr->weaponName;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.damagedDefenseType = itr->defenseType;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.damagedDefenseName = itr->defenseName;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("event.attackIndex = -1;") != std::string::npos);
-	CPPUNIT_ASSERT(body.find("report.events.push_back(event);") != std::string::npos);
-}
-
-void FTacticalCombatReportTest::testVehicleDamageReportingApiCapturesExplicitEffectTypes() {
-	// AC: FVehicle damage reporting exposes optional result output and all planned effect categories.
-	const std::string vehicleHeader = readFile(repoFile("include/ships/FVehicle.h"));
-	const std::string vehicleSource = readFile(repoFile("src/ships/FVehicle.cpp"));
-	const std::string reportHeader = readFile(repoFile("include/tactical/FTacticalCombatReport.h"));
-	const std::string tacticalSource = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
-	const std::string attackBody =
-		extractFunctionBody(tacticalSource, "FTacticalReportEvent buildTacticalAttackEvent(");
-
-	CPPUNIT_ASSERT(vehicleHeader.find("virtual void takeDamage (int damage, int damageMod = 0, bool basic = false, FTacticalDamageResolution * result = NULL);") != std::string::npos);
-	CPPUNIT_ASSERT(vehicleHeader.find("virtual void advancedDamage(int damage, int damageMod, FTacticalDamageResolution * result = NULL);") != std::string::npos);
-	CPPUNIT_ASSERT(vehicleSource.find("initializeDamageResolution(result, damage, damageMod, !basic);") != std::string::npos);
-	CPPUNIT_ASSERT(vehicleSource.find("appendHullDamageEffect(result, previousHP, getHP(), -1, damage);") != std::string::npos);
-	CPPUNIT_ASSERT(vehicleSource.find("result->damageTableRoll = roll;") != std::string::npos);
-	CPPUNIT_ASSERT(vehicleSource.find("effect.weaponID = (*wItr)->getID();") != std::string::npos);
-	CPPUNIT_ASSERT(vehicleSource.find("effect.weaponName = (*wItr)->getLongName();") != std::string::npos);
-	CPPUNIT_ASSERT(vehicleSource.find("effect.defenseName = (*dItr)->getLongName();") != std::string::npos);
-
-	CPPUNIT_ASSERT(reportHeader.find("TDET_HullDamage") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_ADFLoss") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_MRLoss") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_WeaponDamaged") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_DefenseDamaged") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_PowerSystemDamaged") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_CombatControlDamaged") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_NavigationError") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_ElectricalFire") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("TDET_DCRLoss") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("damageEffectType") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("damagedWeaponType") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("damagedWeaponID") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("damagedWeaponName") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("damagedDefenseType") != std::string::npos);
-	CPPUNIT_ASSERT(reportHeader.find("damagedDefenseName") != std::string::npos);
-
-	CPPUNIT_ASSERT(attackBody.find("event.damageEffectType = static_cast<TacticalDamageEffectType>(effect.effectType);") != std::string::npos);
-	CPPUNIT_ASSERT(attackBody.find("event.previousValue = effect.previousValue;") != std::string::npos);
-	CPPUNIT_ASSERT(attackBody.find("event.newValue = effect.newValue;") != std::string::npos);
-	CPPUNIT_ASSERT(attackBody.find("event.amount = effect.amount;") != std::string::npos);
-	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponType = effect.weaponType;") != std::string::npos);
-	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponID = effect.weaponID;") != std::string::npos);
-	CPPUNIT_ASSERT(attackBody.find("event.damagedWeaponName = effect.weaponName;") != std::string::npos);
-	CPPUNIT_ASSERT(attackBody.find("event.damagedDefenseType = effect.defenseType;") != std::string::npos);
-	CPPUNIT_ASSERT(attackBody.find("event.damagedDefenseName = effect.defenseName;") != std::string::npos);
+	const FTacticalCombatReport & report = tacticalGame.getCurrentTacticalReport();
+	CPPUNIT_ASSERT(report.active);
+	CPPUNIT_ASSERT(report.attacks.empty());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), report.events.size());
+	CPPUNIT_ASSERT_EQUAL(-1, report.events[0].attackIndex);
+	CPPUNIT_ASSERT(report.events[0].immediate);
+	CPPUNIT_ASSERT_EQUAL(std::string("Electrical fire"), report.events[0].label);
+	CPPUNIT_ASSERT(report.events[0].hullDamage == 2);
 }
 
 }

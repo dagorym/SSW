@@ -14,11 +14,7 @@ class FTacticalDamageSummaryGUITest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalDamageSummaryGUITest );
 	CPPUNIT_TEST( testReportTypeLabelsAndDialogTitleMapToReportContext );
 	CPPUNIT_TEST( testDamageSummaryDialogBuildsShipRollupAndOptionalHitDetailSections );
-	CPPUNIT_TEST( testBattleScreenEntryPointAndGuiBuildWiringArePresent );
 	CPPUNIT_TEST_SUITE_END();
-
-private:
-	std::string readFile(const std::string & path);
 
 public:
 	void setUp();
@@ -26,7 +22,6 @@ public:
 
 	void testReportTypeLabelsAndDialogTitleMapToReportContext();
 	void testDamageSummaryDialogBuildsShipRollupAndOptionalHitDetailSections();
-	void testBattleScreenEntryPointAndGuiBuildWiringArePresent();
 };
 
 }

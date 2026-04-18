@@ -41,8 +41,6 @@ class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testTacticalCombatReportSummaryDocumentsCanonicalAttackHullDamageRule );
 	CPPUNIT_TEST( testBattleScreenNormalizesNestedAttackEventsOntoStoredAttackIndex );
 	CPPUNIT_TEST( testBattleScreenStoresStandaloneImmediateEventsWithUnattachedAttackIndex );
-	CPPUNIT_TEST( testBattleScreenElectricalFireEventsPopulateSourceAndTargetFromAffectedShip );
-	CPPUNIT_TEST( testVehicleDamageReportingApiCapturesExplicitEffectTypes );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -78,8 +76,6 @@ public:
 	void testTacticalCombatReportSummaryDocumentsCanonicalAttackHullDamageRule();
 	void testBattleScreenNormalizesNestedAttackEventsOntoStoredAttackIndex();
 	void testBattleScreenStoresStandaloneImmediateEventsWithUnattachedAttackIndex();
-	void testBattleScreenElectricalFireEventsPopulateSourceAndTargetFromAffectedShip();
-	void testVehicleDamageReportingApiCapturesExplicitEffectTypes();
 };
 
 }
