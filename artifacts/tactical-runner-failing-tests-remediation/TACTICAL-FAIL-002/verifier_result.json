@@ -1,0 +1,39 @@
+{
+  "status": "success",
+  "subtask_id": "TACTICAL-FAIL-002",
+  "branch": "tactical-runner-failing-tests-remediation-tactical-fail-002-verifier-20260418",
+  "review_scope": "Combined implementer/tester/documenter diff on verifier branch against test-fixes, limited to the touched tactical fixtures, documentation updates, and task artifacts.",
+  "assumptions": [
+    "Used test-fixes...HEAD as the bounded review diff because verifier_prompt.txt identifies test-fixes as the merge-base assumption for the tester/documenter branch stack and branch ancestry matches that assumption."
+  ],
+  "acceptance_reference": [
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/verifier_prompt.txt:3-13",
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/tester_report.md:13-21"
+  ],
+  "convention_files": [
+    "AGENTS.md",
+    "doc/DesignNotes.md",
+    "/home/tstephen/repos/agents/agents/verifier.yaml"
+  ],
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient: FTacticalCombatReportTest now covers report lifecycle, normalization, and standalone-event detachment behavior through FTacticalGame public APIs, and FTacticalDamageSummaryGUITest verifies that only per-attack internal events contribute hit-detail text while standalone events remain in ship rollups.",
+  "documentation_accuracy_summary": "Accurate: AGENTS.md and doc/DesignNotes.md describe the behavioral coverage shift, the per-attack internal-event hit-detail rule, and the removal of the touched architecture-coupled source-inspection checks.",
+  "verification_commands": [
+    "cd tests && make tactical-tests",
+    "cd tests && ./tactical/TacticalTests",
+    "cd tests && set -o pipefail && ./tactical/TacticalTests 2>&1 | grep -E '!!!FAILURES!!!|Run:|Failures:|WXTacticalUIAdapterTest::' ; echo EXIT_CODE:$?"
+  ],
+  "known_unrelated_failures": [
+    "FrontierTests::WXTacticalUIAdapterTest::testShowMessageMatchesRepositoryInformationalPattern",
+    "FrontierTests::WXTacticalUIAdapterTest::testDamageSummaryAndICMSelectionWrapDialogsWithGuards",
+    "FrontierTests::WXTacticalUIAdapterTest::testNotifyWinnerPreservesBattleScreenWinnerMessageSemantics",
+    "FrontierTests::WXTacticalUIAdapterTest::testRuntimeTacticalCallersNotRewiredToAdapter"
+  ],
+  "artifact_files": [
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/verifier_report.md",
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/verifier_result.json"
+  ]
+}
