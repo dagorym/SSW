@@ -194,6 +194,26 @@ return found;
 return NULL;
 }
 
+wxButton * findButtonById(wxWindow * root, int id) {
+if (root == NULL) {
+return NULL;
+}
+
+wxButton * button = dynamic_cast<wxButton *>(root);
+if (button != NULL && button->GetId() == id) {
+return button;
+}
+
+const wxWindowList & children = root->GetChildren();
+for (wxWindowList::const_iterator itr = children.begin(); itr != children.end(); ++itr) {
+wxButton * found = findButtonById(*itr, id);
+if (found != NULL) {
+return found;
+}
+}
+return NULL;
+}
+
 bool sourceContainsLineToken(const std::vector<std::string> & candidatePaths, const std::string & token) {
 for (std::vector<std::string>::const_iterator itr = candidatePaths.begin(); itr != candidatePaths.end(); ++itr) {
 std::ifstream source((*itr).c_str());
@@ -406,12 +426,89 @@ icmData.push_back(&row);
 	const int icmResult = ui.runICMSelection(icmData, &noDefenders);
 	CPPUNIT_ASSERT_EQUAL(1, icmResult);
 
+	const int icmModalResult = m_harness.runModalFunctionWithAction([&]() {
+		return ui.runICMSelection(icmData, &defenders);
+	}, [&]() {
+		wxDialog * modal = m_harness.waitForModalDialog();
+		CPPUNIT_ASSERT(modal != NULL);
+		wxButton * doneButton = findButtonByLabel(modal, wxT("Done"));
+		CPPUNIT_ASSERT(doneButton != NULL);
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, doneButton->GetId());
+		click.SetEventObject(doneButton);
+		doneButton->Command(click);
+	}, wxID_CANCEL, 450);
+	CPPUNIT_ASSERT_EQUAL(0, icmModalResult);
+
 	std::cerr << "TACTICAL1:msg" << std::endl;
-	WXTacticalUI::setModalAutoDismissMs(25);
-	ui.showMessage("Tactical Smoke", "Parent-backed tactical message");
+	bool messageActionRan = false;
+	bool messageBodyFound = false;
+	wxString messageTitle;
+	m_harness.runVoidFunctionWithAction([&]() {
+		ui.showMessage("Tactical Smoke", "Parent-backed tactical message");
+	}, [&]() {
+		messageActionRan = true;
+		wxDialog * modal = m_harness.waitForModalDialog();
+		CPPUNIT_ASSERT(modal != NULL);
+		messageTitle = modal->GetTitle();
+		messageBodyFound = (findStaticTextContaining(modal, wxT("Parent-backed tactical message")) != NULL);
+		wxButton * okButton = findButtonById(modal, wxID_OK);
+		if (okButton == NULL) {
+			okButton = findButtonByLabel(modal, wxT("OK"));
+		}
+		CPPUNIT_ASSERT(okButton != NULL);
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, okButton->GetId());
+		click.SetEventObject(okButton);
+		okButton->Command(click);
+	}, wxID_CANCEL, 450);
+	CPPUNIT_ASSERT(messageActionRan);
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("Tactical Smoke"), messageTitle);
+	CPPUNIT_ASSERT(messageBodyFound);
+
 	std::cerr << "TACTICAL1:winner" << std::endl;
-	ui.notifyWinner(true);
-	WXTacticalUI::setModalAutoDismissMs(0);
+	bool winnerActionRan = false;
+	bool satharWinnerBodyFound = false;
+	wxString winnerTitle;
+	m_harness.runVoidFunctionWithAction([&]() {
+		ui.notifyWinner(true);
+	}, [&]() {
+		winnerActionRan = true;
+		wxDialog * modal = m_harness.waitForModalDialog();
+		CPPUNIT_ASSERT(modal != NULL);
+		winnerTitle = modal->GetTitle();
+		satharWinnerBodyFound =
+			(findStaticTextContaining(modal, wxT("The winner of the battle is")) != NULL)
+			&& (findStaticTextContaining(modal, wxT("Player Sathar")) != NULL);
+		wxButton * okButton = findButtonById(modal, wxID_OK);
+		if (okButton == NULL) {
+			okButton = findButtonByLabel(modal, wxT("OK"));
+		}
+		CPPUNIT_ASSERT(okButton != NULL);
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, okButton->GetId());
+		click.SetEventObject(okButton);
+		okButton->Command(click);
+	}, wxID_CANCEL, 450);
+	CPPUNIT_ASSERT(winnerActionRan);
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("Enemy Defeated!"), winnerTitle);
+	CPPUNIT_ASSERT(satharWinnerBodyFound);
+
+	bool upfWinnerBodyFound = false;
+	m_harness.runVoidFunctionWithAction([&]() {
+		ui.notifyWinner(false);
+	}, [&]() {
+		wxDialog * modal = m_harness.waitForModalDialog();
+		CPPUNIT_ASSERT(modal != NULL);
+		upfWinnerBodyFound = (findStaticTextContaining(modal, wxT("Player UPF")) != NULL);
+		wxButton * okButton = findButtonById(modal, wxID_OK);
+		if (okButton == NULL) {
+			okButton = findButtonByLabel(modal, wxT("OK"));
+		}
+		CPPUNIT_ASSERT(okButton != NULL);
+		wxCommandEvent click(wxEVT_COMMAND_BUTTON_CLICKED, okButton->GetId());
+		click.SetEventObject(okButton);
+		okButton->Command(click);
+	}, wxID_CANCEL, 450);
+	CPPUNIT_ASSERT(upfWinnerBodyFound);
+
 	std::cerr << "TACTICAL1:redraw" << std::endl;
 
 	ui.requestRedraw();

@@ -13,29 +13,20 @@ namespace FrontierTests {
 
 class WXTacticalUIAdapterTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( WXTacticalUIAdapterTest );
-CPPUNIT_TEST( testHeaderDeclaresAdapterImplementingInterface );
-CPPUNIT_TEST( testConstructorStoresParentAndRedrawUsesRefreshSafely );
-CPPUNIT_TEST( testShowMessageMatchesRepositoryInformationalPattern );
-CPPUNIT_TEST( testDamageSummaryAndICMSelectionWrapDialogsWithGuards );
-CPPUNIT_TEST( testNotifyWinnerPreservesBattleScreenWinnerMessageSemantics );
-CPPUNIT_TEST( testRuntimeTacticalCallersNotRewiredToAdapter );
-CPPUNIT_TEST( testAdapterSourceCompilesStandalone );
+CPPUNIT_TEST( testAdapterConstructsAsITacticalUI );
+CPPUNIT_TEST( testRequestRedrawIsSafeWithAndWithoutParent );
+CPPUNIT_TEST( testRunICMSelectionValidatesInputs );
+CPPUNIT_TEST( testNotifyWinnerUsesNoParentFallbackSafely );
 CPPUNIT_TEST_SUITE_END();
-
-private:
-std::string readFile(const std::string & path);
 
 public:
 void setUp();
 void tearDown();
 
-void testHeaderDeclaresAdapterImplementingInterface();
-void testConstructorStoresParentAndRedrawUsesRefreshSafely();
-void testShowMessageMatchesRepositoryInformationalPattern();
-void testDamageSummaryAndICMSelectionWrapDialogsWithGuards();
-void testNotifyWinnerPreservesBattleScreenWinnerMessageSemantics();
-void testRuntimeTacticalCallersNotRewiredToAdapter();
-void testAdapterSourceCompilesStandalone();
+void testAdapterConstructsAsITacticalUI();
+void testRequestRedrawIsSafeWithAndWithoutParent();
+void testRunICMSelectionValidatesInputs();
+void testNotifyWinnerUsesNoParentFallbackSafely();
 };
 
 } // namespace FrontierTests
