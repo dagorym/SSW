@@ -1,0 +1,33 @@
+{
+  "status": "success",
+  "subtask": "TACTICAL-FAIL-002",
+  "branch": "tactical-runner-failing-tests-remediation-tactical-fail-002-tester-20260418",
+  "test_commit_hash": "No Changes Made",
+  "test_files_modified": [],
+  "commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && make tactical-tests >/dev/null && set -o pipefail && ./tactical/TacticalTests 2>&1 | grep -E '!!!FAILURES!!!|Run:|Failures:|WXTacticalUIAdapterTest::' ; echo EXIT_CODE:$?"
+  ],
+  "totals": {
+    "run": 128,
+    "passed": 124,
+    "failed": 4,
+    "errors": 0
+  },
+  "known_unrelated_failures": [
+    "FrontierTests::WXTacticalUIAdapterTest::testShowMessageMatchesRepositoryInformationalPattern",
+    "FrontierTests::WXTacticalUIAdapterTest::testDamageSummaryAndICMSelectionWrapDialogsWithGuards",
+    "FrontierTests::WXTacticalUIAdapterTest::testNotifyWinnerPreservesBattleScreenWinnerMessageSemantics",
+    "FrontierTests::WXTacticalUIAdapterTest::testRuntimeTacticalCallersNotRewiredToAdapter"
+  ],
+  "acceptance_criteria": {
+    "behavioral_lifecycle_and_normalization_via_public_api": "met",
+    "hit_details_use_per_attack_internal_events": "met",
+    "non_convertible_architecture_coupled_source_inspection_removed": "met"
+  },
+  "artifact_files": [
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/tester_report.md",
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/tester_result.json",
+    "artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/documenter_prompt.txt"
+  ]
+}

@@ -1,0 +1,62 @@
+You are the Documenter Agent.
+
+Task summary:
+- Tactical report lifecycle/normalization source-inspection checks were replaced with behavioral FTacticalGame API tests.
+- Tactical damage-summary hit-detail assertions were aligned to per-attack internal-event details only.
+- Non-convertible tactical source-inspection checks in touched fixtures were removed.
+- Tester validated acceptance criteria and confirmed only known unrelated tactical-runner failures remain.
+
+Acceptance criteria validated:
+- Behavioral tests cover report-lifecycle and normalization semantics through public APIs instead of source-token inspection.
+- Hit-detail expectations align with the rule that only per-attack internal events appear in hit details.
+- Tactical source-inspection assertions that are architecture-coupled and non-convertible are removed.
+
+Implementation branch or worktree context:
+- Implementer branch: tactical-runner-failing-tests-remediation-tactical-fail-002-implementer-20260418
+- Tester branch: tactical-runner-failing-tests-remediation-tactical-fail-002-tester-20260418
+- Tester worktree: /home/tstephen/repos/SSW-worktrees/tactical-runner-failing-tests-remediation-tactical-fail-002-tester-20260418
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalDamageSummaryGUITest.h
+- tests/tactical/FTacticalDamageSummaryGUITest.cpp
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/tester_report.md
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/tester_result.json
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002/documenter_prompt.txt
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests && make tactical-tests >/dev/null && set -o pipefail && ./tactical/TacticalTests 2>&1 | grep -E '!!!FAILURES!!!|Run:|Failures:|WXTacticalUIAdapterTest::' ; echo EXIT_CODE:$?
+
+Final test outcomes:
+- Tactical runner executed 128 tests: 124 passed, 4 failed, 0 errors.
+- The only failures are the known unrelated pre-existing failures in:
+  - WXTacticalUIAdapterTest::testShowMessageMatchesRepositoryInformationalPattern
+  - WXTacticalUIAdapterTest::testDamageSummaryAndICMSelectionWrapDialogsWithGuards
+  - WXTacticalUIAdapterTest::testNotifyWinnerPreservesBattleScreenWinnerMessageSemantics
+  - WXTacticalUIAdapterTest::testRuntimeTacticalCallersNotRewiredToAdapter
+- Acceptance criteria for TACTICAL-FAIL-002 are met.
+
+Documentation context:
+- Update milestone/subtask documentation to reflect that lifecycle/normalization validation now relies on FTacticalGame behavioral API tests rather than source-token checks.
+- Note hit-detail semantics: per-attack internal events drive detail lines.
+- Capture removal of architecture-coupled, non-convertible source-inspection assertions in touched tactical fixtures.
+
+Plan and diff context:
+- Story/subtask context: TACTICAL-FAIL-002 (tactical runner failing tests remediation).
+- Comparison base assumption: diff implementer/tester branches against `test-fixes` unless repository evidence indicates a different integration base.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-runner-failing-tests-remediation/TACTICAL-FAIL-002
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
