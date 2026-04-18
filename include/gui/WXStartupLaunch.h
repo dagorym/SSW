@@ -20,6 +20,7 @@ typedef wxFrame* (*FStartupFrameFactory)();
 inline wxFrame* createStartupSplashAndFrame(wxApp& app,
 			FStartupFrameFactory createFrame,
 			const int splashTimeout = 2000) {
+	wxInitAllImageHandlers(); // despite the documentation saying this is not needed, it actually is.
 	wxBitmap bitmap;
 	FGameConfig &gc = FGameConfig::create();
 	if (bitmap.LoadFile(gc.resolveAssetPath("data/splash.png"), wxBITMAP_TYPE_PNG)) {
