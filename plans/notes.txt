@@ -8,6 +8,7 @@ Items to Add
 Items to fix
 * Starting window of each applications (SSW and Battlesim) should open centered on the user's screen under the splash screen image
 * Hits that damage already damaged systems e.g. ADF hits when ADF is zero are not falling back to hull damage.
+  * Weapon system hits -line 1173, Defensive system hits - line 1179 and Recording damage 1189-1202
 * spinners are horizontal, we want them vertical This seems to be a wxWidgits issue.
 
 ---
