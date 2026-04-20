@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## Agent and Skill Profiles
+
+You *must* read ~/repos/agents/AGENTS_LOOKUP.md before proceeding.
+
 ## Overview
 
 SSW is a C++ implementation of the Star Frontiers Second Sathar War strategic game along with a tactical component allowing users to play any of the Knight Hawks board game scenarios using wxWidgets 3.3.1 for the GUI. The repository builds two executables:
@@ -267,6 +271,4 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 - User Guide: `doc/UsersGuide.odt`
 - Game rules for tactical combat: `doc/rules/tactical_operations_manual.md`
 
-## Agent and Skill Profiles
 
-You *must* read ~/repos/agents/AGENTS_LOOKUP.md before proceeding.
