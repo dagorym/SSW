@@ -13,6 +13,10 @@ SSW is a C++ implementation of the Star Frontiers Second Sathar War strategic ga
 
 Cross-platform: Linux via Makefiles, Windows via Visual Studio 2022.
 
+## Non-negotiable Constraints
+
+- Under no cirumstance should the document at `doc/rules/tactical_operations_manual.md` be edited.  This is a non-volitile, external artifact that cannot change.  If implmentation changes occur that would require this document to change, the code is incorrect and discussion must occur with the user to resolve the conflict.
+
 ## Project Structure
 
 The codebase is organized into distinct modules, each with its own Makefile and static library that is linked into the final executables:
