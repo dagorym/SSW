@@ -87,6 +87,34 @@ void assertSingleHullDamageEffect(
 	CPPUNIT_ASSERT(result.effects[0].hullDamageApplied == damage);
 }
 
+void assertMeterEffect(
+		const FTacticalDamageEffect &effect,
+		TacticalDamageEffectType effectType,
+		int roll,
+		int previousValue,
+		int newValue,
+		int amount) {
+	CPPUNIT_ASSERT(effect.effectType == effectType);
+	CPPUNIT_ASSERT(effect.rollValue == roll);
+	CPPUNIT_ASSERT(effect.previousValue == previousValue);
+	CPPUNIT_ASSERT(effect.newValue == newValue);
+	CPPUNIT_ASSERT(effect.amount == amount);
+	CPPUNIT_ASSERT(effect.hullDamageApplied == 0);
+}
+
+void assertStatusEffect(
+		const FTacticalDamageEffect &effect,
+		TacticalDamageEffectType effectType,
+		int roll,
+		int previousValue,
+		int newValue) {
+	CPPUNIT_ASSERT(effect.effectType == effectType);
+	CPPUNIT_ASSERT(effect.rollValue == roll);
+	CPPUNIT_ASSERT(effect.previousValue == previousValue);
+	CPPUNIT_ASSERT(effect.newValue == newValue);
+	CPPUNIT_ASSERT(effect.hullDamageApplied == 0);
+}
+
 }
 
 // Registers the fixture into the 'registry'
@@ -454,6 +482,75 @@ void FVehicleTest::testAdvancedDamageStillDamagesEligibleWeaponAndDefenseCompone
 	CPPUNIT_ASSERT(defenseResult.effects.size() == 1);
 	CPPUNIT_ASSERT(defenseResult.effects[0].effectType == TDET_DefenseDamaged);
 	CPPUNIT_ASSERT(defenseResult.effects[0].defenseType == FDefense::PS);
+}
+
+void FVehicleTest::testDisastrousFireAppliesFullEligibleBundleWithoutHullDamage() {
+	// AC: Disastrous Fire applies each eligible bundled effect without hull fallback.
+	FVehicleDamageHarness vehicle;
+	vehicle.configureStats(20, 4, 3, 10);
+
+	FTacticalDamageResolution result;
+	applyAdvancedRoll(vehicle, 120, 4, result);
+
+	CPPUNIT_ASSERT(vehicle.getHP() == 20);
+	CPPUNIT_ASSERT(vehicle.getADF() == 0);
+	CPPUNIT_ASSERT(vehicle.getMR() == 0);
+	CPPUNIT_ASSERT(vehicle.getDCR() == 5);
+	CPPUNIT_ASSERT(vehicle.isCombatControlDamaged());
+	CPPUNIT_ASSERT(vehicle.isOnFire());
+	CPPUNIT_ASSERT(result.totalHullDamageApplied == 0);
+	CPPUNIT_ASSERT(result.effects.size() == 5);
+	assertMeterEffect(result.effects[0], TDET_ADFLoss, 120, 4, 0, 4);
+	assertMeterEffect(result.effects[1], TDET_MRLoss, 120, 3, 0, 3);
+	assertMeterEffect(result.effects[2], TDET_DCRLoss, 120, 10, 5, 5);
+	assertStatusEffect(result.effects[3], TDET_CombatControlDamaged, 120, 0, 1);
+	assertStatusEffect(result.effects[4], TDET_ElectricalFire, 120, 0, 1);
+}
+
+void FVehicleTest::testDisastrousFireReportsOnlyNewPartialEffectsWithoutHullDamage() {
+	// AC: partially spent Disastrous Fire bundles report only newly changed effects.
+	FVehicleDamageHarness vehicle;
+	vehicle.configureStats(20, 4, 3, 10);
+	vehicle.setADF(0);
+	vehicle.setMR(0);
+	vehicle.setDCR(5);
+	vehicle.setCombatControlDamaged(true);
+	vehicle.setOnFire(false);
+
+	FTacticalDamageResolution result;
+	applyAdvancedRoll(vehicle, 120, 4, result);
+
+	CPPUNIT_ASSERT(vehicle.getHP() == 20);
+	CPPUNIT_ASSERT(vehicle.getADF() == 0);
+	CPPUNIT_ASSERT(vehicle.getMR() == 0);
+	CPPUNIT_ASSERT(vehicle.getDCR() == 5);
+	CPPUNIT_ASSERT(vehicle.isCombatControlDamaged());
+	CPPUNIT_ASSERT(vehicle.isOnFire());
+	CPPUNIT_ASSERT(result.totalHullDamageApplied == 0);
+	CPPUNIT_ASSERT(result.effects.size() == 1);
+	assertStatusEffect(result.effects[0], TDET_ElectricalFire, 120, 0, 1);
+}
+
+void FVehicleTest::testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply() {
+	// AC: Disastrous Fire converts to normal hull damage only when no bundle effect can newly apply.
+	FVehicleDamageHarness vehicle;
+	vehicle.configureStats(20, 4, 3, 10);
+	vehicle.setADF(0);
+	vehicle.setMR(0);
+	vehicle.setDCR(5);
+	vehicle.setCombatControlDamaged(true);
+	vehicle.setOnFire(true);
+
+	FTacticalDamageResolution result;
+	applyAdvancedRoll(vehicle, 120, 4, result);
+
+	CPPUNIT_ASSERT(vehicle.getADF() == 0);
+	CPPUNIT_ASSERT(vehicle.getMR() == 0);
+	CPPUNIT_ASSERT(vehicle.getDCR() == 5);
+	CPPUNIT_ASSERT(vehicle.isCombatControlDamaged());
+	CPPUNIT_ASSERT(vehicle.isOnFire());
+	CPPUNIT_ASSERT(vehicle.getHP() == 16);
+	assertSingleHullDamageEffect(result, 120, 20, 16, 4);
 }
 
 const int FVehicleTest::save(std::ostream &os) const {return 0;}

@@ -53,6 +53,9 @@ public:
 		m_maxDCR = dcr;
 		m_currentDCR = dcr;
 	}
+
+	void setCombatControlDamaged(bool value) { m_combatControlDamaged = value; }
+	void setOnFire(bool value) { m_onFire = value; }
 };
 
 }
@@ -175,6 +178,43 @@ void FTacticalAttackIntegrationTest::testFireReportsConvertedADFHitAsHullDamage(
 	CPPUNIT_ASSERT(result.effects.size() == 1);
 	CPPUNIT_ASSERT(result.effects[0].effectType == TDET_HullDamage);
 	CPPUNIT_ASSERT(result.effects[0].rollValue == 49);
+	CPPUNIT_ASSERT(result.effects[0].previousValue == 20);
+	CPPUNIT_ASSERT(result.effects[0].newValue == 12);
+	CPPUNIT_ASSERT(result.effects[0].amount == 8);
+	CPPUNIT_ASSERT(result.effects[0].hullDamageApplied == 8);
+}
+
+void FTacticalAttackIntegrationTest::testFireReportsDisastrousFireFallbackAsHullDamage() {
+	// AC: full Disastrous Fire fallback reaches attack-result consumers as hull damage only.
+	srand(123);
+	FCombatVehicleHarness *target = static_cast<FCombatVehicleHarness *>(m_target);
+	target->configureStats(20, 0, 0, 8);
+	target->setDCR(4);
+	target->setCombatControlDamaged(true);
+	target->setOnFire(true);
+	static_cast<FWeaponFireHarness *>(m_weapon)->setDamageTableModifier(99);
+	static_cast<FWeaponFireHarness *>(m_weapon)->assignTargetDirectly(m_target, 3);
+
+	FTacticalAttackResult result = m_weapon->fire();
+
+	CPPUNIT_ASSERT(result.outcome == TAO_Hit);
+	CPPUNIT_ASSERT(result.skipReason == TASR_None);
+	CPPUNIT_ASSERT(result.fired());
+	CPPUNIT_ASSERT(result.hit());
+	CPPUNIT_ASSERT(result.damageRolled == 8);
+	CPPUNIT_ASSERT(result.usedAdvancedDamageTable);
+	CPPUNIT_ASSERT(result.damageTableModifier == 99);
+	CPPUNIT_ASSERT(result.damageTableRoll == 120);
+	CPPUNIT_ASSERT(result.totalHullDamageApplied == 8);
+	CPPUNIT_ASSERT(m_target->getHP() == 12);
+	CPPUNIT_ASSERT(m_target->getADF() == 0);
+	CPPUNIT_ASSERT(m_target->getMR() == 0);
+	CPPUNIT_ASSERT(m_target->getDCR() == 4);
+	CPPUNIT_ASSERT(m_target->isCombatControlDamaged());
+	CPPUNIT_ASSERT(m_target->isOnFire());
+	CPPUNIT_ASSERT(result.effects.size() == 1);
+	CPPUNIT_ASSERT(result.effects[0].effectType == TDET_HullDamage);
+	CPPUNIT_ASSERT(result.effects[0].rollValue == 120);
 	CPPUNIT_ASSERT(result.effects[0].previousValue == 20);
 	CPPUNIT_ASSERT(result.effects[0].newValue == 12);
 	CPPUNIT_ASSERT(result.effects[0].amount == 8);
