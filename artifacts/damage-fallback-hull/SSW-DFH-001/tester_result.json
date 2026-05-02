@@ -1,0 +1,40 @@
+{
+  "status": "success",
+  "task_id": "SSW-DFH-001",
+  "branch_name": "damage-fallback-SSW-DFH-001-tester-20260502",
+  "worktree_path": "/tmp/ssw-worktrees/damage-fallback-SSW-DFH-001-tester-20260502",
+  "test_commit_hash": "657c72d5c45597f57e4b5f8d095cbe142e8ea312",
+  "test_files_added_or_modified": [
+    "tests/ships/FVehicleTest.cpp",
+    "tests/ships/FVehicleTest.h",
+    "tests/ships/FTacticalAttackIntegrationTest.cpp",
+    "tests/ships/FTacticalAttackIntegrationTest.h"
+  ],
+  "implementation_files_under_test": [
+    "src/ships/FVehicle.cpp"
+  ],
+  "commands_run": [
+    {
+      "command": "cd tests && make && ./SSWTests",
+      "status": "passed",
+      "output_summary": "OK (170 tests)"
+    }
+  ],
+  "attempts_completed": 1,
+  "tests_written": 4,
+  "pass_fail_totals": {
+    "total": 170,
+    "passed": 170,
+    "failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_file_paths_written": [
+    "artifacts/damage-fallback-hull/SSW-DFH-001/tester_report.md",
+    "artifacts/damage-fallback-hull/SSW-DFH-001/tester_result.json",
+    "artifacts/damage-fallback-hull/SSW-DFH-001/documenter_prompt.txt"
+  ],
+  "notes": [
+    "The first full-suite run completed before the test diff was corrected into the assigned worktree and was not used as final validation evidence.",
+    "The original checkout at /home/tstephen/repos/SSW is clean after removing accidental duplicate tester edits."
+  ]
+}

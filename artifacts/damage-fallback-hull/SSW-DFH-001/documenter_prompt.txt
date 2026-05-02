@@ -1,0 +1,56 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate and document SSW-DFH-001 as needed: standard non-`Disastrous Fire` advanced-damage entries now convert to normal weapon hull damage when the targeted system cannot take a fresh hit.
+- Tester added focused regression coverage for the Implementer change in `src/ships/FVehicle.cpp`.
+
+Acceptance criteria validated:
+- ADF and MR entries continue to apply as cumulative point loss while current values remain above zero.
+- ADF entries convert to normal weapon hull damage when current ADF is already zero.
+- MR entries convert to normal weapon hull damage when current MR is already zero.
+- Repeated hits on already-damaged single-state systems (`power short circuit`, `combat control`, `navigation`, `electrical fire`, `damage control`) convert to normal weapon hull damage instead of reasserting the same state.
+- Weapon-hit and defense-hit fallback behavior remains unchanged for ships that still have an eligible undamaged component.
+- Damage-resolution output for converted hits records hull damage, not a zero-change non-hull effect.
+
+Implementation branch or worktree context:
+- Worktree path: `/tmp/ssw-worktrees/damage-fallback-SSW-DFH-001-tester-20260502`
+- Branch: `damage-fallback-SSW-DFH-001-tester-20260502`
+- The branch includes the Implementer change plus Tester commit `657c72d5c45597f57e4b5f8d095cbe142e8ea312`.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `src/ships/FVehicle.cpp`
+- `tests/ships/FVehicleTest.cpp`
+- `tests/ships/FVehicleTest.h`
+- `tests/ships/FTacticalAttackIntegrationTest.cpp`
+- `tests/ships/FTacticalAttackIntegrationTest.h`
+
+Test commit:
+- `657c72d5c45597f57e4b5f8d095cbe142e8ea312`
+
+Commands executed:
+- `cd tests && make && ./SSWTests`
+
+Final test outcomes:
+- Attempt 1/3 passed.
+- `SSWTests` reported `OK (170 tests)`.
+- Tester wrote 4 regression tests covering cumulative ADF/MR loss, zero-state ADF/MR fallback, repeated subsystem fallback, unchanged eligible weapon/defense component hits, and attack-result hull-damage reporting for converted hits.
+
+Documentation context:
+- Planner expected no documentation update because `doc/rules/tactical_operations_manual.md` already describes the intended behavior.
+- Your task is to verify whether any docs or artifact summaries should be updated now that implementation and tests confirm the rules behavior.
+
+Plan and diff context:
+- Plan artifact path: `plans/damage-fallback-hull-plan.md`
+- Shared artifact directory to reuse: `artifacts/damage-fallback-hull/SSW-DFH-001`
+- Comparison-base guidance: infer the correct base from repository context when needed; the tester commit parent contains the Implementer changes, and `src/ships/FVehicle.cpp` is the production file to inspect for documentation impact.
+
+Startup behavior:
+- If Documenter branch/worktree context and enough story and diff context are present, begin documentation review immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/damage-fallback-hull/SSW-DFH-001`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
