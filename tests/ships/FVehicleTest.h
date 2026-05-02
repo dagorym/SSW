@@ -28,6 +28,9 @@ class FVehicleTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST( testAdvancedDamageKeepsADFAndMRCumulativeUntilZero );
 	CPPUNIT_TEST( testAdvancedDamageFallsBackForAlreadyDamagedSubsystems );
 	CPPUNIT_TEST( testAdvancedDamageStillDamagesEligibleWeaponAndDefenseComponents );
+	CPPUNIT_TEST( testDisastrousFireAppliesFullEligibleBundleWithoutHullDamage );
+	CPPUNIT_TEST( testDisastrousFireReportsOnlyNewPartialEffectsWithoutHullDamage );
+	CPPUNIT_TEST( testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -49,6 +52,9 @@ public:
 	void testAdvancedDamageKeepsADFAndMRCumulativeUntilZero();
 	void testAdvancedDamageFallsBackForAlreadyDamagedSubsystems();
 	void testAdvancedDamageStillDamagesEligibleWeaponAndDefenseComponents();
+	void testDisastrousFireAppliesFullEligibleBundleWithoutHullDamage();
+	void testDisastrousFireReportsOnlyNewPartialEffectsWithoutHullDamage();
+	void testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply();
 };
 
 }

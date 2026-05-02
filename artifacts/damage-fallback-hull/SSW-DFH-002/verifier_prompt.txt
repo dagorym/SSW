@@ -1,0 +1,79 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify SSW-DFH-002 after Documenter review of the tested `Disastrous Fire` advanced-damage bundle fix in `FVehicle::advancedDamage(...)`.
+- The Implementer updated the `Disastrous Fire` branch so bundled ADF, MR, DCR, combat-control, and fire effects apply only when they can newly change state, with normal hull fallback only when no bundle effect can apply and the ship is already on fire.
+- The Tester added regression coverage for full bundle application, partial reapplication, full hull fallback, and weapon-fire attack-result propagation, and the executed suites passed.
+- The Documenter confirmed no product documentation text update is required because the existing rules already describe the shipped behavior; do not edit `doc/rules/tactical_operations_manual.md`.
+
+Acceptance criteria to verify:
+- `Disastrous Fire` reapplies ADF, MR, DCR, combat-control, and fire effects only where those effects can still newly change state.
+- `Disastrous Fire` restarts the fire when the ship is not currently on fire.
+- `Disastrous Fire` does not fall back to hull while any bundled subsystem effect can still be newly applied.
+- `Disastrous Fire` falls back to normal weapon hull damage only when no bundled effect can newly apply and the ship is already on fire.
+- Partial reapplication reports only the effects that actually changed state.
+- Full fallback reports hull damage instead of zero-effect bundled status events.
+- The documentation decision is valid: `doc/rules/tactical_operations_manual.md` already covers the `Disastrous Fire` table entry plus the governing fallback rules for cumulative ADF/MR loss, non-cumulative combat-control and DCR hits, single-fire limits, and repeat/already-destroyed system hits becoming hull hits.
+
+Implementation branch or worktree context:
+- Documenter worktree: `/tmp/ssw-worktrees/damage-fallback-SSW-DFH-002-documenter-20260502`
+- Documenter branch: `damage-fallback-SSW-DFH-002-documenter-20260502`
+- Tester worktree: `/tmp/ssw-worktrees/damage-fallback-SSW-DFH-002-tester-20260502`
+- Tester branch: `damage-fallback-SSW-DFH-002-tester-20260502`
+- Implementer code commit: `9c5b962744f63bebbd9ddd9bda09462cb63a845e`
+- Tester commit: `8249268e89557d466370fe6ecf483e5a21f923a0`
+- Documentation commit: `12009f40f21399a6f3faec7997a1f0d91bf53a08`
+- Comparison-base assumption: use `452d0f855da7eb36e88cdb8d9b4f1dad0e768c65`, the direct parent of `9c5b962744f63bebbd9ddd9bda09462cb63a845e`, as the safest story-specific base because it is the last commit before SSW-DFH-002 work starts on this branch stack.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/ships/FVehicle.cpp`
+- `tests/ships/FVehicleTest.cpp`
+- `tests/ships/FVehicleTest.h`
+- `tests/ships/FTacticalAttackIntegrationTest.cpp`
+- `tests/ships/FTacticalAttackIntegrationTest.h`
+- `artifacts/damage-fallback-hull/SSW-DFH-002/implementer_report.md`
+- `artifacts/damage-fallback-hull/SSW-DFH-002/implementer_result.json`
+- `artifacts/damage-fallback-hull/SSW-DFH-002/tester_report.md`
+- `artifacts/damage-fallback-hull/SSW-DFH-002/tester_result.json`
+- `artifacts/damage-fallback-hull/SSW-DFH-002/documenter_report.md`
+- `artifacts/damage-fallback-hull/SSW-DFH-002/documenter_result.json`
+- `artifacts/damage-fallback-hull/SSW-DFH-002/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make`: passed.
+- `cd tests && ./SSWTests`: passed, `OK (174 tests)`.
+- `cd tests && make tactical-tests`: passed.
+- `cd tests && ./tactical/TacticalTests`: passed, `OK (125 tests)`.
+- Documenter review commands included `git diff --stat 452d0f855da7eb36e88cdb8d9b4f1dad0e768c65..8249268e89557d466370fe6ecf483e5a21f923a0`, `sed -n '560,610p' src/ships/FVehicle.cpp`, and `sed -n '1126,1205p' doc/rules/tactical_operations_manual.md`.
+
+Final test outcomes:
+- 4 tests were written across `tests/ships/FVehicleTest.cpp`, `tests/ships/FVehicleTest.h`, `tests/ships/FTacticalAttackIntegrationTest.cpp`, and `tests/ships/FTacticalAttackIntegrationTest.h`.
+- 299 tests passed across the executed suites.
+- 0 tests failed.
+- No unmet acceptance criteria or implementation defects were reported by the Tester.
+- Documenter made no product documentation text edits; the documentation pass recorded a no-change decision in artifacts and an empty documentation confirmation commit.
+
+Plan and review context:
+- Plan artifact path: `plans/damage-fallback-hull-plan.md`.
+- Relevant repository instruction and convention files: `AGENTS.md`, `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`, and `/home/tstephen/repos/agents/agents/documenter.md`.
+- Rules document reviewed for the no-change decision: `doc/rules/tactical_operations_manual.md`.
+- The plan's Documentation Impact section expected no documentation update; verification should treat that as a hint and confirm it against the implemented diff and the existing rules text.
+
+Documentation files updated:
+- None. The Documenter intentionally left product documentation unchanged and recorded the documentation decision in artifacts after reviewing `doc/rules/tactical_operations_manual.md`.
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the documentation-review decision together.
+- Include the documenter artifacts in scope even though no product documentation file changed.
+- Confirm that the no-change documentation decision is accurate against `doc/rules/tactical_operations_manual.md` and does not rely on prohibited edits to that external artifact.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/damage-fallback-hull/SSW-DFH-002`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

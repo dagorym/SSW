@@ -572,22 +572,41 @@ void FVehicle::advancedDamage(int damage, int damageMod, FTacticalDamageResoluti
 			applyNormalHullDamage();
 		}
 	} else if ( roll <= 120 ) {    //  Disastrous Fire
-		int previousADF = getADF();
-		setADF(0);
-		appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
-		int previousMR = getMR();
-		setMR(0);
-		appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
-		int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
-		int previousDCR = getDCR();
-		setDCR(getDCR()-dcrLost);
-		appendMeterEffect(result, TDET_DCRLoss, "DCR", previousDCR, getDCR(), roll);
-		bool previousCombatControlState = m_combatControlDamaged;
-		m_combatControlDamaged = true;
-		appendStatusEffect(result, TDET_CombatControlDamaged, "Combat Control Hit", previousCombatControlState, m_combatControlDamaged, roll, "Combat control system damaged");
-		bool previousFireState = m_onFire;
-		m_onFire=true;
-		appendStatusEffect(result, TDET_ElectricalFire, "Electrical Fire", previousFireState, m_onFire, roll, "Disastrous fire started");
+		bool appliedDisastrousFireEffect = false;
+		if (getADF() > 0) {
+			int previousADF = getADF();
+			setADF(0);
+			appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
+			appliedDisastrousFireEffect = true;
+		}
+		if (getMR() > 0) {
+			int previousMR = getMR();
+			setMR(0);
+			appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
+			appliedDisastrousFireEffect = true;
+		}
+		if (getDCR() > 0 && getDCR() == getMaxDCR()) {
+			int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
+			int previousDCR = getDCR();
+			setDCR(getDCR()-dcrLost);
+			appendMeterEffect(result, TDET_DCRLoss, "DCR", previousDCR, getDCR(), roll);
+			appliedDisastrousFireEffect = true;
+		}
+		if (!m_combatControlDamaged) {
+			bool previousCombatControlState = m_combatControlDamaged;
+			m_combatControlDamaged = true;
+			appendStatusEffect(result, TDET_CombatControlDamaged, "Combat Control Hit", previousCombatControlState, m_combatControlDamaged, roll, "Combat control system damaged");
+			appliedDisastrousFireEffect = true;
+		}
+		if (!m_onFire) {
+			bool previousFireState = m_onFire;
+			m_onFire=true;
+			appendStatusEffect(result, TDET_ElectricalFire, "Electrical Fire", previousFireState, m_onFire, roll, "Disastrous fire started");
+			appliedDisastrousFireEffect = true;
+		}
+		if (!appliedDisastrousFireEffect) {
+			applyNormalHullDamage();
+		}
 	} else {                       // we should never get here
 		applyNormalHullDamage();
 	}

@@ -19,6 +19,7 @@ class FTacticalAttackIntegrationTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testFireCopiesAppliedHullDamageIntoAttackResult );
 	CPPUNIT_TEST( testFireCopiesAppliedNonHullEffectsIntoAttackResult );
 	CPPUNIT_TEST( testFireReportsConvertedADFHitAsHullDamage );
+	CPPUNIT_TEST( testFireReportsDisastrousFireFallbackAsHullDamage );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -34,6 +35,7 @@ public:
 	void testFireCopiesAppliedHullDamageIntoAttackResult();
 	void testFireCopiesAppliedNonHullEffectsIntoAttackResult();
 	void testFireReportsConvertedADFHitAsHullDamage();
+	void testFireReportsDisastrousFireFallbackAsHullDamage();
 };
 
 }

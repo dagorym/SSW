@@ -1,0 +1,43 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate the SSW-DFH-002 implementation for `Disastrous Fire` advanced-damage bundle semantics in `FVehicle::advancedDamage(...)`.
+
+Modified files:
+- `src/ships/FVehicle.cpp`
+
+Acceptance criteria to validate (from Planner):
+- `Disastrous Fire` reapplies ADF, MR, DCR, combat-control, and fire effects only where those effects can still newly change state.
+- `Disastrous Fire` restarts the fire when the ship is not currently on fire.
+- `Disastrous Fire` does not fall back to hull while any bundled subsystem effect can still be newly applied.
+- `Disastrous Fire` falls back to normal weapon hull damage only when no bundled effect can newly apply and the ship is already on fire.
+- Partial reapplication reports only the effects that actually changed state.
+- Full fallback reports hull damage instead of zero-effect bundled status events.
+
+Create test files in:
+- `tests/ships/FVehicleTest.cpp`
+- `tests/ships/FTacticalAttackIntegrationTest.cpp`
+- `tests/tactical/FTacticalCombatReportTest.cpp` if summary-level indirect behavior needs explicit regression coverage
+
+Implementation context for testing:
+- `Disastrous Fire` now applies ADF loss only when current ADF is above zero and MR loss only when current MR is above zero.
+- DCR loss now applies only when current DCR is positive and still equal to max DCR, matching the existing standard DCR undamaged-state convention from SSW-DFH-001.
+- Combat control and fire status effects are emitted only when they change from undamaged/off to damaged/on.
+- If none of the bundled effects can newly apply, `advancedDamage(...)` calls the existing normal hull fallback path, producing a single hull-damage effect.
+- No test files were changed by the Implementer.
+
+Suggested test command(s):
+- `cd tests && make && ./SSWTests`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- Note: `cd tests/ships && make && ./ShipsTests` was suggested by the plan, but this worktree's `tests/ships` makefile builds `libshipsTests.a` only and has no `ShipsTests` runner. Use the top-level `SSWTests` runner for ships coverage unless repository evidence changes.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- `artifacts/damage-fallback-hull/SSW-DFH-002`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
