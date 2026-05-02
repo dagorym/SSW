@@ -1,7 +1,7 @@
 You are the Tester Agent.
 
 Task summary:
-- Validate SSW-DFH-001: standard non-`Disastrous Fire` advanced-damage entries now convert to normal weapon hull damage when the targeted system cannot take a fresh hit.
+- Validate the SSW-DFH-001 remediation for repeated Damage Control hits. The Implementer changed standard advanced-damage DCR resolution so a second damage-control hit falls back to normal weapon hull damage when DCR was already reduced but remains above zero.
 
 Modified files:
 - `src/ships/FVehicle.cpp`
@@ -16,18 +16,19 @@ Acceptance criteria to validate (from Planner):
 
 Create test files in:
 - `tests/ships/FVehicleTest.cpp`
-- `tests/ships/FTacticalAttackIntegrationTest.cpp`
+- `tests/ships/FTacticalAttackIntegrationTest.cpp` if attack-result plumbing needs direct regression coverage
 
 Implementation context for testing:
-- `FVehicle::advancedDamage(...)` now gates direct ADF, MR, power-system, combat-control, navigation, electrical-fire, and DCR-at-zero effects before mutating state.
-- If a standard direct subsystem hit cannot change state, the method applies the incoming weapon damage as normal hull damage and appends a `TDET_HullDamage` effect.
-- ADF/MR/DCR still reduce cumulatively while their current value is above zero.
-- `damageWeapon(...)`, `damageDefense(...)`, and the `Disastrous Fire` branch were intentionally left unchanged for this subtask.
-- No flags or runtime configuration are required for these tests.
+- The only production change is in `FVehicle::advancedDamage(...)`, standard `Lose 1/2 DCR` branch.
+- Before remediation, DCR fallback occurred only when `getDCR() == 0`.
+- After remediation, DCR loss applies only when `getDCR() > 0 && getDCR() == getMaxDCR()`.
+- Add the verifier-requested missing case: configure DCR to a partially damaged nonzero value below max, apply a standard DCR roll, and assert DCR remains unchanged while HP is reduced by normal weapon hull damage.
+- Assert the emitted damage resolution is a hull-damage effect, not `TDET_DCRLoss`, for the converted repeat hit.
+- Do not address SSW-DFH-002 `Disastrous Fire` behavior in this testing cycle.
 
 Suggested test command(s):
 - `cd tests && make && ./SSWTests`
-- Assumption from local repository evidence: `cd tests/ships && make` builds `libshipsTests.a`, but there is no `tests/ships/ShipsTests` runner in this worktree.
+- If you need a narrower compile check first, `cd tests/ships && make` builds the ships test library, but this branch does not provide a standalone `./ShipsTests` runner.
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.

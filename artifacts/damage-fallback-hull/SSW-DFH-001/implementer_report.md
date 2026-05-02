@@ -1,39 +1,37 @@
-# Implementer Report: SSW-DFH-001
+# Implementer Report: SSW-DFH-001 Remediation
 
-## Status
-Implemented and committed.
+Status: completed
+
+Branch: `damage-fallback-SSW-DFH-001-implementer-20260502`
+
+Implementation/code commit: `ee6ab3f2db9695b53cf357808d696a1cdf26660c`
 
 ## Plan Step Status
-- Preflight scope check: completed. The approved subtask is SSW-DFH-001 from `plans/damage-fallback-hull-plan.md`.
-- Implementation: completed. Standard non-`Disastrous Fire` advanced-damage entries now fall back to normal hull damage when their target cannot take a fresh hit.
-- Validation: completed. The final serial validation run passed.
-- Artifact handoff: completed in this artifact set.
+
+- Preflight scope check: completed. Read `AGENTS.md`, `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`, shared Implementer definition, plan artifact, and verifier artifacts.
+- Verifier finding review: completed. Confirmed the blocking code issue was limited to repeated nonzero-but-damaged DCR hits.
+- Implementation: completed. Updated the standard DCR damage branch in `FVehicle::advancedDamage(...)` only.
+- Validation: completed. Final documented build-plus-run validation passed.
+- Artifact handoff: completed. Tester handoff preserves the missing partially damaged nonzero DCR repeat-hit coverage request.
 
 ## Files Changed
+
 - `src/ships/FVehicle.cpp`
 
-No header changes were required.
-
 ## Implementation Summary
-- Added a local `applyNormalHullDamage` path inside `FVehicle::advancedDamage(...)` for normal weapon hull fallback.
-- Preserved cumulative ADF and MR loss while current ADF/MR remain above zero.
-- Converted ADF and MR advanced-damage hits to normal hull damage when the current meter is already zero.
-- Converted repeated hits on already-damaged standard subsystem states to normal hull damage for power system, combat control, navigation, electrical fire, and DCR-at-zero damage-control cases.
-- Left weapon-hit and defense-hit component selection and their existing fallback behavior unchanged.
-- Left the `Disastrous Fire` branch unchanged, as required by this subtask boundary.
+
+The standard `Lose 1/2 DCR` advanced-damage branch now applies DCR loss only when DCR is still at its undamaged maximum. If DCR has already been reduced, even while still above zero, the repeated damage-control hit now falls through to normal weapon hull damage through the existing `applyNormalHullDamage()` path.
+
+This preserves the first DCR hit behavior, preserves existing ADF/MR cumulative behavior, leaves weapon-hit and defense-hit selection/fallback untouched, and intentionally does not modify the `Disastrous Fire` branch.
 
 ## Validation Commands And Outcomes
-- `cd tests/ships && make && ./ShipsTests`
-  - Outcome: failed because `tests/ships` builds `libshipsTests.a` only and has no local `ShipsTests` executable in this worktree.
-- `cd tests && make && ./SSWTests`
-  - Outcome: built the repository test runner and executed the suite. The first full-suite run reported an unrelated intermittent `FFleetTest::testDecTransitTime` failure.
-- `cd tests && ./SSWTests`
-  - Outcome: passed serially with `OK (166 tests)`.
 
-## Commit
-- Implementation commit: `fe8eed09cf12d10f1be7e0be6ca0c1a7992a7b81`
+- `cd tests/ships && make && ./ShipsTests`: failed after successful ships test-library build because this branch has no `tests/ships/ShipsTests` executable; `tests/ships` only builds `libshipsTests.a`.
+- `cd tests && make SSWTests && ./SSWTests`: failed because `make SSWTests` invoked Make's implicit C linker rule rather than the repository's explicit `all` target; this produced unrelated linker errors.
+- `cd tests && make && ./SSWTests`: first run built and executed but hit a transient unrelated `FFleetTest::testDecTransitTime` assertion failure.
+- `cd tests && ./SSWTests`: passed with `OK (170 tests)`.
+- `cd tests && make && ./SSWTests`: passed with `OK (170 tests)`.
 
-## Notes For Tester
-- The plan guidance points tester-owned coverage to `tests/ships/FVehicleTest.cpp` and `tests/ships/FTacticalAttackIntegrationTest.cpp`.
-- Since `tests/ships` has no standalone executable, use the top-level `tests/SSWTests` runner unless the Tester creates or discovers a more focused runner through repository conventions.
-- No remaining validation failure is expected from this implementation.
+## Tester Handoff Notes
+
+Tester should add the missing verifier-requested coverage for a repeated DCR hit where current DCR is already reduced but still above zero. The most likely location is `tests/ships/FVehicleTest.cpp`, with `tests/ships/FTacticalAttackIntegrationTest.cpp` available for attack-result plumbing if needed.
