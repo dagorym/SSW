@@ -1,0 +1,38 @@
+{
+  "status": "success",
+  "task_id": "SSW-DFH-001",
+  "branch_name": "damage-fallback-SSW-DFH-001-documenter-20260502",
+  "worktree_path": "/tmp/ssw-worktrees/damage-fallback-SSW-DFH-001-documenter-20260502",
+  "commit_hash": "adbb3068c752991b7b252ebb17fa99946bbd2f6d",
+  "documentation_commit_hash": "adbb3068c752991b7b252ebb17fa99946bbd2f6d",
+  "documentation_files_added_or_modified": [],
+  "documentation_files_reviewed": [
+    "doc/rules/tactical_operations_manual.md",
+    "doc/DesignNotes.md",
+    "plans/damage-fallback-hull-plan.md"
+  ],
+  "comparison_base_assumption": "c0adf5c was used as the comparison base because it is the branch point immediately before the SSW-DFH-001 implementer and tester commits in this worktree history.",
+  "documentation_decision": "No product documentation changes were needed because the existing Tactical Operations Manual already states that further drive hits at zero ADF and hits on systems a ship lacks or systems already destroyed by damage are treated as hull hits; it also states combat control and damage control hits are not cumulative and second fires are hull damage.",
+  "commands_run": [
+    {
+      "command": "git diff --stat c0adf5c..HEAD",
+      "status": "passed",
+      "output_summary": "Reviewed Implementer and Tester diff surface."
+    },
+    {
+      "command": "git diff c0adf5c..HEAD -- src/ships/FVehicle.cpp",
+      "status": "passed",
+      "output_summary": "Confirmed standard non-Disastrous Fire fallback implementation."
+    },
+    {
+      "command": "git diff c0adf5c..HEAD -- tests/ships/FVehicleTest.cpp tests/ships/FTacticalAttackIntegrationTest.cpp",
+      "status": "passed",
+      "output_summary": "Confirmed focused regression coverage for SSW-DFH-001 acceptance criteria."
+    }
+  ],
+  "artifact_file_paths_written": [
+    "artifacts/damage-fallback-hull/SSW-DFH-001/documenter_report.md",
+    "artifacts/damage-fallback-hull/SSW-DFH-001/documenter_result.json",
+    "artifacts/damage-fallback-hull/SSW-DFH-001/verifier_prompt.txt"
+  ]
+}
