@@ -1,0 +1,58 @@
+{
+  "status": "success",
+  "feature": "damage-fallback-hull",
+  "plan_path": "plans/damage-fallback-hull-plan.md",
+  "artifact_directory": "artifacts/damage-fallback-hull",
+  "reviewer_definition_path": "/home/tstephen/repos/agents/agents/reviewer.md",
+  "worktree": "/tmp/ssw-worktrees/damage-fallback-reviewer-20260502",
+  "branch": "damage-fallback-reviewer-20260502",
+  "subtasks_reviewed": [
+    "SSW-DFH-001",
+    "SSW-DFH-002"
+  ],
+  "inputs_reviewed": {
+    "artifact_roots": [
+      "artifacts/damage-fallback-hull/SSW-DFH-001",
+      "artifacts/damage-fallback-hull/SSW-DFH-002"
+    ],
+    "implementation_files": [
+      "src/ships/FVehicle.cpp"
+    ],
+    "test_files": [
+      "tests/ships/FVehicleTest.cpp",
+      "tests/ships/FVehicleTest.h",
+      "tests/ships/FTacticalAttackIntegrationTest.cpp",
+      "tests/ships/FTacticalAttackIntegrationTest.h"
+    ],
+    "documentation_reference": [
+      "doc/rules/tactical_operations_manual.md"
+    ]
+  },
+  "validation_commands": [
+    {
+      "command": "cd tests && make && ./SSWTests",
+      "result": "passed",
+      "summary": "OK (174 tests)"
+    },
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "result": "passed",
+      "summary": "OK (125 tests)"
+    }
+  ],
+  "overall_feature_completeness": "Feature matches the governing plan across both subtasks, including standard subsystem hull fallback, Disastrous Fire partial reapplication, full hull fallback when exhausted, attack-result hull reporting for converted hits, and correct no-change documentation handling.",
+  "findings": {
+    "blocking": [],
+    "warning": [],
+    "note": [
+      {
+        "summary": "A subtask verifier recorded one transient unrelated FFleet transit-time failure before an immediate clean rerun.",
+        "reference": "artifacts/damage-fallback-hull/SSW-DFH-002/verifier_report.md",
+        "impact": "Non-blocking for this feature because reviewer reruns passed and the issue is outside the reviewed codepath."
+      }
+    ]
+  },
+  "missed_functionality": [],
+  "follow_up_feature_requests": [],
+  "final_outcome": "PASS"
+}
