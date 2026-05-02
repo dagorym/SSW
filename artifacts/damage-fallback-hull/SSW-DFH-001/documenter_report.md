@@ -1,10 +1,10 @@
 ## Documenter Report
 
 ### Files Updated
-- **`None`** — Reviewed `doc/rules/tactical_operations_manual.md` and confirmed it already documents the implemented SSW-DFH-001 behavior: damage to unavailable or already-damaged systems is treated as hull damage, while cumulative ADF/MR loss applies until the meter reaches zero.
+- **`doc/rules/tactical_operations_manual.md`** — Reviewed for documentation impact; no text change was needed because the existing rules already state that damage-control hits are not cumulative, repeated hits on already-hit systems are hull hits, and hits on already-destroyed systems are treated as hull hits.
 
 ### Summary
-No product documentation update was required. The shipped implementation and Tester coverage align with the existing Tactical Operations Manual rules text, and no repository-wide guidance changed.
+Second-pass documentation review confirmed the verifier-triggered DCR remediation for SSW-DFH-001 is already covered by the tactical rules text. No product documentation was changed; an empty documentation confirmation commit records the review outcome before handoff artifacts were refreshed.
 
 ### Commit Message
-`docs: confirm damage fallback rules coverage`
+`docs: confirm SSW-DFH-001 DCR fallback coverage`

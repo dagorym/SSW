@@ -1,9 +1,12 @@
 You are the Verifier Agent.
 
 Task summary:
-- Validate SSW-DFH-001 end to end: standard non-`Disastrous Fire` advanced-damage entries now convert to normal weapon hull damage when the targeted system cannot take a fresh hit.
-- Tester added focused regression coverage for the Implementer change in `src/ships/FVehicle.cpp`.
-- Documenter reviewed the existing rules documentation and made no product-doc edits because `doc/rules/tactical_operations_manual.md` already documents this intended behavior.
+- Verify SSW-DFH-001 after the second-pass Documenter review.
+- The Implementer changed standard advanced-damage resolution in `FVehicle::advancedDamage(...)` so non-hull hits outside `Disastrous Fire` convert to normal weapon hull damage when the targeted system cannot take fresh damage.
+- The verifier-triggered remediation changed standard DCR hits so a repeated DCR result falls back to normal weapon hull damage when current DCR is already reduced below max, even if it remains above zero.
+- The Tester added regression coverage for a partially damaged nonzero DCR repeat hit and confirmed the full SSW-DFH-001 test scope still passes.
+- The Documenter reviewed the relevant rules text and confirmed no product documentation text change is required because the existing tactical rules already describe the fallback behavior.
+- Do not address or validate SSW-DFH-002 `Disastrous Fire` semantics in this verification pass.
 
 Acceptance criteria to verify:
 - ADF and MR entries continue to apply as cumulative point loss while current values remain above zero.
@@ -12,14 +15,16 @@ Acceptance criteria to verify:
 - Repeated hits on already-damaged single-state systems (`power short circuit`, `combat control`, `navigation`, `electrical fire`, `damage control`) convert to normal weapon hull damage instead of reasserting the same state.
 - Weapon-hit and defense-hit fallback behavior remains unchanged for ships that still have an eligible undamaged component.
 - Damage-resolution output for converted hits records hull damage, not a zero-change non-hull effect.
+- The documentation decision is valid: `doc/rules/tactical_operations_manual.md` already covers the implemented SSW-DFH-001 fallback behavior, including non-cumulative damage-control hits and repeated/already-destroyed system hits becoming hull hits.
 
 Implementation branch or worktree context:
-- Worktree path: `/tmp/ssw-worktrees/damage-fallback-SSW-DFH-001-documenter-20260502`
-- Branch: `damage-fallback-SSW-DFH-001-documenter-20260502`
-- Implementer commit: `fe8eed09cf12d10f1be7e0be6ca0c1a7992a7b81`
-- Tester commit: `657c72d5c45597f57e4b5f8d095cbe142e8ea312`
-- Documenter commit: `adbb3068c752991b7b252ebb17fa99946bbd2f6d`
-- Comparison-base assumption: `c0adf5c` is the base before the SSW-DFH-001 implementer/tester commits in this branch history.
+- Documenter worktree: `/tmp/ssw-worktrees/damage-fallback-SSW-DFH-001-documenter-20260502`
+- Documenter branch: `damage-fallback-SSW-DFH-001-documenter-20260502`
+- Tester worktree: `/tmp/ssw-worktrees/damage-fallback-SSW-DFH-001-tester-20260502`
+- Tester branch: `damage-fallback-SSW-DFH-001-tester-20260502`
+- Test commit: `52b37c0daf970bde3afb24ce1bdf3b7355da5bc7`
+- Documentation commit: `f6dfee46dbf100e61de16cbbeae71b5b187a5440`
+- Comparison-base assumption: compare against `master` via merge-base `c0adf5c89a38d03862b3225d20aef10bc727a555`; `main` is not present and `master` is `origin/HEAD`.
 
 Files modified by Implementer, Tester, and Documenter to inspect:
 - `src/ships/FVehicle.cpp`
@@ -27,35 +32,45 @@ Files modified by Implementer, Tester, and Documenter to inspect:
 - `tests/ships/FVehicleTest.h`
 - `tests/ships/FTacticalAttackIntegrationTest.cpp`
 - `tests/ships/FTacticalAttackIntegrationTest.h`
-- No product documentation files were modified by Documenter; verify the documentation decision against `doc/rules/tactical_operations_manual.md`.
+- `artifacts/damage-fallback-hull/SSW-DFH-001/implementer_report.md`
+- `artifacts/damage-fallback-hull/SSW-DFH-001/implementer_result.json`
+- `artifacts/damage-fallback-hull/SSW-DFH-001/tester_report.md`
+- `artifacts/damage-fallback-hull/SSW-DFH-001/tester_result.json`
 - `artifacts/damage-fallback-hull/SSW-DFH-001/documenter_report.md`
 - `artifacts/damage-fallback-hull/SSW-DFH-001/documenter_result.json`
 - `artifacts/damage-fallback-hull/SSW-DFH-001/verifier_prompt.txt`
 
 Commands executed:
-- Implementer: `cd tests/ships && make && ./ShipsTests` failed because `tests/ships` builds `libshipsTests.a` only and has no local `ShipsTests` executable.
-- Implementer: `cd tests && make && ./SSWTests` built the top-level runner; the initial suite run reported an unrelated intermittent `FFleetTest::testDecTransitTime` failure.
-- Implementer: `cd tests && ./SSWTests` passed with `OK (166 tests)`.
-- Tester: `cd tests && make && ./SSWTests` passed with `OK (170 tests)`.
-- Documenter: inspected `plans/damage-fallback-hull-plan.md`, `doc/rules/tactical_operations_manual.md`, `doc/DesignNotes.md`, and the assumed comparison diff `c0adf5c..HEAD`.
+- `cd tests/ships && make`
+- `cd tests && make`
+- `cd tests && ./SSWTests`
+- Documenter review commands included `git diff master...HEAD -- src/ships/FVehicle.cpp tests/ships/FVehicleTest.cpp doc/rules/tactical_operations_manual.md` and `sed -n '1160,1205p' doc/rules/tactical_operations_manual.md`.
 
 Final test outcomes:
-- Tester final validation passed on attempt 1/3.
-- `SSWTests` reported `OK (170 tests)`.
-- Tester wrote 4 regression tests covering cumulative ADF/MR loss, zero-state ADF/MR fallback, repeated subsystem fallback, unchanged eligible weapon/defense component hits, and attack-result hull-damage reporting for converted hits.
+- Tester wrote 1 verifier-requested regression case in `tests/ships/FVehicleTest.cpp` for partially damaged nonzero DCR fallback.
+- `cd tests/ships && make` passed.
+- `cd tests && make` passed with existing unrelated `FJumpRoute.cpp` pointer-cast warnings.
+- `cd tests && ./SSWTests` passed with `OK (170 tests)`.
+- Documenter did not rerun tests; documentation review only.
 
 Plan and review context:
-- Plan path: `plans/damage-fallback-hull-plan.md`
-- Relevant repository instruction files: `AGENTS.md` and `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`
-- Documenter used the plan's Documentation Impact section only as a hint and verified the actual implementation/test diff against existing documentation.
-- Existing rules text to verify: `doc/rules/tactical_operations_manual.md` under `Recording Damage`, especially the paragraphs stating further drive hits at zero ADF and hits on unavailable or already-destroyed systems are treated as hull hits.
+- Plan artifact path: `plans/damage-fallback-hull-plan.md`.
+- Relevant repository instruction and convention files: `AGENTS.md`, `/home/tstephen/repos/agents/AGENTS_LOOKUP.md`, and `/home/tstephen/repos/agents/agents/documenter.md`.
+- Relevant rules document: `doc/rules/tactical_operations_manual.md`.
+- The plan's Documentation Impact section expected no documentation update; verification should treat that as a hint and verify against the implemented diff and actual docs.
 
 Documentation files updated:
-- None. Documenter made an empty documentation-stage commit because no product documentation change was warranted after review.
+- None. The second-pass Documenter created an empty documentation confirmation commit because no product documentation text required changes.
+
+Documentation files reviewed:
+- `doc/rules/tactical_operations_manual.md`
+- `plans/damage-fallback-hull-plan.md`
+- `AGENTS.md`
 
 Verification scope:
-- Verify implementation behavior, test coverage, the no-product-doc-change documentation decision, and the Documenter artifacts together.
-- Confirm that `doc/rules/tactical_operations_manual.md` already covers the implemented fallback behavior and that no stale or contradictory documentation was introduced.
+- Verify implementation behavior, test coverage, and the updated documentation decision/artifacts together.
+- Include the documentation review outcome and artifact files in scope even though no product documentation text changed.
+- Do not include SSW-DFH-002 `Disastrous Fire` behavior in this verification pass except to ensure SSW-DFH-001 did not intentionally document or claim it.
 
 Startup behavior:
 - If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
