@@ -406,35 +406,59 @@ void FVehicle::advancedDamage(int damage, int damageMod, FTacticalDamageResoluti
 	if (result != NULL) {
 		result->damageTableRoll = roll;
 	}
+	const int normalHullDamage = damage;
+	const auto applyNormalHullDamage = [&]() {
+		int previousHP = getHP();
+		takeHullDamage(normalHullDamage);
+		appendHullDamageEffect(result, previousHP, getHP(), roll, normalHullDamage);
+	};
 	if ( roll <= 10 ) {            // double hull damage
 		int previousHP = getHP();
 		takeHullDamage(damage*2);
 		appendHullDamageEffect(result, previousHP, getHP(), roll, damage * 2);
 	} else if ( roll <= 45 ) {     // normal hull damage
-		int previousHP = getHP();
-		takeHullDamage(damage);
-		appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
+		applyNormalHullDamage();
 	} else if ( roll <= 49 ) {     //  Lose 1 ADF
-		int previousADF = getADF();
-		setADF(getADF()-1);
-		appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
+		if (getADF() > 0) {
+			int previousADF = getADF();
+			setADF(getADF()-1);
+			appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
+		} else {
+			applyNormalHullDamage();
+		}
 	} else if ( roll <= 52 ) {     //  Lose 1/2 ADF
-		int adfLost = getMaxADF()/2 + getMaxADF()%2;  // half of original ADF rounded up.
-		int previousADF = getADF();
-		setADF(getADF()-adfLost);
-		appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
+		if (getADF() > 0) {
+			int adfLost = getMaxADF()/2 + getMaxADF()%2;  // half of original ADF rounded up.
+			int previousADF = getADF();
+			setADF(getADF()-adfLost);
+			appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
+		} else {
+			applyNormalHullDamage();
+		}
 	} else if ( roll == 53 ) {     //  Lose all ADF
-		int previousADF = getADF();
-		setADF(0);
-		appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
+		if (getADF() > 0) {
+			int previousADF = getADF();
+			setADF(0);
+			appendMeterEffect(result, TDET_ADFLoss, "ADF", previousADF, getADF(), roll);
+		} else {
+			applyNormalHullDamage();
+		}
 	} else if ( roll <= 58 ) {     //  Lose 1 MR
-		int previousMR = getMR();
-		setMR(getMR()-1);
-		appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
+		if (getMR() > 0) {
+			int previousMR = getMR();
+			setMR(getMR()-1);
+			appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
+		} else {
+			applyNormalHullDamage();
+		}
 	} else if ( roll <= 60 ) {     //  Lose all MR
-		int previousMR = getMR();
-		setMR(0);
-		appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
+		if (getMR() > 0) {
+			int previousMR = getMR();
+			setMR(0);
+			appendMeterEffect(result, TDET_MRLoss, "MR", previousMR, getMR(), roll);
+		} else {
+			applyNormalHullDamage();
+		}
 	} else if ( roll <= 62 ) {     //  Weapon Hit
 		int wList[] = {FWeapon::LC,FWeapon::LB,FWeapon::PB,FWeapon::EB,FWeapon::AR,FWeapon::RB,FWeapon::NONE};
 		if (damageWeapon(wList, result)==0) { // didn't hit a weapon
@@ -471,9 +495,13 @@ void FVehicle::advancedDamage(int damage, int damageMod, FTacticalDamageResoluti
 			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 74 ) {     //  Loose all screens and ICMs
-		bool previousPowerSystemState = m_powerSystemDamaged;
-		m_powerSystemDamaged = true;
-		appendStatusEffect(result, TDET_PowerSystemDamaged, "Power System Hit", previousPowerSystemState, m_powerSystemDamaged, roll, "All screens and ICMs lost");
+		if (m_powerSystemDamaged) {
+			applyNormalHullDamage();
+		} else {
+			bool previousPowerSystemState = m_powerSystemDamaged;
+			m_powerSystemDamaged = true;
+			appendStatusEffect(result, TDET_PowerSystemDamaged, "Power System Hit", previousPowerSystemState, m_powerSystemDamaged, roll, "All screens and ICMs lost");
+		}
 	} else if ( roll <= 77 ) {     //  Defense Hit
 		int dList[] = {FDefense::PS,FDefense::ES,FDefense::SS,FDefense::MS,FDefense::ICM,FDefense::UNDEF};
 		if (damageDefense(dList, result)==0) { // didn't hit a weapon
@@ -496,37 +524,53 @@ void FVehicle::advancedDamage(int damage, int damageMod, FTacticalDamageResoluti
 			appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
 		}
 	} else if ( roll <= 91 ) {     //  Combat Control System Hit (-10%)
-		bool previousCombatControlState = m_combatControlDamaged;
-		m_combatControlDamaged = true;
-		appendStatusEffect(result, TDET_CombatControlDamaged, "Combat Control Hit", previousCombatControlState, m_combatControlDamaged, roll, "Combat control system damaged");
-	} else if ( roll <= 97 ) {     //  Navigation Hit
-		int previousNavError = m_navError;
-		if (irand(2)==1){
-			m_navError = -1;
+		if (m_combatControlDamaged) {
+			applyNormalHullDamage();
 		} else {
-			m_navError = 1;
+			bool previousCombatControlState = m_combatControlDamaged;
+			m_combatControlDamaged = true;
+			appendStatusEffect(result, TDET_CombatControlDamaged, "Combat Control Hit", previousCombatControlState, m_combatControlDamaged, roll, "Combat control system damaged");
 		}
-		if (result != NULL) {
-			FTacticalDamageEffect effect;
-			effect.effectType = TDET_NavigationError;
-			effect.rollValue = roll;
-			effect.previousValue = previousNavError;
-			effect.newValue = m_navError;
-			effect.amount = m_navError;
-			effect.navigationError = m_navError;
-			effect.label = "Navigation Hit";
-			effect.detail = (m_navError < 0) ? "Navigation error set to starboard" : "Navigation error set to port";
-			result->effects.push_back(effect);
+	} else if ( roll <= 97 ) {     //  Navigation Hit
+		if (m_navError != 0) {
+			applyNormalHullDamage();
+		} else {
+			int previousNavError = m_navError;
+			if (irand(2)==1){
+				m_navError = -1;
+			} else {
+				m_navError = 1;
+			}
+			if (result != NULL) {
+				FTacticalDamageEffect effect;
+				effect.effectType = TDET_NavigationError;
+				effect.rollValue = roll;
+				effect.previousValue = previousNavError;
+				effect.newValue = m_navError;
+				effect.amount = m_navError;
+				effect.navigationError = m_navError;
+				effect.label = "Navigation Hit";
+				effect.detail = (m_navError < 0) ? "Navigation error set to starboard" : "Navigation error set to port";
+				result->effects.push_back(effect);
+			}
 		}
 	} else if ( roll <= 105 ) {    //  Electrical Fire
-		bool previousFireState = m_onFire;
-		m_onFire=true;
-		appendStatusEffect(result, TDET_ElectricalFire, "Electrical Fire", previousFireState, m_onFire, roll, "Electrical fire started");
+		if (m_onFire) {
+			applyNormalHullDamage();
+		} else {
+			bool previousFireState = m_onFire;
+			m_onFire=true;
+			appendStatusEffect(result, TDET_ElectricalFire, "Electrical Fire", previousFireState, m_onFire, roll, "Electrical fire started");
+		}
 	} else if ( roll <= 116 ) {    //  Lose 1/2 DCR
-		int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
-		int previousDCR = getDCR();
-		setDCR(getDCR()-dcrLost);
-		appendMeterEffect(result, TDET_DCRLoss, "DCR", previousDCR, getDCR(), roll);
+		if (getDCR() > 0) {
+			int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
+			int previousDCR = getDCR();
+			setDCR(getDCR()-dcrLost);
+			appendMeterEffect(result, TDET_DCRLoss, "DCR", previousDCR, getDCR(), roll);
+		} else {
+			applyNormalHullDamage();
+		}
 	} else if ( roll <= 120 ) {    //  Disastrous Fire
 		int previousADF = getADF();
 		setADF(0);
@@ -545,9 +589,7 @@ void FVehicle::advancedDamage(int damage, int damageMod, FTacticalDamageResoluti
 		m_onFire=true;
 		appendStatusEffect(result, TDET_ElectricalFire, "Electrical Fire", previousFireState, m_onFire, roll, "Disastrous fire started");
 	} else {                       // we should never get here
-		int previousHP = getHP();
-		takeHullDamage(damage);
-		appendHullDamageEffect(result, previousHP, getHP(), roll, damage);
+		applyNormalHullDamage();
 	}
 }
 
