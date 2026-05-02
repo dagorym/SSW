@@ -414,6 +414,15 @@ void FVehicleTest::testAdvancedDamageFallsBackForAlreadyDamagedSubsystems() {
 	CPPUNIT_ASSERT(dcrVehicle.getDCR() == 0);
 	CPPUNIT_ASSERT(dcrVehicle.getHP() == 16);
 	assertSingleHullDamageEffect(dcrResult, 106, 20, 16, 4);
+
+	FVehicleDamageHarness partialDCRVehicle;
+	partialDCRVehicle.configureStats(20, 4, 3, 10);
+	partialDCRVehicle.setDCR(5);
+	FTacticalDamageResolution partialDCRResult;
+	applyAdvancedRoll(partialDCRVehicle, 106, 4, partialDCRResult);
+	CPPUNIT_ASSERT(partialDCRVehicle.getDCR() == 5);
+	CPPUNIT_ASSERT(partialDCRVehicle.getHP() == 16);
+	assertSingleHullDamageEffect(partialDCRResult, 106, 20, 16, 4);
 }
 
 void FVehicleTest::testAdvancedDamageStillDamagesEligibleWeaponAndDefenseComponents() {
