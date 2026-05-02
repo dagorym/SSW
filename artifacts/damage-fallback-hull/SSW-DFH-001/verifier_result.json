@@ -1,0 +1,56 @@
+{
+  "status": "completed",
+  "task_id": "SSW-DFH-001",
+  "branch_name": "damage-fallback-SSW-DFH-001-verifier-20260502",
+  "verdict": "FAIL",
+  "blocking_finding_count": 2,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "acceptance_criteria_source": [
+    "plans/damage-fallback-hull-plan.md",
+    "Verifier handoff prompt"
+  ],
+  "comparison_base_assumption": "c0adf5c was used as the comparison base because the handoff identified it as the base before the SSW-DFH-001 implementer/tester commits and the branch history confirms it immediately precedes the implementation commit.",
+  "test_sufficiency_summary": "Verifier validation passed with `cd tests && make && ./SSWTests` reporting `OK (170 tests)`, but regression coverage is insufficient for the DCR non-cumulative repeat-hit criterion because it only covers DCR already at zero.",
+  "documentation_accuracy_summary": "The no-product-doc-change decision is accurate. doc/rules/tactical_operations_manual.md already documents drive hits at zero, non-cumulative damage-control/combat-control hits, second fires, and unavailable or already-destroyed system hits falling back to hull damage.",
+  "commands_run": [
+    {
+      "command": "pwd",
+      "status": "passed",
+      "output_summary": "/tmp/ssw-worktrees/damage-fallback-SSW-DFH-001-verifier-20260502"
+    },
+    {
+      "command": "git branch --show-current",
+      "status": "passed",
+      "output_summary": "damage-fallback-SSW-DFH-001-verifier-20260502"
+    },
+    {
+      "command": "git diff --stat c0adf5c..HEAD",
+      "status": "passed",
+      "output_summary": "Reviewed combined implementation, test, and artifact diff surface."
+    },
+    {
+      "command": "cd tests && make && ./SSWTests",
+      "status": "passed",
+      "output_summary": "OK (170 tests)"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "BLOCKING",
+      "file": "src/ships/FVehicle.cpp",
+      "line": 566,
+      "summary": "Repeated Damage Control hits remain cumulative while DCR is above zero instead of falling back to hull damage after the first DCR hit."
+    },
+    {
+      "severity": "BLOCKING",
+      "file": "tests/ships/FVehicleTest.cpp",
+      "line": 410,
+      "summary": "The DCR regression only covers an already-zero DCR state, missing the non-cumulative repeat-hit case for partially damaged DCR."
+    }
+  ],
+  "artifact_file_paths_written": [
+    "artifacts/damage-fallback-hull/SSW-DFH-001/verifier_report.md",
+    "artifacts/damage-fallback-hull/SSW-DFH-001/verifier_result.json"
+  ]
+}
