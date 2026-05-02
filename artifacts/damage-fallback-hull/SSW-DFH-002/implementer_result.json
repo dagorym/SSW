@@ -1,0 +1,29 @@
+{
+  "status": "success",
+  "task_identifier": "SSW-DFH-002",
+  "branch_name": "damage-fallback-SSW-DFH-002-implementer-20260502",
+  "implementation_commit_hash": "9c5b962744f63bebbd9ddd9bda09462cb63a845e",
+  "changed_files": [
+    "src/ships/FVehicle.cpp"
+  ],
+  "validation_commands_run": [
+    {
+      "command": "cd tests/ships && make && ./ShipsTests",
+      "outcome": "make completed; ./ShipsTests was unavailable because tests/ships builds libshipsTests.a only"
+    },
+    {
+      "command": "cd tests && make && ./SSWTests",
+      "outcome": "passed; OK (170 tests)"
+    },
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "outcome": "passed; OK (125 tests)"
+    }
+  ],
+  "validation_outcome": "passed using available top-level ships coverage and tactical standalone runner",
+  "artifact_file_paths_written": [
+    "artifacts/damage-fallback-hull/SSW-DFH-002/implementer_report.md",
+    "artifacts/damage-fallback-hull/SSW-DFH-002/tester_prompt.txt",
+    "artifacts/damage-fallback-hull/SSW-DFH-002/implementer_result.json"
+  ]
+}
