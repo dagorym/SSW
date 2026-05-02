@@ -1,0 +1,47 @@
+{
+  "status": "success",
+  "task_identifier": "SSW-DFH-002",
+  "agent": "Documenter",
+  "pass": "first",
+  "branch": "damage-fallback-SSW-DFH-002-documenter-20260502",
+  "worktree": "/tmp/ssw-worktrees/damage-fallback-SSW-DFH-002-documenter-20260502",
+  "documentation_commit_hash": "12009f40f21399a6f3faec7997a1f0d91bf53a08",
+  "commit_hash": "12009f40f21399a6f3faec7997a1f0d91bf53a08",
+  "documentation_commit_message": "docs: confirm SSW-DFH-002 rules coverage",
+  "comparison_base_assumption": "Used commit 452d0f855da7eb36e88cdb8d9b4f1dad0e768c65, the direct parent of implementation commit 9c5b962744f63bebbd9ddd9bda09462cb63a845e, as the safest story-specific base because it is the last commit before SSW-DFH-002 work begins on this stacked branch.",
+  "plan_artifact_path": "plans/damage-fallback-hull-plan.md",
+  "shared_artifact_directory": "artifacts/damage-fallback-hull/SSW-DFH-002",
+  "documentation_files_added_or_modified": [],
+  "documentation_files_reviewed": [
+    "doc/rules/tactical_operations_manual.md",
+    "plans/damage-fallback-hull-plan.md",
+    "AGENTS.md"
+  ],
+  "implementation_and_test_files_reviewed": [
+    "src/ships/FVehicle.cpp",
+    "tests/ships/FVehicleTest.cpp",
+    "tests/ships/FVehicleTest.h",
+    "tests/ships/FTacticalAttackIntegrationTest.cpp",
+    "tests/ships/FTacticalAttackIntegrationTest.h"
+  ],
+  "documentation_decision": "No product documentation update required. The existing tactical rules already describe the Disastrous Fire table entry and the governing fallback rules: ADF/MR damage remains cumulative until zero, combat-control and DCR hits are non-cumulative, only one fire may exist at a time, and repeat or already-destroyed system hits become hull hits.",
+  "commands_executed": [
+    "pwd",
+    "git branch --show-current",
+    "sed -n '1,220p' AGENTS.md",
+    "sed -n '1,220p' /home/tstephen/repos/agents/AGENTS_LOOKUP.md",
+    "sed -n '1,260p' /home/tstephen/repos/agents/agents/documenter.md",
+    "sed -n '1,240p' plans/damage-fallback-hull-plan.md",
+    "git log --oneline --decorate --graph --max-count=8",
+    "git diff --stat 452d0f855da7eb36e88cdb8d9b4f1dad0e768c65..8249268e89557d466370fe6ecf483e5a21f923a0",
+    "git diff 9c5b962744f63bebbd9ddd9bda09462cb63a845e..8249268e89557d466370fe6ecf483e5a21f923a0 -- tests/ships/FVehicleTest.cpp tests/ships/FVehicleTest.h tests/ships/FTacticalAttackIntegrationTest.cpp tests/ships/FTacticalAttackIntegrationTest.h",
+    "sed -n '560,610p' src/ships/FVehicle.cpp",
+    "sed -n '1126,1205p' doc/rules/tactical_operations_manual.md",
+    "git commit --allow-empty -m \"docs: confirm SSW-DFH-002 rules coverage\""
+  ],
+  "artifact_file_paths_written": [
+    "artifacts/damage-fallback-hull/SSW-DFH-002/documenter_report.md",
+    "artifacts/damage-fallback-hull/SSW-DFH-002/documenter_result.json",
+    "artifacts/damage-fallback-hull/SSW-DFH-002/verifier_prompt.txt"
+  ]
+}
