@@ -1,0 +1,44 @@
+{
+  "status": "success",
+  "task_id": "SSW-DFH-002",
+  "branch": "damage-fallback-SSW-DFH-002-tester-20260502",
+  "worktree": "/tmp/ssw-worktrees/damage-fallback-SSW-DFH-002-tester-20260502",
+  "test_commit_hash": "8249268e89557d466370fe6ecf483e5a21f923a0",
+  "test_files_modified": [
+    "tests/ships/FVehicleTest.cpp",
+    "tests/ships/FVehicleTest.h",
+    "tests/ships/FTacticalAttackIntegrationTest.cpp",
+    "tests/ships/FTacticalAttackIntegrationTest.h"
+  ],
+  "commands_run": [
+    {
+      "command": "cd tests && make",
+      "status": "passed"
+    },
+    {
+      "command": "cd tests && ./SSWTests",
+      "status": "passed",
+      "result": "OK (174 tests)"
+    },
+    {
+      "command": "cd tests && make tactical-tests",
+      "status": "passed"
+    },
+    {
+      "command": "cd tests && ./tactical/TacticalTests",
+      "status": "passed",
+      "result": "OK (125 tests)"
+    }
+  ],
+  "pass_fail_totals": {
+    "tests_written": 4,
+    "tests_passed_across_executed_suites": 299,
+    "tests_failed": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_file_paths_written": [
+    "artifacts/damage-fallback-hull/SSW-DFH-002/tester_report.md",
+    "artifacts/damage-fallback-hull/SSW-DFH-002/tester_result.json",
+    "artifacts/damage-fallback-hull/SSW-DFH-002/documenter_prompt.txt"
+  ]
+}

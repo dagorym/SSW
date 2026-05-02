@@ -1,0 +1,64 @@
+You are the Documenter Agent.
+
+Task summary:
+- Review documentation impact for SSW-DFH-002 after implementation and tester validation of `Disastrous Fire` advanced-damage bundle semantics in `FVehicle::advancedDamage(...)`.
+- Implementer updated the `Disastrous Fire` branch so bundled ADF, MR, DCR, combat-control, and fire effects apply only when they can newly change state, with normal hull fallback only when no bundle effect can apply and the ship is already on fire.
+- Tester added regression coverage for full bundle application, partial reapplication, full hull fallback, and weapon-fire attack-result propagation.
+
+Acceptance criteria validated:
+- `Disastrous Fire` reapplies ADF, MR, DCR, combat-control, and fire effects only where those effects can still newly change state.
+- `Disastrous Fire` restarts the fire when the ship is not currently on fire.
+- `Disastrous Fire` does not fall back to hull while any bundled subsystem effect can still be newly applied.
+- `Disastrous Fire` falls back to normal weapon hull damage only when no bundled effect can newly apply and the ship is already on fire.
+- Partial reapplication reports only the effects that actually changed state.
+- Full fallback reports hull damage instead of zero-effect bundled status events.
+
+Implementation branch or worktree context:
+- Tester branch: `damage-fallback-SSW-DFH-002-tester-20260502`
+- Tester worktree: `/tmp/ssw-worktrees/damage-fallback-SSW-DFH-002-tester-20260502`
+- Implementer code commit from handoff: `9c5b962744f63bebbd9ddd9bda09462cb63a845e`
+- Tester commit: `8249268e89557d466370fe6ecf483e5a21f923a0`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `src/ships/FVehicle.cpp`
+- `tests/ships/FVehicleTest.cpp`
+- `tests/ships/FVehicleTest.h`
+- `tests/ships/FTacticalAttackIntegrationTest.cpp`
+- `tests/ships/FTacticalAttackIntegrationTest.h`
+
+Test commit:
+- `8249268e89557d466370fe6ecf483e5a21f923a0`
+
+Commands executed:
+- `cd tests && make`: passed.
+- `cd tests && ./SSWTests`: passed, `OK (174 tests)`.
+- `cd tests && make tactical-tests`: passed.
+- `cd tests && ./tactical/TacticalTests`: passed, `OK (125 tests)`.
+
+Final test outcomes:
+- 4 tests written.
+- 299 tests passed across executed suites.
+- 0 tests failed.
+- No unmet acceptance criteria.
+- No implementation defects identified.
+
+Documentation context:
+- Plan says no documentation update is expected because the rules text already describes the intended behavior.
+- Do not edit `doc/rules/tactical_operations_manual.md`; repository instructions state it is a non-volatile external artifact and must not change.
+- Confirm whether any implementation notes, artifact documentation, or changelog-style project docs need to mention the bug fix. If no documentation change is needed, write the documenter artifacts documenting that decision.
+
+Plan and diff context:
+- Plan artifact path: `plans/damage-fallback-hull-plan.md`.
+- Shared artifact directory to reuse: `artifacts/damage-fallback-hull/SSW-DFH-002`.
+- Comparison-base guidance: use repository history and the implementer/tester commits above; if a formal base branch is not explicit, infer the safest comparison base from git context and label it as an assumption.
+
+Startup behavior:
+- If Documenter branch/worktree context and enough story and diff context are present, begin documentation review immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/damage-fallback-hull/SSW-DFH-002`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
