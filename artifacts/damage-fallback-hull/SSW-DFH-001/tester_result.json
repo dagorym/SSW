@@ -1,40 +1,72 @@
 {
   "status": "success",
-  "task_id": "SSW-DFH-001",
+  "task_identifier": "SSW-DFH-001",
   "branch_name": "damage-fallback-SSW-DFH-001-tester-20260502",
   "worktree_path": "/tmp/ssw-worktrees/damage-fallback-SSW-DFH-001-tester-20260502",
-  "test_commit_hash": "657c72d5c45597f57e4b5f8d095cbe142e8ea312",
+  "shared_artifact_directory": "artifacts/damage-fallback-hull/SSW-DFH-001",
+  "plan_artifact_path": "plans/damage-fallback-hull-plan.md",
+  "test_commit_hash": "52b37c0daf970bde3afb24ce1bdf3b7355da5bc7",
   "test_files_added_or_modified": [
-    "tests/ships/FVehicleTest.cpp",
-    "tests/ships/FVehicleTest.h",
-    "tests/ships/FTacticalAttackIntegrationTest.cpp",
-    "tests/ships/FTacticalAttackIntegrationTest.h"
+    "tests/ships/FVehicleTest.cpp"
   ],
-  "implementation_files_under_test": [
+  "implementation_files_validated": [
     "src/ships/FVehicle.cpp"
   ],
   "commands_run": [
     {
-      "command": "cd tests && make && ./SSWTests",
-      "status": "passed",
+      "command": "cd tests/ships && make",
+      "result": "passed"
+    },
+    {
+      "command": "cd tests && make",
+      "result": "passed",
+      "notes": "Build emitted existing FJumpRoute.cpp pointer-cast warnings."
+    },
+    {
+      "command": "cd tests && ./SSWTests",
+      "result": "passed",
       "output_summary": "OK (170 tests)"
     }
   ],
-  "attempts_completed": 1,
-  "tests_written": 4,
   "pass_fail_totals": {
-    "total": 170,
-    "passed": 170,
-    "failed": 0
+    "regression_cases_written": 1,
+    "top_level_tests_passed": 170,
+    "tests_failed": 0
   },
+  "acceptance_criteria": [
+    {
+      "criterion": "ADF and MR entries continue to apply as cumulative point loss while current values remain above zero.",
+      "status": "passed"
+    },
+    {
+      "criterion": "ADF entries convert to normal weapon hull damage when current ADF is already zero.",
+      "status": "passed"
+    },
+    {
+      "criterion": "MR entries convert to normal weapon hull damage when current MR is already zero.",
+      "status": "passed"
+    },
+    {
+      "criterion": "Repeated hits on already-damaged single-state systems convert to normal weapon hull damage instead of reasserting the same state.",
+      "status": "passed",
+      "notes": "Expanded to include partially damaged nonzero DCR below max."
+    },
+    {
+      "criterion": "Weapon-hit and defense-hit fallback behavior remains unchanged for ships that still have an eligible undamaged component.",
+      "status": "passed"
+    },
+    {
+      "criterion": "Damage-resolution output for converted hits records hull damage, not a zero-change non-hull effect.",
+      "status": "passed",
+      "notes": "Partial DCR repeat-hit case asserts a single TDET_HullDamage effect."
+    }
+  ],
   "unmet_acceptance_criteria": [],
   "artifact_file_paths_written": [
     "artifacts/damage-fallback-hull/SSW-DFH-001/tester_report.md",
     "artifacts/damage-fallback-hull/SSW-DFH-001/tester_result.json",
     "artifacts/damage-fallback-hull/SSW-DFH-001/documenter_prompt.txt"
   ],
-  "notes": [
-    "The first full-suite run completed before the test diff was corrected into the assigned worktree and was not used as final validation evidence.",
-    "The original checkout at /home/tstephen/repos/SSW is clean after removing accidental duplicate tester edits."
-  ]
+  "documenter_prompt_written": true,
+  "temporary_byproducts": []
 }
