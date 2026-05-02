@@ -152,4 +152,33 @@ void FTacticalAttackIntegrationTest::testFireCopiesAppliedNonHullEffectsIntoAtta
 	CPPUNIT_ASSERT(result.effects[0].hullDamageApplied == 0);
 }
 
+void FTacticalAttackIntegrationTest::testFireReportsConvertedADFHitAsHullDamage() {
+	// AC: attack-result output for converted subsystem hits reports hull damage, not ADF loss.
+	srand(123);
+	static_cast<FCombatVehicleHarness *>(m_target)->configureStats(20, 0, 3, 8);
+	static_cast<FWeaponFireHarness *>(m_weapon)->setDamageTableModifier(28);
+	static_cast<FWeaponFireHarness *>(m_weapon)->assignTargetDirectly(m_target, 3);
+
+	FTacticalAttackResult result = m_weapon->fire();
+
+	CPPUNIT_ASSERT(result.outcome == TAO_Hit);
+	CPPUNIT_ASSERT(result.skipReason == TASR_None);
+	CPPUNIT_ASSERT(result.fired());
+	CPPUNIT_ASSERT(result.hit());
+	CPPUNIT_ASSERT(result.damageRolled == 8);
+	CPPUNIT_ASSERT(result.usedAdvancedDamageTable);
+	CPPUNIT_ASSERT(result.damageTableModifier == 28);
+	CPPUNIT_ASSERT(result.damageTableRoll == 49);
+	CPPUNIT_ASSERT(result.totalHullDamageApplied == 8);
+	CPPUNIT_ASSERT(m_target->getADF() == 0);
+	CPPUNIT_ASSERT(m_target->getHP() == 12);
+	CPPUNIT_ASSERT(result.effects.size() == 1);
+	CPPUNIT_ASSERT(result.effects[0].effectType == TDET_HullDamage);
+	CPPUNIT_ASSERT(result.effects[0].rollValue == 49);
+	CPPUNIT_ASSERT(result.effects[0].previousValue == 20);
+	CPPUNIT_ASSERT(result.effects[0].newValue == 12);
+	CPPUNIT_ASSERT(result.effects[0].amount == 8);
+	CPPUNIT_ASSERT(result.effects[0].hullDamageApplied == 8);
+}
+
 }

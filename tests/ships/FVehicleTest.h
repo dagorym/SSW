@@ -25,6 +25,9 @@ class FVehicleTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST( testTakeDamageBasicPopulatesOptionalResolution );
 	CPPUNIT_TEST( testTakeDamageAdvancedPreservesMutationWithOptionalResolution );
 	CPPUNIT_TEST( testDamageHelpersReportExplicitComponentMetadata );
+	CPPUNIT_TEST( testAdvancedDamageKeepsADFAndMRCumulativeUntilZero );
+	CPPUNIT_TEST( testAdvancedDamageFallsBackForAlreadyDamagedSubsystems );
+	CPPUNIT_TEST( testAdvancedDamageStillDamagesEligibleWeaponAndDefenseComponents );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -43,6 +46,9 @@ public:
 	void testTakeDamageBasicPopulatesOptionalResolution();
 	void testTakeDamageAdvancedPreservesMutationWithOptionalResolution();
 	void testDamageHelpersReportExplicitComponentMetadata();
+	void testAdvancedDamageKeepsADFAndMRCumulativeUntilZero();
+	void testAdvancedDamageFallsBackForAlreadyDamagedSubsystems();
+	void testAdvancedDamageStillDamagesEligibleWeaponAndDefenseComponents();
 };
 
 }

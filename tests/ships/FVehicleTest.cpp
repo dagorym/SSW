@@ -6,6 +6,7 @@
  */
 
 #include "FVehicleTest.h"
+#include <cstdlib>
 #include <cstdio>
 
 namespace FrontierTests {
@@ -54,7 +55,37 @@ public:
 	int applyDefenseDamage(int *dList, FTacticalDamageResolution *result) {
 		return damageDefense(dList, result);
 	}
+
+	void setPowerSystemDamaged(bool value) { m_powerSystemDamaged = value; }
+	void setCombatControlDamaged(bool value) { m_combatControlDamaged = value; }
+	void setOnFire(bool value) { m_onFire = value; }
+	void setNavControlError(int value) { m_navError = value; }
 };
+
+const int SEEDED_DAMAGE_TABLE_ROLL = 7;
+
+void applyAdvancedRoll(FVehicleDamageHarness &vehicle, int targetRoll, int damage, FTacticalDamageResolution &result) {
+	srand(123);
+	vehicle.takeDamage(damage, targetRoll - SEEDED_DAMAGE_TABLE_ROLL, false, &result);
+	CPPUNIT_ASSERT(result.usedAdvancedDamageTable);
+	CPPUNIT_ASSERT(result.damageTableRoll == targetRoll);
+}
+
+void assertSingleHullDamageEffect(
+		const FTacticalDamageResolution &result,
+		int roll,
+		int previousHP,
+		int currentHP,
+		int damage) {
+	CPPUNIT_ASSERT(result.totalHullDamageApplied == damage);
+	CPPUNIT_ASSERT(result.effects.size() == 1);
+	CPPUNIT_ASSERT(result.effects[0].effectType == TDET_HullDamage);
+	CPPUNIT_ASSERT(result.effects[0].rollValue == roll);
+	CPPUNIT_ASSERT(result.effects[0].previousValue == previousHP);
+	CPPUNIT_ASSERT(result.effects[0].newValue == currentHP);
+	CPPUNIT_ASSERT(result.effects[0].amount == damage);
+	CPPUNIT_ASSERT(result.effects[0].hullDamageApplied == damage);
+}
 
 }
 
@@ -271,6 +302,149 @@ void FVehicleTest::testDamageHelpersReportExplicitComponentMetadata() {
 	CPPUNIT_ASSERT(defenseResult.effects[0].rollValue == 77);
 	CPPUNIT_ASSERT(defenseResult.effects[0].defenseType == defense->getType());
 	CPPUNIT_ASSERT(defenseResult.effects[0].defenseName == defense->getLongName());
+}
+
+void FVehicleTest::testAdvancedDamageKeepsADFAndMRCumulativeUntilZero() {
+	// AC: ADF/MR hits keep reducing points while nonzero, then fall back to hull damage at zero.
+	FVehicleDamageHarness adfVehicle;
+	adfVehicle.configureStats(20, 2, 2, 10);
+
+	FTacticalDamageResolution adfOneResult;
+	applyAdvancedRoll(adfVehicle, 49, 4, adfOneResult);
+	CPPUNIT_ASSERT(adfVehicle.getADF() == 1);
+	CPPUNIT_ASSERT(adfVehicle.getHP() == 20);
+	CPPUNIT_ASSERT(adfOneResult.totalHullDamageApplied == 0);
+	CPPUNIT_ASSERT(adfOneResult.effects.size() == 1);
+	CPPUNIT_ASSERT(adfOneResult.effects[0].effectType == TDET_ADFLoss);
+	CPPUNIT_ASSERT(adfOneResult.effects[0].previousValue == 2);
+	CPPUNIT_ASSERT(adfOneResult.effects[0].newValue == 1);
+	CPPUNIT_ASSERT(adfOneResult.effects[0].amount == 1);
+
+	FTacticalDamageResolution adfHalfResult;
+	applyAdvancedRoll(adfVehicle, 52, 4, adfHalfResult);
+	CPPUNIT_ASSERT(adfVehicle.getADF() == 0);
+	CPPUNIT_ASSERT(adfVehicle.getHP() == 20);
+	CPPUNIT_ASSERT(adfHalfResult.totalHullDamageApplied == 0);
+	CPPUNIT_ASSERT(adfHalfResult.effects.size() == 1);
+	CPPUNIT_ASSERT(adfHalfResult.effects[0].effectType == TDET_ADFLoss);
+	CPPUNIT_ASSERT(adfHalfResult.effects[0].previousValue == 1);
+	CPPUNIT_ASSERT(adfHalfResult.effects[0].newValue == 0);
+	CPPUNIT_ASSERT(adfHalfResult.effects[0].amount == 1);
+
+	FTacticalDamageResolution adfFallbackResult;
+	applyAdvancedRoll(adfVehicle, 53, 4, adfFallbackResult);
+	CPPUNIT_ASSERT(adfVehicle.getADF() == 0);
+	CPPUNIT_ASSERT(adfVehicle.getHP() == 16);
+	assertSingleHullDamageEffect(adfFallbackResult, 53, 20, 16, 4);
+
+	FVehicleDamageHarness mrVehicle;
+	mrVehicle.configureStats(20, 2, 2, 10);
+
+	FTacticalDamageResolution mrOneResult;
+	applyAdvancedRoll(mrVehicle, 58, 4, mrOneResult);
+	CPPUNIT_ASSERT(mrVehicle.getMR() == 1);
+	CPPUNIT_ASSERT(mrVehicle.getHP() == 20);
+	CPPUNIT_ASSERT(mrOneResult.totalHullDamageApplied == 0);
+	CPPUNIT_ASSERT(mrOneResult.effects.size() == 1);
+	CPPUNIT_ASSERT(mrOneResult.effects[0].effectType == TDET_MRLoss);
+	CPPUNIT_ASSERT(mrOneResult.effects[0].previousValue == 2);
+	CPPUNIT_ASSERT(mrOneResult.effects[0].newValue == 1);
+	CPPUNIT_ASSERT(mrOneResult.effects[0].amount == 1);
+
+	FTacticalDamageResolution mrAllResult;
+	applyAdvancedRoll(mrVehicle, 60, 4, mrAllResult);
+	CPPUNIT_ASSERT(mrVehicle.getMR() == 0);
+	CPPUNIT_ASSERT(mrVehicle.getHP() == 20);
+	CPPUNIT_ASSERT(mrAllResult.totalHullDamageApplied == 0);
+	CPPUNIT_ASSERT(mrAllResult.effects.size() == 1);
+	CPPUNIT_ASSERT(mrAllResult.effects[0].effectType == TDET_MRLoss);
+	CPPUNIT_ASSERT(mrAllResult.effects[0].previousValue == 1);
+	CPPUNIT_ASSERT(mrAllResult.effects[0].newValue == 0);
+	CPPUNIT_ASSERT(mrAllResult.effects[0].amount == 1);
+
+	FTacticalDamageResolution mrFallbackResult;
+	applyAdvancedRoll(mrVehicle, 58, 4, mrFallbackResult);
+	CPPUNIT_ASSERT(mrVehicle.getMR() == 0);
+	CPPUNIT_ASSERT(mrVehicle.getHP() == 16);
+	assertSingleHullDamageEffect(mrFallbackResult, 58, 20, 16, 4);
+}
+
+void FVehicleTest::testAdvancedDamageFallsBackForAlreadyDamagedSubsystems() {
+	// AC: repeated standard non-hull subsystem hits become normal hull damage.
+	FVehicleDamageHarness powerVehicle;
+	powerVehicle.configureStats(20, 4, 3, 10);
+	powerVehicle.setPowerSystemDamaged(true);
+	FTacticalDamageResolution powerResult;
+	applyAdvancedRoll(powerVehicle, 74, 4, powerResult);
+	CPPUNIT_ASSERT(powerVehicle.isPowerSystemDamaged());
+	CPPUNIT_ASSERT(powerVehicle.getHP() == 16);
+	assertSingleHullDamageEffect(powerResult, 74, 20, 16, 4);
+
+	FVehicleDamageHarness combatVehicle;
+	combatVehicle.configureStats(20, 4, 3, 10);
+	combatVehicle.setCombatControlDamaged(true);
+	FTacticalDamageResolution combatResult;
+	applyAdvancedRoll(combatVehicle, 91, 4, combatResult);
+	CPPUNIT_ASSERT(combatVehicle.isCombatControlDamaged());
+	CPPUNIT_ASSERT(combatVehicle.getHP() == 16);
+	assertSingleHullDamageEffect(combatResult, 91, 20, 16, 4);
+
+	FVehicleDamageHarness navVehicle;
+	navVehicle.configureStats(20, 4, 3, 10);
+	navVehicle.setNavControlError(1);
+	FTacticalDamageResolution navResult;
+	applyAdvancedRoll(navVehicle, 97, 4, navResult);
+	CPPUNIT_ASSERT(navVehicle.getNavControlError() == 1);
+	CPPUNIT_ASSERT(navVehicle.getHP() == 16);
+	assertSingleHullDamageEffect(navResult, 97, 20, 16, 4);
+
+	FVehicleDamageHarness fireVehicle;
+	fireVehicle.configureStats(20, 4, 3, 10);
+	fireVehicle.setOnFire(true);
+	FTacticalDamageResolution fireResult;
+	applyAdvancedRoll(fireVehicle, 105, 4, fireResult);
+	CPPUNIT_ASSERT(fireVehicle.isOnFire());
+	CPPUNIT_ASSERT(fireVehicle.getHP() == 16);
+	assertSingleHullDamageEffect(fireResult, 105, 20, 16, 4);
+
+	FVehicleDamageHarness dcrVehicle;
+	dcrVehicle.configureStats(20, 4, 3, 0);
+	FTacticalDamageResolution dcrResult;
+	applyAdvancedRoll(dcrVehicle, 106, 4, dcrResult);
+	CPPUNIT_ASSERT(dcrVehicle.getDCR() == 0);
+	CPPUNIT_ASSERT(dcrVehicle.getHP() == 16);
+	assertSingleHullDamageEffect(dcrResult, 106, 20, 16, 4);
+}
+
+void FVehicleTest::testAdvancedDamageStillDamagesEligibleWeaponAndDefenseComponents() {
+	// AC: component hit fallback is unchanged when an undamaged eligible component exists.
+	FVehicleDamageHarness weaponVehicle;
+	weaponVehicle.configureStats(20, 4, 3, 10);
+	weaponVehicle.addWeapon(FWeapon::LB);
+	FTacticalDamageResolution weaponResult;
+	applyAdvancedRoll(weaponVehicle, 62, 4, weaponResult);
+
+	CPPUNIT_ASSERT(weaponVehicle.getHP() == 20);
+	CPPUNIT_ASSERT(weaponVehicle.getWeapon(0) != NULL);
+	CPPUNIT_ASSERT(weaponVehicle.getWeapon(0)->isDamaged());
+	CPPUNIT_ASSERT(weaponResult.totalHullDamageApplied == 0);
+	CPPUNIT_ASSERT(weaponResult.effects.size() == 1);
+	CPPUNIT_ASSERT(weaponResult.effects[0].effectType == TDET_WeaponDamaged);
+	CPPUNIT_ASSERT(weaponResult.effects[0].weaponType == FWeapon::LB);
+
+	FVehicleDamageHarness defenseVehicle;
+	defenseVehicle.configureStats(20, 4, 3, 10);
+	defenseVehicle.addDefense(FDefense::PS);
+	FTacticalDamageResolution defenseResult;
+	applyAdvancedRoll(defenseVehicle, 77, 4, defenseResult);
+
+	CPPUNIT_ASSERT(defenseVehicle.getHP() == 20);
+	CPPUNIT_ASSERT(defenseVehicle.getDefense(0) != NULL);
+	CPPUNIT_ASSERT(defenseVehicle.getDefense(0)->isDamaged());
+	CPPUNIT_ASSERT(defenseResult.totalHullDamageApplied == 0);
+	CPPUNIT_ASSERT(defenseResult.effects.size() == 1);
+	CPPUNIT_ASSERT(defenseResult.effects[0].effectType == TDET_DefenseDamaged);
+	CPPUNIT_ASSERT(defenseResult.effects[0].defenseType == FDefense::PS);
 }
 
 const int FVehicleTest::save(std::ostream &os) const {return 0;}
