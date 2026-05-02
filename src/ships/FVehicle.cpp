@@ -563,7 +563,7 @@ void FVehicle::advancedDamage(int damage, int damageMod, FTacticalDamageResoluti
 			appendStatusEffect(result, TDET_ElectricalFire, "Electrical Fire", previousFireState, m_onFire, roll, "Electrical fire started");
 		}
 	} else if ( roll <= 116 ) {    //  Lose 1/2 DCR
-		if (getDCR() > 0) {
+		if (getDCR() > 0 && getDCR() == getMaxDCR()) {
 			int dcrLost = getMaxDCR()/2 + getMaxDCR()%2;  // half of original DCR rounded up.
 			int previousDCR = getDCR();
 			setDCR(getDCR()-dcrLost);
