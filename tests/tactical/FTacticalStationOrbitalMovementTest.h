@@ -17,6 +17,10 @@ CPPUNIT_TEST_SUITE( FTacticalStationOrbitalMovementTest );
 CPPUNIT_TEST( testStationMoveAlreadyCompleteAtPhaseEntry );
 CPPUNIT_TEST( testStationHeadingUpdatedAfterOrbit );
 CPPUNIT_TEST( testStationSpeedPreservedAfterOrbit );
+CPPUNIT_TEST( testStationPlacementRecordsSinglePendingOccupant );
+CPPUNIT_TEST( testStationPlacementRelocatesPendingOccupant );
+CPPUNIT_TEST( testInvalidStationPlacementDoesNotMutatePendingStation );
+CPPUNIT_TEST( testStationOrbitInitializesFromRelocatedPendingHex );
 CPPUNIT_TEST( testNonStationHeadingUnchangedByFix );
 CPPUNIT_TEST_SUITE_END();
 
@@ -27,6 +31,10 @@ void tearDown();
 void testStationMoveAlreadyCompleteAtPhaseEntry();
 void testStationHeadingUpdatedAfterOrbit();
 void testStationSpeedPreservedAfterOrbit();
+void testStationPlacementRecordsSinglePendingOccupant();
+void testStationPlacementRelocatesPendingOccupant();
+void testInvalidStationPlacementDoesNotMutatePendingStation();
+void testStationOrbitInitializesFromRelocatedPendingHex();
 void testNonStationHeadingUnchangedByFix();
 };
 
