@@ -1341,6 +1341,20 @@ bool FTacticalGame::placeStation(const FPoint & hex) {
 	if (FHexMap::computeHexDistance(hex, m_planetPos) != 1) {
 		return false;
 	}
+
+	for (int x = 0; x < 100; ++x) {
+		for (int y = 0; y < 100; ++y) {
+			VehicleList & occupants = m_hexData[x][y].ships;
+			for (VehicleList::iterator itr = occupants.begin(); itr != occupants.end();) {
+				if ((*itr)->getID() == m_station->getID()) {
+					itr = occupants.erase(itr);
+				} else {
+					++itr;
+				}
+			}
+		}
+	}
+
 	setStationPosition(hex);
 	m_hexData[hex.getX()][hex.getY()].ships.push_back(m_station);
 	m_shipPos = hex;
