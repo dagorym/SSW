@@ -1,0 +1,17 @@
+version: 1
+roles:
+  implementer:
+    model: gpt-5.3-codex
+    reasoning_effort: medium
+  tester:
+    model: gpt-5.3-codex
+    reasoning_effort: medium
+  documenter:
+    model: gpt-5.4
+    reasoning_effort: medium
+  verifier:
+    model: gpt-5.4
+    reasoning_effort: medium
+  reviewer:
+    model: gpt-5.4
+    reasoning_effort: high

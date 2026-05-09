@@ -17,7 +17,6 @@ tests/gui/GuiTests
 *.so
 .settings
 doc/coverage
-.myteam
 
 /.vs/slnx.sqlite
 /.vs/ProjectSettings.json
