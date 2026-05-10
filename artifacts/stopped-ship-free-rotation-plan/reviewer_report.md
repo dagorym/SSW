@@ -4,24 +4,30 @@ Feature plan reviewed:
 - `plans/stopped-ship-free-rotation-plan.md`
 
 Review scope:
-- Feature-level review of the merged `stopped-ship-free-rotation-plan` state in `/home/tstephen/repos/SSW-worktrees/stopped-ship-free-rotation-plan-reviewer-20260509`
-- Requested focus on delivered subtask `SSW-ZSR-001`, plus its tests, documentation update, and reviewer-visible artifacts
-- Read-only review except for these reviewer artifacts
+- Final feature-level review of the merged `stopped-ship-free-rotation-plan` delivery in `/home/tstephen/repos/SSW-worktrees/stopped-ship-free-rotation-plan-reviewer-20260509`
+- Combined review of serial subtasks `SSW-ZSR-001` and `SSW-ZSR-002`
+- Read-only review except for these reviewer artifacts; this report supersedes the earlier partial reviewer pass committed in `0df733b`
 
 Inputs reviewed:
-- Production/model change:
+- Production files:
   - `src/tactical/FTacticalGame.cpp`
-- Added/updated tests:
+  - `src/tactical/FBattleBoard.cpp`
+  - `src/tactical/FBattleDisplay.cpp`
+- Tactical tests:
   - `tests/tactical/FTacticalMoveRouteSelectionTest.cpp`
   - `tests/tactical/FTacticalMoveRouteSelectionTest.h`
   - `tests/tactical/FTacticalGameMechanicsTest.cpp`
   - `tests/tactical/FTacticalGameMechanicsTest.h`
   - `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp`
   - `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h`
+  - `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp`
+  - `tests/tactical/FTacticalBattleBoardRendererDelegationTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
 - Documentation:
   - `doc/DesignNotes.md`
+  - `doc/UsersGuide.md`
 - Plan and upstream artifacts:
-  - `plans/stopped-ship-free-rotation-plan.md`
   - `artifacts/stopped-ship-free-rotation-plan/subtask-001/implementer_report.md`
   - `artifacts/stopped-ship-free-rotation-plan/subtask-001/implementer_result.json`
   - `artifacts/stopped-ship-free-rotation-plan/subtask-001/tester_report.md`
@@ -30,15 +36,23 @@ Inputs reviewed:
   - `artifacts/stopped-ship-free-rotation-plan/subtask-001/documenter_result.json`
   - `artifacts/stopped-ship-free-rotation-plan/subtask-001/verifier_report.md`
   - `artifacts/stopped-ship-free-rotation-plan/subtask-001/verifier_result.json`
+  - `artifacts/stopped-ship-free-rotation-plan/subtask-002/implementer_report.md`
+  - `artifacts/stopped-ship-free-rotation-plan/subtask-002/implementer_result.json`
+  - `artifacts/stopped-ship-free-rotation-plan/subtask-002/tester_report.md`
+  - `artifacts/stopped-ship-free-rotation-plan/subtask-002/tester_result.json`
+  - `artifacts/stopped-ship-free-rotation-plan/subtask-002/documenter_report.md`
+  - `artifacts/stopped-ship-free-rotation-plan/subtask-002/documenter_result.json`
+  - `artifacts/stopped-ship-free-rotation-plan/subtask-002/verifier_report.md`
+  - `artifacts/stopped-ship-free-rotation-plan/subtask-002/verifier_result.json`
 
 Validation performed:
-- `cd tests/tactical && make >/dev/null && ./TacticalTests` → `OK (136 tests)`
-- `cd tests && make tactical-tests >/dev/null && ./tactical/TacticalTests` → `OK (136 tests)`
+- `cd tests && make tactical-tests >/dev/null && ./tactical/TacticalTests` → `OK (138 tests)`
 
 Overall feature completeness:
-- PASS-level complete for the shipped stopped-ship free-rotation feature.
-- The delivered model change matches the governing behavior: eligible ships at `speed == 0` can choose any legal facing before displacement, can finish movement in place with `speed == 0`, and still respect `MR == 0` steering limits.
-- Although the plan split the work into `SSW-ZSR-001` and `SSW-ZSR-002`, the merged result does not leave a reviewer-visible integration gap: the existing tactical board/display flow already consumes the model-owned movement/turn highlight buckets and existing move-complete path, so no additional UI code change was required to surface the shipped behavior.
+- Feature-complete against the governing plan across both subtasks.
+- `SSW-ZSR-001` delivers the tactical-model contract: a ship beginning movement at `speed == 0` can choose any legal adjacent facing before displacement, can complete movement in place with `speed == 0`, can move using the selected facing, and does not bypass `MR == 0` steering limits.
+- `SSW-ZSR-002` surfaces that model behavior through the existing board/display flow: the selected stopped ship previews its pending facing on the tactical board, the move prompt explains adjacent-hex facing selection and rotate-in-place completion, existing nonzero-speed route rendering remains intact, and the normal `Movement Done` path still advances into the post-move flow.
+- Documentation matches the shipped behavior: `doc/DesignNotes.md` records both the model and UI seams, `doc/UsersGuide.md` replaces the obsolete stopped-ship warning with current usage instructions, and `doc/rules/tactical_operations_manual.md` remains untouched.
 
 Findings
 
@@ -49,12 +63,12 @@ WARNING
 - None.
 
 NOTE
-- `doc/DesignNotes.md` accurately documents the shipped contract and explicitly avoids overstating new UI work; it describes the model-owned route-selection behavior and notes that no `FBattleBoard` renderer change was required.
-- `doc/rules/tactical_operations_manual.md` remains untouched in the reviewed diff, satisfying the repository constraint.
+- The earlier reviewer artifact set in this directory covered only the partial `SSW-ZSR-001` review and is superseded by this final full-feature review.
+- Cross-subtask integration is coherent: the model-owned stopped-ship facing state in `FTacticalGame` is what `FBattleBoard` now previews and what `FBattleDisplay` describes, so the delivered UI behavior is aligned with the model contract rather than duplicating movement logic in wx code.
+- Combined runtime and source-contract coverage now spans the key feature edges: any-adjacent facing choice for eligible stopped ships, rotate-in-place completion, first movement from the selected facing, preserved non-stopped routing, preserved `MR == 0` restrictions, temporary facing preview on the selected mover, and move prompt branching for stopped-vs-normal movement.
 
 Missed functionality / edge cases:
-- No confirmed feature-level gaps remain in the reviewed scope.
-- Runtime and source-contract coverage together lock the key edge cases: any-adjacent facing choice for eligible stopped ships, rotate-in-place completion, first moved hex following the selected facing, preserved non-stopped routing, and preserved `MR == 0` restrictions.
+- No confirmed missed functionality, integration gaps, edge-case omissions, or documentation mismatches remain within the full planned feature scope.
 
 Follow-up feature requests for planning:
 - None.
