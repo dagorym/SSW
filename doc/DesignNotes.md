@@ -801,13 +801,34 @@ so the routine tactical module run now enforces all three runtime regressions.
 No `FBattleBoard` renderer change was required for this fix; the existing move
 overlay already matched the corrected model selection contract.
 
+The stopped-ship free-rotation follow-up kept that same model-owned route
+selection seam but broadened the zero-speed entry case. When a moving ship
+enters `PH_MOVE` with `speed == 0`, an untouched one-hex path, and `MR > 0`,
+`computeRemainingMoves()` now exposes every legal adjacent starting facing
+instead of forcing movement projection from the prior-turn heading.
+`FTacticalGame::handleMoveHexSelection()` treats those adjacent-hex clicks as
+heading-only selections: it updates `startHeading`, `curHeading`, and
+`finalHeading`, resets the pending path back to the current hex, and lets
+`completeMovePhase()` commit an in-place rotation while preserving `speed == 0`.
+The refreshed tactical regressions now lock that behavior through:
+
+- eligible stopped ships being able to choose any legal starting facing before
+  displacement;
+- facing-only completion preserving the current hex and `speed == 0` while
+  committing the selected final heading;
+- the first traveled hex after that facing choice following the selected
+  heading; and
+- existing non-stopped routing plus `MR == 0` steering restrictions remaining
+  unchanged.
+
 Validation commands:
 
 ```bash
 cd tests/tactical && make && ./TacticalTests
+cd tests && make tactical-tests && ./tactical/TacticalTests
 ```
 
-Result: `OK (84 tests)`.
+Result: `OK (136 tests)`.
 
 The forward-fire final-orientation regression follow-up then documented the
 restored moving-ship fire-arc contract for model-owned range highlighting and
