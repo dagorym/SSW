@@ -1,0 +1,49 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Validate SSW-ZSR-002 tactical UI integration for stopped-ship free-rotation movement flow in battle move phase.
+
+Modified files:
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- Selecting a stopped ship in `PH_MOVE` visibly exposes the legal facing choices required by the model contract from `SSW-ZSR-001`.
+- After the player selects a facing, the UI supports both continuing into actual movement and ending movement with zero displacement through the existing completion flow.
+- Prompt text and board highlights remain clear for both the stopped-ship case and the existing nonzero-speed movement case.
+- Existing route rendering for ships that begin the turn with nonzero speed is unchanged.
+- The move-completion path still transitions cleanly into the normal post-move phase flow after a rotate-in-place turn.
+
+Create test files in:
+- Assumption: no new tester files are required for this handoff; use existing tactical fixtures under `tests/tactical/`, especially:
+  - `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp`
+  - `tests/tactical/FTacticalMoveRouteSelectionTest.cpp`
+  - `tests/tactical/FTacticalGameMechanicsTest.cpp`
+  - `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp`
+
+Implementation context for testing:
+- `FBattleBoard` now renders temporary heading for the active moving ship when it is a stopped ship (`speed == 0`, `nMoved == 0`, `MR > 0`) and a new facing has been selected.
+- `FBattleDisplay` move-phase messaging now differentiates:
+  - stopped-ship facing selection + rotate-in-place completion guidance,
+  - active normal route-selection guidance,
+  - no-ship-selected guidance.
+- Route highlight drawing logic itself was not changed.
+- Move completion path remains the existing `onMoveDone -> completeMovePhase` flow.
+
+Suggested test command(s):
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- Optional secondary GUI confidence command (assumption, not required scope): `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Known validation status from implementer run:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` passed (`OK (136 tests)`).
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/stopped-ship-free-rotation-plan/subtask-002
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
