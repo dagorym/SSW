@@ -100,6 +100,24 @@ const std::string mineBody = extractFunctionBody(source, "void FBattleBoard::dra
 assertContains(mineBody, "for (PointSet::const_iterator itr = m_parent->getMinedHexes().begin();");
 }
 
+void FTacticalBattleBoardRendererDelegationTest::testDrawShipsUsesTemporaryFacingForStoppedSelectedMover() {
+// AC: selected stopped mover in PH_MOVE draws with temporary facing while retaining normal heading fallback.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string helperBody = extractFunctionBody(source, "int getRenderedHeadingForShip(FBattleScreen * parent, FVehicle * ship)");
+const std::string drawShipsBody = extractFunctionBody(source, "void FBattleBoard::drawShips()");
+
+assertContains(helperBody, "if (parent->getPhase() != PH_MOVE || parent->getShip() == NULL");
+assertContains(helperBody, "|| ship->getOwner() != parent->getMovingPlayerID()) {");
+assertContains(helperBody, "if (turnData.speed == 0");
+assertContains(helperBody, "&& turnData.nMoved == 0");
+assertContains(helperBody, "&& ship->getMR() > 0");
+assertContains(helperBody, "&& turnData.curHeading != ship->getHeading()) {");
+assertContains(helperBody, "return turnData.curHeading;");
+assertContains(helperBody, "return ship->getHeading();");
+
+assertContains(drawShipsBody, "drawCenteredOnHex(*icon,hex,getRenderedHeadingForShip(m_parent, *itr));");
+}
+
 void FTacticalBattleBoardRendererDelegationTest::testOnLeftUpOnlyHitTestsAndForwardsHexClick() {
 // AC: onLeftUp computes clicked hex and forwards to model click handler through FBattleScreen.
 const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));

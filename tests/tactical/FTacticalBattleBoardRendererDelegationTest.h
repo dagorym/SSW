@@ -15,6 +15,7 @@ class FTacticalBattleBoardRendererDelegationTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleBoardRendererDelegationTest );
 CPPUNIT_TEST( testDrawUsesBattleScreenModelAccessors );
 CPPUNIT_TEST( testOverlayDrawingUsesModelStateAccessors );
+CPPUNIT_TEST( testDrawShipsUsesTemporaryFacingForStoppedSelectedMover );
 CPPUNIT_TEST( testOnLeftUpOnlyHitTestsAndForwardsHexClick );
 CPPUNIT_TEST( testHeaderRemovesDuplicatedMechanicsState );
 CPPUNIT_TEST( testOnMotionUsesPlacementForwardersOnly );
@@ -31,6 +32,7 @@ void tearDown();
 
 void testDrawUsesBattleScreenModelAccessors();
 void testOverlayDrawingUsesModelStateAccessors();
+void testDrawShipsUsesTemporaryFacingForStoppedSelectedMover();
 void testOnLeftUpOnlyHitTestsAndForwardsHexClick();
 void testHeaderRemovesDuplicatedMechanicsState();
 void testOnMotionUsesPlacementForwardersOnly();

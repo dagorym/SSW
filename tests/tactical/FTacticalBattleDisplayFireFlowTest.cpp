@@ -374,6 +374,25 @@ assertContains(body, "m_first=true;");
 assertBefore(body, "m_parent->completeMovePhase();", "m_buttonMoveDone->Hide();");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases() {
+// AC: move-phase text guides stopped-ship facing, normal movement, and no-selection states.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
+
+assertContains(body, "bool stoppedShipFacingSelection = false;");
+assertContains(body, "stoppedShipFacingSelection = (turnData.speed == 0");
+assertContains(body, "&& turnData.nMoved == 0");
+assertContains(body, "&& m_parent->getShip()->getMR() > 0);");
+assertContains(body, "if (stoppedShipFacingSelection) {");
+assertContains(body, "Select an adjacent hex to choose facing.");
+assertContains(body, "Then move along a route, or press Movement Done to rotate in place.");
+assertContains(body, "} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {");
+assertContains(body, "Select route hexes to move the ship.");
+assertContains(body, "Press Movement Done when all ships finish movement.");
+assertContains(body, "} else {");
+assertContains(body, "Please select a ship to move.");
+}
+
 void FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractConstantsAndHelpersDefined() {
 // AC: spacing contract constants/helpers are explicitly declared for stable verification.
 const std::string header = readFile(repoFile("include/tactical/FBattleDisplay.h"));
