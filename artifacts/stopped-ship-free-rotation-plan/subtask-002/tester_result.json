@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "subtask": "SSW-ZSR-002",
+  "branch": "stopped-ship-free-rotation-plan-tester-20260509",
+  "test_commit_hash": "d61fefbd0bfa0442dd79a6c5df354d7a994550f8",
+  "test_files_added": [],
+  "test_files_modified": [
+    "tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp",
+    "tests/tactical/FTacticalBattleBoardRendererDelegationTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h"
+  ],
+  "commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && ./tactical/TacticalTests | tail -n 80"
+  ],
+  "pass_fail_totals": {
+    "tactical_tests": "OK (138 tests)",
+    "failed_commands": 0
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_files": [
+    "artifacts/stopped-ship-free-rotation-plan/subtask-002/tester_report.md",
+    "artifacts/stopped-ship-free-rotation-plan/subtask-002/tester_result.json",
+    "artifacts/stopped-ship-free-rotation-plan/subtask-002/documenter_prompt.txt"
+  ]
+}
