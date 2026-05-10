@@ -14,6 +14,34 @@
 
 namespace Frontier {
 
+namespace {
+
+int getRenderedHeadingForShip(FBattleScreen * parent, FVehicle * ship) {
+	if (parent == NULL || ship == NULL) {
+		return 0;
+	}
+	if (parent->getPhase() != PH_MOVE || parent->getShip() == NULL
+		|| parent->getShip()->getID() != ship->getID()
+		|| ship->getOwner() != parent->getMovingPlayerID()) {
+		return ship->getHeading();
+	}
+	const std::map<unsigned int, FTacticalTurnData> & turnInfo = parent->getTurnInfo();
+	std::map<unsigned int, FTacticalTurnData>::const_iterator turnItr = turnInfo.find(ship->getID());
+	if (turnItr == turnInfo.end()) {
+		return ship->getHeading();
+	}
+	const FTacticalTurnData & turnData = turnItr->second;
+	if (turnData.speed == 0
+		&& turnData.nMoved == 0
+		&& ship->getMR() > 0
+		&& turnData.curHeading != ship->getHeading()) {
+		return turnData.curHeading;
+	}
+	return ship->getHeading();
+}
+
+}
+
 FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)
 : wxScrolledWindow( parent, id, pos, size, style, name ) {
 m_parent = (FBattleScreen *)parent;
@@ -215,7 +243,7 @@ icon = &WXIconCache::instance().get((*itr)->getIconName());
 } else {
 icon = m_maskingScreenIcon;
 }
-drawCenteredOnHex(*icon,hex,(*itr)->getHeading());
+drawCenteredOnHex(*icon,hex,getRenderedHeadingForShip(m_parent, *itr));
 }
 }
 }

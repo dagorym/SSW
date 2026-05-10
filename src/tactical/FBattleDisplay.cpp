@@ -434,8 +434,26 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 	os << "turn.";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
-	os.str("Please select a ship to move.");
-	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(1));
+	bool stoppedShipFacingSelection = false;
+	if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
+		const std::map<unsigned int, FTacticalTurnData> & turnInfo = m_parent->getTurnInfo();
+		std::map<unsigned int, FTacticalTurnData>::const_iterator turnItr = turnInfo.find(m_parent->getShip()->getID());
+		if (turnItr != turnInfo.end()) {
+			const FTacticalTurnData & turnData = turnItr->second;
+			stoppedShipFacingSelection = (turnData.speed == 0
+				&& turnData.nMoved == 0
+				&& m_parent->getShip()->getMR() > 0);
+		}
+	}
+	if (stoppedShipFacingSelection) {
+		dc.DrawText("Select an adjacent hex to choose facing.",leftOffset,getActionPromptLineY(1));
+		dc.DrawText("Then move along a route, or press Movement Done to rotate in place.",leftOffset,getActionPromptLineY(2));
+	} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
+		dc.DrawText("Select route hexes to move the ship.",leftOffset,getActionPromptLineY(1));
+		dc.DrawText("Press Movement Done when all ships finish movement.",leftOffset,getActionPromptLineY(2));
+	} else {
+		dc.DrawText("Please select a ship to move.",leftOffset,getActionPromptLineY(1));
+	}
 		m_buttonMoveDone->Enable(m_parent->isMoveComplete());
 		if (m_first){
 		m_buttonMoveDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
