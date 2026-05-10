@@ -1,0 +1,55 @@
+{
+  "status": "success",
+  "feature_plan": "plans/stopped-ship-free-rotation-plan.md",
+  "branch": "stopped-ship-free-rotation-plan-reviewer-20260509",
+  "worktree": "/home/tstephen/repos/SSW-worktrees/stopped-ship-free-rotation-plan-reviewer-20260509",
+  "outcome": "PASS",
+  "review_mode": "feature-level read-only except reviewer artifacts",
+  "scope": {
+    "subtasks_reviewed": [
+      "SSW-ZSR-001"
+    ],
+    "implementation_files": [
+      "src/tactical/FTacticalGame.cpp",
+      "tests/tactical/FTacticalMoveRouteSelectionTest.cpp",
+      "tests/tactical/FTacticalMoveRouteSelectionTest.h",
+      "tests/tactical/FTacticalGameMechanicsTest.cpp",
+      "tests/tactical/FTacticalGameMechanicsTest.h",
+      "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp",
+      "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h",
+      "doc/DesignNotes.md"
+    ],
+    "artifact_inputs": [
+      "artifacts/stopped-ship-free-rotation-plan/subtask-001/implementer_report.md",
+      "artifacts/stopped-ship-free-rotation-plan/subtask-001/implementer_result.json",
+      "artifacts/stopped-ship-free-rotation-plan/subtask-001/tester_report.md",
+      "artifacts/stopped-ship-free-rotation-plan/subtask-001/tester_result.json",
+      "artifacts/stopped-ship-free-rotation-plan/subtask-001/documenter_report.md",
+      "artifacts/stopped-ship-free-rotation-plan/subtask-001/documenter_result.json",
+      "artifacts/stopped-ship-free-rotation-plan/subtask-001/verifier_report.md",
+      "artifacts/stopped-ship-free-rotation-plan/subtask-001/verifier_result.json"
+    ]
+  },
+  "validation_commands": [
+    {
+      "command": "cd tests/tactical && make >/dev/null && ./TacticalTests",
+      "outcome": "pass",
+      "details": "OK (136 tests)"
+    },
+    {
+      "command": "cd tests && make tactical-tests >/dev/null && ./tactical/TacticalTests",
+      "outcome": "pass",
+      "details": "OK (136 tests)"
+    }
+  ],
+  "findings": {
+    "blocking": [],
+    "warning": [],
+    "note": [
+      "The apparent SSW-ZSR-001/SSW-ZSR-002 split does not leave a reviewer-visible integration gap because the existing board/display flow already consumes the model highlight and move-complete seams used by the shipped stopped-ship behavior.",
+      "doc/DesignNotes.md accurately describes the shipped stopped-ship contract without overstating UI changes, and doc/rules/tactical_operations_manual.md was not modified."
+    ]
+  },
+  "follow_up_feature_requests": [],
+  "summary": "The merged stopped-ship free-rotation delivery matches the governing plan behavior in the reviewed scope: eligible zero-speed ships can preselect a facing, rotate in place with speed 0, move using the selected heading, and still respect MR==0 restrictions; tests pass and documentation matches the shipped contract."
+}
