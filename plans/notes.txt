@@ -8,7 +8,6 @@ Items to Add
 Items to fix
 * Starting window of each applications (SSW and Battlesim) should open centered on the user's screen under the splash screen image
 * When a ship stops moving, the game doesn't allow me to move it any more even if it has ADF available on the next turn.
-* When placing the station on the map, if you click on a second location before selecting the orbital direction, it places a second copy of the station.
 * spinners are horizontal, we want them vertical This seems to be a wxWidgits issue.
 
 ---
@@ -19,6 +18,13 @@ after completing any numbered step, you must complete all three.
 1. Read AGENTS.md and print READY!
 2. You are the Coodinator agent.  Read that agent definition and print "READY TO START".
 3. Run the coordinator workflow on the plan at `plans/gui-console-warning-remediation-plan.md` 
+
+Alternate with myteam
+Do the following in order and don't start the next numbered step until you finish the previous one. Also don't
+stop after completing any numbered step, you must complete all three.
+1. Read AGENTS.md and print READY!
+2. You have the coodinator role.
+3. Run the coordinator workflow on the plan at `plans/gui-console-warning-remediation-plan.md`
 
 Running on codex
 data:
