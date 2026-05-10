@@ -182,6 +182,44 @@ void buildPathHeadings(const FTacticalTurnData & turnData, PointList & path, std
 	}
 }
 
+bool canUseStoppedShipFreeRotation(const FVehicle * ship, FTacticalTurnData * turnData) {
+	return (ship != NULL
+		&& turnData != NULL
+		&& turnData->speed == 0
+		&& turnData->nMoved == 0
+		&& turnData->path.getPathLength() == 1
+		&& ship->getMR() > 0);
+}
+
+bool isAdjacentFacingSelection(const FPoint & shipHex, const FPoint & selectedHex, int & heading) {
+	if (FHexMap::computeHexDistance(shipHex, selectedHex) != 1) {
+		return false;
+	}
+	heading = FHexMap::computeHeading(shipHex, selectedHex);
+	return (heading >= 0 && heading <= 5);
+}
+
+void buildStoppedShipTurnOptions(const FPoint & shipHex, int currentHeading, std::vector<FPoint> & leftHexes,
+	std::vector<FPoint> & rightHexes) {
+	leftHexes.clear();
+	rightHexes.clear();
+	for (int heading = 0; heading < 6; ++heading) {
+		if (heading == currentHeading) {
+			continue;
+		}
+		const FPoint adjacent = FHexMap::findNextHex(shipHex, heading);
+		if (adjacent.getX() < 0 || adjacent.getY() < 0) {
+			continue;
+		}
+		const int delta = (heading - currentHeading + 6) % 6;
+		if (delta <= 3) {
+			leftHexes.push_back(adjacent);
+		} else {
+			rightHexes.push_back(adjacent);
+		}
+	}
+}
+
 }
 
 FTacticalGame::FTacticalGame() {
@@ -919,6 +957,9 @@ void FTacticalGame::computeRemainingMoves(FPoint start) {
 		computePath(m_leftHexes, start, left);
 		computePath(m_rightHexes, start, right);
 	}
+	if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {
+		buildStoppedShipTurnOptions(start, forward, m_leftHexes, m_rightHexes);
+	}
 }
 
 void FTacticalGame::setInitialRoute() {
@@ -963,6 +1004,7 @@ void FTacticalGame::setInitialRoute() {
 			curHeading = forceTurn(m_curShip, curHeading, current);
 		}
 	}
+
 }
 
 bool FTacticalGame::findHexInList(PointList list, FPoint ref, int & count) const {
@@ -983,6 +1025,21 @@ bool FTacticalGame::handleMoveHexSelection(const FPoint & hex) {
 	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
 	if (turnData == NULL) {
 		return false;
+	}
+	if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {
+		int selectedHeading = -1;
+		if (isAdjacentFacingSelection(m_shipPos, hex, selectedHeading)
+			&& selectedHeading != turnData->curHeading) {
+			turnData->startHeading = selectedHeading;
+			turnData->curHeading = selectedHeading;
+			turnData->finalHeading = selectedHeading;
+			turnData->nMoved = 0;
+			turnData->path.clear();
+			turnData->path.addPoint(m_shipPos);
+			m_moved = 0;
+			computeRemainingMoves(m_shipPos);
+			return true;
+		}
 	}
 	if (turnData->path.isPointOnPath(hex)) {
 		m_moved = static_cast<int>(turnData->path.removeTrailingPoints(hex)) - 1;
