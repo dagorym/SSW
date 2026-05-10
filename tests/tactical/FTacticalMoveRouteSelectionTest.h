@@ -17,6 +17,11 @@ CPPUNIT_TEST_SUITE( FTacticalMoveRouteSelectionTest );
 CPPUNIT_TEST( testFirstHighlightedHexExtendsRouteByOne );
 CPPUNIT_TEST( testLaterHighlightedHexBecomesRouteEndpoint );
 CPPUNIT_TEST( testSelectingEarlierPathHexTrimsRouteToClickedHex );
+CPPUNIT_TEST( testStoppedShipCanChooseAnyAdjacentFacingWithoutDisplacement );
+CPPUNIT_TEST( testStoppedShipFacingOnlyMoveCommitsHeadingWithoutChangingHexOrSpeed );
+CPPUNIT_TEST( testStoppedShipForwardMoveUsesSelectedFacingForFirstHex );
+CPPUNIT_TEST( testNonStoppedShipDoesNotAllowFreeAdjacentFacingSelection );
+CPPUNIT_TEST( testStoppedShipWithZeroMRCannotFreelyRotate );
 CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -26,6 +31,11 @@ void tearDown();
 void testFirstHighlightedHexExtendsRouteByOne();
 void testLaterHighlightedHexBecomesRouteEndpoint();
 void testSelectingEarlierPathHexTrimsRouteToClickedHex();
+void testStoppedShipCanChooseAnyAdjacentFacingWithoutDisplacement();
+void testStoppedShipFacingOnlyMoveCommitsHeadingWithoutChangingHexOrSpeed();
+void testStoppedShipForwardMoveUsesSelectedFacingForFirstHex();
+void testNonStoppedShipDoesNotAllowFreeAdjacentFacingSelection();
+void testStoppedShipWithZeroMRCannotFreelyRotate();
 };
 
 } // namespace FrontierTests

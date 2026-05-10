@@ -26,6 +26,7 @@ CPPUNIT_TEST( testFireICMCollectsOnlyActionableHexInterceptions );
 CPPUNIT_TEST( testInteractionApisAndRendererAccessorsAreExposed );
 CPPUNIT_TEST( testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState );
 CPPUNIT_TEST( testMinePlacementAndMoveFireProgressionUpdateModelState );
+CPPUNIT_TEST( testStoppedShipFreeRotationGuardsAndFacingSelectionFlow );
 CPPUNIT_TEST( testImplementationRemainsSelfContainedWithoutLegacyWxRewire );
 CPPUNIT_TEST_SUITE_END();
 
@@ -51,6 +52,7 @@ void testFireICMCollectsOnlyActionableHexInterceptions();
 void testInteractionApisAndRendererAccessorsAreExposed();
 void testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState();
 void testMinePlacementAndMoveFireProgressionUpdateModelState();
+void testStoppedShipFreeRotationGuardsAndFacingSelectionFlow();
 void testImplementationRemainsSelfContainedWithoutLegacyWxRewire();
 };
 

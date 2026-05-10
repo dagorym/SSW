@@ -106,4 +106,23 @@ assertContains(body, "if (selectShipFromHex(hex)) {");
 assertContains(body, "setWeapon(NULL);");
 }
 
+void FTacticalModelSelectionHexClickSurfaceTest::testMoveHexSelectionSupportsStoppedShipFacingChoice() {
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "bool FTacticalGame::handleMoveHexSelection(const FPoint & hex)");
+
+assertContains(body, "if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {");
+assertContains(body, "if (isAdjacentFacingSelection(m_shipPos, hex, selectedHeading)");
+assertContains(body, "&& selectedHeading != turnData->curHeading) {");
+assertContains(body, "turnData->startHeading = selectedHeading;");
+assertContains(body, "turnData->curHeading = selectedHeading;");
+assertContains(body, "turnData->finalHeading = selectedHeading;");
+assertContains(body, "turnData->nMoved = 0;");
+assertContains(body, "turnData->path.clear();");
+assertContains(body, "turnData->path.addPoint(m_shipPos);");
+assertContains(body, "m_moved = 0;");
+assertContains(body, "computeRemainingMoves(m_shipPos);");
+assertContains(body, "if (turnData->path.isPointOnPath(hex)) {");
+assertContains(body, "found = findHexInList(m_movementHexes, hex, moved);");
+}
+
 }

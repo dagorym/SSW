@@ -448,6 +448,35 @@ void FTacticalGameMechanicsTest::testMinePlacementAndMoveFireProgressionUpdateMo
 	assertContains(offensiveBody, "setPhase(PH_MOVE);");
 }
 
+void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelectionFlow() {
+// AC: stopped-ship free rotation is gated to speed==0, nMoved==0, path length 1, and MR>0.
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string freeRotationGuardBody =
+		extractFunctionBody(source, "bool canUseStoppedShipFreeRotation(const FVehicle * ship, FTacticalTurnData * turnData)");
+	const std::string remainingMovesBody = extractFunctionBody(source, "void FTacticalGame::computeRemainingMoves(FPoint start)");
+	const std::string moveSelectionBody = extractFunctionBody(source, "bool FTacticalGame::handleMoveHexSelection(const FPoint & hex)");
+
+	assertContains(freeRotationGuardBody, "turnData->speed == 0");
+	assertContains(freeRotationGuardBody, "turnData->nMoved == 0");
+	assertContains(freeRotationGuardBody, "turnData->path.getPathLength() == 1");
+	assertContains(freeRotationGuardBody, "ship->getMR() > 0");
+
+	assertContains(remainingMovesBody, "if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {");
+	assertContains(remainingMovesBody, "buildStoppedShipTurnOptions(start, forward, m_leftHexes, m_rightHexes);");
+
+	assertContains(moveSelectionBody, "if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {");
+	assertContains(moveSelectionBody, "if (isAdjacentFacingSelection(m_shipPos, hex, selectedHeading)");
+	assertContains(moveSelectionBody, "&& selectedHeading != turnData->curHeading) {");
+	assertContains(moveSelectionBody, "turnData->startHeading = selectedHeading;");
+	assertContains(moveSelectionBody, "turnData->curHeading = selectedHeading;");
+	assertContains(moveSelectionBody, "turnData->finalHeading = selectedHeading;");
+	assertContains(moveSelectionBody, "turnData->nMoved = 0;");
+	assertContains(moveSelectionBody, "turnData->path.clear();");
+	assertContains(moveSelectionBody, "turnData->path.addPoint(m_shipPos);");
+	assertContains(moveSelectionBody, "m_moved = 0;");
+	assertContains(moveSelectionBody, "computeRemainingMoves(m_shipPos);");
+}
+
 void FTacticalGameMechanicsTest::testImplementationRemainsSelfContainedWithoutLegacyWxRewire() {
 // AC: implementation remains additive/self-contained and does not require FBattleScreen/Board/Display rewiring.
 	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
