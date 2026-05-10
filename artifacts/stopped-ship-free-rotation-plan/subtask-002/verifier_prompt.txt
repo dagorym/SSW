@@ -1,0 +1,79 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- Subtask SSW-ZSR-002 implemented and tested stopped-ship move-phase UI integration, and the documenter updated the tactical design notes and user guide to match the shipped behavior.
+
+Acceptance criteria to verify:
+- Selecting a stopped ship in `PH_MOVE` visibly exposes the legal facing choices required by the SSW-ZSR-001 model contract.
+- After a facing is selected, the UI supports both continued movement and zero-displacement completion through the existing move-completion flow.
+- Prompt text and board highlights remain clear for both stopped-ship and nonzero-speed movement.
+- Existing move-route rendering for ships that begin with nonzero speed is unchanged.
+- Move completion still transitions cleanly into the normal post-move phase flow after a rotate-in-place turn.
+- `doc/DesignNotes.md` and `doc/UsersGuide.md` accurately describe the implemented and tested stopped-ship UI behavior without overstating new rules.
+
+Implementation branch or worktree context:
+- Implementer branch: `stopped-ship-free-rotation-plan-implementer-20260509`
+- Tester branch/worktree: `stopped-ship-free-rotation-plan-tester-20260509` / `/home/tstephen/repos/SSW-worktrees/stopped-ship-free-rotation-plan-tester-20260509`
+- Documenter branch/worktree: `stopped-ship-free-rotation-plan-documenter-20260509` / `/home/tstephen/repos/SSW-worktrees/stopped-ship-free-rotation-plan-documenter-20260509`
+- Documentation commit: `439ac9f449d594f3cd6cd2507f11022e11136b1f`
+- Comparison-base assumptions:
+  - `stopped-ship-free-rotation-plan-implementer-20260509..stopped-ship-free-rotation-plan-tester-20260509` for tester-stage additions
+  - `stopped-ship-free-rotation-plan..HEAD` for the full shipped story context
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/tactical/FBattleBoard.cpp`
+- `src/tactical/FBattleDisplay.cpp`
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp`
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.h`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+- `doc/DesignNotes.md`
+- `doc/UsersGuide.md`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002/implementer_report.md`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002/implementer_result.json`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002/tester_report.md`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002/tester_result.json`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002/documenter_prompt.txt`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002/documenter_report.md`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002/documenter_result.json`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && ./tactical/TacticalTests | tail -n 80`
+- `git diff --stat stopped-ship-free-rotation-plan-implementer-20260509..stopped-ship-free-rotation-plan-tester-20260509`
+- `git diff --stat stopped-ship-free-rotation-plan..HEAD`
+
+Final test outcomes:
+- Tactical suite passed: `OK (138 tests)`.
+- New tester assertions validate stopped-ship temporary heading rendering and move prompt branching while existing move-route/mechanics checks continue to validate route rendering and move completion behavior.
+
+Plan and evaluation context:
+- Plan path: `plans/stopped-ship-free-rotation-plan.md`
+- This is Subtask `SSW-ZSR-002` from that plan.
+- The plan's documentation guidance said no documentation update was expected unless repository docs misdescribed the buggy behavior. The documenter updated `doc/DesignNotes.md` because the tactical UI seam changed, and updated `doc/UsersGuide.md` because it still claimed ships could not stop.
+
+Convention-file guidance:
+- Read `AGENTS.md` for tactical documentation and workflow conventions.
+- Do not edit `doc/rules/tactical_operations_manual.md`; it remains the external rules source that the implementation must align with.
+- No `.myteam` or `AGENTS.md` update was required for this subtask.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+- `doc/UsersGuide.md`
+
+Verification scope:
+- Verify implementation behavior, tester coverage, and the updated documentation together.
+- Confirm the battle board now previews the temporary facing for the selected stopped mover, the move-phase prompt explicitly supports adjacent-hex facing selection plus rotate-in-place completion, and normal nonzero-speed route overlays remain unchanged.
+- Confirm the user guide no longer documents the old stopped-ship bug and now accurately explains the `Movement Done` flow for zero-displacement rotations.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe, and label those choices as assumptions instead of treating them as blockers.
+
+Startup behavior:
+- If the blocking inputs above are present, continue in the same run.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when verification can proceed.
+
+Shared artifact directory:
+- `artifacts/stopped-ship-free-rotation-plan/subtask-002`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
