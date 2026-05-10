@@ -1,0 +1,77 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- Subtask SSW-ZSR-001 implemented and tested stopped-ship free-rotation movement behavior, and the documenter updated the tactical design notes to match the shipped model behavior.
+
+Acceptance criteria to verify:
+- A moving-side ship that starts with `speed == 0` and has legal maneuver authority can choose any legal starting facing.
+- Facing-only selection updates pending movement heading without immediate displacement.
+- Completing movement after facing-only selection keeps the ship in the same hex, preserves `speed == 0`, and commits final heading.
+- Moving after facing selection makes the first traveled hex follow the selected facing.
+- Existing non-stopped routing behavior is preserved and `MR == 0` ships cannot freely rotate.
+- `doc/DesignNotes.md` accurately describes the implemented and tested stopped-ship movement behavior without overstating UI changes.
+
+Implementation branch or worktree context:
+- Implementer branch: `stopped-ship-free-rotation-plan-implementer-20260509`
+- Tester branch/worktree: `stopped-ship-free-rotation-plan-tester-20260509` / `/home/tstephen/repos/SSW-worktrees/stopped-ship-free-rotation-plan-tester-20260509`
+- Documenter branch/worktree: `stopped-ship-free-rotation-plan-documenter-20260509` / `/home/tstephen/repos/SSW-worktrees/stopped-ship-free-rotation-plan-documenter-20260509`
+- Comparison base assumption: `73ef28b` on `master` / `stopped-ship-free-rotation-plan`
+- Documentation commit: `f2acd12d7c0cda39a2090a4967286505e28b7829`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalMoveRouteSelectionTest.cpp`
+- `tests/tactical/FTacticalMoveRouteSelectionTest.h`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.h`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h`
+- `doc/DesignNotes.md`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001/implementer_report.md`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001/implementer_result.json`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001/tester_report.md`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001/tester_result.json`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001/documenter_prompt.txt`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001/documenter_report.md`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001/documenter_result.json`
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (baseline)
+- `cd tests/tactical && make && ./TacticalTests` (post-change)
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (post-change)
+- `git diff --stat 73ef28b..HEAD`
+- `git diff 73ef28b..HEAD -- src/tactical/FTacticalGame.cpp tests/tactical/FTacticalMoveRouteSelectionTest.cpp tests/tactical/FTacticalMoveRouteSelectionTest.h tests/tactical/FTacticalGameMechanicsTest.cpp tests/tactical/FTacticalGameMechanicsTest.h tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h`
+
+Final test outcomes:
+- Baseline tactical runner before tester changes: `OK (129 tests)`.
+- Post-change tactical module runner: `OK (136 tests)`.
+- Post-change top-level tactical runner: `OK (136 tests)`.
+
+Plan and evaluation context:
+- Plan path: `plans/stopped-ship-free-rotation-plan.md`
+- This is Subtask `SSW-ZSR-001` from that plan.
+- The plan's documentation guidance said no documentation update was expected unless repository docs misdescribed the buggy behavior; the documenter still updated `doc/DesignNotes.md` because the design notes track the model-owned tactical movement contract and needed to reflect the shipped zero-speed facing-selection behavior.
+
+Convention-file guidance:
+- Read `AGENTS.md` for tactical model/documentation conventions.
+- Do not edit `doc/rules/tactical_operations_manual.md`; it remains the external rules source that the implementation must align with.
+- No `.myteam` or `AGENTS.md` update was required for this subtask.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation together.
+- Confirm the design notes describe the model-owned movement change precisely: eligible stopped ships can preselect a facing, keep a one-hex pending path for facing-only turns, complete movement in place with `speed == 0`, and still preserve existing non-stopped routing and `MR == 0` restrictions.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe, and label those choices as assumptions instead of treating them as blockers.
+
+Startup behavior:
+- If the blocking inputs above are present, continue in the same run.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when verification can proceed.
+
+Shared artifact directory:
+- `artifacts/stopped-ship-free-rotation-plan/subtask-001`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
