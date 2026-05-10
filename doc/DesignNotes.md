@@ -830,6 +830,36 @@ cd tests && make tactical-tests && ./tactical/TacticalTests
 
 Result: `OK (136 tests)`.
 
+The SSW-ZSR-002 tactical UI integration follow-up then made that stopped-ship
+movement contract visible through the existing battle board and move prompt.
+`FBattleBoard::drawShips()` now renders the selected moving-side ship with its
+temporary `curHeading` during `PH_MOVE` when the model is in the zero-speed,
+pre-displacement facing-selection state, so choosing an adjacent facing visibly
+rotates the ship icon before move completion. `FBattleDisplay::drawMoveShip()`
+branches its prompt copy for that same `speed == 0`, `nMoved == 0`, `MR > 0`
+case so the HUD tells the player to pick an adjacent hex for facing and then
+either continue plotting a route or press `Movement Done` to rotate in place.
+That follow-up intentionally leaves the existing non-stopped route overlays
+unchanged and adds focused tactical source-contract coverage for:
+
+- temporary facing rendering on the selected stopped mover while other ships
+  keep their persisted heading;
+- move-phase prompt text that distinguishes stopped-ship facing selection from
+  normal route selection and the no-ship-selected case;
+- the unchanged movement/left-turn/right-turn route overlay accessors for
+  nonzero-speed ships; and
+- the existing `Movement Done` delegation path continuing through
+  `FBattleScreen::completeMovePhase()` into normal post-move phase progression.
+
+Validation commands:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+cd tests && ./tactical/TacticalTests | tail -n 80
+```
+
+Result: `OK (138 tests)`.
+
 The forward-fire final-orientation regression follow-up then documented the
 restored moving-ship fire-arc contract for model-owned range highlighting and
 target validation. `FTacticalGame` now derives a shared per-path heading
