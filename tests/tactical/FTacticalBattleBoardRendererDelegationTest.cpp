@@ -88,6 +88,12 @@ assertContains(shipsBody, "const VehicleList & ships = m_parent->getHexOccupants
 
 const std::string routeBody = extractFunctionBody(source, "void FBattleBoard::drawRoute(wxDC &dc)");
 assertContains(routeBody, "const std::map<unsigned int, FTacticalTurnData> & turnInfo = m_parent->getTurnInfo();");
+assertContains(routeBody, "const bool isStoppedShipPreviewSelection = selectedTurnItr != turnInfo.end()");
+assertContains(routeBody, "&& selectedTurnItr->second.speed == 0");
+assertContains(routeBody, "&& selectedTurnItr->second.nMoved == 0");
+assertContains(routeBody, "&& m_parent->getShip()->getMR() > 0;");
+assertContains(routeBody, "const std::vector<FTacticalMovePreviewRoute> & previewRoutes = m_parent->getStoppedShipPreviewRoutes();");
+assertContains(routeBody, "drawRouteHexes(dc, previewItr->routeHexes, 1);");
 assertContains(routeBody, "drawRouteHexes(dc, m_parent->getMovementHexes(), movedCount+1);");
 assertContains(routeBody, "drawRouteHexes(dc, m_parent->getLeftTurnHexes(), movedCount+1);");
 assertContains(routeBody, "drawRouteHexes(dc, m_parent->getRightTurnHexes(), movedCount+1);");

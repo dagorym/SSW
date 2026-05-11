@@ -105,6 +105,7 @@ assertContains(extractFunctionBody(source, "void FBattleScreen::setWeapon(FWeapo
 
 void FTacticalBattleScreenDelegationTest::testBattleScreenForwardsInteractionAndRendererAccessorsToModel() {
 // AC: FBattleScreen forwards model APIs for interactions and renderer state with redraw behavior where expected.
+const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
 const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 
 const std::string selectWeaponBody = extractFunctionBody(source, "bool FBattleScreen::selectWeapon(unsigned int weaponIndex)");
@@ -138,6 +139,12 @@ assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleS
 "return m_tacticalGame->getLeftTurnHexes();");
 assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getRightTurnHexes() const"),
 "return m_tacticalGame->getRightTurnHexes();");
+assertContains(header, "const std::vector<FTacticalMovePreviewRoute> & getStoppedShipPreviewRoutes() const;");
+assertContains(header, "const std::vector<int> & getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const;");
+assertContains(extractFunctionBody(source, "const std::vector<FTacticalMovePreviewRoute> & FBattleScreen::getStoppedShipPreviewRoutes() const"),
+"return m_tacticalGame->getStoppedShipPreviewRoutes();");
+assertContains(extractFunctionBody(source, "const std::vector<int> & FBattleScreen::getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const"),
+"return m_tacticalGame->getStoppedShipPreviewHeadingsForHex(hex);");
 assertContains(extractFunctionBody(source, "const PointSet & FBattleScreen::getTargetHexes() const"),
 "return m_tacticalGame->getTargetHexes();");
 assertContains(extractFunctionBody(source, "const PointSet & FBattleScreen::getHeadOnHexes() const"),

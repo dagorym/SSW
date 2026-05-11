@@ -384,13 +384,15 @@ assertContains(body, "stoppedShipFacingSelection = (turnData.speed == 0");
 assertContains(body, "&& turnData.nMoved == 0");
 assertContains(body, "&& m_parent->getShip()->getMR() > 0);");
 assertContains(body, "if (stoppedShipFacingSelection) {");
-assertContains(body, "Select an adjacent hex to choose facing.");
-assertContains(body, "Then move along a route, or press Movement Done to rotate in place.");
+assertContains(body, "Select a highlighted preview route to choose your starting facing.");
+assertContains(body, "Continue a route, or click an adjacent hex then Movement Done to rotate in place.");
 assertContains(body, "} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {");
 assertContains(body, "Select route hexes to move the ship.");
 assertContains(body, "Press Movement Done when all ships finish movement.");
 assertContains(body, "} else {");
 assertContains(body, "Please select a ship to move.");
+assertNotContains(body, "Select an adjacent hex to choose facing.");
+assertNotContains(body, "Then move along a route, or press Movement Done to rotate in place.");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractConstantsAndHelpersDefined() {
