@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "task_id": "SSW-SSMR-001",
+  "branch": "stopped-ship-free-rotation-plan-documenter-20260510",
+  "documentation_commit_hash": "807597b527ca68d7988408f2182f6e19249a9bfc",
+  "documentation_files_modified": [
+    "doc/UsersGuide.md",
+    "doc/DesignNotes.md"
+  ],
+  "artifact_files_written": [
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/documenter_report.md",
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/documenter_result.json",
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/verifier_prompt.txt"
+  ],
+  "plan_path": "plans/stopped-ship-move-ui-review-remediation-plan.md",
+  "validation_commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
+  ],
+  "validation_outcome": {
+    "summary": "Tactical runner passes after documentation updates.",
+    "details": "OK (143 tests)"
+  }
+}
