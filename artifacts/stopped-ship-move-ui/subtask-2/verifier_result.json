@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "task": "stopped-ship-move-ui/subtask-2",
+  "branch": "stopped-ship-free-rotation-plan",
+  "verdict": "PASS",
+  "reviewed_diff": "205c46a..HEAD",
+  "comparison_base_assumption": "080206edf47996bdc32a1c1e5ba7b01e73c2519a..1533578fdb3f38ead4a90595e732a143fed8ac66",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 0,
+  "test_sufficiency_summary": "Sufficient for the stopped-ship preview-click scope: runtime tactical regressions cover inferred preview heading, first-step direction, trim/extension continuity, rotate-in-place completion, and unchanged non-stopped behavior; verifier reran `cd tests && make tactical-tests && ./tactical/TacticalTests` with `OK (143 tests)`.",
+  "documentation_accuracy_summary": "Accurate: `doc/UsersGuide.md` and `doc/DesignNotes.md` now describe direct preview-route clicks, preserved adjacent facing-only selection, rotate-in-place completion, and unchanged non-stopped movement flow without overstating any rules change.",
+  "artifact_directory": "artifacts/stopped-ship-move-ui/subtask-2",
+  "artifact_files": [
+    "artifacts/stopped-ship-move-ui/subtask-2/verifier_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-2/verifier_result.json"
+  ],
+  "validation": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests => OK (143 tests)"
+  ]
+}
