@@ -890,6 +890,34 @@ cd tests && make tactical-tests && ./tactical/TacticalTests
 
 Result: `OK (141 tests)`.
 
+The stopped-ship PH_MOVE preview-route UI follow-up then wired that additive
+model contract into the tactical renderer without changing ordinary movement
+overlays. `FBattleScreen` gained additive forwarding accessors for
+`getStoppedShipPreviewRoutes()` and
+`getStoppedShipPreviewHeadingsForHex(...)`, allowing `FBattleBoard::drawRoute()`
+to render every legal preview route for the selected zero-speed, pre-
+displacement mover (`speed == 0`, `nMoved == 0`, `MR > 0`) and then fall back
+to the existing movement/left-turn/right-turn buckets once the player commits a
+route. `FBattleDisplay::drawMoveShip()` now tells the player to select a
+highlighted preview route to choose the starting facing while keeping the
+adjacent-hex plus `Movement Done` rotate-in-place path available. The updated
+tactical source-contract regressions now lock that UI-facing behavior through:
+
+- renderer assertions that stopped-ship PH_MOVE selection draws every preview
+  route while nonzero-speed route rendering stays on the existing path;
+- prompt-copy assertions that remove the legacy adjacent-hex-only discovery
+  wording in favor of the preview-route interaction text; and
+- delegation assertions that the new `FBattleScreen` accessors remain additive
+  forwarders over the tactical model.
+
+Validation command:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+```
+
+Result: `OK (143 tests)`.
+
 The forward-fire final-orientation regression follow-up then documented the
 restored moving-ship fire-arc contract for model-owned range highlighting and
 target validation. `FTacticalGame` now derives a shared per-path heading
