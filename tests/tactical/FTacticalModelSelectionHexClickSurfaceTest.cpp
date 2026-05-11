@@ -72,6 +72,8 @@ assertContains(header, "bool assignTargetFromHex(const FPoint & hex);");
 assertContains(header, "bool placeMineAtHex(const FPoint & hex);");
 assertContains(header, "bool isHexMinable(const FPoint & hex);");
 assertContains(header, "const VehicleList & getHexOccupants(const FPoint & hex) const;");
+assertContains(header, "const std::vector<FTacticalMovePreviewRoute> & getStoppedShipPreviewRoutes() const");
+assertContains(header, "const std::vector<int> & getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const;");
 assertContains(header, "bool isHexInBounds(const FPoint & hex) const;");
 assertContains(header, "bool isHexOccupied(const FPoint & hex) const;");
 }
@@ -87,6 +89,7 @@ assertContains(source, "bool FTacticalGame::placeMineAtHex(const FPoint & hex)")
 assertContains(source, "bool FTacticalGame::isHexMinable(const FPoint & hex)");
 assertContains(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
 assertContains(source, "const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const");
+assertContains(source, "const std::vector<int> & FTacticalGame::getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const");
 assertContains(source, "bool FTacticalGame::isHexInBounds(const FPoint & hex) const");
 assertContains(source, "bool FTacticalGame::isHexOccupied(const FPoint & hex) const");
 }
@@ -123,6 +126,26 @@ assertContains(body, "m_moved = 0;");
 assertContains(body, "computeRemainingMoves(m_shipPos);");
 assertContains(body, "if (turnData->path.isPointOnPath(hex)) {");
 assertContains(body, "found = findHexInList(m_movementHexes, hex, moved);");
+}
+
+void FTacticalModelSelectionHexClickSurfaceTest::testStoppedShipPreviewApiAndLifecycleHooksAreExposed() {
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string selectBody = extractFunctionBody(source, "bool FTacticalGame::selectShipFromHex(const FPoint & hex)");
+const std::string setupBody = extractFunctionBody(source, "void FTacticalGame::setInitialRoute()");
+const std::string computeBody = extractFunctionBody(source, "void FTacticalGame::computeRemainingMoves(FPoint start)");
+const std::string clearBody = extractFunctionBody(source, "void FTacticalGame::clearMovementHighlights()");
+const std::string headingLookupBody = extractFunctionBody(source,
+	"const std::vector<int> & FTacticalGame::getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const");
+
+assertContains(source, "void FTacticalGame::clearStoppedShipPreviewRoutes()");
+assertContains(source, "void FTacticalGame::rebuildStoppedShipPreviewRoutes()");
+assertContains(setupBody, "clearStoppedShipPreviewRoutes();");
+assertContains(setupBody, "rebuildStoppedShipPreviewRoutes();");
+assertContains(computeBody, "rebuildStoppedShipPreviewRoutes();");
+assertContains(clearBody, "clearStoppedShipPreviewRoutes();");
+assertContains(selectBody, "clearStoppedShipPreviewRoutes();");
+assertContains(headingLookupBody, "return EMPTY_PREVIEW_HEADING_LIST;");
+assertContains(headingLookupBody, "return itr->second;");
 }
 
 }

@@ -17,6 +17,7 @@ CPPUNIT_TEST( testHeaderDeclaresMilestone8SelectionAndHexClickApi );
 CPPUNIT_TEST( testImplementationDefinesSelectionAndHexClickHandlers );
 CPPUNIT_TEST( testHexClickRoutesThroughModelOwnedSelectionAndTargetingFlow );
 CPPUNIT_TEST( testMoveHexSelectionSupportsStoppedShipFacingChoice );
+CPPUNIT_TEST( testStoppedShipPreviewApiAndLifecycleHooksAreExposed );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -32,6 +33,7 @@ void testHeaderDeclaresMilestone8SelectionAndHexClickApi();
 void testImplementationDefinesSelectionAndHexClickHandlers();
 void testHexClickRoutesThroughModelOwnedSelectionAndTargetingFlow();
 void testMoveHexSelectionSupportsStoppedShipFacingChoice();
+void testStoppedShipPreviewApiAndLifecycleHooksAreExposed();
 };
 
 }

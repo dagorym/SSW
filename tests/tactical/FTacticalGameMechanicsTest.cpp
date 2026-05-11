@@ -83,6 +83,7 @@ assertContains(header, "void setPhase(int p);");
 assertContains(header, "void resetMovementState();");
 assertContains(header, "void finalizeMovementState();");
 assertContains(header, "void clearMovementHighlights();");
+assertContains(header, "} FTacticalMovePreviewRoute;");
 assertContains(header, "void resetTurnInfoForCurrentMover();");
 assertContains(header, "FTacticalTurnData * findTurnData(unsigned int shipID);");
 assertContains(header, "void beginTacticalReport(const FTacticalCombatReportContext & context);");
@@ -205,6 +206,7 @@ assertContains(resetMoveBody, "checkMoveStatus();");
 assertContains(clearBody, "m_movementHexes.clear();");
 assertContains(clearBody, "m_leftHexes.clear();");
 assertContains(clearBody, "m_rightHexes.clear();");
+assertContains(clearBody, "clearStoppedShipPreviewRoutes();");
 assertContains(clearBody, "m_targetHexes.clear();");
 assertContains(clearBody, "m_headOnHexes.clear();");
 assertContains(clearBody, "m_drawRoute = false;");
@@ -332,6 +334,8 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(header, "const std::vector<FPoint> & getMovementHexes() const");
 	assertContains(header, "const std::vector<FPoint> & getLeftTurnHexes() const");
 	assertContains(header, "const std::vector<FPoint> & getRightTurnHexes() const");
+	assertContains(header, "const std::vector<FTacticalMovePreviewRoute> & getStoppedShipPreviewRoutes() const");
+	assertContains(header, "const std::vector<int> & getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const;");
 	assertContains(header, "const PointSet & getTargetHexes() const");
 	assertContains(header, "const PointSet & getHeadOnHexes() const");
 	assertContains(header, "const PointSet & getMinedHexes() const");
@@ -348,6 +352,8 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(source, "bool FTacticalGame::selectDefense(unsigned int defenseIndex)");
 	assertContains(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
 	assertContains(source, "const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const");
+	assertContains(source, "const std::vector<int> & FTacticalGame::getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const");
+	assertContains(source, "return EMPTY_PREVIEW_HEADING_LIST;");
 	assertContains(buildPathHeadingsBody, "headings.push_back(lastPoint ? turnData.finalHeading : heading);");
 	assertContains(buildPathHeadingsBody, "heading = FHexMap::computeHeading(path[i], path[i + 1]);");
 	assertContains(buildPathHeadingsBody, "heading = turnData.finalHeading;");
@@ -453,7 +459,10 @@ void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelec
 	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
 	const std::string freeRotationGuardBody =
 		extractFunctionBody(source, "bool canUseStoppedShipFreeRotation(const FVehicle * ship, FTacticalTurnData * turnData)");
+	const std::string setInitialRouteBody = extractFunctionBody(source, "void FTacticalGame::setInitialRoute()");
 	const std::string remainingMovesBody = extractFunctionBody(source, "void FTacticalGame::computeRemainingMoves(FPoint start)");
+	const std::string rebuildPreviewBody = extractFunctionBody(source, "void FTacticalGame::rebuildStoppedShipPreviewRoutes()");
+	const std::string clearPreviewBody = extractFunctionBody(source, "void FTacticalGame::clearStoppedShipPreviewRoutes()");
 	const std::string moveSelectionBody = extractFunctionBody(source, "bool FTacticalGame::handleMoveHexSelection(const FPoint & hex)");
 
 	assertContains(freeRotationGuardBody, "turnData->speed == 0");
@@ -463,6 +472,21 @@ void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelec
 
 	assertContains(remainingMovesBody, "if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {");
 	assertContains(remainingMovesBody, "buildStoppedShipTurnOptions(start, forward, m_leftHexes, m_rightHexes);");
+	assertContains(remainingMovesBody, "rebuildStoppedShipPreviewRoutes();");
+	assertContains(setInitialRouteBody, "clearStoppedShipPreviewRoutes();");
+	assertContains(setInitialRouteBody, "rebuildStoppedShipPreviewRoutes();");
+
+	assertContains(clearPreviewBody, "m_stoppedShipPreviewRoutes.clear();");
+	assertContains(clearPreviewBody, "m_stoppedShipPreviewHeadingsByHex.clear();");
+
+	assertContains(rebuildPreviewBody, "if (!canUseStoppedShipFreeRotation(m_curShip, turnData)) {");
+	assertContains(rebuildPreviewBody, "preview.startHeading = heading;");
+	assertContains(rebuildPreviewBody, "preview.facingHex = facingHex;");
+	assertContains(rebuildPreviewBody, "preview.routeHexes.push_back(current);");
+	assertContains(rebuildPreviewBody, "if (preview.routeHexes.empty()) {");
+	assertContains(rebuildPreviewBody, "preview.routeHexes.push_back(facingHex);");
+	assertContains(rebuildPreviewBody, "std::vector<int> & headings = m_stoppedShipPreviewHeadingsByHex[*itr];");
+	assertContains(rebuildPreviewBody, "m_stoppedShipPreviewRoutes.push_back(preview);");
 
 	assertContains(moveSelectionBody, "if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {");
 	assertContains(moveSelectionBody, "if (isAdjacentFacingSelection(m_shipPos, hex, selectedHeading)");

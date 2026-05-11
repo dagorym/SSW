@@ -11,6 +11,9 @@
 #include "strategic/FFleet.h"
 #include "tactical/FTacticalGame.h"
 
+#include <algorithm>
+#include <set>
+
 namespace FrontierTests {
 
 namespace {
@@ -276,12 +279,64 @@ CPPUNIT_ASSERT_EQUAL(1, turnData->nMoved);
 destroyFixture(fixture);
 }
 
+void FTacticalMoveRouteSelectionTest::testStoppedShipPreviewRoutesExposeLegalStartingFacings() {
+FMoveRouteFixture fixture;
+setupFixture(fixture, 0);
+
+FTacticalTurnData * turnData = requireTurnData(fixture);
+const int originalHeading = turnData->curHeading;
+const std::vector<FTacticalMovePreviewRoute> & previewRoutes = fixture.game.getStoppedShipPreviewRoutes();
+CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), previewRoutes.size());
+
+std::set<int> observedHeadings;
+for (std::vector<FTacticalMovePreviewRoute>::const_iterator itr = previewRoutes.begin();
+	itr != previewRoutes.end(); ++itr) {
+	CPPUNIT_ASSERT(itr->startHeading >= 0 && itr->startHeading < 6);
+	CPPUNIT_ASSERT(itr->startHeading != originalHeading);
+	observedHeadings.insert(itr->startHeading);
+	assertSamePoint(FHexMap::findNextHex(fixture.attackerPos, itr->startHeading), itr->facingHex);
+	CPPUNIT_ASSERT(!itr->routeHexes.empty());
+}
+
+for (int heading = 0; heading < 6; ++heading) {
+	if (heading == originalHeading) {
+		continue;
+	}
+	CPPUNIT_ASSERT(observedHeadings.find(heading) != observedHeadings.end());
+}
+
+destroyFixture(fixture);
+}
+
+void FTacticalMoveRouteSelectionTest::testStoppedShipPreviewHeadingLookupTracksPreviewHexMembership() {
+FMoveRouteFixture fixture;
+setupFixture(fixture, 0);
+
+const std::vector<FTacticalMovePreviewRoute> & previewRoutes = fixture.game.getStoppedShipPreviewRoutes();
+CPPUNIT_ASSERT(!previewRoutes.empty());
+
+for (std::vector<FTacticalMovePreviewRoute>::const_iterator routeItr = previewRoutes.begin();
+	routeItr != previewRoutes.end(); ++routeItr) {
+	for (PointList::const_iterator hexItr = routeItr->routeHexes.begin();
+		hexItr != routeItr->routeHexes.end(); ++hexItr) {
+		const std::vector<int> & headings = fixture.game.getStoppedShipPreviewHeadingsForHex(*hexItr);
+		CPPUNIT_ASSERT(std::find(headings.begin(), headings.end(), routeItr->startHeading) != headings.end());
+	}
+}
+
+const std::vector<int> & unrelatedHeadings = fixture.game.getStoppedShipPreviewHeadingsForHex(FPoint(0, 0));
+CPPUNIT_ASSERT(unrelatedHeadings.empty());
+
+destroyFixture(fixture);
+}
+
 void FTacticalMoveRouteSelectionTest::testNonStoppedShipDoesNotAllowFreeAdjacentFacingSelection() {
 FMoveRouteFixture fixture;
 setupFixture(fixture, 1);
 
 FTacticalTurnData * turnData = requireTurnData(fixture);
 const int originalHeading = turnData->curHeading;
+CPPUNIT_ASSERT(fixture.game.getStoppedShipPreviewRoutes().empty());
 FPoint nonForwardAdjacent(-1, -1);
 for (int heading = 0; heading < 6; ++heading) {
 if (heading == originalHeading) {
@@ -331,6 +386,8 @@ const FPoint adjacentLeft = FHexMap::findNextHex(fixture.attackerPos, (originalH
 CPPUNIT_ASSERT(!fixture.game.handleHexClick(adjacentLeft));
 CPPUNIT_ASSERT(fixture.game.getLeftTurnHexes().empty());
 CPPUNIT_ASSERT(fixture.game.getRightTurnHexes().empty());
+CPPUNIT_ASSERT(fixture.game.getStoppedShipPreviewRoutes().empty());
+CPPUNIT_ASSERT(fixture.game.getStoppedShipPreviewHeadingsForHex(adjacentLeft).empty());
 
 turnData = requireTurnData(fixture);
 CPPUNIT_ASSERT_EQUAL(originalHeading, turnData->curHeading);
