@@ -382,22 +382,25 @@ setupFixture(fixture, 0);
 FTacticalTurnData * turnData = requireTurnData(fixture);
 const int originalHeading = turnData->curHeading;
 const std::vector<FTacticalMovePreviewRoute> & previewRoutes = fixture.game.getStoppedShipPreviewRoutes();
-CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), previewRoutes.size());
+CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), previewRoutes.size());
 
 std::set<int> observedHeadings;
+bool foundCurrentHeadingPreviewRoute = false;
+const FPoint currentHeadingForwardHex = FHexMap::findNextHex(fixture.attackerPos, originalHeading);
 for (std::vector<FTacticalMovePreviewRoute>::const_iterator itr = previewRoutes.begin();
 	itr != previewRoutes.end(); ++itr) {
 	CPPUNIT_ASSERT(itr->startHeading >= 0 && itr->startHeading < 6);
-	CPPUNIT_ASSERT(itr->startHeading != originalHeading);
+	if (itr->startHeading == originalHeading) {
+		foundCurrentHeadingPreviewRoute = true;
+		CPPUNIT_ASSERT(pathContainsPoint(itr->routeHexes, currentHeadingForwardHex));
+	}
 	observedHeadings.insert(itr->startHeading);
 	assertSamePoint(FHexMap::findNextHex(fixture.attackerPos, itr->startHeading), itr->facingHex);
 	CPPUNIT_ASSERT(!itr->routeHexes.empty());
 }
 
+CPPUNIT_ASSERT(foundCurrentHeadingPreviewRoute);
 for (int heading = 0; heading < 6; ++heading) {
-	if (heading == originalHeading) {
-		continue;
-	}
 	CPPUNIT_ASSERT(observedHeadings.find(heading) != observedHeadings.end());
 }
 

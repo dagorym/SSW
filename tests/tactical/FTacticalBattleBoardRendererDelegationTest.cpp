@@ -89,14 +89,17 @@ assertContains(shipsBody, "const VehicleList & ships = m_parent->getHexOccupants
 const std::string routeBody = extractFunctionBody(source, "void FBattleBoard::drawRoute(wxDC &dc)");
 assertContains(routeBody, "const std::map<unsigned int, FTacticalTurnData> & turnInfo = m_parent->getTurnInfo();");
 assertContains(routeBody, "const bool isStoppedShipPreviewSelection = selectedTurnItr != turnInfo.end()");
-assertContains(routeBody, "&& selectedTurnItr->second.speed == 0");
-assertContains(routeBody, "&& selectedTurnItr->second.nMoved == 0");
-assertContains(routeBody, "&& m_parent->getShip()->getMR() > 0;");
-assertContains(routeBody, "const std::vector<FTacticalMovePreviewRoute> & previewRoutes = m_parent->getStoppedShipPreviewRoutes();");
-assertContains(routeBody, "drawRouteHexes(dc, previewItr->routeHexes, 1);");
-assertContains(routeBody, "drawRouteHexes(dc, m_parent->getMovementHexes(), movedCount+1);");
-assertContains(routeBody, "drawRouteHexes(dc, m_parent->getLeftTurnHexes(), movedCount+1);");
-assertContains(routeBody, "drawRouteHexes(dc, m_parent->getRightTurnHexes(), movedCount+1);");
+	assertContains(routeBody, "&& selectedTurnItr->second.speed == 0");
+	assertContains(routeBody, "&& selectedTurnItr->second.nMoved == 0");
+	assertContains(routeBody, "&& m_parent->getShip()->getMR() > 0;");
+	assertContains(routeBody, "if (isStoppedShipPreviewSelection) {");
+	assertContains(routeBody, "const std::vector<FTacticalMovePreviewRoute> & previewRoutes = m_parent->getStoppedShipPreviewRoutes();");
+	assertContains(routeBody, "for (std::vector<FTacticalMovePreviewRoute>::const_iterator previewItr = previewRoutes.begin();");
+	assertContains(routeBody, "drawRouteHexes(dc, previewItr->routeHexes, 1);");
+	assertContains(routeBody, "} else {");
+	assertContains(routeBody, "drawRouteHexes(dc, m_parent->getMovementHexes(), movedCount+1);");
+	assertContains(routeBody, "drawRouteHexes(dc, m_parent->getLeftTurnHexes(), movedCount+1);");
+	assertContains(routeBody, "drawRouteHexes(dc, m_parent->getRightTurnHexes(), movedCount+1);");
 
 const std::string rangeBody = extractFunctionBody(source, "void FBattleBoard::drawWeaponRange(wxDC &dc)");
 assertContains(rangeBody, "for (PointSet::const_iterator itr = m_parent->getTargetHexes().begin();");

@@ -480,6 +480,7 @@ void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelec
 	assertContains(clearPreviewBody, "m_stoppedShipPreviewHeadingsByHex.clear();");
 
 	assertContains(rebuildPreviewBody, "if (!canUseStoppedShipFreeRotation(m_curShip, turnData)) {");
+	assertContains(rebuildPreviewBody, "for (int heading = 0; heading < 6; ++heading) {");
 	assertContains(rebuildPreviewBody, "preview.startHeading = heading;");
 	assertContains(rebuildPreviewBody, "preview.facingHex = facingHex;");
 	assertContains(rebuildPreviewBody, "preview.routeHexes.push_back(current);");
@@ -487,6 +488,7 @@ void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelec
 	assertContains(rebuildPreviewBody, "preview.routeHexes.push_back(facingHex);");
 	assertContains(rebuildPreviewBody, "std::vector<int> & headings = m_stoppedShipPreviewHeadingsByHex[*itr];");
 	assertContains(rebuildPreviewBody, "m_stoppedShipPreviewRoutes.push_back(preview);");
+	CPPUNIT_ASSERT(rebuildPreviewBody.find("if (heading == turnData->curHeading)") == std::string::npos);
 
 	assertContains(moveSelectionBody, "if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {");
 	assertContains(moveSelectionBody, "if (isAdjacentFacingSelection(m_shipPos, hex, selectedHeading)");
