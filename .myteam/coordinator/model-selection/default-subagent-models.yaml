@@ -1,5 +1,11 @@
 version: 1
 roles:
+  planner:
+    model: gpt-5.4
+    reasoning_effort: high
+  coordinator:
+    model: gpt-5.4-mini
+    reasoning_effort: medium
   implementer:
     model: gpt-5.3-codex
     reasoning_effort: medium

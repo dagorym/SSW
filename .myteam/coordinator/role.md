@@ -50,7 +50,7 @@ Keep role-specific orchestration gates, remediation limits, branch policies, and
 16. If the Verifier reports any `BLOCKING` or `WARNING` findings on the first pass, merge the Verifier, Documenter, and Tester branches back into the Implementer branch for that subtask, clean up the stale downstream worktrees, and run at most one remediation cycle for that subtask from the existing Implementer branch and worktree.
 17. On the second Verifier pass for a subtask, stop and notify the user if any `BLOCKING` findings remain. `WARNING` findings on the second pass do not block subtask completion.
 18. After a subtask completes successfully, merge the full stage chain back through its parent branches until the Implementer branch is merged into the dedicated coordination base branch.
-19. After every subtask has completed and been merged to the dedicated coordination base branch, compose the final Reviewer launch prompt from scratch based on the plan and completed work, launch the Reviewer as an isolated sub-agent, and report the Reviewer outcome to the user without starting automatic follow-up work.
+19. Only after all planned subtasks have completed successfully and every subtask has been merged to the dedicated coordination base branch, compose the final Reviewer launch prompt from scratch based on the full plan and all completed work, launch the Reviewer as an isolated sub-agent, and report the Reviewer outcome to the user without starting automatic follow-up work.
 20. Leave the repository on the dedicated coordination base branch at the end of the run and do not merge that branch into `main` or `master`; handing off that final merge remains the user's responsibility.
 21. The Coordinator's role is limited to coordination-only actions: create worktrees and stage branches, launch isolated sub-agents, read committed artifacts and reports to validate stage completion, launch allowed remediation cycles, merge validated stage branches and worktrees back through the required branch chain at the appropriate workflow checkpoints, compose and launch the final Reviewer prompt, execute approved colocated coordinator tools and required git operations for worktree creation, merge-back, and cleanup, and report final results.
 22. The Coordinator must never perform Implementer, Tester, Documenter, Verifier, or Reviewer work in its own context and must never substitute its own outputs for any downstream agent's required artifacts, reports, prompts, tests, documentation, code changes, or review results.
@@ -78,7 +78,7 @@ Keep role-specific orchestration gates, remediation limits, branch policies, and
 5. Load `stage-launches` and `stage-validation` for each stage in the strict serial order Implementer -> Tester -> Documenter -> Verifier.
 6. If a Tester or Verifier outcome triggers a permitted remediation cycle, load `remediation` and follow the exact retry limits.
 7. After a subtask completes successfully, load `merge-and-cleanup` to merge the full stage chain back into the coordination base branch and clean up workflow state.
-8. After every subtask has completed and been merged back, load `final-reviewer` to compose and launch the Reviewer stage.
+8. Only after all planned subtasks have completed successfully and been merged back, load `final-reviewer` exactly once to compose and launch the Reviewer stage.
 9. Load `completion-reporting` to report subtask status, branch outcome, artifact locations, and final Reviewer result.
 
 ## Constraints
@@ -87,6 +87,7 @@ Keep role-specific orchestration gates, remediation limits, branch policies, and
 - Do not launch a new stage worktree for a subtask before the previous stage has completed successfully, committed all required changes and artifacts, and left a clean branch.
 - Do not launch parallel subtasks unless the plan explicitly allows it and the Coordinator finds no ambiguity after plan intake.
 - Do not continue launching new subtasks after any subtask enters a failed or user-decision-required state.
+- Do not load or launch the final Reviewer after an individual subtask completion; the Reviewer is a one-time terminal stage that may start only after the full planned subtask set has completed successfully and been merged into the coordination base branch.
 - Do not rewrite, paraphrase, or regenerate the planner-written Implementer prompt or valid upstream handoff prompts when those prompt artifacts already exist.
 - Do not make substantive changes to stage-handoff prompts; only add procedural wrapper instructions.
 - Do not replace the original planner-written Implementer prompt during remediation; only add a remediation preamble.
