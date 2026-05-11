@@ -499,6 +499,17 @@ void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelec
 	assertContains(moveSelectionBody, "turnData->path.addPoint(m_shipPos);");
 	assertContains(moveSelectionBody, "m_moved = 0;");
 	assertContains(moveSelectionBody, "computeRemainingMoves(m_shipPos);");
+	assertContains(moveSelectionBody, "const std::vector<int> & previewHeadings = getStoppedShipPreviewHeadingsForHex(hex);");
+	assertContains(moveSelectionBody, "const int originalStartHeading = turnData->startHeading;");
+	assertContains(moveSelectionBody, "const FHexPath originalPath = turnData->path;");
+	assertContains(moveSelectionBody, "for (std::vector<int>::const_iterator headingItr = previewHeadings.begin();");
+	assertContains(moveSelectionBody, "turnData->startHeading = *headingItr;");
+	assertContains(moveSelectionBody, "bool foundPreviewHex = findHexInList(m_movementHexes, hex, previewMoved);");
+	assertContains(moveSelectionBody, "foundPreviewHex = findHexInList(m_leftHexes, hex, previewMoved);");
+	assertContains(moveSelectionBody, "foundPreviewHex = findHexInList(m_rightHexes, hex, previewMoved);");
+	assertContains(moveSelectionBody, "if (!resolvedPreviewHeading) {");
+	assertContains(moveSelectionBody, "turnData->startHeading = originalStartHeading;");
+	assertContains(moveSelectionBody, "turnData->path = originalPath;");
 }
 
 void FTacticalGameMechanicsTest::testImplementationRemainsSelfContainedWithoutLegacyWxRewire() {

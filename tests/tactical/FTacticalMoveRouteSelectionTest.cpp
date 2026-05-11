@@ -115,6 +115,36 @@ bool pointsEqual(const FPoint & left, const FPoint & right) {
 return left.getX() == right.getX() && left.getY() == right.getY();
 }
 
+bool pathContainsPoint(const PointList & points, const FPoint & point) {
+for (PointList::const_iterator itr = points.begin(); itr != points.end(); ++itr) {
+if (itr->getX() == point.getX() && itr->getY() == point.getY()) {
+return true;
+}
+}
+return false;
+}
+
+bool findNonAdjacentPreviewRouteHex(
+	const FTacticalGame & game,
+	const FPoint & shipPos,
+	int & heading,
+	FPoint & targetHex) {
+	const std::vector<FTacticalMovePreviewRoute> & previewRoutes = game.getStoppedShipPreviewRoutes();
+	for (std::vector<FTacticalMovePreviewRoute>::const_iterator routeItr = previewRoutes.begin();
+		routeItr != previewRoutes.end(); ++routeItr) {
+		for (PointList::const_iterator hexItr = routeItr->routeHexes.begin();
+			hexItr != routeItr->routeHexes.end(); ++hexItr) {
+			if (FHexMap::computeHexDistance(shipPos, *hexItr) <= 1) {
+				continue;
+			}
+			heading = routeItr->startHeading;
+			targetHex = *hexItr;
+			return true;
+		}
+	}
+	return false;
+}
+
 bool hexContainsShipWithID(const VehicleList & ships, unsigned int shipID) {
 for (VehicleList::const_iterator itr = ships.begin(); itr != ships.end(); ++itr) {
 if ((*itr) != NULL && (*itr)->getID() == shipID) {
@@ -275,6 +305,72 @@ const PointList path = turnData->path.getFullPath();
 CPPUNIT_ASSERT(path.size() >= 2);
 assertSamePoint(expectedFirstMove, path[1]);
 CPPUNIT_ASSERT_EQUAL(1, turnData->nMoved);
+
+destroyFixture(fixture);
+}
+
+void FTacticalMoveRouteSelectionTest::testStoppedShipPreviewHexClickInfersFacingAndMovesAlongPreviewDirection() {
+FMoveRouteFixture fixture;
+setupFixture(fixture, 0);
+
+FTacticalTurnData * turnData = requireTurnData(fixture);
+const int originalHeading = turnData->curHeading;
+int previewHeading = -1;
+FPoint previewHex(-1, -1);
+CPPUNIT_ASSERT(findNonAdjacentPreviewRouteHex(fixture.game, fixture.attackerPos, previewHeading, previewHex));
+CPPUNIT_ASSERT(previewHeading >= 0 && previewHeading < 6);
+CPPUNIT_ASSERT(previewHeading != originalHeading);
+CPPUNIT_ASSERT(FHexMap::computeHexDistance(fixture.attackerPos, previewHex) > 1);
+CPPUNIT_ASSERT(fixture.game.handleHexClick(previewHex));
+
+turnData = requireTurnData(fixture);
+const PointList path = turnData->path.getFullPath();
+CPPUNIT_ASSERT(path.size() >= 2);
+CPPUNIT_ASSERT(pathContainsPoint(path, previewHex));
+assertSamePoint(previewHex, turnData->path.endPoint());
+assertSamePoint(FHexMap::findNextHex(fixture.attackerPos, previewHeading), path[1]);
+CPPUNIT_ASSERT_EQUAL(previewHeading, turnData->startHeading);
+CPPUNIT_ASSERT(turnData->nMoved > 0);
+
+destroyFixture(fixture);
+}
+
+void FTacticalMoveRouteSelectionTest::testStoppedShipPreviewFirstMoveStillSupportsTrimAndFollowOnExtension() {
+FMoveRouteFixture fixture;
+setupFixture(fixture, 0);
+
+int previewHeading = -1;
+FPoint previewHex(-1, -1);
+CPPUNIT_ASSERT(findNonAdjacentPreviewRouteHex(fixture.game, fixture.attackerPos, previewHeading, previewHex));
+CPPUNIT_ASSERT(fixture.game.handleHexClick(previewHex));
+
+FTacticalTurnData * turnData = requireTurnData(fixture);
+const PointList previewPath = turnData->path.getFullPath();
+CPPUNIT_ASSERT(previewPath.size() >= 2);
+const FPoint firstMovedHex = previewPath[1];
+CPPUNIT_ASSERT(fixture.game.handleHexClick(firstMovedHex));
+
+turnData = requireTurnData(fixture);
+CPPUNIT_ASSERT_EQUAL(1, turnData->nMoved);
+CPPUNIT_ASSERT_EQUAL(2U, turnData->path.getPathLength());
+assertSamePoint(firstMovedHex, turnData->path.endPoint());
+CPPUNIT_ASSERT_EQUAL(previewHeading, turnData->startHeading);
+
+FPoint extensionHex(-1, -1);
+if (!fixture.game.getMovementHexes().empty()) {
+	extensionHex = fixture.game.getMovementHexes().front();
+} else if (!fixture.game.getLeftTurnHexes().empty()) {
+	extensionHex = fixture.game.getLeftTurnHexes().front();
+} else if (!fixture.game.getRightTurnHexes().empty()) {
+	extensionHex = fixture.game.getRightTurnHexes().front();
+}
+CPPUNIT_ASSERT(extensionHex.getX() >= 0 && extensionHex.getY() >= 0);
+CPPUNIT_ASSERT(fixture.game.handleHexClick(extensionHex));
+
+turnData = requireTurnData(fixture);
+CPPUNIT_ASSERT(turnData->nMoved > 1);
+CPPUNIT_ASSERT(turnData->path.getPathLength() > 2);
+assertSamePoint(extensionHex, turnData->path.endPoint());
 
 destroyFixture(fixture);
 }

@@ -120,12 +120,21 @@ assertContains(body, "turnData->startHeading = selectedHeading;");
 assertContains(body, "turnData->curHeading = selectedHeading;");
 assertContains(body, "turnData->finalHeading = selectedHeading;");
 assertContains(body, "turnData->nMoved = 0;");
-assertContains(body, "turnData->path.clear();");
-assertContains(body, "turnData->path.addPoint(m_shipPos);");
-assertContains(body, "m_moved = 0;");
-assertContains(body, "computeRemainingMoves(m_shipPos);");
-assertContains(body, "if (turnData->path.isPointOnPath(hex)) {");
-assertContains(body, "found = findHexInList(m_movementHexes, hex, moved);");
+	assertContains(body, "turnData->path.clear();");
+	assertContains(body, "turnData->path.addPoint(m_shipPos);");
+	assertContains(body, "m_moved = 0;");
+	assertContains(body, "computeRemainingMoves(m_shipPos);");
+	assertContains(body, "const std::vector<int> & previewHeadings = getStoppedShipPreviewHeadingsForHex(hex);");
+	assertContains(body, "const FHexPath originalPath = turnData->path;");
+	assertContains(body, "for (std::vector<int>::const_iterator headingItr = previewHeadings.begin();");
+	assertContains(body, "turnData->startHeading = *headingItr;");
+	assertContains(body, "bool foundPreviewHex = findHexInList(m_movementHexes, hex, previewMoved);");
+	assertContains(body, "foundPreviewHex = findHexInList(m_leftHexes, hex, previewMoved);");
+	assertContains(body, "foundPreviewHex = findHexInList(m_rightHexes, hex, previewMoved);");
+	assertContains(body, "if (!resolvedPreviewHeading) {");
+	assertContains(body, "turnData->path = originalPath;");
+	assertContains(body, "if (turnData->path.isPointOnPath(hex)) {");
+	assertContains(body, "found = findHexInList(m_movementHexes, hex, moved);");
 }
 
 void FTacticalModelSelectionHexClickSurfaceTest::testStoppedShipPreviewApiAndLifecycleHooksAreExposed() {
