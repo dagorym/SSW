@@ -1,0 +1,41 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Implementer restored stopped-ship preview-route completeness so the model-owned preview surface now includes the ship's current-heading forward route in addition to alternate starting facings.
+
+Modified files:
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- When a moving-side ship begins PH_MOVE at `speed == 0`, `nMoved == 0`, and `MR > 0`, `getStoppedShipPreviewRoutes()` includes the current-heading forward preview in addition to alternate legal starting facings.
+- The stopped-ship preview lookup surface continues to map preview-route hexes back to the legal starting heading set, including the restored current-heading route where applicable.
+- The remediation does not change non-stopped movement highlight semantics or grant new preview options to ships with `MR == 0`.
+- Existing stopped-ship preview-click continuation still resolves into the normal route-selection flow after the preview contract is corrected.
+- The tactical model remains additive and non-wx.
+
+Create test files in:
+- tests/tactical/FTacticalMoveRouteSelectionTest.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp
+- tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp
+
+Implementation context for testing:
+- In `FTacticalGame::rebuildStoppedShipPreviewRoutes()`, the loop no longer skips `heading == turnData->curHeading`; all six legal headings are now considered when stopped-ship free-rotation preview is active.
+- Preview-route-to-hex heading mapping is still generated from the same `preview.routeHexes` iteration, so current-heading participation now propagates into `getStoppedShipPreviewHeadingsForHex(...)`.
+- Gating for stopped-ship free-rotation preview is unchanged (`speed==0`, `nMoved==0`, path length 1, `MR>0`).
+- Existing validation currently has one failure that appears intentionally stale relative to approved behavior:
+  - `FTacticalMoveRouteSelectionTest::testStoppedShipPreviewRoutesExposeLegalStartingFacings` expected 5 routes, now actual 6.
+
+Suggested test command(s):
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
