@@ -1,0 +1,43 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Validate additive stopped-ship movement preview-route model data for legal starting facings.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- A stopped ship with speed == 0, nMoved == 0, and legal maneuver authority exposes preview-route data for each legal starting facing.
+- The preview data is sufficient for callers to both render the candidate paths and identify which initial facing a clicked preview hex belongs to.
+- Existing movement/left/right route accessors for non-stopped movement remain valid and unchanged in semantics.
+- The change does not grant new facing options to ships with MR == 0.
+
+Create test files in:
+- tests/tactical/FTacticalMoveRouteSelectionTest.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp
+
+Implementation context for testing:
+- New additive model type: `FTacticalMovePreviewRoute` with `startHeading`, `facingHex`, and `routeHexes`.
+- New additive accessors:
+  - `getStoppedShipPreviewRoutes()`
+  - `getStoppedShipPreviewHeadingsForHex(const FPoint & hex)`
+- Preview state is rebuilt on move-route setup and remaining-move recomputation, and cleared with movement-highlight resets/non-mover selection.
+- Preview generation is gated by existing stopped-ship free-rotation eligibility (`speed == 0`, `nMoved == 0`, path length 1, `MR > 0`).
+- Existing `getMovementHexes()`, `getLeftTurnHexes()`, and `getRightTurnHexes()` flows are unchanged and still used by normal movement route selection.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- (Assumption for focused iteration) cd tests/tactical && make && ./TacticalTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/stopped-ship-move-ui/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
