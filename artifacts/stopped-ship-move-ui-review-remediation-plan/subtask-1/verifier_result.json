@@ -1,0 +1,28 @@
+{
+  "status": "success",
+  "task": "stopped-ship-move-ui-review-remediation-plan/subtask-1",
+  "subtask_id": "SSW-SSMR-001",
+  "branch": "stopped-ship-free-rotation-plan-verifier-20260510",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient tactical coverage: runtime tests verify six stopped-ship preview routes, current-heading participation, preview-hex heading membership, unchanged MR==0/non-stopped behavior, and continuation into normal route selection; TacticalTests passed with OK (143 tests).",
+  "documentation_accuracy_summary": "UsersGuide.md and DesignNotes.md accurately describe the restored all-legal-facings stopped-ship preview contract, including the current-heading forward route, unchanged gating, and normal route-selection continuation.",
+  "acceptance_criteria_source": [
+    "plans/stopped-ship-move-ui-review-remediation-plan.md",
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/verifier_prompt.txt",
+    "User verification request"
+  ],
+  "assumptions": [
+    "Used the provided lineage hint and repository history to review the combined change from implementer commit 54988f8a407f2f967840604fb84895e512830ef0 through tester commit 3474f67 to documenter commit 807597b527ca68d7988408f2182f6e19249a9bfc.",
+    "The tactical verification command from the plan and handoff artifacts was the required validation scope for this focused remediation."
+  ],
+  "artifact_files_written": [
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/verifier_report.md",
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/verifier_result.json"
+  ],
+  "validation_commands": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
+  ]
+}
