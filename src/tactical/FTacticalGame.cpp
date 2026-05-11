@@ -8,12 +8,16 @@
 
 #include "tactical/FTacticalGame.h"
 
+#include <algorithm>
+
 #include "tactical/ITacticalUI.h"
 #include "tactical/FTacticalAttackResult.h"
 
 namespace Frontier {
 
 namespace {
+
+const std::vector<int> EMPTY_PREVIEW_HEADING_LIST;
 
 TacticalReportEventType tacticalReportEventTypeForDamageEffect(TacticalDamageEffectType effectType) {
 	switch (effectType) {
@@ -270,6 +274,7 @@ void FTacticalGame::reset() {
 	m_movementHexes.clear();
 	m_leftHexes.clear();
 	m_rightHexes.clear();
+	clearStoppedShipPreviewRoutes();
 	m_drawRoute = false;
 	m_moved = 0;
 	m_turnInfo.clear();
@@ -724,6 +729,7 @@ void FTacticalGame::clearMovementHighlights() {
 	m_movementHexes.clear();
 	m_leftHexes.clear();
 	m_rightHexes.clear();
+	clearStoppedShipPreviewRoutes();
 	m_targetHexes.clear();
 	m_headOnHexes.clear();
 	m_drawRoute = false;
@@ -960,6 +966,7 @@ void FTacticalGame::computeRemainingMoves(FPoint start) {
 	if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {
 		buildStoppedShipTurnOptions(start, forward, m_leftHexes, m_rightHexes);
 	}
+	rebuildStoppedShipPreviewRoutes();
 }
 
 void FTacticalGame::setInitialRoute() {
@@ -974,6 +981,7 @@ void FTacticalGame::setInitialRoute() {
 	m_movementHexes.clear();
 	m_leftHexes.clear();
 	m_rightHexes.clear();
+	clearStoppedShipPreviewRoutes();
 	m_gravityTurns.clear();
 	m_gravityTurnFlag = false;
 
@@ -1004,7 +1012,79 @@ void FTacticalGame::setInitialRoute() {
 			curHeading = forceTurn(m_curShip, curHeading, current);
 		}
 	}
+	rebuildStoppedShipPreviewRoutes();
 
+}
+
+void FTacticalGame::clearStoppedShipPreviewRoutes() {
+	m_stoppedShipPreviewRoutes.clear();
+	m_stoppedShipPreviewHeadingsByHex.clear();
+}
+
+void FTacticalGame::rebuildStoppedShipPreviewRoutes() {
+	clearStoppedShipPreviewRoutes();
+	if (m_curShip == NULL || m_shipPos.getX() < 0 || m_shipPos.getY() < 0) {
+		return;
+	}
+
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (!canUseStoppedShipFreeRotation(m_curShip, turnData)) {
+		return;
+	}
+
+	const std::map<FPoint, int> originalGravityTurns = m_gravityTurns;
+	const bool originalGravityTurnFlag = m_gravityTurnFlag;
+
+	for (int heading = 0; heading < 6; ++heading) {
+		if (heading == turnData->curHeading) {
+			continue;
+		}
+		const FPoint facingHex = FHexMap::findNextHex(m_shipPos, heading);
+		if (!isHexInBounds(facingHex)) {
+			continue;
+		}
+
+		FTacticalMovePreviewRoute preview;
+		preview.startHeading = heading;
+		preview.facingHex = facingHex;
+		preview.routeHexes.clear();
+
+		m_gravityTurns.clear();
+		m_gravityTurnFlag = false;
+		FPoint current = m_shipPos;
+		int currentHeading = heading;
+		unsigned int navTurns = 0;
+		const int navTurnDirection = m_curShip->getNavControlError();
+		for (int i = 0; i < m_curShip->getSpeed() + m_curShip->getADF(); ++i) {
+			if (current.getX() == -1) {
+				break;
+			}
+			current = FHexMap::findNextHex(current, currentHeading);
+			checkForPlanetCollision(current, currentHeading);
+			if (current.getX() != -1) {
+				preview.routeHexes.push_back(current);
+				if (navTurnDirection != 0 && navTurns < m_curShip->getMR()) {
+					currentHeading = turnShip(currentHeading, navTurnDirection);
+					++navTurns;
+				}
+			}
+		}
+
+		if (preview.routeHexes.empty()) {
+			preview.routeHexes.push_back(facingHex);
+		}
+
+		for (PointList::const_iterator itr = preview.routeHexes.begin(); itr != preview.routeHexes.end(); ++itr) {
+			std::vector<int> & headings = m_stoppedShipPreviewHeadingsByHex[*itr];
+			if (std::find(headings.begin(), headings.end(), heading) == headings.end()) {
+				headings.push_back(heading);
+			}
+		}
+		m_stoppedShipPreviewRoutes.push_back(preview);
+	}
+
+	m_gravityTurns = originalGravityTurns;
+	m_gravityTurnFlag = originalGravityTurnFlag;
 }
 
 bool FTacticalGame::findHexInList(PointList list, FPoint ref, int & count) const {
@@ -1377,8 +1457,17 @@ bool FTacticalGame::selectShipFromHex(const FPoint & hex) {
 		setInitialRoute();
 	} else {
 		m_drawRoute = false;
+		clearStoppedShipPreviewRoutes();
 	}
 	return true;
+}
+
+const std::vector<int> & FTacticalGame::getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const {
+	std::map<FPoint, std::vector<int> >::const_iterator itr = m_stoppedShipPreviewHeadingsByHex.find(hex);
+	if (itr == m_stoppedShipPreviewHeadingsByHex.end()) {
+		return EMPTY_PREVIEW_HEADING_LIST;
+	}
+	return itr->second;
 }
 
 bool FTacticalGame::placePlanet(const FPoint & hex) {

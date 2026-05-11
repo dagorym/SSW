@@ -61,6 +61,15 @@ FHexPath path;
 } FTacticalTurnData;
 
 /**
+ * @brief Preview route metadata for a stopped-ship starting-facing option.
+ */
+typedef struct {
+int startHeading;
+FPoint facingHex;
+PointList routeHexes;
+} FTacticalMovePreviewRoute;
+
+/**
  * @brief Pure C++ tactical mechanics state container.
  */
 class FTacticalGame {
@@ -150,6 +159,8 @@ bool isMoveComplete() const { return m_moveComplete; }
 	const std::vector<FPoint> & getMovementHexes() const { return m_movementHexes; }
 	const std::vector<FPoint> & getLeftTurnHexes() const { return m_leftHexes; }
 	const std::vector<FPoint> & getRightTurnHexes() const { return m_rightHexes; }
+	const std::vector<FTacticalMovePreviewRoute> & getStoppedShipPreviewRoutes() const { return m_stoppedShipPreviewRoutes; }
+	const std::vector<int> & getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const;
 	const PointSet & getTargetHexes() const { return m_targetHexes; }
 	const PointSet & getHeadOnHexes() const { return m_headOnHexes; }
 	const PointSet & getMinedHexes() const { return m_minedHexList; }
@@ -230,6 +241,8 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	void checkMoveStatus();
 	void checkForMines(FVehicle * ship);
 	void applyMineDamage();
+	void clearStoppedShipPreviewRoutes();
+	void rebuildStoppedShipPreviewRoutes();
 	void computeFFRange(const FPoint & pos, PointSet & targetHexes, PointSet & headOnHexes, int heading = -1) const;
 	void computeBatteryRange(const FPoint & pos, PointSet & targetHexes) const;
 	bool setIfValidTarget(FVehicle * target, const FPoint & targetHex);
@@ -280,6 +293,8 @@ FTacticalHexData m_hexData[100][100];
 	std::vector<FPoint> m_movementHexes;
 	std::vector<FPoint> m_leftHexes;
 	std::vector<FPoint> m_rightHexes;
+	std::vector<FTacticalMovePreviewRoute> m_stoppedShipPreviewRoutes;
+	std::map<FPoint, std::vector<int> > m_stoppedShipPreviewHeadingsByHex;
 bool m_drawRoute;
 int m_moved;
 std::map<unsigned int, FTacticalTurnData> m_turnInfo;
