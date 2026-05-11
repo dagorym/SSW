@@ -870,9 +870,16 @@ to map a clicked preview hex back to one or more legal starting facings.
 `FTacticalGame` only rebuilds that preview metadata for the existing zero-speed
 free-rotation case (`speed == 0`, `nMoved == 0`, one-hex pending path, and
 `MR > 0`), so ships with `MR == 0` still expose no new facing options. The
-refreshed tactical regressions now lock that additive contract through runtime
-preview-route coverage plus model/API source-surface assertions while keeping
-non-stopped movement highlight semantics unchanged.
+later move-click follow-up keeps the original adjacent facing-only branch for
+rotate-in-place selection, but `handleMoveHexSelection()` now also uses that
+preview-heading lookup to infer the stopped ship's initial facing from a
+non-adjacent highlighted preview hex before dropping back into the existing
+movement append/trim flow. That keeps the first moved hex aligned with the
+selected preview direction, preserves the existing route-trimming behavior
+after preview-based selection, and leaves ordinary non-stopped move selection
+unchanged. The refreshed tactical regressions now lock that additive contract
+through runtime preview-route coverage plus model/API source-surface assertions
+while keeping non-stopped movement highlight semantics unchanged.
 
 Validation commands:
 
