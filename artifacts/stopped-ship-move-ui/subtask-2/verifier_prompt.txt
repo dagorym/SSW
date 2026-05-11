@@ -1,0 +1,89 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- Validated stopped-ship preview-route move-click behavior where non-adjacent preview hex clicks infer the initial facing and then continue through the existing movement append/trim flow.
+- Added tactical regression coverage for preview-hex heading inference, first-step direction, post-preview trim/extension continuity, preserved rotate-in-place completion, and unchanged non-stopped handling.
+- Updated tactical documentation so both the user guide and design notes describe the shipped preview-route click behavior without overstating any rules changes.
+
+Acceptance criteria to verify:
+- Clicking a stopped-ship preview route hex selects the correct implied initial facing before adding movement to the path.
+- The ship's first moved hex follows the selected preview direction.
+- Existing route trimming and follow-on move extension continue to work after a preview-based first selection.
+- Rotate-in-place completion still works once the player has chosen a facing without displacement.
+- Non-stopped move selection behavior remains unchanged.
+- `doc/UsersGuide.md` and `doc/DesignNotes.md` accurately describe the shipped behavior: direct preview-route clicks are allowed, adjacent facing-only selection still works, and normal non-stopped movement flow is unchanged.
+
+Implementation branch or worktree context:
+- Branch: `stopped-ship-free-rotation-plan`
+- Repository: `/home/tstephen/repos/SSW`
+- Implementer code commit: `3c2c2655a27e6afdbd8376e1f6cb8494d91beccc`
+- Tester test commit: `1533578fdb3f38ead4a90595e732a143fed8ac66`
+- Documenter documentation commit: `9e60ef4b686fa0bb4f7448489eca02cdf349c55f`
+- Comparison-base assumptions:
+  - `1533578fdb3f38ead4a90595e732a143fed8ac66^` (`080206edf47996bdc32a1c1e5ba7b01e73c2519a`) is the tester-provided comparison-base assumption for the final test-handoff context.
+  - `205c46a..HEAD` is the safest bounded diff for the full implementer+tester+documenter review surface because the implementation commit precedes `080206e` in the branch's linear history.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalMoveRouteSelectionTest.h`
+- `tests/tactical/FTacticalMoveRouteSelectionTest.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp`
+- `doc/UsersGuide.md`
+- `doc/DesignNotes.md`
+- `artifacts/stopped-ship-move-ui/subtask-2/implementer_report.md`
+- `artifacts/stopped-ship-move-ui/subtask-2/implementer_result.json`
+- `artifacts/stopped-ship-move-ui/subtask-2/tester_prompt.txt`
+- `artifacts/stopped-ship-move-ui/subtask-2/tester_report.md`
+- `artifacts/stopped-ship-move-ui/subtask-2/tester_result.json`
+- `artifacts/stopped-ship-move-ui/subtask-2/documenter_prompt.txt`
+- `artifacts/stopped-ship-move-ui/subtask-2/documenter_report.md`
+- `artifacts/stopped-ship-move-ui/subtask-2/documenter_result.json`
+- `artifacts/stopped-ship-move-ui/subtask-2/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `git --no-pager show 3c2c2655a27e6afdbd8376e1f6cb8494d91beccc -- src/tactical/FTacticalGame.cpp`
+- `git --no-pager diff --stat 080206edf47996bdc32a1c1e5ba7b01e73c2519a 1533578fdb3f38ead4a90595e732a143fed8ac66 -- src/tactical/FTacticalGame.cpp tests/tactical/FTacticalMoveRouteSelectionTest.h tests/tactical/FTacticalMoveRouteSelectionTest.cpp tests/tactical/FTacticalGameMechanicsTest.cpp tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp`
+- `git --no-pager log --oneline --decorate -5`
+
+Final test outcomes:
+- Tester baseline tactical suite passed: `OK (141 tests)`.
+- Tester updated tactical suite passed: `OK (143 tests)`.
+- Documenter reran `cd tests && make tactical-tests && ./tactical/TacticalTests` after documentation edits: `OK (143 tests)`.
+- No acceptance criteria remain unmet.
+
+Plan and evaluation context:
+- Plan paths reviewed:
+  - `plans/stopped-ship-move-ui-plan.md`
+  - `plans/stopped-ship-free-rotation-plan.md`
+- Story context: stopped-ship move UI subtask 2 for preview-route click resolution.
+- The plan's documentation-impact guidance said no documentation update was expected unless existing docs still implied the older flow. `doc/UsersGuide.md` still described an adjacent-hex-first interaction, and `doc/DesignNotes.md` described preview metadata without the validated preview-click resolution behavior, so both existing docs required narrow updates.
+
+Convention-file guidance:
+- Read `AGENTS.md` for repository tactical-model and documentation conventions.
+- Do not edit `doc/rules/tactical_operations_manual.md`; it remains the external tactical rules artifact that the code and docs must align with.
+- No `.myteam` or `AGENTS.md` update was required for this change.
+
+Updated documentation files:
+- `doc/UsersGuide.md`
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, tester coverage, and updated documentation together.
+- Confirm `FTacticalGame::handleMoveHexSelection()` infers a stopped ship's starting facing from eligible non-adjacent preview-route clicks before the existing movement append/trim logic runs.
+- Confirm adjacent facing-only selection still supports rotate-in-place completion and that ordinary non-stopped move selection behavior is unchanged.
+- Confirm the updated documentation accurately describes the direct preview-route click path, preserved adjacent facing-only path, and unchanged non-stopped flow.
+- Infer missing plan-path, comparison-base, convention-file, or artifact-path details from repository context when safe, and label those choices as assumptions instead of treating them as blockers.
+
+Startup behavior:
+- If the blocking inputs above are present, continue in the same run.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when verification can proceed.
+
+Shared artifact directory:
+- `artifacts/stopped-ship-move-ui/subtask-2`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

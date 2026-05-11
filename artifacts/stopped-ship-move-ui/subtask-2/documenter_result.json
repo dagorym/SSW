@@ -1,0 +1,47 @@
+{
+  "status": "success",
+  "subtask": "stopped-ship-move-ui/subtask-2",
+  "branch": "stopped-ship-free-rotation-plan",
+  "comparison_base_assumptions": [
+    "1533578fdb3f38ead4a90595e732a143fed8ac66^ (080206edf47996bdc32a1c1e5ba7b01e73c2519a) is the tester-provided comparison base assumption for the final test-handoff context",
+    "205c46a..HEAD is the safest bounded diff for the full implementer+tester+documenter review surface because the implementation commit precedes 080206e in branch history"
+  ],
+  "documentation_commit": "9e60ef4b686fa0bb4f7448489eca02cdf349c55f",
+  "documentation_files_modified": [
+    "doc/UsersGuide.md",
+    "doc/DesignNotes.md"
+  ],
+  "reviewed_files": [
+    "plans/stopped-ship-move-ui-plan.md",
+    "plans/stopped-ship-free-rotation-plan.md",
+    "src/tactical/FTacticalGame.cpp",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.h",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.cpp",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp",
+    "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp",
+    "doc/UsersGuide.md",
+    "doc/DesignNotes.md",
+    "artifacts/stopped-ship-move-ui/subtask-2/implementer_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-2/implementer_result.json",
+    "artifacts/stopped-ship-move-ui/subtask-2/tester_prompt.txt",
+    "artifacts/stopped-ship-move-ui/subtask-2/tester_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-2/tester_result.json",
+    "artifacts/stopped-ship-move-ui/subtask-2/documenter_prompt.txt"
+  ],
+  "commands_reviewed": [
+    "git --no-pager show 3c2c2655a27e6afdbd8376e1f6cb8494d91beccc -- src/tactical/FTacticalGame.cpp",
+    "git --no-pager diff --stat 080206edf47996bdc32a1c1e5ba7b01e73c2519a 1533578fdb3f38ead4a90595e732a143fed8ac66 -- src/tactical/FTacticalGame.cpp tests/tactical/FTacticalMoveRouteSelectionTest.h tests/tactical/FTacticalMoveRouteSelectionTest.cpp tests/tactical/FTacticalGameMechanicsTest.cpp tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp",
+    "git --no-pager log --oneline --decorate -5"
+  ],
+  "test_commands_reviewed": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
+  ],
+  "artifact_directory": "artifacts/stopped-ship-move-ui/subtask-2",
+  "artifact_files_written": [
+    "artifacts/stopped-ship-move-ui/subtask-2/documenter_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-2/documenter_result.json",
+    "artifacts/stopped-ship-move-ui/subtask-2/verifier_prompt.txt"
+  ]
+}
