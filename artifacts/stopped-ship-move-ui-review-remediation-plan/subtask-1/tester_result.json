@@ -1,0 +1,37 @@
+{
+  "status": "success",
+  "task": "stopped-ship-move-ui-review-remediation-plan/subtask-1",
+  "branch": "stopped-ship-free-rotation-plan-tester-20260510",
+  "test_commit": "3474f67",
+  "test_files_modified": [
+    "tests/tactical/FTacticalMoveRouteSelectionTest.cpp",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp",
+    "tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp",
+    "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
+  ],
+  "results": {
+    "baseline": {
+      "tests_run": 143,
+      "failures": 1,
+      "errors": 0,
+      "failing_test": "FrontierTests::FTacticalMoveRouteSelectionTest::testStoppedShipPreviewRoutesExposeLegalStartingFacings",
+      "expected": 5,
+      "actual": 6
+    },
+    "final": {
+      "tests_run": 143,
+      "failures": 0,
+      "errors": 0
+    }
+  },
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/tester_report.md",
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/tester_result.json",
+    "artifacts/stopped-ship-move-ui-review-remediation-plan/subtask-1/documenter_prompt.txt"
+  ]
+}
