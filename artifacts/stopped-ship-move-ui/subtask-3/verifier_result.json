@@ -1,0 +1,38 @@
+{
+  "status": "success",
+  "task": "stopped-ship-move-ui/subtask-3",
+  "branch": "stopped-ship-free-rotation-plan",
+  "comparison_base": "dcbe160..HEAD",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "implementation_commit": "a1d42ccf68ef16dbfe77ce0df53ec5cb896ce10d",
+  "test_commit": "fbbaa8f1bb3ef8a333164594d0adf447ab401930",
+  "documentation_commit": "c500fdfd8bf28ecab0b924f19a391b0e781334bc",
+  "test_sufficiency_summary": "Sufficient focused tactical coverage: FTacticalMoveRouteSelectionTest verifies stopped-ship preview-route enumeration, reverse heading lookup, preview-commit continuity, nonzero-speed fallback, and MR==0 exclusion; source-contract tests lock the renderer branch, prompt copy, and additive FBattleScreen forwarders; verifier rerun of cd tests && make tactical-tests && ./tactical/TacticalTests passed with OK (143 tests).",
+  "documentation_accuracy_summary": "doc/DesignNotes.md accurately describes the shipped stopped-ship renderer branch, revised move prompt, additive FBattleScreen forwarders, and validated tactical-suite result without altering unrelated guidance.",
+  "acceptance_criteria_source": [
+    "artifacts/stopped-ship-move-ui/subtask-3/verifier_prompt.txt",
+    "plans/stopped-ship-move-ui-plan.md",
+    "artifacts/stopped-ship-move-ui/subtask-3/implementer_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-3/tester_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-3/documenter_report.md"
+  ],
+  "convention_files_considered": [
+    "AGENTS.md",
+    ".myteam/role.md",
+    ".myteam/verifier/role.md"
+  ],
+  "assumptions": [
+    "dcbe160..HEAD is the safest bounded review surface because dcbe160 immediately precedes the subtask-3 implementation commit in the current linear history.",
+    "The active repository checkout /home/tstephen/repos/SSW was the correct verifier workspace because no separate verifier worktree path was supplied in the task context."
+  ],
+  "artifact_files_written": [
+    "artifacts/stopped-ship-move-ui/subtask-3/verifier_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-3/verifier_result.json"
+  ],
+  "validation_commands": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
+  ]
+}
