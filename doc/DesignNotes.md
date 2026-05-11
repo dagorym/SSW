@@ -860,6 +860,29 @@ cd tests && ./tactical/TacticalTests | tail -n 80
 
 Result: `OK (138 tests)`.
 
+A later additive stopped-ship preview-route follow-up kept the existing
+movement/left-turn/right-turn accessors unchanged for non-stopped ships while
+extending the `FTacticalGame` model surface for stopped-ship callers.
+`FTacticalMovePreviewRoute` now pairs each legal alternate starting heading
+with its adjacent facing hex and projected route hexes, and
+`getStoppedShipPreviewHeadingsForHex(...)` provides the reverse lookup needed
+to map a clicked preview hex back to one or more legal starting facings.
+`FTacticalGame` only rebuilds that preview metadata for the existing zero-speed
+free-rotation case (`speed == 0`, `nMoved == 0`, one-hex pending path, and
+`MR > 0`), so ships with `MR == 0` still expose no new facing options. The
+refreshed tactical regressions now lock that additive contract through runtime
+preview-route coverage plus model/API source-surface assertions while keeping
+non-stopped movement highlight semantics unchanged.
+
+Validation commands:
+
+```bash
+cd tests/tactical && make && ./TacticalTests
+cd tests && make tactical-tests && ./tactical/TacticalTests
+```
+
+Result: `OK (141 tests)`.
+
 The forward-fire final-orientation regression follow-up then documented the
 restored moving-ship fire-arc contract for model-owned range highlighting and
 target validation. `FTacticalGame` now derives a shared per-path heading
