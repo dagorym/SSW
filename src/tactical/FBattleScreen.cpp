@@ -518,6 +518,14 @@ const std::vector<FPoint> & FBattleScreen::getRightTurnHexes() const {
 	return m_tacticalGame->getRightTurnHexes();
 }
 
+const std::vector<FTacticalMovePreviewRoute> & FBattleScreen::getStoppedShipPreviewRoutes() const {
+	return m_tacticalGame->getStoppedShipPreviewRoutes();
+}
+
+const std::vector<int> & FBattleScreen::getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const {
+	return m_tacticalGame->getStoppedShipPreviewHeadingsForHex(hex);
+}
+
 const PointSet & FBattleScreen::getTargetHexes() const {
 	return m_tacticalGame->getTargetHexes();
 }

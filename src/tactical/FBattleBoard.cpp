@@ -287,12 +287,24 @@ drawMovedHexes(dc, movedPath, current);
 
 if (m_parent->getPhase() == PH_MOVE && m_parent->getShip() != NULL
 && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
-const int movedCount = m_parent->getTurnInfo().find(m_parent->getShip()->getID()) != m_parent->getTurnInfo().end()
-? m_parent->getTurnInfo().find(m_parent->getShip()->getID())->second.nMoved
-: 0;
-drawRouteHexes(dc, m_parent->getMovementHexes(), movedCount+1);
-drawRouteHexes(dc, m_parent->getLeftTurnHexes(), movedCount+1);
-drawRouteHexes(dc, m_parent->getRightTurnHexes(), movedCount+1);
+	const std::map<unsigned int, FTacticalTurnData>::const_iterator selectedTurnItr
+		= turnInfo.find(m_parent->getShip()->getID());
+	const bool isStoppedShipPreviewSelection = selectedTurnItr != turnInfo.end()
+		&& selectedTurnItr->second.speed == 0
+		&& selectedTurnItr->second.nMoved == 0
+		&& m_parent->getShip()->getMR() > 0;
+	if (isStoppedShipPreviewSelection) {
+		const std::vector<FTacticalMovePreviewRoute> & previewRoutes = m_parent->getStoppedShipPreviewRoutes();
+		for (std::vector<FTacticalMovePreviewRoute>::const_iterator previewItr = previewRoutes.begin();
+			previewItr != previewRoutes.end(); ++previewItr) {
+			drawRouteHexes(dc, previewItr->routeHexes, 1);
+		}
+	} else {
+		const int movedCount = selectedTurnItr != turnInfo.end() ? selectedTurnItr->second.nMoved : 0;
+		drawRouteHexes(dc, m_parent->getMovementHexes(), movedCount+1);
+		drawRouteHexes(dc, m_parent->getLeftTurnHexes(), movedCount+1);
+		drawRouteHexes(dc, m_parent->getRightTurnHexes(), movedCount+1);
+	}
 }
 }
 

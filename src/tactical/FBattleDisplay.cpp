@@ -446,8 +446,8 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 		}
 	}
 	if (stoppedShipFacingSelection) {
-		dc.DrawText("Select an adjacent hex to choose facing.",leftOffset,getActionPromptLineY(1));
-		dc.DrawText("Then move along a route, or press Movement Done to rotate in place.",leftOffset,getActionPromptLineY(2));
+		dc.DrawText("Select a highlighted preview route to choose your starting facing.",leftOffset,getActionPromptLineY(1));
+		dc.DrawText("Continue a route, or click an adjacent hex then Movement Done to rotate in place.",leftOffset,getActionPromptLineY(2));
 	} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
 		dc.DrawText("Select route hexes to move the ship.",leftOffset,getActionPromptLineY(1));
 		dc.DrawText("Press Movement Done when all ships finish movement.",leftOffset,getActionPromptLineY(2));

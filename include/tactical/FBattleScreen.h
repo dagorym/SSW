@@ -205,6 +205,8 @@ public:
 	const std::vector<FPoint> & getMovementHexes() const;
 	const std::vector<FPoint> & getLeftTurnHexes() const;
 	const std::vector<FPoint> & getRightTurnHexes() const;
+	const std::vector<FTacticalMovePreviewRoute> & getStoppedShipPreviewRoutes() const;
+	const std::vector<int> & getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const;
 	const PointSet & getTargetHexes() const;
 	const PointSet & getHeadOnHexes() const;
 	const PointSet & getMinedHexes() const;
