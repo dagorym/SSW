@@ -1120,6 +1120,54 @@ bool FTacticalGame::handleMoveHexSelection(const FPoint & hex) {
 			computeRemainingMoves(m_shipPos);
 			return true;
 		}
+
+		const std::vector<int> & previewHeadings = getStoppedShipPreviewHeadingsForHex(hex);
+		if (!previewHeadings.empty()) {
+			const int originalStartHeading = turnData->startHeading;
+			const int originalCurHeading = turnData->curHeading;
+			const int originalFinalHeading = turnData->finalHeading;
+			const int originalMoved = m_moved;
+			const FHexPath originalPath = turnData->path;
+			bool resolvedPreviewHeading = false;
+			for (std::vector<int>::const_iterator headingItr = previewHeadings.begin();
+				headingItr != previewHeadings.end(); ++headingItr) {
+				if (*headingItr == turnData->curHeading) {
+					continue;
+				}
+				turnData->startHeading = *headingItr;
+				turnData->curHeading = *headingItr;
+				turnData->finalHeading = *headingItr;
+				turnData->nMoved = 0;
+				turnData->path.clear();
+				turnData->path.addPoint(m_shipPos);
+				m_moved = 0;
+				computeRemainingMoves(m_shipPos);
+
+				int previewMoved = 1;
+				bool foundPreviewHex = findHexInList(m_movementHexes, hex, previewMoved);
+				if (!foundPreviewHex) {
+					previewMoved = 1;
+					foundPreviewHex = findHexInList(m_leftHexes, hex, previewMoved);
+				}
+				if (!foundPreviewHex) {
+					previewMoved = 1;
+					foundPreviewHex = findHexInList(m_rightHexes, hex, previewMoved);
+				}
+				if (foundPreviewHex) {
+					resolvedPreviewHeading = true;
+					break;
+				}
+			}
+			if (!resolvedPreviewHeading) {
+				turnData->startHeading = originalStartHeading;
+				turnData->curHeading = originalCurHeading;
+				turnData->finalHeading = originalFinalHeading;
+				turnData->nMoved = originalMoved;
+				turnData->path = originalPath;
+				m_moved = originalMoved;
+				computeRemainingMoves(m_shipPos);
+			}
+		}
 	}
 	if (turnData->path.isPointOnPath(hex)) {
 		m_moved = static_cast<int>(turnData->path.removeTrailingPoints(hex)) - 1;
