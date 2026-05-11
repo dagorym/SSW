@@ -1,0 +1,44 @@
+{
+  "status": "success",
+  "subtask": "stopped-ship-move-ui/subtask-1",
+  "branch": "stopped-ship-free-rotation-plan",
+  "comparison_base_assumptions": [
+    "3374ee7 as the parent implementer baseline for tester+documenter diff review",
+    "3374ee7..HEAD for the full reviewed tester+documenter context"
+  ],
+  "documentation_commit": "d67040567f8413cac2166b22464e69aac7d35f26",
+  "documentation_files_modified": [
+    "doc/DesignNotes.md"
+  ],
+  "reviewed_files": [
+    "plans/stopped-ship-free-rotation-plan.md",
+    "include/tactical/FTacticalGame.h",
+    "src/tactical/FTacticalGame.cpp",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.h",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.cpp",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp",
+    "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h",
+    "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp",
+    "doc/DesignNotes.md",
+    "artifacts/stopped-ship-move-ui/subtask-1/implementer_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-1/implementer_result.json",
+    "artifacts/stopped-ship-move-ui/subtask-1/tester_prompt.txt",
+    "artifacts/stopped-ship-move-ui/subtask-1/tester_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-1/tester_result.json",
+    "artifacts/stopped-ship-move-ui/subtask-1/documenter_prompt.txt"
+  ],
+  "commands_reviewed": [
+    "git --no-pager diff --stat 3374ee7..HEAD",
+    "git --no-pager diff --name-only 3374ee7..HEAD"
+  ],
+  "test_commands_reviewed": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/tactical && make && ./TacticalTests"
+  ],
+  "artifact_directory": "artifacts/stopped-ship-move-ui/subtask-1",
+  "artifact_files_written": [
+    "artifacts/stopped-ship-move-ui/subtask-1/documenter_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-1/documenter_result.json",
+    "artifacts/stopped-ship-move-ui/subtask-1/verifier_prompt.txt"
+  ]
+}

@@ -1,0 +1,83 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- Validated additive stopped-ship preview-route model behavior for legal starting facings and heading-to-preview-hex lookup coverage.
+- Added tactical regression coverage in movement behavior tests plus model/API surface-source assertions.
+- Updated `doc/DesignNotes.md` so the tactical design notes now describe the shipped stopped-ship preview-route metadata and its existing eligibility guards.
+
+Acceptance criteria to verify:
+- A stopped ship with `speed == 0`, `nMoved == 0`, and legal maneuver authority exposes preview-route data for each legal starting facing.
+- Preview data is sufficient for callers to both render candidate paths and identify which initial facing a clicked preview hex belongs to.
+- Existing movement/left/right route accessors for non-stopped movement remain valid and unchanged in semantics.
+- The change does not grant new facing options to ships with `MR == 0`.
+- `doc/DesignNotes.md` accurately documents the additive preview-route model surface without overstating new UI or rules behavior.
+
+Implementation branch or worktree context:
+- Branch: `stopped-ship-free-rotation-plan`
+- Repository: `/home/tstephen/repos/SSW`
+- Implementer code commit: `46210048ff634bcc73406585dfdc9175452bbcbb`
+- Tester test commit: `89cc3b3bcfa6d6bd8b226be8de45edcc17492b6d`
+- Documenter documentation commit: `d67040567f8413cac2166b22464e69aac7d35f26`
+- Comparison-base assumptions:
+  - `3374ee7` is the parent implementer baseline for the tester+documenter review surface.
+  - `3374ee7..HEAD` is the safest bounded diff for the full tester+documenter context in this artifact directory.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalMoveRouteSelectionTest.h`
+- `tests/tactical/FTacticalMoveRouteSelectionTest.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp`
+- `doc/DesignNotes.md`
+- `artifacts/stopped-ship-move-ui/subtask-1/implementer_report.md`
+- `artifacts/stopped-ship-move-ui/subtask-1/implementer_result.json`
+- `artifacts/stopped-ship-move-ui/subtask-1/tester_prompt.txt`
+- `artifacts/stopped-ship-move-ui/subtask-1/tester_report.md`
+- `artifacts/stopped-ship-move-ui/subtask-1/tester_result.json`
+- `artifacts/stopped-ship-move-ui/subtask-1/documenter_prompt.txt`
+- `artifacts/stopped-ship-move-ui/subtask-1/documenter_report.md`
+- `artifacts/stopped-ship-move-ui/subtask-1/documenter_result.json`
+- `artifacts/stopped-ship-move-ui/subtask-1/verifier_prompt.txt`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests/tactical && make && ./TacticalTests`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `git --no-pager diff --stat 3374ee7..HEAD`
+- `git --no-pager diff --name-only 3374ee7..HEAD`
+
+Final test outcomes:
+- Baseline tactical suite passed: `OK (138 tests)`.
+- Post-change tactical suite passed in focused and top-level commands: `OK (141 tests)`.
+- No acceptance criteria remain unmet.
+
+Plan and evaluation context:
+- Plan path: `plans/stopped-ship-free-rotation-plan.md`
+- Story context: stopped-ship movement preview-route additive model data for legal starting facings.
+- The plan's `Documentation Impact` guidance said no update was expected unless an existing doc misdescribed the behavior. `doc/DesignNotes.md` still needed a narrow update because it tracks tactical model API/change-log behavior and did not yet describe the additive preview-route metadata.
+
+Convention-file guidance:
+- Read `AGENTS.md` for repository tactical-model and documentation conventions.
+- Do not edit `doc/rules/tactical_operations_manual.md`; it remains the external tactical rules artifact that the code and docs must align with.
+- No `.myteam` or `AGENTS.md` update was required for this change.
+
+Updated documentation files:
+- `doc/DesignNotes.md`
+
+Verification scope:
+- Verify implementation behavior, tester coverage, and updated documentation together.
+- Confirm the new `FTacticalMovePreviewRoute` / `getStoppedShipPreviewHeadingsForHex(...)` surface is additive, preview metadata is rebuilt only for the existing stopped-ship free-rotation case, and non-stopped movement highlight semantics remain unchanged.
+- Confirm the updated design notes accurately describe that callers can both render stopped-ship preview paths and map clicked preview hexes back to legal starting headings.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe, and label those choices as assumptions instead of treating them as blockers.
+
+Startup behavior:
+- If the blocking inputs above are present, continue in the same run.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when verification can proceed.
+
+Shared artifact directory:
+- `artifacts/stopped-ship-move-ui/subtask-1`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
