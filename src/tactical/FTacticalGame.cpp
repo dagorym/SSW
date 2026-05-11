@@ -1036,9 +1036,6 @@ void FTacticalGame::rebuildStoppedShipPreviewRoutes() {
 	const bool originalGravityTurnFlag = m_gravityTurnFlag;
 
 	for (int heading = 0; heading < 6; ++heading) {
-		if (heading == turnData->curHeading) {
-			continue;
-		}
 		const FPoint facingHex = FHexMap::findNextHex(m_shipPos, heading);
 		if (!isHexInBounds(facingHex)) {
 			continue;
