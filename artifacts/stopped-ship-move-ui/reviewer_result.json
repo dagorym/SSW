@@ -1,0 +1,77 @@
+{
+  "status": "success",
+  "feature_plan": "plans/stopped-ship-move-ui-plan.md",
+  "branch": "stopped-ship-free-rotation-plan",
+  "repository": "/home/tstephen/repos/SSW",
+  "outcome": "FAIL",
+  "review_mode": "feature-level read-only except reviewer artifacts",
+  "scope": {
+    "subtasks_reviewed": [
+      "subtask-1"
+    ],
+    "implementation_files": [
+      "include/tactical/FTacticalGame.h",
+      "src/tactical/FTacticalGame.cpp",
+      "src/tactical/FBattleBoard.cpp",
+      "src/tactical/FBattleDisplay.cpp",
+      "include/tactical/FBattleScreen.h",
+      "src/tactical/FBattleScreen.cpp",
+      "tests/tactical/FTacticalMoveRouteSelectionTest.h",
+      "tests/tactical/FTacticalMoveRouteSelectionTest.cpp",
+      "tests/tactical/FTacticalGameMechanicsTest.cpp",
+      "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h",
+      "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp",
+      "doc/DesignNotes.md"
+    ],
+    "artifact_inputs_reviewed": [
+      "artifacts/stopped-ship-move-ui/subtask-1/implementer_report.md",
+      "artifacts/stopped-ship-move-ui/subtask-1/implementer_result.json",
+      "artifacts/stopped-ship-move-ui/subtask-1/tester_prompt.txt",
+      "artifacts/stopped-ship-move-ui/subtask-1/tester_report.md",
+      "artifacts/stopped-ship-move-ui/subtask-1/tester_result.json",
+      "artifacts/stopped-ship-move-ui/subtask-1/documenter_prompt.txt",
+      "artifacts/stopped-ship-move-ui/subtask-1/documenter_report.md",
+      "artifacts/stopped-ship-move-ui/subtask-1/documenter_result.json",
+      "artifacts/stopped-ship-move-ui/subtask-1/verifier_prompt.txt",
+      "artifacts/stopped-ship-move-ui/subtask-1/verifier_report.md",
+      "artifacts/stopped-ship-move-ui/subtask-1/verifier_result.json"
+    ],
+    "commits_reviewed": {
+      "implementer": "46210048ff634bcc73406585dfdc9175452bbcbb",
+      "tester": "89cc3b3bcfa6d6bd8b226be8de45edcc17492b6d",
+      "documenter": "d67040567f8413cac2166b22464e69aac7d35f26",
+      "verifier": "6f70546db67ce4e7b9c599606196ac8c12684d27"
+    }
+  },
+  "validation_commands": [
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "outcome": "pass",
+      "details": "OK (141 tests)"
+    },
+    {
+      "command": "cd /home/tstephen/repos/SSW && git --no-pager diff --name-only 30a5bd4..HEAD",
+      "outcome": "pass",
+      "details": "Changed files stop at FTacticalGame, tactical tests, DesignNotes, and artifacts; no planned UI files are part of the delivered feature."
+    }
+  ],
+  "findings": {
+    "blocking": [
+      "Preview-click resolution is not implemented: FTacticalGame still uses the old adjacent-hex stopped-ship facing path, and runtime code does not consume getStoppedShipPreviewHeadingsForHex(...) to map preview-route clicks back to implied starting headings.",
+      "UI rendering/forwarding is not implemented: FBattleBoard still draws only movement/left/right route buckets and FBattleScreen still forwards only those legacy accessors, so selecting a stopped mover does not immediately show preview routes from every legal starting facing.",
+      "Move prompt text still instructs the player to choose an adjacent hex first, which conflicts with the approved preview-first interaction model."
+    ],
+    "warning": [
+      "The verifier PASS is scoped to the additive model/data change and cites a narrower plan context than the governing feature plan, so it is not sufficient evidence of full feature completion.",
+      "Regression coverage validates the new model surface but does not cover the planned preview-click runtime behavior or the planned tactical UI rendering/prompt updates."
+    ],
+    "note": [
+      "DesignNotes now documents the additive preview-route model surface accurately, but earlier adjacent-hex UI notes remain, matching the delivered code rather than the intended feature plan."
+    ]
+  },
+  "follow_up_feature_requests": [
+    "Implement the remaining stopped-ship-move-ui plan work by forwarding FTacticalGame preview-route metadata through FBattleScreen to FBattleBoard, rendering all legal stopped-ship preview routes immediately on selection, and updating move-phase prompt text to the preview-first interaction.",
+    "Extend stopped-ship movement selection so clicking any highlighted preview-route hex resolves the implied starting facing and continues the normal movement-selection flow, then add regression coverage for preview-click resolution and updated UI behavior."
+  ],
+  "summary": "The delivered work completes the additive stopped-ship preview-route model surface and preserves existing non-stopped and MR==0 behavior, but it does not deliver the governing plan's preview-click and tactical UI changes, so the feature is not complete."
+}
