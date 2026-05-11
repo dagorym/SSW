@@ -1,0 +1,75 @@
+{
+  "status": "success",
+  "task": "stopped-ship-move-ui/subtask-1",
+  "branch": "stopped-ship-free-rotation-plan",
+  "implementation_commit": "46210048ff634bcc73406585dfdc9175452bbcbb",
+  "test_commit": "89cc3b3bcfa6d6bd8b226be8de45edcc17492b6d",
+  "documentation_commit": "d67040567f8413cac2166b22464e69aac7d35f26",
+  "comparison_base_assumptions": [
+    "3374ee7 is the parent implementer baseline for the tester+documenter review surface",
+    "3374ee7..HEAD is the bounded combined diff used for this verification"
+  ],
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "findings": [],
+  "acceptance_criteria_source": [
+    "plans/stopped-ship-free-rotation-plan.md:48-60",
+    "artifacts/stopped-ship-move-ui/subtask-1/verifier_prompt.txt:8-13,69-72"
+  ],
+  "convention_files_considered": [
+    "AGENTS.md",
+    "myteam get role verifier"
+  ],
+  "assumptions": [
+    "Used the provided repository-relative shared artifact directory artifacts/stopped-ship-move-ui/subtask-1 for verifier outputs.",
+    "Reviewed the current branch tip as the combined implementer/tester/documenter surface described by the supplied commits and bounded diff context."
+  ],
+  "review_scope": {
+    "implementation_files": [
+      "include/tactical/FTacticalGame.h",
+      "src/tactical/FTacticalGame.cpp"
+    ],
+    "test_files": [
+      "tests/tactical/FTacticalMoveRouteSelectionTest.h",
+      "tests/tactical/FTacticalMoveRouteSelectionTest.cpp",
+      "tests/tactical/FTacticalGameMechanicsTest.cpp",
+      "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h",
+      "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp"
+    ],
+    "documentation_files": [
+      "doc/DesignNotes.md"
+    ],
+    "artifact_inputs_reviewed": [
+      "artifacts/stopped-ship-move-ui/subtask-1/implementer_report.md",
+      "artifacts/stopped-ship-move-ui/subtask-1/implementer_result.json",
+      "artifacts/stopped-ship-move-ui/subtask-1/tester_prompt.txt",
+      "artifacts/stopped-ship-move-ui/subtask-1/tester_report.md",
+      "artifacts/stopped-ship-move-ui/subtask-1/tester_result.json",
+      "artifacts/stopped-ship-move-ui/subtask-1/documenter_prompt.txt",
+      "artifacts/stopped-ship-move-ui/subtask-1/documenter_report.md",
+      "artifacts/stopped-ship-move-ui/subtask-1/documenter_result.json",
+      "artifacts/stopped-ship-move-ui/subtask-1/verifier_prompt.txt"
+    ]
+  },
+  "test_sufficiency_summary": "Sufficient: runtime route-selection tests cover preview-route exposure, reverse preview-hex heading lookup, unchanged non-stopped routing semantics, and the MR==0 restriction; source-surface tests also lock the additive API and lifecycle hooks.",
+  "documentation_accuracy_summary": "Accurate: doc/DesignNotes.md documents the additive preview-route model surface, reverse lookup API, preserved non-stopped movement accessors, and existing stopped-ship eligibility guards without overstating UI or rules changes.",
+  "security_review": "No security-sensitive findings in this model/test/documentation scoped change.",
+  "validation_commands": [
+    {
+      "command": "cd tests/tactical && make && ./TacticalTests",
+      "status": "passed",
+      "result": "OK (141 tests)"
+    },
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "status": "passed",
+      "result": "OK (141 tests)"
+    }
+  ],
+  "artifact_files_written": [
+    "artifacts/stopped-ship-move-ui/subtask-1/verifier_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-1/verifier_result.json"
+  ]
+}
