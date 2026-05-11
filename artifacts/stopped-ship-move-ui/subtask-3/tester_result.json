@@ -1,0 +1,44 @@
+{
+  "status": "success",
+  "summary": "Validated stopped-ship preview-route PH_MOVE rendering/forwarding updates and prompt-copy changes with passing tactical suite.",
+  "test_commit": "fbbaa8f1bb3ef8a333164594d0adf447ab401930",
+  "tests": {
+    "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "result": "pass",
+    "passed": 143,
+    "failed": 0,
+    "errors": 0
+  },
+  "acceptance_criteria": [
+    {
+      "id": "ac-1",
+      "description": "Stopped ship in PH_MOVE highlights all legal preview routes.",
+      "status": "pass"
+    },
+    {
+      "id": "ac-2",
+      "description": "Route rendering remains coherent after preview commitment.",
+      "status": "pass"
+    },
+    {
+      "id": "ac-3",
+      "description": "Move prompt text reflects preview-route interaction and removes legacy adjacent-hex wording.",
+      "status": "pass"
+    },
+    {
+      "id": "ac-4",
+      "description": "Nonzero-speed route rendering behavior remains unchanged.",
+      "status": "pass"
+    },
+    {
+      "id": "ac-5",
+      "description": "FBattleScreen API additions are additive forwarding accessors for renderer needs.",
+      "status": "pass"
+    }
+  ],
+  "artifacts_written": [
+    "artifacts/stopped-ship-move-ui/subtask-3/tester_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-3/tester_result.json",
+    "artifacts/stopped-ship-move-ui/subtask-3/documenter_prompt.txt"
+  ]
+}
