@@ -1,0 +1,49 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Validate stopped-ship PH_MOVE UI forwarding/rendering updates so selected stopped ships show all legal start-route previews and preserve normal route behavior after commitment.
+
+Modified files:
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FBattleScreen.cpp
+- include/tactical/FBattleScreen.h
+
+Acceptance criteria to validate:
+- In PH_MOVE, selecting a stopped ship highlights all legal start-route previews (not only current-heading route).
+- After committing to one preview, route rendering remains coherent through normal move selection.
+- Move-phase prompt text accurately describes preview-based interaction and no longer relies on hidden adjacent-hex discovery.
+- Nonzero-speed route rendering remains unchanged.
+- FBattleScreen API additions are additive forwarding of model accessors needed by renderer.
+
+Implementation context for testing:
+- `FBattleBoard::drawRoute(...)` now detects stopped-ship free-rotation selection (`speed==0`, `nMoved==0`, `MR>0`) and draws each entry from `m_parent->getStoppedShipPreviewRoutes()`.
+- Non-stopped flow still uses existing `getMovementHexes()/getLeftTurnHexes()/getRightTurnHexes()` rendering path.
+- `FBattleScreen` now forwards:
+  - `getStoppedShipPreviewRoutes()`
+  - `getStoppedShipPreviewHeadingsForHex(const FPoint &)`
+- `FBattleDisplay::drawMoveShip(...)` prompt text updated for preview-route interaction wording.
+
+Validation run context from implementer:
+- Baseline: `cd tests && make tactical-tests && ./tactical/TacticalTests` passed (`OK (143 tests)`).
+- Post-change same command reported one failure in source-inspection prompt-copy test (`FTacticalBattleDisplayFireFlowTest::testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases`) due expected legacy-string assertions.
+
+Expected tester-owned coverage location guidance:
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/FTacticalMoveRouteSelectionTest.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+
+Suggested test commands:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- Optional focused iteration assumption: cd tests/tactical && make && ./TacticalTests
+
+Startup behavior:
+- Begin testing immediately and continue in the same run when context is sufficient.
+- Do not stop after activation metadata alone.
+
+Shared artifact directory:
+- artifacts/stopped-ship-move-ui/subtask-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "task": "stopped-ship-move-ui/subtask-3",
+  "branch": "stopped-ship-free-rotation-plan",
+  "implementation_commit": "a1d42ccf68ef16dbfe77ce0df53ec5cb896ce10d",
+  "changed_files": [
+    "src/tactical/FBattleBoard.cpp",
+    "src/tactical/FBattleDisplay.cpp",
+    "src/tactical/FBattleScreen.cpp",
+    "include/tactical/FBattleScreen.h"
+  ],
+  "validation": {
+    "commands": [
+      "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "cd tests && make tactical-tests && ./tactical/TacticalTests"
+    ],
+    "outcome": "expected_failure",
+    "details": "Baseline tactical suite passed (OK 143 tests). Post-change run failed one source-inspection assertion expecting legacy stopped-ship prompt copy in FTacticalBattleDisplayFireFlowTest."
+  },
+  "artifacts": {
+    "implementer_report": "artifacts/stopped-ship-move-ui/subtask-3/implementer_report.md",
+    "tester_prompt": "artifacts/stopped-ship-move-ui/subtask-3/tester_prompt.txt",
+    "implementer_result": "artifacts/stopped-ship-move-ui/subtask-3/implementer_result.json"
+  }
+}
