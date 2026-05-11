@@ -1,0 +1,34 @@
+{
+  "status": "success",
+  "task": "stopped-ship-move-ui/subtask-2",
+  "branch": "stopped-ship-free-rotation-plan",
+  "test_commit": "1533578fdb3f38ead4a90595e732a143fed8ac66",
+  "test_files_modified": [
+    "tests/tactical/FTacticalMoveRouteSelectionTest.h",
+    "tests/tactical/FTacticalMoveRouteSelectionTest.cpp",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp",
+    "tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
+  ],
+  "totals": {
+    "final_total": 143,
+    "passed": 143,
+    "failed": 0
+  },
+  "acceptance_criteria_validated": [
+    "Clicking a stopped-ship preview route hex selects the implied initial facing before adding movement to the path.",
+    "The ship's first moved hex follows the selected preview direction.",
+    "Existing route trimming and follow-on move extension continue to work after a preview-based first selection.",
+    "Rotate-in-place completion still works once the player has chosen a facing without displacement.",
+    "Non-stopped move selection behavior remains unchanged."
+  ],
+  "unmet_acceptance_criteria": [],
+  "artifacts_written": [
+    "artifacts/stopped-ship-move-ui/subtask-2/tester_report.md",
+    "artifacts/stopped-ship-move-ui/subtask-2/tester_result.json",
+    "artifacts/stopped-ship-move-ui/subtask-2/documenter_prompt.txt"
+  ]
+}
