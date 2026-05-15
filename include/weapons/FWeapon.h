@@ -20,12 +20,12 @@ class FVehicle;
 /**
  * @brief Base class for all weapon objects
  *
- * This class forms the base class for all the weapon objects used in
- * the game.
+ * This class stores shared weapon stats, target-selection state, ammo and
+ * damage state, and attack-resolution behavior for all concrete weapon types.
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.3-codex (medium)
  * @date Created:  Feb 27, 2009
- * @date Last Modified:  May 28, 2010
+ * @date Last Modified:  Mar 20, 2026
  */
 class FWeapon: public Frontier::FPObject {
 public:
@@ -117,17 +117,16 @@ public:
 	/**
 	 * @brief Fires the weapon
 	 *
-	 * This method fires the weapon at the specified target.  It currently just
-	 * implements the basic damage system (hull damage only).  It rolls the d100
-	 * and compares that to the To Hit probability modified by the range if
-	 * appropriate.  If the attack is a success, it computes the hull damage and
-	 * passes that along to the target vessel.
+	 * This method resolves a complete attack cycle against the currently assigned
+	 * target, including skip conditions, to-hit logic, defensive modifiers,
+	 * optional damage-table effects, and ammunition consumption, then returns a
+	 * structured tactical attack result.
 	 *
-	 * @param v The FVehicle object to shoot at
+	 * @return Structured attack outcome and damage/effect details
 	 *
-	 * @author Tom Stephens
-	 * @date Created:  Feb 27, 2009
-	 * @date Last Modified:  Mar 24, 2011
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @date Created:  Mar 24, 2009
+	 * @date Last Modified:  Mar 20, 2026
 	 */
 	FTacticalAttackResult fire();
 

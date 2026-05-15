@@ -4,6 +4,10 @@
  *
  * This header exists to provide strategic-layer type aliases without pulling in
  * full model headers or GUI dependencies.
+ *
+ * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @date Created:  Mar 28, 2026
+ * @date Last Modified:  Mar 28, 2026
  */
 
 #ifndef STRATEGICTYPES_H

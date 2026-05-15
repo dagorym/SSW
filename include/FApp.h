@@ -17,24 +17,25 @@
  *
  * This class is the main GUI for the SSW game.
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.3-codex (medium)
  * @date Created:  Feb 28, 2005
- * @date Last Modified:  Feb 28, 2005
+ * @date Last Modified:  Apr 16, 2026
  */
 class FApp : public wxApp {
 public:
-  // Default constuctor
+  /// Default constructor
 	FApp();
   /// Default destructor
 	virtual ~FApp();
   /**
-   * @brief Method to initalize the program
+   * @brief Initialize the application startup flow
    *
-   * This method handles all the setup of the program
+   * Creates the startup splash screen and main frame, then installs the exit
+   * handler for the main loop.
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, gpt-5.3-codex (medium)
    * @date Created:  Feb 28, 2005
-   * @date Last Modified:  Mar 01, 2005
+   * @date Last Modified:  Apr 16, 2026
    */
   virtual bool OnInit();
 };

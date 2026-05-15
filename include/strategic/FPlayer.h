@@ -26,11 +26,13 @@ namespace Frontier
  * in the game.
  *
  * The FPlayer class is responsible for deleting all of the fleets that
- * the player posses when the class is destroyed.
+ * the player posses when the class is destroyed.  Fleet icon image data
+ * is no longer stored here; only the icon file name is retained and
+ * resolved at render time.
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.3-codex (medium)
  * @date Created:  Jan 17, 2005
- * @date Last Modified:  Mar 06, 2008
+ * @date Last Modified:  Mar 28, 2026
  */
 class FPlayer : public Frontier::FPObject
 {
@@ -91,36 +93,51 @@ public:
   void addFleet(FFleet * fleet) { m_fleets.push_back(fleet); }
 
   /**
-   * @brief Get a pointer to a player's fleet
+   * @brief Get a pointer to a player's fleet at a map position
    *
    * This method takes as input the position of a fleet in the internal map
-   * coordinate scale
-   * and returns a pointer to that fleet.  If the player does not own a fleet
-   * at that position or if an error occured, the method returns a NULL pointer.
+   * coordinate scale and returns a pointer to that fleet.  The search uses
+   * a Euclidean distance threshold of 0.5 map units to locate the fleet.
+   * If the player does not own a fleet at that position or if an error
+   * occured, the method returns a NULL pointer.
    *
    * @param x  The x coordinate of the fleet
    * @param y The y coordinate of the fleet
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, gpt-5.3-codex (medium)
    * @date Created:  Mar 21, 2008
-   * @date Last Modified:  Aug 3, 2009
+   * @date Last Modified:  Mar 28, 2026
    */
   FFleet * getFleet (double x, double y) const;
 
   /**
    * @brief Set the fleet icon file name
    *
-   * This method stores the file name for the fleet icon.
+   * This method stores the file name for the fleet icon in m_iconName.
+   * No image loading is performed here; GUI render paths are responsible
+   * for resolving and loading the image at draw time via WXIconCache or
+   * equivalent helpers.
    *
    * @param file The file name of the icon to use
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, gpt-5.3-codex (medium)
    * @date Created:  Feb 10, 2008
-   * @date Last Modified:  Feb 10, 2008
+   * @date Last Modified:  Mar 27, 2026
    */
   void setFleetIcon(std::string file);
 
-  // return a pointer to the fleet icon
+  /**
+   * @brief Get the fleet icon file name
+   *
+   * Returns the file name of the icon used to represent this player's
+   * fleets on the map.  The returned string is relative to the game
+   * installation root and must be resolved through
+   * FGameConfig::resolveAssetPath() before use.
+   *
+   * @author Tom Stephens, gpt-5.3-codex (medium)
+   * @date Created:  Mar 27, 2026
+   * @date Last Modified:  Mar 27, 2026
+   */
   const std::string & getFleetIconName() const { return m_iconName; }
 
   /// gets a reference to the player's fleet list
@@ -236,13 +253,18 @@ public:
 	 * @brief Method to read data contents
 	 *
 	 * This method is the inverse of the save method.  It reads the data for
-	 * the class from the designated input stream.  This method returns 0 if
-	 * everything is okay and a positive integer error code if there is a
-	 * failure
+	 * the class from the designated input stream, restoring the player ID,
+	 * name, fleet icon file name, unattached ship list, and fleet list.
+	 * No image loading is performed during deserialization; icon images are
+	 * resolved lazily at render time.
+	 * This method returns 0 if everything is okay and a positive integer
+	 * error code if there is a failure.
 	 *
-	 * @author Tom Stephens
+	 * @param is The input stream to read from
+	 *
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Mar 07, 2008
+	 * @date Last Modified:  Mar 27, 2026
 	 */
 	virtual int load(std::istream &is);
 

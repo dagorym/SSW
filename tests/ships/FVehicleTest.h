@@ -16,6 +16,16 @@
 namespace FrontierTests {
 using namespace Frontier;
 
+/**
+ * @brief Validates baseline and tactical-damage behavior for FVehicle.
+ *
+ * This fixture combines legacy constructor/serialization coverage with tactical
+ * damage-resolution regression scenarios for hull, subsystem, and fallback paths.
+ *
+ * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @date Created: Jun 23, 2009
+ * @date Last Modified: May 02, 2026
+ */
 class FVehicleTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST_SUITE( FVehicleTest );
 	CPPUNIT_TEST( testConstructor );
@@ -35,25 +45,165 @@ class FVehicleTest : public CppUnit::TestFixture, public Frontier::FPObject{
 
 private:
 	FVehicle *m_v1;
+
+	/**
+	 * @brief Satisfies FPObject serialization requirements for the fixture type.
+	 *
+	 * @param os Output stream placeholder for fixture compatibility.
+	 * @return Always returns 0 for this test fixture.
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jun 23, 2009
+	 * @date Last Modified: Jun 23, 2009
+	 */
 	const virtual int save(std::ostream &os) const;
+
+	/**
+	 * @brief Satisfies FPObject deserialization requirements for the fixture type.
+	 *
+	 * @param is Input stream placeholder for fixture compatibility.
+	 * @return Always returns 0 for this test fixture.
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jun 23, 2009
+	 * @date Last Modified: Jun 23, 2009
+	 */
 	virtual int load(std::istream &is);
 
 public:
+	/**
+	 * @brief Allocates a baseline vehicle instance used by legacy unit tests.
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jun 23, 2009
+	 * @date Last Modified: Jun 23, 2009
+	 */
 	void setUp();
+
+	/**
+	 * @brief Releases the baseline vehicle instance after each legacy unit test.
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jun 23, 2009
+	 * @date Last Modified: Jun 23, 2009
+	 */
 	void tearDown();
 
+	/**
+	 * @brief Verifies default vehicle construction values and identity metadata.
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jun 23, 2009
+	 * @date Last Modified: Jun 23, 2009
+	 */
 	void testConstructor();
+
+	/**
+	 * @brief Verifies setter behavior and bounds handling for core vehicle fields.
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jun 23, 2009
+	 * @date Last Modified: Jun 23, 2009
+	 */
 	void testSetters();
+
+	/**
+	 * @brief Verifies vehicle persistence and reload behavior for serialized fields.
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jun 23, 2009
+	 * @date Last Modified: Jun 23, 2009
+	 */
 	void testSerialize();
+
+	/**
+	 * @brief Verifies unknown ship identifiers fail creation cleanly.
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jun 23, 2009
+	 * @date Last Modified: Jun 23, 2009
+	 */
 	void testBadType();
+
+	/**
+	 * @brief Verifies basic damage flow reports explicit hull damage details.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 20, 2026
+	 * @date Last Modified: Mar 20, 2026
+	 */
 	void testTakeDamageBasicPopulatesOptionalResolution();
+
+	/**
+	 * @brief Verifies optional reporting preserves legacy advanced-damage mutations.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 20, 2026
+	 * @date Last Modified: Mar 20, 2026
+	 */
 	void testTakeDamageAdvancedPreservesMutationWithOptionalResolution();
+
+	/**
+	 * @brief Verifies component-hit effects include explicit weapon and defense metadata.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 20, 2026
+	 * @date Last Modified: Mar 20, 2026
+	 */
 	void testDamageHelpersReportExplicitComponentMetadata();
+
+	/**
+	 * @brief Verifies repeated ADF/MR hits reduce cumulatively before hull fallback.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: May 02, 2026
+	 * @date Last Modified: May 02, 2026
+	 */
 	void testAdvancedDamageKeepsADFAndMRCumulativeUntilZero();
+
+	/**
+	 * @brief Verifies already-damaged subsystem rolls fall back to hull damage.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: May 02, 2026
+	 * @date Last Modified: May 02, 2026
+	 */
 	void testAdvancedDamageFallsBackForAlreadyDamagedSubsystems();
+
+	/**
+	 * @brief Verifies component rolls still disable eligible undamaged weapons/defenses.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: May 02, 2026
+	 * @date Last Modified: May 02, 2026
+	 */
 	void testAdvancedDamageStillDamagesEligibleWeaponAndDefenseComponents();
+
+	/**
+	 * @brief Verifies Disastrous Fire applies all eligible bundled non-hull effects.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: May 02, 2026
+	 * @date Last Modified: May 02, 2026
+	 */
 	void testDisastrousFireAppliesFullEligibleBundleWithoutHullDamage();
+
+	/**
+	 * @brief Verifies partial Disastrous Fire bundles report only newly applied effects.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: May 02, 2026
+	 * @date Last Modified: May 02, 2026
+	 */
 	void testDisastrousFireReportsOnlyNewPartialEffectsWithoutHullDamage();
+
+	/**
+	 * @brief Verifies Disastrous Fire falls back to hull when no bundled effect can apply.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: May 02, 2026
+	 * @date Last Modified: May 02, 2026
+	 */
 	void testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply();
 };
 

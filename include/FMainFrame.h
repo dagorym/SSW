@@ -23,26 +23,28 @@ class WXStrategicUI;
  * @brief Main frame class for the SSW game
  *
  * This class is the main user interface window for the SSW game.  It builds
- * all the menus and handles the user interface
+ * the menus, owns the drawing panel, and coordinates the strategic UI
+ * adapter.
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.3-codex (medium)
  * @date Created:  Feb 28, 2005
- * @date Last Modified:  Mar 25, 2008
+ * @date Last Modified:  Apr 17, 2026
  */
 class FMainFrame : public wxFrame {
 public:
   /**
-   * @brief FMainFrame Constuctor
+   * @brief Construct the main game frame
    *
-   * This is the constructor method for the FMainFrame class.
+   * Builds the menus, installs the drawing panel and strategic UI adapter,
+   * and centers the window after layout.
    *
    * @param title  The frame title
-   * @param pos The screen position of the top right corner for the frame
+   * @param pos The initial position of the frame
    * @param size The size, in pixels, of the window
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, gpt-5.3-codex (medium)
    * @date Created:  Feb 28, 2005
-   * @date Last Modified:  Feb 19, 2008
+   * @date Last Modified:  Apr 16, 2026
    */
   FMainFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
 
@@ -287,7 +289,16 @@ public:
    */
   void onShowBattleScreen(wxCommandEvent& event);
 
-  ///Default destructor
+  /**
+   * @brief Release the frame-owned game and strategic UI objects
+   *
+   * The child drawing panel is owned by wxWidgets and is destroyed with the
+   * frame.
+   *
+   * @author Tom Stephens, gpt-5.3-codex (medium)
+   * @date Created:  Feb 28, 2005
+   * @date Last Modified:  Apr 17, 2026
+   */
   virtual ~FMainFrame();
 
   /// Event table constuction

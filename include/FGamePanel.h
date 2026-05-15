@@ -13,38 +13,74 @@
 
 using namespace Frontier;
 /**
- * @brief wxPanel derived class for drawing game map
+ * @brief wxPanel derived class for drawing the game map
  *
- * This class is simply a drawing class to allow the game
- * to draw and interact with the game map.  
+ * This class is a drawing surface that lets the game render and interact with
+ * the strategic map through WXGameDisplay.
  *
  * It was added because of issues with the wxWidgets 3.0
  * library not having consistent behavior with drawing and
  * refreshing frames on Windows & Linux.
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.3-codex (medium)
  * @date Created: Jan 31, 2018
- * @date Last Modified: Jan 31, 2018
+ * @date Last Modified: Mar 28, 2026
  */
 class FGamePanel : public wxPanel
 {
 public:
+	/**
+	 * @brief Construct a drawing panel for the owning frame
+	 *
+	 * @param parent The frame that owns this panel
+	 *
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @date Created: Jan 31, 2018
+	 * @date Last Modified: Mar 28, 2026
+	 */
 	FGamePanel(wxFrame * parent);
+
+	/**
+	 * @brief Release the panel resources
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jan 31, 2018
+	 * @date Last Modified: Jan 31, 2018
+	 */
 	~FGamePanel();
 
 	/**
-	* @brief Method to handle the onPaint events
-	*
-	* This method redraws the map as needed on wxEVT_PAINT events
-	*
-	* @param event The window event to handle
-	*
-	* @author Tom Stephens
-	* @date Created:  Jan 31, 2018
-	* @date Last Modified:  Jan 31, 2018
-	*/
+	 * @brief Method to handle the onPaint events
+	 *
+	 * This method redraws the map as needed on wxEVT_PAINT events through the
+	 * shared WXGameDisplay renderer.
+	 *
+	 * @param event The window event to handle
+	 *
+	 * @author Tom Stephens
+	 * @date Created:  Jan 31, 2018
+	 * @date Last Modified:  Mar 28, 2026
+	 */
 	void onPaint(wxPaintEvent & event);
+
+	/**
+	 * @brief Set the game instance rendered by the panel
+	 *
+	 * @param game The game to draw
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jan 31, 2018
+	 * @date Last Modified: Jan 31, 2018
+	 */
 	void setGame(FGame * game) { m_game = game; }
+
+	/**
+	 * @brief Clear the game instance rendered by the panel
+	 *
+	 * @author Tom Stephens
+	 * @date Created: Jan 31, 2018
+	 * @date Last Modified: Jan 31, 2018
+	 */
 	void clearGame() { m_game = NULL; }
 
 private:

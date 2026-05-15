@@ -24,11 +24,17 @@ class FSystem;
  * @brief Class to hold a fleet of ships
  *
  * This class holds all the information pertaining to a fleet of ships,
- * including its location, composition, owner, etc.
+ * including its location, composition, owner, etc.  FFleet is non-copyable
+ * because it exclusively owns the FVehicle objects in m_ships; copying would
+ * alias that ownership.  Use the NO_DESTINATION and NO_ROUTE sentinel
+ * constants (both equal to `static_cast<unsigned int>(-1)`) to represent an
+ * unset destination or jump-route ID respectively.  FFleet does not own or
+ * cache any wxImage state; icon identity is stored as a filename string and
+ * retrieved via getIconName().
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.3-codex (medium)
  * @date Created:  Jan 14, 2005
- * @date Last Modified:  Mar 14, 2008
+ * @date Last Modified:  Mar 28, 2026
  */
 class FFleet : public Frontier::FPObject {
 public:
@@ -43,31 +49,27 @@ public:
   /**
    * @brief Set the location of the fleet
    *
-   * This method takes as input the ID of the system or jump route that
-   * the ship is currently in and optionally, a flag that indicates whether
-   * the ID corresponds to a system or jump route and an integer number of
-   * days for the jump.  If not specified the flag defaults to false (a
-   * system) and the time is set to zero.  The location ID value is
-   * stored in the m_location
-   * member variable.  If the ID corresponds to a system the transit
-   * parameter should be set to false.  If the location ID corresponds
-   * to a jump route the transit flag should be true and the length of the
-   * jump should be ass so that the method can
-   * set the m_inTransit variable and enter the transit time.
+   * This method takes as input a pointer to the FSystem the fleet is
+   * currently at and optionally a transit flag, remaining transit time in
+   * days, destination system ID, jump speed, and jump route ID.  The system's
+   * ID is extracted and stored in m_location; the system's map coordinates
+   * are copied into m_pos.  When not specified, dest defaults to
+   * NO_DESTINATION and route defaults to NO_ROUTE, indicating that no
+   * destination or active jump route is set.
    *
    * If there is a problem the method will return a non-zero error code,
-   * otherwise it returns a zero.
+   * otherwise it returns zero.
    *
-   * @param loc The ID value of the star system or jump route the fleet is at
-   * @param transit Flag indicating whether or not the location is a system or jump route
-   * @param time The length of the transit if present
-   * @param dest The ID of the destination system
-   * @param speed The jump speed for the transit
-   * @param route The ID of the Jump route the fleet is on.
+   * @param loc     Pointer to the FSystem the fleet is currently at
+   * @param transit Flag indicating whether the fleet is in transit on a jump route
+   * @param time    Remaining transit time in days (default 0)
+   * @param dest    ID of the destination system; use NO_DESTINATION when none (default)
+   * @param speed   Jump speed for the transit (default 0)
+   * @param route   ID of the jump route the fleet is on; use NO_ROUTE when none (default)
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, gpt-5.3-codex (medium)
    * @date Created:  Jan 14, 2004
-   * @date Last Modified:  Mar 14, 2008
+   * @date Last Modified:  Mar 24, 2026
    */
   int setLocation( FSystem * loc, bool transit, int time = 0, unsigned int dest = NO_DESTINATION , int speed = 0, unsigned int route = NO_ROUTE);
 
@@ -126,12 +128,14 @@ public:
    * This method reduces the distance left in the jump by the appropriate
    * value based on the fleet's holding status and jump speed.  It takes
    * the shortened step at high jump speeds into account when transitioning
-   * from one system to another.
+   * from one system to another.  When the transit completes, m_inTransit is
+   * cleared, m_jumpRouteID is reset to NO_ROUTE, m_destination is reset to
+   * NO_DESTINATION, and m_location is updated to the destination system.
    * It returns the amount of time left in the jump as its return value.
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, gpt-5.3-codex (medium)
    * @date Created:  Jan 14, 2004
-   * @date Last Modified:  Mar 14, 2008
+   * @date Last Modified:  Mar 24, 2026
    */
   int decTransitTime();
 
@@ -243,27 +247,33 @@ public:
 	 * @brief Method to read data contents
 	 *
 	 * This method is the inverse of the save method.  It reads the data for
-	 * the class from the designated input stream.  This method returns 0 if
-	 * everything is okay and a positive integer error code if there is a
-	 * failure
+	 * the class from the designated input stream and reconstructs the fleet's
+	 * ships via createShip().  Legacy save files that encoded "no route" as 0
+	 * for m_jumpRouteID are normalized to the current NO_ROUTE sentinel on
+	 * load.  This method returns 0 if everything is okay and a positive
+	 * integer error code if there is a failure.
 	 *
-	 * @author Tom Stephens
+	 * @param is The input stream to read from
+	 *
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Mar 14, 2008
+	 * @date Last Modified:  Mar 24, 2026
 	 */
 	virtual int load(std::istream &is);
 
 	/**
 	 * @brief Method to cancel a jump order
 	 *
-	 * This method cancels a jump order by setting the destination
-	 * of the current jump to the ships current location and the
-	 * transit time to the jump length minus the time already spent.
-	 * If the fleet is already in the destination system nothing happens
+	 * This method cancels a jump order by setting the fleet's destination to
+	 * its current location and recomputing the remaining transit time as
+	 * (m_jumpLength - m_transitTime) so the fleet travels back to the origin.
+	 * If the resulting transit time is zero, m_inTransit is cleared and the
+	 * fleet is considered to have arrived.  If m_location already equals
+	 * m_destination the method does nothing.
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
 	 * @date Created:  Mar 14, 2008
-	 * @date Last Modified:  Mar 14, 2008
+	 * @date Last Modified:  Mar 24, 2026
 	 */
 	void cancelJump();
 
@@ -285,7 +295,7 @@ public:
   const unsigned int & getSpeed() const { return m_speed; }
   /// set the jump route the fleet is on
   void setJumpRoute(int i, const FSystem * s, const FSystem * e, unsigned int length);
-  /// get pointer to the jump route the fleet is on
+  /// get the ID of the active jump route; returns NO_ROUTE when the fleet is not on a jump route
   unsigned int getJumpRoute() const { return m_jumpRouteID; }
   /// get the time left in the transit
   const int getTransitTime() const { return m_transitTime; }

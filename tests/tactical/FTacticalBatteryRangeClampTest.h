@@ -13,6 +13,15 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief CppUnit fixture for FTacticalBatteryRangeClampTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 24, 2026
+ * @date Last Modified: Mar 24, 2026
+ */
 class FTacticalBatteryRangeClampTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalBatteryRangeClampTest );
 	CPPUNIT_TEST( testCenterBoardUsesSymmetricWindowAndDistanceFilter );
@@ -32,10 +41,55 @@ public:
 	void setUp();
 	void tearDown();
 
+	/**
+	 * @brief Verifies center Board Uses Symmetric Window And Distance Filter.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 24, 2026
+	 * @date Last Modified: Mar 24, 2026
+	 */
 	void testCenterBoardUsesSymmetricWindowAndDistanceFilter();
+	/**
+	 * @brief Verifies upper Bound Clamping Uses Correct Guard And Assignments.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 24, 2026
+	 * @date Last Modified: Mar 24, 2026
+	 */
 	void testUpperBoundClampingUsesCorrectGuardAndAssignments();
+	/**
+	 * @brief Verifies lower Bound Clamping Appears Before Loop Traversal.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 24, 2026
+	 * @date Last Modified: Mar 24, 2026
+	 */
 	void testLowerBoundClampingAppearsBeforeLoopTraversal();
+	/**
+	 * @brief Verifies all Clamp Statements Execute Before Loop Header.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 24, 2026
+	 * @date Last Modified: Mar 24, 2026
+	 */
 	void testAllClampStatementsExecuteBeforeLoopHeader();
+	/**
+	 * @brief Verifies loop Boundaries Use Inclusive Clamped Invariants.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 24, 2026
+	 * @date Last Modified: Mar 24, 2026
+	 */
 	void testLoopBoundariesUseInclusiveClampedInvariants();
 };
 

@@ -11,6 +11,15 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief CppUnit fixture for FTacticalMineDamageFlowTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 22, 2026
+ * @date Last Modified: Apr 02, 2026
+ */
 class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalMineDamageFlowTest );
 	CPPUNIT_TEST( testApplyMineDamageDefersDestroyedShipCleanupUntilAfterImmediateSummaryDialog );
@@ -29,10 +38,55 @@ public:
 	void setUp();
 	void tearDown();
 
+	/**
+	 * @brief Verifies apply Mine Damage Defers Destroyed Ship Cleanup Until After Immediate Summary Dialog.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 22, 2026
+	 * @date Last Modified: Mar 22, 2026
+	 */
 	void testApplyMineDamageDefersDestroyedShipCleanupUntilAfterImmediateSummaryDialog();
+	/**
+	 * @brief Verifies finalize Move Applies Mine Damage Exactly Once Per Movement Resolution.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 22, 2026
+	 * @date Last Modified: Mar 22, 2026
+	 */
 	void testFinalizeMoveAppliesMineDamageExactlyOncePerMovementResolution();
+	/**
+	 * @brief Verifies finalize Move Phase State Delegates To Canonical Completion Path.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 02, 2026
+	 * @date Last Modified: Apr 02, 2026
+	 */
 	void testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath();
+	/**
+	 * @brief Verifies mine Damage Attack Report Builder Leaves Nested Events Unattached Until Battle Screen Stores Them.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 22, 2026
+	 * @date Last Modified: Mar 22, 2026
+	 */
 	void testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem();
+	/**
+	 * @brief Verifies runtime Move Done Path Uses Canonical Completion And Resolves Off Board Outcome.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 02, 2026
+	 * @date Last Modified: Apr 02, 2026
+	 */
 	void testRuntimeMoveDonePathUsesCanonicalCompletionAndResolvesOffBoardOutcome();
 };
 

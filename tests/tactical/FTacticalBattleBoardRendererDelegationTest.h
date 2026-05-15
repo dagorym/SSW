@@ -11,6 +11,15 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief CppUnit fixture for FTacticalBattleBoardRendererDelegationTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: May 09, 2026
+ */
 class FTacticalBattleBoardRendererDelegationTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleBoardRendererDelegationTest );
 CPPUNIT_TEST( testDrawUsesBattleScreenModelAccessors );
@@ -30,11 +39,65 @@ public:
 void setUp();
 void tearDown();
 
+/**
+ * @brief Verifies draw Uses Battle Screen Model Accessors.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testDrawUsesBattleScreenModelAccessors();
+/**
+ * @brief Verifies overlay Drawing Uses Model State Accessors.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testOverlayDrawingUsesModelStateAccessors();
+/**
+ * @brief Verifies draw Ships Uses Temporary Facing For Stopped Selected Mover.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: May 09, 2026
+ * @date Last Modified: May 09, 2026
+ */
 void testDrawShipsUsesTemporaryFacingForStoppedSelectedMover();
+/**
+ * @brief Verifies on Left Up Only Hit Tests And Forwards Hex Click.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testOnLeftUpOnlyHitTestsAndForwardsHexClick();
+/**
+ * @brief Verifies header Removes Duplicated Mechanics State.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testHeaderRemovesDuplicatedMechanicsState();
+/**
+ * @brief Verifies on Motion Uses Placement Forwarders Only.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testOnMotionUsesPlacementForwardersOnly();
 };
 

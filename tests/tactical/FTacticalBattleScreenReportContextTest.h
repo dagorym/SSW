@@ -11,6 +11,15 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief CppUnit fixture for FTacticalBattleScreenReportContextTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 22, 2026
+ * @date Last Modified: Mar 30, 2026
+ */
 class FTacticalBattleScreenReportContextTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleScreenReportContextTest );
 CPPUNIT_TEST( testAppendTacticalAttackReportDelegatesToTacticalModel );
@@ -25,7 +34,25 @@ public:
 void setUp();
 void tearDown();
 
+/**
+ * @brief Verifies append Tactical Attack Report Delegates To Tactical Model.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 30, 2026
+ * @date Last Modified: Mar 30, 2026
+ */
 void testAppendTacticalAttackReportDelegatesToTacticalModel();
+/**
+ * @brief Verifies append Tactical Report Event Delegates To Tactical Model.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 30, 2026
+ * @date Last Modified: Mar 30, 2026
+ */
 void testAppendTacticalReportEventDelegatesToTacticalModel();
 };
 

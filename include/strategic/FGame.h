@@ -24,14 +24,17 @@ namespace Frontier
  * @brief Main game class
  *
  * This is the main class of the game that contains pointers to
- * the players and the maps.
+ * the players and the maps.  Game creation is managed through the
+ * static factory methods create(), create(IStrategicUI*), and
+ * create(wxWindow*).  All UI notifications are routed through an
+ * IStrategicUI adapter so no wx types are required in the model layer.
  *
  * The FGame class is responsible for destroying the FMap object and the
  * FPlayer objects when it is destroyed.
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.3-codex (medium)
  * @date Created:  Jan 14, 2005
- * @date Last Modified:  May 28, 2009
+ * @date Last Modified:  Mar 28, 2026
  */
 class FGame : public Frontier::FPObject {
 private:
@@ -43,41 +46,66 @@ private:
 	FGame& operator=(FGame&);
 
 protected:
-	/// Default Constructor
+	/// Constructor accepting an optional strategic UI adapter; pass NULL for non-GUI use.
 	FGame(IStrategicUI * ui);
 
 public:
 	/**
-	 * @brief method to create the game object or get a reference to it
+	 * @brief Creates the game singleton (no UI) or returns the existing instance.
 	 *
 	 * This method creates the game object if it doesn't exist and
 	 * returns a reference to the object once it is created.  If called
 	 * and the object already exists, it just returns a reference to
-	 * the object.
+	 * the object.  The game is created in non-GUI mode when called
+	 * without arguments.
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
 	 * @date Created:  May 30, 2008
-	 * @date Last Modified:  May 30, 2008
+	 * @date Last Modified:  Mar 28, 2026
 	 */
 	static FGame & create();
+	/**
+	 * @brief Creates the game singleton with a strategic UI adapter or returns the existing instance.
+	 *
+	 * Passes @p ui to the protected constructor so all subsequent UI notifications
+	 * are routed through the IStrategicUI seam.  Pass NULL for non-GUI mode.
+	 *
+	 * @param ui Pointer to the IStrategicUI adapter, or NULL for non-GUI use.
+	 *
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @date Created:  Mar 28, 2026
+	 * @date Last Modified:  Mar 28, 2026
+	 */
 	static FGame & create(IStrategicUI * ui);
+	/**
+	 * @brief Compatibility shim — ignores @p win and delegates to create().
+	 *
+	 * Retained so existing call sites that pass a wxWindow pointer still compile.
+	 * The window argument is discarded; all UI routing now goes through IStrategicUI.
+	 *
+	 * @param win Ignored; accepted only for backwards-compatible call sites.
+	 *
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @date Created:  Mar 28, 2026
+	 * @date Last Modified:  Mar 28, 2026
+	 */
 	static FGame & create(wxWindow * win);
 
   /// Default Destructor
 	virtual ~FGame();
   /**
-   * @brief  Method to initalize the game information
+   * @brief Initialises the game: loads players, map, and fleets.
    *
-   * This method initalizes all the data for the game so that it is ready
-   * to play.  It returns a zero if all is well and a positive error code
-   * if there was a problem.
+   * This method initialises all the data for the game so that it is ready
+   * to play.  All UI interaction is routed through the IStrategicUI adapter
+   * installed at construction time.  It returns a zero if all is well and a
+   * positive error code if there was a problem.
    *
-   * @param dc Device context to draw to.
-   * @param w pointer to the main frame window
+   * @param w Accepted for backwards-compatible call sites; ignored internally.
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, gpt-5.3-codex (medium)
    * @date Created:  Jan 14, 2005
-   * @date Last Modified:  Mar 09, 2008
+   * @date Last Modified:  Mar 28, 2026
    */
 	  int init(wxWindow *w);
 
@@ -94,13 +122,20 @@ public:
   void showPlayers();
 
   /**
-   * @brief Handle map click using logical map coordinates
+   * @brief Handle map click using logical map coordinates.
    *
-   * This method processes selection using model-space map coordinates
-   * supplied by the GUI layer.
+   * Translates model-space coordinates supplied by the GUI layer into
+   * a system or fleet selection.  If a system is found at the given
+   * coordinates, showSystemDialog() is called on the IStrategicUI adapter.
+   * If a fleet is found, showFleetDialog() is called instead.  Does
+   * nothing when no UI adapter is installed.
    *
    * @param mapX Logical map X coordinate.
    * @param mapY Logical map Y coordinate.
+   *
+   * @author Tom Stephens, gpt-5.3-codex (medium)
+   * @date Created:  Mar 28, 2026
+   * @date Last Modified:  Mar 28, 2026
    */
   void handleMapClick(double mapX, double mapY);
 
@@ -167,29 +202,26 @@ public:
 	virtual int load(std::istream &is);
 
 	/**
-	 * @brief Process end turn for the active player
+	 * @brief Process end turn for the active player.
 	 *
-	 * The return value signals what transition occurred:
-	 * <ul>
-	 * <li> 1 = Ended UPF turn
-	 * <li> 2 = Ended Sathar turn
-	 * </ul>
+	 * Invokes endUPFTurn() or endSatharTurn() depending on which player
+	 * is currently active and advances the game state accordingly.
+	 *
+	 * @return 1 if the UPF turn was ended, 2 if the Sathar turn was ended.
+	 *
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @date Created:  Mar 28, 2026
+	 * @date Last Modified:  Mar 28, 2026
 	 */
 	int processEndTurn();
 
-	/**
-	 * @brief Returns the current game round.
-	 */
+	/// Returns the current game round number.
 	unsigned int getRound() const;
 
-	/**
-	 * @brief Returns the active player's id.
-	 */
+	/// Returns the ID of the currently active player.
 	unsigned int getCurrentPlayerID() const;
 
-	/**
-	 * @brief Returns a read-only list of players.
-	 */
+	/// Returns a read-only reference to the list of players.
 	const PlayerList & getPlayers() const;
 
 	/**

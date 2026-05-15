@@ -11,6 +11,15 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief CppUnit fixture for ITacticalUIBoundaryTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 class ITacticalUIBoundaryTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( ITacticalUIBoundaryTest );
 CPPUNIT_TEST( testHeaderDeclaresFrontierITacticalUI );
@@ -27,9 +36,45 @@ public:
 void setUp();
 void tearDown();
 
+/**
+ * @brief Verifies header Declares Frontier ITactical UI.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testHeaderDeclaresFrontierITacticalUI();
+/**
+ * @brief Verifies interface Declares Exactly Required Callbacks.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testInterfaceDeclaresExactlyRequiredCallbacks();
+/**
+ * @brief Verifies header Has No Wx Includes Or Types.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testHeaderHasNoWxIncludesOrTypes();
+/**
+ * @brief Verifies boundary Compiles For Tactical Model Use.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testBoundaryCompilesForTacticalModelUse();
 };
 

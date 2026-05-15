@@ -1,0 +1,392 @@
+# Comment audit update list
+
+Audited all header files under `include/` and `tests/`. `include/core` and `include/strategic` required no post-`6da393e065b909fafc80364e8f47e361bd3bce4d` comment updates.
+
+## Updated headers
+
+### include/gui
+
+- `include/gui/TacticalDamageSummaryGUI.h`
+  - `TacticalDamageSummaryGUI`
+  - `buildContextText()`
+  - `buildShipRollupText()`
+  - `buildHitDetailText()`
+  - `buildSummaryText()`
+  - constructor / destructor
+- `include/gui/WXStartupLaunch.h`
+  - `createStartupSplashAndFrame(...)`
+- `include/gui/WXStrategicUI.h`
+  - `WXStrategicUI`
+  - constructor / destructor
+  - `showMessage(...)`
+  - `notifyFailedJump(...)`
+  - `notifyVictory(...)`
+  - `selectRetreatCondition()`
+  - `runUPFUnattachedSetup(...)`
+  - `runSatharFleetSetup(...)`
+  - `showSystemDialog(...)`
+  - `showFleetDialog(...)`
+  - `showRetreatConditions(...)`
+  - `selectCombat(...)`
+  - `requestRedraw()`
+- `include/gui/WXTacticalUI.h`
+  - `WXTacticalUI`
+  - constructor / destructor
+  - `requestRedraw()`
+  - `showMessage(...)`
+  - `showDamageSummary(...)`
+  - `runICMSelection(...)`
+  - `notifyWinner(...)`
+  - `setModalAutoDismissMs(...)`
+
+### include/ships, include/weapons, include/tactical
+
+- `include/ships/FVehicle.h`
+  - `FVehicle`
+  - `takeDamage(...)`
+  - `advancedDamage(...)`
+  - `damageWeapon(...)`
+  - `damageDefense(...)`
+- `include/weapons/FWeapon.h`
+  - `FWeapon`
+  - `fire()`
+- `include/tactical/FTacticalAttackResult.h`
+  - `TacticalAttackOutcome`
+  - `TacticalAttackSkipReason`
+  - `FTacticalAttackEffect`
+  - `FTacticalAttackResult`
+  - `fired()`
+  - `hit()`
+- `include/tactical/ITacticalUI.h`
+  - `ITacticalUI`
+  - destructor
+  - `requestRedraw()`
+  - `showMessage(...)`
+  - `showDamageSummary(...)`
+  - `runICMSelection(...)`
+  - `notifyWinner(...)`
+
+### tests/core and tests/strategic
+
+- `tests/core/WXIconCacheTest.h`
+  - `WXIconCacheTest`
+  - `testGetResolvesFilenameThroughSharedAssetResolver()`
+  - `testCacheKeyRemainsOriginalFilename()`
+- `tests/core/WXStrategicUITest.h`
+  - `WXStrategicUITest`
+  - `testGuardedDialogMethodsReturnNonZeroWhenNoUIContext()`
+  - `testGuardedDialogMethodsReturnCancelForValidInputsWithoutWxRuntime()`
+  - `testGuardedDialogMethodsIgnoreParentWhenNoWxRuntime()`
+  - `testRequestRedrawIsNullSafe()`
+- `tests/strategic/FGameMockStrategicUITest.h`
+  - `FGameMockStrategicUITest`
+  - `testInitWithMockStrategicUI()`
+- `tests/strategic/FGameHeaderDependencyTest.h`
+  - `FGameHeaderDependencyTest`
+  - `testHeaderDoesNotIncludeWxHeaders()`
+  - `testHeaderDoesNotExposeWxRenderOrMouseTypes()`
+  - `testHeaderUsesStrategicUIAndRemovesParentMember()`
+  - `testHeaderDoesNotDeclareStrategicDrawOrMouseHandlers()`
+  - `testSourceDoesNotUseDisplayPaintingHelpers()`
+  - `testSourceDoesNotImplementStrategicDrawOrMouseHandlers()`
+  - `testWXGameDisplayOwnsStrategicDrawEntryPoint()`
+  - `testSourceRemovesDirectStrategicDialogIncludes()`
+  - `testSourceRoutesStrategicInteractionsThroughInterface()`
+
+### tests/gui
+
+- `tests/gui/WXGuiTestHarness.h`
+  - `WXGuiTestHarness`
+  - constructor / destructor
+  - `bootstrap()`
+  - `shutdown()`
+  - `pumpEvents(...)`
+  - `getTopLevelWindows(...)`
+  - `findTopLevelWindow(...)`
+  - `waitForTopLevelWindow(...)`
+  - `findModalDialog()`
+  - `waitForModalDialog(...)`
+  - `cleanupOrphanTopLevels(...)`
+  - `showModalWithAutoDismiss(...)`
+  - `showModalWithAction(...)`
+  - `runModalFunctionWithAutoDismiss(...)`
+  - `runModalFunctionWithAction(...)`
+  - `runVoidFunctionWithAutoDismiss(...)`
+  - `runVoidFunctionWithAction(...)`
+- `tests/gui/GuiHarnessTest.h`
+  - `GuiHarnessTest`
+  - `testPumpEventsAfterBootstrap()`
+  - `testCanObserveShownTopLevelWindow()`
+  - `testWaitForModalDialogFindsLaunchedModal()`
+  - `testCleanupOrphanTopLevelsRemovesShownWindows()`
+  - `testShowModalWithAutoDismissReturnsExpectedCode()`
+- `tests/gui/TacticalGuiLiveTest.h`
+  - `TacticalGuiLiveTest`
+  - `testWXTacticalUIParentBackedModalAndRedrawPaths()`
+  - `testTacticalActionButtonsRemainSizerPositionedWhenShown()`
+  - `testTacticalActionButtonsStayBelowPromptReservationAcrossPhases()`
+  - `testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior()`
+  - `testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo()`
+- `tests/gui/StrategicGuiLiveTest.h`
+  - `StrategicGuiLiveTest`
+  - `testMainFrameBuildsExpectedInitialUI()`
+  - `testGamePanelPaintTracksParentSize()`
+  - `testStrategicDialogsCloseModallyWithoutInput()`
+  - `testStrategicDialogsUseStaticBoxChildParents()`
+  - `testWXStrategicUIParentBackedModalAndRedrawPaths()`
+  - `testWXStrategicUIParentlessRetreatModalPathWithRuntime()`
+  - `testWXStrategicUISourceGuardsRuntimeAndPreservesParentlessFlow()`
+  - `testUPFAndSatharFleetDialogsMutateModelState()`
+  - `testTransferShipsDialogMovesShipsAndUpdatesFleets()`
+  - `testCombatSelectionDialogsReturnCodesAndState()`
+  - `testRemediatedStrategicDialogsUseFirstShowSizingContract()`
+  - `testStartupLaunchCreatesCenteredSplashAndMainFrame()`
+  - `testSelectCombatLaunchesBattleScreenAndCleansUpLifetime()`
+  - `testBattleResultsDialogUpdatesShipStatistics()`
+  - `testWXMapDisplayOffscreenRendering()`
+  - `testWXPlayerDisplayOffscreenRendersSystemAndTransitFleets()`
+  - `testWXGameDisplayOffscreenRendersTurnCounterAndIcons()`
+- `tests/gui/BattleSimGuiLiveTest.h`
+  - `BattleSimGuiLiveTest`
+  - `testBattleSimFrameOpensLocalGameDialogAndReturns()`
+  - `testLocalGameDialogLaunchesPredefinedAndCustomModalChains()`
+  - `testBattleSimLaunchDialogsRetainFirstShowSizingContracts()`
+  - `testStartupLaunchCreatesCenteredSplashAndBattleSimFrame()`
+  - `testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage()`
+  - `testScenarioEditorStartBattleLaunchesBattleScreenWithLifecycleCoverage()`
+
+### tests/ships and tests/weapons
+
+- `tests/ships/FTacticalAttackIntegrationTest.h`
+  - `FTacticalAttackIntegrationTest`
+  - `testFireHitPreservesLegacyCleanupSideEffects()`
+  - `testFireCopiesAppliedHullDamageIntoAttackResult()`
+  - `testFireCopiesAppliedNonHullEffectsIntoAttackResult()`
+  - `testFireReportsConvertedADFHitAsHullDamage()`
+  - `testFireReportsDisastrousFireFallbackAsHullDamage()`
+- `tests/ships/FVehicleTest.h`
+  - `FVehicleTest`
+  - `testConstructor()`
+  - `testSetters()`
+  - `testSerialize()`
+  - `testBadType()`
+  - `testTakeDamageBasicPopulatesOptionalResolution()`
+  - `testTakeDamageAdvancedPreservesMutationWithOptionalResolution()`
+  - `testDamageHelpersReportExplicitComponentMetadata()`
+  - `testAdvancedDamageKeepsADFAndMRCumulativeUntilZero()`
+  - `testAdvancedDamageFallsBackForAlreadyDamagedSubsystems()`
+  - `testAdvancedDamageStillDamagesEligibleWeaponAndDefenseComponents()`
+  - `testDisastrousFireAppliesFullEligibleBundleWithoutHullDamage()`
+  - `testDisastrousFireReportsOnlyNewPartialEffectsWithoutHullDamage()`
+  - `testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply()`
+- `tests/weapons/FWeaponFireResultTest.h`
+  - `FWeaponFireResultTest`
+  - `testFireReturnsStructuredSkippedStateWhenOutOfAmmo()`
+  - `testFireReturnsStructuredSkippedStateWhenWeaponDamaged()`
+  - `testFireReturnsStructuredSkippedStateWhenNoTargetOrRangeInvalid()`
+  - `testFireReturnsStructuredMissAndPreservesLegacyFireSideEffects()`
+- `tests/weapons/FWeaponTest.h`
+  - `FWeaponTest`
+  - `testConstructor()`
+  - `setMaxAmmo()`
+  - `setCurrentAmmo()`
+  - `checkAddAmmoToName()`
+  - `reloadTest()`
+  - `setDamageStatus()`
+  - `testSerialize()`
+  - `testBaseWeaponZeroRange()`
+  - `testSetTarget()`
+  - `testFireWhenEmpty()`
+  - `testFireNoTarget()`
+  - `testFireAtTarget()`
+  - `testBadIdentifier()`
+
+### tests/tactical
+
+- `tests/tactical/FTacticalAttackResultTest.h`
+  - `FTacticalAttackResultTest`
+  - `testDefaultConstructorRepresentsNotFiredAttack()`
+  - `testHelpersAndEffectsReflectMutatedOutcomeState()`
+- `tests/tactical/FTacticalBatteryRangeClampTest.h`
+  - `FTacticalBatteryRangeClampTest`
+  - `testCenterBoardUsesSymmetricWindowAndDistanceFilter()`
+  - `testUpperBoundClampingUsesCorrectGuardAndAssignments()`
+  - `testLowerBoundClampingAppearsBeforeLoopTraversal()`
+  - `testAllClampStatementsExecuteBeforeLoopHeader()`
+  - `testLoopBoundariesUseInclusiveClampedInvariants()`
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.h`
+  - `FTacticalBattleBoardRendererDelegationTest`
+  - `testDrawUsesBattleScreenModelAccessors()`
+  - `testOverlayDrawingUsesModelStateAccessors()`
+  - `testDrawShipsUsesTemporaryFacingForStoppedSelectedMover()`
+  - `testOnLeftUpOnlyHitTestsAndForwardsHexClick()`
+  - `testHeaderRemovesDuplicatedMechanicsState()`
+  - `testOnMotionUsesPlacementForwardersOnly()`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+  - `FTacticalBattleDisplayFireFlowTest`
+  - `testDrawAndOnPaintUseBattleScreenStateAccessors()`
+  - `testZoomImageLoadUsesResolveAssetPath()`
+  - `testBattleBoardAndBattleScreenUseResolveAssetPathForTacticalImages()`
+  - `testLegacyFireAllWeaponsHelperRemoved()`
+  - `testDefensiveFireDoneDelegatesToModelFirePhaseResolution()`
+  - `testOffensiveFireDoneDelegatesToModelFirePhaseResolution()`
+  - `testDefensiveFireDoneDisablesAndHidesButtonBeforeResolution()`
+  - `testOffensiveFireDoneDisablesAndHidesButtonBeforeResolution()`
+  - `testWeaponSelectionDelegatesToBattleScreenModelApi()`
+  - `testDefenseSelectionDelegatesToBattleScreenModelApi()`
+  - `testMinePlacementFlowUsesModelMinePlacementApis()`
+  - `testMinePlacementDisplayUsesModelShipList()`
+  - `testDisplayClickFlowUsesModelForwardingApis()`
+  - `testMoveDoneDelegatesToBattleScreenCompleteMovePhase()`
+  - `testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation()`
+  - `testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases()`
+  - `testActionPromptSpacingContractConstantsAndHelpersDefined()`
+  - `testActionPromptSpacingContractAppliedAcrossActionPhases()`
+  - `testActionButtonShowPathsRelayoutAfterVisibilityChange()`
+  - `testActionButtonHidePathsRelayoutAfterVisibilityChange()`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.h`
+  - `FTacticalBattleScreenDelegationTest`
+  - `testBattleScreenOwnsAndInstallsTacticalModelAndUI()`
+  - `testBattleScreenDetachesTacticalUIBeforeTeardown()`
+  - `testBattleScreenStateAndSelectionApiDelegatesToTacticalModel()`
+  - `testBattleScreenForwardsInteractionAndRendererAccessorsToModel()`
+  - `testBattleScreenForwardsSelectionAndHexInteractionMutatorsToModel()`
+  - `testBattleScreenDamageSummaryDialogDelegatesThroughInstalledUI()`
+  - `testBattleScreenPhaseWeaponAndCleanupFlowDelegatesToTacticalModel()`
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.h`
+  - `FTacticalBattleScreenElectricalFireTest`
+  - `testApplyFireDamageDelegatesToTacticalModel()`
+  - `testDeclareWinnerUsesTacticalUIAndGuardedClosePath()`
+  - `testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath()`
+  - `testModalCallerSitesOwnBattleScreenLifetimeAfterShowModal()`
+  - `testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen()`
+  - `testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI()`
+- `tests/tactical/FTacticalBattleScreenReportContextTest.h`
+  - `FTacticalBattleScreenReportContextTest`
+  - `testAppendTacticalAttackReportDelegatesToTacticalModel()`
+  - `testAppendTacticalReportEventDelegatesToTacticalModel()`
+- `tests/tactical/FTacticalCombatReportTest.h`
+  - `FTacticalCombatReportTest`
+  - `testReportModelPreservesRawAttackAndImmediateEventData()`
+  - `testBuildTacticalCombatReportSummaryCapturesImmediateElectricalFireAndMineDamageEvents()`
+  - `testReportModelDefinesSeparateShipSummaryRollupTypes()`
+  - `testTacticalCombatReportSummaryHitDetailToggleDefaultsEnabled()`
+  - `testReportModelSupportsAllPlannedReportingModes()`
+  - `testBattleScreenExposesTacticalReportLifecycleApi()`
+  - `testBuildTacticalCombatReportSummaryBuildsHitDetailsForHitAttacksOnly()`
+  - `testBuildTacticalCombatReportSummaryHitDetailsCapturePlayerReadableOutcome()`
+  - `testBuildTacticalCombatReportSummaryAggregatesMultipleAttacksPerShip()`
+  - `testBuildTacticalCombatReportSummaryWeaponFireAttackShapeDoesNotDoubleCountTargetHullDamage()`
+  - `testBuildTacticalCombatReportSummaryMineDamageAttackShapeDoesNotDoubleCountTargetHullDamage()`
+  - `testBuildTacticalCombatReportSummaryAttackShapeRetainsNonHullInternalEffects()`
+  - `testBuildTacticalCombatReportSummaryDoesNotDoubleCountNestedHullDamageForAttackTarget()`
+  - `testBuildTacticalCombatReportSummaryCountsStandaloneReportLevelHullDamageEvents()`
+  - `testBuildTacticalCombatReportSummaryCountsStandaloneHullDamageWhileSuppressingMatchingNestedAttackEvent()`
+  - `testBuildTacticalCombatReportSummaryRetainsNonHullNestedEffectsWhenSuppressingDuplicateHullDamage()`
+  - `testBuildTacticalCombatReportSummarySummarizesHullDamageAndEffects()`
+  - `testBuildTacticalCombatReportSummaryOmitsUndamagedShips()`
+  - `testBuildTacticalCombatReportSummaryUsesStoredShipReferences()`
+  - `testBuildTacticalCombatReportSummaryCountsNestedHullDamageForOtherShips()`
+  - `testBuildTacticalCombatReportSummaryCountsNestedHullDamageWhenOwnerDiffersFromAttackTarget()`
+  - `testBattleScreenDelegatesSummaryGenerationToModelBuilder()`
+  - `testTacticalCombatReportSummaryDocumentsCanonicalAttackHullDamageRule()`
+  - `testBattleScreenNormalizesNestedAttackEventsOntoStoredAttackIndex()`
+  - `testBattleScreenStoresStandaloneImmediateEventsWithUnattachedAttackIndex()`
+- `tests/tactical/FTacticalDamageSummaryGUITest.h`
+  - `FTacticalDamageSummaryGUITest`
+  - `testReportTypeLabelsAndDialogTitleMapToReportContext()`
+  - `testDamageSummaryDialogBuildsShipRollupAndOptionalHitDetailSections()`
+- `tests/tactical/FTacticalDestroyedShipCleanupLifecycleTest.h`
+  - `FTacticalDestroyedShipCleanupLifecycleTest`
+  - `testClearsSelectedShipAndRedrawsWhenSelectedShipDestroyed()`
+  - `testBookkeepingClearedExactlyOncePerCleanup()`
+  - `testWinnerHandlingRunsAfterBookkeepingClear()`
+- `tests/tactical/FTacticalForwardFireFinalOrientationTest.h`
+  - `FTacticalForwardFireFinalOrientationTest`
+  - `testFinalTurnEndpointUsesFinalHeadingForHighlightsAndTargetValidation()`
+  - `testStraightLineForwardFireRemainsUnchanged()`
+  - `testBatteryRangeRemainsHeadingIndependent()`
+- `tests/tactical/FTacticalGameHeaderTest.h`
+  - `FTacticalGameHeaderTest`
+  - `testHeaderDeclaresTacticalModelState()`
+  - `testHeaderProvidesHexAndTurnOwnershipTypes()`
+  - `testHeaderCompilesWithoutWxIncludes()`
+- `tests/tactical/FTacticalGameMechanicsTest.h`
+  - `FTacticalGameMechanicsTest`
+  - `testFTacticalGameImplementationCompilesStandalone()`
+  - `testHeaderExposesAdditiveMechanicsApiSurface()`
+  - `testResetInitializesSafeLegacyCompatibleDefaults()`
+  - `testTacticalReportLifecycleUsesSharedReportTypes()`
+  - `testFireAllWeaponsOwnsCombatReportLifecycleAndCleanup()`
+  - `testDestroyedShipBookkeepingLifecycleContractIsExplicit()`
+  - `testMovementHelpersResetAndFinalizeTurnData()`
+  - `testWinnerAndCombatEndHelpersResolveBattleState()`
+  - `testDestroyedShipCleanupPurgesHexAndTurnBookkeeping()`
+  - `testFireICMCollectsOnlyActionableHexInterceptions()`
+  - `testInteractionApisAndRendererAccessorsAreExposed()`
+  - `testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState()`
+  - `testMinePlacementAndMoveFireProgressionUpdateModelState()`
+  - `testStoppedShipFreeRotationGuardsAndFacingSelectionFlow()`
+  - `testImplementationRemainsSelfContainedWithoutLegacyWxRewire()`
+- `tests/tactical/FTacticalGameMockUITest.h`
+  - `FTacticalGameMockUITest`
+  - `testDeterministicTwoShipCombatDeclaresAttackerWinnerViaModelState()`
+- `tests/tactical/FTacticalMineDamageFlowTest.h`
+  - `FTacticalMineDamageFlowTest`
+  - `testApplyMineDamageDefersDestroyedShipCleanupUntilAfterImmediateSummaryDialog()`
+  - `testFinalizeMoveAppliesMineDamageExactlyOncePerMovementResolution()`
+  - `testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath()`
+  - `testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem()`
+  - `testRuntimeMoveDonePathUsesCanonicalCompletionAndResolvesOffBoardOutcome()`
+- `tests/tactical/FTacticalMineDamageReportSummaryTest.h`
+  - `FTacticalMineDamageReportSummaryTest`
+  - `testMineDamageReportSummaryPreservesImmediateEventAndVisibleShipRollup()`
+  - `testMineDamageSummaryKeepsNestedRawDetailWithoutDoubleCountingTargetHullDamage()`
+- `tests/tactical/FTacticalModelSelectionHexClickSurfaceTest.h`
+  - `FTacticalModelSelectionHexClickSurfaceTest`
+  - `testHeaderDeclaresMilestone8SelectionAndHexClickApi()`
+  - `testImplementationDefinesSelectionAndHexClickHandlers()`
+  - `testHexClickRoutesThroughModelOwnedSelectionAndTargetingFlow()`
+  - `testMoveHexSelectionSupportsStoppedShipFacingChoice()`
+  - `testStoppedShipPreviewApiAndLifecycleHooksAreExposed()`
+- `tests/tactical/FTacticalMoveRouteSelectionTest.h`
+  - `FTacticalMoveRouteSelectionTest`
+  - `testFirstHighlightedHexExtendsRouteByOne()`
+  - `testLaterHighlightedHexBecomesRouteEndpoint()`
+  - `testSelectingEarlierPathHexTrimsRouteToClickedHex()`
+  - `testStoppedShipCanChooseAnyAdjacentFacingWithoutDisplacement()`
+  - `testStoppedShipFacingOnlyMoveCommitsHeadingWithoutChangingHexOrSpeed()`
+  - `testStoppedShipForwardMoveUsesSelectedFacingForFirstHex()`
+  - `testStoppedShipPreviewHexClickInfersFacingAndMovesAlongPreviewDirection()`
+  - `testStoppedShipPreviewFirstMoveStillSupportsTrimAndFollowOnExtension()`
+  - `testStoppedShipPreviewRoutesExposeLegalStartingFacings()`
+  - `testStoppedShipPreviewHeadingLookupTracksPreviewHexMembership()`
+  - `testNonStoppedShipDoesNotAllowFreeAdjacentFacingSelection()`
+  - `testStoppedShipWithZeroMRCannotFreelyRotate()`
+- `tests/tactical/FTacticalShipPlacementOrientationTest.h`
+  - `FTacticalShipPlacementOrientationTest`
+  - `testPreviewByHexUpdatesHeadingWithoutAdvancingPlacement()`
+  - `testDefenderSetupSecondClickCommitsLastPreviewedHeading()`
+  - `testAttackerSetupSecondClickCommitsLastPreviewedHeading()`
+- `tests/tactical/FTacticalStationOrbitalMovementTest.h`
+  - `FTacticalStationOrbitalMovementTest`
+  - `testStationMoveAlreadyCompleteAtPhaseEntry()`
+  - `testStationHeadingUpdatedAfterOrbit()`
+  - `testStationSpeedPreservedAfterOrbit()`
+  - `testStationPlacementRecordsSinglePendingOccupant()`
+  - `testStationPlacementRelocatesPendingOccupant()`
+  - `testInvalidStationPlacementDoesNotMutatePendingStation()`
+  - `testStationOrbitInitializesFromRelocatedPendingHex()`
+  - `testNonStationHeadingUnchangedByFix()`
+- `tests/tactical/ITacticalUIBoundaryTest.h`
+  - `ITacticalUIBoundaryTest`
+  - `testHeaderDeclaresFrontierITacticalUI()`
+  - `testInterfaceDeclaresExactlyRequiredCallbacks()`
+  - `testHeaderHasNoWxIncludesOrTypes()`
+  - `testBoundaryCompilesForTacticalModelUse()`
+- `tests/tactical/WXTacticalUIAdapterTest.h`
+  - `WXTacticalUIAdapterTest`
+  - `testAdapterConstructsAsITacticalUI()`
+  - `testRequestRedrawIsSafeWithAndWithoutParent()`
+  - `testRunICMSelectionValidatesInputs()`
+  - `testNotifyWinnerUsesNoParentFallbackSafely()`

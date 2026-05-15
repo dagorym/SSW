@@ -13,6 +13,17 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief Provides live BattleSim GUI launch and modal-ownership regression coverage.
+ *
+ * The fixture validates BattleSim launcher dialogs, startup splash/frame creation, and
+ * scenario-to-battle-screen launch paths while keeping top-level window lifecycle cleanup
+ * deterministic under the shared GUI harness.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 04, 2026
+ * @date Last Modified: Apr 16, 2026
+ */
 class BattleSimGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( BattleSimGuiLiveTest );
 CPPUNIT_TEST( testBattleSimFrameOpensLocalGameDialogAndReturns );
@@ -28,14 +39,70 @@ private:
 	wxString m_originalCwd;
 
 public:
+	/**
+	 * @brief Bootstraps wx harness state and captures the original working directory.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 04, 2026
+	 * @date Last Modified: Apr 04, 2026
+	 */
 	void setUp();
+	/**
+	 * @brief Restores the original working directory and cleans residual top-level windows.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 04, 2026
+	 * @date Last Modified: Apr 04, 2026
+	 */
 	void tearDown();
 
+	/**
+	 * @brief Verifies BattleSimFrame launches LocalGameDialog and returns cleanly.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 04, 2026
+	 * @date Last Modified: Apr 04, 2026
+	 */
 	void testBattleSimFrameOpensLocalGameDialogAndReturns();
+	/**
+	 * @brief Verifies LocalGameDialog launches predefined and custom scenario modal chains.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 04, 2026
+	 * @date Last Modified: Apr 04, 2026
+	 */
 	void testLocalGameDialogLaunchesPredefinedAndCustomModalChains();
+	/**
+	 * @brief Confirms BattleSim launch dialogs retain first-show sizing expectations.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 14, 2026
+	 * @date Last Modified: Apr 14, 2026
+	 */
 	void testBattleSimLaunchDialogsRetainFirstShowSizingContracts();
+	/**
+	 * @brief Verifies startup launch creates centered splash and BattleSim frame surfaces.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 16, 2026
+	 * @date Last Modified: Apr 16, 2026
+	 */
 	void testStartupLaunchCreatesCenteredSplashAndBattleSimFrame();
+	/**
+	 * @brief Validates scenario-dialog flow launches battle screen with lifecycle checks.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 04, 2026
+	 * @date Last Modified: Apr 04, 2026
+	 */
 	void testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage();
+	/**
+	 * @brief Validates scenario-editor start-battle flow launches battle screen cleanly.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Apr 04, 2026
+	 * @date Last Modified: Apr 04, 2026
+	 */
 	void testScenarioEditorStartBattleLaunchesBattleScreenWithLifecycleCoverage();
 };
 

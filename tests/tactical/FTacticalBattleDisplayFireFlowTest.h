@@ -11,6 +11,15 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief CppUnit fixture for FTacticalBattleDisplayFireFlowTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 22, 2026
+ * @date Last Modified: May 09, 2026
+ */
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
 CPPUNIT_TEST( testDrawAndOnPaintUseBattleScreenStateAccessors );
@@ -47,25 +56,205 @@ public:
 void setUp();
 void tearDown();
 
+/**
+ * @brief Verifies draw And On Paint Use Battle Screen State Accessors.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testDrawAndOnPaintUseBattleScreenStateAccessors();
+/**
+ * @brief Verifies zoom Image Load Uses Resolve Asset Path.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 17, 2026
+ * @date Last Modified: Apr 17, 2026
+ */
 void testZoomImageLoadUsesResolveAssetPath();
+/**
+ * @brief Verifies battle Board And Battle Screen Use Resolve Asset Path For Tactical Images.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 17, 2026
+ * @date Last Modified: Apr 17, 2026
+ */
 void testBattleBoardAndBattleScreenUseResolveAssetPathForTacticalImages();
+/**
+ * @brief Verifies legacy Fire All Weapons Helper Removed.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testLegacyFireAllWeaponsHelperRemoved();
+/**
+ * @brief Verifies defensive Fire Done Delegates To Model Fire Phase Resolution.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testDefensiveFireDoneDelegatesToModelFirePhaseResolution();
+/**
+ * @brief Verifies offensive Fire Done Delegates To Model Fire Phase Resolution.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testOffensiveFireDoneDelegatesToModelFirePhaseResolution();
+/**
+ * @brief Verifies defensive Fire Done Disables And Hides Button Before Resolution.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 02, 2026
+ * @date Last Modified: Apr 02, 2026
+ */
 void testDefensiveFireDoneDisablesAndHidesButtonBeforeResolution();
+/**
+ * @brief Verifies offensive Fire Done Disables And Hides Button Before Resolution.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 02, 2026
+ * @date Last Modified: Apr 02, 2026
+ */
 void testOffensiveFireDoneDisablesAndHidesButtonBeforeResolution();
+/**
+ * @brief Verifies weapon Selection Delegates To Battle Screen Model Api.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testWeaponSelectionDelegatesToBattleScreenModelApi();
+/**
+ * @brief Verifies defense Selection Delegates To Battle Screen Model Api.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testDefenseSelectionDelegatesToBattleScreenModelApi();
+/**
+ * @brief Verifies mine Placement Flow Uses Model Mine Placement Apis.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testMinePlacementFlowUsesModelMinePlacementApis();
+/**
+ * @brief Verifies mine Placement Display Uses Model Ship List.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testMinePlacementDisplayUsesModelShipList();
+/**
+ * @brief Verifies display Click Flow Uses Model Forwarding Apis.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testDisplayClickFlowUsesModelForwardingApis();
+/**
+ * @brief Verifies move Done Delegates To Battle Screen Complete Move Phase.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 02, 2026
+ * @date Last Modified: Apr 02, 2026
+ */
 void testMoveDoneDelegatesToBattleScreenCompleteMovePhase();
+/**
+ * @brief Verifies move Done Disconnects And Hides Move Button Around Delegation.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 02, 2026
+ * @date Last Modified: Apr 02, 2026
+ */
 void testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation();
+/**
+ * @brief Verifies move Prompt Differentiates Stopped Facing Normal And No Ship Cases.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: May 09, 2026
+ * @date Last Modified: May 09, 2026
+ */
 void testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases();
+/**
+ * @brief Verifies action Prompt Spacing Contract Constants And Helpers Defined.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 08, 2026
+ * @date Last Modified: Apr 08, 2026
+ */
 void testActionPromptSpacingContractConstantsAndHelpersDefined();
+/**
+ * @brief Verifies action Prompt Spacing Contract Applied Across Action Phases.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 08, 2026
+ * @date Last Modified: Apr 08, 2026
+ */
 void testActionPromptSpacingContractAppliedAcrossActionPhases();
+/**
+ * @brief Verifies action Button Show Paths Relayout After Visibility Change.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 08, 2026
+ * @date Last Modified: Apr 08, 2026
+ */
 void testActionButtonShowPathsRelayoutAfterVisibilityChange();
+/**
+ * @brief Verifies action Button Hide Paths Relayout After Visibility Change.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 08, 2026
+ * @date Last Modified: Apr 08, 2026
+ */
 void testActionButtonHidePathsRelayoutAfterVisibilityChange();
 };
 

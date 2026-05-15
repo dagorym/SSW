@@ -11,6 +11,15 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief CppUnit fixture for FTacticalGameMechanicsTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: May 09, 2026
+ */
 class FTacticalGameMechanicsTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalGameMechanicsTest );
 CPPUNIT_TEST( testFTacticalGameImplementationCompilesStandalone );
@@ -39,20 +48,155 @@ public:
 void setUp();
 void tearDown();
 
+/**
+ * @brief Verifies fTactical Game Implementation Compiles Standalone.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testFTacticalGameImplementationCompilesStandalone();
+/**
+ * @brief Verifies header Exposes Additive Mechanics Api Surface.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testHeaderExposesAdditiveMechanicsApiSurface();
+/**
+ * @brief Verifies reset Initializes Safe Legacy Compatible Defaults.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testResetInitializesSafeLegacyCompatibleDefaults();
+/**
+ * @brief Verifies tactical Report Lifecycle Uses Shared Report Types.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testTacticalReportLifecycleUsesSharedReportTypes();
+/**
+ * @brief Verifies fire All Weapons Owns Combat Report Lifecycle And Cleanup.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testFireAllWeaponsOwnsCombatReportLifecycleAndCleanup();
+/**
+ * @brief Verifies destroyed Ship Bookkeeping Lifecycle Contract Is Explicit.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testDestroyedShipBookkeepingLifecycleContractIsExplicit();
+/**
+ * @brief Verifies movement Helpers Reset And Finalize Turn Data.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testMovementHelpersResetAndFinalizeTurnData();
+/**
+ * @brief Verifies winner And Combat End Helpers Resolve Battle State.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testWinnerAndCombatEndHelpersResolveBattleState();
+/**
+ * @brief Verifies destroyed Ship Cleanup Purges Hex And Turn Bookkeeping.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testDestroyedShipCleanupPurgesHexAndTurnBookkeeping();
+/**
+ * @brief Verifies fire ICMCollects Only Actionable Hex Interceptions.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testFireICMCollectsOnlyActionableHexInterceptions();
+/**
+ * @brief Verifies interaction Apis And Renderer Accessors Are Exposed.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testInteractionApisAndRendererAccessorsAreExposed();
+/**
+ * @brief Verifies hex Click Dispatch And Target Selection Rules Flow Through Model State.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState();
+/**
+ * @brief Verifies mine Placement And Move Fire Progression Update Model State.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 01, 2026
+ * @date Last Modified: Apr 01, 2026
+ */
 void testMinePlacementAndMoveFireProgressionUpdateModelState();
+/**
+ * @brief Verifies stopped Ship Free Rotation Guards And Facing Selection Flow.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: May 09, 2026
+ * @date Last Modified: May 09, 2026
+ */
 void testStoppedShipFreeRotationGuardsAndFacingSelectionFlow();
+/**
+ * @brief Verifies implementation Remains Self Contained Without Legacy Wx Rewire.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testImplementationRemainsSelfContainedWithoutLegacyWxRewire();
 };
 

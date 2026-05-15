@@ -12,6 +12,15 @@
 
 namespace FrontierTests {
 
+/**
+ * @brief CppUnit fixture for FTacticalBattleScreenElectricalFireTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 22, 2026
+ * @date Last Modified: Apr 03, 2026
+ */
 class FTacticalBattleScreenElectricalFireTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleScreenElectricalFireTest );
 CPPUNIT_TEST( testApplyFireDamageDelegatesToTacticalModel );
@@ -32,11 +41,65 @@ public:
 void setUp();
 void tearDown();
 
+/**
+ * @brief Verifies apply Fire Damage Delegates To Tactical Model.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 30, 2026
+ * @date Last Modified: Mar 30, 2026
+ */
 void testApplyFireDamageDelegatesToTacticalModel();
+/**
+ * @brief Verifies declare Winner Uses Tactical UIAnd Guarded Close Path.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 30, 2026
+ * @date Last Modified: Mar 30, 2026
+ */
 void testDeclareWinnerUsesTacticalUIAndGuardedClosePath();
+/**
+ * @brief Verifies close Battle Screen Uses Model Close Guard With Modal First Path.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 30, 2026
+ * @date Last Modified: Mar 30, 2026
+ */
 void testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath();
+/**
+ * @brief Verifies modal Caller Sites Own Battle Screen Lifetime After Show Modal.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Mar 29, 2026
+ */
 void testModalCallerSitesOwnBattleScreenLifetimeAfterShowModal();
+/**
+ * @brief Verifies battle Sim Launch Path Uses Modal Dialog Flow Into Battle Screen.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 03, 2026
+ * @date Last Modified: Apr 03, 2026
+ */
 void testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen();
+/**
+ * @brief Verifies battle Screen Constructor Owns And Installs Tactical Game And UI.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Apr 03, 2026
+ * @date Last Modified: Apr 03, 2026
+ */
 void testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI();
 };
 

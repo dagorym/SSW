@@ -21,12 +21,12 @@ struct FTacticalDamageResolution;
 /**
  * @brief Base class for all vehicle objects
  *
- * This class forms the base class for all the vehicle objects used in
- * the game such as space ships and stations.
+ * This class provides the shared hull, movement, weapon, defense, ownership,
+ * and tactical-damage state used by all ship and station types.
  *
- * @author Tom Stephens
- * @date Created:  Jan 12, 2005
- * @date Last Modified:  Feb 22, 2011
+ * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @date Created:  Mar 24, 2009
+ * @date Last Modified:  May 02, 2026
  */
 class FVehicle : public Frontier::FPObject
 {
@@ -162,17 +162,18 @@ public:
 	/**
 	 * @brief Take damage from a successful hit
 	 *
-	 * This method provides the damage interface for the vessel.  Based on the
-	 * basic flag, it will either just apply hull damage or call the advanced
-	 * damage table for the vessel.
+	 * This method applies either basic hull-only damage or advanced tactical
+	 * damage-table resolution and can optionally capture a structured breakdown
+	 * of the resulting effects.
 	 *
 	 * @param damage The amount of hull damage sustained
 	 * @param damageMod The table modifier for the advanced damage table.  Default is 0
 	 * @param basic Flag for whether or not to just use basic damage (hull hits only).  Default is false
+	 * @param result Optional tactical damage report output structure
 	 *
-	 * @author Tom Stephens
-	 * @date Created:  Apr 28, 2009
-	 * @date Last Modified:  Jan 28, 2011
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @date Created:  Apr 29, 2009
+	 * @date Last Modified:  Mar 20, 2026
 	 */
 	virtual void takeDamage (int damage, int damageMod = 0, bool basic = false, FTacticalDamageResolution * result = NULL);
 
@@ -321,48 +322,48 @@ protected:
 	 *
 	 * This method implements the default advanced damage table from the
 	 * Tactical Operations Manual.  It can be overridden for derived
-	 * classes to reflect the specifics of the derived class.
+	 * classes to reflect the specifics of the derived class, and optionally
+	 * records the detailed tactical effects applied during resolution.
 	 *
 	 * @param damage The amount of hull damage to apply if applicable
 	 * @param damageMod The damage table modifier for the attacking weapon
+	 * @param result Optional tactical damage report output structure
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
 	 * @date Created:  Jan 28, 2011
-	 * @date Last Modified:  Jan 28, 2011
+	 * @date Last Modified:  May 02, 2026
 	 */
 	virtual void advancedDamage(int damage, int damageMod, FTacticalDamageResolution * result = NULL);
 
 	/**
 	 * @brief Applies damage to a weapon hit in combat
 	 *
-	 * This method takes a list of weapons and loops over the weapons
-	 * carried by the ship.  If one of the weapons in the listed is
-	 * carried by the ship and undamaged it is marked as damaged and
-	 * a 1 is returned to indicate that a weapon was hit.  If
-	 * no weapons from the list are found it returns a 0.
+	 * This method walks the priority weapon list and marks the first matching
+	 * undamaged onboard weapon as damaged. If no matching operational weapon is
+	 * found, hull damage fallback handling remains with the caller.
 	 *
 	 * @param wList List of weapons to check existence of
+	 * @param result Optional tactical damage report output structure
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
 	 * @date Created:  Jan 28, 2011
-	 * @date Last Modified:  Jan 28, 2011
+	 * @date Last Modified:  Mar 20, 2026
 	 */
 	int damageWeapon(int * wList, FTacticalDamageResolution * result = NULL);
 
 	/**
-	 * @brief Applies damage to a weapon hit in combat
+	 * @brief Applies damage to a defense hit in combat
 	 *
-	 * This method takes a list of defenses and loops over the defenses
-	 * carried by the ship.  If one of the defenses in the listed is
-	 * carried by the ship and undamaged it is marked as damaged and
-	 * a 1 is returned to indicate that a defense was hit.  If
-	 * no defenses from the list are found it returns a 0.
+	 * This method walks the priority defense list and marks the first matching
+	 * undamaged onboard defense as damaged. If no matching operational defense
+	 * is found, hull damage fallback handling remains with the caller.
 	 *
 	 * @param dList List of defenses to check existence of
+	 * @param result Optional tactical damage report output structure
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, gpt-5.3-codex (medium)
 	 * @date Created:  Jan 28, 2011
-	 * @date Last Modified:  Jan 28, 2011
+	 * @date Last Modified:  Mar 20, 2026
 	 */
 	int damageDefense(int * dList, FTacticalDamageResolution * result = NULL);
 };

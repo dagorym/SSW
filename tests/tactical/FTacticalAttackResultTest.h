@@ -13,6 +13,15 @@
 namespace FrontierTests {
 using namespace Frontier;
 
+/**
+ * @brief CppUnit fixture for FTacticalAttackResultTest tactical regression coverage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium)
+ * @date Created: Mar 20, 2026
+ * @date Last Modified: Mar 20, 2026
+ */
 class FTacticalAttackResultTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalAttackResultTest );
 	CPPUNIT_TEST( testDefaultConstructorRepresentsNotFiredAttack );
@@ -23,7 +32,25 @@ public:
 	void setUp();
 	void tearDown();
 
+	/**
+	 * @brief Verifies default Constructor Represents Not Fired Attack.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 20, 2026
+	 * @date Last Modified: Mar 20, 2026
+	 */
 	void testDefaultConstructorRepresentsNotFiredAttack();
+	/**
+	 * @brief Verifies helpers And Effects Reflect Mutated Outcome State.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.3-codex (medium)
+	 * @date Created: Mar 20, 2026
+	 * @date Last Modified: Mar 20, 2026
+	 */
 	void testHelpersAndEffectsReflectMutatedOutcomeState();
 };
 
