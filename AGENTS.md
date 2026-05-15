@@ -209,15 +209,37 @@ Milestone 10 note: there is no fully automated end-to-end wx GUI playback system
 - Test classes: `<ClassName>Test` in `namespace FrontierTests`
 
 ### Include Guards
-Use `#ifndef _<FILENAME>_H_` pattern (e.g., `#ifndef _FGAME_H_`). Doxygen-style file headers mandatory:
+Use `#ifndef _<FILENAME>_H_` pattern (e.g., `#ifndef _FGAME_H_`). 
+
+### Function Comments
+
+Doxygen-style file headers mandatory in all header files.  
+
+For simple one-line functions or getter and setters you can use a simple one-line doxygen comment (proceeded with a triple forward slash) like this example:
+
+```cpp
+/// get the time left in the transit
+const int getTransitTime() const { return m_transitTime; }
+```
+
+For major functions use a full header block like below:
 ```cpp
 /**
- * @file ClassName.h
  * @brief Brief description
- * @author Name
+ * 
+ * Full description of the function's purpose, input values, return values, 
+ * and any other notes needed to understand its operation or the reason a
+ * specific algorithm was chosen.
+ * 
+ * @param Include a paramater description for each function parameter
+ * ...
+ * 
+ * @author Name1, Name2, ...
  * @date Created: MMM DD, YYYY
+ * @date Last Modified: MMM DD, YYYY
  */
 ```
+When writing new functions, this should be added to the function with the author being the agent model (with reasoning level) that wrote the code.  The `Created` and `Last Modified` dates should be the current date.  When updating a function, the `Last Modified` date should be updated to the current date and the current agent model should be added to the list in the `@author` field if it is not already there.
 
 ### Memory Management
 - Raw pointers common (`FVehicle*`, `FWeapon*`) - no smart pointers in legacy code
