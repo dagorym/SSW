@@ -1,0 +1,90 @@
+{
+  "status": "success",
+  "task_identifier": "tactical-movement-prompt-overlap-plan/tmp-1",
+  "agent": "Verifier",
+  "branch": "layout-update-verifier-20260516",
+  "worktree": "/home/tstephen/worktrees/SSW/layout-update-verifier-20260516",
+  "comparison_base_assumption": "Used commit efc5eac6e32f363de7f5a5c0f457854de1570711 as the story-specific base because it is the direct parent of implementation commit 4d8cb29beb1bd94fc84cd394bb9686adcb845007 and the last commit before this FBattleScreen layout change stack begins.",
+  "plan_artifact_path": "plans/tactical-movement-prompt-overlap-replan-v2.md",
+  "shared_artifact_directory": "artifacts/tactical-movement-prompt-overlap-plan/tmp-1",
+  "scope_reviewed": [
+    "include/tactical/FBattleScreen.h",
+    "src/tactical/FBattleScreen.cpp",
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "doc/UsersGuide.md",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_report.md",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_result.json",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_report.md",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_result.json",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_report.md",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_result.json",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_prompt.txt"
+  ],
+  "convention_files_considered": [
+    "AGENTS.md",
+    "myteam get role verifier"
+  ],
+  "commands_executed": [
+    "myteam get role verifier",
+    "git diff --name-only efc5eac6e32f363de7f5a5c0f457854de1570711..HEAD",
+    "git diff --unified=20 efc5eac6e32f363de7f5a5c0f457854de1570711..HEAD -- include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp doc/UsersGuide.md",
+    "cd tests && ./tactical/TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests"
+  ],
+  "acceptance_criteria_verification": {
+    "battle_screen_defaults_to_1200x900": "verified",
+    "lower_panel_starts_at_120px_when_possible": "verified",
+    "parent_layout_can_honor_larger_lower_panel_requests": "verified",
+    "map_keeps_at_least_60_percent_of_client_height": "verified",
+    "no_tactical_rules_or_battle_state_behavior_changes": "verified",
+    "documentation_update_matches_shipped_behavior": "verified"
+  },
+  "test_results": {
+    "tactical_tests": {
+      "command": "cd tests && ./tactical/TacticalTests",
+      "result": "failed",
+      "notes": "Run: 147, Failures: 3, Errors: 0. Failures are the unchanged baseline FBattleDisplay.cpp token expectations outside this FBattleScreen-only scope. New FBattleScreen acceptance coverage passed."
+    },
+    "gui_tests": {
+      "command": "cd tests/gui && make && xvfb-run -a ./GuiTests",
+      "result": "failed",
+      "notes": "Run: 34, Failures: 1, Errors: 0. Failure is the unchanged baseline FBattleDisplay.cpp token expectation outside this FBattleScreen-only scope. The new FBattleScreen live layout-policy test passed."
+    }
+  },
+  "findings": {
+    "blocking": [],
+    "warning": [],
+    "note": [
+      {
+        "file": "include/tactical/FBattleScreen.h",
+        "lines": "30-45",
+        "summary": "Constructor default size updated to 1200x900 and header comments were refreshed for the new layout policy surface."
+      },
+      {
+        "file": "src/tactical/FBattleScreen.cpp",
+        "lines": "23-25, 128-145, 180-217",
+        "summary": "FBattleScreen now applies an explicit 120px baseline lower-panel policy, remembers larger display requests, and enforces the 60% minimum map-height floor without touching tactical rules/state logic."
+      },
+      {
+        "file": "doc/UsersGuide.md",
+        "lines": "323-327",
+        "summary": "User guide now matches the shipped tactical battle-screen sizing/layout behavior; no additional documentation update is required."
+      }
+    ]
+  },
+  "documentation_review": {
+    "updated_file": "doc/UsersGuide.md",
+    "accurate": true,
+    "additional_updates_required": false,
+    "protected_rules_doc_modified": false,
+    "battle_state_documentation_changed": false
+  },
+  "verdict": "PASS",
+  "artifact_file_paths_written": [
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_report.md",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_result.json"
+  ]
+}
