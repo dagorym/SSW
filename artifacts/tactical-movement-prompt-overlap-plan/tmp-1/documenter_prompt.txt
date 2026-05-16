@@ -1,55 +1,52 @@
-Your role is 'documenter'. Your task is as follows:
+You are the Documenter Agent.
 
 Task summary:
-- Document the validated FBattleDisplay lower-panel layout-state update that persists prompt/stats split state and requested display height across tactical phases, with geometry-driven invalidation behavior.
+- Document the tactical lower-panel resize/reflow validation results for branch `layout-update-tester-20260516`.
+- Implementation validated tactical layout-only updates in FBattleScreen/FBattleDisplay:
+  - `FBattleScreen::onSize(...)` now triggers `FBattleDisplay::reflowLowerPanelLayout()` before screen-level layout policy.
+  - `FBattleDisplay` added lower-panel reflow helper seams (`reflowLowerPanelLayout`, `refreshMovePromptReservation`, `buildMovePromptText`, `getCurrentPromptMaxWidth`) for deterministic move-prompt reservation recalculation.
+- No tactical combat rules or fire-resolution logic changes were introduced.
 
-Acceptance criteria validated:
-- FBattleDisplay has an explicit shared layout state for prompt/stats positioning and requested height.
-- The ship-stats split remains stable across phases when size constraints do not force change.
-- The display can communicate a requested height based on its current layout state.
-- The change remains localized to tactical display/layout behavior.
+Acceptance criteria validated by Tester:
+- Open-dialog resize triggers immediate lower-panel reflow.
+- Lower-panel layout state recalculates predictably when size changes require it.
+- Selected-ship constrained-width move path is deterministic enough for downstream live GUI tests.
+- Change remains localized to tactical layout behavior and does not alter tactical rules.
 
-Implementation branch or worktree context:
+Implementation/worktree context:
+- Tester worktree: `/home/tstephen/worktrees/SSW/layout-update-tester-20260516`
 - Branch: `layout-update-tester-20260516`
-- Worktree: `/home/tstephen/worktrees/SSW/layout-update-tester-20260516`
-- Implementation commit inspected for localization: `55ed2b6`
+- Shared artifact directory to reuse: `artifacts/tactical-movement-prompt-overlap-plan/tmp-1`
+- Plan provenance path (inferred from repo evidence): `plans/tactical-movement-prompt-overlap-replan-v2.md`
 
-Files modified by Implementer and Tester to inspect for documentation impact:
-- include/tactical/FBattleDisplay.h
-- src/tactical/FBattleDisplay.cpp
-- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
-- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
-- tests/gui/TacticalGuiLiveTest.h
-- tests/gui/TacticalGuiLiveTest.cpp
+Files modified by Implementer and Tester to inspect:
+- Implementer files:
+  - `include/tactical/FBattleDisplay.h`
+  - `src/tactical/FBattleDisplay.cpp`
+  - `src/tactical/FBattleScreen.cpp`
+- Tester files:
+  - `tests/gui/TacticalGuiLiveTest.cpp`
+  - `tests/gui/TacticalGuiLiveTest.h`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+  - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
 
 Test commit:
-- ec57142
+- `15709b920a54c1c54ba3914307b7c888172de218`
 
 Commands executed:
-- cd tests && make tactical-tests && ./tactical/TacticalTests
-- cd tests/gui && make && xvfb-run -a ./GuiTests
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (baseline): `OK (150 tests)`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (baseline): `OK (35 tests)`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (post-change): `OK (152 tests)`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (post-change): `OK (35 tests)`
 
-Final test outcomes:
-- Tactical tests: OK (150 tests)
-- GUI tests: OK (35 tests)
-- Added tactical source-contract checks for shared lower-panel state, persistence/invalidation flow, and requested-height propagation.
-- Added live GUI regression for cross-phase lower-panel min-height stability under non-invalidating geometry changes.
-
-Documentation context:
-- Tactical display/layout behavior docs may need updates where FBattleDisplay lower-panel rendering or layout policy is described.
-- Emphasize that layout mode/position/requested-height state is now shared and preserved across phases unless geometry invalidates active split assumptions.
-
-Plan and diff context:
-- Plan/story context: tactical movement prompt overlap plan, artifact lane `tmp-1`.
-- Comparison base assumption: use `layout-update` as the likely base branch and compare through tester commit `ec57142` plus the implementation commit `55ed2b6`.
+Documentation guidance:
+- Focus documentation impact analysis on tactical layout determinism and resize/reflow behavior.
+- Preserve non-negotiable constraint: do not edit `doc/rules/tactical_operations_manual.md`.
 
 Startup behavior:
-- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
-- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
-- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
-
-Shared artifact directory:
-- artifacts/tactical-movement-prompt-overlap-plan/tmp-1
+- If scope, changed files, and artifact path are present, begin documentation work immediately and continue in the same run.
+- Infer any missing documentation conventions from repository evidence and label assumptions.
+- Do not stop after activation metadata, scope confirmation, or diff discovery when the next documentation step can proceed.
 
 Completion gate:
 - Do not report success unless all required artifacts exist and all changes are committed.
