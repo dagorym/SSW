@@ -1,0 +1,29 @@
+{
+  "status": "success",
+  "task_identifier": "TMPR-1",
+  "branch_name": "layout-update-implementer-20260516",
+  "implementation_commit_hash": "18fd1d79fb30bd1f37f8d1931cf8ff4b23bd24b6",
+  "changed_files": [
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "validation_commands_run": [
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests && cd gui && make && xvfb-run -a ./GuiTests",
+      "outcome": "baseline pass; OK (152 tests) and OK (35 tests)"
+    },
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests && cd gui && make && xvfb-run -a ./GuiTests",
+      "outcome": "post-change tactical pass; GUI had one intermittent BattleSimGuiLiveTest failure"
+    },
+    {
+      "command": "cd tests/gui && xvfb-run -a ./GuiTests",
+      "outcome": "rerun pass; OK (35 tests)"
+    }
+  ],
+  "validation_outcome": "passed (with GUI flake triaged by successful rerun)",
+  "artifact_file_paths_written": [
+    "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-1/implementer_report.md",
+    "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-1/tester_prompt.txt",
+    "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-1/implementer_result.json"
+  ]
+}

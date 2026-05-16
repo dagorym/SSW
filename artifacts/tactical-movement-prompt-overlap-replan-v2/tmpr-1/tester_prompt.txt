@@ -1,0 +1,30 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate TMPR-1 tactical lower-panel layout-state behavior updates.
+
+Implemented change:
+- `FBattleDisplay::ensureLowerPanelLayoutState(...)` now treats stacked mode as reversible fallback: stacked remains only while split cannot fit; when width regains split viability, normal reflow switches back to right-split without phase transitions.
+
+Modified file:
+- `src/tactical/FBattleDisplay.cpp`
+
+Acceptance criteria to validate:
+- Lower-panel layout state persists across phases and redraws while current mode remains valid.
+- Narrow width still forces stacked mode when required.
+- Widening after forced stacked returns layout to side-by-side when right split is valid again.
+- Re-entry to side-by-side occurs during resize/reflow, not only on phase transition.
+
+Tester test-file guidance:
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+
+Suggested validation commands:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Shared artifact directory:
+- `artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-1`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
