@@ -1,0 +1,77 @@
+{
+  "status": "failure",
+  "task_identifier": "tactical-movement-prompt-overlap-plan/tmp-1",
+  "branch_name": "layout-update",
+  "shared_artifact_directory": "artifacts/tactical-movement-prompt-overlap-plan/tmp-1",
+  "test_commit_hash": "2239e3544516fba1e5b161ae092476156ff474a9",
+  "test_files_added_or_modified": [
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.cpp"
+  ],
+  "implementation_files_validated": [
+    "include/tactical/FBattleDisplay.h",
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "commands_run": [
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "result": "passed",
+      "notes": "Baseline before test edits: OK (143 tests)."
+    },
+    {
+      "command": "cd tests/gui && make && xvfb-run -a ./GuiTests",
+      "result": "passed",
+      "notes": "Baseline before test edits: OK (33 tests)."
+    },
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "result": "failed",
+      "notes": "After test edits: 3 assertion failures in FTacticalBattleDisplayFireFlowTest."
+    },
+    {
+      "command": "cd tests/gui && make && xvfb-run -a ./GuiTests",
+      "result": "failed",
+      "notes": "After test edits: 1 assertion failure in TacticalGuiLiveTest."
+    }
+  ],
+  "pass_fail_totals": {
+    "regression_cases_updated": 2,
+    "baseline_tactical_tests_passed": 143,
+    "baseline_gui_tests_passed": 33,
+    "post_change_failures": 4
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "In the normal movement-phase selected-ship state, the movement prompt and ship stats block do not overlap.",
+      "status": "failed"
+    },
+    {
+      "criterion": "The revised third instruction line is present with the intended meaning and quoted `Movement Done` label.",
+      "status": "failed"
+    },
+    {
+      "criterion": "The longer instruction remains readable in narrower widths through wrapping or equivalent constrained rendering instead of overflowing into the ship stats area.",
+      "status": "failed"
+    },
+    {
+      "criterion": "If a dynamic ship-stats margin is introduced, it is derived from available space or prompt width constraints rather than replacing one fixed overlap-prone constant with another fixed constant.",
+      "status": "failed"
+    },
+    {
+      "criterion": "Any new helper or constants added for prompt wrapping or ship-stats positioning are explicit enough for downstream regression coverage.",
+      "status": "failed"
+    }
+  ],
+  "unmet_acceptance_criteria": [
+    "Missing quoted movement reminder text with 'Movement Done' label.",
+    "Missing wrapped prompt helpers drawWrappedActionPrompt/countWrappedActionPromptLines.",
+    "Missing dynamic reservation helper reserveActionPromptLines.",
+    "Missing available-width stats-margin fallback branch marker largestMarginWithStatsRoom."
+  ],
+  "artifact_file_paths_written": [
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_report.md",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_result.json"
+  ],
+  "documenter_prompt_written": false,
+  "temporary_byproducts": []
+}
