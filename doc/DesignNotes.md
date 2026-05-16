@@ -1095,6 +1095,34 @@ cd tests/gui && make && xvfb-run -a ./GuiTests
 
 Result: `OK (26 tests)`.
 
+The next tactical lower-panel resize/reflow follow-up kept that same
+player-facing layout contract but tightened the open-dialog resize path so the
+runtime geometry updates deterministically instead of waiting for incidental
+repaint timing. `FBattleScreen::onSize(...)` now forces
+`FBattleDisplay::reflowLowerPanelLayout()` before the screen reapplies its
+map-vs-display sizing policy, and `FBattleDisplay` now routes move-phase resize
+recalculation through `reflowLowerPanelLayout()`,
+`refreshMovePromptReservation(...)`, `buildMovePromptText(...)`, and
+`getCurrentPromptMaxWidth(...)`. Those helper seams let the lower panel rebuild
+its prompt reservation from the current selected-ship text and available width
+before the parent layout decides how much height the panel needs, keeping the
+selected-ship constrained-width movement path stable enough for downstream live
+GUI checks. The paired tester coverage now locks that behavior through
+source-contract assertions on the resize/reflow ordering, deterministic
+reservation recalculation for the move prompt, and live resize checks that keep
+the `Movement Done` band below the reserved prompt region without changing any
+tactical rules or fire-resolution flow.
+
+Validation commands:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+cd tests/gui && make && xvfb-run -a ./GuiTests
+```
+
+Result: `OK (152 tests)` for the tactical runner and `OK (35 tests)` for the
+GUI runner.
+
 The tactical combat report hit-detail follow-up then documented the richer
 player-facing summary shape used by `FTacticalCombatReportSummary`.
 `include/tactical/FTacticalCombatReport.h` now adds
