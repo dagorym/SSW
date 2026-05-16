@@ -89,6 +89,33 @@ protected:
 	/// minimum vertical gap between prompt block and tactical action buttons
 	static const int ACTION_PROMPT_BUTTON_GAP = 8;
 
+	/// minimum width needed to render ship stats in a right-side split
+	static const int SHIP_STATS_MIN_WIDTH = 320;
+	/// minimum width to preserve for prompt text while ship stats are right-aligned
+	static const int ACTION_PROMPT_MIN_WIDTH = 240;
+
+	/// lower-panel layout modes for tactical prompts and ship stats
+	enum LowerPanelLayoutMode {
+		LOWER_PANEL_LAYOUT_RIGHT_SPLIT,
+		LOWER_PANEL_LAYOUT_STACKED
+	};
+
+	/**
+	 * @brief Shared lower-panel layout state across tactical phases.
+	 *
+	 * @author Tom Stephens, GPT-5 (high)
+	 * @date Created: May 16, 2026
+	 * @date Last Modified: May 16, 2026
+	 */
+	struct LowerPanelLayoutState {
+		LowerPanelLayoutMode mode;
+		int shipStatsLeftMargin;
+		int shipStatsTop;
+		int reservedPromptLines;
+		int requestedDisplayHeight;
+		bool initialized;
+	};
+
 	/// Event handler for setting the ship's speed
 	void onSetSpeed( wxCommandEvent& event );
 
@@ -395,6 +422,24 @@ protected:
 
 	/// returns explicit spacer height that keeps action buttons below prompt text
 	int getActionButtonTopSpacerHeight() const;
+
+	/// reserve prompt lines for the lower-panel action layout state
+	void reserveActionPromptLines(int lineCount);
+
+	/// counts wrapped lines needed to render a prompt within the given width
+	int countWrappedActionPromptLines(wxDC &dc, const wxString &promptText, int maxWidth) const;
+
+	/// draws wrapped prompt text into action-prompt lines and returns consumed lines by reference
+	void drawWrappedActionPrompt(wxDC &dc, const wxString &promptText, int maxWidth, int &lineCursor);
+
+	/// validates or updates the shared lower-panel layout state for the current geometry
+	void ensureLowerPanelLayoutState(int panelWidth, int panelHeight);
+
+	/// apply the requested display height from the active lower-panel layout state
+	void applyRequestedDisplayHeight();
+
+	/// shared layout state for prompt/stats split and requested tactical-display height
+	LowerPanelLayoutState m_lowerPanelLayoutState;
 };
 
 }

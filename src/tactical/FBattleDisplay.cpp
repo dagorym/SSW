@@ -27,6 +27,12 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_parent = (FBattleScreen *)parent;
 	m_loaded = false;
 	m_first = true;
+	m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;
+	m_lowerPanelLayoutState.shipStatsLeftMargin = 300;
+	m_lowerPanelLayoutState.shipStatsTop = BORDER;
+	m_lowerPanelLayoutState.reservedPromptLines = ACTION_PROMPT_MAX_LINES;
+	m_lowerPanelLayoutState.requestedDisplayHeight = 120;
+	m_lowerPanelLayoutState.initialized = false;
 
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	wxColour black(wxT("#000000"));// black
@@ -83,6 +89,132 @@ int FBattleDisplay::getActionPromptLineY(int lineIndex) const{
 
 int FBattleDisplay::getActionButtonTopSpacerHeight() const{
 	return getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_BUTTON_GAP;
+}
+
+void FBattleDisplay::reserveActionPromptLines(int lineCount){
+	if (lineCount < 1){
+		lineCount = 1;
+	}
+	if (lineCount > ACTION_PROMPT_MAX_LINES){
+		lineCount = ACTION_PROMPT_MAX_LINES;
+	}
+	m_lowerPanelLayoutState.reservedPromptLines = lineCount;
+}
+
+int FBattleDisplay::countWrappedActionPromptLines(wxDC &dc, const wxString &promptText, int maxWidth) const{
+	if (promptText.IsEmpty()){
+		return 0;
+	}
+	if (maxWidth <= 0){
+		return 1;
+	}
+	wxArrayString words = wxSplit(promptText, ' ');
+	if (words.IsEmpty()){
+		return 1;
+	}
+	int lineCount = 1;
+	wxString currentLine;
+	for (size_t i = 0; i < words.size(); i++){
+		const wxString & word = words[i];
+		if (word.IsEmpty()){
+			continue;
+		}
+		const wxString candidate = currentLine.IsEmpty() ? word : currentLine + " " + word;
+		if (!currentLine.IsEmpty() && dc.GetTextExtent(candidate).GetWidth() > maxWidth){
+			lineCount++;
+			currentLine = word;
+		} else {
+			currentLine = candidate;
+		}
+	}
+	return lineCount;
+}
+
+void FBattleDisplay::drawWrappedActionPrompt(wxDC &dc, const wxString &promptText, int maxWidth, int &lineCursor){
+	if (promptText.IsEmpty()){
+		return;
+	}
+	if (maxWidth <= 0){
+		dc.DrawText(promptText,leftOffset,getActionPromptLineY(lineCursor));
+		lineCursor++;
+		return;
+	}
+	wxArrayString words = wxSplit(promptText, ' ');
+	wxString currentLine;
+	for (size_t i = 0; i < words.size(); i++){
+		const wxString & word = words[i];
+		if (word.IsEmpty()){
+			continue;
+		}
+		const wxString candidate = currentLine.IsEmpty() ? word : currentLine + " " + word;
+		if (!currentLine.IsEmpty() && dc.GetTextExtent(candidate).GetWidth() > maxWidth){
+			dc.DrawText(currentLine,leftOffset,getActionPromptLineY(lineCursor));
+			lineCursor++;
+			currentLine = word;
+		} else {
+			currentLine = candidate;
+		}
+	}
+	if (!currentLine.IsEmpty()){
+		dc.DrawText(currentLine,leftOffset,getActionPromptLineY(lineCursor));
+		lineCursor++;
+	}
+}
+
+void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight){
+	const int promptBottomY = getActionPromptLineY(m_lowerPanelLayoutState.reservedPromptLines - 1) + ACTION_PROMPT_LINE_HEIGHT;
+	const int statsHeight = BORDER + (int)(1.6*(10*6.3));
+	const int minStatsLeftMargin = leftOffset + ACTION_PROMPT_MIN_WIDTH;
+	const int largestMarginWithStatsRoom = panelWidth - SHIP_STATS_MIN_WIDTH - BORDER;
+	const bool splitCanFit = largestMarginWithStatsRoom >= minStatsLeftMargin;
+	const int stackedTop = promptBottomY + ACTION_PROMPT_BUTTON_GAP;
+	bool keepCurrentState = false;
+
+	if (m_lowerPanelLayoutState.initialized){
+		if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT){
+			keepCurrentState = splitCanFit
+				&& m_lowerPanelLayoutState.shipStatsLeftMargin >= minStatsLeftMargin
+				&& m_lowerPanelLayoutState.shipStatsLeftMargin <= largestMarginWithStatsRoom;
+		} else {
+			keepCurrentState = m_lowerPanelLayoutState.shipStatsTop >= stackedTop;
+		}
+	}
+
+	if (!keepCurrentState){
+		if (splitCanFit){
+			m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;
+			m_lowerPanelLayoutState.shipStatsLeftMargin = largestMarginWithStatsRoom;
+			m_lowerPanelLayoutState.shipStatsTop = BORDER;
+		} else {
+			m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;
+			m_lowerPanelLayoutState.shipStatsLeftMargin = leftOffset;
+			m_lowerPanelLayoutState.shipStatsTop = stackedTop;
+		}
+		m_lowerPanelLayoutState.initialized = true;
+	}
+
+	int requestedHeight = getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_LINE_HEIGHT + ACTION_PROMPT_BUTTON_GAP + BORDER;
+	const int statsBottom = m_lowerPanelLayoutState.shipStatsTop + statsHeight + BORDER;
+	if (statsBottom > requestedHeight){
+		requestedHeight = statsBottom;
+	}
+	if (requestedHeight < 120){
+		requestedHeight = 120;
+	}
+	if (panelHeight > requestedHeight){
+		requestedHeight = panelHeight;
+	}
+	m_lowerPanelLayoutState.requestedDisplayHeight = requestedHeight;
+}
+
+void FBattleDisplay::applyRequestedDisplayHeight(){
+	int requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;
+	if (requestedHeight < 120){
+		requestedHeight = 120;
+	}
+	if (GetMinSize().GetHeight() != requestedHeight){
+		SetMinSize(wxSize(-1, requestedHeight));
+	}
 }
 
 void FBattleDisplay::draw(wxDC &dc){
@@ -424,6 +556,16 @@ bool FBattleDisplay::setStationRotation(wxMouseEvent &event){
 void FBattleDisplay::drawMoveShip(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	const int promptTopY = getActionPromptLineY(0);
+	dc.DrawText("",leftOffset,promptTopY);
+	int promptMaxWidth = GetClientSize().GetWidth() - leftOffset - BORDER;
+	if (m_lowerPanelLayoutState.initialized
+			&& m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT){
+		promptMaxWidth = m_lowerPanelLayoutState.shipStatsLeftMargin - leftOffset - BORDER;
+	}
+	if (promptMaxWidth < 120){
+		promptMaxWidth = 120;
+	}
 	std::ostringstream os;
 	os << "It is the ";
 	if (m_parent->getActivePlayer()){
@@ -433,8 +575,10 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 	}
 	os << "turn.";
 	dc.SetTextForeground(white);
-	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
+	const wxString turnPrompt(os.str());
 	bool stoppedShipFacingSelection = false;
+	wxString detailPromptOne;
+	wxString detailPromptTwo;
 	if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
 		const std::map<unsigned int, FTacticalTurnData> & turnInfo = m_parent->getTurnInfo();
 		std::map<unsigned int, FTacticalTurnData>::const_iterator turnItr = turnInfo.find(m_parent->getShip()->getID());
@@ -446,13 +590,29 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 		}
 	}
 	if (stoppedShipFacingSelection) {
-		dc.DrawText("Select a highlighted preview route to choose your starting facing.",leftOffset,getActionPromptLineY(1));
-		dc.DrawText("Continue a route, or click an adjacent hex then Movement Done to rotate in place.",leftOffset,getActionPromptLineY(2));
+		detailPromptOne = "Select a highlighted preview route to choose your starting facing.";
+		detailPromptTwo = "Continue a route, or click an adjacent hex then Movement Done to rotate in place.";
 	} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
-		dc.DrawText("Select route hexes to move the ship.",leftOffset,getActionPromptLineY(1));
-		dc.DrawText("Press Movement Done when all ships finish movement.",leftOffset,getActionPromptLineY(2));
+		detailPromptOne = "Select route hexes to move the ship.";
+		detailPromptTwo = "Press the 'Movement Done' button when all ships have been assigned their movement instructions.";
 	} else {
-		dc.DrawText("Please select a ship to move.",leftOffset,getActionPromptLineY(1));
+		detailPromptOne = "Please select a ship to move.";
+	}
+
+	int promptLineCount = countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptOne, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptTwo, promptMaxWidth);
+	reserveActionPromptLines(promptLineCount);
+
+	int promptLineCursor = 0;
+	drawWrappedActionPrompt(dc, turnPrompt, promptMaxWidth, promptLineCursor);
+	drawWrappedActionPrompt(dc, detailPromptOne, promptMaxWidth, promptLineCursor);
+	drawWrappedActionPrompt(dc, detailPromptTwo, promptMaxWidth, promptLineCursor);
+
+	if (m_lowerPanelLayoutState.reservedPromptLines < ACTION_PROMPT_MAX_LINES){
+		for (int i = m_lowerPanelLayoutState.reservedPromptLines; i < ACTION_PROMPT_MAX_LINES; i++){
+			dc.DrawText("",leftOffset,getActionPromptLineY(i));
+		}
 	}
 		m_buttonMoveDone->Enable(m_parent->isMoveComplete());
 		if (m_first){
@@ -465,7 +625,19 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 }
 
 void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
-	int lMargin = 300;	// left margin for ship display
+	int panelWidth = 0;
+	int panelHeight = 0;
+	dc.GetSize(&panelWidth,&panelHeight);
+	ensureLowerPanelLayoutState(panelWidth, panelHeight);
+	applyRequestedDisplayHeight();
+	const int largestMarginWithStatsRoom = panelWidth - SHIP_STATS_MIN_WIDTH - BORDER;
+	int lMargin = m_lowerPanelLayoutState.shipStatsLeftMargin;
+	if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT
+			&& largestMarginWithStatsRoom >= leftOffset + ACTION_PROMPT_MIN_WIDTH
+			&& lMargin > largestMarginWithStatsRoom){
+		lMargin = largestMarginWithStatsRoom;
+	}
+	int topMargin = m_lowerPanelLayoutState.shipStatsTop;
 	int textSize = 10;		// text height
 	FVehicle *s = m_parent->getShip();
 	wxColour white(wxT("#FFFFFF"));
@@ -476,36 +648,36 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 //		std::cerr << "Entering drawCurrentShipStats() for " << s->getName() << std::endl;
 		dc.SetTextForeground(white);
 		dc.SetFont(bold);
-		dc.DrawText("Speed:",lMargin,BORDER+(int)(1.6*(textSize*1.3)));
-		dc.DrawText("Heading: ",lMargin+90,BORDER+(int)(1.6*(textSize*1.3)));
-		dc.DrawText("ADF:",lMargin,BORDER+(int)(1.6*(textSize*2.3)));
-		dc.DrawText("MR: ",lMargin+80,BORDER+(int)(1.6*(textSize*2.3)));
-		dc.DrawText("HP: ",lMargin+160,BORDER+(int)(1.6*(textSize*2.3)));
-		dc.DrawText("DCR: ",lMargin+240,BORDER+(int)(1.6*(textSize*2.3)));
-		dc.DrawText("Weapons:",lMargin,BORDER+(int)(1.6*(textSize*3.3)));
-		dc.DrawText("Defenses:",lMargin,BORDER+(int)(1.6*(textSize*4.3)));
-		dc.DrawText("Other Status:",lMargin,BORDER+(int)(1.6*(textSize*5.3)));
+		dc.DrawText("Speed:",lMargin,topMargin+(int)(1.6*(textSize*1.3)));
+		dc.DrawText("Heading: ",lMargin+90,topMargin+(int)(1.6*(textSize*1.3)));
+		dc.DrawText("ADF:",lMargin,topMargin+(int)(1.6*(textSize*2.3)));
+		dc.DrawText("MR: ",lMargin+80,topMargin+(int)(1.6*(textSize*2.3)));
+		dc.DrawText("HP: ",lMargin+160,topMargin+(int)(1.6*(textSize*2.3)));
+		dc.DrawText("DCR: ",lMargin+240,topMargin+(int)(1.6*(textSize*2.3)));
+		dc.DrawText("Weapons:",lMargin,topMargin+(int)(1.6*(textSize*3.3)));
+		dc.DrawText("Defenses:",lMargin,topMargin+(int)(1.6*(textSize*4.3)));
+		dc.DrawText("Other Status:",lMargin,topMargin+(int)(1.6*(textSize*5.3)));
 		dc.SetFont(large);
-		dc.DrawText(s->getName(),lMargin,BORDER);
+		dc.DrawText(s->getName(),lMargin,topMargin);
 		dc.SetFont(normal);
 		std::ostringstream os;
 		os << s->getSpeed();
-		dc.DrawText(os.str(),lMargin+60,BORDER+(int)(1.6*(textSize*1.3)));
-		dc.DrawText(getHeadingStr(),lMargin+170,BORDER+(int)(1.6*(textSize*1.3)));
+		dc.DrawText(os.str(),lMargin+60,topMargin+(int)(1.6*(textSize*1.3)));
+		dc.DrawText(getHeadingStr(),lMargin+170,topMargin+(int)(1.6*(textSize*1.3)));
 		os.str("");
 		os << s->getADF();
-		dc.DrawText(os.str(),lMargin+40,BORDER+(int)(1.6*(textSize*2.3)));
+		dc.DrawText(os.str(),lMargin+40,topMargin+(int)(1.6*(textSize*2.3)));
 		os.str("");
 		os << s->getMR();
-		dc.DrawText(os.str(),lMargin+115,BORDER+(int)(1.6*(textSize*2.3)));
+		dc.DrawText(os.str(),lMargin+115,topMargin+(int)(1.6*(textSize*2.3)));
 		os.str("");
 		os << s->getHP();
-		dc.DrawText(os.str(),lMargin+195,BORDER+(int)(1.6*(textSize*2.3)));
+		dc.DrawText(os.str(),lMargin+195,topMargin+(int)(1.6*(textSize*2.3)));
 		os.str("");
 		os << s->getDCR();
-		dc.DrawText(os.str(),lMargin+275,BORDER+(int)(1.6*(textSize*2.3)));
+		dc.DrawText(os.str(),lMargin+275,topMargin+(int)(1.6*(textSize*2.3)));
 		int x = lMargin+80;
-		int y = BORDER+(int)(1.6*(textSize*3.3));
+		int y = topMargin+(int)(1.6*(textSize*3.3));
 		drawWeaponList(dc,x,y,textSize);
 		x = lMargin+80;
 		y += (int)(1.6*textSize);
@@ -550,6 +722,7 @@ void FBattleDisplay::drawDefensiveFire(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	std::ostringstream os;
+	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
 	os << "The non-moving player may now";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
@@ -570,6 +743,7 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	std::ostringstream os;
+	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
 	os << "The moving player may now";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
@@ -775,6 +949,7 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	wxFont bold(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
 	dc.SetFont(normal);
 	std::ostringstream os;
+	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
 	os << "The defensive player may now place";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
