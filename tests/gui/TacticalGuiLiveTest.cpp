@@ -778,32 +778,16 @@ FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
 CPPUNIT_ASSERT(mapPanel != NULL);
 CPPUNIT_ASSERT(displayPanel != NULL);
 
-const int clientHeight = battleScreen->GetClientSize().GetHeight();
-CPPUNIT_ASSERT(clientHeight > 0);
-const int mapFloor = (clientHeight * 60) / 100;
-const int maxDisplayHeight = clientHeight - mapFloor;
+	const int clientHeight = battleScreen->GetClientSize().GetHeight();
+	CPPUNIT_ASSERT(clientHeight > 0);
+	const int mapFloor = (clientHeight * 60) / 100;
 
-CPPUNIT_ASSERT_EQUAL(mapFloor, mapPanel->GetMinSize().GetHeight());
-CPPUNIT_ASSERT_EQUAL(120, displayPanel->GetMinSize().GetHeight());
-
-if (maxDisplayHeight > 120) {
-	const int requestedDisplayHeight = std::min(maxDisplayHeight, 220);
-	displayPanel->SetMinSize(wxSize(-1, requestedDisplayHeight));
-	battleScreen->SendSizeEvent();
-	m_harness.pumpEvents(5);
-	CPPUNIT_ASSERT_EQUAL(requestedDisplayHeight, displayPanel->GetMinSize().GetHeight());
 	CPPUNIT_ASSERT_EQUAL(mapFloor, mapPanel->GetMinSize().GetHeight());
-}
+	CPPUNIT_ASSERT_EQUAL(120, displayPanel->GetMinSize().GetHeight());
 
-displayPanel->SetMinSize(wxSize(-1, clientHeight + 200));
-battleScreen->SendSizeEvent();
-m_harness.pumpEvents(5);
-CPPUNIT_ASSERT_EQUAL(maxDisplayHeight, displayPanel->GetMinSize().GetHeight());
-CPPUNIT_ASSERT_EQUAL(mapFloor, mapPanel->GetMinSize().GetHeight());
-
-battleScreen->Destroy();
-m_harness.pumpEvents(5);
-m_harness.cleanupOrphanTopLevels(10);
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
 }
 
 void TacticalGuiLiveTest::testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges() {
@@ -871,26 +855,32 @@ moveDoneButton->GetParent()->Layout();
 wideScreen->Layout();
 m_harness.pumpEvents(2);
 
-const wxRect beforeResizeRect = moveDoneButton->GetRect();
-const int beforeResizeHeight = wideDisplay->GetMinSize().GetHeight();
-const wxSize beforeResizeSize = wideScreen->GetSize();
-wideScreen->SetSize(wxSize(760, beforeResizeSize.GetHeight()));
-wideScreen->SendSizeEvent();
-m_harness.pumpEvents(5);
+	const wxRect beforeResizeRect = moveDoneButton->GetRect();
+	const int beforeResizeHeight = wideDisplay->GetMinSize().GetHeight();
+	const wxSize beforeResizeSize = wideScreen->GetSize();
+	wideScreen->SetSize(wxSize(760, beforeResizeSize.GetHeight()));
+	wideScreen->SendSizeEvent();
+	m_harness.pumpEvents(5);
 
 CPPUNIT_ASSERT(moveDoneButton->IsShown());
-const wxRect afterResizeRect = moveDoneButton->GetRect();
-CPPUNIT_ASSERT(afterResizeRect.GetWidth() > 0);
-CPPUNIT_ASSERT(afterResizeRect.GetHeight() > 0);
-CPPUNIT_ASSERT(afterResizeRect.GetX() >= expectedLeftOffset);
-CPPUNIT_ASSERT(afterResizeRect.GetTop() >= FBattleDisplayTestPeer::actionPromptReservedBottomY());
-CPPUNIT_ASSERT(wideDisplay->GetMinSize().GetHeight() >= beforeResizeHeight);
-CPPUNIT_ASSERT(afterResizeRect.GetTop() > beforeResizeRect.GetTop() - 80);
+	const wxRect afterResizeRect = moveDoneButton->GetRect();
+	CPPUNIT_ASSERT(afterResizeRect.GetWidth() > 0);
+	CPPUNIT_ASSERT(afterResizeRect.GetHeight() > 0);
+	CPPUNIT_ASSERT(afterResizeRect.GetX() >= expectedLeftOffset);
+	CPPUNIT_ASSERT(afterResizeRect.GetTop() >= FBattleDisplayTestPeer::actionPromptReservedBottomY());
+	CPPUNIT_ASSERT(wideDisplay->GetMinSize().GetHeight() >= beforeResizeHeight);
+	CPPUNIT_ASSERT(afterResizeRect.GetTop() > beforeResizeRect.GetTop() - 80);
 
-wideScreen->Destroy();
-m_harness.pumpEvents(5);
-m_harness.cleanupOrphanTopLevels(10);
-delete attackFleet;
+	wideScreen->SetSize(beforeResizeSize);
+	wideScreen->SendSizeEvent();
+	m_harness.pumpEvents(5);
+	const int restoredHeight = wideDisplay->GetMinSize().GetHeight();
+	CPPUNIT_ASSERT_EQUAL(beforeResizeHeight, restoredHeight);
+
+	wideScreen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+	delete attackFleet;
 delete defendFleet;
 }
 

@@ -256,7 +256,7 @@ protected:
 	FBattleBoard * m_map;
 	/// The game display window
 	FBattleDisplay * m_display;
-	/// remembers the largest display-row height request observed from FBattleDisplay
+	/// remembers the current display-row height request observed from FBattleDisplay
 	int m_displayRequestedMinHeight;
 	/// tactical model owner during delegation migration
 	FTacticalGame * m_tacticalGame;

@@ -160,16 +160,12 @@ void FBattleDisplay::reflowLowerPanelLayout(){
 
 	int panelWidth = GetClientSize().GetWidth();
 	int panelHeight = GetClientSize().GetHeight();
-	int previousMinHeight = GetMinSize().GetHeight();
 	if (panelWidth > 0 && panelHeight > 0) {
 		wxClientDC dc(this);
 		if (m_parent->getState() == BS_Battle && m_parent->getPhase() == PH_MOVE) {
 			refreshMovePromptReservation(dc, panelWidth, panelHeight);
 		} else {
 			ensureLowerPanelLayoutState(panelWidth, panelHeight);
-		}
-		if (previousMinHeight > m_lowerPanelLayoutState.requestedDisplayHeight) {
-			m_lowerPanelLayoutState.requestedDisplayHeight = previousMinHeight;
 		}
 		applyRequestedDisplayHeight();
 	}
@@ -293,9 +289,6 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 	}
 	if (requestedHeight < 120){
 		requestedHeight = 120;
-	}
-	if (panelHeight > requestedHeight){
-		requestedHeight = panelHeight;
 	}
 	m_lowerPanelLayoutState.requestedDisplayHeight = requestedHeight;
 }

@@ -551,28 +551,30 @@ assertContains(statsBody, "&& largestMarginWithStatsRoom >= leftOffset + ACTION_
 }
 
 void FTacticalBattleDisplayFireFlowTest::testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize() {
-const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-const std::string stateBody = extractFunctionBody(
-source,
-"void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight)");
-const std::string applyBody = extractFunctionBody(source, "void FBattleDisplay::applyRequestedDisplayHeight()");
-const std::string statsBody = extractFunctionBody(source, "void FBattleDisplay::drawCurrentShipStats(wxDC & dc)");
+	const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+	const std::string stateBody = extractFunctionBody(
+		source,
+		"void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight)");
+	const std::string applyBody = extractFunctionBody(source, "void FBattleDisplay::applyRequestedDisplayHeight()");
+	const std::string statsBody = extractFunctionBody(source, "void FBattleDisplay::drawCurrentShipStats(wxDC & dc)");
+	const std::string reflowBody = extractFunctionBody(source, "void FBattleDisplay::reflowLowerPanelLayout()");
 
-assertContains(stateBody, "int requestedHeight = getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_LINE_HEIGHT + ACTION_PROMPT_BUTTON_GAP + BORDER;");
-assertContains(stateBody, "const int statsBottom = m_lowerPanelLayoutState.shipStatsTop + statsHeight + BORDER;");
-assertContains(stateBody, "if (statsBottom > requestedHeight){");
-assertContains(stateBody, "requestedHeight = statsBottom;");
-assertContains(stateBody, "if (panelHeight > requestedHeight){");
-assertContains(stateBody, "requestedHeight = panelHeight;");
-assertContains(stateBody, "m_lowerPanelLayoutState.requestedDisplayHeight = requestedHeight;");
+	assertContains(stateBody, "int requestedHeight = getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_LINE_HEIGHT + ACTION_PROMPT_BUTTON_GAP + BORDER;");
+	assertContains(stateBody, "const int statsBottom = m_lowerPanelLayoutState.shipStatsTop + statsHeight + BORDER;");
+	assertContains(stateBody, "if (statsBottom > requestedHeight){");
+	assertContains(stateBody, "requestedHeight = statsBottom;");
+	assertNotContains(stateBody, "if (panelHeight > requestedHeight){");
+	assertNotContains(stateBody, "requestedHeight = panelHeight;");
+	assertContains(stateBody, "m_lowerPanelLayoutState.requestedDisplayHeight = requestedHeight;");
 
-assertContains(applyBody, "int requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;");
-assertContains(applyBody, "if (requestedHeight < 120){");
-assertContains(applyBody, "if (GetMinSize().GetHeight() != requestedHeight){");
-assertContains(applyBody, "SetMinSize(wxSize(-1, requestedHeight));");
+	assertContains(applyBody, "int requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;");
+	assertContains(applyBody, "if (requestedHeight < 120){");
+	assertContains(applyBody, "if (GetMinSize().GetHeight() != requestedHeight){");
+	assertContains(applyBody, "SetMinSize(wxSize(-1, requestedHeight));");
+	assertNotContains(reflowBody, "previousMinHeight");
 
-assertContains(statsBody, "applyRequestedDisplayHeight();");
-assertBefore(statsBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);", "applyRequestedDisplayHeight();");
+	assertContains(statsBody, "applyRequestedDisplayHeight();");
+	assertBefore(statsBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);", "applyRequestedDisplayHeight();");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testBattleScreenDefaultsTo1200x900InConstructorSignature() {
@@ -588,17 +590,19 @@ assertContains(source, "m_displayRequestedMinHeight = BATTLE_SCREEN_BASE_DISPLAY
 }
 
 void FTacticalBattleDisplayFireFlowTest::testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp() {
-const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
-const std::string body = extractFunctionBody(source, "void FBattleScreen::applyLayoutPolicy()");
+	const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+	const std::string body = extractFunctionBody(source, "void FBattleScreen::applyLayoutPolicy()");
 
-assertContains(body, "const int mapMinHeight = (clientHeight * BATTLE_SCREEN_MAP_MIN_PERCENT) / 100;");
-assertContains(body, "const int currentDisplayRequest = m_display->GetMinSize().GetHeight();");
-assertContains(body, "if (currentDisplayRequest > m_displayRequestedMinHeight) {");
-assertContains(body, "m_displayRequestedMinHeight = currentDisplayRequest;");
-assertContains(body, "if (desiredDisplayHeight < BATTLE_SCREEN_BASE_DISPLAY_HEIGHT) {");
-assertContains(body, "desiredDisplayHeight = BATTLE_SCREEN_BASE_DISPLAY_HEIGHT;");
-assertContains(body, "const int maxDisplayHeight = clientHeight - mapMinHeight;");
-assertContains(body, "if (maxDisplayHeight >= 0 && desiredDisplayHeight > maxDisplayHeight) {");
+	assertContains(body, "const int mapMinHeight = (clientHeight * BATTLE_SCREEN_MAP_MIN_PERCENT) / 100;");
+	assertContains(body, "const int currentDisplayRequest = m_display->GetMinSize().GetHeight();");
+	assertContains(body, "m_displayRequestedMinHeight = currentDisplayRequest;");
+	assertContains(body, "if (m_displayRequestedMinHeight < BATTLE_SCREEN_BASE_DISPLAY_HEIGHT) {");
+	assertContains(body, "m_displayRequestedMinHeight = BATTLE_SCREEN_BASE_DISPLAY_HEIGHT;");
+	assertNotContains(body, "if (currentDisplayRequest > m_displayRequestedMinHeight) {");
+	assertContains(body, "if (desiredDisplayHeight < BATTLE_SCREEN_BASE_DISPLAY_HEIGHT) {");
+	assertContains(body, "desiredDisplayHeight = BATTLE_SCREEN_BASE_DISPLAY_HEIGHT;");
+	assertContains(body, "const int maxDisplayHeight = clientHeight - mapMinHeight;");
+	assertContains(body, "if (maxDisplayHeight >= 0 && desiredDisplayHeight > maxDisplayHeight) {");
 assertContains(body, "desiredDisplayHeight = maxDisplayHeight;");
 assertContains(body, "m_map->SetMinSize(wxSize(-1, mapMinHeight));");
 assertContains(body, "m_display->SetMinSize(wxSize(-1, desiredDisplayHeight));");

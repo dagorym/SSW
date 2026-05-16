@@ -189,8 +189,9 @@ void FBattleScreen::applyLayoutPolicy() {
 
 	const int mapMinHeight = (clientHeight * BATTLE_SCREEN_MAP_MIN_PERCENT) / 100;
 	const int currentDisplayRequest = m_display->GetMinSize().GetHeight();
-	if (currentDisplayRequest > m_displayRequestedMinHeight) {
-		m_displayRequestedMinHeight = currentDisplayRequest;
+	m_displayRequestedMinHeight = currentDisplayRequest;
+	if (m_displayRequestedMinHeight < BATTLE_SCREEN_BASE_DISPLAY_HEIGHT) {
+		m_displayRequestedMinHeight = BATTLE_SCREEN_BASE_DISPLAY_HEIGHT;
 	}
 
 	int desiredDisplayHeight = m_displayRequestedMinHeight;
