@@ -1,35 +1,36 @@
 Your role is 'verifier'. Your task is as follows:
-- Validate the full FBattleScreen layout-policy story after Documenter review.
-- The Implementer changed `FBattleScreen` so the tactical battle screen defaults to `1200x900` and the parent layout explicitly starts the lower panel at `120px`, honors larger lower-panel requests when possible, and preserves a `60%` minimum map-height floor.
-- The Tester added source-contract and live-GUI regression coverage for the new FBattleScreen sizing/layout policy and confirmed the remaining failures are unchanged baseline `FBattleDisplay.cpp` token expectations outside this task scope.
-- The Documenter updated `doc/UsersGuide.md` because it still described the tactical battle screen as `800x600` with a constant-height lower panel; no tactical rules document changes were made.
+- Validate the tactical lower-panel resize/reflow story after the Documenter review.
+- The Implementer changed `FBattleScreen`/`FBattleDisplay` so open-dialog resize now forces immediate lower-panel reflow, move-phase prompt reservation is recalculated through deterministic helper seams, and the change stays localized to tactical layout behavior.
+- The Tester added source-contract and live-GUI regression coverage for the resize/reflow path and reported all acceptance criteria passing.
+- The Documenter updated tactical documentation to reflect the shipped resize/reflow behavior and the validated implementation seams.
 
 Acceptance criteria to verify:
-- `FBattleScreen` defaults to `1200x900`.
-- Parent layout explicitly starts the lower panel at `120px` when possible.
-- Parent layout can honor larger lower-panel requests.
-- Map keeps at least `60%` of client height.
-- No tactical rules or battle-state behavior changes were introduced.
-- The documentation update is accurate: `doc/UsersGuide.md` now matches the shipped tactical battle-screen sizing/layout behavior and no additional documentation update is required.
+- Open-dialog resize triggers immediate lower-panel reflow.
+- Lower-panel layout state recalculates predictably when size changes require it.
+- The selected-ship constrained-width move path is deterministic enough for downstream live GUI tests.
+- The change remains localized to tactical layout behavior and does not alter tactical rules or fire-resolution logic.
+- The documentation update is accurate: `doc/UsersGuide.md` and `doc/DesignNotes.md` match the shipped resize/reflow behavior and no additional documentation update is required.
 
-Implementation branch or worktree context:
+Implementation/worktree context:
 - Documenter worktree: `/home/tstephen/worktrees/SSW/layout-update-documenter-20260516`
 - Documenter branch: `layout-update-documenter-20260516`
 - Tester worktree: `/home/tstephen/worktrees/SSW/layout-update-tester-20260516`
 - Tester branch: `layout-update-tester-20260516`
-- Implementer commit from handoff: `4d8cb29beb1bd94fc84cd394bb9686adcb845007`
-- Tester commit: `001c853f9833a3b85db701087a956798e00af9cd`
-- Documentation commit: `3b0301ec453887fdb013637ed7900b88f8ac2e74`
-- Comparison-base assumption: use `efc5eac6e32f363de7f5a5c0f457854de1570711`, the direct parent of `4d8cb29beb1bd94fc84cd394bb9686adcb845007`, as the safest story-specific base because it is the last commit before this FBattleScreen layout change starts on the branch stack.
+- Implementation commit: `3a23aa7ac113512688b14af7f277d6caf362d834`
+- Tester commit: `15709b920a54c1c54ba3914307b7c888172de218`
+- Documentation commit: `6dd9605e4d2f1a35972db79732ccb2182a6e76f7`
+- Comparison-base assumption: use `22010b9b51c906f68dbd5ead9ffeaa82b37d3df2`, the direct parent of `3a23aa7ac113512688b14af7f277d6caf362d834`, as the story-specific base because it is the last commit before this resize/reflow implementation begins on the stacked branch.
 
 Files modified by Implementer, Tester, and Documenter to inspect:
-- `include/tactical/FBattleScreen.h`
+- `include/tactical/FBattleDisplay.h`
+- `src/tactical/FBattleDisplay.cpp`
 - `src/tactical/FBattleScreen.cpp`
 - `tests/gui/TacticalGuiLiveTest.cpp`
 - `tests/gui/TacticalGuiLiveTest.h`
 - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
 - `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
 - `doc/UsersGuide.md`
+- `doc/DesignNotes.md`
 - `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_report.md`
 - `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_result.json`
 - `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_report.md`
@@ -38,31 +39,26 @@ Files modified by Implementer, Tester, and Documenter to inspect:
 - `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_result.json`
 - `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_prompt.txt`
 
-Commands executed:
-- Implementer ran `cd tests && make tactical-tests && ./tactical/TacticalTests` and `cd tests/gui && make && xvfb-run -a ./GuiTests` before and after the code change; both runs reported unchanged pre-existing `FBattleDisplay.cpp` token failures outside this FBattleScreen-only scope.
-- Tester reran `cd tests && make tactical-tests && ./tactical/TacticalTests` and `cd tests/gui && make && xvfb-run -a ./GuiTests`; new FBattleScreen acceptance coverage passed while the same baseline `FBattleDisplay.cpp` token failures remained.
-- Documenter reviewed `plans/tactical-movement-prompt-overlap-replan-v2.md`, the implementation/test diffs, and updated `doc/UsersGuide.md` to match the shipped window-sizing/layout behavior.
-
-Final test outcome context:
-- 5 tests were added or updated for this task.
-- New FBattleScreen acceptance coverage is passing.
-- Remaining suite failures are unchanged baseline failures tied to `FBattleDisplay.cpp` source-token expectations outside this FBattleScreen-only implementation scope.
-- No unmet acceptance criteria were reported for the FBattleScreen layout task.
+Commands executed and validated by Tester:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (baseline) → `OK (150 tests)`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (baseline) → `OK (35 tests)`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (post-change) → `OK (152 tests)`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (post-change) → `OK (35 tests)`
 
 Plan and documentation review context:
-- Plan artifact path: `plans/tactical-movement-prompt-overlap-replan-v2.md`.
-- Use the plan's `Documentation Impact` sections only as hints; verify against the implemented and tested diff.
+- Plan artifact path: `plans/tactical-movement-prompt-overlap-replan-v2.md`
+- Use the plan's documentation-impact hints only as hints; verify against the implemented and tested diff.
 - `doc/rules/tactical_operations_manual.md` is protected and must not be edited.
-- Relevant documentation files reviewed: `doc/UsersGuide.md` and `doc/DesignNotes.md`.
-- Updated documentation files: `doc/UsersGuide.md`.
+- Documenter updated `doc/UsersGuide.md` to note immediate lower-panel reflow during live resize and updated `doc/DesignNotes.md` to capture the deterministic resize/reflow seam plus the tester-validated command results.
 
 Verification scope:
 - Verify the implementation, tests, and updated documentation together.
-- Confirm the user-guide update reflects the shipped `FBattleScreen` behavior and that no tactical rules or battle-state documentation changed.
-- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe, and label those choices as assumptions.
+- Confirm the resize/reflow seam stays within tactical layout behavior and does not change tactical combat rules or fire-resolution flow.
+- Confirm the documentation accurately reflects the shipped behavior and validated scope.
+- Infer any missing comparison-base, convention, or artifact-path details from repository evidence when safe, and label those choices as assumptions.
 
 Startup behavior:
-- If branch/worktree context and diff context are present, begin verification immediately and continue in the same run.
+- If the branch/worktree context, changed-file scope, and shared artifact path are present, begin verification immediately and continue in the same run.
 - Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when blockers are absent.
 
 Shared artifact directory:
