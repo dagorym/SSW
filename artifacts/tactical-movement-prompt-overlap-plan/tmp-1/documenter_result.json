@@ -1,0 +1,43 @@
+{
+  "status": "success",
+  "task_identifier": "tactical-movement-prompt-overlap-plan/tmp-1",
+  "agent": "Documenter",
+  "branch": "layout-update-documenter-20260516",
+  "worktree": "/home/tstephen/worktrees/SSW/layout-update-documenter-20260516",
+  "documentation_commit_hash": "3b0301ec453887fdb013637ed7900b88f8ac2e74",
+  "commit_hash": "3b0301ec453887fdb013637ed7900b88f8ac2e74",
+  "documentation_commit_message": "docs: update tactical battle screen layout guide",
+  "comparison_base_assumption": "Used commit efc5eac6e32f363de7f5a5c0f457854de1570711, the direct parent of implementation commit 4d8cb29beb1bd94fc84cd394bb9686adcb845007, as the safest story-specific base because it is the last commit before this FBattleScreen layout change begins on the stacked branch.",
+  "plan_artifact_path": "plans/tactical-movement-prompt-overlap-replan-v2.md",
+  "shared_artifact_directory": "artifacts/tactical-movement-prompt-overlap-plan/tmp-1",
+  "documentation_files_added_or_modified": [
+    "doc/UsersGuide.md"
+  ],
+  "documentation_files_reviewed": [
+    "doc/UsersGuide.md",
+    "doc/DesignNotes.md",
+    "plans/tactical-movement-prompt-overlap-replan-v2.md"
+  ],
+  "implementation_and_test_files_reviewed": [
+    "include/tactical/FBattleScreen.h",
+    "src/tactical/FBattleScreen.cpp",
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h"
+  ],
+  "documentation_decision": "Updated `doc/UsersGuide.md` because the shipped tactical battle screen behavior is user-visible and the existing guide was outdated: it still claimed a constant-height lower panel and an 800x600 default size. No tactical rules documentation or repository-wide contributor guidance update was required for this layout-only change.",
+  "commands_executed": [
+    "myteam get role documenter",
+    "git diff --stat 4d8cb29beb1bd94fc84cd394bb9686adcb845007..001c853f9833a3b85db701087a956798e00af9cd -- include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp tests/gui/TacticalGuiLiveTest.cpp tests/gui/TacticalGuiLiveTest.h tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
+    "git show --stat --summary 4d8cb29beb1bd94fc84cd394bb9686adcb845007 -- include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp",
+    "git diff 4d8cb29beb1bd94fc84cd394bb9686adcb845007..001c853f9833a3b85db701087a956798e00af9cd -- tests/gui/TacticalGuiLiveTest.cpp tests/gui/TacticalGuiLiveTest.h tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
+    "git rev-parse 4d8cb29beb1bd94fc84cd394bb9686adcb845007^",
+    "git commit -m \"docs: update tactical battle screen layout guide\" -m \"Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\""
+  ],
+  "artifact_file_paths_written": [
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_report.md",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_result.json",
+    "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_prompt.txt"
+  ]
+}

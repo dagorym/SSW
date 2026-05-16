@@ -1,0 +1,72 @@
+Your role is 'verifier'. Your task is as follows:
+- Validate the full FBattleScreen layout-policy story after Documenter review.
+- The Implementer changed `FBattleScreen` so the tactical battle screen defaults to `1200x900` and the parent layout explicitly starts the lower panel at `120px`, honors larger lower-panel requests when possible, and preserves a `60%` minimum map-height floor.
+- The Tester added source-contract and live-GUI regression coverage for the new FBattleScreen sizing/layout policy and confirmed the remaining failures are unchanged baseline `FBattleDisplay.cpp` token expectations outside this task scope.
+- The Documenter updated `doc/UsersGuide.md` because it still described the tactical battle screen as `800x600` with a constant-height lower panel; no tactical rules document changes were made.
+
+Acceptance criteria to verify:
+- `FBattleScreen` defaults to `1200x900`.
+- Parent layout explicitly starts the lower panel at `120px` when possible.
+- Parent layout can honor larger lower-panel requests.
+- Map keeps at least `60%` of client height.
+- No tactical rules or battle-state behavior changes were introduced.
+- The documentation update is accurate: `doc/UsersGuide.md` now matches the shipped tactical battle-screen sizing/layout behavior and no additional documentation update is required.
+
+Implementation branch or worktree context:
+- Documenter worktree: `/home/tstephen/worktrees/SSW/layout-update-documenter-20260516`
+- Documenter branch: `layout-update-documenter-20260516`
+- Tester worktree: `/home/tstephen/worktrees/SSW/layout-update-tester-20260516`
+- Tester branch: `layout-update-tester-20260516`
+- Implementer commit from handoff: `4d8cb29beb1bd94fc84cd394bb9686adcb845007`
+- Tester commit: `001c853f9833a3b85db701087a956798e00af9cd`
+- Documentation commit: `3b0301ec453887fdb013637ed7900b88f8ac2e74`
+- Comparison-base assumption: use `efc5eac6e32f363de7f5a5c0f457854de1570711`, the direct parent of `4d8cb29beb1bd94fc84cd394bb9686adcb845007`, as the safest story-specific base because it is the last commit before this FBattleScreen layout change starts on the branch stack.
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/tactical/FBattleScreen.h`
+- `src/tactical/FBattleScreen.cpp`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+- `doc/UsersGuide.md`
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_report.md`
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_result.json`
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_report.md`
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_result.json`
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_report.md`
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_result.json`
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_prompt.txt`
+
+Commands executed:
+- Implementer ran `cd tests && make tactical-tests && ./tactical/TacticalTests` and `cd tests/gui && make && xvfb-run -a ./GuiTests` before and after the code change; both runs reported unchanged pre-existing `FBattleDisplay.cpp` token failures outside this FBattleScreen-only scope.
+- Tester reran `cd tests && make tactical-tests && ./tactical/TacticalTests` and `cd tests/gui && make && xvfb-run -a ./GuiTests`; new FBattleScreen acceptance coverage passed while the same baseline `FBattleDisplay.cpp` token failures remained.
+- Documenter reviewed `plans/tactical-movement-prompt-overlap-replan-v2.md`, the implementation/test diffs, and updated `doc/UsersGuide.md` to match the shipped window-sizing/layout behavior.
+
+Final test outcome context:
+- 5 tests were added or updated for this task.
+- New FBattleScreen acceptance coverage is passing.
+- Remaining suite failures are unchanged baseline failures tied to `FBattleDisplay.cpp` source-token expectations outside this FBattleScreen-only implementation scope.
+- No unmet acceptance criteria were reported for the FBattleScreen layout task.
+
+Plan and documentation review context:
+- Plan artifact path: `plans/tactical-movement-prompt-overlap-replan-v2.md`.
+- Use the plan's `Documentation Impact` sections only as hints; verify against the implemented and tested diff.
+- `doc/rules/tactical_operations_manual.md` is protected and must not be edited.
+- Relevant documentation files reviewed: `doc/UsersGuide.md` and `doc/DesignNotes.md`.
+- Updated documentation files: `doc/UsersGuide.md`.
+
+Verification scope:
+- Verify the implementation, tests, and updated documentation together.
+- Confirm the user-guide update reflects the shipped `FBattleScreen` behavior and that no tactical rules or battle-state documentation changed.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe, and label those choices as assumptions.
+
+Startup behavior:
+- If branch/worktree context and diff context are present, begin verification immediately and continue in the same run.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when blockers are absent.
+
+Shared artifact directory:
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
