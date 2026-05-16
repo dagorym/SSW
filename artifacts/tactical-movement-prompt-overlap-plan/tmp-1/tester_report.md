@@ -1,47 +1,54 @@
-# Tester Report: Tactical movement prompt overlap remediation
+# Tester Report: FBattleScreen layout policy validation
 
 ## Scope
-Validated tactical movement-phase layout remediation for:
-- wrapped movement instructions vs action-button row spacing,
-- selected-ship stats separation,
-- updated movement reminder wording,
-- dynamic margin / helper exposure for regression locking.
+Validated the FBattleScreen layout update on branch `layout-update-tester-20260516` for:
+- default tactical-screen size (`1200x900`),
+- lower-panel baseline allocation (`120px`),
+- larger lower-panel request handling,
+- map-height minimum floor (`60%`),
+- no tactical-state/rules flow changes.
 
 ## Assumptions
-- Used provided test targets as canonical commands: `cd tests && make tactical-tests && ./tactical/TacticalTests` and `cd tests/gui && make && xvfb-run -a ./GuiTests`.
-- Implementer-modified surface is limited to `include/tactical/FBattleDisplay.h` and `src/tactical/FBattleDisplay.cpp`.
+- Used provided commands as the smallest relevant validation path:
+  - `cd tests && make tactical-tests && ./tactical/TacticalTests`
+  - `cd tests/gui && make && xvfb-run -a ./GuiTests`
+- Pre-existing source-token failures in `FBattleDisplay.cpp` are baseline and unrelated to this FBattleScreen-only implementation, as stated in task context and reflected in current runs.
 
 ## Test changes
+Modified files:
 - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
-  - Added source-contract checks for wrapped movement prompt flow (`drawWrappedActionPrompt`, `countWrappedActionPromptLines`, `reserveActionPromptLines`), quoted `Movement Done` reminder text, non-movement reservation reset, and available-width fallback marker `largestMarginWithStatsRoom`.
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
 - `tests/gui/TacticalGuiLiveTest.cpp`
-  - Added GUI fixture source-lock assertions for quoted movement reminder, prompt wrapping helpers, dynamic prompt reservation, and stats-margin fallback token.
+- `tests/gui/TacticalGuiLiveTest.h`
 
-## Commands run
-1. `cd tests && make tactical-tests && ./tactical/TacticalTests` (baseline) — PASS (`OK (143 tests)`)
-2. `cd tests/gui && make && xvfb-run -a ./GuiTests` (baseline) — PASS (`OK (33 tests)`)
-3. `cd tests && make tactical-tests && ./tactical/TacticalTests` (after test updates) — FAIL (3 failures)
-4. `cd tests/gui && make && xvfb-run -a ./GuiTests` (after test updates) — FAIL (1 failure)
+Added coverage:
+- Source-contract checks for FBattleScreen default constructor size (`1200x900`).
+- Source-contract checks for layout constants (`120` baseline, `60%` map floor).
+- Source-contract checks that `applyLayoutPolicy()` tracks larger display requests, applies baseline, and clamps to preserve map floor.
+- Source-contract checks that `onSize(...)` only reapplies layout policy.
+- Live GUI runtime check that FBattleScreen default size is `1200x900`, baseline lower-row starts at `120`, larger lower-row requests are honored when possible, and oversized requests are clamped to keep a 60% map floor.
 
-## Failure evidence
-- Tactical failure: expected movement reminder text
-  - `Press the 'Movement Done' button when all ships have been assigned their movement instructions.`
-  - actual source still contains shorter legacy reminder.
-- Tactical failure: expected helper declarations/usages not present
-  - `reserveActionPromptLines(...)`
-  - `countWrappedActionPromptLines(...)`
-- GUI failure mirrors missing quoted reminder token in `src/tactical/FBattleDisplay.cpp`.
+## Command results
+1. `cd tests && make tactical-tests && ./tactical/TacticalTests` — **failed**
+   - Run: 147, Failures: 3, Errors: 0.
+   - All failures are pre-existing source-token expectations in `FTacticalBattleDisplayFireFlowTest` targeting `src/tactical/FBattleDisplay.cpp` (movement-prompt helper tokens).
+2. `cd tests/gui && make && xvfb-run -a ./GuiTests` — **failed**
+   - Run: 34, Failures: 1, Errors: 0.
+   - Failure is pre-existing `TacticalGuiLiveTest` source-token expectation in `src/tactical/FBattleDisplay.cpp`.
 
 ## Acceptance criteria status
-1. Movement prompt and selected-ship stats do not overlap in selected-ship movement state: **not met** (new dynamic reservation/margin evidence absent).
-2. Revised third instruction line with quoted `Movement Done` label: **not met**.
-3. Narrow-width readability via wrapping/constrained rendering: **not met** (`drawWrappedActionPrompt`/`countWrappedActionPromptLines` absent).
-4. Dynamic margin derived from available/prompt width constraints: **not met** (`largestMarginWithStatsRoom` branch absent).
-5. Explicit helper/constants for downstream regression coverage: **partially met** (existing fixed spacing constants exist; new wrapping/reservation helpers absent).
+1. `FBattleScreen` defaults to `1200x900`: **validated** (new tactical source-contract + live GUI size assertion).
+2. Parent layout starts lower panel at `120px` when possible: **validated**.
+3. Parent layout honors larger lower-panel request when needed: **validated**.
+4. Map keeps at least `60%` of client height: **validated**.
+5. No tactical rules or battle-state behavior changed: **validated** (layout-only policy assertions plus no new tactical-flow failures).
+
+## Outcome
+- New layout-policy acceptance coverage is passing.
+- Remaining suite failures are unchanged pre-existing baseline failures outside this FBattleScreen diff.
 
 ## Commits
-- Test changes commit: `2239e3544516fba1e5b161ae092476156ff474a9`
-- Artifact commit: pending at time of this report write.
+- Test changes commit: `001c853f9833a3b85db701087a956798e00af9cd`
 
 ## Cleanup
-- No temporary non-handoff byproducts created.
+- No temporary non-handoff byproducts were created.

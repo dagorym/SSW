@@ -1,0 +1,52 @@
+You are the Documenter Agent.
+
+Task summary:
+- Validate documentation impact for FBattleScreen layout policy changes that set default tactical screen size to `1200x900` and apply explicit parent height allocation policy.
+- Tester added layout-policy regression coverage (source-contract + live GUI runtime assertions) for lower-panel baseline allocation, larger lower-panel requests, and 60% minimum map-height floor.
+
+Acceptance criteria validated by Tester:
+- `FBattleScreen` defaults to `1200x900`.
+- Parent layout explicitly starts lower panel at `120px` when possible.
+- Parent layout can honor larger lower-panel requests.
+- Map keeps at least `60%` of client height.
+- No tactical rules or battle-state behavior changes were introduced.
+
+Implementation branch/worktree context:
+- Tester branch: `layout-update-tester-20260516`
+- Tester worktree: `/home/tstephen/worktrees/SSW/layout-update-tester-20260516`
+- Implementer commit from handoff: `4d8cb29beb1bd94fc84cd394bb9686adcb845007`
+- Tester commit: `001c853f9833a3b85db701087a956798e00af9cd`
+
+Files modified by Implementer and Tester to inspect:
+- `include/tactical/FBattleScreen.h`
+- `src/tactical/FBattleScreen.cpp`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`: failed with pre-existing source-token failures in `src/tactical/FBattleDisplay.cpp`.
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`: failed with pre-existing source-token failure in `src/tactical/FBattleDisplay.cpp`.
+
+Final test outcome context:
+- 5 tests added/updated for this task.
+- New FBattleScreen acceptance coverage is passing.
+- Remaining suite failures are unchanged baseline failures tied to `FBattleDisplay.cpp` token expectations (outside this FBattleScreen-only implementation scope).
+- No unmet acceptance criteria for the FBattleScreen layout task.
+
+Documentation guidance:
+- Evaluate whether user-facing or developer documentation should mention FBattleScreen default sizing/layout-policy behavior.
+- Do not edit `doc/rules/tactical_operations_manual.md` (repository non-negotiable constraint).
+- If no documentation updates are required, still produce documenter artifacts documenting that decision.
+
+Shared artifact directory (reuse exactly):
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1`
+
+Startup behavior:
+- If branch/worktree context and diff context are present, begin documentation review immediately and continue in the same run.
+- Infer missing comparison-base or documentation-convention details from repository evidence when safe, and label assumptions.
+- Do not stop after scope confirmation, docs discovery, or diff review when documentation work can proceed.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
