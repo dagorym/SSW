@@ -1,35 +1,33 @@
 Your role is 'tester'. Your task is as follows:
 
 Task summary:
-- Validate the FBattleDisplay lower-panel layout-state implementation that now persists prompt/stats split mode and requested display height across tactical phases unless geometry constraints invalidate the active split.
+- Validate tactical lower-panel resize/reflow implementation updates in FBattleScreen/FBattleDisplay.
 
 Modified files:
 - include/tactical/FBattleDisplay.h
 - src/tactical/FBattleDisplay.cpp
+- src/tactical/FBattleScreen.cpp
 
 Acceptance criteria to validate (from Planner):
-- FBattleDisplay has an explicit shared layout state for prompt/stats positioning and requested height.
-- The ship-stats split remains stable across phases when size constraints do not force change.
-- The display can communicate a requested height based on its current layout state.
-- The change remains localized to tactical display/layout behavior.
+- Open-dialog resize triggers immediate lower-panel reflow.
+- The lower-panel layout state recalculates predictably when size changes require it.
+- The selected-ship constrained-width move path is deterministic enough for downstream live GUI tests to target.
+- The change stays localized to tactical layout behavior and does not alter tactical rules.
 
 Create test files in:
-- tests/gui/TacticalGuiLiveTest.cpp
-- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- `tests/gui/TacticalGuiLiveTest.cpp` (existing guidance)
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp` (existing guidance)
+- No new tests are required unless regression investigation proves necessity.
 
 Implementation context for testing:
-- Added `LowerPanelLayoutState` to track mode, prompt-line reservation, stats position, and requested display height.
-- Added wrapped prompt helper methods and movement-prompt reservation flow so prompt height and control spacing are computed through shared helpers.
-- Added geometry-validation path (`ensureLowerPanelLayoutState`) to keep prior split unless current constraints invalidate it.
-- Added requested-height propagation from current layout state via display min-size updates.
-- Defensive/offensive/mine prompt paths now explicitly reserve action prompt lines.
+- FBattleScreen resize handler now triggers FBattleDisplay lower-panel reflow before screen-level layout policy application.
+- FBattleDisplay now has a dedicated reflow path (`reflowLowerPanelLayout`) that recalculates move-prompt line reservations and lower-panel layout state using current geometry.
+- Move-phase prompt handling retains selected-ship facing-selection and constrained-width prompt behavior text while recomputing reservations for deterministic geometry.
+- No tactical combat rules, fire resolution ordering, or turn logic were changed.
 
 Suggested test command(s):
 - cd tests && make tactical-tests && ./tactical/TacticalTests
 - cd tests/gui && make && xvfb-run -a ./GuiTests
-
-Validation notes:
-- Baseline failures seen before edits were source-token mismatches in tactical/gui layout prompt tests; these now pass with updated implementation.
 
 Startup behavior:
 - If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.

@@ -1,35 +1,34 @@
 # Implementer Report
 
-## Task
-Introduce persistent `FBattleDisplay` lower-panel layout state for prompt/stats split, keep ship-stats split stable across tactical phases unless geometry invalidates it, and communicate requested display height from current layout state.
+## Task Summary
+Implemented tactical product-code resize/reflow behavior so FBattleScreen resize events immediately trigger FBattleDisplay lower-panel reflow and sizing policy recalculation.
 
-## Files Changed
+## Scope and Files
+Modified files:
 - `include/tactical/FBattleDisplay.h`
 - `src/tactical/FBattleDisplay.cpp`
+- `src/tactical/FBattleScreen.cpp`
 
-## Implementation Summary
-- Added explicit shared lower-panel layout state (`LowerPanelLayoutState`) tracking:
-  - current prompt/stats split mode,
-  - ship-stats anchor positions,
-  - reserved prompt lines,
-  - requested display height.
-- Added prompt wrapping/reservation helpers:
-  - `reserveActionPromptLines(...)`
-  - `countWrappedActionPromptLines(...)`
-  - `drawWrappedActionPrompt(...)`
-- Updated movement prompt flow to reserve wrapped prompt lines and retain required reminder text.
-- Updated defensive fire, offensive fire, and mine placement paths to reserve the action prompt block consistently.
-- Updated `drawCurrentShipStats(...)` to apply and reuse shared layout state and request display height from that state.
-- Layout transitions now occur only when current geometry can no longer sustain existing state.
+## What Changed
+- Added `FBattleDisplay::reflowLowerPanelLayout()` and supporting prompt/layout helpers for deterministic lower-panel recomputation from current geometry.
+- Added move-prompt text builder + move-prompt reservation recalculation path so constrained-width selected-ship move prompts compute consistent wrapped-line reservations.
+- Updated `FBattleScreen::onSize(...)` to trigger display reflow before applying the screen-level layout policy.
+- Preserved tactical behavior scope (layout-only changes; no tactical rules/state-transition changes).
+
+## Acceptance Criteria Mapping
+- **Open-dialog resize triggers immediate lower-panel reflow**: `FBattleScreen::onSize()` now calls `m_display->reflowLowerPanelLayout()` before `applyLayoutPolicy()`.
+- **Lower-panel layout recalculates predictably on size changes**: display reflow recomputes prompt reservation + lower-panel state from current geometry and reapplies requested display height.
+- **Selected-ship constrained-width move path deterministic**: move prompt reservation now recalculates with constrained prompt width and selected-ship move text path before drawing.
+- **Localized tactical layout behavior only**: changes confined to tactical display/screen layout logic.
 
 ## Validation
-Baseline before edits:
-- `cd tests && make tactical-tests && ./tactical/TacticalTests` (failed baseline: 3 known source-token mismatches)
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` (failed baseline: 1 known source-token mismatch)
+Baseline (pre-change):
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` ✅
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` ✅
 
 Post-change:
-- `cd tests && make tactical-tests && ./tactical/TacticalTests` ✅ pass (`OK (147 tests)`)
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` ✅ pass (`OK (34 tests)`)
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` ✅
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` ✅
 
-## Commit
-- Implementation/code commit: `55ed2b6`
+## Commits
+- Implementation/code commit: `3a23aa7ac113512688b14af7f277d6caf362d834`
