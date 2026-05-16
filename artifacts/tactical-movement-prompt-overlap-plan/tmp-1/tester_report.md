@@ -1,54 +1,42 @@
-# Tester Report: FBattleScreen layout policy validation
+# Tester Report
 
-## Scope
-Validated the FBattleScreen layout update on branch `layout-update-tester-20260516` for:
-- default tactical-screen size (`1200x900`),
-- lower-panel baseline allocation (`120px`),
-- larger lower-panel request handling,
-- map-height minimum floor (`60%`),
-- no tactical-state/rules flow changes.
+## Scope Restatement
+Validated FBattleDisplay lower-panel layout-state behavior for shared prompt/stats split state and requested display-height propagation, limited to tactical display/layout changes.
 
 ## Assumptions
-- Used provided commands as the smallest relevant validation path:
-  - `cd tests && make tactical-tests && ./tactical/TacticalTests`
-  - `cd tests/gui && make && xvfb-run -a ./GuiTests`
-- Pre-existing source-token failures in `FBattleDisplay.cpp` are baseline and unrelated to this FBattleScreen-only implementation, as stated in task context and reflected in current runs.
+- Used repository-standard commands from `tests/` and `tests/gui/` as the smallest meaningful validation scope.
 
-## Test changes
-Modified files:
-- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
-- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
-- `tests/gui/TacticalGuiLiveTest.cpp`
-- `tests/gui/TacticalGuiLiveTest.h`
+## Files Updated
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
 
-Added coverage:
-- Source-contract checks for FBattleScreen default constructor size (`1200x900`).
-- Source-contract checks for layout constants (`120` baseline, `60%` map floor).
-- Source-contract checks that `applyLayoutPolicy()` tracks larger display requests, applies baseline, and clamps to preserve map floor.
-- Source-contract checks that `onSize(...)` only reapplies layout policy.
-- Live GUI runtime check that FBattleScreen default size is `1200x900`, baseline lower-row starts at `120`, larger lower-row requests are honored when possible, and oversized requests are clamped to keep a 60% map floor.
+## Acceptance Criteria Validation
+1. **Explicit shared layout state exists** — Passed.
+   - Added tactical source-contract tests asserting `LowerPanelLayoutState`, mode enum, shared member, and initialization paths.
+2. **Ship-stats split remains stable across phases when constraints do not force change** — Passed.
+   - Added source-contract test for `ensureLowerPanelLayoutState(...)` keep/invalidate logic.
+   - Added live GUI regression asserting consistent display min-height across defensive/offensive phases and after non-invalidating geometry resize.
+3. **Display communicates requested height from current layout state** — Passed.
+   - Added source-contract test for `requestedDisplayHeight` computation and `applyRequestedDisplayHeight()` min-size propagation.
+4. **Change remains localized to tactical display/layout behavior** — Passed.
+   - Verified implementation commit `55ed2b6` touches only:
+     - include/tactical/FBattleDisplay.h
+     - src/tactical/FBattleDisplay.cpp
 
-## Command results
-1. `cd tests && make tactical-tests && ./tactical/TacticalTests` — **failed**
-   - Run: 147, Failures: 3, Errors: 0.
-   - All failures are pre-existing source-token expectations in `FTacticalBattleDisplayFireFlowTest` targeting `src/tactical/FBattleDisplay.cpp` (movement-prompt helper tokens).
-2. `cd tests/gui && make && xvfb-run -a ./GuiTests` — **failed**
-   - Run: 34, Failures: 1, Errors: 0.
-   - Failure is pre-existing `TacticalGuiLiveTest` source-token expectation in `src/tactical/FBattleDisplay.cpp`.
+## Commands Executed
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
 
-## Acceptance criteria status
-1. `FBattleScreen` defaults to `1200x900`: **validated** (new tactical source-contract + live GUI size assertion).
-2. Parent layout starts lower panel at `120px` when possible: **validated**.
-3. Parent layout honors larger lower-panel request when needed: **validated**.
-4. Map keeps at least `60%` of client height: **validated**.
-5. No tactical rules or battle-state behavior changed: **validated** (layout-only policy assertions plus no new tactical-flow failures).
+## Results
+- Tactical runner: **OK (150 tests)**
+- GUI runner: **OK (35 tests)**
+- Final status: **PASS**
 
-## Outcome
-- New layout-policy acceptance coverage is passing.
-- Remaining suite failures are unchanged pre-existing baseline failures outside this FBattleScreen diff.
-
-## Commits
-- Test changes commit: `001c853f9833a3b85db701087a956798e00af9cd`
+## Commit Summary
+- Test changes committed: `ec57142`
+- Artifact files committed separately after capturing the test commit hash.
 
 ## Cleanup
 - No temporary non-handoff byproducts were created.

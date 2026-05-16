@@ -1,65 +1,32 @@
 {
   "status": "success",
-  "task_identifier": "tactical-movement-prompt-overlap-plan/tmp-1",
-  "branch_name": "layout-update-tester-20260516",
-  "shared_artifact_directory": "artifacts/tactical-movement-prompt-overlap-plan/tmp-1",
-  "test_commit_hash": "001c853f9833a3b85db701087a956798e00af9cd",
-  "test_files_added_or_modified": [
-    "tests/gui/TacticalGuiLiveTest.cpp",
-    "tests/gui/TacticalGuiLiveTest.h",
+  "task_id": "tactical-movement-prompt-overlap-plan/tmp-1",
+  "branch": "layout-update-tester-20260516",
+  "test_commit": "ec57142",
+  "test_files_modified": [
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
     "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
-    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h"
-  ],
-  "implementation_files_validated": [
-    "include/tactical/FBattleScreen.h",
-    "src/tactical/FBattleScreen.cpp"
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/gui/TacticalGuiLiveTest.cpp"
   ],
   "commands_run": [
-    {
-      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
-      "result": "failed",
-      "notes": "Run: 147, Failures: 3, Errors: 0. Failures are pre-existing FBattleDisplay source-token expectations."
-    },
-    {
-      "command": "cd tests/gui && make && xvfb-run -a ./GuiTests",
-      "result": "failed",
-      "notes": "Run: 34, Failures: 1, Errors: 0. Failure is pre-existing FBattleDisplay source-token expectation."
-    }
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests"
   ],
-  "pass_fail_totals": {
-    "tests_written": 5,
-    "tests_passed_across_executed_suites": 177,
-    "tests_failed": 4
+  "results": {
+    "tactical": {
+      "passed": 150,
+      "failed": 0
+    },
+    "gui": {
+      "passed": 35,
+      "failed": 0
+    }
   },
-  "acceptance_criteria": [
-    {
-      "criterion": "FBattleScreen defaults to 1200x900",
-      "status": "validated"
-    },
-    {
-      "criterion": "Parent layout starts lower panel at 120px when possible",
-      "status": "validated"
-    },
-    {
-      "criterion": "Parent layout can honor larger lower-panel requests",
-      "status": "validated"
-    },
-    {
-      "criterion": "Map keeps at least 60% of client height",
-      "status": "validated"
-    },
-    {
-      "criterion": "No tactical rules or battle-state behavior changed",
-      "status": "validated"
-    }
-  ],
   "unmet_acceptance_criteria": [],
-  "validation_outcome": "expected_pre_existing_failures",
-  "artifact_file_paths_written": [
+  "artifacts_written": [
     "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_report.md",
     "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_result.json",
     "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_prompt.txt"
-  ],
-  "documenter_prompt_written": true,
-  "temporary_byproducts": []
+  ]
 }

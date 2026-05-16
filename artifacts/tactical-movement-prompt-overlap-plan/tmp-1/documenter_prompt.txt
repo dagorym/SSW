@@ -1,52 +1,55 @@
-You are the Documenter Agent.
+Your role is 'documenter'. Your task is as follows:
 
 Task summary:
-- Validate documentation impact for FBattleScreen layout policy changes that set default tactical screen size to `1200x900` and apply explicit parent height allocation policy.
-- Tester added layout-policy regression coverage (source-contract + live GUI runtime assertions) for lower-panel baseline allocation, larger lower-panel requests, and 60% minimum map-height floor.
+- Document the validated FBattleDisplay lower-panel layout-state update that persists prompt/stats split state and requested display height across tactical phases, with geometry-driven invalidation behavior.
 
-Acceptance criteria validated by Tester:
-- `FBattleScreen` defaults to `1200x900`.
-- Parent layout explicitly starts lower panel at `120px` when possible.
-- Parent layout can honor larger lower-panel requests.
-- Map keeps at least `60%` of client height.
-- No tactical rules or battle-state behavior changes were introduced.
+Acceptance criteria validated:
+- FBattleDisplay has an explicit shared layout state for prompt/stats positioning and requested height.
+- The ship-stats split remains stable across phases when size constraints do not force change.
+- The display can communicate a requested height based on its current layout state.
+- The change remains localized to tactical display/layout behavior.
 
-Implementation branch/worktree context:
-- Tester branch: `layout-update-tester-20260516`
-- Tester worktree: `/home/tstephen/worktrees/SSW/layout-update-tester-20260516`
-- Implementer commit from handoff: `4d8cb29beb1bd94fc84cd394bb9686adcb845007`
-- Tester commit: `001c853f9833a3b85db701087a956798e00af9cd`
+Implementation branch or worktree context:
+- Branch: `layout-update-tester-20260516`
+- Worktree: `/home/tstephen/worktrees/SSW/layout-update-tester-20260516`
+- Implementation commit inspected for localization: `55ed2b6`
 
-Files modified by Implementer and Tester to inspect:
-- `include/tactical/FBattleScreen.h`
-- `src/tactical/FBattleScreen.cpp`
-- `tests/gui/TacticalGuiLiveTest.cpp`
-- `tests/gui/TacticalGuiLiveTest.h`
-- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
-- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Test commit:
+- ec57142
 
 Commands executed:
-- `cd tests && make tactical-tests && ./tactical/TacticalTests`: failed with pre-existing source-token failures in `src/tactical/FBattleDisplay.cpp`.
-- `cd tests/gui && make && xvfb-run -a ./GuiTests`: failed with pre-existing source-token failure in `src/tactical/FBattleDisplay.cpp`.
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
 
-Final test outcome context:
-- 5 tests added/updated for this task.
-- New FBattleScreen acceptance coverage is passing.
-- Remaining suite failures are unchanged baseline failures tied to `FBattleDisplay.cpp` token expectations (outside this FBattleScreen-only implementation scope).
-- No unmet acceptance criteria for the FBattleScreen layout task.
+Final test outcomes:
+- Tactical tests: OK (150 tests)
+- GUI tests: OK (35 tests)
+- Added tactical source-contract checks for shared lower-panel state, persistence/invalidation flow, and requested-height propagation.
+- Added live GUI regression for cross-phase lower-panel min-height stability under non-invalidating geometry changes.
 
-Documentation guidance:
-- Evaluate whether user-facing or developer documentation should mention FBattleScreen default sizing/layout-policy behavior.
-- Do not edit `doc/rules/tactical_operations_manual.md` (repository non-negotiable constraint).
-- If no documentation updates are required, still produce documenter artifacts documenting that decision.
+Documentation context:
+- Tactical display/layout behavior docs may need updates where FBattleDisplay lower-panel rendering or layout policy is described.
+- Emphasize that layout mode/position/requested-height state is now shared and preserved across phases unless geometry invalidates active split assumptions.
 
-Shared artifact directory (reuse exactly):
-- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1`
+Plan and diff context:
+- Plan/story context: tactical movement prompt overlap plan, artifact lane `tmp-1`.
+- Comparison base assumption: use `layout-update` as the likely base branch and compare through tester commit `ec57142` plus the implementation commit `55ed2b6`.
 
 Startup behavior:
-- If branch/worktree context and diff context are present, begin documentation review immediately and continue in the same run.
-- Infer missing comparison-base or documentation-convention details from repository evidence when safe, and label assumptions.
-- Do not stop after scope confirmation, docs discovery, or diff review when documentation work can proceed.
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-movement-prompt-overlap-plan/tmp-1
 
 Completion gate:
 - Do not report success unless all required artifacts exist and all changes are committed.
