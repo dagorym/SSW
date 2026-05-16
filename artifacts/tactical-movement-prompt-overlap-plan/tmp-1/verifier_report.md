@@ -1,37 +1,44 @@
 Verifier Report
 
 Scope reviewed:
-- `include/tactical/FBattleScreen.h` and `src/tactical/FBattleScreen.cpp` for the FBattleScreen sizing/layout-policy implementation.
-- `tests/tactical/FTacticalBattleDisplayFireFlowTest.{h,cpp}` and `tests/gui/TacticalGuiLiveTest.{h,cpp}` for acceptance coverage added by the Tester.
-- `doc/UsersGuide.md` plus the shared handoff artifacts in `artifacts/tactical-movement-prompt-overlap-plan/tmp-1` after Documenter review.
+- Combined implementation, tester, and documenter diffs from `22010b9b51c906f68dbd5ead9ffeaa82b37d3df2` to `180bf8477e134cf15d2ce1053236c11bdb5dd4f6` for the tactical lower-panel resize/reflow story.
+- Code reviewed: `include/tactical/FBattleDisplay.h`, `src/tactical/FBattleDisplay.cpp`, `src/tactical/FBattleScreen.cpp`, `tests/gui/TacticalGuiLiveTest.cpp`, `tests/gui/TacticalGuiLiveTest.h`, `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`, `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`.
+- Documentation and handoff artifacts reviewed: `doc/UsersGuide.md`, `doc/DesignNotes.md`, `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_report.md`, `implementer_result.json`, `tester_report.md`, `tester_result.json`, `documenter_report.md`, `documenter_result.json`, and `verifier_prompt.txt` in the same artifact directory.
 
 Acceptance criteria / plan reference:
-- `plans/tactical-movement-prompt-overlap-replan-v2.md` (Locked Design Decisions and TMP-V2-1 acceptance criteria).
-- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_prompt.txt`.
-- Assumption: used `efc5eac6e32f363de7f5a5c0f457854de1570711` as the story-specific comparison base, matching the prompt and artifact chain.
+- `plans/tactical-movement-prompt-overlap-replan-v2.md` TMP-V2-4 acceptance criteria.
+- `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_prompt.txt` handoff criteria.
+- Assumption: used `22010b9b51c906f68dbd5ead9ffeaa82b37d3df2` as the story-specific base exactly as directed in the verifier prompt.
+- Assumption: the prompt's documentation commit hash appears truncated incorrectly; repository evidence resolves the reachable documentation commit as `6dd9605550f4a93e1c38baa5481d84110b2bad68` via `git rev-parse 6dd9605`.
 
 Convention files considered:
 - `AGENTS.md`
-- `myteam get role verifier`
+- `myteam get role verifier` output loaded in this worktree
 
 Findings
 
 BLOCKING
-- None.
+- `src/tactical/FBattleDisplay.cpp:163-174`, `src/tactical/FBattleScreen.cpp:191-196`, `doc/UsersGuide.md:327`, `doc/DesignNotes.md:1098-1124` — The lower-panel height only ratchets upward during an open dialog session.
+  `FBattleDisplay::reflowLowerPanelLayout()` preserves `previousMinHeight` whenever the recalculated request is smaller, and `FBattleScreen::applyLayoutPolicy()` keeps only the maximum `m_displayRequestedMinHeight`. After a narrow resize forces the HUD taller, widening the dialog again cannot return the lower panel to the 120px baseline even when width pressure disappears. That fails the acceptance criterion that layout state recalculates when size changes require it, and it makes the new user/design documentation overstate the shipped behavior.
 
 WARNING
-- None.
+- `tests/gui/TacticalGuiLiveTest.cpp:874-888`, `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp:590-650` — The added regression coverage proves wide-to-narrow growth and ordering, but it never exercises the widen-again path that should shrink the HUD.
+  The live test only checks that post-resize height is `>= beforeResizeHeight`, and the source-contract test locks in the max-retention policy instead of challenging it. That gap is why the monotonic-height defect still passes both verification suites.
 
 NOTE
-- `include/tactical/FBattleScreen.h:30-45`, `src/tactical/FBattleScreen.cpp:23-25`, and `src/tactical/FBattleScreen.cpp:180-217` implement the requested layout-only policy: default dialog size `1200x900`, explicit `120px` lower-panel baseline, remembered larger display-height requests, and a `60%` minimum map-height floor. The touched code is confined to FBattleScreen sizing/layout seams and does not alter tactical phase/state methods.
-- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp:495-534` and `tests/gui/TacticalGuiLiveTest.cpp:767-807` add source-contract and live-GUI coverage for the accepted FBattleScreen policy. My verification rerun still fails only on the known baseline `FBattleDisplay.cpp` token expectations (`FTacticalBattleDisplayFireFlowTest::testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases`, `testActionPromptSpacingContractConstantsAndHelpersDefined`, `testActionPromptSpacingContractAppliedAcrossActionPhases`, and `TacticalGuiLiveTest::testTacticalActionButtonsStayBelowPromptReservationAcrossPhases`), which are outside this FBattleScreen-only scope.
-- `doc/UsersGuide.md:323-327` now matches shipped behavior by describing the `1200x900` default tactical screen, the `120px` lower-panel baseline, growth for larger tactical-control requests, and the `60%` battlefield-height floor. Diff inspection against the comparison base shows no changes to `doc/rules/tactical_operations_manual.md` and no additional documentation updates are required.
+- None.
 
 Test sufficiency assessment:
-- Sufficient for this scope. The tester added both source-contract checks and a live-GUI runtime assertion that verifies the default size, the baseline lower-row height, honoring larger lower-panel requests, and clamping to preserve the `60%` map floor. My rerun of `cd tests && ./tactical/TacticalTests` and `cd tests/gui && make && xvfb-run -a ./GuiTests` reproduced only the documented unrelated baseline failures in `src/tactical/FBattleDisplay.cpp` token assertions.
+- Insufficient for the full TMP-V2-4 acceptance criteria. I reran `cd tests && make tactical-tests && ./tactical/TacticalTests` and `cd tests/gui && make && xvfb-run -a ./GuiTests`; they passed with `OK (152 tests)` and `OK (35 tests)`.
+- Coverage is strong for immediate resize ordering, constrained-width prompt reservation, and localized tactical-layout scope, but it does not verify that the lower panel recomputes back down after width pressure is removed.
 
 Documentation accuracy assessment:
-- Accurate. The only user-facing documentation change is in `doc/UsersGuide.md`, and it now reflects the implemented FBattleScreen sizing/layout behavior. No tactical rules document or battle-state documentation changed, and none is needed for this layout-only update.
+- Not accurate as shipped. `doc/UsersGuide.md` and `doc/DesignNotes.md` now describe a lower panel that grows when needed during live resize, but the implementation keeps the largest requested lower-panel height for the rest of the dialog lifetime.
+- No additional wording update can make the documentation correct without first fixing the implementation behavior.
 
 Verdict:
-- PASS
+- FAIL
+
+Rationale:
+- The resize hook and helper seams are present, and the diff stays localized to tactical display/layout files without changing tactical rules or fire-resolution logic.
+- However, the actual lower-panel height negotiation is monotonic within a live dialog, so the resize/reflow story is only partially implemented and the accompanying docs/tests overclaim what shipped.
