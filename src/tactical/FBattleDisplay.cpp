@@ -266,6 +266,7 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 				&& m_lowerPanelLayoutState.shipStatsLeftMargin <= largestMarginWithStatsRoom;
 		} else {
 			keepCurrentState = m_lowerPanelLayoutState.shipStatsTop >= stackedTop;
+			keepCurrentState = keepCurrentState && !splitCanFit;
 		}
 	}
 
