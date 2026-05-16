@@ -1,44 +1,35 @@
-Implementer Report — layout-update-implementer-20260516
+# Implementer Report
 
-Plan step status:
-- Preflight scope check: completed
-- Implementation: completed
-- Validation: completed with pre-existing unrelated failures
-- Completion gate prep: completed
+## Task
+Introduce persistent `FBattleDisplay` lower-panel layout state for prompt/stats split, keep ship-stats split stable across tactical phases unless geometry invalidates it, and communicate requested display height from current layout state.
 
-Summary of implementation:
-- Updated `FBattleScreen` default size from `750x550` to `1200x900`.
-- Added explicit tactical screen layout policy constants in `FBattleScreen.cpp` for a `120px` baseline lower panel and `60%` minimum map-height floor.
-- Added `applyLayoutPolicy()` and resize handling (`onSize`) so the parent layout allocates the lower `FBattleDisplay` row at `120px` when possible, honors larger display-height requests when observed, and clamps lower-panel height so the map remains at least 60% of client height.
-- Kept tactical rules/state behavior unchanged (layout-only edits in `FBattleScreen`).
+## Files Changed
+- `include/tactical/FBattleDisplay.h`
+- `src/tactical/FBattleDisplay.cpp`
 
-Files changed:
-- include/tactical/FBattleScreen.h
-- src/tactical/FBattleScreen.cpp
+## Implementation Summary
+- Added explicit shared lower-panel layout state (`LowerPanelLayoutState`) tracking:
+  - current prompt/stats split mode,
+  - ship-stats anchor positions,
+  - reserved prompt lines,
+  - requested display height.
+- Added prompt wrapping/reservation helpers:
+  - `reserveActionPromptLines(...)`
+  - `countWrappedActionPromptLines(...)`
+  - `drawWrappedActionPrompt(...)`
+- Updated movement prompt flow to reserve wrapped prompt lines and retain required reminder text.
+- Updated defensive fire, offensive fire, and mine placement paths to reserve the action prompt block consistently.
+- Updated `drawCurrentShipStats(...)` to apply and reuse shared layout state and request display height from that state.
+- Layout transitions now occur only when current geometry can no longer sustain existing state.
 
-Validation commands run:
-1) `cd tests && make tactical-tests && ./tactical/TacticalTests` (baseline)
-   - Outcome: FAIL (pre-existing)
-   - Details: 3 failures in `FTacticalBattleDisplayFireFlowTest` expecting missing `FBattleDisplay.cpp` source tokens (`Movement Done` prompt text and prompt-spacing helper tokens). Unrelated to FBattleScreen layout scope.
-2) `cd tests/gui && make && xvfb-run -a ./GuiTests` (baseline)
-   - Outcome: FAIL (pre-existing)
-   - Details: at least one pre-existing source-token failure in `TacticalGuiLiveTest::testTacticalActionButtonsStayBelowPromptReservationAcrossPhases` expecting the same `FBattleDisplay.cpp` movement prompt token.
-3) `cd tests && make tactical-tests && ./tactical/TacticalTests` (post-change)
-   - Outcome: FAIL (same pre-existing failures)
-   - Details: unchanged 3 failures in `FTacticalBattleDisplayFireFlowTest`, all in `FBattleDisplay.cpp` token assertions.
-4) `cd tests/gui && make && xvfb-run -a ./GuiTests` (post-change)
-   - Outcome: FAIL (same pre-existing failure)
-   - Details: unchanged `TacticalGuiLiveTest` source-token failure against `FBattleDisplay.cpp` movement prompt text.
+## Validation
+Baseline before edits:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (failed baseline: 3 known source-token mismatches)
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` (failed baseline: 1 known source-token mismatch)
 
-Validation triage classification:
-- Classification: expected pre-existing failure, not a regression from this implementation.
-- Evidence: failures target source-token expectations in `src/tactical/FBattleDisplay.cpp`; this task changed only `include/tactical/FBattleScreen.h` and `src/tactical/FBattleScreen.cpp`.
-- Tester follow-up: confirm layout acceptance criteria in FBattleScreen while treating existing FBattleDisplay token failures as baseline unless behavior outside approved scope changed.
+Post-change:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` ✅ pass (`OK (147 tests)`)
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` ✅ pass (`OK (34 tests)`)
 
-Implementation/code commit:
-- 4d8cb29beb1bd94fc84cd394bb9686adcb845007
-
-Artifacts written:
-- artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_report.md
-- artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_prompt.txt
-- artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_result.json
+## Commit
+- Implementation/code commit: `55ed2b6`
