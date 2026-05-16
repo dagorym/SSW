@@ -492,6 +492,89 @@ assertContains(minesBody, "m_buttonMinePlacementDone->Hide();");
 assertBefore(minesBody, "m_buttonMinePlacementDone->Hide();", "Layout();");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields() {
+const std::string header = readFile(repoFile("include/tactical/FBattleDisplay.h"));
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string ctorBody = extractFunctionBody(
+source,
+"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+
+assertContains(header, "enum LowerPanelLayoutMode {");
+assertContains(header, "LOWER_PANEL_LAYOUT_RIGHT_SPLIT");
+assertContains(header, "LOWER_PANEL_LAYOUT_STACKED");
+assertContains(header, "struct LowerPanelLayoutState {");
+assertContains(header, "LowerPanelLayoutMode mode;");
+assertContains(header, "int shipStatsLeftMargin;");
+assertContains(header, "int shipStatsTop;");
+assertContains(header, "int reservedPromptLines;");
+assertContains(header, "int requestedDisplayHeight;");
+assertContains(header, "bool initialized;");
+assertContains(header, "LowerPanelLayoutState m_lowerPanelLayoutState;");
+assertContains(header, "void ensureLowerPanelLayoutState(int panelWidth, int panelHeight);");
+assertContains(header, "void applyRequestedDisplayHeight();");
+
+assertContains(ctorBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;");
+assertContains(ctorBody, "m_lowerPanelLayoutState.shipStatsLeftMargin = 300;");
+assertContains(ctorBody, "m_lowerPanelLayoutState.shipStatsTop = BORDER;");
+assertContains(ctorBody, "m_lowerPanelLayoutState.reservedPromptLines = ACTION_PROMPT_MAX_LINES;");
+assertContains(ctorBody, "m_lowerPanelLayoutState.requestedDisplayHeight = 120;");
+assertContains(ctorBody, "m_lowerPanelLayoutState.initialized = false;");
+assertContains(source, "m_lowerPanelLayoutState.reservedPromptLines = lineCount;");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testLowerPanelLayoutStatePersistsSplitUntilGeometryInvalidatesIt() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string stateBody = extractFunctionBody(
+source,
+"void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight)");
+
+assertContains(stateBody, "if (m_lowerPanelLayoutState.initialized){");
+assertContains(stateBody, "if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT){");
+assertContains(stateBody, "keepCurrentState = splitCanFit");
+assertContains(stateBody, "m_lowerPanelLayoutState.shipStatsLeftMargin >= minStatsLeftMargin");
+assertContains(stateBody, "m_lowerPanelLayoutState.shipStatsLeftMargin <= largestMarginWithStatsRoom;");
+assertContains(stateBody, "} else {");
+assertContains(stateBody, "keepCurrentState = m_lowerPanelLayoutState.shipStatsTop >= stackedTop;");
+assertContains(stateBody, "if (!keepCurrentState){");
+assertContains(stateBody, "if (splitCanFit){");
+assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;");
+assertContains(stateBody, "} else {");
+assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;");
+assertContains(stateBody, "m_lowerPanelLayoutState.shipStatsLeftMargin = leftOffset;");
+assertContains(stateBody, "m_lowerPanelLayoutState.shipStatsTop = stackedTop;");
+assertContains(stateBody, "m_lowerPanelLayoutState.initialized = true;");
+
+const std::string statsBody = extractFunctionBody(source, "void FBattleDisplay::drawCurrentShipStats(wxDC & dc)");
+assertContains(statsBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);");
+assertContains(statsBody, "if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT");
+assertContains(statsBody, "&& largestMarginWithStatsRoom >= leftOffset + ACTION_PROMPT_MIN_WIDTH");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string stateBody = extractFunctionBody(
+source,
+"void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight)");
+const std::string applyBody = extractFunctionBody(source, "void FBattleDisplay::applyRequestedDisplayHeight()");
+const std::string statsBody = extractFunctionBody(source, "void FBattleDisplay::drawCurrentShipStats(wxDC & dc)");
+
+assertContains(stateBody, "int requestedHeight = getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_LINE_HEIGHT + ACTION_PROMPT_BUTTON_GAP + BORDER;");
+assertContains(stateBody, "const int statsBottom = m_lowerPanelLayoutState.shipStatsTop + statsHeight + BORDER;");
+assertContains(stateBody, "if (statsBottom > requestedHeight){");
+assertContains(stateBody, "requestedHeight = statsBottom;");
+assertContains(stateBody, "if (panelHeight > requestedHeight){");
+assertContains(stateBody, "requestedHeight = panelHeight;");
+assertContains(stateBody, "m_lowerPanelLayoutState.requestedDisplayHeight = requestedHeight;");
+
+assertContains(applyBody, "int requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;");
+assertContains(applyBody, "if (requestedHeight < 120){");
+assertContains(applyBody, "if (GetMinSize().GetHeight() != requestedHeight){");
+assertContains(applyBody, "SetMinSize(wxSize(-1, requestedHeight));");
+
+assertContains(statsBody, "applyRequestedDisplayHeight();");
+assertBefore(statsBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);", "applyRequestedDisplayHeight();");
+}
+
 void FTacticalBattleDisplayFireFlowTest::testBattleScreenDefaultsTo1200x900InConstructorSignature() {
 const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
 assertContains(header, "const wxSize& size = wxSize( 1200,900 )");

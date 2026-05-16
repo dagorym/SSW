@@ -806,6 +806,63 @@ m_harness.pumpEvents(5);
 m_harness.cleanupOrphanTopLevels(10);
 }
 
+void TacticalGuiLiveTest::testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges() {
+FFleet * attackFleet = new FFleet();
+FFleet * defendFleet = new FFleet();
+FVehicle * setupAttacker = createShip("Destroyer");
+FVehicle * setupDefender = createShip("Frigate");
+CPPUNIT_ASSERT(setupAttacker != NULL && setupDefender != NULL);
+setupAttacker->setOwner(1);
+setupDefender->setOwner(2);
+attackFleet->addShip(setupAttacker);
+defendFleet->addShip(setupDefender);
+FleetList attackFleets;
+FleetList defendFleets;
+attackFleets.push_back(attackFleet);
+defendFleets.push_back(defendFleet);
+
+FBattleScreen * wideScreen = new FBattleScreen("Lower Panel Layout State Persistence (wide)");
+wideScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+wideScreen->Show();
+m_harness.pumpEvents(5);
+
+FBattleDisplay * wideDisplay = findFirstBattleDisplay(wideScreen);
+CPPUNIT_ASSERT(wideDisplay != NULL);
+
+wideScreen->setState(BS_Battle);
+wideScreen->setPhase(PH_DEFENSE_FIRE);
+wideScreen->setMoveComplete(true);
+wideScreen->reDraw();
+wideScreen->Layout();
+m_harness.pumpEvents(5);
+const int wideDefenseHeight = wideDisplay->GetMinSize().GetHeight();
+CPPUNIT_ASSERT_EQUAL(120, wideDefenseHeight);
+
+wideScreen->setPhase(PH_ATTACK_FIRE);
+wideScreen->reDraw();
+wideScreen->Layout();
+m_harness.pumpEvents(5);
+const int wideAttackHeight = wideDisplay->GetMinSize().GetHeight();
+CPPUNIT_ASSERT_EQUAL(wideDefenseHeight, wideAttackHeight);
+
+const wxSize wideSize = wideScreen->GetSize();
+wideScreen->SetSize(wxSize(wideSize.GetWidth() + 180, wideSize.GetHeight() + 120));
+wideScreen->SendSizeEvent();
+m_harness.pumpEvents(5);
+wideScreen->setPhase(PH_DEFENSE_FIRE);
+wideScreen->reDraw();
+wideScreen->Layout();
+m_harness.pumpEvents(5);
+const int resizedWideHeight = wideDisplay->GetMinSize().GetHeight();
+CPPUNIT_ASSERT_EQUAL(wideDefenseHeight, resizedWideHeight);
+
+wideScreen->Destroy();
+m_harness.pumpEvents(5);
+m_harness.cleanupOrphanTopLevels(10);
+delete attackFleet;
+delete defendFleet;
+}
+
 void TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior() {
 	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Damage Summary Parent", wxPoint(120, 120), wxSize(540, 420));
 parent->Show();

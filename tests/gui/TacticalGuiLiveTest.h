@@ -29,6 +29,7 @@ CPPUNIT_TEST( testWXTacticalUIParentBackedModalAndRedrawPaths );
 CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
 CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
 CPPUNIT_TEST( testBattleScreenDefaultSizeAndLayoutPolicyRuntime );
+CPPUNIT_TEST( testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges );
 CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
 CPPUNIT_TEST_SUITE_END();
@@ -86,6 +87,14 @@ void testTacticalActionButtonsStayBelowPromptReservationAcrossPhases();
  * @date Last Modified: May 16, 2026
  */
 void testBattleScreenDefaultSizeAndLayoutPolicyRuntime();
+/**
+ * @brief Verifies FBattleDisplay lower-panel layout state persists across phases until geometry forces stacked mode.
+ *
+ * @author gpt-5.3-codex (medium), GPT-5 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges();
 /**
  * @brief Validates tactical damage summary modal content and close behavior.
  *

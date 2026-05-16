@@ -42,6 +42,9 @@ CPPUNIT_TEST( testActionPromptSpacingContractConstantsAndHelpersDefined );
 CPPUNIT_TEST( testActionPromptSpacingContractAppliedAcrossActionPhases );
 CPPUNIT_TEST( testActionButtonShowPathsRelayoutAfterVisibilityChange );
 CPPUNIT_TEST( testActionButtonHidePathsRelayoutAfterVisibilityChange );
+CPPUNIT_TEST( testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields );
+CPPUNIT_TEST( testLowerPanelLayoutStatePersistsSplitUntilGeometryInvalidatesIt );
+CPPUNIT_TEST( testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize );
 CPPUNIT_TEST( testBattleScreenDefaultsTo1200x900InConstructorSignature );
 CPPUNIT_TEST( testBattleScreenLayoutPolicyUsesBaselineAndMapFloorConstants );
 CPPUNIT_TEST( testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp );
@@ -260,6 +263,30 @@ void testActionButtonShowPathsRelayoutAfterVisibilityChange();
  * @date Last Modified: Apr 08, 2026
  */
 void testActionButtonHidePathsRelayoutAfterVisibilityChange();
+/**
+ * @brief Verifies FBattleDisplay declares shared lower-panel prompt/stats/height state.
+ *
+ * @author gpt-5.3-codex (medium), GPT-5 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields();
+/**
+ * @brief Verifies lower-panel split state is preserved unless geometry invalidates it.
+ *
+ * @author gpt-5.3-codex (medium), GPT-5 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testLowerPanelLayoutStatePersistsSplitUntilGeometryInvalidatesIt();
+/**
+ * @brief Verifies requested display height propagates from lower-panel layout state.
+ *
+ * @author gpt-5.3-codex (medium), GPT-5 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize();
 /**
  * @brief Verifies FBattleScreen constructor default size is explicitly 1200x900.
  *
