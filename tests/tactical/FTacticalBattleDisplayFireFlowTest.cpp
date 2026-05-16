@@ -388,11 +388,15 @@ assertContains(body, "Select a highlighted preview route to choose your starting
 assertContains(body, "Continue a route, or click an adjacent hex then Movement Done to rotate in place.");
 assertContains(body, "} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {");
 assertContains(body, "Select route hexes to move the ship.");
-assertContains(body, "Press Movement Done when all ships finish movement.");
+assertContains(body, "Press the 'Movement Done' button when all ships have been assigned their movement instructions.");
 assertContains(body, "} else {");
 assertContains(body, "Please select a ship to move.");
+assertContains(body, "drawWrappedActionPrompt(");
+assertContains(body, "countWrappedActionPromptLines(");
+assertContains(body, "reserveActionPromptLines(");
 assertNotContains(body, "Select an adjacent hex to choose facing.");
 assertNotContains(body, "Then move along a route, or press Movement Done to rotate in place.");
+assertNotContains(body, "Press Movement Done when all ships finish movement.");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractConstantsAndHelpersDefined() {
@@ -411,6 +415,9 @@ assertContains(header, "static const int ACTION_PROMPT_MAX_LINES = 3;");
 assertContains(header, "static const int ACTION_PROMPT_BUTTON_GAP = 8;");
 assertContains(header, "int getActionPromptLineY(int lineIndex) const;");
 assertContains(header, "int getActionButtonTopSpacerHeight() const;");
+assertContains(header, "void reserveActionPromptLines(");
+assertContains(header, "int countWrappedActionPromptLines(");
+assertContains(header, "void drawWrappedActionPrompt(");
 
 assertContains(lineYBody, "return ACTION_PROMPT_TOP_MARGIN + (lineIndex * ACTION_PROMPT_LINE_HEIGHT);");
 assertContains(spacerBody, "return getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_BUTTON_GAP;");
@@ -429,24 +436,26 @@ const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::d
 const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::drawDefensiveFire(wxDC &dc)");
 const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
 const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+const std::string statsBody = extractFunctionBody(source, "void FBattleDisplay::drawCurrentShipStats(wxDC & dc)");
 
 assertContains(ctorBody, "actionSizer->AddSpacer(leftOffset);");
 assertBefore(ctorBody, "actionSizer->AddSpacer(leftOffset);", "actionSizer->Add(m_buttonMoveDone, 0, wxALIGN_CENTER_VERTICAL);");
 
 assertContains(moveBody, "getActionPromptLineY(0)");
-assertContains(moveBody, "getActionPromptLineY(1)");
+assertContains(moveBody, "countWrappedActionPromptLines(");
+assertContains(moveBody, "drawWrappedActionPrompt(");
+assertContains(moveBody, "reserveActionPromptLines(");
+assertContains(moveBody, "Movement Done");
 
 assertContains(defenseBody, "getActionPromptLineY(0)");
-assertContains(defenseBody, "getActionPromptLineY(1)");
-assertContains(defenseBody, "getActionPromptLineY(2)");
+assertContains(defenseBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
 
 assertContains(attackBody, "getActionPromptLineY(0)");
-assertContains(attackBody, "getActionPromptLineY(1)");
-assertContains(attackBody, "getActionPromptLineY(2)");
+assertContains(attackBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
 
 assertContains(minesBody, "getActionPromptLineY(0)");
-assertContains(minesBody, "getActionPromptLineY(1)");
-assertContains(minesBody, "getActionPromptLineY(2)");
+assertContains(minesBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
+assertContains(statsBody, "largestMarginWithStatsRoom");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {

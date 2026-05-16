@@ -622,6 +622,31 @@ m_harness.cleanupOrphanTopLevels(10);
 
 void TacticalGuiLiveTest::testTacticalActionButtonsStayBelowPromptReservationAcrossPhases() {
 const int expectedLeftOffset = 40;
+CPPUNIT_ASSERT_MESSAGE(
+	"Movement reminder text must retain the quoted button label.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"Press the 'Movement Done' button when all ships have been assigned their movement instructions."));
+CPPUNIT_ASSERT_MESSAGE(
+	"Movement prompts should use wrapped prompt drawing in constrained widths.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"drawWrappedActionPrompt("));
+CPPUNIT_ASSERT_MESSAGE(
+	"Movement prompt line reservation should be calculated from wrapped line counts.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"countWrappedActionPromptLines("));
+CPPUNIT_ASSERT_MESSAGE(
+	"Movement prompt rendering must reserve dynamic action-prompt lines.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"reserveActionPromptLines("));
+CPPUNIT_ASSERT_MESSAGE(
+	"Movement-phase ship stats margin fallback must derive from available width.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"largestMarginWithStatsRoom"));
 
 struct Scenario {
 	int state;
