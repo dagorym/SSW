@@ -1,47 +1,40 @@
-# Tester Report: layout-update-tester-20260516
+# Tester Report
 
 ## Scope
-- Validate tactical lower-panel resize/reflow updates in `FBattleScreen`/`FBattleDisplay`.
-- Acceptance criteria under test:
-  - Open-dialog resize triggers immediate lower-panel reflow.
-  - Lower-panel layout state recalculates predictably when size changes require it.
-  - Selected-ship constrained-width move path is deterministic for downstream GUI targeting.
-  - Changes remain tactical-layout-only with no tactical rules mutation.
+Validated tactical lower-panel resize/reflow remediation for `FBattleScreen`/`FBattleDisplay` at commit `5c332730b252a1a07fb0309f691b1935ec1b2c8d`.
 
-## Assumptions
-- Shared artifact directory was provided as `artifacts/tactical-movement-prompt-overlap-plan/tmp-1` and reused directly.
-- Related plan provenance path inferred from repository evidence: `plans/tactical-movement-prompt-overlap-replan-v2.md`.
+## Inputs and assumptions
+- Acceptance criteria and implementation context were provided.
+- Test locations were provided (`tests/gui/TacticalGuiLiveTest.cpp`, `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`).
+- Commands were provided and used as authoritative validation commands.
 
-## Test Changes
-- Updated `tests/tactical/FTacticalBattleDisplayFireFlowTest.h` and `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`.
-  - Added source-contract regression coverage for:
-    - `FBattleScreen::onSize(...)` ordering (`reflowLowerPanelLayout()` before `applyLayoutPolicy()`).
-    - `FBattleDisplay::reflowLowerPanelLayout()` and `refreshMovePromptReservation(...)` deterministic recalculation behavior.
-    - constrained-width move prompt helper seams (`buildMovePromptText`, `getCurrentPromptMaxWidth`, `refreshMovePromptReservation`).
-- Updated `tests/gui/TacticalGuiLiveTest.cpp` (and updated declaration metadata in `tests/gui/TacticalGuiLiveTest.h`).
-  - Extended live tactical lower-panel layout-state test to assert resize behavior in move phase with selected ship, without requiring a post-resize redraw trigger.
+## Coverage audit
+Existing tests in the target files already cover the remediation goals:
+- `TacticalGuiLiveTest::testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges` verifies narrow-width growth and post-resize restoration (`restoredHeight == beforeResizeHeight`) in an open dialog.
+- `FTacticalBattleDisplayFireFlowTest::testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize` asserts the max-height retention path is removed.
+- `FTacticalBattleDisplayFireFlowTest::testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp` asserts `applyLayoutPolicy()` no longer keeps prior max request.
+- `FTacticalBattleDisplayFireFlowTest::testBattleScreenResizeHandlerReflowsLowerPanelBeforeLayoutPolicy` verifies immediate resize reflow ordering.
+- `FTacticalBattleDisplayFireFlowTest::testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrentGeometry` and `...ConstrainedWidthSelectionPathUsesDeterministicHelpers` verify deterministic constrained-width move prompt behavior.
 
-## Commands Run
-- `cd tests && make tactical-tests && ./tactical/TacticalTests` (baseline) -> passed, `OK (150 tests)`
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` (baseline) -> passed, `OK (35 tests)`
-- `cd tests && make tactical-tests && ./tactical/TacticalTests` (post-change) -> passed, `OK (152 tests)`
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` (post-change) -> passed, `OK (35 tests)`
+No additional test edits were necessary.
 
-## Acceptance Criteria Results
-- Open-dialog resize triggers immediate lower-panel reflow: **passed**
-  - Covered by source-contract ordering assertions on `FBattleScreen::onSize(...)` and live resize assertions in move phase.
-- Lower-panel layout state recalculates predictably when size changes require it: **passed**
-  - Covered by explicit `reflowLowerPanelLayout`/`refreshMovePromptReservation` path assertions and repeated reservation recalculation checks.
-- Selected-ship constrained-width move path deterministic for downstream live GUI tests: **passed**
-  - Covered by helper-path source assertions plus selected-ship live resize behavior checks.
-- Change remains localized to tactical layout behavior and does not alter tactical rules: **passed**
-  - Source-contract tests explicitly reject tactical-rule mutation calls from resize/reflow paths.
+## Commands executed
+1. `cd tests && make tactical-tests && ./tactical/TacticalTests`
+2. `cd tests/gui && make && xvfb-run -a ./GuiTests`
 
-## Commit Status
-- Test changes committed: **yes**
-- Test commit hash: `15709b920a54c1c54ba3914307b7c888172de218`
-- Artifact commit: pending at report-write time
+## Results
+- Tactical tests: **PASS** (`OK (152 tests)`)
+- GUI tests (xvfb): **PASS** (`OK (35 tests)`)
+
+## Acceptance criteria status
+- Open-dialog resize triggers immediate lower-panel reflow: **Met**
+- Lower-panel layout state recalculates predictably on size change: **Met**
+- Selected-ship constrained-width move path deterministic for live GUI targeting: **Met**
+- Change remains tactical-layout-local and does not alter tactical rules: **Met**
+
+## File changes made by Tester
+- No test-source changes.
+- Updated success-path artifacts in `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/`.
 
 ## Cleanup
-- Removed temporary non-handoff byproducts created during skill-loading attempts.
-- No remaining temporary non-handoff files are intentionally retained.
+No temporary non-handoff byproducts were created.

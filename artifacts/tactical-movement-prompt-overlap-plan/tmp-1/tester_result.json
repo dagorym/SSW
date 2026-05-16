@@ -1,78 +1,47 @@
 {
   "status": "success",
-  "task_identifier": "layout-update-tester-20260516",
-  "branch_name": "layout-update-tester-20260516",
-  "worktree_path": "/home/tstephen/worktrees/SSW/layout-update-tester-20260516",
-  "shared_artifact_directory": "artifacts/tactical-movement-prompt-overlap-plan/tmp-1",
-  "plan_artifact_path": "plans/tactical-movement-prompt-overlap-replan-v2.md",
-  "test_commit_hash": "15709b920a54c1c54ba3914307b7c888172de218",
-  "test_files_added_or_modified": [
-    "tests/gui/TacticalGuiLiveTest.cpp",
-    "tests/gui/TacticalGuiLiveTest.h",
-    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
-    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h"
-  ],
-  "implementation_files_validated": [
-    "include/tactical/FBattleDisplay.h",
-    "src/tactical/FBattleDisplay.cpp",
-    "src/tactical/FBattleScreen.cpp"
-  ],
+  "task": "tactical-lower-panel-resize-reflow-remediation-validation",
+  "branch": "tester-remediation-20260516",
+  "implementation_commit_under_test": "5c332730b252a1a07fb0309f691b1935ec1b2c8d",
+  "test_commit": "No Changes Made",
+  "test_files_added": [],
+  "test_files_modified": [],
   "commands_run": [
-    {
-      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
-      "result": "passed",
-      "output_summary": "OK (150 tests)",
-      "phase": "baseline"
-    },
-    {
-      "command": "cd tests/gui && make && xvfb-run -a ./GuiTests",
-      "result": "passed",
-      "output_summary": "OK (35 tests)",
-      "phase": "baseline"
-    },
-    {
-      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
-      "result": "passed",
-      "output_summary": "OK (152 tests)",
-      "phase": "post-change"
-    },
-    {
-      "command": "cd tests/gui && make && xvfb-run -a ./GuiTests",
-      "result": "passed",
-      "output_summary": "OK (35 tests)",
-      "phase": "post-change"
-    }
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests"
   ],
-  "pass_fail_totals": {
-    "regression_cases_added_or_extended": 4,
-    "tactical_tests_passed": 152,
-    "gui_tests_passed": 35,
-    "tests_failed": 0
+  "results": {
+    "tactical_tests": {
+      "status": "pass",
+      "summary": "OK (152 tests)"
+    },
+    "gui_tests": {
+      "status": "pass",
+      "summary": "OK (35 tests)"
+    }
   },
   "acceptance_criteria": [
     {
       "criterion": "Open-dialog resize triggers immediate lower-panel reflow.",
-      "status": "passed"
+      "status": "met"
     },
     {
       "criterion": "The lower-panel layout state recalculates predictably when size changes require it.",
-      "status": "passed"
+      "status": "met"
     },
     {
       "criterion": "The selected-ship constrained-width move path is deterministic enough for downstream live GUI tests to target.",
-      "status": "passed"
+      "status": "met"
     },
     {
       "criterion": "The change stays localized to tactical layout behavior and does not alter tactical rules.",
-      "status": "passed"
+      "status": "met"
     }
   ],
   "unmet_acceptance_criteria": [],
-  "artifact_file_paths_written": [
+  "artifacts_written": [
     "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_report.md",
     "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/tester_result.json",
     "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_prompt.txt"
-  ],
-  "documenter_prompt_written": true,
-  "temporary_byproducts": []
+  ]
 }
