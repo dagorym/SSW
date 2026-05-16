@@ -48,7 +48,9 @@ CPPUNIT_TEST( testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize );
 CPPUNIT_TEST( testBattleScreenDefaultsTo1200x900InConstructorSignature );
 CPPUNIT_TEST( testBattleScreenLayoutPolicyUsesBaselineAndMapFloorConstants );
 CPPUNIT_TEST( testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp );
-CPPUNIT_TEST( testBattleScreenResizeHandlerOnlyReappliesLayoutPolicy );
+CPPUNIT_TEST( testBattleScreenResizeHandlerReflowsLowerPanelBeforeLayoutPolicy );
+CPPUNIT_TEST( testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrentGeometry );
+CPPUNIT_TEST( testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -312,13 +314,29 @@ void testBattleScreenLayoutPolicyUsesBaselineAndMapFloorConstants();
  */
 void testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp();
 /**
- * @brief Verifies FBattleScreen resize handler reuses layout policy without tactical-state mutation logic.
+ * @brief Verifies FBattleScreen resize handler reflows lower-panel layout before screen-level policy.
  *
  * @author gpt-5.4 (high)
  * @date Created: May 16, 2026
  * @date Last Modified: May 16, 2026
  */
-void testBattleScreenResizeHandlerOnlyReappliesLayoutPolicy();
+void testBattleScreenResizeHandlerReflowsLowerPanelBeforeLayoutPolicy();
+/**
+ * @brief Verifies FBattleDisplay reflow path recalculates move prompt reservations using current geometry.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrentGeometry();
+/**
+ * @brief Verifies constrained-width move prompt paths route through shared deterministic helper seams.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers();
 };
 
 }

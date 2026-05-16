@@ -90,7 +90,7 @@ void testBattleScreenDefaultSizeAndLayoutPolicyRuntime();
 /**
  * @brief Verifies FBattleDisplay lower-panel layout state persists across phases until geometry forces stacked mode.
  *
- * @author gpt-5.3-codex (medium), GPT-5 (high)
+ * @author gpt-5.3-codex (medium), GPT-5 (high), gpt-5.4 (high)
  * @date Created: May 16, 2026
  * @date Last Modified: May 16, 2026
  */

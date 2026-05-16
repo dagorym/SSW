@@ -807,6 +807,7 @@ m_harness.cleanupOrphanTopLevels(10);
 }
 
 void TacticalGuiLiveTest::testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges() {
+const int expectedLeftOffset = 40;
 FFleet * attackFleet = new FFleet();
 FFleet * defendFleet = new FFleet();
 FVehicle * setupAttacker = createShip("Destroyer");
@@ -855,6 +856,36 @@ wideScreen->Layout();
 m_harness.pumpEvents(5);
 const int resizedWideHeight = wideDisplay->GetMinSize().GetHeight();
 CPPUNIT_ASSERT_EQUAL(wideDefenseHeight, resizedWideHeight);
+
+wideScreen->setPhase(PH_MOVE);
+wideScreen->setShip(setupAttacker);
+wideScreen->setMoveComplete(true);
+wideScreen->reDraw();
+wideScreen->Layout();
+m_harness.pumpEvents(5);
+
+wxButton * moveDoneButton = findButtonByLabel(wideScreen, wxT("Movement Done"));
+CPPUNIT_ASSERT(moveDoneButton != NULL);
+moveDoneButton->Show();
+moveDoneButton->GetParent()->Layout();
+wideScreen->Layout();
+m_harness.pumpEvents(2);
+
+const wxRect beforeResizeRect = moveDoneButton->GetRect();
+const int beforeResizeHeight = wideDisplay->GetMinSize().GetHeight();
+const wxSize beforeResizeSize = wideScreen->GetSize();
+wideScreen->SetSize(wxSize(760, beforeResizeSize.GetHeight()));
+wideScreen->SendSizeEvent();
+m_harness.pumpEvents(5);
+
+CPPUNIT_ASSERT(moveDoneButton->IsShown());
+const wxRect afterResizeRect = moveDoneButton->GetRect();
+CPPUNIT_ASSERT(afterResizeRect.GetWidth() > 0);
+CPPUNIT_ASSERT(afterResizeRect.GetHeight() > 0);
+CPPUNIT_ASSERT(afterResizeRect.GetX() >= expectedLeftOffset);
+CPPUNIT_ASSERT(afterResizeRect.GetTop() >= FBattleDisplayTestPeer::actionPromptReservedBottomY());
+CPPUNIT_ASSERT(wideDisplay->GetMinSize().GetHeight() >= beforeResizeHeight);
+CPPUNIT_ASSERT(afterResizeRect.GetTop() > beforeResizeRect.GetTop() - 80);
 
 wideScreen->Destroy();
 m_harness.pumpEvents(5);

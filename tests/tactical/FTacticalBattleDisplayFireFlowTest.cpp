@@ -605,15 +605,77 @@ assertContains(body, "m_display->SetMinSize(wxSize(-1, desiredDisplayHeight));")
 assertNotContains(body, "m_tacticalGame");
 }
 
-void FTacticalBattleDisplayFireFlowTest::testBattleScreenResizeHandlerOnlyReappliesLayoutPolicy() {
+void FTacticalBattleDisplayFireFlowTest::testBattleScreenResizeHandlerReflowsLowerPanelBeforeLayoutPolicy() {
 const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string body = extractFunctionBody(source, "void FBattleScreen::onSize(wxSizeEvent & event)");
 
+assertContains(body, "if (m_display != NULL) {");
+assertContains(body, "m_display->reflowLowerPanelLayout();");
 assertContains(body, "applyLayoutPolicy();");
+assertBefore(body, "m_display->reflowLowerPanelLayout();", "applyLayoutPolicy();");
 assertContains(body, "event.Skip();");
 assertNotContains(body, "m_tacticalGame");
 assertNotContains(body, "setPhase(");
 assertNotContains(body, "resolveCurrentFirePhase");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrentGeometry() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string reflowBody = extractFunctionBody(source, "void FBattleDisplay::reflowLowerPanelLayout()");
+const std::string refreshBody = extractFunctionBody(source, "void FBattleDisplay::refreshMovePromptReservation(wxDC &dc, int panelWidth, int panelHeight)");
+const std::string maxWidthBody = extractFunctionBody(source, "int FBattleDisplay::getCurrentPromptMaxWidth(int panelWidth) const");
+
+assertContains(reflowBody, "if (m_inResizeReflow){");
+assertContains(reflowBody, "m_inResizeReflow = true;");
+assertContains(reflowBody, "if (panelWidth > 0 && panelHeight > 0) {");
+assertContains(reflowBody, "wxClientDC dc(this);");
+assertContains(reflowBody, "if (m_parent->getState() == BS_Battle && m_parent->getPhase() == PH_MOVE) {");
+assertContains(reflowBody, "refreshMovePromptReservation(dc, panelWidth, panelHeight);");
+assertContains(reflowBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);");
+assertContains(reflowBody, "applyRequestedDisplayHeight();");
+assertContains(reflowBody, "m_inResizeReflow = false;");
+assertNotContains(reflowBody, "resolveCurrentFirePhase");
+assertNotContains(reflowBody, "setPhase(");
+
+assertContains(refreshBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);");
+assertContains(refreshBody, "int promptMaxWidth = getCurrentPromptMaxWidth(panelWidth);");
+assertContains(refreshBody, "buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo);");
+assertContains(refreshBody, "countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);");
+assertContains(refreshBody, "reserveActionPromptLines(promptLineCount);");
+CPPUNIT_ASSERT(countOccurrences(refreshBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);") >= 3);
+CPPUNIT_ASSERT(countOccurrences(refreshBody, "reserveActionPromptLines(promptLineCount);") >= 2);
+
+assertContains(maxWidthBody, "if (promptMaxWidth < 120){");
+assertContains(maxWidthBody, "promptMaxWidth = 120;");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
+const std::string builderBody = extractFunctionBody(source, "void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo) const");
+const std::string header = readFile(repoFile("include/tactical/FBattleDisplay.h"));
+
+assertContains(drawBody, "refreshMovePromptReservation(dc, panelWidth, panelHeight);");
+assertContains(drawBody, "int promptMaxWidth = getCurrentPromptMaxWidth(panelWidth);");
+assertContains(drawBody, "wxString turnPrompt;");
+assertContains(drawBody, "wxString detailPromptOne;");
+assertContains(drawBody, "wxString detailPromptTwo;");
+assertBefore(drawBody, "refreshMovePromptReservation(dc, panelWidth, panelHeight);", "drawWrappedActionPrompt(");
+assertContains(drawBody, "Select a highlighted preview route to choose your starting facing.");
+assertContains(drawBody, "Press the 'Movement Done' button when all ships have been assigned their movement instructions.");
+
+assertContains(builderBody, "if (stoppedShipFacingSelection) {");
+assertContains(builderBody, "Select a highlighted preview route to choose your starting facing.");
+assertContains(builderBody, "Continue a route, or click an adjacent hex then Movement Done to rotate in place.");
+assertContains(builderBody, "} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {");
+assertContains(builderBody, "Select route hexes to move the ship.");
+assertContains(builderBody, "Press the 'Movement Done' button when all ships have been assigned their movement instructions.");
+assertContains(builderBody, "} else {");
+assertContains(builderBody, "Please select a ship to move.");
+
+assertContains(header, "void buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo) const;");
+assertContains(header, "void refreshMovePromptReservation(wxDC &dc, int panelWidth, int panelHeight);");
+assertContains(header, "int getCurrentPromptMaxWidth(int panelWidth) const;");
 }
 
 }
