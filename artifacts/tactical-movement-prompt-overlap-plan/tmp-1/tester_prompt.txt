@@ -1,0 +1,46 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- FBattleScreen now defaults to `1200x900`.
+- Parent tactical-screen layout policy now explicitly allocates the lower FBattleDisplay row with a `120px` baseline when possible, while allowing larger lower-panel requests.
+- Parent layout now explicitly enforces a 60% minimum map-height floor so the tactical map remains dominant unless the lower panel needs more height.
+
+Modified files:
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate (from Planner):
+- `FBattleScreen` defaults to `1200x900`.
+- The parent layout has an explicit height-allocation policy that starts the lower panel at `120px` when possible.
+- The parent layout can honor a larger lower-panel request when needed.
+- The map keeps at least `60%` of client height.
+- No tactical rules or battle-state behavior are changed.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Implementation context for testing:
+- `FBattleScreen` gained `applyLayoutPolicy()` and an `onSize(wxSizeEvent&)` handler.
+- Layout policy constants are in `src/tactical/FBattleScreen.cpp`: baseline lower panel = `120`, map minimum floor = `60%` of client height.
+- `m_displayRequestedMinHeight` tracks observed larger display requests; parent clamps to preserve 60% map floor.
+- Tactical game logic/state, report flow, and combat behavior were not modified.
+
+Suggested test command(s):
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests`
+
+Known validation context:
+- Existing baseline failures currently reference source-token expectations in `src/tactical/FBattleDisplay.cpp` (movement prompt text / prompt-spacing helper tokens).
+- Those failures were present before and after this FBattleScreen-only change; treat as pre-existing unless you detect a new regression tied to these edits.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-movement-prompt-overlap-plan/tmp-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
