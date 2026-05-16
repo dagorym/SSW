@@ -1,34 +1,29 @@
 Your role is 'verifier'. Your task is as follows:
-- Validate the tactical lower-panel resize/reflow story after the Documenter review.
-- The Implementer changed `FBattleScreen`/`FBattleDisplay` so open-dialog resize now forces immediate lower-panel reflow, move-phase prompt reservation is recalculated through deterministic helper seams, and the change stays localized to tactical layout behavior.
-- The Tester added source-contract and live-GUI regression coverage for the resize/reflow path and reported all acceptance criteria passing.
-- The Documenter updated tactical documentation to reflect the shipped resize/reflow behavior and the validated implementation seams.
+- Validate the tactical lower-panel resize/reflow remediation after the Documenter pass.
+- The shipped change updates `FBattleScreen`/`FBattleDisplay` so open-dialog resize reflows immediately, the lower-panel requested height is recomputed from current geometry, and the lower panel can shrink back after constrained-width expansion when the wider size is restored.
+- The Tester already validated the tactical and GUI regressions, and the Documenter updated tactical documentation to match the shipped behavior.
 
 Acceptance criteria to verify:
 - Open-dialog resize triggers immediate lower-panel reflow.
-- Lower-panel layout state recalculates predictably when size changes require it.
-- The selected-ship constrained-width move path is deterministic enough for downstream live GUI tests.
-- The change remains localized to tactical layout behavior and does not alter tactical rules or fire-resolution logic.
+- The lower-panel layout state recalculates predictably when size changes require it.
+- The selected-ship constrained-width move path is deterministic enough for downstream live GUI tests to target.
+- The lower panel now shrinks back after width pressure is removed instead of retaining the largest earlier height request.
+- The change remains localized to tactical layout behavior and does not alter tactical combat rules or fire-resolution logic.
 - The documentation update is accurate: `doc/UsersGuide.md` and `doc/DesignNotes.md` match the shipped resize/reflow behavior and no additional documentation update is required.
 
 Implementation/worktree context:
 - Documenter worktree: `/home/tstephen/worktrees/SSW/layout-update-documenter-20260516`
 - Documenter branch: `layout-update-documenter-20260516`
-- Tester worktree: `/home/tstephen/worktrees/SSW/layout-update-tester-20260516`
-- Tester branch: `layout-update-tester-20260516`
-- Implementation commit: `3a23aa7ac113512688b14af7f277d6caf362d834`
-- Tester commit: `15709b920a54c1c54ba3914307b7c888172de218`
-- Documentation commit: `6dd9605e4d2f1a35972db79732ccb2182a6e76f7`
-- Comparison-base assumption: use `22010b9b51c906f68dbd5ead9ffeaa82b37d3df2`, the direct parent of `3a23aa7ac113512688b14af7f277d6caf362d834`, as the story-specific base because it is the last commit before this resize/reflow implementation begins on the stacked branch.
+- Commit under test: `5c332730b252a1a07fb0309f691b1935ec1b2c8d`
+- Documentation commit: `edc27151ccaeb8e61537f93867bc0174b4927a73`
+- Comparison-base assumption: use `70ddd886a047b110690656c52f3a3a00cc9eb2e1`, the immediate parent of `5c332730b252a1a07fb0309f691b1935ec1b2c8d`, because the task asked for the remediation delta against that parent.
 
 Files modified by Implementer, Tester, and Documenter to inspect:
-- `include/tactical/FBattleDisplay.h`
+- `include/tactical/FBattleScreen.h`
 - `src/tactical/FBattleDisplay.cpp`
 - `src/tactical/FBattleScreen.cpp`
 - `tests/gui/TacticalGuiLiveTest.cpp`
-- `tests/gui/TacticalGuiLiveTest.h`
 - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
-- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
 - `doc/UsersGuide.md`
 - `doc/DesignNotes.md`
 - `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/implementer_report.md`
@@ -40,21 +35,19 @@ Files modified by Implementer, Tester, and Documenter to inspect:
 - `artifacts/tactical-movement-prompt-overlap-plan/tmp-1/verifier_prompt.txt`
 
 Commands executed and validated by Tester:
-- `cd tests && make tactical-tests && ./tactical/TacticalTests` (baseline) → `OK (150 tests)`
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` (baseline) → `OK (35 tests)`
-- `cd tests && make tactical-tests && ./tactical/TacticalTests` (post-change) → `OK (152 tests)`
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` (post-change) → `OK (35 tests)`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` → `OK (152 tests)`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` → `OK (35 tests)`
 
 Plan and documentation review context:
 - Plan artifact path: `plans/tactical-movement-prompt-overlap-replan-v2.md`
 - Use the plan's documentation-impact hints only as hints; verify against the implemented and tested diff.
 - `doc/rules/tactical_operations_manual.md` is protected and must not be edited.
-- Documenter updated `doc/UsersGuide.md` to note immediate lower-panel reflow during live resize and updated `doc/DesignNotes.md` to capture the deterministic resize/reflow seam plus the tester-validated command results.
+- Documenter updated `doc/UsersGuide.md` to note live lower-panel shrink-back after width pressure is removed and updated `doc/DesignNotes.md` to capture the current-geometry height recomputation plus the tester evidence for shrink-back.
 
 Verification scope:
 - Verify the implementation, tests, and updated documentation together.
+- Confirm the shrink-back remediation is evidenced by both source-contract checks and live GUI resize/restore coverage.
 - Confirm the resize/reflow seam stays within tactical layout behavior and does not change tactical combat rules or fire-resolution flow.
-- Confirm the documentation accurately reflects the shipped behavior and validated scope.
 - Infer any missing comparison-base, convention, or artifact-path details from repository evidence when safe, and label those choices as assumptions.
 
 Startup behavior:

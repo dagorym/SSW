@@ -1107,11 +1107,26 @@ recalculation through `reflowLowerPanelLayout()`,
 its prompt reservation from the current selected-ship text and available width
 before the parent layout decides how much height the panel needs, keeping the
 selected-ship constrained-width movement path stable enough for downstream live
-GUI checks. The paired tester coverage now locks that behavior through
-source-contract assertions on the resize/reflow ordering, deterministic
-reservation recalculation for the move prompt, and live resize checks that keep
-the `Movement Done` band below the reserved prompt region without changing any
-tactical rules or fire-resolution flow.
+GUI checks.
+
+The shrink-back remediation that followed removed the old "largest height seen"
+retention from both layers of the tactical layout policy. `FBattleDisplay` now
+recomputes `requestedDisplayHeight` from the current prompt/stats geometry
+instead of preserving `previousMinHeight` or inflating the request to the
+current panel height, while `FBattleScreen::applyLayoutPolicy()` treats the
+display minimum as the current request and clamps only against the 120-pixel
+baseline and the 60% map-floor rule. That keeps the resize behavior localized
+to tactical layout only: a narrower move-phase window can still grow the lower
+panel when the selected-ship reminder needs it, but widening the window again
+lets the lower panel shrink back to its earlier compact height.
+
+The paired tester coverage now locks that behavior through source-contract
+assertions on the resize/reflow ordering, explicit checks that the old
+max-height retention code is absent, and live resize checks that drive a
+selected-ship move state narrow and then restore the wider size to prove the
+lower panel returns to its previous height. Those checks keep the `Movement
+Done` band below the reserved prompt region without changing any tactical rules
+or fire-resolution flow.
 
 Validation commands:
 

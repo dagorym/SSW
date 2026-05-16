@@ -4,10 +4,10 @@
   "agent": "Documenter",
   "branch": "layout-update-documenter-20260516",
   "worktree": "/home/tstephen/worktrees/SSW/layout-update-documenter-20260516",
-  "documentation_commit_hash": "6dd9605e4d2f1a35972db79732ccb2182a6e76f7",
-  "commit_hash": "6dd9605e4d2f1a35972db79732ccb2182a6e76f7",
-  "documentation_commit_message": "docs: capture tactical resize reflow validation",
-  "comparison_base_assumption": "Used commit 22010b9b51c906f68dbd5ead9ffeaa82b37d3df2, the direct parent of implementation commit 3a23aa7ac113512688b14af7f277d6caf362d834, as the safest story-specific base because it is the last commit before this tactical lower-panel resize/reflow change begins on the stacked branch.",
+  "documentation_commit_hash": "edc27151ccaeb8e61537f93867bc0174b4927a73",
+  "commit_hash": "edc27151ccaeb8e61537f93867bc0174b4927a73",
+  "documentation_commit_message": "docs: note tactical lower-panel shrink-back",
+  "comparison_base_assumption": "Used commit 70ddd886a047b110690656c52f3a3a00cc9eb2e1, the immediate parent of implementation commit 5c332730b252a1a07fb0309f691b1935ec1b2c8d, because the task explicitly asked for the remediation delta against that parent.",
   "plan_artifact_path": "plans/tactical-movement-prompt-overlap-replan-v2.md",
   "shared_artifact_directory": "artifacts/tactical-movement-prompt-overlap-plan/tmp-1",
   "documentation_files_added_or_modified": [
@@ -20,20 +20,21 @@
     "plans/tactical-movement-prompt-overlap-replan-v2.md"
   ],
   "implementation_and_test_files_reviewed": [
-    "include/tactical/FBattleDisplay.h",
+    "include/tactical/FBattleScreen.h",
     "src/tactical/FBattleDisplay.cpp",
     "src/tactical/FBattleScreen.cpp",
     "tests/gui/TacticalGuiLiveTest.cpp",
-    "tests/gui/TacticalGuiLiveTest.h",
-    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
-    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h"
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp"
   ],
-  "documentation_decision": "Updated the existing tactical docs instead of creating new ones: `doc/UsersGuide.md` now records the user-visible immediate lower-panel reflow during live resize, and `doc/DesignNotes.md` now captures the deterministic resize/reflow helper seams plus the tester-validated results. No tactical rules document or repository-wide guidance update was needed because the change stayed localized to tactical layout behavior.",
+  "documentation_decision": "Updated the existing tactical docs instead of creating new ones. `doc/UsersGuide.md` now states that the lower panel shrinks back after constrained-width pressure is removed, and `doc/DesignNotes.md` now captures the current-geometry height recomputation plus the live/test proof that the shrink-back behavior is deterministic. No tactical rules document or repository-wide guidance update was needed because the remediation stayed localized to tactical layout behavior.",
   "commands_executed": [
     "myteam get role documenter",
-    "git show --stat --summary 3a23aa7ac113512688b14af7f277d6caf362d834 -- include/tactical/FBattleDisplay.h src/tactical/FBattleDisplay.cpp src/tactical/FBattleScreen.cpp",
-    "git diff --stat 22010b9b51c906f68dbd5ead9ffeaa82b37d3df2..401eefc8d214424209799e42299cb8d97c745f95 -- include/tactical/FBattleDisplay.h src/tactical/FBattleDisplay.cpp src/tactical/FBattleScreen.cpp tests/gui/TacticalGuiLiveTest.cpp tests/gui/TacticalGuiLiveTest.h tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.h plans/tactical-movement-prompt-overlap-replan-v2.md",
-    "git commit -m \"docs: capture tactical resize reflow validation\" -m \"Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\""
+    "git diff --stat 70ddd886a047b110690656c52f3a3a00cc9eb2e1 5c332730b252a1a07fb0309f691b1935ec1b2c8d -- include/tactical/FBattleScreen.h src/tactical/FBattleDisplay.cpp src/tactical/FBattleScreen.cpp tests/gui/TacticalGuiLiveTest.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "git commit -m \"docs: note tactical lower-panel shrink-back\" -m \"Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\""
+  ],
+  "validation_context": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests -> OK (152 tests)",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests -> OK (35 tests)"
   ],
   "artifact_file_paths_written": [
     "artifacts/tactical-movement-prompt-overlap-plan/tmp-1/documenter_report.md",
