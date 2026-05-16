@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 22, 2026
- * @date Last Modified: May 09, 2026
+ * @date Last Modified: May 16, 2026
  */
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
@@ -42,6 +42,10 @@ CPPUNIT_TEST( testActionPromptSpacingContractConstantsAndHelpersDefined );
 CPPUNIT_TEST( testActionPromptSpacingContractAppliedAcrossActionPhases );
 CPPUNIT_TEST( testActionButtonShowPathsRelayoutAfterVisibilityChange );
 CPPUNIT_TEST( testActionButtonHidePathsRelayoutAfterVisibilityChange );
+CPPUNIT_TEST( testBattleScreenDefaultsTo1200x900InConstructorSignature );
+CPPUNIT_TEST( testBattleScreenLayoutPolicyUsesBaselineAndMapFloorConstants );
+CPPUNIT_TEST( testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp );
+CPPUNIT_TEST( testBattleScreenResizeHandlerOnlyReappliesLayoutPolicy );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -256,6 +260,38 @@ void testActionButtonShowPathsRelayoutAfterVisibilityChange();
  * @date Last Modified: Apr 08, 2026
  */
 void testActionButtonHidePathsRelayoutAfterVisibilityChange();
+/**
+ * @brief Verifies FBattleScreen constructor default size is explicitly 1200x900.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testBattleScreenDefaultsTo1200x900InConstructorSignature();
+/**
+ * @brief Verifies FBattleScreen layout policy constants define 120 baseline and 60 percent map floor.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testBattleScreenLayoutPolicyUsesBaselineAndMapFloorConstants();
+/**
+ * @brief Verifies FBattleScreen layout policy honors larger display requests and clamps to preserve map floor.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp();
+/**
+ * @brief Verifies FBattleScreen resize handler reuses layout policy without tactical-state mutation logic.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testBattleScreenResizeHandlerOnlyReappliesLayoutPolicy();
 };
 
 }

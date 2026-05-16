@@ -492,4 +492,45 @@ assertContains(minesBody, "m_buttonMinePlacementDone->Hide();");
 assertBefore(minesBody, "m_buttonMinePlacementDone->Hide();", "Layout();");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testBattleScreenDefaultsTo1200x900InConstructorSignature() {
+const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
+assertContains(header, "const wxSize& size = wxSize( 1200,900 )");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testBattleScreenLayoutPolicyUsesBaselineAndMapFloorConstants() {
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+assertContains(source, "const int BATTLE_SCREEN_BASE_DISPLAY_HEIGHT = 120;");
+assertContains(source, "const int BATTLE_SCREEN_MAP_MIN_PERCENT = 60;");
+assertContains(source, "m_displayRequestedMinHeight = BATTLE_SCREEN_BASE_DISPLAY_HEIGHT;");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp() {
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleScreen::applyLayoutPolicy()");
+
+assertContains(body, "const int mapMinHeight = (clientHeight * BATTLE_SCREEN_MAP_MIN_PERCENT) / 100;");
+assertContains(body, "const int currentDisplayRequest = m_display->GetMinSize().GetHeight();");
+assertContains(body, "if (currentDisplayRequest > m_displayRequestedMinHeight) {");
+assertContains(body, "m_displayRequestedMinHeight = currentDisplayRequest;");
+assertContains(body, "if (desiredDisplayHeight < BATTLE_SCREEN_BASE_DISPLAY_HEIGHT) {");
+assertContains(body, "desiredDisplayHeight = BATTLE_SCREEN_BASE_DISPLAY_HEIGHT;");
+assertContains(body, "const int maxDisplayHeight = clientHeight - mapMinHeight;");
+assertContains(body, "if (maxDisplayHeight >= 0 && desiredDisplayHeight > maxDisplayHeight) {");
+assertContains(body, "desiredDisplayHeight = maxDisplayHeight;");
+assertContains(body, "m_map->SetMinSize(wxSize(-1, mapMinHeight));");
+assertContains(body, "m_display->SetMinSize(wxSize(-1, desiredDisplayHeight));");
+assertNotContains(body, "m_tacticalGame");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testBattleScreenResizeHandlerOnlyReappliesLayoutPolicy() {
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleScreen::onSize(wxSizeEvent & event)");
+
+assertContains(body, "applyLayoutPolicy();");
+assertContains(body, "event.Skip();");
+assertNotContains(body, "m_tacticalGame");
+assertNotContains(body, "setPhase(");
+assertNotContains(body, "resolveCurrentFirePhase");
+}
+
 }

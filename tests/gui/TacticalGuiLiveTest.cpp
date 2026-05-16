@@ -154,6 +154,46 @@ return found;
 return NULL;
 }
 
+FBattleBoard * findFirstBattleBoard(wxWindow * root) {
+if (root == NULL) {
+return NULL;
+}
+
+FBattleBoard * battleBoard = dynamic_cast<FBattleBoard *>(root);
+if (battleBoard != NULL) {
+return battleBoard;
+}
+
+const wxWindowList & children = root->GetChildren();
+for (wxWindowList::const_iterator itr = children.begin(); itr != children.end(); ++itr) {
+FBattleBoard * found = findFirstBattleBoard(*itr);
+if (found != NULL) {
+return found;
+}
+}
+return NULL;
+}
+
+FBattleDisplay * findFirstBattleDisplay(wxWindow * root) {
+if (root == NULL) {
+return NULL;
+}
+
+FBattleDisplay * battleDisplay = dynamic_cast<FBattleDisplay *>(root);
+if (battleDisplay != NULL) {
+return battleDisplay;
+}
+
+const wxWindowList & children = root->GetChildren();
+for (wxWindowList::const_iterator itr = children.begin(); itr != children.end(); ++itr) {
+FBattleDisplay * found = findFirstBattleDisplay(*itr);
+if (found != NULL) {
+return found;
+}
+}
+return NULL;
+}
+
 wxStaticText * findStaticTextContaining(wxWindow * root, const wxString & token) {
 if (root == NULL) {
 return NULL;
@@ -721,6 +761,48 @@ for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
 	delete defendFleet;
 }
 
+m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testBattleScreenDefaultSizeAndLayoutPolicyRuntime() {
+FBattleScreen * battleScreen = new FBattleScreen();
+battleScreen->Show();
+m_harness.pumpEvents(8);
+
+const wxSize defaultSize = battleScreen->GetSize();
+CPPUNIT_ASSERT_EQUAL(1200, defaultSize.GetWidth());
+CPPUNIT_ASSERT_EQUAL(900, defaultSize.GetHeight());
+
+FBattleBoard * mapPanel = findFirstBattleBoard(battleScreen);
+FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
+CPPUNIT_ASSERT(mapPanel != NULL);
+CPPUNIT_ASSERT(displayPanel != NULL);
+
+const int clientHeight = battleScreen->GetClientSize().GetHeight();
+CPPUNIT_ASSERT(clientHeight > 0);
+const int mapFloor = (clientHeight * 60) / 100;
+const int maxDisplayHeight = clientHeight - mapFloor;
+
+CPPUNIT_ASSERT_EQUAL(mapFloor, mapPanel->GetMinSize().GetHeight());
+CPPUNIT_ASSERT_EQUAL(120, displayPanel->GetMinSize().GetHeight());
+
+if (maxDisplayHeight > 120) {
+	const int requestedDisplayHeight = std::min(maxDisplayHeight, 220);
+	displayPanel->SetMinSize(wxSize(-1, requestedDisplayHeight));
+	battleScreen->SendSizeEvent();
+	m_harness.pumpEvents(5);
+	CPPUNIT_ASSERT_EQUAL(requestedDisplayHeight, displayPanel->GetMinSize().GetHeight());
+	CPPUNIT_ASSERT_EQUAL(mapFloor, mapPanel->GetMinSize().GetHeight());
+}
+
+displayPanel->SetMinSize(wxSize(-1, clientHeight + 200));
+battleScreen->SendSizeEvent();
+m_harness.pumpEvents(5);
+CPPUNIT_ASSERT_EQUAL(maxDisplayHeight, displayPanel->GetMinSize().GetHeight());
+CPPUNIT_ASSERT_EQUAL(mapFloor, mapPanel->GetMinSize().GetHeight());
+
+battleScreen->Destroy();
+m_harness.pumpEvents(5);
 m_harness.cleanupOrphanTopLevels(10);
 }
 

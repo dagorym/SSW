@@ -19,15 +19,16 @@ namespace FrontierTests {
  * tactical runtime interactions deterministic across redraw, prompt-spacing, and selection
  * scenarios.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Apr 08, 2026
+ * @date Last Modified: May 16, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
 CPPUNIT_TEST( testWXTacticalUIParentBackedModalAndRedrawPaths );
 CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
 CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
+CPPUNIT_TEST( testBattleScreenDefaultSizeAndLayoutPolicyRuntime );
 CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
 CPPUNIT_TEST_SUITE_END();
@@ -77,6 +78,14 @@ void testTacticalActionButtonsRemainSizerPositionedWhenShown();
  * @date Last Modified: Apr 08, 2026
  */
 void testTacticalActionButtonsStayBelowPromptReservationAcrossPhases();
+/**
+ * @brief Verifies FBattleScreen default sizing and parent layout policy behavior at runtime.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 16, 2026
+ * @date Last Modified: May 16, 2026
+ */
+void testBattleScreenDefaultSizeAndLayoutPolicyRuntime();
 /**
  * @brief Validates tactical damage summary modal content and close behavior.
  *
