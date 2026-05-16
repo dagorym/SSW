@@ -33,6 +33,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_lowerPanelLayoutState.reservedPromptLines = ACTION_PROMPT_MAX_LINES;
 	m_lowerPanelLayoutState.requestedDisplayHeight = 120;
 	m_lowerPanelLayoutState.initialized = false;
+	m_inResizeReflow = false;
 
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	wxColour black(wxT("#000000"));// black
@@ -77,10 +78,102 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	Layout();
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
-
 }
 
 FBattleDisplay::~FBattleDisplay() {
+}
+
+int FBattleDisplay::getCurrentPromptMaxWidth(int panelWidth) const{
+	int promptMaxWidth = panelWidth - leftOffset - BORDER;
+	if (m_lowerPanelLayoutState.initialized
+			&& m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT){
+		promptMaxWidth = m_lowerPanelLayoutState.shipStatsLeftMargin - leftOffset - BORDER;
+	}
+	if (promptMaxWidth < 120){
+		promptMaxWidth = 120;
+	}
+	return promptMaxWidth;
+}
+
+void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo) const{
+	std::ostringstream os;
+	os << "It is the ";
+	if (m_parent->getActivePlayer()){
+		os << "attacker's ";
+	} else {
+		os << "defender's ";
+	}
+	os << "turn.";
+	turnPrompt = wxString(os.str());
+
+	bool stoppedShipFacingSelection = false;
+	if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
+		const std::map<unsigned int, FTacticalTurnData> & turnInfo = m_parent->getTurnInfo();
+		std::map<unsigned int, FTacticalTurnData>::const_iterator turnItr = turnInfo.find(m_parent->getShip()->getID());
+		if (turnItr != turnInfo.end()) {
+			const FTacticalTurnData & turnData = turnItr->second;
+			stoppedShipFacingSelection = (turnData.speed == 0
+				&& turnData.nMoved == 0
+				&& m_parent->getShip()->getMR() > 0);
+		}
+	}
+
+	if (stoppedShipFacingSelection) {
+		detailPromptOne = "Select a highlighted preview route to choose your starting facing.";
+		detailPromptTwo = "Continue a route, or click an adjacent hex then Movement Done to rotate in place.";
+	} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
+		detailPromptOne = "Select route hexes to move the ship.";
+		detailPromptTwo = "Press the 'Movement Done' button when all ships have been assigned their movement instructions.";
+	} else {
+		detailPromptOne = "Please select a ship to move.";
+		detailPromptTwo.clear();
+	}
+}
+
+void FBattleDisplay::refreshMovePromptReservation(wxDC &dc, int panelWidth, int panelHeight){
+	ensureLowerPanelLayoutState(panelWidth, panelHeight);
+	int promptMaxWidth = getCurrentPromptMaxWidth(panelWidth);
+
+	wxString turnPrompt;
+	wxString detailPromptOne;
+	wxString detailPromptTwo;
+	buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo);
+	int promptLineCount = countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptOne, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptTwo, promptMaxWidth);
+	reserveActionPromptLines(promptLineCount);
+
+	ensureLowerPanelLayoutState(panelWidth, panelHeight);
+	promptMaxWidth = getCurrentPromptMaxWidth(panelWidth);
+	promptLineCount = countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptOne, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptTwo, promptMaxWidth);
+	reserveActionPromptLines(promptLineCount);
+	ensureLowerPanelLayoutState(panelWidth, panelHeight);
+}
+
+void FBattleDisplay::reflowLowerPanelLayout(){
+	if (m_inResizeReflow){
+		return;
+	}
+	m_inResizeReflow = true;
+
+	int panelWidth = GetClientSize().GetWidth();
+	int panelHeight = GetClientSize().GetHeight();
+	int previousMinHeight = GetMinSize().GetHeight();
+	if (panelWidth > 0 && panelHeight > 0) {
+		wxClientDC dc(this);
+		if (m_parent->getState() == BS_Battle && m_parent->getPhase() == PH_MOVE) {
+			refreshMovePromptReservation(dc, panelWidth, panelHeight);
+		} else {
+			ensureLowerPanelLayoutState(panelWidth, panelHeight);
+		}
+		if (previousMinHeight > m_lowerPanelLayoutState.requestedDisplayHeight) {
+			m_lowerPanelLayoutState.requestedDisplayHeight = previousMinHeight;
+		}
+		applyRequestedDisplayHeight();
+	}
+	m_inResizeReflow = false;
 }
 
 int FBattleDisplay::getActionPromptLineY(int lineIndex) const{
@@ -556,29 +649,16 @@ bool FBattleDisplay::setStationRotation(wxMouseEvent &event){
 void FBattleDisplay::drawMoveShip(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	int panelWidth = 0;
+	int panelHeight = 0;
+	dc.GetSize(&panelWidth,&panelHeight);
+	refreshMovePromptReservation(dc, panelWidth, panelHeight);
+	applyRequestedDisplayHeight();
 	const int promptTopY = getActionPromptLineY(0);
 	dc.DrawText("",leftOffset,promptTopY);
-	int promptMaxWidth = GetClientSize().GetWidth() - leftOffset - BORDER;
-	if (m_lowerPanelLayoutState.initialized
-			&& m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT){
-		promptMaxWidth = m_lowerPanelLayoutState.shipStatsLeftMargin - leftOffset - BORDER;
-	}
-	if (promptMaxWidth < 120){
-		promptMaxWidth = 120;
-	}
-	std::ostringstream os;
-	os << "It is the ";
-	if (m_parent->getActivePlayer()){
-		os << "attacker's ";
-	} else {
-		os << "defender's ";
-	}
-	os << "turn.";
+	int promptMaxWidth = getCurrentPromptMaxWidth(panelWidth);
 	dc.SetTextForeground(white);
-	const wxString turnPrompt(os.str());
 	bool stoppedShipFacingSelection = false;
-	wxString detailPromptOne;
-	wxString detailPromptTwo;
 	if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
 		const std::map<unsigned int, FTacticalTurnData> & turnInfo = m_parent->getTurnInfo();
 		std::map<unsigned int, FTacticalTurnData>::const_iterator turnItr = turnInfo.find(m_parent->getShip()->getID());
@@ -589,6 +669,18 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 				&& m_parent->getShip()->getMR() > 0);
 		}
 	}
+	wxString turnPrompt;
+	wxString detailPromptOne;
+	wxString detailPromptTwo;
+	std::ostringstream os;
+	os << "It is the ";
+	if (m_parent->getActivePlayer()){
+		os << "attacker's ";
+	} else {
+		os << "defender's ";
+	}
+	os << "turn.";
+	turnPrompt = wxString(os.str());
 	if (stoppedShipFacingSelection) {
 		detailPromptOne = "Select a highlighted preview route to choose your starting facing.";
 		detailPromptTwo = "Continue a route, or click an adjacent hex then Movement Done to rotate in place.";
@@ -598,7 +690,6 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 	} else {
 		detailPromptOne = "Please select a ship to move.";
 	}
-
 	int promptLineCount = countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);
 	promptLineCount += countWrappedActionPromptLines(dc, detailPromptOne, promptMaxWidth);
 	promptLineCount += countWrappedActionPromptLines(dc, detailPromptTwo, promptMaxWidth);

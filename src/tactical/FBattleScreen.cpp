@@ -212,6 +212,9 @@ void FBattleScreen::applyLayoutPolicy() {
 }
 
 void FBattleScreen::onSize(wxSizeEvent & event) {
+	if (m_display != NULL) {
+		m_display->reflowLowerPanelLayout();
+	}
 	applyLayoutPolicy();
 	event.Skip();
 }

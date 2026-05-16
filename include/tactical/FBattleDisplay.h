@@ -45,6 +45,19 @@ public:
 	void onPaint(wxPaintEvent & event);
 	void onLeftUp(wxMouseEvent & event);
 
+	/**
+	 * @brief Recompute lower-panel geometry and minimum height for current size.
+	 *
+	 * Runs prompt reservation and ship-stat placement calculations using the
+	 * current widget geometry so parent resize handlers can force deterministic
+	 * lower-panel reflow before applying screen-level sizing policy.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created:  May 16, 2026
+	 * @date Last Modified:  May 16, 2026
+	 */
+	void reflowLowerPanelLayout();
+
 	/// Set the list of planet images
 	void setImageList(ImageList l) { m_imageList = l;}
 
@@ -437,6 +450,18 @@ protected:
 
 	/// apply the requested display height from the active lower-panel layout state
 	void applyRequestedDisplayHeight();
+
+	/// returns prompt width after accounting for right-split ship stat placement
+	int getCurrentPromptMaxWidth(int panelWidth) const;
+
+	/// derives move-phase prompt strings based on active turn and selected ship state
+	void buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo) const;
+
+	/// recomputes reserved prompt lines for move phase using current constrained width
+	void refreshMovePromptReservation(wxDC &dc, int panelWidth, int panelHeight);
+
+	/// protects lower-panel resize/reflow from recursive reflow churn
+	bool m_inResizeReflow;
 
 	/// shared layout state for prompt/stats split and requested tactical-display height
 	LowerPanelLayoutState m_lowerPanelLayoutState;
