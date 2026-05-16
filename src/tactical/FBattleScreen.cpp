@@ -20,6 +20,8 @@ namespace {
 int g_battleScreenConstructedCount = 0;
 int g_battleScreenDestroyedCount = 0;
 int g_battleScreenLiveCount = 0;
+const int BATTLE_SCREEN_BASE_DISPLAY_HEIGHT = 120;
+const int BATTLE_SCREEN_MAP_MIN_PERCENT = 60;
 }
 
 struct FDestroyedShipCleanupLifecycle {
@@ -124,11 +126,12 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	fgSizer1->Add( m_map, 5, wxEXPAND|wxALL, 1 );
 
 	m_display = new FBattleDisplay( this );
+	m_displayRequestedMinHeight = BATTLE_SCREEN_BASE_DISPLAY_HEIGHT;
 
 	fgSizer1->Add( m_display, 1, wxEXPAND | wxALL, 1 );
 
 	this->SetSizer( fgSizer1 );
-	this->Layout();
+	applyLayoutPolicy();
 	Centre();
 	SetOwnBackgroundColour(black);
 
@@ -138,6 +141,7 @@ TacticalUI(this);
 	m_tacticalGame->installUI(m_tacticalUI);
 
 	Bind(wxEVT_CLOSE_WINDOW, &FBattleScreen::onClose, this);
+	Bind(wxEVT_SIZE, &FBattleScreen::onSize, this);
 
 }
 
@@ -171,6 +175,45 @@ int FBattleScreen::getDestroyedCount() {
 
 int FBattleScreen::getLiveInstanceCount() {
 	return g_battleScreenLiveCount;
+}
+
+void FBattleScreen::applyLayoutPolicy() {
+	if (m_map == NULL || m_display == NULL) {
+		return;
+	}
+
+	const int clientHeight = GetClientSize().GetHeight();
+	if (clientHeight <= 0) {
+		return;
+	}
+
+	const int mapMinHeight = (clientHeight * BATTLE_SCREEN_MAP_MIN_PERCENT) / 100;
+	const int currentDisplayRequest = m_display->GetMinSize().GetHeight();
+	if (currentDisplayRequest > m_displayRequestedMinHeight) {
+		m_displayRequestedMinHeight = currentDisplayRequest;
+	}
+
+	int desiredDisplayHeight = m_displayRequestedMinHeight;
+	if (desiredDisplayHeight < BATTLE_SCREEN_BASE_DISPLAY_HEIGHT) {
+		desiredDisplayHeight = BATTLE_SCREEN_BASE_DISPLAY_HEIGHT;
+	}
+
+	const int maxDisplayHeight = clientHeight - mapMinHeight;
+	if (maxDisplayHeight >= 0 && desiredDisplayHeight > maxDisplayHeight) {
+		desiredDisplayHeight = maxDisplayHeight;
+	}
+	if (desiredDisplayHeight < 0) {
+		desiredDisplayHeight = 0;
+	}
+
+	m_map->SetMinSize(wxSize(-1, mapMinHeight));
+	m_display->SetMinSize(wxSize(-1, desiredDisplayHeight));
+	Layout();
+}
+
+void FBattleScreen::onSize(wxSizeEvent & event) {
+	applyLayoutPolicy();
+	event.Skip();
 }
 
 void FBattleScreen::draw(){

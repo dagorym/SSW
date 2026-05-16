@@ -27,9 +27,9 @@ class WXTacticalUI;
  * This class implements the code for the FBattleScreen, the main
  * board used for the tactical combat game..
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jan 28, 2011
+ * @date Last Modified:  May 16, 2026
  */
 class FBattleScreen : public wxDialog //wxFrame
 {
@@ -37,11 +37,11 @@ public:
 	/**
 	 * @brief FBattleScreen constructor
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  Jul 19, 2008
+	 * @date Last Modified:  May 16, 2026
 	 */
-	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxRESIZE_BORDER );
+	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1200,900 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxRESIZE_BORDER );
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 	/// Default destructor
 	~FBattleScreen();
@@ -228,10 +228,36 @@ public:
 	const FTacticalCombatReport & getCurrentTacticalReport() const;
 
 protected:
+	/**
+	 * @brief Apply tactical screen height allocation policy.
+	 *
+	 * Keeps the map dominant by reserving at least sixty percent of client height
+	 * for the map while giving the lower display row a baseline height and
+	 * honoring larger display-height requests when space allows.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created:  May 16, 2026
+	 * @date Last Modified:  May 16, 2026
+	 */
+	void applyLayoutPolicy();
+
+	/**
+	 * @brief Recompute tactical screen layout policy on resize.
+	 *
+	 * @param event wxWidgets size event raised by dialog resizing.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created:  May 16, 2026
+	 * @date Last Modified:  May 16, 2026
+	 */
+	void onSize(wxSizeEvent & event);
+
 	/// The map window
 	FBattleBoard * m_map;
 	/// The game display window
 	FBattleDisplay * m_display;
+	/// remembers the largest display-row height request observed from FBattleDisplay
+	int m_displayRequestedMinHeight;
 	/// tactical model owner during delegation migration
 	FTacticalGame * m_tacticalGame;
 	/// wx tactical UI adapter owner during delegation migration
