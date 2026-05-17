@@ -10,14 +10,14 @@
   "findings": [
     {
       "severity": "WARNING",
-      "file": "doc/DesignNotes.md",
-      "line_start": 1155,
-      "line_end": 1163,
-      "summary": "Validation result totals are stale: the document still reports OK (152 tests) / OK (35 tests) instead of the reviewed branch's OK (153 tests) / OK (36 tests)."
+      "file": "tests/gui/TacticalGuiLiveTest.cpp",
+      "line_start": 887,
+      "line_end": 959,
+      "summary": "Live GUI coverage still validates only a Destroyer/Frigate narrow-width case and does not exercise the large-ship split-layout scenario that previously clipped at the right edge."
     }
   ],
-  "test_sufficiency_summary": "Sufficient: tactical source-contract and live GUI coverage both target the content-based split/stack contract, and verifier reruns passed with OK (153 tests) and OK (36 tests).",
-  "documentation_accuracy_summary": "Partially accurate: UsersGuide matches the shipped behavior, but DesignNotes records stale validation totals for the reviewed branch.",
+  "test_sufficiency_summary": "Source-contract coverage is strong and verifier reruns passed with OK (153 tests) and OK (36 tests), but live GUI coverage still lacks the plan-requested large-ship split-mode runtime case.",
+  "documentation_accuracy_summary": "Accurate: UsersGuide and DesignNotes now match the implemented split/stack behavior, preserved resize seam, and current validated totals.",
   "artifact_files": [
     "artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/verifier_report.md",
     "artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/verifier_result.json"

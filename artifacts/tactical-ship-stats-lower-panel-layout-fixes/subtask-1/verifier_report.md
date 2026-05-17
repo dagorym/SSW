@@ -15,7 +15,7 @@ Acceptance criteria / plan reference:
 Convention files considered:
 - `AGENTS.md`
 - Repository-local `.myteam/` verifier workflow guidance via `myteam get role verifier`
-- Shared verifier/supporting skill guidance returned by `myteam get skill execution-start`, `artifact-paths`, and `review-artifacts`
+- Shared verifier/supporting skill guidance from `.myteam/execution-start/skill.md`, `.myteam/artifact-paths/skill.md`, and `.myteam/review-artifacts/skill.md`
 
 Findings
 
@@ -23,26 +23,25 @@ BLOCKING
 - None.
 
 WARNING
-- `doc/DesignNotes.md:1155-1163` - The recorded validation results are stale.
-  The section still says the tactical and GUI runners finished with `OK (152 tests)` and `OK (35 tests)`, but both the tester handoff and the verifier rerun on this branch completed with `OK (153 tests)` and `OK (36 tests)`. That leaves the design notes' implementation/test status out of sync with the reviewed branch.
+- `tests/gui/TacticalGuiLiveTest.cpp:887-959` - The new live GUI regression still exercises only a `Destroyer`/`Frigate` setup and never opens the previously risky large-ship split-layout case.
+  The implementation and source-contract tests strongly suggest the content-based measurement fix is correct, but the plan explicitly called for live GUI coverage of a large ship whose longer stats block had been clipped at the right edge. Without a heavy-cruiser or battleship runtime case, wx font/layout regressions in the split path could still slip through while the suite stays green.
 
 NOTE
 - None.
 
 Test sufficiency assessment:
-- Sufficient for this scope. The implementation uses measured ship-stat width/height in `measureShipStatsLayoutRequirements(...)` and routes resize reflow through the existing `FBattleScreen::onSize(...) -> reflowLowerPanelLayout() -> applyLayoutPolicy()` seam.
-- Tactical source-contract coverage locks in the content-based sizing contract, split/stack switching, requested-height propagation, and resize ordering.
-- Live GUI coverage exercises the narrow-width stacked fallback and verifies the action-button row remains below the reserved prompt region.
-- Verifier reran the focused suites on this branch: `cd tests/tactical && make && ./TacticalTests` passed with `OK (153 tests)` and `cd tests/gui && make && xvfb-run -a ./GuiTests` passed with `OK (36 tests)`.
+- Mixed. Tactical source-contract coverage is strong: it locks in measured ship-stat sizing, split/stack switching, requested-height propagation, and the preserved `FBattleScreen::onSize(...) -> reflowLowerPanelLayout() -> applyLayoutPolicy()` seam.
+- Live GUI coverage now proves the stacked fallback keeps the action-button row separated from the stats block under narrow widths, and verifier reruns passed: `cd tests/tactical && ./TacticalTests` → `OK (153 tests)` and `cd tests/gui && xvfb-run -a ./GuiTests` → `OK (36 tests)`.
+- However, the live GUI suite still lacks the large-ship split-mode scenario requested by the plan, so end-to-end coverage for the original clipping regression is not fully demonstrated at runtime.
 
 Documentation accuracy assessment:
-- `doc/UsersGuide.md` accurately describes the shipped user-facing behavior: split mode is retained only when the full ship-stats block fits, otherwise the stats stack below the action-button row.
-- The focused documentation update was warranted even though the plan originally marked documentation impact as unnecessary, because the final change established a reusable lower-panel sizing policy and a user-visible resize/reflow behavior.
-- `doc/DesignNotes.md` accurately describes the implementation seam and coverage additions, but its validation result counts are now stale as noted above.
+- `doc/UsersGuide.md:323-327` accurately describes the shipped user-facing behavior: split mode is retained when the full stats block fits, otherwise the stats stack below the action-button row.
+- `doc/DesignNotes.md:1131-1163` now accurately documents the content-based sizing helper, the preserved resize seam, and the validated `OK (153 tests)` / `OK (36 tests)` totals.
+- The focused documentation update was warranted despite the plan's earlier "no documentation update expected" note because the final change established a reusable lower-panel sizing policy and updated validation record.
 
 Verdict:
 - CONDITIONAL PASS
 
 Rationale:
-- The code and tests satisfy the requested layout behavior: content-based fit decisions prevent split-mode clipping, stacked mode reserves separate vertical space below the action buttons, and resize reflow still runs through the existing tactical screen/display seam.
-- The only issue found is a documentation bookkeeping mismatch in the recorded validation totals, not a correctness problem in the shipped implementation or coverage.
+- The implementation itself appears correct for the requested layout behavior, the documentation now matches the reviewed branch, and the verifier reruns were green.
+- The remaining issue is a test-sufficiency gap in live GUI coverage rather than a confirmed logic defect in the shipped code.
