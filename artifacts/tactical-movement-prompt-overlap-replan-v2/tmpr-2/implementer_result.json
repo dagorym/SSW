@@ -1,0 +1,26 @@
+{
+  "status": "success",
+  "subtask_id": "TMPR-2",
+  "branch": "layout-update-implementer-20260516",
+  "implementation_commit": "4a2a89db600ae87340bb1e234579ee8f75a668bb",
+  "changed_files": [
+    "include/tactical/FBattleDisplay.h",
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "validation_commands": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests"
+  ],
+  "validation_outcome": {
+    "status": "passed",
+    "details": [
+      "TacticalTests: OK (152 tests)",
+      "GuiTests: OK (35 tests)"
+    ]
+  },
+  "artifacts_written": [
+    "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-2/implementer_report.md",
+    "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-2/tester_prompt.txt",
+    "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-2/implementer_result.json"
+  ]
+}
