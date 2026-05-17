@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "task_id": "tactical-ship-stats-lower-panel-layout-fixes/subtask-1",
+  "branch": "layout-update-verifier-20260516",
+  "comparison_base": "59994de",
+  "verdict": "CONDITIONAL PASS",
+  "blocking_findings": 0,
+  "warning_findings": 1,
+  "note_findings": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "file": "doc/DesignNotes.md",
+      "line_start": 1155,
+      "line_end": 1163,
+      "summary": "Validation result totals are stale: the document still reports OK (152 tests) / OK (35 tests) instead of the reviewed branch's OK (153 tests) / OK (36 tests)."
+    }
+  ],
+  "test_sufficiency_summary": "Sufficient: tactical source-contract and live GUI coverage both target the content-based split/stack contract, and verifier reruns passed with OK (153 tests) and OK (36 tests).",
+  "documentation_accuracy_summary": "Partially accurate: UsersGuide matches the shipped behavior, but DesignNotes records stale validation totals for the reviewed branch.",
+  "artifact_files": [
+    "artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/verifier_report.md",
+    "artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/verifier_result.json"
+  ]
+}
