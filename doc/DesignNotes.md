@@ -1128,6 +1128,30 @@ lower panel returns to its previous height. Those checks keep the `Movement
 Done` band below the reserved prompt region without changing any tactical rules
 or fire-resolution flow.
 
+The next lower-panel follow-up addressed a second layout failure in the same
+surface: the selected-ship stats block had still been using the old
+`SHIP_STATS_MIN_WIDTH` constant as the split-mode fit test, so larger ships
+with longer weapon lists could be clipped at the right edge even though the
+panel stayed in split mode. `FBattleDisplay` now measures the actual rendered
+ship-stats block through `measureShipStatsLayoutRequirements(...)` before
+`ensureLowerPanelLayoutState(...)` decides whether the right-side split can fit.
+That same layout state now derives stacked placement from the button-row bottom
+edge instead of from prompt text alone, so narrow tactical windows move the
+ship-stats block below the completion controls rather than painting into the
+same vertical band. `applyRequestedDisplayHeight()` continues to consume the
+requested lower-panel height from that shared state, which keeps the existing
+`FBattleScreen::onSize(...) -> reflowLowerPanelLayout() -> applyLayoutPolicy()`
+resize seam intact while making the height contract content-based instead of
+fixed-width.
+
+The paired tester update added tactical source-contract coverage for measured
+ship-stats width/height, split eligibility, and requested-height propagation,
+plus a live GUI regression that narrows the tactical display until the lower
+panel must stack the ship stats below the `Defensive Fire Done` row. Together
+those checks lock in the player-facing rule that split mode is only used when
+the full stats block fits and that the stacked fallback keeps the action
+buttons and stats block separated after resize/reflow.
+
 Validation commands:
 
 ```bash
