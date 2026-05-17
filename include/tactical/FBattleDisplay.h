@@ -439,6 +439,15 @@ protected:
 	/// reserve prompt lines for the lower-panel action layout state
 	void reserveActionPromptLines(int lineCount);
 
+	/// returns additional prompt lines beyond baseline action prompt reservation
+	int getActionPromptExtraLines() const;
+
+	/// returns extra spacer height needed before action buttons for wrapped prompts
+	int getActionButtonExtraSpacerHeight() const;
+
+	/// updates dynamic spacer above action buttons from current prompt reservation
+	void refreshActionButtonSpacer();
+
 	/// counts wrapped lines needed to render a prompt within the given width
 	int countWrappedActionPromptLines(wxDC &dc, const wxString &promptText, int maxWidth) const;
 
@@ -462,6 +471,9 @@ protected:
 
 	/// protects lower-panel resize/reflow from recursive reflow churn
 	bool m_inResizeReflow;
+
+	/// dynamic spacer above action buttons for wrapped move prompts
+	wxSizerItem * m_actionButtonExtraSpacerItem;
 
 	/// shared layout state for prompt/stats split and requested tactical-display height
 	LowerPanelLayoutState m_lowerPanelLayoutState;

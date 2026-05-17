@@ -34,6 +34,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_lowerPanelLayoutState.requestedDisplayHeight = 120;
 	m_lowerPanelLayoutState.initialized = false;
 	m_inResizeReflow = false;
+	m_actionButtonExtraSpacerItem = NULL;
 
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	wxColour black(wxT("#000000"));// black
@@ -66,6 +67,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	actionSizer->Add(m_buttonOffensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonMinePlacementDone, 0, wxALIGN_CENTER_VERTICAL);
 	rootSizer->AddSpacer(getActionButtonTopSpacerHeight());
+	m_actionButtonExtraSpacerItem = rootSizer->AddSpacer(getActionButtonExtraSpacerHeight());
 	rootSizer->Add(actionSizer, 0, wxTOP, BORDER);
 	rootSizer->AddStretchSpacer(1);
 	SetSizer(rootSizer);
@@ -131,6 +133,7 @@ void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detai
 }
 
 void FBattleDisplay::refreshMovePromptReservation(wxDC &dc, int panelWidth, int panelHeight){
+	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	ensureLowerPanelLayoutState(panelWidth, panelHeight);
 	int promptMaxWidth = getCurrentPromptMaxWidth(panelWidth);
 
@@ -184,10 +187,31 @@ void FBattleDisplay::reserveActionPromptLines(int lineCount){
 	if (lineCount < 1){
 		lineCount = 1;
 	}
-	if (lineCount > ACTION_PROMPT_MAX_LINES){
-		lineCount = ACTION_PROMPT_MAX_LINES;
-	}
 	m_lowerPanelLayoutState.reservedPromptLines = lineCount;
+	refreshActionButtonSpacer();
+}
+
+int FBattleDisplay::getActionPromptExtraLines() const{
+	int extraLines = m_lowerPanelLayoutState.reservedPromptLines - ACTION_PROMPT_MAX_LINES;
+	if (extraLines < 0){
+		extraLines = 0;
+	}
+	return extraLines;
+}
+
+int FBattleDisplay::getActionButtonExtraSpacerHeight() const{
+	return getActionPromptExtraLines() * ACTION_PROMPT_LINE_HEIGHT;
+}
+
+void FBattleDisplay::refreshActionButtonSpacer(){
+	if (m_actionButtonExtraSpacerItem == NULL){
+		return;
+	}
+	const int extraSpacerHeight = getActionButtonExtraSpacerHeight();
+	const wxSize currentSize = m_actionButtonExtraSpacerItem->GetMinSize();
+	if (currentSize.GetHeight() != extraSpacerHeight || currentSize.GetWidth() != 0){
+		m_actionButtonExtraSpacerItem->SetMinSize(0, extraSpacerHeight);
+	}
 }
 
 int FBattleDisplay::countWrappedActionPromptLines(wxDC &dc, const wxString &promptText, int maxWidth) const{
@@ -264,6 +288,9 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 			keepCurrentState = splitCanFit
 				&& m_lowerPanelLayoutState.shipStatsLeftMargin >= minStatsLeftMargin
 				&& m_lowerPanelLayoutState.shipStatsLeftMargin <= largestMarginWithStatsRoom;
+			if (keepCurrentState){
+				m_lowerPanelLayoutState.shipStatsLeftMargin = largestMarginWithStatsRoom;
+			}
 		} else {
 			keepCurrentState = m_lowerPanelLayoutState.shipStatsTop >= stackedTop;
 			keepCurrentState = keepCurrentState && !splitCanFit;
@@ -284,6 +311,18 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 	}
 
 	int requestedHeight = getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_LINE_HEIGHT + ACTION_PROMPT_BUTTON_GAP + BORDER;
+	const int extraPromptHeight = getActionButtonExtraSpacerHeight();
+	if (extraPromptHeight > 0){
+		requestedHeight += extraPromptHeight;
+	}
+	const int buttonRowBottom = getActionButtonTopSpacerHeight()
+		+ extraPromptHeight
+		+ BORDER
+		+ m_buttonMoveDone->GetBestSize().GetHeight()
+		+ BORDER;
+	if (buttonRowBottom > requestedHeight){
+		requestedHeight = buttonRowBottom;
+	}
 	const int statsBottom = m_lowerPanelLayoutState.shipStatsTop + statsHeight + BORDER;
 	if (statsBottom > requestedHeight){
 		requestedHeight = statsBottom;
@@ -295,6 +334,7 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 }
 
 void FBattleDisplay::applyRequestedDisplayHeight(){
+	refreshActionButtonSpacer();
 	int requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;
 	if (requestedHeight < 120){
 		requestedHeight = 120;
