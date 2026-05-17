@@ -12,11 +12,10 @@ Load this skill immediately after the request is recognized as `.myteam` role or
 - Determine whether the user wants to create a new role or skill or update an existing one.
 - Determine whether the target should be a `role` or a `skill`.
 - Ask for the target path.
-- Normalize the path to slash-delimited lower-kebab-case segments as `<targetpath>`.
-- State the default drafting file explicitly as:
-  - `.myteam/<targetpath>/role.md` for roles
-  - `.myteam/<targetpath>/skill.md` for skills
+- Run `node_target.py` to normalize the path and derive the default drafting target whenever enough input is available.
+- State the default drafting file returned by `node_target.py` explicitly.
 - State that a different file can be used only if the user explicitly requests it.
+- If the tool cannot normalize the request cleanly, ask a targeted clarification question instead of guessing.
 
 ## Limits
 

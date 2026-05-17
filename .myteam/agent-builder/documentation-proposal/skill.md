@@ -9,11 +9,10 @@ Load this skill only after `.myteam` node actions are complete and repo-level do
 
 ## Required Actions
 
-- Inspect whether repo-level documentation or instruction files such as top-level docs, bootstrap-only `AGENTS.md`, or relevant `.myteam` role or skill files should change.
+- Run `doc_impact_scan.py` to identify likely repo-level documentation or instruction files that reference the changed node or may need follow-up.
 - Present minimal documentation diffs inline in chat when relevant.
 - Ask for explicit approval before writing documentation updates.
-- Only propose changes to `AGENTS.md` when its startup bootstrap instruction itself should change.
-- Only propose changes to any lightweight IDE bootstrap instruction file when its bootstrap instruction itself should change.
+- Treat scan results as candidates to confirm, not automatic proof that documentation must change.
 
 ## Limits
 

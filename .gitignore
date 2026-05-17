@@ -38,3 +38,4 @@ doc/coverage
 *.pdb
 .idea
 .codex
+*__pycache__*

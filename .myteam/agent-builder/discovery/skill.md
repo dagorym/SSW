@@ -18,6 +18,7 @@ Load this skill after intake establishes the normalized target path, node type, 
   - gather exact sections or behaviors to change
   - gather what must remain unchanged
   - confirm whether only `role.md` or `skill.md` changes are needed or whether `load.py` behavior must also change
+- If the request depends on how `myteam` currently scaffolds, loads, or discovers nodes, load `framework-context` and inspect the local `myteam` repo before asking the user to explain framework behavior.
 - Ask targeted clarification questions whenever requirements are ambiguous, conflicting, or incomplete.
 
 ## Limits
