@@ -30,6 +30,7 @@ CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
 CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
 CPPUNIT_TEST( testBattleScreenDefaultSizeAndLayoutPolicyRuntime );
 CPPUNIT_TEST( testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges );
+CPPUNIT_TEST( testBattleDisplayNarrowWidthStacksShipStatsBelowButtons );
 CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
 CPPUNIT_TEST_SUITE_END();
@@ -95,6 +96,14 @@ void testBattleScreenDefaultSizeAndLayoutPolicyRuntime();
  * @date Last Modified: May 16, 2026
  */
 void testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges();
+/**
+ * @brief Verifies narrow tactical widths force stacked ship stats below action buttons and increase panel height.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 17, 2026
+ * @date Last Modified: May 17, 2026
+ */
+void testBattleDisplayNarrowWidthStacksShipStatsBelowButtons();
 /**
  * @brief Validates tactical damage summary modal content and close behavior.
  *

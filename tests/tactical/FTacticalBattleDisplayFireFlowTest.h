@@ -51,6 +51,7 @@ CPPUNIT_TEST( testBattleScreenLayoutPolicyAppliesDisplayRequestAndMapFloorClamp 
 CPPUNIT_TEST( testBattleScreenResizeHandlerReflowsLowerPanelBeforeLayoutPolicy );
 CPPUNIT_TEST( testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrentGeometry );
 CPPUNIT_TEST( testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers );
+CPPUNIT_TEST( testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -337,6 +338,14 @@ void testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrentGeometry(
  * @date Last Modified: May 16, 2026
  */
 void testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers();
+/**
+ * @brief Verifies ship-stats split eligibility and requested height derive from measured text content.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 17, 2026
+ * @date Last Modified: May 17, 2026
+ */
+void testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing();
 };
 
 }

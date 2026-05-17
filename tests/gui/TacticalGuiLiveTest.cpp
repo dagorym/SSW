@@ -884,6 +884,82 @@ CPPUNIT_ASSERT(moveDoneButton->IsShown());
 delete defendFleet;
 }
 
+void TacticalGuiLiveTest::testBattleDisplayNarrowWidthStacksShipStatsBelowButtons() {
+const int expectedLeftOffset = 40;
+FFleet * attackFleet = new FFleet();
+FFleet * defendFleet = new FFleet();
+FVehicle * setupAttacker = createShip("Destroyer");
+FVehicle * setupDefender = createShip("Frigate");
+CPPUNIT_ASSERT(setupAttacker != NULL && setupDefender != NULL);
+setupAttacker->setOwner(1);
+setupDefender->setOwner(2);
+attackFleet->addShip(setupAttacker);
+defendFleet->addShip(setupDefender);
+FleetList attackFleets;
+FleetList defendFleets;
+attackFleets.push_back(attackFleet);
+defendFleets.push_back(defendFleet);
+
+FBattleScreen * battleScreen = new FBattleScreen("Narrow Width Stacked Ship Stats");
+battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+battleScreen->Show();
+m_harness.pumpEvents(5);
+
+FBattleDisplay * display = findFirstBattleDisplay(battleScreen);
+CPPUNIT_ASSERT(display != NULL);
+battleScreen->setState(BS_Battle);
+battleScreen->setPhase(PH_DEFENSE_FIRE);
+battleScreen->setShip(setupAttacker);
+battleScreen->setMoveComplete(true);
+battleScreen->reDraw();
+battleScreen->Layout();
+m_harness.pumpEvents(5);
+
+wxButton * defenseDoneButton = findButtonByLabel(battleScreen, wxT("Defensive Fire Done"));
+CPPUNIT_ASSERT(defenseDoneButton != NULL);
+defenseDoneButton->Show();
+defenseDoneButton->GetParent()->Layout();
+battleScreen->Layout();
+m_harness.pumpEvents(3);
+const int wideHeight = display->GetMinSize().GetHeight();
+const wxRect wideRect = defenseDoneButton->GetRect();
+CPPUNIT_ASSERT(wideRect.GetX() >= expectedLeftOffset);
+CPPUNIT_ASSERT(wideRect.GetTop() >= FBattleDisplayTestPeer::actionPromptReservedBottomY());
+
+const wxSize baselineSize = battleScreen->GetSize();
+battleScreen->SetSize(wxSize(650, baselineSize.GetHeight()));
+battleScreen->SendSizeEvent();
+m_harness.pumpEvents(6);
+battleScreen->setPhase(PH_DEFENSE_FIRE);
+battleScreen->setShip(setupAttacker);
+battleScreen->reDraw();
+battleScreen->Layout();
+m_harness.pumpEvents(5);
+
+defenseDoneButton = findButtonByLabel(battleScreen, wxT("Defensive Fire Done"));
+CPPUNIT_ASSERT(defenseDoneButton != NULL);
+defenseDoneButton->Show();
+defenseDoneButton->GetParent()->Layout();
+battleScreen->Layout();
+m_harness.pumpEvents(3);
+
+const int narrowHeight = display->GetMinSize().GetHeight();
+const wxRect narrowRect = defenseDoneButton->GetRect();
+CPPUNIT_ASSERT(narrowRect.GetWidth() > 0);
+CPPUNIT_ASSERT(narrowRect.GetHeight() > 0);
+CPPUNIT_ASSERT(narrowRect.GetX() >= expectedLeftOffset);
+CPPUNIT_ASSERT(narrowRect.GetTop() >= FBattleDisplayTestPeer::actionPromptReservedBottomY());
+CPPUNIT_ASSERT(narrowRect.GetTop() >= wideRect.GetTop());
+CPPUNIT_ASSERT(narrowHeight > wideHeight);
+CPPUNIT_ASSERT(narrowHeight > 120);
+
+battleScreen->Destroy();
+m_harness.pumpEvents(5);
+m_harness.cleanupOrphanTopLevels(10);
+delete attackFleet;
+delete defendFleet;
+}
+
 void TacticalGuiLiveTest::testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior() {
 	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Damage Summary Parent", wxPoint(120, 120), wxSize(540, 420));
 parent->Show();

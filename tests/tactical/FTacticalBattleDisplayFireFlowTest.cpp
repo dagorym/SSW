@@ -682,4 +682,32 @@ assertContains(header, "void refreshMovePromptReservation(wxDC &dc, int panelWid
 assertContains(header, "int getCurrentPromptMaxWidth(int panelWidth) const;");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string measureBody = extractFunctionBody(
+source,
+"FBattleDisplay::ShipStatsLayoutRequirements FBattleDisplay::measureShipStatsLayoutRequirements(wxDC &dc) const");
+const std::string stateBody = extractFunctionBody(
+source,
+"void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight)");
+
+assertContains(measureBody, "dc.GetTextExtent(selectedShip->getName())");
+assertContains(measureBody, "for (unsigned int i = 0; i < selectedShip->getWeaponCount(); i++)");
+assertContains(measureBody, "for (unsigned int i = 0; i < selectedShip->getDefenseCount(); i++)");
+assertContains(measureBody, "otherStatusWidth += dc.GetTextExtent(\"none\").GetWidth();");
+assertContains(measureBody, "requirements.width = rightEdge + BORDER;");
+assertContains(measureBody, "requirements.height = bottomEdge + BORDER;");
+assertContains(measureBody, "if (requirements.width < SHIP_STATS_MIN_WIDTH)");
+
+assertContains(stateBody, "const ShipStatsLayoutRequirements shipStatsRequirements = measureShipStatsLayoutRequirements(dc);");
+assertContains(stateBody, "const int largestMarginWithStatsRoom = panelWidth - shipStatsRequirements.width - BORDER;");
+assertContains(stateBody, "const bool splitCanFit = largestMarginWithStatsRoom >= minStatsLeftMargin;");
+assertContains(stateBody, "const int stackedTop = buttonRowBottom + ACTION_PROMPT_BUTTON_GAP;");
+assertContains(stateBody, "const int statsHeight = shipStatsRequirements.height;");
+assertContains(stateBody, "const int statsBottom = m_lowerPanelLayoutState.shipStatsTop + statsHeight + BORDER;");
+assertContains(stateBody, "if (splitCanFit){");
+assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;");
+assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;");
+}
+
 }
