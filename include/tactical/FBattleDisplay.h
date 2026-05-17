@@ -105,7 +105,7 @@ protected:
 	/// minimum width needed to render ship stats in a right-side split
 	static const int SHIP_STATS_MIN_WIDTH = 320;
 	/// minimum width to preserve for prompt text while ship stats are right-aligned
-	static const int ACTION_PROMPT_MIN_WIDTH = 240;
+	static const int ACTION_PROMPT_MIN_WIDTH = 280;
 
 	/// lower-panel layout modes for tactical prompts and ship stats
 	enum LowerPanelLayoutMode {
@@ -465,6 +465,9 @@ protected:
 
 	/// measure width/height needed to render current ship stats without clipping
 	ShipStatsLayoutRequirements measureShipStatsLayoutRequirements(wxDC &dc) const;
+
+	/// returns the current bottom edge for the action-button row in client coordinates
+	int getActionButtonRowBottom() const;
 
 	/// apply the requested display height from the active lower-panel layout state
 	void applyRequestedDisplayHeight();

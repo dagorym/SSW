@@ -438,6 +438,7 @@ FBattleDisplay::ShipStatsLayoutRequirements FBattleDisplay::measureShipStatsLayo
 	if (otherStatusY + textExtent.GetHeight() > bottomEdge){ bottomEdge = otherStatusY + textExtent.GetHeight(); }
 
 	requirements.width = rightEdge + BORDER;
+	requirements.width += BORDER;
 	if (requirements.width < SHIP_STATS_MIN_WIDTH){
 		requirements.width = SHIP_STATS_MIN_WIDTH;
 	}
@@ -448,12 +449,45 @@ FBattleDisplay::ShipStatsLayoutRequirements FBattleDisplay::measureShipStatsLayo
 	return requirements;
 }
 
+int FBattleDisplay::getActionButtonRowBottom() const{
+	const int extraPromptHeight = getActionButtonExtraSpacerHeight();
+	const int buttonRowTop = getActionButtonTopSpacerHeight() + extraPromptHeight + BORDER;
+	int fallbackBottom = buttonRowTop + m_buttonMoveDone->GetBestSize().GetHeight() + BORDER;
+	int shownBottom = -1;
+
+	wxButton * buttons[] = {
+		m_buttonMoveDone,
+		m_buttonDefensiveFireDone,
+		m_buttonOffensiveFireDone,
+		m_buttonMinePlacementDone
+	};
+	for (size_t i = 0; i < sizeof(buttons) / sizeof(buttons[0]); i++){
+		if (buttons[i] != NULL && buttons[i]->IsShown()){
+			const wxRect buttonRect = buttons[i]->GetRect();
+			const int buttonBottom = buttonRect.GetBottom() + 1;
+			if (buttonBottom > shownBottom){
+				shownBottom = buttonBottom;
+			}
+		}
+	}
+
+	if (shownBottom >= 0){
+		const int shownBottomWithGap = shownBottom + BORDER;
+		if (shownBottomWithGap > fallbackBottom){
+			fallbackBottom = shownBottomWithGap;
+		}
+	}
+	return fallbackBottom;
+}
+
 void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight){
 	wxClientDC dc(this);
 	const ShipStatsLayoutRequirements shipStatsRequirements = measureShipStatsLayoutRequirements(dc);
 	const int minStatsLeftMargin = leftOffset + ACTION_PROMPT_MIN_WIDTH;
 	const int largestMarginWithStatsRoom = panelWidth - shipStatsRequirements.width - BORDER;
 	const bool splitCanFit = largestMarginWithStatsRoom >= minStatsLeftMargin;
+	const bool splitCanFitWithPadding = splitCanFit
+		&& largestMarginWithStatsRoom >= (minStatsLeftMargin + BORDER);
 	const int extraPromptHeight = getActionButtonExtraSpacerHeight();
 	const int buttonRowTop = getActionButtonTopSpacerHeight() + extraPromptHeight + BORDER;
 	const int buttonRowBottom = buttonRowTop + m_buttonMoveDone->GetBestSize().GetHeight() + BORDER;
@@ -463,6 +497,7 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 	if (m_lowerPanelLayoutState.initialized){
 		if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT){
 			keepCurrentState = splitCanFit
+				&& splitCanFitWithPadding
 				&& m_lowerPanelLayoutState.shipStatsLeftMargin >= minStatsLeftMargin
 				&& m_lowerPanelLayoutState.shipStatsLeftMargin <= largestMarginWithStatsRoom;
 			if (keepCurrentState){
@@ -472,7 +507,7 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 		} else {
 			keepCurrentState = m_lowerPanelLayoutState.shipStatsTop >= stackedTop;
 			keepCurrentState = keepCurrentState
-				&& !splitCanFit
+				&& !splitCanFitWithPadding
 				&& m_lowerPanelLayoutState.shipStatsLeftMargin == leftOffset;
 			if (keepCurrentState){
 				m_lowerPanelLayoutState.shipStatsTop = stackedTop;
@@ -482,9 +517,15 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 
 	if (!keepCurrentState){
 		if (splitCanFit){
-			m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;
-			m_lowerPanelLayoutState.shipStatsLeftMargin = largestMarginWithStatsRoom;
-			m_lowerPanelLayoutState.shipStatsTop = BORDER;
+			if (splitCanFitWithPadding){
+				m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;
+				m_lowerPanelLayoutState.shipStatsLeftMargin = largestMarginWithStatsRoom;
+				m_lowerPanelLayoutState.shipStatsTop = BORDER;
+			} else {
+				m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;
+				m_lowerPanelLayoutState.shipStatsLeftMargin = leftOffset;
+				m_lowerPanelLayoutState.shipStatsTop = stackedTop;
+			}
 		} else {
 			m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;
 			m_lowerPanelLayoutState.shipStatsLeftMargin = leftOffset;
@@ -933,12 +974,32 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 	const ShipStatsLayoutRequirements requirements = measureShipStatsLayoutRequirements(dc);
 	const int largestMarginWithStatsRoom = panelWidth - requirements.width - BORDER;
 	int lMargin = m_lowerPanelLayoutState.shipStatsLeftMargin;
-	if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT
-			&& largestMarginWithStatsRoom >= leftOffset + ACTION_PROMPT_MIN_WIDTH
-			&& lMargin > largestMarginWithStatsRoom){
-		lMargin = largestMarginWithStatsRoom;
+	if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT){
+		if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT
+				&& largestMarginWithStatsRoom >= leftOffset + ACTION_PROMPT_MIN_WIDTH
+				&& lMargin > largestMarginWithStatsRoom){
+			lMargin = largestMarginWithStatsRoom;
+			m_lowerPanelLayoutState.shipStatsLeftMargin = lMargin;
+		} else if (largestMarginWithStatsRoom < leftOffset + ACTION_PROMPT_MIN_WIDTH + BORDER){
+			m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;
+			m_lowerPanelLayoutState.shipStatsLeftMargin = leftOffset;
+			m_lowerPanelLayoutState.shipStatsTop = getActionButtonRowBottom() + ACTION_PROMPT_BUTTON_GAP;
+			lMargin = m_lowerPanelLayoutState.shipStatsLeftMargin;
+			const int stackedStatsBottom = m_lowerPanelLayoutState.shipStatsTop + requirements.height + BORDER;
+			if (stackedStatsBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+				m_lowerPanelLayoutState.requestedDisplayHeight = stackedStatsBottom;
+				applyRequestedDisplayHeight();
+			}
+		}
 	}
 	int topMargin = m_lowerPanelLayoutState.shipStatsTop;
+	if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_STACKED){
+		const int stackedTop = getActionButtonRowBottom() + ACTION_PROMPT_BUTTON_GAP;
+		if (topMargin < stackedTop){
+			topMargin = stackedTop;
+			m_lowerPanelLayoutState.shipStatsTop = topMargin;
+		}
+	}
 	int textSize = 10;		// text height
 	FVehicle *s = m_parent->getShip();
 	wxColour white(wxT("#FFFFFF"));
