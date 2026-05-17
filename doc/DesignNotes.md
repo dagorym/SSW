@@ -1159,7 +1159,7 @@ cd tests && make tactical-tests && ./tactical/TacticalTests
 cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
-Result: `OK (152 tests)` for the tactical runner and `OK (35 tests)` for the
+Result: `OK (153 tests)` for the tactical runner and `OK (36 tests)` for the
 GUI runner.
 
 The tactical combat report hit-detail follow-up then documented the richer
