@@ -51,6 +51,7 @@ Workflow artifacts to inspect:
 ## Final test outcomes
 - Tester validation passed: `cd tests/tactical && make && ./TacticalTests` → `OK (153 tests)`.
 - Tester validation passed: `cd tests/gui && make && xvfb-run -a ./GuiTests` → `OK (36 tests)`.
+- `doc/DesignNotes.md` should now record those same validated totals for this branch.
 
 ## Plan and convention context
 - Governing plan: `plans/tactical-ship-stats-lower-panel-layout-fixes-plan.md`.

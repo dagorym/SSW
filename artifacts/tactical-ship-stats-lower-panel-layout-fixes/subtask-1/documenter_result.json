@@ -2,11 +2,10 @@
   "status": "success",
   "task_identifier": "tactical-ship-stats-lower-panel-layout-fixes/subtask-1",
   "branch_name": "layout-update-documenter-20260516",
-  "documentation_commit_hash": "64a26b329659f0d3162c5b7a27de242e93a30d80",
+  "documentation_commit_hash": "a18f91d842d3a3c150297671eb4f1232b54cd7c6",
   "comparison_base": "Assumption: compare tester/documenter-stage changes against the shared layout-update base at commit 59994de for the full implementation/test/documentation review surface.",
-  "plan_context": "plans/tactical-ship-stats-lower-panel-layout-fixes-plan.md (the plan's subtask-1 Documentation Impact said no update was expected, but the shipped diff established a reusable lower-panel layout policy that is now documented).",
+  "plan_context": "plans/tactical-ship-stats-lower-panel-layout-fixes-plan.md (the plan's subtask-1 Documentation Impact said no update was expected, but the shipped diff established a reusable lower-panel layout policy; this follow-up refreshed stale Design Notes validation totals after tester coverage expanded to 153 tactical tests and 36 GUI tests).",
   "documentation_files": [
-    "doc/UsersGuide.md",
     "doc/DesignNotes.md"
   ],
   "artifact_file_paths_written": [
