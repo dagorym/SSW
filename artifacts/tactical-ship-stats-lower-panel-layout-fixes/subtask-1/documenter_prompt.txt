@@ -1,0 +1,45 @@
+You are the documenter agent for `tactical-ship-stats-lower-panel-layout-fixes/subtask-1`.
+
+Continue immediately when blocking inputs are present; do not stop after scope confirmation, documentation discovery, or diff review.
+
+## Task summary
+Document the validated tactical lower-panel split/stacked ship-stats layout fix.
+
+## Validation outcome
+Tester validation passed with:
+- `cd tests/tactical && make && ./TacticalTests` → `OK (153 tests)`
+- `cd tests/gui && make && xvfb-run -a ./GuiTests` → `OK (36 tests)`
+
+## Full modified-file context to review
+Implementer changes:
+- `include/tactical/FBattleDisplay.h`
+- `src/tactical/FBattleDisplay.cpp`
+
+Tester changes:
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+
+Workflow artifacts in shared directory:
+- `artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/implementer_report.md`
+- `artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/implementer_result.json`
+- `artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/tester_report.md`
+- `artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/tester_result.json`
+
+## Acceptance criteria verified
+- No split-mode right-edge ship-stats clipping.
+- Split only when full stats fit.
+- Stacked stats below action buttons, no overlap.
+- Resize reflow still runs through existing seam.
+- Stable content-based sizing contract is in place.
+
+## Commits
+- Implementer commit: `40a2b83d85984339e6c4a53b7cfad8d797af66e8`
+- Tester test commit: `522f1bb8540bcda1554a085c5a777ef9ec8e7a7f`
+
+## Shared artifact directory (repo-root-relative)
+- `artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
