@@ -886,6 +886,11 @@ delete defendFleet;
 
 void TacticalGuiLiveTest::testBattleDisplayNarrowWidthStacksShipStatsBelowButtons() {
 const int expectedLeftOffset = 40;
+CPPUNIT_ASSERT_MESSAGE(
+	"Stacked fallback should trigger when split mode cannot preserve full prompt-width padding.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"largestMarginWithStatsRoom < leftOffset + ACTION_PROMPT_MIN_WIDTH + BORDER"));
 FFleet * attackFleet = new FFleet();
 FFleet * defendFleet = new FFleet();
 FVehicle * setupAttacker = createShip("Destroyer");

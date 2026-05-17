@@ -533,10 +533,14 @@ assertContains(stateBody, "if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOU
 assertContains(stateBody, "keepCurrentState = splitCanFit");
 assertContains(stateBody, "m_lowerPanelLayoutState.shipStatsLeftMargin >= minStatsLeftMargin");
 assertContains(stateBody, "m_lowerPanelLayoutState.shipStatsLeftMargin <= largestMarginWithStatsRoom;");
+assertContains(stateBody, "const bool splitCanFitWithPadding = splitCanFit");
+assertContains(stateBody, "largestMarginWithStatsRoom >= (minStatsLeftMargin + BORDER);");
 assertContains(stateBody, "} else {");
 assertContains(stateBody, "keepCurrentState = m_lowerPanelLayoutState.shipStatsTop >= stackedTop;");
+assertContains(stateBody, "&& !splitCanFitWithPadding");
 assertContains(stateBody, "if (!keepCurrentState){");
 assertContains(stateBody, "if (splitCanFit){");
+assertContains(stateBody, "if (splitCanFitWithPadding){");
 assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;");
 assertContains(stateBody, "} else {");
 assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;");
@@ -548,6 +552,9 @@ const std::string statsBody = extractFunctionBody(source, "void FBattleDisplay::
 assertContains(statsBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);");
 assertContains(statsBody, "if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT");
 assertContains(statsBody, "&& largestMarginWithStatsRoom >= leftOffset + ACTION_PROMPT_MIN_WIDTH");
+assertContains(statsBody, "largestMarginWithStatsRoom < leftOffset + ACTION_PROMPT_MIN_WIDTH + BORDER");
+assertContains(statsBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;");
+assertContains(statsBody, "m_lowerPanelLayoutState.shipStatsTop = getActionButtonRowBottom() + ACTION_PROMPT_BUTTON_GAP;");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize() {
