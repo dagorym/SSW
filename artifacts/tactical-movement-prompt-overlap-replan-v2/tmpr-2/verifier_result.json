@@ -1,0 +1,30 @@
+{
+  "status": "success",
+  "subtask_id": "TMPR-2",
+  "branch": "layout-update-verifier-20260516",
+  "reviewed_head_commit": "abe1e96e9b787346e9a0d186fcef66ade4ce4677",
+  "implementation_commit": "4a2a89db600ae87340bb1e234579ee8f75a668bb",
+  "implementer_artifact_commit": "9d39f44",
+  "documentation_commit": "bac3208ffef6860db2d0b6b65c51026bccdf09ca",
+  "comparison_base": "layout-update",
+  "plan_path": "plans/tactical-movement-prompt-overlap-replan-v3-plan.md",
+  "artifact_directory": "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-2",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "test_sufficiency_summary": "Sufficient: existing tactical source-contract coverage checks prompt-width reflow, requested-height flow, shrink-back, and preserved 120px/60% layout policy, while live GUI coverage verifies baseline height, no prompt/button overlap under narrow width, and shrink-back after widening; verifier reruns passed with OK (152 tests) and OK (35 tests).",
+  "documentation_accuracy_summary": "Accurate: no documentation diff was needed because UsersGuide and DesignNotes already describe the 120px baseline, 60% map-floor, immediate resize reflow, prompt/button separation, and shrink-back behavior implemented for TMPR-2.",
+  "commands_run": [
+    "cd /home/tstephen/repos/SSW-worktrees/layout-update-verifier-20260516 && myteam get role verifier",
+    "git -C /home/tstephen/repos/SSW-worktrees/layout-update-verifier-20260516 diff --stat layout-update...HEAD",
+    "git -C /home/tstephen/repos/SSW-worktrees/layout-update-verifier-20260516 diff --name-status layout-update...HEAD",
+    "git -C /home/tstephen/repos/SSW-worktrees/layout-update-verifier-20260516 diff --name-status layout-update...layout-update-documenter-20260516 -- doc/UsersGuide.md doc/DesignNotes.md",
+    "cd /home/tstephen/repos/SSW-worktrees/layout-update-verifier-20260516/tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd /home/tstephen/repos/SSW-worktrees/layout-update-verifier-20260516/tests/gui && make && xvfb-run -a ./GuiTests"
+  ],
+  "artifact_files_written": [
+    "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-2/verifier_report.md",
+    "artifacts/tactical-movement-prompt-overlap-replan-v2/tmpr-2/verifier_result.json"
+  ]
+}
