@@ -129,6 +129,12 @@ protected:
 		bool initialized;
 	};
 
+	/// measured ship-stat block dimensions for lower-panel layout decisions
+	struct ShipStatsLayoutRequirements {
+		int width;
+		int height;
+	};
+
 	/// Event handler for setting the ship's speed
 	void onSetSpeed( wxCommandEvent& event );
 
@@ -456,6 +462,9 @@ protected:
 
 	/// validates or updates the shared lower-panel layout state for the current geometry
 	void ensureLowerPanelLayoutState(int panelWidth, int panelHeight);
+
+	/// measure width/height needed to render current ship stats without clipping
+	ShipStatsLayoutRequirements measureShipStatsLayoutRequirements(wxDC &dc) const;
 
 	/// apply the requested display height from the active lower-panel layout state
 	void applyRequestedDisplayHeight();

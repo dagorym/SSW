@@ -274,13 +274,190 @@ void FBattleDisplay::drawWrappedActionPrompt(wxDC &dc, const wxString &promptTex
 	}
 }
 
+FBattleDisplay::ShipStatsLayoutRequirements FBattleDisplay::measureShipStatsLayoutRequirements(wxDC &dc) const{
+	ShipStatsLayoutRequirements requirements;
+	requirements.width = SHIP_STATS_MIN_WIDTH;
+	requirements.height = BORDER + (int)(1.6*(10*6.3));
+
+	FVehicle * selectedShip = m_parent->getShip();
+	if (selectedShip == NULL){
+		return requirements;
+	}
+
+	const int textSize = 10;
+	const int lineOneY = (int)(1.6*(textSize*1.3));
+	const int lineTwoY = (int)(1.6*(textSize*2.3));
+	const int weaponY = (int)(1.6*(textSize*3.3));
+	const int defenseY = weaponY + (int)(1.6*textSize);
+	const int otherStatusY = defenseY + (int)(1.6*textSize);
+
+	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	wxFont large((int)(textSize*1.3),wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
+	wxFont bold(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
+
+	int rightEdge = 0;
+	int bottomEdge = 0;
+	wxSize textExtent;
+	wxString valueText;
+	std::ostringstream os;
+
+	dc.SetFont(large);
+	textExtent = dc.GetTextExtent(selectedShip->getName());
+	rightEdge = textExtent.GetWidth();
+	bottomEdge = textExtent.GetHeight();
+
+	dc.SetFont(bold);
+	textExtent = dc.GetTextExtent("Speed:");
+	if (textExtent.GetWidth() > rightEdge){ rightEdge = textExtent.GetWidth(); }
+	if (lineOneY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineOneY + textExtent.GetHeight(); }
+	textExtent = dc.GetTextExtent("Heading: ");
+	if (90 + textExtent.GetWidth() > rightEdge){ rightEdge = 90 + textExtent.GetWidth(); }
+	if (lineOneY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineOneY + textExtent.GetHeight(); }
+	textExtent = dc.GetTextExtent("ADF:");
+	if (textExtent.GetWidth() > rightEdge){ rightEdge = textExtent.GetWidth(); }
+	if (lineTwoY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineTwoY + textExtent.GetHeight(); }
+	textExtent = dc.GetTextExtent("MR: ");
+	if (80 + textExtent.GetWidth() > rightEdge){ rightEdge = 80 + textExtent.GetWidth(); }
+	if (lineTwoY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineTwoY + textExtent.GetHeight(); }
+	textExtent = dc.GetTextExtent("HP: ");
+	if (160 + textExtent.GetWidth() > rightEdge){ rightEdge = 160 + textExtent.GetWidth(); }
+	if (lineTwoY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineTwoY + textExtent.GetHeight(); }
+	textExtent = dc.GetTextExtent("DCR: ");
+	if (240 + textExtent.GetWidth() > rightEdge){ rightEdge = 240 + textExtent.GetWidth(); }
+	if (lineTwoY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineTwoY + textExtent.GetHeight(); }
+	textExtent = dc.GetTextExtent("Weapons:");
+	if (textExtent.GetWidth() > rightEdge){ rightEdge = textExtent.GetWidth(); }
+	if (weaponY + textExtent.GetHeight() > bottomEdge){ bottomEdge = weaponY + textExtent.GetHeight(); }
+	textExtent = dc.GetTextExtent("Defenses:");
+	if (textExtent.GetWidth() > rightEdge){ rightEdge = textExtent.GetWidth(); }
+	if (defenseY + textExtent.GetHeight() > bottomEdge){ bottomEdge = defenseY + textExtent.GetHeight(); }
+	textExtent = dc.GetTextExtent("Other Status:");
+	if (textExtent.GetWidth() > rightEdge){ rightEdge = textExtent.GetWidth(); }
+	if (otherStatusY + textExtent.GetHeight() > bottomEdge){ bottomEdge = otherStatusY + textExtent.GetHeight(); }
+
+	dc.SetFont(normal);
+	os << selectedShip->getSpeed();
+	valueText = os.str();
+	textExtent = dc.GetTextExtent(valueText);
+	if (60 + textExtent.GetWidth() > rightEdge){ rightEdge = 60 + textExtent.GetWidth(); }
+	if (lineOneY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineOneY + textExtent.GetHeight(); }
+	switch (selectedShip->getHeading()){
+	case 0:
+		valueText = "W";
+		break;
+	case 1:
+		valueText = "SW";
+		break;
+	case 2:
+		valueText = "SE";
+		break;
+	case 3:
+		valueText = "E";
+		break;
+	case 4:
+		valueText = "NE";
+		break;
+	case 5:
+		valueText = "NW";
+		break;
+	default:
+		valueText.clear();
+		break;
+	}
+	textExtent = dc.GetTextExtent(valueText);
+	if (170 + textExtent.GetWidth() > rightEdge){ rightEdge = 170 + textExtent.GetWidth(); }
+	if (lineOneY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineOneY + textExtent.GetHeight(); }
+
+	os.str("");
+	os << selectedShip->getADF();
+	valueText = os.str();
+	textExtent = dc.GetTextExtent(valueText);
+	if (40 + textExtent.GetWidth() > rightEdge){ rightEdge = 40 + textExtent.GetWidth(); }
+	if (lineTwoY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineTwoY + textExtent.GetHeight(); }
+
+	os.str("");
+	os << selectedShip->getMR();
+	valueText = os.str();
+	textExtent = dc.GetTextExtent(valueText);
+	if (115 + textExtent.GetWidth() > rightEdge){ rightEdge = 115 + textExtent.GetWidth(); }
+	if (lineTwoY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineTwoY + textExtent.GetHeight(); }
+
+	os.str("");
+	os << selectedShip->getHP();
+	valueText = os.str();
+	textExtent = dc.GetTextExtent(valueText);
+	if (195 + textExtent.GetWidth() > rightEdge){ rightEdge = 195 + textExtent.GetWidth(); }
+	if (lineTwoY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineTwoY + textExtent.GetHeight(); }
+
+	os.str("");
+	os << selectedShip->getDCR();
+	valueText = os.str();
+	textExtent = dc.GetTextExtent(valueText);
+	if (275 + textExtent.GetWidth() > rightEdge){ rightEdge = 275 + textExtent.GetWidth(); }
+	if (lineTwoY + textExtent.GetHeight() > bottomEdge){ bottomEdge = lineTwoY + textExtent.GetHeight(); }
+
+	int weaponLineWidth = 80;
+	for (unsigned int i = 0; i < selectedShip->getWeaponCount(); i++){
+		textExtent = dc.GetTextExtent(selectedShip->getWeapon(i)->getName() + "  ");
+		weaponLineWidth += textExtent.GetWidth();
+		if (weaponY + textExtent.GetHeight() > bottomEdge){ bottomEdge = weaponY + textExtent.GetHeight(); }
+	}
+	if (weaponLineWidth > rightEdge){ rightEdge = weaponLineWidth; }
+
+	int defenseLineWidth = 80;
+	for (unsigned int i = 0; i < selectedShip->getDefenseCount(); i++){
+		textExtent = dc.GetTextExtent(selectedShip->getDefense(i)->getName() + "  ");
+		defenseLineWidth += textExtent.GetWidth();
+		if (defenseY + textExtent.GetHeight() > bottomEdge){ bottomEdge = defenseY + textExtent.GetHeight(); }
+	}
+	if (defenseLineWidth > rightEdge){ rightEdge = defenseLineWidth; }
+
+	int otherStatusWidth = 110;
+	bool damage = false;
+	if (selectedShip->isOnFire()){
+		otherStatusWidth += dc.GetTextExtent("Fire  ").GetWidth();
+		damage = true;
+	}
+	if (selectedShip->isCombatControlDamaged()){
+		otherStatusWidth += dc.GetTextExtent("Combat Sys Damaged  ").GetWidth();
+		damage = true;
+	}
+	if (selectedShip->isPowerSystemDamaged()){
+		otherStatusWidth += dc.GetTextExtent("Power Short Circuit  ").GetWidth();
+		damage = true;
+	}
+	if (selectedShip->getNavControlError()){
+		otherStatusWidth += dc.GetTextExtent("Nav Sys Damaged  ").GetWidth();
+		damage = true;
+	}
+	if (!damage){
+		otherStatusWidth += dc.GetTextExtent("none").GetWidth();
+	}
+	if (otherStatusWidth > rightEdge){ rightEdge = otherStatusWidth; }
+	textExtent = dc.GetTextExtent("none");
+	if (otherStatusY + textExtent.GetHeight() > bottomEdge){ bottomEdge = otherStatusY + textExtent.GetHeight(); }
+
+	requirements.width = rightEdge + BORDER;
+	if (requirements.width < SHIP_STATS_MIN_WIDTH){
+		requirements.width = SHIP_STATS_MIN_WIDTH;
+	}
+	requirements.height = bottomEdge + BORDER;
+	if (requirements.height < BORDER + (int)(1.6*(10*6.3))){
+		requirements.height = BORDER + (int)(1.6*(10*6.3));
+	}
+	return requirements;
+}
+
 void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight){
-	const int promptBottomY = getActionPromptLineY(m_lowerPanelLayoutState.reservedPromptLines - 1) + ACTION_PROMPT_LINE_HEIGHT;
-	const int statsHeight = BORDER + (int)(1.6*(10*6.3));
+	wxClientDC dc(this);
+	const ShipStatsLayoutRequirements shipStatsRequirements = measureShipStatsLayoutRequirements(dc);
 	const int minStatsLeftMargin = leftOffset + ACTION_PROMPT_MIN_WIDTH;
-	const int largestMarginWithStatsRoom = panelWidth - SHIP_STATS_MIN_WIDTH - BORDER;
+	const int largestMarginWithStatsRoom = panelWidth - shipStatsRequirements.width - BORDER;
 	const bool splitCanFit = largestMarginWithStatsRoom >= minStatsLeftMargin;
-	const int stackedTop = promptBottomY + ACTION_PROMPT_BUTTON_GAP;
+	const int extraPromptHeight = getActionButtonExtraSpacerHeight();
+	const int buttonRowTop = getActionButtonTopSpacerHeight() + extraPromptHeight + BORDER;
+	const int buttonRowBottom = buttonRowTop + m_buttonMoveDone->GetBestSize().GetHeight() + BORDER;
+	const int stackedTop = buttonRowBottom + ACTION_PROMPT_BUTTON_GAP;
 	bool keepCurrentState = false;
 
 	if (m_lowerPanelLayoutState.initialized){
@@ -290,10 +467,16 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 				&& m_lowerPanelLayoutState.shipStatsLeftMargin <= largestMarginWithStatsRoom;
 			if (keepCurrentState){
 				m_lowerPanelLayoutState.shipStatsLeftMargin = largestMarginWithStatsRoom;
+				m_lowerPanelLayoutState.shipStatsTop = BORDER;
 			}
 		} else {
 			keepCurrentState = m_lowerPanelLayoutState.shipStatsTop >= stackedTop;
-			keepCurrentState = keepCurrentState && !splitCanFit;
+			keepCurrentState = keepCurrentState
+				&& !splitCanFit
+				&& m_lowerPanelLayoutState.shipStatsLeftMargin == leftOffset;
+			if (keepCurrentState){
+				m_lowerPanelLayoutState.shipStatsTop = stackedTop;
+			}
 		}
 	}
 
@@ -311,18 +494,10 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 	}
 
 	int requestedHeight = getActionPromptLineY(ACTION_PROMPT_MAX_LINES) + ACTION_PROMPT_LINE_HEIGHT + ACTION_PROMPT_BUTTON_GAP + BORDER;
-	const int extraPromptHeight = getActionButtonExtraSpacerHeight();
-	if (extraPromptHeight > 0){
-		requestedHeight += extraPromptHeight;
-	}
-	const int buttonRowBottom = getActionButtonTopSpacerHeight()
-		+ extraPromptHeight
-		+ BORDER
-		+ m_buttonMoveDone->GetBestSize().GetHeight()
-		+ BORDER;
 	if (buttonRowBottom > requestedHeight){
 		requestedHeight = buttonRowBottom;
 	}
+	const int statsHeight = shipStatsRequirements.height;
 	const int statsBottom = m_lowerPanelLayoutState.shipStatsTop + statsHeight + BORDER;
 	if (statsBottom > requestedHeight){
 		requestedHeight = statsBottom;
@@ -755,7 +930,8 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 	dc.GetSize(&panelWidth,&panelHeight);
 	ensureLowerPanelLayoutState(panelWidth, panelHeight);
 	applyRequestedDisplayHeight();
-	const int largestMarginWithStatsRoom = panelWidth - SHIP_STATS_MIN_WIDTH - BORDER;
+	const ShipStatsLayoutRequirements requirements = measureShipStatsLayoutRequirements(dc);
+	const int largestMarginWithStatsRoom = panelWidth - requirements.width - BORDER;
 	int lMargin = m_lowerPanelLayoutState.shipStatsLeftMargin;
 	if (m_lowerPanelLayoutState.mode == LOWER_PANEL_LAYOUT_RIGHT_SPLIT
 			&& largestMarginWithStatsRoom >= leftOffset + ACTION_PROMPT_MIN_WIDTH
