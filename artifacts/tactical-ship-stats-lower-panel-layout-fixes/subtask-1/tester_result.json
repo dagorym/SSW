@@ -2,11 +2,9 @@
   "status": "success",
   "task_identifier": "tactical-ship-stats-lower-panel-layout-fixes/subtask-1",
   "branch_name": "layout-update-tester-20260516",
-  "test_commit_hash": "522f1bb8540bcda1554a085c5a777ef9ec8e7a7f",
+  "test_commit_hash": "aabe1d7511aac33e5a9d2d97ead5ea7e8bae536b",
   "changed_test_files": [
-    "tests/gui/TacticalGuiLiveTest.h",
     "tests/gui/TacticalGuiLiveTest.cpp",
-    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
     "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp"
   ],
   "validation_commands_run": [
@@ -15,16 +13,16 @@
       "outcome": "passed; OK (153 tests)"
     },
     {
-      "command": "cd tests/gui && make && xvfb-run -a ./GuiTests",
+      "command": "cd tests/gui && make && GDK_BACKEND=x11 xvfb-run -a ./GuiTests",
       "outcome": "passed; OK (36 tests)"
     }
   ],
   "acceptance_criteria_validated": [
-    "No split-mode right-edge ship-stats clipping.",
-    "Split only when full stats fit.",
-    "Stacked stats below action buttons, no overlap.",
-    "Resize reflow still runs through existing seam.",
-    "Stable content-based sizing contract is in place."
+    "No right-edge clipping for large ship stats in split mode.",
+    "Split mode only when full ship-stats block fits.",
+    "Stacked mode keeps ship-data below action buttons with no overlap.",
+    "Resize still reflows via existing FBattleScreen/display seam.",
+    "Lower-panel sizing contract is stable and testable."
   ],
   "unmet_acceptance_criteria": [],
   "artifact_file_paths_written": [

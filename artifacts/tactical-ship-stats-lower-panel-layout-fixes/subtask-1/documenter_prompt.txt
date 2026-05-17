@@ -3,12 +3,12 @@ You are the documenter agent for `tactical-ship-stats-lower-panel-layout-fixes/s
 Continue immediately when blocking inputs are present; do not stop after scope confirmation, documentation discovery, or diff review.
 
 ## Task summary
-Document the validated tactical lower-panel split/stacked ship-stats layout fix.
+Document the validated tactical lower-panel split-fit vs stacked fallback remediation and lower-panel sizing contract behavior.
 
 ## Validation outcome
 Tester validation passed with:
 - `cd tests/tactical && make && ./TacticalTests` → `OK (153 tests)`
-- `cd tests/gui && make && xvfb-run -a ./GuiTests` → `OK (36 tests)`
+- `cd tests/gui && make && GDK_BACKEND=x11 xvfb-run -a ./GuiTests` → `OK (36 tests)`
 
 ## Full modified-file context to review
 Implementer changes:
@@ -16,9 +16,7 @@ Implementer changes:
 - `src/tactical/FBattleDisplay.cpp`
 
 Tester changes:
-- `tests/gui/TacticalGuiLiveTest.h`
 - `tests/gui/TacticalGuiLiveTest.cpp`
-- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
 - `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
 
 Workflow artifacts in shared directory:
@@ -28,15 +26,15 @@ Workflow artifacts in shared directory:
 - `artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1/tester_result.json`
 
 ## Acceptance criteria verified
-- No split-mode right-edge ship-stats clipping.
-- Split only when full stats fit.
-- Stacked stats below action buttons, no overlap.
-- Resize reflow still runs through existing seam.
-- Stable content-based sizing contract is in place.
+- No right-edge clipping for large ship stats in split mode.
+- Split mode only when full ship-stats block fits.
+- Stacked mode keeps ship-data below action buttons with no overlap.
+- Resize still reflows via existing FBattleScreen/display seam.
+- Lower-panel sizing contract is stable and testable.
 
 ## Commits
-- Implementer commit: `40a2b83d85984339e6c4a53b7cfad8d797af66e8`
-- Tester test commit: `522f1bb8540bcda1554a085c5a777ef9ec8e7a7f`
+- Implementer commit: `535f305`
+- Tester test commit: `aabe1d7511aac33e5a9d2d97ead5ea7e8bae536b`
 
 ## Shared artifact directory (repo-root-relative)
 - `artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1`
