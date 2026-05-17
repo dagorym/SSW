@@ -1,0 +1,40 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Validate the tactical lower-panel layout fix that now measures real ship-stats width/height, uses split mode only when stats fully fit, and reflows stacked mode below the action-button row.
+
+Modified files:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- Large-ship stat content, including long weapon lists, is no longer cut off at the right edge when split mode is active.
+- Split mode remains right-aligned only when the available width can display the full ship-stats block.
+- Stacked mode places the ship-data block fully below the action-button area with no overlap.
+- FBattleScreen resize handling still recomputes the lower-panel layout deterministically through the existing display reflow seam.
+- The implementation replaces brittle fixed-layout assumptions with a stable lower-panel sizing contract that later tests can verify.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Implementation context for testing:
+- New lower-panel sizing contract is driven by `measureShipStatsLayoutRequirements(wxDC&)`, which computes runtime width/height from actual ship labels, values, weapon/defense lists, and status text.
+- `ensureLowerPanelLayoutState(int panelWidth, int panelHeight)` now derives split eligibility from measured stats width and `ACTION_PROMPT_MIN_WIDTH` reservation; it no longer relies on fixed `SHIP_STATS_MIN_WIDTH` assumptions alone.
+- In stacked mode, `shipStatsTop` is now based on computed action-button row bottom (`buttonRowBottom + ACTION_PROMPT_BUTTON_GAP`) to keep ship stats and controls in separate vertical regions.
+- Resize flow remains `FBattleScreen::onSize()` -> `m_display->reflowLowerPanelLayout()` -> `applyLayoutPolicy()`.
+
+Suggested test command(s):
+- cd tests/tactical && make && ./TacticalTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-ship-stats-lower-panel-layout-fixes/subtask-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
