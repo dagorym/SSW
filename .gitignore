@@ -18,24 +18,20 @@ tests/gui/GuiTests
 .settings
 doc/coverage
 
-/.vs/slnx.sqlite
-/.vs/ProjectSettings.json
-/.vs/VSWorkspaceState.json
+/.vs/
 *.obj
 /Debug/SSW.log
 *.tlog
 /Debug/vc141.idb
-/SSW.sln
-/SSW.vcxproj
-/SSW.vcxproj.filters
 /x64/Debug/SSW.Build.CppClean.log
 /x64/Debug/SSW.log
 /x64/Debug/vc141.idb
 /Debug/SSW.Build.CppClean.log
-/SSW.vcxproj.user
 *.exe
 *.ilk
 *.pdb
 .idea
 .codex
 *__pycache__*
+vs2022/build/
+vs2022/obj/
