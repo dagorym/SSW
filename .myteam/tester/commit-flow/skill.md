@@ -7,6 +7,10 @@ description: "Run the tester-specific commit decision and commit ordering rules.
 
 Load this skill only when test changes or required tester artifacts are ready to be committed.
 
+## Tooling
+
+- Use the colocated tool `validate_tester_state.py` before final reporting or commit decisions to confirm expected artifact presence, changed-file scope, optional handoff files, and whether leftover byproducts remain outside the allowed test and artifact paths.
+
 ## Commit Decisions
 
 - If the final test run passes and you created or modified valid test files, commit those test files first.
@@ -27,6 +31,7 @@ Load this skill only when test changes or required tester artifacts are ready to
 - Record only the test commit hash in `tester_result.json`.
 - If no test commit is made, record `"No Changes Made"` instead.
 - Do not replace the captured test commit hash with the later artifact commit hash.
+- Use validation output to confirm the staged/untracked state, but keep the final commit decision with the tester agent.
 
 ## Limits
 

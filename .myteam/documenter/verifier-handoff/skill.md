@@ -21,7 +21,6 @@ Load this skill only when documentation has succeeded and the downstream Verifie
 - the shared repository-root-relative artifact directory path to reuse
 - an instruction that verification must include implementation, tests, and updated docs together
 - an instruction to infer missing plan-source, convention-file, or artifact-path details from repository context when safe
-- an instruction to continue in the same run when blockers are absent
 - the explicit completion gate:
   - `Do not report success unless all required artifacts exist and all changes are committed.`
 
@@ -30,3 +29,4 @@ Load this skill only when documentation has succeeded and the downstream Verifie
 - In stdout, present the handoff as a `Verifier Agent Prompt` block.
 - In `verifier_prompt.txt`, omit the heading line `Verifier Agent Prompt` and write only the handoff body.
 - Start the handoff body with the exact line `Your role is 'verifier'. Your task is as follows:`
+- Prefer rendering the final handoff through `write_documenter_artifacts.py` from structured fields instead of hand-formatting it when the required data is already available.

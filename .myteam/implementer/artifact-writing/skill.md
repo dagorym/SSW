@@ -7,6 +7,10 @@ description: "Write the implementer success-path report, result artifact, and te
 
 Load this skill only on the success path after the implementation/code commit hash has been captured and the shared artifact directory has been resolved.
 
+## Tooling
+
+- Use the colocated tool `write_success_artifacts.py` to render and write the required success-path files from structured input instead of composing those files manually.
+
 ## Required Artifacts
 
 Write the following files to the resolved shared artifact directory:
@@ -38,6 +42,7 @@ Write the following files to the resolved shared artifact directory:
 - If deriving `<task-slug>`, remove trailing agent-role suffixes such as `implementer`, `tester`, and `verifier`.
 - Create the resolved shared artifact directory before writing files if it does not already exist.
 - Preserve the implementation/code commit hash in artifact data. Do not replace it with the later artifact commit hash.
+- Treat the tool output as the canonical file-formatting path for `implementer_report.md`, `tester_prompt.txt`, and `implementer_result.json`.
 
 ## Limits
 

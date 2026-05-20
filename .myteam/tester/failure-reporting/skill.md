@@ -21,8 +21,12 @@ On the failure path, report:
 - expected vs. actual behavior for each unmet criterion
 - implementation defects discovered when applicable
 - whether the produced tests are valid and should be committed or invalid and should not be committed
+- the final structured failure report content that must be written to `tester_report.md`
 
-Also ensure the failure-state `tester_result.json` records:
+Also ensure the failure-path artifacts include:
+
+- `tester_report.md` containing the final structured failure report presented in stdout
+- failure-state `tester_result.json` recording:
 
 - failure status
 - available pass/fail totals when present

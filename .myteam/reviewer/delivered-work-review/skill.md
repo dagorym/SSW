@@ -7,6 +7,10 @@ description: "Inspect upstream artifacts, reports, and delivered changes across 
 
 Load this skill only when inspecting the delivered work across the relevant subtasks.
 
+## Tooling
+
+- Use the colocated tool `summarize_feature_review_surface.py` to aggregate upstream result artifacts, changed-file lists, commands, commits, verifier verdict metadata, and candidate high-signal files before opening raw artifacts one by one.
+
 ## Required Actions
 
 - Review combined Implementer, Tester, and Documenter outputs across relevant subtasks.

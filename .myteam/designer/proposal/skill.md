@@ -7,6 +7,10 @@ description: "Present the section-by-section change plan and approval-gated inli
 
 Load this skill only when all open questions are resolved and the proposed design-document changes are ready to present.
 
+## Tooling
+
+- Use the colocated tool `extract_section_context.py` to gather the current text of targeted sections and surrounding heading context before drafting inline diffs.
+
 ## Required Actions
 
 - Present a section-by-section change plan.
@@ -18,3 +22,4 @@ Load this skill only when all open questions are resolved and the proposed desig
 
 - If feedback changes scope, revise the proposal and ask for approval again.
 - Do not write files before explicit approval.
+- Do not re-copy large unchanged document regions into the proposal when the colocated tool can isolate the relevant section context.

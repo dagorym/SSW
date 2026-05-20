@@ -7,11 +7,16 @@ description: "Run tests and report structured pass/fail results tied to acceptan
 
 Load this skill only when tests are ready to run or when results must be summarized to decide the next step.
 
+## Tooling
+
+- Use the colocated tool `run_test_command.py` to run the selected command, capture stdout and stderr, persist raw logs when needed, and return normalized execution metadata before writing the human-readable summary.
+
 ## Required Actions
 
 - Run the complete relevant suite or the smallest meaningful test scope selected for the task.
 - Capture full output including passes, failures, and error messages.
 - Summarize results in structured form.
+- Treat tool-reported counts as best-effort execution metadata; keep acceptance-criteria mapping and failure interpretation with the tester agent.
 
 ## Structured Result Format
 

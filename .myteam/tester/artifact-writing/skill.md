@@ -7,6 +7,10 @@ description: "Write tester result artifacts for success and failure paths."
 
 Load this skill only when `tester_report.md`, `tester_result.json`, or `documenter_prompt.txt` may need to be written.
 
+## Tooling
+
+- Use the colocated tool `write_tester_artifacts.py` to render and write the required tester report, result artifact, and success-path Documenter prompt from structured input instead of manually reproducing those file formats.
+
 ## Required Artifacts
 
 - `tester_report.md`
@@ -35,7 +39,7 @@ Load this skill only when `tester_report.md`, `tester_result.json`, or `document
 - Always write machine-readable handoff artifacts to the shared artifact directory and report the same information in stdout as the human-readable log.
 - On success, include the written artifact file paths, including `documenter_prompt.txt` and `tester_report.md`.
 - On failure, record the failure status, available pass/fail totals, unmet acceptance criteria when present, and omit any claim that `documenter_prompt.txt` was written.
-- Only write `documenter_prompt.txt` when testing passes.
+- Treat the tool output as the canonical file-formatting path for tester artifacts.
 
 ## Limits
 

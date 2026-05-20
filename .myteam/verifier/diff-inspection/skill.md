@@ -7,6 +7,10 @@ description: "Inspect the combined implementation, test, and documentation diff 
 
 Load this skill only when the verifier must establish the combined review surface and the evaluation basis.
 
+## Tooling
+
+- Use the colocated tool `summarize_review_surface.py` to recover the likely comparison base, changed-file categories, changed line ranges, and candidate files needing deeper inspection before spending tokens on manual diff narration.
+
 ## Required Actions
 
 - Review the full combined diff for implementation, test, and documentation changes.

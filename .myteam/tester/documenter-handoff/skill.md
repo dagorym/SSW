@@ -7,6 +7,10 @@ description: "Compose the success-path Documenter handoff for stdout and documen
 
 Load this skill only when testing has passed and the downstream Documenter prompt is about to be written or reported.
 
+## Tooling
+
+- When the handoff content is ready, use the colocated artifact-writing tool path to render `documenter_prompt.txt` and the stdout prompt block instead of manually reproducing the full prompt template.
+
 ## Required Content
 
 The Documenter handoff must include:

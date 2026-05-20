@@ -7,6 +7,10 @@ description: "Restate review scope, recover evaluation inputs, and begin review 
 
 Load this skill immediately after the verifier has confirmed that blocking inputs are present and review work should continue in the same run.
 
+## Tooling
+
+- Use the colocated tool `resolve_preflight.py` to extract structured verifier-handoff inputs, normalize shared artifact path guidance, derive the task slug when needed, and gather repository-backed candidate plan and convention context before restating scope manually.
+
 ## Required Actions
 
 - Confirm the review is being performed from an isolated worktree branched from the completed Documenter branch.

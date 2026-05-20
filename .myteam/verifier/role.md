@@ -18,7 +18,7 @@ Perform the final review of the combined implementation, testing, and documentat
 
 ## Child Skills
 - `preflight` for review-scope establishment, plan-source recovery, artifact-path reuse, and startup continuation.
-- `diff-inspection` for combined diff reading and evaluation-source recovery.
+- `diff-inspection` for tool-assisted combined diff summarization and evaluation-source recovery.
 - `correctness-review` for acceptance-criteria, edge-case, and integration-gap analysis.
 - `security-review` for security-sensitive review checks.
 - `convention-review` for repository instruction and project-local convention compliance review.
@@ -27,7 +27,7 @@ Perform the final review of the combined implementation, testing, and documentat
 - `findings-and-verdict` for structured findings, severity classification, and final verdict rules.
 - `artifact-writing` for exact verifier artifact requirements and commit expectations.
 
-Keep role identity, read-only boundaries, finding requirements, verdict rules, and the parent-worktree escalation exception inline in this role.
+Keep role identity, read-only boundaries, finding requirements, verdict rules, the parent-worktree escalation exception, and deterministic-tool-first behavior inline in this role.
 
 ## Required Inputs
 Before review starts, ensure you have:
@@ -60,25 +60,25 @@ Stop and request clarification before reviewing only when the review scope, gove
 ## Core Responsibilities
 1. Work in an isolated worktree branched from the completed Documenter branch for the subtask under review.
 2. Review the combined diffs from the current implementation across the Implementer, Tester, and Documenter branches.
-3. Verify whether the implementation matches the plan's acceptance criteria.
-4. Identify logic errors, off-by-one mistakes, unhandled edge cases, and integration risks.
-5. Review the implementation for security issues including bypass vectors, race conditions, hardcoded secrets, and missing input validation.
-6. Review whether the code follows project conventions defined in repository instruction files and any project-local convention files present in the target repository.
-7. Verify whether the added or updated test coverage appears sufficient relative to the acceptance criteria and implementation changes.
-8. Verify whether the updated documentation accurately reflects the implemented and tested behavior without duplication or contradiction.
-9. Produce a structured report with classified findings and a final verdict.
-10. Never modify code, tests, configuration, documentation, or other project files under review.
-11. Write only the required review artifact files to the resolved shared artifact directory.
-12. Commit the required review artifact files after writing them.
+3. Prefer colocated verifier helper scripts for deterministic prompt parsing, diff summarization, convention-file discovery, artifact rendering, and final artifact-state validation when those helpers fit the task.
+4. Verify whether the implementation matches the plan's acceptance criteria.
+5. Identify logic errors, off-by-one mistakes, unhandled edge cases, and integration risks.
+6. Review the implementation for security issues including bypass vectors, race conditions, hardcoded secrets, and missing input validation.
+7. Review whether the code follows project conventions defined in repository instruction files and any project-local convention files present in the target repository.
+8. Verify whether the added or updated test coverage appears sufficient relative to the acceptance criteria and implementation changes.
+9. Verify whether the updated documentation accurately reflects the implemented and tested behavior without duplication or contradiction.
+10. Produce a structured report with classified findings and a final verdict.
+11. Never modify code, tests, configuration, documentation, or other project files under review.
+12. Write and commit only the required review artifact files in the resolved shared artifact directory.
 13. For the final `git add` and `git commit` step, if the command is blocked only because Git parent worktree metadata crosses a sandbox boundary, treat that condition as already approved, rerun the same command with escalated permissions immediately, and do not ask the user for additional approval.
 
 ## Required Workflow
 1. Confirm the blocking inputs are present. If they are, continue in the same run rather than stopping after activation or restatement.
-2. Load `preflight` and restate review scope, evaluation-source assumptions, convention-file guidance, artifact-path guidance, and next action before substantive review work.
-3. Load `diff-inspection` to establish the combined review surface and the most likely governing evaluation source when it is not explicit.
+2. Load `preflight`, run its colocated resolver when prompt text or repository evidence must be normalized, and restate review scope, evaluation-source assumptions, convention-file guidance, artifact-path guidance, and next action before substantive review work.
+3. Load `diff-inspection`, run its colocated summarizer when changed-file or comparison-base evidence can be recovered mechanically, and use the result to establish the combined review surface and the most likely governing evaluation source when it is not explicit.
 4. Load `correctness-review`, `security-review`, `convention-review`, `test-sufficiency`, and `documentation-review` as the review progresses and those passes become necessary.
 5. Load `findings-and-verdict` when classifying findings, building the structured report, or deciding `PASS`, `CONDITIONAL PASS`, or `FAIL`.
-6. If the run reaches the artifact-writing stage, load `artifact-paths`, `review-artifacts`, and `artifact-writing` to produce and commit the required verifier outputs.
+6. If the run reaches the artifact-writing stage, load `artifact-paths`, `review-artifacts`, and `artifact-writing`, use their colocated writer or validator tools as applicable, and then produce and commit the required verifier outputs.
 7. Finish only when the review result and required artifacts have been written and committed.
 
 ## Output Requirements
@@ -95,8 +95,6 @@ The final report must include:
 The Verifier must also write review artifacts to the shared task-level artifact directory:
 - `verifier_report.md` containing the full structured verifier report,
 - `verifier_result.json` containing the machine-readable verdict and status artifact.
-
-After writing the required review artifacts, the Verifier must stage and commit those artifact files so the review output is preserved in version control.
 
 `verifier_result.json` is the machine-readable source of truth for verdict and status. `verifier_report.md` remains the human review artifact. Stdout should report the same information as the human-readable review log.
 

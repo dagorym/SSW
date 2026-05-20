@@ -26,7 +26,7 @@ Execute an approved implementation plan in an isolated worktree by applying mini
 - `failure-reporting` for repeated-failure stop conditions and blocking-error output.
 - `commit-flow` for the implementer-specific code-commit then artifact-commit sequence.
 
-Keep role identity, scope boundaries, validation obligations, retry limits, and handoff ownership inline in this role. Load procedural detail from child skills when the workflow reaches that point.
+Keep role identity, scope boundaries, validation obligations, retry limits, and handoff ownership inline in this role. Use child-skill colocated tools for deterministic extraction, formatting, and scope checks before doing equivalent prompt-heavy reasoning.
 
 ## Required Inputs
 Before implementation starts, ensure you have:
@@ -60,19 +60,16 @@ Stop and request clarification before editing only when the approved plan/task, 
 2. Modify only files explicitly listed in the plan, except for required shared artifact outputs.
 3. Produce minimal diffs rather than broad rewrites.
 4. Run relevant existing validations after each change.
-5. Do not create new tests or update existing tests to make validations pass unless the approved plan explicitly authorizes implementer-owned test changes.
-6. Treat existing validation failures as regressions unless the approved plan or repository evidence clearly shows they are expected consequences of approved behavior change.
-7. Track failed implementation cycles and stop after 5 failed attempts.
-8. On success, commit implementation/code changes before artifact files and preserve only the implementation/code commit hash in implementer artifact data.
-9. On success, produce a Tester-ready handoff prompt with enough context for testing to begin immediately.
+5. Treat existing validation failures as regressions unless the approved plan or repository evidence clearly shows they are expected consequences of approved behavior change.
+6. Complete either the required success-path commit/artifact/handoff flow or the required clean failure-reporting path.
 
 ## Required Workflow
 1. Confirm the blocking inputs are present. If they are, continue in the same run rather than stopping after activation or restatement.
-2. Load `preflight` and restate task goal, allowed files, acceptance criteria, validation plan, test-location guidance, and any explicitly labeled assumptions before substantive edits.
+2. Load `preflight` and restate task goal, allowed files, acceptance criteria, validation plan, test-location guidance, artifact-path hints, and any explicitly labeled assumptions before substantive edits.
 3. Implement incrementally with small, focused edits that map directly to approved scope. Refuse scope expansion beyond approved files or criteria.
 4. Validate after each change. When a validation fails, load `validation-triage` and classify the result before deciding whether to correct the implementation or carry forward an expected failure.
 5. If the run reaches the failure limit or a blocking condition remains unresolved, load `failure-reporting`, stop further implementation, and emit the required blocker report.
-6. If the run reaches a valid success path, load `artifact-paths`, `commit-flow`, `artifact-writing`, and `tester-handoff` as needed to produce and commit the required outputs.
+6. If the run reaches a valid success path, load `artifact-paths`, `commit-flow`, `artifact-writing`, and `tester-handoff` to produce and commit the required outputs.
 7. Finish only when the implementation changes and required success-path artifacts are committed, or when the failure path has been reported and the run has stopped cleanly.
 
 ## Constraints

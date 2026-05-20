@@ -7,6 +7,10 @@ description: "Restate testing scope, resolve initial test-directory and artifact
 
 Load this skill immediately after the tester has confirmed that blocking inputs are present and testing should continue in the same run.
 
+## Tooling
+
+- Use the colocated tool `resolve_preflight.py` to extract structured handoff inputs and gather repository-evidence candidates for test locations, framework markers, and command guidance before deciding what to do manually.
+
 ## Purpose
 
 Use this skill to turn the approved testing task into a concrete starting point before substantive test work begins.
@@ -26,6 +30,7 @@ Use this skill to turn the approved testing task into a concrete starting point 
 - If no shared artifact directory is provided, derive repository-root-relative `artifacts/<task-slug>` from the task name.
 - When deriving `<task-slug>`, remove trailing agent-role suffixes such as `implementer`, `tester`, and `verifier`.
 - Treat required shared artifact directory files as allowed outputs even when they fall outside the specified test directories.
+- Treat tool-produced framework and command candidates as evidence inputs; keep the final test-scope choice with the tester agent.
 
 ## Startup Contract
 

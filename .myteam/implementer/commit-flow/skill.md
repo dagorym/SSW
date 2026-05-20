@@ -7,19 +7,23 @@ description: "Run the implementer-specific code-commit then artifact-commit sequ
 
 Load this skill only when implementation changes or required success-path artifacts are ready to be committed.
 
+## Tooling
+
+- Use the colocated tool `validate_commit_scope.py` before committing to verify that changed files stay within the approved file list and that required artifacts are present before the artifact commit.
+
 ## Purpose
 
 Use this skill to apply the implementer's exact commit ordering and commit-hash preservation rules.
 
 ## Required Sequence
 
-1. Confirm the final diff stays within approved scope and files.
+1. Run `validate_commit_scope.py` and confirm the final diff stays within approved scope and files.
 2. Confirm acceptance criteria are satisfied.
 3. Confirm any remaining failing existing validations are explicitly documented as expected consequences of approved behavior changes rather than unresolved regressions.
 4. Create a code-change commit that contains only the approved implementation changes.
 5. Capture the resulting implementation/code commit hash immediately after the commit succeeds.
 6. Write the required success-path artifacts only after that commit hash has been captured.
-7. Stage and commit the artifact files in a second commit.
+7. Re-run `validate_commit_scope.py` with required artifact expectations if needed, then stage and commit the artifact files in a second commit.
 
 ## Hash Rules
 
