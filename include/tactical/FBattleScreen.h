@@ -31,7 +31,10 @@ class WXTacticalUI;
  * stack-allocated battle-screen call sites. The native top-level now installs
  * `File`, `Settings`, and `Help` menus, with `File -> Quit` acting as the
  * initial active command while the remaining tactical menu entries stay
- * present as disabled placeholders.
+ * present as disabled placeholders. Both the menu quit command and the native
+ * title-bar close vector now funnel through the same shared lifecycle so
+ * non-modal tactical screens can destroy normally and modal callers still
+ * unwind back to their launch sites.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
@@ -303,10 +306,13 @@ protected:
 	/// Print a winner message and exit the battle screen through the shared close path.
 	void declareWinner();
 	/**
-	 * @brief Close the tactical top-level using modal-first compatibility behavior.
+	 * @brief Close the tactical top-level through the shared modal and non-modal lifecycle.
 	 *
 	 * Stack-owned launch paths must unwind through EndModal(returnCode) before the
 	 * frame falls back to the non-modal destroy path used by heap-owned callers.
+	 * If the wx destroy request does not immediately mark the frame for deletion,
+	 * the close-in-progress guard is cleared so the first legitimate close request
+	 * cannot strand the tactical window behind stale guard state.
 	 *
 	 * @param returnCode Return code propagated back to modal compatibility callers.
 	 *
@@ -315,7 +321,20 @@ protected:
 	 * @date Last Modified:  May 22, 2026
 	 */
 	void closeBattleScreen(int returnCode = 0);
-	/// Handle top-level close events by delegating into the shared battle-screen close path.
+	/**
+	 * @brief Handle title-bar close events through the shared battle-screen lifecycle.
+	 *
+	 * The native close event reuses closeBattleScreen(GetReturnCode()) so menu and
+	 * title-bar shutdown stay centralized in FBattleScreen. Non-modal callers then
+	 * continue through wxWidgets' default close handling instead of forcing an
+	 * application-loop shutdown path.
+	 *
+	 * @param event wxWidgets top-level close event for the tactical frame.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created:  May 22, 2026
+	 * @date Last Modified:  May 22, 2026
+	 */
 	void onClose(wxCloseEvent & event);
 	/**
 	 * @brief Handle `File -> Quit` by delegating into the shared battle-screen close path.

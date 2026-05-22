@@ -1048,10 +1048,19 @@ while changing the underlying top-level type. `FBattleScreen` now inherits from
 `wxFrame` so tactical flows can rely on frame-only menu APIs, but it preserves
 the existing stack-owned `bb.ShowModal()` call sites through a class-owned modal
 event-loop shim and still routes closure through modal-first `EndModal(...)`
-before the non-modal destroy path. The focused tactical source-contract checks
-cover that ordering directly, and the GUI live fixtures continue to use the
+before the non-modal destroy path. The close lifecycle is now explicitly locked
+down for both `File -> Quit` and the native title-bar close vector: each route
+funnels through `FBattleScreen::closeBattleScreen(...)`, non-modal close events
+continue through default wx close processing after the shared helper runs, and
+the close-in-progress guard is cleared if `Destroy()` does not immediately put
+the frame into deletion so a first legitimate close request cannot leave the
+screen stuck open. The focused tactical source-contract checks now guard that
+non-modal reset behavior and also reject `exit(...)` / `ExitMainLoop()` in the
+tactical close path, while the GUI live fixtures use the
 constructed/destroyed/live lifecycle counters to prove that both BattleSim and
-strategic launch chains finish with zero live battle screens after teardown.
+strategic launch chains finish with zero live battle screens after teardown and
+that modal callers unwind back to their launch dialogs after closing the battle
+screen.
 
 The next dialog-sizing audit stayed evidence-driven instead of broadening the
 implementation surface. Four additional strategic dialogs with confirmed
