@@ -29,6 +29,8 @@ CPPUNIT_TEST( testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath );
 CPPUNIT_TEST( testModalCallerSitesOwnBattleScreenLifetimeAfterShowModal );
 CPPUNIT_TEST( testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen );
 CPPUNIT_TEST( testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI );
+CPPUNIT_TEST( testBattleScreenHeaderDeclaresFrameModalAndLifecycleContracts );
+CPPUNIT_TEST( testMainFrameLaunchPathKeepsNonModalBattleScreenUsage );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -98,9 +100,29 @@ void testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen();
  *
  * @author gpt-5.3-codex (medium)
  * @date Created: Apr 03, 2026
- * @date Last Modified: Apr 03, 2026
+ * @date Last Modified: May 22, 2026
  */
 void testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI();
+/**
+ * @brief Verifies battle Screen Header Declares Frame Modal And Lifecycle Contracts.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
+ * @date Created: May 22, 2026
+ * @date Last Modified: May 22, 2026
+ */
+void testBattleScreenHeaderDeclaresFrameModalAndLifecycleContracts();
+/**
+ * @brief Verifies main Frame Launch Path Keeps Non Modal Battle Screen Usage.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 22, 2026
+ * @date Last Modified: May 22, 2026
+ */
+void testMainFrameLaunchPathKeepsNonModalBattleScreenUsage();
 };
 
 }

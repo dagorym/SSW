@@ -204,6 +204,7 @@ CPPUNIT_ASSERT(scenarioEditorSource.find("bb.Show();") == std::string::npos);
 
 void FTacticalBattleScreenElectricalFireTest::testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI() {
 // AC: FBattleScreen constructor owns FTacticalGame and WXTacticalUI installation path.
+// AC: FBattleBoard and FBattleDisplay stay parented and layout-managed by FBattleScreen.
 const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string ctorBody = extractFunctionBody(source, "FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style )");
 
@@ -212,8 +213,38 @@ assertContains(source, "#include \"gui/WX");
 assertContains(ctorBody, "m_tacticalGame = new FTacticalGame();");
 assertContains(ctorBody, "m_tacticalUI = new WX");
 assertContains(ctorBody, "m_tacticalGame->installUI(m_tacticalUI);");
+assertContains(ctorBody, "m_map = new FBattleBoard( this );");
+assertContains(ctorBody, "m_display = new FBattleDisplay( this );");
+assertContains(ctorBody, "this->SetSizer( fgSizer1 );");
+assertContains(ctorBody, "applyLayoutPolicy();");
 CPPUNIT_ASSERT(ctorBody.find("m_tacticalGame = NULL") == std::string::npos);
 CPPUNIT_ASSERT(ctorBody.find("m_tacticalUI = NULL") == std::string::npos);
+}
+
+void FTacticalBattleScreenElectricalFireTest::testBattleScreenHeaderDeclaresFrameModalAndLifecycleContracts() {
+// AC: FBattleScreen is a wxFrame-backed top-level with modal compatibility and lifecycle APIs.
+const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
+
+assertContains(header, "class FBattleScreen : public wxFrame");
+assertContains(header, "int ShowModal();");
+assertContains(header, "void EndModal(int returnCode);");
+assertContains(header, "bool IsModal() const;");
+assertContains(header, "void SetReturnCode(int returnCode);");
+assertContains(header, "int GetReturnCode() const;");
+assertContains(header, "static void resetLifecycleCounters();");
+assertContains(header, "static int getConstructedCount();");
+assertContains(header, "static int getDestroyedCount();");
+assertContains(header, "static int getLiveInstanceCount();");
+CPPUNIT_ASSERT(header.find("class FBattleScreen : public wxDialog") == std::string::npos);
+}
+
+void FTacticalBattleScreenElectricalFireTest::testMainFrameLaunchPathKeepsNonModalBattleScreenUsage() {
+// AC: Existing non-modal launch paths stay source-compatible and still use Show(true).
+const std::string mainFrameSource = readFile(repoFile("src/FMainFrame.cpp"));
+
+assertContains(mainFrameSource, "FBattleScreen *bb = new FBattleScreen();");
+assertContains(mainFrameSource, "bb->Show(true);");
+CPPUNIT_ASSERT(mainFrameSource.find("bb->ShowModal();") == std::string::npos);
 }
 
 }
