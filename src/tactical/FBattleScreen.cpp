@@ -8,6 +8,7 @@
 
 #include "tactical/FBattleScreen.h"
 #include "Frontier.h"
+#include "wxWidgets.h"
 #include "core/FGameConfig.h"
 #include <wx/evtloop.h>
 #include "gui/WX\
@@ -144,6 +145,31 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 TacticalUI(this);
 	m_tacticalGame->installUI(m_tacticalUI);
 
+	wxMenu *menuFile = new wxMenu;
+	menuFile->Append(ID_TacticalLoadGame, "&Load Game");
+	menuFile->Append(ID_TacticalSaveGame, "&Save Game");
+	menuFile->AppendSeparator();
+	menuFile->Append(ID_TacticalQuit, "&Quit");
+	menuFile->Enable(ID_TacticalLoadGame, false);
+	menuFile->Enable(ID_TacticalSaveGame, false);
+
+	wxMenu *menuSettings = new wxMenu;
+	menuSettings->Append(ID_TacticalDamageDetails, "&Damage Details");
+	menuSettings->Enable(ID_TacticalDamageDetails, false);
+
+	wxMenu *menuHelp = new wxMenu;
+	menuHelp->Append(ID_TacticalUsersGuide, "&User's Guide");
+	menuHelp->Append(ID_TacticalAbout, "&About");
+	menuHelp->Enable(ID_TacticalUsersGuide, false);
+	menuHelp->Enable(ID_TacticalAbout, false);
+
+	wxMenuBar *menuBar = new wxMenuBar;
+	menuBar->Append(menuFile, "&File");
+	menuBar->Append(menuSettings, "&Settings");
+	menuBar->Append(menuHelp, "&Help");
+	SetMenuBar(menuBar);
+
+	Bind(wxEVT_MENU, &FBattleScreen::onMenuQuit, this, ID_TacticalQuit);
 	Bind(wxEVT_CLOSE_WINDOW, &FBattleScreen::onClose, this);
 	Bind(wxEVT_SIZE, &FBattleScreen::onSize, this);
 
@@ -734,6 +760,10 @@ void FBattleScreen::onClose(wxCloseEvent & event) {
 		return;
 	}
 
+	closeBattleScreen(GetReturnCode());
+}
+
+void FBattleScreen::onMenuQuit(wxCommandEvent & WXUNUSED(event)) {
 	closeBattleScreen(GetReturnCode());
 }
 

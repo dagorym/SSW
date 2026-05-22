@@ -303,6 +303,8 @@ protected:
 	void closeBattleScreen(int returnCode = 0);
 	/// Handle top-level close events by delegating into the shared battle-screen close path.
 	void onClose(wxCloseEvent & event);
+	/// Handle menu quit requests by delegating into the shared battle-screen close path.
+	void onMenuQuit(wxCommandEvent & event);
 
 	/**
 	 * @brief applies damage to ships from electrical fires

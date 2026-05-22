@@ -25,7 +25,13 @@ enum
     ID_PlaceNova,
     ID_AddSatharShips,
     ID_ShowRetreatCond,
-    ID_ShowBattleScreen
+    ID_ShowBattleScreen,
+    ID_TacticalLoadGame,
+    ID_TacticalSaveGame,
+    ID_TacticalQuit,
+    ID_TacticalDamageDetails,
+    ID_TacticalUsersGuide,
+    ID_TacticalAbout
 };
 
 
