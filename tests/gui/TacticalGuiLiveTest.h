@@ -28,6 +28,7 @@ CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
 CPPUNIT_TEST( testWXTacticalUIParentBackedModalAndRedrawPaths );
 CPPUNIT_TEST( testBattleScreenMenuBarLabelsAndDisabledItems );
 CPPUNIT_TEST( testBattleScreenMenuQuitClosesViaSharedClosePath );
+CPPUNIT_TEST( testBattleScreenTitleBarCloseClosesViaSharedClosePath );
 CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
 CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
 CPPUNIT_TEST( testBattleScreenDefaultSizeAndLayoutPolicyRuntime );
@@ -82,6 +83,14 @@ void testBattleScreenMenuBarLabelsAndDisabledItems();
  * @date Last Modified: May 22, 2026
  */
 void testBattleScreenMenuQuitClosesViaSharedClosePath();
+/**
+ * @brief Verifies tactical title-bar close uses shared close lifecycle handling.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 22, 2026
+ * @date Last Modified: May 22, 2026
+ */
+void testBattleScreenTitleBarCloseClosesViaSharedClosePath();
 /**
  * @brief Confirms tactical action controls stay sizer-managed when toggled visible.
  *

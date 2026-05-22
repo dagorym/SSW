@@ -26,6 +26,7 @@
 #include "core/FGameConfig.h"
 #include "gui/WXStartupLaunch.h"
 #include "tactical/FBattleScreen.h"
+#include "wxWidgets.h"
 
 wxBEGIN_EVENT_TABLE(BattleSimFrame, wxFrame)
 wxEND_EVENT_TABLE()
@@ -606,6 +607,52 @@ void BattleSimGuiLiveTest::testStartupLaunchCreatesCenteredSplashAndBattleSimFra
 	if (!copiedSplashPath.IsEmpty() && wxFileExists(copiedSplashPath)) {
 		wxRemoveFile(copiedSplashPath);
 	}
+}
+
+void BattleSimGuiLiveTest::testScenarioDialogMenuQuitUnwindsBattleScreenModalCaller() {
+	const std::vector<wxTopLevelWindow *> baselineTopLevels = m_harness.getTopLevelWindows(false);
+	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Scenario Menu Quit Parent");
+	parent->Show();
+	m_harness.pumpEvents();
+
+	FBattleScreen::resetLifecycleCounters();
+	ScenarioDialogTestPeer * dialog = new ScenarioDialogTestPeer(parent);
+	dialog->Show();
+	m_harness.pumpEvents();
+	CPPUNIT_ASSERT(dialog->IsShown());
+
+	bool battleScreenPresented = false;
+	bool quitPosted = false;
+	m_harness.runVoidFunctionWithAction([&]() {
+		dialog->clickScenario1();
+	}, [&]() {
+		wxTopLevelWindow * launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
+			return dynamic_cast<FBattleScreen *>(topLevel) != NULL;
+		}, 250, 5);
+		FBattleScreen * battleScreen = dynamic_cast<FBattleScreen *>(launchedTopLevel);
+		battleScreenPresented = (battleScreen != NULL);
+		if (battleScreen != NULL) {
+			wxCommandEvent quitEvent(wxEVT_MENU, ID_TacticalQuit);
+			battleScreen->ProcessWindowEvent(quitEvent);
+			quitPosted = true;
+		}
+	}, wxID_CANCEL, 350);
+
+	CPPUNIT_ASSERT(battleScreenPresented);
+	CPPUNIT_ASSERT(quitPosted);
+	CPPUNIT_ASSERT(dialog->IsShown());
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
+	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
+
+	dialog->Hide();
+	dialog->Destroy();
+	parent->Hide();
+	parent->Destroy();
+	m_harness.pumpEvents(10);
+	stabilizeTopLevels(m_harness);
+	forceCloseShownTopLevels(m_harness);
+	CPPUNIT_ASSERT_EQUAL(0, countShownTopLevelsNotInBaseline(m_harness, baselineTopLevels));
 }
 
 void BattleSimGuiLiveTest::testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage() {

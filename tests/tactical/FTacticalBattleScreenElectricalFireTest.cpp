@@ -121,17 +121,25 @@ closeSequence.push_back("EndModal(returnCode);");
 closeSequence.push_back("return;");
 closeSequence.push_back("SetReturnCode(returnCode);");
 closeSequence.push_back("Destroy();");
+closeSequence.push_back("if (!IsBeingDeleted()) {");
+closeSequence.push_back("m_tacticalGame->setCloseInProgress(false);");
 assertAppearsInOrder(closeBody, closeSequence);
 
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "Destroy();"));
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "EndModal(returnCode);"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "setCloseInProgress(false);"));
 
 std::vector<std::string> onCloseSequence;
 onCloseSequence.push_back("if (m_tacticalGame->isCloseInProgress()) {");
 onCloseSequence.push_back("event.Skip();");
 onCloseSequence.push_back("return;");
 onCloseSequence.push_back("closeBattleScreen(GetReturnCode());");
+onCloseSequence.push_back("if (!IsModal()) {");
+onCloseSequence.push_back("event.Skip();");
 assertAppearsInOrder(onCloseBody, onCloseSequence);
+
+CPPUNIT_ASSERT(source.find("exit(") == std::string::npos);
+CPPUNIT_ASSERT(source.find("ExitMainLoop") == std::string::npos);
 }
 
 void FTacticalBattleScreenElectricalFireTest::testModalCallerSitesOwnBattleScreenLifetimeAfterShowModal() {
