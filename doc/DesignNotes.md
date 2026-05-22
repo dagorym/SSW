@@ -1055,8 +1055,14 @@ continue through default wx close processing after the shared helper runs, and
 the close-in-progress guard is cleared if `Destroy()` does not immediately put
 the frame into deletion so a first legitimate close request cannot leave the
 screen stuck open. The focused tactical source-contract checks now guard that
-non-modal reset behavior and also reject `exit(...)` / `ExitMainLoop()` in the
-tactical close path, while the GUI live fixtures use the
+non-modal reset behavior, preserve the single `ID_TacticalQuit` binding to
+`closeBattleScreen(GetReturnCode())`, and reject `exit(...)` / `ExitMainLoop()`
+in the tactical close path without freezing incidental event sequencing. The
+GUI live regression now posts the real `ID_TacticalQuit` command and a separate
+posted `wxEVT_CLOSE_WINDOW` title-bar vector against shown battle screens, then
+uses `WXGuiTestHarness::waitForTopLevelWindowClosed(...)` as the bounded proof
+seam for asynchronous frame deletion so the suite no longer depends on a human
+click on the window-manager close button. Those fixtures still use the
 constructed/destroyed/live lifecycle counters to prove that both BattleSim and
 strategic launch chains finish with zero live battle screens after teardown and
 that modal callers unwind back to their launch dialogs after closing the battle
