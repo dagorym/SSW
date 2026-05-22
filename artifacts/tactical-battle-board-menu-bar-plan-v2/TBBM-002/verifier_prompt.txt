@@ -1,0 +1,78 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Document the tactical battle-board native menu bar, Quit close-path behavior, and related regression coverage for TBBM-002.
+
+Acceptance criteria to verify:
+- FBattleScreen installs a wxMenuBar during construction using wxMenu, wxMenuBar, and SetMenuBar(...).
+- The top-level menus appear in this order: File, Settings, Help.
+- File has visible entries Load Game, Save Game, and Quit; Load Game and Save Game are disabled, and Quit is enabled.
+- Settings has visible entry Damage Details, disabled.
+- Help has visible entries User's Guide and About, both disabled.
+- Selecting Quit invokes the existing tactical close path, so modal callers return and non-modal windows are destroyed without terminating the process.
+- Disabled entries do not have active handlers or side effects.
+- Documentation reflects the shipped tactical menu-bar behavior without editing doc/rules/tactical_operations_manual.md.
+
+Implementation branch or worktree context:
+- Branch: coord-tactical-battle-board-menu-bar-plan-documenter-20260522
+- Worktree: /home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-documenter-20260522
+- Parent tester branch: coord-tactical-battle-board-menu-bar-plan-tester-20260522
+- Tester validation commit: 185c701
+- Documentation commit: 62c50fb77661b24812536cd6b6945333540fa805
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/wxWidgets.h
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.h
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+- AGENTS.md
+- doc/UsersGuide.md
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/implementer_report.md
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/implementer_result.json
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/tester_prompt.txt
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/tester_report.md
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/tester_result.json
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/documenter_prompt.txt
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/documenter_report.md
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/documenter_result.json
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002/verifier_prompt.txt
+
+Commands executed:
+- git --no-pager diff 89ee7b0..HEAD -- include/wxWidgets.h include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp tests/gui/TacticalGuiLiveTest.h tests/gui/TacticalGuiLiveTest.cpp tests/tactical/FTacticalBattleScreenElectricalFireTest.h tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- git --no-pager diff --check
+
+Final test outcomes:
+- Tactical standalone runner passed: OK (157 tests).
+- Headless GUI runner passed: OK (38 tests).
+- Documentation-only diff passed git diff --check.
+
+Plan or evaluation context guidance:
+- Plan path: plans/tactical-battle-board-menu-bar-plan-v2.md.
+- TBBM-002 documentation impact requires updating FBattleScreen header comments for menu-related declarations and forbids edits to doc/rules/tactical_operations_manual.md.
+- Use the actual implemented/tested diff rather than the plan text as the source of truth for verification.
+
+Convention-file guidance:
+- AGENTS.md requires Doxygen-style file/function comments in edited headers, including author and Last Modified metadata updates.
+- AGENTS.md forbids edits to doc/rules/tactical_operations_manual.md.
+- AGENTS.md Testing notes should stay aligned with the shipped tactical menu-bar live and source-contract coverage.
+
+Updated documentation files:
+- AGENTS.md
+- doc/UsersGuide.md
+- include/tactical/FBattleScreen.h
+
+Shared artifact directory:
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
