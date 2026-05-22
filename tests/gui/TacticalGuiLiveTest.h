@@ -21,11 +21,13 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 16, 2026
+ * @date Last Modified: May 22, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
 CPPUNIT_TEST( testWXTacticalUIParentBackedModalAndRedrawPaths );
+CPPUNIT_TEST( testBattleScreenMenuBarLabelsAndDisabledItems );
+CPPUNIT_TEST( testBattleScreenMenuQuitClosesViaSharedClosePath );
 CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
 CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
 CPPUNIT_TEST( testBattleScreenDefaultSizeAndLayoutPolicyRuntime );
@@ -64,6 +66,22 @@ void tearDown();
  * @date Last Modified: Apr 04, 2026
  */
 void testWXTacticalUIParentBackedModalAndRedrawPaths();
+/**
+ * @brief Verifies tactical battle-screen menu labels, order, and enabled states.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 22, 2026
+ * @date Last Modified: May 22, 2026
+ */
+void testBattleScreenMenuBarLabelsAndDisabledItems();
+/**
+ * @brief Verifies tactical Quit menu command closes through the shared close path.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 22, 2026
+ * @date Last Modified: May 22, 2026
+ */
+void testBattleScreenMenuQuitClosesViaSharedClosePath();
 /**
  * @brief Confirms tactical action controls stay sizer-managed when toggled visible.
  *

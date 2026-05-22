@@ -17,9 +17,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 22, 2026
- * @date Last Modified: Apr 03, 2026
+ * @date Last Modified: May 22, 2026
  */
 class FTacticalBattleScreenElectricalFireTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleScreenElectricalFireTest );
@@ -29,6 +29,8 @@ CPPUNIT_TEST( testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath );
 CPPUNIT_TEST( testModalCallerSitesOwnBattleScreenLifetimeAfterShowModal );
 CPPUNIT_TEST( testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen );
 CPPUNIT_TEST( testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI );
+CPPUNIT_TEST( testBattleScreenConstructorBuildsMenuBarAndQuitBinding );
+CPPUNIT_TEST( testTacticalMenuCommandIDsDeclaredInSharedWxHeader );
 CPPUNIT_TEST( testBattleScreenHeaderDeclaresFrameModalAndLifecycleContracts );
 CPPUNIT_TEST( testMainFrameLaunchPathKeepsNonModalBattleScreenUsage );
 CPPUNIT_TEST_SUITE_END();
@@ -103,6 +105,26 @@ void testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen();
  * @date Last Modified: May 22, 2026
  */
 void testBattleScreenConstructorOwnsAndInstallsTacticalGameAndUI();
+/**
+ * @brief Verifies battle screen constructor wires tactical menu creation and quit binding.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 22, 2026
+ * @date Last Modified: May 22, 2026
+ */
+void testBattleScreenConstructorBuildsMenuBarAndQuitBinding();
+/**
+ * @brief Verifies tactical menu command IDs are declared in shared wx header.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 22, 2026
+ * @date Last Modified: May 22, 2026
+ */
+void testTacticalMenuCommandIDsDeclaredInSharedWxHeader();
 /**
  * @brief Verifies battle Screen Header Declares Frame Modal And Lifecycle Contracts.
  *

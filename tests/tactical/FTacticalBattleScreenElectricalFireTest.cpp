@@ -221,6 +221,52 @@ CPPUNIT_ASSERT(ctorBody.find("m_tacticalGame = NULL") == std::string::npos);
 CPPUNIT_ASSERT(ctorBody.find("m_tacticalUI = NULL") == std::string::npos);
 }
 
+void FTacticalBattleScreenElectricalFireTest::testBattleScreenConstructorBuildsMenuBarAndQuitBinding() {
+// AC: FBattleScreen constructor installs File/Settings/Help menu bar with disabled non-Quit entries.
+// AC: Quit command is the only active wxEVT_MENU binding and routes to closeBattleScreen(GetReturnCode()).
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string ctorBody = extractFunctionBody(source, "FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style )");
+const std::string menuQuitBody = extractFunctionBody(source, "void FBattleScreen::onMenuQuit(wxCommandEvent & WXUNUSED(event))");
+
+assertContains(ctorBody, "wxMenu *menuFile = new wxMenu;");
+assertContains(ctorBody, "wxMenu *menuSettings = new wxMenu;");
+assertContains(ctorBody, "wxMenu *menuHelp = new wxMenu;");
+assertContains(ctorBody, "menuFile->Append(ID_TacticalLoadGame, \"&Load Game\");");
+assertContains(ctorBody, "menuFile->Append(ID_TacticalSaveGame, \"&Save Game\");");
+assertContains(ctorBody, "menuFile->Append(ID_TacticalQuit, \"&Quit\");");
+assertContains(ctorBody, "menuSettings->Append(ID_TacticalDamageDetails, \"&Damage Details\");");
+assertContains(ctorBody, "menuHelp->Append(ID_TacticalUsersGuide, \"&User's Guide\");");
+assertContains(ctorBody, "menuHelp->Append(ID_TacticalAbout, \"&About\");");
+assertContains(ctorBody, "menuFile->Enable(ID_TacticalLoadGame, false);");
+assertContains(ctorBody, "menuFile->Enable(ID_TacticalSaveGame, false);");
+assertContains(ctorBody, "menuSettings->Enable(ID_TacticalDamageDetails, false);");
+assertContains(ctorBody, "menuHelp->Enable(ID_TacticalUsersGuide, false);");
+assertContains(ctorBody, "menuHelp->Enable(ID_TacticalAbout, false);");
+assertContains(ctorBody, "wxMenuBar *menuBar = new wxMenuBar;");
+assertAppearsInOrder(ctorBody, std::vector<std::string>{
+	"menuBar->Append(menuFile, \"&File\");",
+	"menuBar->Append(menuSettings, \"&Settings\");",
+	"menuBar->Append(menuHelp, \"&Help\");",
+	"SetMenuBar(menuBar);"
+});
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(ctorBody, "Bind(wxEVT_MENU, &FBattleScreen::onMenuQuit, this, ID_TacticalQuit);"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(ctorBody, "Bind(wxEVT_MENU,"));
+assertContains(menuQuitBody, "closeBattleScreen(GetReturnCode());");
+CPPUNIT_ASSERT(menuQuitBody.find("exit(") == std::string::npos);
+CPPUNIT_ASSERT(source.find("exit(") == std::string::npos);
+}
+
+void FTacticalBattleScreenElectricalFireTest::testTacticalMenuCommandIDsDeclaredInSharedWxHeader() {
+// AC: tactical menu IDs are declared in shared wxWidgets command enum.
+const std::string header = readFile(repoFile("include/wxWidgets.h"));
+assertContains(header, "ID_TacticalLoadGame");
+assertContains(header, "ID_TacticalSaveGame");
+assertContains(header, "ID_TacticalQuit");
+assertContains(header, "ID_TacticalDamageDetails");
+assertContains(header, "ID_TacticalUsersGuide");
+assertContains(header, "ID_TacticalAbout");
+}
+
 void FTacticalBattleScreenElectricalFireTest::testBattleScreenHeaderDeclaresFrameModalAndLifecycleContracts() {
 // AC: FBattleScreen is a wxFrame-backed top-level with modal compatibility and lifecycle APIs.
 const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));

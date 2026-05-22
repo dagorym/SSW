@@ -8,6 +8,7 @@
 #include <wx/button.h>
 #include <wx/display.h>
 #include <wx/dialog.h>
+#include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/spinctrl.h>
 #include <wx/stattext.h>
@@ -33,6 +34,7 @@
 #include "tactical/FBattleScreen.h"
 #include "tactical/FTacticalCombatReport.h"
 #include "weapons/FWeapon.h"
+#include "wxWidgets.h"
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -325,6 +327,12 @@ summary.hitDetails.push_back(hitDetail);
 	return summary;
 }
 
+wxString stripMenuMnemonic(const wxString & label) {
+	wxString stripped = label;
+	stripped.Replace("&", "");
+	return stripped;
+}
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( TacticalGuiLiveTest );
@@ -591,6 +599,105 @@ icmData.push_back(&row);
 	m_harness.pumpEvents(10);
 	m_harness.cleanupOrphanTopLevels(10);
 	std::cerr << "TACTICAL1:done" << std::endl;
+}
+
+void TacticalGuiLiveTest::testBattleScreenMenuBarLabelsAndDisabledItems() {
+	FBattleScreen * battleScreen = new FBattleScreen("Menu Bar Regression");
+	battleScreen->Show();
+	m_harness.pumpEvents(5);
+
+	wxMenuBar * menuBar = battleScreen->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), static_cast<size_t>(menuBar->GetMenuCount()));
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("File"), stripMenuMnemonic(menuBar->GetMenuLabel(0)));
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("Settings"), stripMenuMnemonic(menuBar->GetMenuLabel(1)));
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("Help"), stripMenuMnemonic(menuBar->GetMenuLabel(2)));
+
+	wxMenu * fileMenu = menuBar->GetMenu(0);
+	wxMenu * settingsMenu = menuBar->GetMenu(1);
+	wxMenu * helpMenu = menuBar->GetMenu(2);
+	CPPUNIT_ASSERT(fileMenu != NULL);
+	CPPUNIT_ASSERT(settingsMenu != NULL);
+	CPPUNIT_ASSERT(helpMenu != NULL);
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("Load Game"), stripMenuMnemonic(fileMenu->FindItemByPosition(0)->GetItemLabelText()));
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("Save Game"), stripMenuMnemonic(fileMenu->FindItemByPosition(1)->GetItemLabelText()));
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("Quit"), stripMenuMnemonic(fileMenu->FindItemByPosition(3)->GetItemLabelText()));
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("Damage Details"), stripMenuMnemonic(settingsMenu->FindItemByPosition(0)->GetItemLabelText()));
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("User's Guide"), stripMenuMnemonic(helpMenu->FindItemByPosition(0)->GetItemLabelText()));
+	CPPUNIT_ASSERT_EQUAL(wxString::FromUTF8("About"), stripMenuMnemonic(helpMenu->FindItemByPosition(1)->GetItemLabelText()));
+
+	wxMenuItem * loadItem = menuBar->FindItem(ID_TacticalLoadGame);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_TacticalSaveGame);
+	wxMenuItem * quitItem = menuBar->FindItem(ID_TacticalQuit);
+	wxMenuItem * damageDetailsItem = menuBar->FindItem(ID_TacticalDamageDetails);
+	wxMenuItem * usersGuideItem = menuBar->FindItem(ID_TacticalUsersGuide);
+	wxMenuItem * aboutItem = menuBar->FindItem(ID_TacticalAbout);
+	CPPUNIT_ASSERT(loadItem != NULL);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(quitItem != NULL);
+	CPPUNIT_ASSERT(damageDetailsItem != NULL);
+	CPPUNIT_ASSERT(usersGuideItem != NULL);
+	CPPUNIT_ASSERT(aboutItem != NULL);
+	CPPUNIT_ASSERT(!loadItem->IsEnabled());
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(quitItem->IsEnabled());
+	CPPUNIT_ASSERT(!damageDetailsItem->IsEnabled());
+	CPPUNIT_ASSERT(!usersGuideItem->IsEnabled());
+	CPPUNIT_ASSERT(!aboutItem->IsEnabled());
+
+	const int baselineDestroyed = FBattleScreen::getDestroyedCount();
+	wxCommandEvent loadEvent(wxEVT_MENU, ID_TacticalLoadGame);
+	battleScreen->ProcessWindowEvent(loadEvent);
+	wxCommandEvent saveEvent(wxEVT_MENU, ID_TacticalSaveGame);
+	battleScreen->ProcessWindowEvent(saveEvent);
+	wxCommandEvent damageEvent(wxEVT_MENU, ID_TacticalDamageDetails);
+	battleScreen->ProcessWindowEvent(damageEvent);
+	wxCommandEvent usersGuideEvent(wxEVT_MENU, ID_TacticalUsersGuide);
+	battleScreen->ProcessWindowEvent(usersGuideEvent);
+	wxCommandEvent aboutEvent(wxEVT_MENU, ID_TacticalAbout);
+	battleScreen->ProcessWindowEvent(aboutEvent);
+	m_harness.pumpEvents(3);
+	CPPUNIT_ASSERT(battleScreen->IsShown());
+	CPPUNIT_ASSERT_EQUAL(baselineDestroyed, FBattleScreen::getDestroyedCount());
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testBattleScreenMenuQuitClosesViaSharedClosePath() {
+	FBattleScreen::resetLifecycleCounters();
+	FBattleScreen * battleScreen = new FBattleScreen("Menu Quit Close Path");
+	CPPUNIT_ASSERT(battleScreen->GetMenuBar() != NULL);
+	battleScreen->SetReturnCode(wxID_OK);
+	battleScreen->Show();
+	m_harness.pumpEvents(5);
+	CPPUNIT_ASSERT_EQUAL(1, FBattleScreen::getConstructedCount());
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getDestroyedCount());
+	CPPUNIT_ASSERT_EQUAL(1, FBattleScreen::getLiveInstanceCount());
+
+	const bool closeAccepted = battleScreen->Close();
+	bool stillPresent = true;
+	for (int attempt = 0; attempt < 40 && stillPresent; ++attempt) {
+		stillPresent = (m_harness.findTopLevelWindow([&](wxTopLevelWindow * window) {
+			return window == battleScreen;
+		}, true) != NULL);
+		if (!stillPresent) {
+			break;
+		}
+		m_harness.pumpEvents(1);
+		wxMilliSleep(5);
+	}
+	CPPUNIT_ASSERT(closeAccepted);
+	wxTopLevelWindow * screenTopLevel = m_harness.findTopLevelWindow([&](wxTopLevelWindow * window) {
+		return window == battleScreen;
+	}, true);
+	if (screenTopLevel != NULL) {
+		CPPUNIT_ASSERT(!screenTopLevel->IsShown());
+		screenTopLevel->Destroy();
+		m_harness.pumpEvents(5);
+	}
+	m_harness.cleanupOrphanTopLevels(10);
 }
 
 void TacticalGuiLiveTest::testTacticalActionButtonsRemainSizerPositionedWhenShown() {
