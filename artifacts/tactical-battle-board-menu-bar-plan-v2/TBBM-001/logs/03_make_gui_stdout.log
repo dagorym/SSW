@@ -1,0 +1,33 @@
+make -C ../../src/core
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/core'
+ar rcs libcore.a FGameConfig.o FHexMap.o FHexPath.o FObject.o FPObject.o FPoint.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/core'
+make -C ../../src/strategic
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/strategic'
+ar rcs libstrategic.a FAstroBody.o FFleet.o FGame.o FJumpRoute.o FMap.o FPlanet.o FPlayer.o FSystem.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/strategic'
+make -C ../../src/ships
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/ships'
+ar rcs libships.a FArmedStation.o FAssaultCarrier.o FAssaultScout.o FBattleship.o FDestroyer.o FFighter.o FFortifiedStation.o FFortress.o FFrigate.o FHvCruiser.o FLtCruiser.o FMinelayer.o FVehicle.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/ships'
+make -C ../../src/defenses
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/defenses'
+ar rcs libdefenses.a FDefense.o FElectronScreen.o FICM.o FMaskingScreen.o FNone.o FProtonScreen.o FReflectiveHull.o FStasisScreen.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/defenses'
+make -C ../../src/weapons
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/weapons'
+ar rcs libweapons.a FAssaultRocket.o FDisruptorCannon.o FElectronBattery.o FLaserBattery.o FLaserCannon.o FMineLauncher.o FProtonBattery.o FRocketBattery.o FSeekerMissileLauncher.o FTorpedo.o FWeapon.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/weapons'
+make -C ../../src/tactical
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/tactical'
+ar rcs libtactical.a FBattleBoard.o FBattleDisplay.o FBattleScreen.o FTacticalGame.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/tactical'
+make -C ../../src/gui
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/gui'
+ar rcs libgui.a AssignedICMData.o BattleResultsGUI.o CombatFleetsGUI.o CombatLocationGUI.o ICMSelectionGUI.o SatharFleetsGUI.o SatharRetreatGUI.o SelectCombatGUI.o SelectJumpGUI.o SelectResolutionGUI.o SystemDialogGUI.o TacticalDamageSummaryGUI.o TransferShipsGUI.o TwoPlanetsGUI.o UPFUnattachedGUI.o ViewFleetGUI.o WXGameDisplay.o WXIconCache.o WXMapDisplay.o WXPlayerDisplay.o WXStrategicUI.o WXTacticalUI.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/gui'
+make -C ../../src/battleSim
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/battleSim'
+ar rcs libbattleSim.a BattleSimFrame.o LocalGameDialog.o ScenarioDialog.o ScenarioEditorGUI.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/battleSim'
+g++ -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX  -o GuiTests BattleSimGuiLiveTest.o FMainFrameEventTableShim.o GuiHarnessTest.o GuiTests.o StrategicGuiLiveTest.o TacticalGuiLiveTest.o WXGuiTestHarness.o FMainFrame.o FGamePanel.o -lcppunit -L../../src/battleSim -L../../src/gui -L../../src/tactical -L../../src/weapons -L../../src/defenses -L../../src/ships -L../../src/strategic -L../../src/core -Wl,--start-group -lbattleSim -lgui -ltactical -lweapons -ldefenses -lships -lstrategic -lcore -Wl,--end-group `wx-config --libs`

@@ -1,0 +1,60 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated FBattleScreen wxFrame migration with modal-compatibility APIs and launch-path compatibility for modal/non-modal tactical flows.
+
+Acceptance criteria validated:
+- FBattleScreen compiles as a menu-capable top-level (wxFrame path with SetMenuBar(...)/GetMenuBar()).
+- Existing modal launch paths remain source-compatible and still block until close.
+- Existing non-modal launch paths remain source-compatible and still close via closeBattleScreen(...) without terminating the app.
+- closeBattleScreen(...) still executes modal-first behavior before non-modal destroy behavior.
+- Lifecycle counters still represent constructed/destroyed/live battle screens accurately.
+- FBattleBoard and FBattleDisplay parent/layout policy remains intact.
+
+Implementation branch or worktree context:
+- Branch: coord-tactical-battle-board-menu-bar-plan-tester-20260522
+- Worktree: /home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522
+- Implementation commit under validation: 21b713a66e5ac564fc87c6a6d6778ea855b0c2a4
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.h
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+
+Test commit:
+- ad018eef4b7ab22c70494dbef53188a8aa9ca578
+
+Commands executed:
+- cd tests && make tactical-tests
+- cd tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && xvfb-run -a ./GuiTests
+
+Final test outcomes:
+- PASS: include/tactical/FBattleScreen.h and src/tactical/FBattleScreen.cpp compile in tactical and GUI builds; tactical/gui suites passed.
+- PASS: modal launch compatibility validated by source-contract checks for stack-owned ShowModal call sites and modal close ordering (EndModal before non-modal destroy path).
+- PASS: non-modal compatibility validated by source-contract check for src/FMainFrame.cpp using new FBattleScreen() with Show(true) and no ShowModal substitution.
+- PASS: closeBattleScreen modal-first behavior validated by ordered assertions in FTacticalBattleScreenElectricalFireTest and passing tactical suite.
+- PASS: lifecycle counters validated by live GUI tests in StrategicGuiLiveTest and BattleSimGuiLiveTest; constructed == destroyed and live == 0 after launches.
+- PASS: FBattleBoard/FBattleDisplay parent and layout policy validated by constructor source-contract assertions (FBattleBoard(this), FBattleDisplay(this), SetSizer, applyLayoutPolicy).
+- PASS: frame/menu-capable top-level contract validated by header source-contract assertions for wxFrame inheritance and modal shim lifecycle API declarations.
+
+Documentation context:
+- Behavioral change is tactical-launch plumbing: FBattleScreen now frame-backed with class-owned modal compatibility shims.
+- No gameplay rule changes were introduced; documentation impact is likely limited to technical architecture or developer notes, if any.
+
+Plan and diff context:
+- Task reference: TBBM-001 under tactical-battle-board-menu-bar-plan-v2.
+- Comparison base assumption: validate implementer commit 21b713a66e5ac564fc87c6a6d6778ea855b0c2a4 and tester commit ad018eef4b7ab22c70494dbef53188a8aa9ca578 on this branch.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

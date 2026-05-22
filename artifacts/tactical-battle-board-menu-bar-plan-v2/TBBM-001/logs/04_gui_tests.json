@@ -1,0 +1,21 @@
+{
+  "best_effort_counts": {
+    "failed": null,
+    "framework": null,
+    "passed": null,
+    "total": null
+  },
+  "command": [
+    "bash",
+    "-lc",
+    "cd tests/gui && xvfb-run -a ./GuiTests"
+  ],
+  "cwd": "/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522",
+  "duration_sec": 58.807,
+  "exit_code": 0,
+  "stderr_excerpt": "",
+  "stderr_log": "artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/04_gui_tests_stderr.log",
+  "stdout_excerpt": "..................Adding Fleet Attacker Fleet\n.....TACTICAL1:start\nTACTICAL1:damage\nTACTICAL1:icm\nTACTICAL1:msg\nTACTICAL1:winner\nTACTICAL1:redraw\nTACTICAL1:done\n.............\n\n\nOK (36 tests)\n\n\n",
+  "stdout_log": "artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/04_gui_tests_stdout.log",
+  "timed_out": false
+}

@@ -1,0 +1,62 @@
+make -C ../src/core
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/core'
+ar rcs libcore.a FGameConfig.o FHexMap.o FHexPath.o FObject.o FPObject.o FPoint.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/core'
+make -C ../src/strategic
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/strategic'
+ar rcs libstrategic.a FAstroBody.o FFleet.o FGame.o FJumpRoute.o FMap.o FPlanet.o FPlayer.o FSystem.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/strategic'
+make -C ../src/ships
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/ships'
+ar rcs libships.a FArmedStation.o FAssaultCarrier.o FAssaultScout.o FBattleship.o FDestroyer.o FFighter.o FFortifiedStation.o FFortress.o FFrigate.o FHvCruiser.o FLtCruiser.o FMinelayer.o FVehicle.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/ships'
+make -C ../src/defenses
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/defenses'
+ar rcs libdefenses.a FDefense.o FElectronScreen.o FICM.o FMaskingScreen.o FNone.o FProtonScreen.o FReflectiveHull.o FStasisScreen.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/defenses'
+make -C ../src/weapons
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/weapons'
+ar rcs libweapons.a FAssaultRocket.o FDisruptorCannon.o FElectronBattery.o FLaserBattery.o FLaserCannon.o FMineLauncher.o FProtonBattery.o FRocketBattery.o FSeekerMissileLauncher.o FTorpedo.o FWeapon.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/weapons'
+make -C ../src/tactical
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/tactical'
+ar rcs libtactical.a FBattleBoard.o FBattleDisplay.o FBattleScreen.o FTacticalGame.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/tactical'
+make -C ../src/gui
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/gui'
+ar rcs libgui.a AssignedICMData.o BattleResultsGUI.o CombatFleetsGUI.o CombatLocationGUI.o ICMSelectionGUI.o SatharFleetsGUI.o SatharRetreatGUI.o SelectCombatGUI.o SelectJumpGUI.o SelectResolutionGUI.o SystemDialogGUI.o TacticalDamageSummaryGUI.o TransferShipsGUI.o TwoPlanetsGUI.o UPFUnattachedGUI.o ViewFleetGUI.o WXGameDisplay.o WXIconCache.o WXMapDisplay.o WXPlayerDisplay.o WXStrategicUI.o WXTacticalUI.o
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/gui'
+make[1]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/tests/tactical'
+make -C ../../src/core
+make[2]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/core'
+ar rcs libcore.a FGameConfig.o FHexMap.o FHexPath.o FObject.o FPObject.o FPoint.o
+make[2]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/core'
+make -C ../../src/strategic
+make[2]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/strategic'
+ar rcs libstrategic.a FAstroBody.o FFleet.o FGame.o FJumpRoute.o FMap.o FPlanet.o FPlayer.o FSystem.o
+make[2]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/strategic'
+make -C ../../src/ships
+make[2]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/ships'
+ar rcs libships.a FArmedStation.o FAssaultCarrier.o FAssaultScout.o FBattleship.o FDestroyer.o FFighter.o FFortifiedStation.o FFortress.o FFrigate.o FHvCruiser.o FLtCruiser.o FMinelayer.o FVehicle.o
+make[2]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/ships'
+make -C ../../src/defenses
+make[2]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/defenses'
+ar rcs libdefenses.a FDefense.o FElectronScreen.o FICM.o FMaskingScreen.o FNone.o FProtonScreen.o FReflectiveHull.o FStasisScreen.o
+make[2]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/defenses'
+make -C ../../src/weapons
+make[2]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/weapons'
+ar rcs libweapons.a FAssaultRocket.o FDisruptorCannon.o FElectronBattery.o FLaserBattery.o FLaserCannon.o FMineLauncher.o FProtonBattery.o FRocketBattery.o FSeekerMissileLauncher.o FTorpedo.o FWeapon.o
+make[2]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/weapons'
+make -C ../../src/tactical
+make[2]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/tactical'
+ar rcs libtactical.a FBattleBoard.o FBattleDisplay.o FBattleScreen.o FTacticalGame.o
+make[2]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/tactical'
+make -C ../../src/gui
+make[2]: Entering directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/gui'
+ar rcs libgui.a AssignedICMData.o BattleResultsGUI.o CombatFleetsGUI.o CombatLocationGUI.o ICMSelectionGUI.o SatharFleetsGUI.o SatharRetreatGUI.o SelectCombatGUI.o SelectJumpGUI.o SelectResolutionGUI.o SystemDialogGUI.o TacticalDamageSummaryGUI.o TransferShipsGUI.o TwoPlanetsGUI.o UPFUnattachedGUI.o ViewFleetGUI.o WXGameDisplay.o WXIconCache.o WXMapDisplay.o WXPlayerDisplay.o WXStrategicUI.o WXTacticalUI.o
+make[2]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/src/gui'
+g++ -c -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX  -DTACTICAL_TEST_REPO_ROOT=\"/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/tests/tactical/../..\" -MMD -MP -fPIC -DPIC -o FTacticalBattleScreenElectricalFireTest.o FTacticalBattleScreenElectricalFireTest.cpp
+ar rcs libtacticalTests.a FTacticalAttackResultTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalBattleScreenReportContextTest.o FTacticalCombatReportTest.o FTacticalDamageSummaryGUITest.o FTacticalDestroyedShipCleanupLifecycleTest.o FTacticalForwardFireFinalOrientationTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalGameMockUITest.o FTacticalMineDamageFlowTest.o FTacticalMineDamageReportSummaryTest.o FTacticalModelSelectionHexClickSurfaceTest.o FTacticalMoveRouteSelectionTest.o FTacticalShipPlacementOrientationTest.o FTacticalStationOrbitalMovementTest.o ITacticalUIBoundaryTest.o WXTacticalUIAdapterTest.o
+g++ -c -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX  -DTACTICAL_TEST_REPO_ROOT=\"/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/tests/tactical/../..\" -MMD -MP -fPIC -DPIC -o TacticalTests.o TacticalTests.cpp
+g++ -I../../include -g `wx-config --cxxflags` -Wall -Woverloaded-virtual -DLINUX  -DTACTICAL_TEST_REPO_ROOT=\"/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/tests/tactical/../..\" -o TacticalTests FTacticalAttackResultTest.o FTacticalBatteryRangeClampTest.o FTacticalBattleBoardRendererDelegationTest.o FTacticalBattleDisplayFireFlowTest.o FTacticalBattleScreenDelegationTest.o FTacticalBattleScreenElectricalFireTest.o FTacticalBattleScreenReportContextTest.o FTacticalCombatReportTest.o FTacticalDamageSummaryGUITest.o FTacticalDestroyedShipCleanupLifecycleTest.o FTacticalForwardFireFinalOrientationTest.o FTacticalGameHeaderTest.o FTacticalGameMechanicsTest.o FTacticalGameMockUITest.o FTacticalMineDamageFlowTest.o FTacticalMineDamageReportSummaryTest.o FTacticalModelSelectionHexClickSurfaceTest.o FTacticalMoveRouteSelectionTest.o FTacticalShipPlacementOrientationTest.o FTacticalStationOrbitalMovementTest.o ITacticalUIBoundaryTest.o TacticalTests.o WXTacticalUIAdapterTest.o -lcppunit -L../../src/gui -L../../src/tactical -L../../src/weapons -L../../src/defenses -L../../src/ships -L../../src/strategic -L../../src/core -Wl,--start-group -lgui -ltactical -lweapons -ldefenses -lships -lstrategic -lcore -Wl,--end-group `wx-config --libs`
+make[1]: Leaving directory '/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522/tests/tactical'

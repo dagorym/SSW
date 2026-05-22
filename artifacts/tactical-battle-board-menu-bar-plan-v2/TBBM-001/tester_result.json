@@ -1,0 +1,28 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/tester_report.md",
+    "artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/tester_result.json",
+    "artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/documenter_prompt.txt"
+  ],
+  "branch_name": "coord-tactical-battle-board-menu-bar-plan-tester-20260522",
+  "commands_run": [
+    "cd tests && make tactical-tests",
+    "cd tests && ./tactical/TacticalTests",
+    "cd tests/gui && make",
+    "cd tests/gui && xvfb-run -a ./GuiTests"
+  ],
+  "pass_fail_totals": {
+    "gui_tests_passed": 36,
+    "tactical_tests_passed": 155,
+    "tests_failed": 0,
+    "tests_passed": 191
+  },
+  "status": "success",
+  "task_id": "TBBM-001",
+  "test_commit_hash": "ad018eef4b7ab22c70494dbef53188a8aa9ca578",
+  "test_files_changed": [
+    "tests/tactical/FTacticalBattleScreenElectricalFireTest.h",
+    "tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
