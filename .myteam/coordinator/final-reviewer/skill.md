@@ -14,11 +14,13 @@ Load this skill only when all subtasks have completed successfully and been merg
 - Resolve reviewer artifacts to the plan-level artifact directory.
 - Reread `.myteam/reviewer/role.md` immediately before writing the Reviewer prompt.
 - Compose the Reviewer launch prompt from the approved plan, completed subtask outputs, and the current reviewer definition.
+- Instruct the Reviewer that the review is not complete until `reviewer_report.md` and `reviewer_result.json` are written to the resolved artifact directory and committed.
 - Start the substantive Reviewer prompt with the exact line `Your role is 'reviewer'. Your task is as follows:`.
 - Include the required coordinator wrapper lines ahead of the substantive Reviewer prompt body.
-- Launch the Reviewer as an isolated sub-agent and report its outcome without starting automatic follow-up work.
+- Launch the Reviewer as an isolated sub-agent, then validate the resolved reviewer artifact directory before reporting the outcome.
 
 ## Limits
 
 - Do not launch this skill after an individual subtask completion or merge event.
 - Do not treat a partially completed plan as eligible for final review.
+- Do not accept a chat-only Reviewer verdict when the required reviewer artifact files are missing.

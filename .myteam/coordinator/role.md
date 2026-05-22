@@ -65,7 +65,7 @@ Keep role-specific orchestration gates, remediation limits, branch policies, and
 5. Load `stage-launches` and `stage-validation` for each stage in the strict serial order Implementer -> Tester -> Documenter -> Verifier.
 6. If a Tester or Verifier outcome triggers a permitted remediation cycle, load `remediation` and follow the exact retry limits.
 7. After a subtask completes successfully, load `merge-and-cleanup` to merge the full stage chain back into the coordination base branch and clean up workflow state.
-8. Only after all planned subtasks have completed successfully and been merged back, load `final-reviewer` exactly once to compose and launch the Reviewer stage.
+8. Only after all planned subtasks have completed successfully and been merged back, load `final-reviewer` exactly once to compose and launch the Reviewer stage, then validate the Reviewer stage outputs with `stage-validation` before treating the run as complete.
 9. Load `completion-reporting` to report subtask status, branch outcome, artifact locations, and final Reviewer result.
 
 ## Constraints
@@ -93,6 +93,7 @@ Keep role-specific orchestration gates, remediation limits, branch policies, and
 - Do not start automatic follow-up work after the final Reviewer reports `CONDITIONAL PASS` or `FAIL`.
 - Do not merge the dedicated coordination branch into `main` or `master` automatically; that final merge remains the user's responsibility.
 - Do not place reviewer artifacts inside subtask artifact directories.
+- Do not treat the final Reviewer stage as complete until `stage-validation` confirms that `reviewer_report.md` and `reviewer_result.json` exist in the resolved reviewer artifact directory.
 - Do not author or launch the Reviewer prompt without first rereading the active reviewer definition in `.myteam/reviewer/role.md` and ensuring the prompt includes the Reviewer's current required inputs and constraints.
 - Do not author or launch the Reviewer prompt in the older all-explicit-input shape when the current Reviewer definition allows safe bounded inference from repository context for plan path, artifact paths, convention files, or reviewer artifact directory details.
 - Do not spend prompt tokens re-parsing long plan artifacts, re-checking deterministic git cleanliness, or re-deriving required artifact filenames when colocated coordinator tools can provide that data directly.
