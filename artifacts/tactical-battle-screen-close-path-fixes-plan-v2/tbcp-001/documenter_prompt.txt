@@ -1,0 +1,60 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated FBattleScreen shared close lifecycle for non-modal and modal tactical launch paths.
+
+Acceptance criteria validated:
+- File -> Quit closes the non-modal strategic battle screen.
+- The title-bar X closes the non-modal strategic battle screen.
+- Modal tactical launch paths unwind and return to their callers after either close vector.
+- The shared tactical close path remains centralized in FBattleScreen.
+- A first legitimate close request can complete cleanly without leaving the screen stuck open due to guard state.
+- The implementation does not call exit(...) and does not stop the main application loop as part of closing only the tactical window.
+
+Implementation branch or worktree context:
+- Tester branch: coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-tester-20260522
+- Parent implementer branch: coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-implementer-20260522
+- Implementation surface inspected: src/tactical/FBattleScreen.cpp
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.h
+
+Test commit:
+- a34bc4df6a59123e0d980f019b59f1e79857eadc
+
+Commands executed:
+- cd tests && make tactical-tests
+- cd tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && ./GuiTests
+
+Final test outcomes:
+- Tactical runner passed: OK (157 tests).
+- GUI runner passed: OK (40 tests).
+- Source-contract tactical test now checks non-modal close guard reset and onClose default non-modal skip behavior.
+- Live tactical GUI tests now verify File->Quit and title-bar close vectors close non-modal FBattleScreen via the shared lifecycle path.
+- BattleSim live coverage now verifies ScenarioDialog modal launch unwinds correctly when FBattleScreen closes via File->Quit.
+
+Documentation context:
+- Close lifecycle behavior for FBattleScreen now explicitly validated for non-modal menu/title-bar vectors and modal caller unwind behavior.
+- No app-loop shutdown or exit() behavior is allowed for tactical window closure and is source-guarded in tactical tests.
+
+Plan and diff context:
+- Task artifact directory: artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001
+- Comparison base assumption: tester branch diff against parent implementer branch coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-implementer-20260522
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
