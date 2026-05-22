@@ -1,0 +1,22 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/verifier_report.md",
+    "artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "coord-tactical-battle-board-menu-bar-plan-verifier-20260522",
+  "documentation_accuracy_summary": [
+    "Accurate. `include/tactical/FBattleScreen.h` now documents the frame-backed top-level, the class-owned modal compatibility surface, and the modal-first `closeBattleScreen(...)` contract that the implementation follows in `src/tactical/FBattleScreen.cpp`.",
+    "`doc/DesignNotes.md` now describes the wxDialog-to-wxFrame migration, the continued blocking `ShowModal()` launch contract for stack-owned BattleSim/strategic callers, the non-modal heap-owned close path, and the lifecycle-counter coverage used by the GUI suite."
+  ],
+  "note_finding_count": 0,
+  "status": "success",
+  "task_id": "TBBM-001",
+  "test_sufficiency_summary": [
+    "Sufficient for the scoped change. The focused tactical source-contract fixture `tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp` now covers wxFrame inheritance, modal-shim API declarations, modal-first `closeBattleScreen(...)` ordering, stack-owned `ShowModal()` launch sites, and the surviving non-modal `new FBattleScreen(); bb->Show(true);` strategic launch path.",
+    "Existing GUI live coverage in `tests/gui/StrategicGuiLiveTest.cpp` and `tests/gui/BattleSimGuiLiveTest.cpp` still verifies lifecycle-counter behavior after real launch/teardown flows by asserting constructed == destroyed and live == 0.",
+    "Verification reruns passed in this worktree: `cd tests && make tactical-tests && ./tactical/TacticalTests` reported `OK (155 tests)`, and `cd tests/gui && make && xvfb-run -a ./GuiTests` reported `OK (36 tests)`."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
