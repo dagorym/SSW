@@ -1,0 +1,77 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Validated FBattleScreen shared close lifecycle for non-modal and modal tactical launch paths.
+
+Acceptance criteria to verify:
+- File -> Quit closes the non-modal strategic battle screen.
+- The title-bar X closes the non-modal strategic battle screen.
+- Modal tactical launch paths unwind and return to their callers after either close vector.
+- The shared tactical close path remains centralized in FBattleScreen.
+- A first legitimate close request can complete cleanly without leaving the screen stuck open due to guard state.
+- The implementation does not call exit(...) and does not stop the main application loop as part of closing only the tactical window.
+
+Implementation branch or worktree context:
+- Tester branch: coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-tester-20260522
+- Parent implementer branch: coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-implementer-20260522
+- Documenter branch: coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-documenter-20260522
+- Implementation surface inspected: src/tactical/FBattleScreen.cpp
+- Test commit: a34bc4df6a59123e0d980f019b59f1e79857eadc
+- Documentation commit: d2581671f09e0c0cbd8bb7b252cdde2ed4455fb3
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.h
+- include/tactical/FBattleScreen.h
+- doc/DesignNotes.md
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/implementer_report.md
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/implementer_result.json
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/tester_prompt.txt
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/tester_report.md
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/tester_result.json
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/documenter_prompt.txt
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/documenter_report.md
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/documenter_result.json
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/verifier_prompt.txt
+
+Commands executed:
+- git --no-pager diff coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-implementer-20260522..HEAD -- src/tactical/FBattleScreen.cpp tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp tests/gui/TacticalGuiLiveTest.cpp tests/gui/TacticalGuiLiveTest.h tests/gui/BattleSimGuiLiveTest.cpp tests/gui/BattleSimGuiLiveTest.h
+- git --no-pager diff -- include/tactical/FBattleScreen.h doc/DesignNotes.md
+- cd tests && make tactical-tests
+- cd tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && ./GuiTests
+
+Final test outcomes:
+- Tactical runner passed: OK (157 tests).
+- GUI runner passed: OK (40 tests).
+- Source-contract tactical test now checks non-modal close guard reset and onClose default non-modal skip behavior.
+- Live tactical GUI tests now verify File->Quit and title-bar close vectors close non-modal FBattleScreen via the shared lifecycle path.
+- BattleSim live coverage now verifies ScenarioDialog modal launch unwinds correctly when FBattleScreen closes via File->Quit.
+
+Plan or evaluation context guidance:
+- Assumption: the tester handoff plus the diff against coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-implementer-20260522 provided sufficient story context for this focused documentation pass, so no separate plan file was required.
+- Documentation impact was treated as behavior-focused: capture the shared FBattleScreen close lifecycle, the non-modal guard reset, and the modal-caller unwind coverage actually implemented and tested.
+
+Convention-file guidance:
+- AGENTS.md requires Doxygen-style comments for edited header declarations; the FBattleScreen declarations in include/tactical/FBattleScreen.h were updated accordingly.
+- doc/DesignNotes.md is the existing architecture note for tactical runtime behavior, so the close-lifecycle narrative was updated there instead of creating a new documentation file.
+
+Updated documentation files:
+- include/tactical/FBattleScreen.h
+- doc/DesignNotes.md
+
+Shared artifact directory:
+- artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

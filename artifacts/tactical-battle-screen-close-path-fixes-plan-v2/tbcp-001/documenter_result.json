@@ -1,0 +1,15 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/documenter_report.md",
+    "artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/documenter_result.json",
+    "artifacts/tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001/verifier_prompt.txt"
+  ],
+  "branch_name": "coord-tactical-battle-screen-close-path-fixes-plan-v2-tbcp-001-documenter-20260522",
+  "documentation_commit_hash": "d2581671f09e0c0cbd8bb7b252cdde2ed4455fb3",
+  "documentation_files_changed": [
+    "include/tactical/FBattleScreen.h",
+    "doc/DesignNotes.md"
+  ],
+  "status": "success",
+  "task_id": "tactical-battle-screen-close-path-fixes-plan-v2/tbcp-001"
+}
