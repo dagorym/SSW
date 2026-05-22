@@ -28,7 +28,10 @@ class WXTacticalUI;
  * top-level board used for the tactical combat game. The runtime surface is
  * now frame-backed so tactical flows can attach a menu bar, while class-owned
  * modal shim APIs preserve the legacy blocking launch contract used by
- * stack-allocated battle-screen call sites.
+ * stack-allocated battle-screen call sites. The native top-level now installs
+ * `File`, `Settings`, and `Help` menus, with `File -> Quit` acting as the
+ * initial active command while the remaining tactical menu entries stay
+ * present as disabled placeholders.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
@@ -38,7 +41,18 @@ class FBattleScreen : public wxFrame
 {
 public:
 	/**
-	 * @brief FBattleScreen constructor
+	 * @brief Construct the tactical battle screen and install its initial menu bar.
+	 *
+	 * Builds the frame-backed tactical top-level with the shared battle map and
+	 * lower display panel, then installs the native `File`, `Settings`, and
+	 * `Help` menus used by the current tactical runtime. Only `File -> Quit`
+	 * is active in this initial menu set; the remaining entries stay visible as
+	 * disabled placeholders for future tactical commands.
+	 *
+	 * @param title Initial window title.
+	 * @param pos Initial top-left window position.
+	 * @param size Initial top-level window size.
+	 * @param style wxWidgets top-level style flags for the frame-backed surface.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  Jul 11, 2008
@@ -303,7 +317,18 @@ protected:
 	void closeBattleScreen(int returnCode = 0);
 	/// Handle top-level close events by delegating into the shared battle-screen close path.
 	void onClose(wxCloseEvent & event);
-	/// Handle menu quit requests by delegating into the shared battle-screen close path.
+	/**
+	 * @brief Handle `File -> Quit` by delegating into the shared battle-screen close path.
+	 *
+	 * Keeps tactical menu shutdown aligned with the existing modal and non-modal
+	 * close behavior instead of introducing a separate exit path.
+	 *
+	 * @param event wxWidgets menu event raised for the tactical quit command.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created:  May 22, 2026
+	 * @date Last Modified:  May 22, 2026
+	 */
 	void onMenuQuit(wxCommandEvent & event);
 
 	/**
