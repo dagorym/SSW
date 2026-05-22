@@ -310,8 +310,8 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 - Doxygen configuration: `doc/Doxyfile`
 - Generated documentation: `doc/` (`make docs` writes HTML output to `doc/html/`)
 - AI agent information: `AGENTS.md` (this file)
-- Design documentation: `doc/DesignNotes.odt`
-- User Guide: `doc/UsersGuide.odt`
+- Design documentation: `doc/DesignNotes.md`
+- User Guide: `doc/UsersGuide.md`
 - Game rules for tactical combat: `doc/rules/tactical_operations_manual.md`
 
 

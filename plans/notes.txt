@@ -7,7 +7,6 @@ Items to Add
 
 Items to fix
 * Starting window of each applications (SSW and Battlesim) should open centered on the user's screen under the splash screen image
-* When moving ships, the text overlaps the ship data.
 * spinners are horizontal, we want them vertical This seems to be a wxWidgits issue.
 
 ---
