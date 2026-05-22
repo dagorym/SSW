@@ -9,6 +9,7 @@
 #include "tactical/FBattleScreen.h"
 #include "Frontier.h"
 #include "core/FGameConfig.h"
+#include <wx/evtloop.h>
 #include "gui/WX\
 TacticalUI.h"
 #include "tactical/ITacticalUI.h"
@@ -101,8 +102,11 @@ void declareWinnerForCleanup(void * context) {
 
 }
 
-FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( (wxDialog *)NULL, -1, title, pos, size, style )
-//FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style )
+FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style ),
+	m_modalDisabler(NULL),
+	m_modalEventLoop(NULL),
+	m_modalReturnCode(wxID_CANCEL),
+	m_modalActive(false)
 {
 	g_battleScreenConstructedCount++;
 	g_battleScreenLiveCount++;
@@ -157,6 +161,59 @@ FBattleScreen::~FBattleScreen(){
 	if (m_tacticalGame) { delete m_tacticalGame; }
 //	delete m_wd;
 //	this->MakeModal(false);
+}
+
+int FBattleScreen::ShowModal() {
+	if (m_modalActive) {
+		return m_modalReturnCode;
+	}
+
+	m_modalActive = true;
+	m_modalReturnCode = wxID_CANCEL;
+	if (m_tacticalGame != NULL) {
+		m_tacticalGame->setCloseInProgress(false);
+	}
+
+	wxWindowDisabler modalDisabler(this);
+	m_modalDisabler = &modalDisabler;
+	Show(true);
+	Raise();
+
+	wxEventLoop modalEventLoop;
+	m_modalEventLoop = &modalEventLoop;
+	m_modalEventLoop->Run();
+	m_modalEventLoop = NULL;
+	m_modalDisabler = NULL;
+
+	return m_modalReturnCode;
+}
+
+void FBattleScreen::EndModal(int returnCode) {
+	if (!m_modalActive) {
+		return;
+	}
+
+	SetReturnCode(returnCode);
+	m_modalActive = false;
+	Show(false);
+	if (m_modalEventLoop != NULL && m_modalEventLoop->IsRunning()) {
+		m_modalEventLoop->Exit();
+	}
+	if (m_tacticalGame != NULL) {
+		m_tacticalGame->setCloseInProgress(false);
+	}
+}
+
+bool FBattleScreen::IsModal() const {
+	return m_modalActive;
+}
+
+void FBattleScreen::SetReturnCode(int returnCode) {
+	m_modalReturnCode = returnCode;
+}
+
+int FBattleScreen::GetReturnCode() const {
+	return m_modalReturnCode;
 }
 
 void FBattleScreen::resetLifecycleCounters() {

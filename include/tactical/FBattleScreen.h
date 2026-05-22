@@ -29,9 +29,9 @@ class WXTacticalUI;
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 16, 2026
+ * @date Last Modified:  May 22, 2026
  */
-class FBattleScreen : public wxDialog //wxFrame
+class FBattleScreen : public wxFrame
 {
 public:
 	/**
@@ -39,12 +39,22 @@ public:
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  May 16, 2026
+	 * @date Last Modified:  May 22, 2026
 	 */
 	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1200,900 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxRESIZE_BORDER );
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 	/// Default destructor
 	~FBattleScreen();
+	/// wxFrame modal compatibility shim for source-compatible battle launch paths.
+	int ShowModal();
+	/// wxFrame modal compatibility shim for source-compatible battle launch paths.
+	void EndModal(int returnCode);
+	/// Returns true when modal compatibility mode is active.
+	bool IsModal() const;
+	/// Stores return code for modal and non-modal close paths.
+	void SetReturnCode(int returnCode);
+	/// Gets return code for modal and non-modal close paths.
+	int GetReturnCode() const;
 	static void resetLifecycleCounters();
 	static int getConstructedCount();
 	static int getDestroyedCount();
@@ -244,7 +254,7 @@ protected:
 	/**
 	 * @brief Recompute tactical screen layout policy on resize.
 	 *
-	 * @param event wxWidgets size event raised by dialog resizing.
+	 * @param event wxWidgets size event raised by top-level resizing.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  May 16, 2026
@@ -262,6 +272,14 @@ protected:
 	FTacticalGame * m_tacticalGame;
 	/// wx tactical UI adapter owner during delegation migration
 	WXTacticalUI * m_tacticalUI;
+	/// modal shim disabler for wxFrame modal compatibility paths
+	wxWindowDisabler * m_modalDisabler;
+	/// modal shim event loop pointer for wxFrame modal compatibility paths
+	wxEventLoopBase * m_modalEventLoop;
+	/// modal shim return code storage for wxFrame modal compatibility paths
+	int m_modalReturnCode;
+	/// true while wxFrame modal compatibility mode is running
+	bool m_modalActive;
 //	/// window disabler object
 //	wxWindowDisabler *m_wd;
 
