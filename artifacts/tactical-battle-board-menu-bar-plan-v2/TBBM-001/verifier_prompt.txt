@@ -1,0 +1,89 @@
+You are the Verifier Agent.
+
+Task summary:
+- Validate TBBM-001 end to end: `FBattleScreen` moved from `wxDialog` inheritance to a menu-capable `wxFrame` while preserving source-compatible modal and non-modal tactical launch flows.
+- Confirm the new documentation now matches the implemented and tested tactical launch plumbing instead of the pre-change dialog description.
+
+Acceptance criteria to verify:
+- `FBattleScreen` compiles as a menu-capable top-level with `wxFrame` inheritance and frame menu APIs available.
+- Existing modal launch paths remain source-compatible and still block until the battle screen closes.
+- Existing non-modal launch paths remain source-compatible and still close through `closeBattleScreen(...)` without terminating the app.
+- `closeBattleScreen(...)` still executes modal-first behavior before the non-modal destroy path.
+- Lifecycle counters still report constructed, destroyed, and live battle screens accurately after launch/teardown.
+- `FBattleBoard` and `FBattleDisplay` parent/layout policy remains intact.
+- Documentation now reflects the frame-backed modal shim, close-ordering contract, and lifecycle coverage accurately.
+
+Implementation branch or worktree context:
+- Comparison base assumption: `master` (merge-base `7dbdb3fd1b58e106dbf7f7e285123bebae105696`)
+- Implementer commit: `21b713a66e5ac564fc87c6a6d6778ea855b0c2a4`
+- Tester commit: `ad018eef4b7ab22c70494dbef53188a8aa9ca578`
+- Documentation commit: `89e38130bf2743a16ab39afd125ca50b628369d7`
+- Tester branch/worktree: `coord-tactical-battle-board-menu-bar-plan-tester-20260522` at `/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522`
+- Documenter branch/worktree: `coord-tactical-battle-board-menu-bar-plan-documenter-20260522` at `/home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-documenter-20260522`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/tactical/FBattleScreen.h`
+- `src/tactical/FBattleScreen.cpp`
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.h`
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp`
+- `doc/DesignNotes.md`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/implementer_report.md`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/implementer_result.json`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/tester_prompt.txt`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/tester_report.md`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/tester_result.json`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/documenter_prompt.txt`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/documenter_report.md`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/documenter_result.json`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/verifier_prompt.txt`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/01_make_tactical.json`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/01_make_tactical_stderr.log`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/01_make_tactical_stdout.log`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/02_tactical_tests.json`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/02_tactical_tests_stderr.log`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/02_tactical_tests_stdout.log`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/03_make_gui.json`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/03_make_gui_stderr.log`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/03_make_gui_stdout.log`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/04_gui_tests.json`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/04_gui_tests_stderr.log`
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001/logs/04_gui_tests_stdout.log`
+
+Commands already executed:
+- `cd tests && make tactical-tests`
+- `cd tests && ./tactical/TacticalTests`
+- `cd tests/gui && make`
+- `cd tests/gui && xvfb-run -a ./GuiTests`
+- `git --no-pager diff --name-only 7dbdb3fd1b58e106dbf7f7e285123bebae105696 HEAD`
+- `git --no-pager diff -- include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp`
+- `cd tests && make tactical-tests`
+- `cd tests/gui && make`
+
+Final test and build outcomes:
+- Tester validated all behavioral acceptance criteria with passing tactical and GUI suites.
+- `cd tests && ./tactical/TacticalTests` -> PASS (`OK (155 tests)` per tester report)
+- `cd tests/gui && xvfb-run -a ./GuiTests` -> PASS (`OK (36 tests)` per tester report)
+- Documenter re-ran `cd tests && make tactical-tests` and `cd tests/gui && make` after documentation edits; both completed successfully.
+
+Plan and review context:
+- Task reference: `TBBM-001` under `tactical-battle-board-menu-bar-plan-v2`.
+- Assumption: the tester handoff plus the branch diff from merge-base `7dbdb3fd1b58e106dbf7f7e285123bebae105696` fully scope this verification pass; if any remaining plan-path detail is missing, infer it from repository context and label the choice as an assumption instead of treating it as a blocker.
+- Review repository guidance in `AGENTS.md` and the updated architecture notes in `doc/DesignNotes.md`; the in-code header comments in `include/tactical/FBattleScreen.h` are part of the required documentation surface for this story.
+
+Documentation files updated:
+- `doc/DesignNotes.md`
+- `include/tactical/FBattleScreen.h`
+
+Verification scope:
+- Verify implementation behavior, test coverage, and the updated documentation together.
+
+Startup behavior:
+- If enough combined diff context, acceptance-criteria context, and repository context are present, begin verification immediately and continue in the same run.
+- Infer missing plan-source, comparison-base, convention-file, or artifact-path details from repository context when the evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when verification can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
