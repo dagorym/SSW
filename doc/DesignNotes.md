@@ -353,12 +353,20 @@ behavior until later subtasks move the active tactical wx path over to that
 model.
 
 Milestone 7 Subtask 2 keeps that migration additive but moves ownership
-responsibility into `FBattleScreen` itself. The dialog now constructs and owns
-its `FTacticalGame*` and `WXTacticalUI*`, installs the wx adapter onto the
-model during setup, detaches it with `installUI(NULL)` during teardown, and
-then deletes both delegated runtime objects safely. Existing guarded close-path
-behavior is preserved through the `m_closeInProgress` gate and the same modal
-`EndModal()` handling, while the tactical `Makefile` change remains limited to
+responsibility into `FBattleScreen` itself. The tactical top-level now
+constructs and owns its `FTacticalGame*` and `WXTacticalUI*`, installs the wx
+adapter onto the model during setup, detaches it with `installUI(NULL)` during
+teardown, and then deletes both delegated runtime objects safely. Existing
+guarded close-path behavior is preserved through the `m_closeInProgress` gate.
+The later battle-board menu-bar follow-up keeps that ownership model intact
+while moving `FBattleScreen` from `wxDialog` to `wxFrame`, so the tactical
+window can expose native frame features such as `SetMenuBar(...)` /
+`GetMenuBar()` without breaking the established blocking `ShowModal()` launch
+sites. `FBattleScreen` now provides its own frame-backed `ShowModal()`,
+`EndModal(...)`, `IsModal()`, and return-code shim so stack-owned BattleSim and
+strategic launch paths still block until the battle screen closes, while
+heap-owned non-modal callers continue to close through `closeBattleScreen(...)`
+without terminating the app. The tactical `Makefile` change remains limited to
 the new `FBattleScreen` header dependencies needed for that wiring.
 
 Milestone 8 Subtask 1 extends that additive delegation surface again, but only
@@ -1034,6 +1042,16 @@ ownership or `bb.Show()`. The paired tactical source-contract test now checks
 that `Hide()` → `bb.ShowModal()` → `Show()` ordering per handler, while the
 live BattleSim fixture launches from a shown `ScenarioDialog` and verifies the
 dialog is visible again after the battle window closes.
+
+The tactical battle-board menu-bar follow-up keeps those launch contracts intact
+while changing the underlying top-level type. `FBattleScreen` now inherits from
+`wxFrame` so tactical flows can rely on frame-only menu APIs, but it preserves
+the existing stack-owned `bb.ShowModal()` call sites through a class-owned modal
+event-loop shim and still routes closure through modal-first `EndModal(...)`
+before the non-modal destroy path. The focused tactical source-contract checks
+cover that ordering directly, and the GUI live fixtures continue to use the
+constructed/destroyed/live lifecycle counters to prove that both BattleSim and
+strategic launch chains finish with zero live battle screens after teardown.
 
 The next dialog-sizing audit stayed evidence-driven instead of broadening the
 implementation surface. Four additional strategic dialogs with confirmed

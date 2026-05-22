@@ -25,7 +25,10 @@ class WXTacticalUI;
  * @brief Class for the Main tactical combat board
  *
  * This class implements the code for the FBattleScreen, the main
- * board used for the tactical combat game..
+ * top-level board used for the tactical combat game. The runtime surface is
+ * now frame-backed so tactical flows can attach a menu bar, while class-owned
+ * modal shim APIs preserve the legacy blocking launch contract used by
+ * stack-allocated battle-screen call sites.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
@@ -45,9 +48,9 @@ public:
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 	/// Default destructor
 	~FBattleScreen();
-	/// wxFrame modal compatibility shim for source-compatible battle launch paths.
+	/// Runs a class-owned event loop so legacy blocking launch sites stay source-compatible on wxFrame.
 	int ShowModal();
-	/// wxFrame modal compatibility shim for source-compatible battle launch paths.
+	/// Ends frame-backed modal compatibility mode before any non-modal destroy path runs.
 	void EndModal(int returnCode);
 	/// Returns true when modal compatibility mode is active.
 	bool IsModal() const;
@@ -283,9 +286,22 @@ protected:
 //	/// window disabler object
 //	wxWindowDisabler *m_wd;
 
-	// Print a dialog declaring the  winner and exit the window
+	/// Print a winner message and exit the battle screen through the shared close path.
 	void declareWinner();
+	/**
+	 * @brief Close the tactical top-level using modal-first compatibility behavior.
+	 *
+	 * Stack-owned launch paths must unwind through EndModal(returnCode) before the
+	 * frame falls back to the non-modal destroy path used by heap-owned callers.
+	 *
+	 * @param returnCode Return code propagated back to modal compatibility callers.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created:  May 22, 2026
+	 * @date Last Modified:  May 22, 2026
+	 */
 	void closeBattleScreen(int returnCode = 0);
+	/// Handle top-level close events by delegating into the shared battle-screen close path.
 	void onClose(wxCloseEvent & event);
 
 	/**
