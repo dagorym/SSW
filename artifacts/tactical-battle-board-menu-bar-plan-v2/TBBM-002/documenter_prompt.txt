@@ -1,0 +1,37 @@
+You are the Documenter Agent for task TBBM-002.
+
+Repository/worktree:
+- /home/tstephen/worktrees/coord-tactical-battle-board-menu-bar-plan-tester-20260522
+- Branch: coord-tactical-battle-board-menu-bar-plan-tester-20260522
+
+Shared artifact directory (repository-relative):
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002
+
+Continue immediately when inputs are present; do not stop at scope confirmation, documentation discovery, or diff review.
+
+Implementation files changed by Implementer (inspect all):
+- include/wxWidgets.h
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+
+Tester files changed (inspect all):
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.h
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+
+What testing validated:
+- Tactical menu bar top-level order, labels, and enabled/disabled states.
+- Disabled non-Quit entries remain non-active in live smoke checks.
+- Source-contract locks for wxMenu/wxMenuBar creation and SetMenuBar order.
+- Source-contract lock that Quit is the only tactical menu binding and delegates to closeBattleScreen(GetReturnCode()) with no exit(...).
+
+Validation commands executed:
+- cd tests && make tactical-tests && ./tactical/TacticalTests  (OK: 157 tests)
+- cd tests/gui && make && xvfb-run -a ./GuiTests               (OK: 38 tests)
+
+Test changes commit hash:
+- 185c701
+
+Completion gate (required):
+- Do not report success unless all required artifacts exist in `artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-002` and all documentation changes are committed.
