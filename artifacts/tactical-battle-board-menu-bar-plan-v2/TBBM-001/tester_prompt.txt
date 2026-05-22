@@ -1,0 +1,42 @@
+You are the Tester Agent.
+
+Task summary:
+- Validate TBBM-001: `FBattleScreen` was moved from `wxDialog` inheritance to `wxFrame` with class-owned modal compatibility APIs so tactical launch call sites remain source-compatible for both modal and non-modal usage.
+
+Modified files:
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate:
+- `FBattleScreen` compiles as a menu-capable top-level (`wxFrame` path with `SetMenuBar(...)`/`GetMenuBar()`).
+- Existing modal launch paths remain source-compatible and still block until close.
+- Existing non-modal launch paths remain source-compatible and still close via `closeBattleScreen(...)` without terminating the app.
+- `closeBattleScreen(...)` still executes modal-first behavior before non-modal destroy behavior.
+- Lifecycle counters still represent constructed/destroyed/live battle screens accurately.
+- `FBattleBoard` and `FBattleDisplay` parent/layout policy remains intact.
+
+Tester test-file location guidance:
+- Lifecycle and close-path source-contract coverage: tests/tactical/FTacticalBattleScreenElectricalFireTest.*
+- Live launch and top-level lifecycle coverage: tests/gui/TacticalGuiLiveTest.*, tests/gui/StrategicGuiLiveTest.*, tests/gui/BattleSimGuiLiveTest.*
+
+Implementation context for testing:
+- `FBattleScreen` now inherits from `wxFrame`.
+- Modal compatibility is implemented by new class-owned methods/state in `FBattleScreen`:
+  - `ShowModal()`
+  - `EndModal(int)`
+  - `IsModal() const`
+  - `SetReturnCode(int)`
+  - `GetReturnCode() const`
+- `closeBattleScreen(...)` still checks modal path first and calls `Destroy()` only for non-modal paths.
+
+Suggested validation commands:
+- `cd tests && make tactical-tests`
+- `cd tests && ./tactical/TacticalTests`
+- `cd tests/gui && make`
+- `cd tests/gui && xvfb-run -a ./GuiTests`
+
+Implementation commit to validate:
+- 21b713a0b27f2f89ca24ad286459e719e55077cb
+
+Shared artifact directory:
+- artifacts/tactical-battle-board-menu-bar-plan-v2/TBBM-001
