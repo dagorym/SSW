@@ -223,6 +223,31 @@ wxTopLevelWindow * WXGuiTestHarness::waitForTopLevelWindow(const std::function<b
 	return NULL;
 }
 
+bool WXGuiTestHarness::waitForTopLevelWindowClosed(const std::function<bool(wxTopLevelWindow *)> & predicate,
+                                                   int timeoutMs,
+                                                   int pollMs,
+                                                   bool includeBeingDeleted) {
+	if (!m_bootstrapped && !bootstrap()) {
+		return false;
+	}
+
+	const int safePollMs = (pollMs > 0) ? pollMs : 1;
+	int elapsedMs = 0;
+	while (elapsedMs <= timeoutMs) {
+		wxTopLevelWindow * observed = findTopLevelWindow(predicate, includeBeingDeleted);
+		if (observed == NULL || observed->IsBeingDeleted() || !observed->IsShown()) {
+			return true;
+		}
+		pumpEvents(1);
+		if (elapsedMs < timeoutMs) {
+			wxMilliSleep(static_cast<unsigned long>(safePollMs));
+		}
+		elapsedMs += safePollMs;
+	}
+	wxTopLevelWindow * observed = findTopLevelWindow(predicate, includeBeingDeleted);
+	return observed == NULL || observed->IsBeingDeleted() || !observed->IsShown();
+}
+
 wxDialog * WXGuiTestHarness::findModalDialog() const {
 	wxTopLevelWindow * topLevel = findTopLevelWindow([](wxTopLevelWindow * window) {
 		wxDialog * dialog = dynamic_cast<wxDialog *>(window);

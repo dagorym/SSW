@@ -22,9 +22,9 @@ namespace FrontierTests {
  * deterministic modal dialog helpers so GUI fixtures can assert runtime behavior without
  * duplicating setup and teardown scaffolding.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Apr 04, 2026
+ * @date Last Modified: May 22, 2026
  */
 class WXGuiTestHarness {
 private:
@@ -117,6 +117,23 @@ public:
 	wxTopLevelWindow * waitForTopLevelWindow(const std::function<bool(wxTopLevelWindow *)> & predicate,
 	                                         int timeoutMs = 250,
 	                                         int pollMs = 5);
+	/**
+	 * @brief Waits until a matching top-level window is no longer present.
+	 *
+	 * @param predicate Callback that identifies the window to observe.
+	 * @param timeoutMs Total wait budget in milliseconds.
+	 * @param pollMs Poll interval in milliseconds.
+	 * @param includeBeingDeleted When true, waits for pending-delete windows to be removed too.
+	 * @return True when the target window is gone before timeout, otherwise false.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 22, 2026
+	 * @date Last Modified: May 22, 2026
+	 */
+	bool waitForTopLevelWindowClosed(const std::function<bool(wxTopLevelWindow *)> & predicate,
+	                                 int timeoutMs = 250,
+	                                 int pollMs = 5,
+	                                 bool includeBeingDeleted = true);
 	/**
 	 * @brief Returns the first currently modal dialog.
 	 *

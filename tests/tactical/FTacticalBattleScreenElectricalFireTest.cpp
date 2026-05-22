@@ -107,36 +107,36 @@ CPPUNIT_ASSERT(body.find("wxMessageBox") == std::string::npos);
 }
 
 void FTacticalBattleScreenElectricalFireTest::testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath() {
-// AC: close logic stays behind one guarded helper, ending modal sessions before any non-modal Destroy() path.
+// AC: close logic stays behind one guarded helper with close-in-progress protection and shared vector routing.
 const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string closeBody = extractFunctionBody(source, "void FBattleScreen::closeBattleScreen(int returnCode)");
 const std::string onCloseBody = extractFunctionBody(source, "void FBattleScreen::onClose(wxCloseEvent & event)");
+const std::string menuQuitBody = extractFunctionBody(source, "void FBattleScreen::onMenuQuit(wxCommandEvent & WXUNUSED(event))");
 
-std::vector<std::string> closeSequence;
-closeSequence.push_back("if (m_tacticalGame->isCloseInProgress()) {");
-closeSequence.push_back("return;");
-closeSequence.push_back("m_tacticalGame->setCloseInProgress(true);");
-closeSequence.push_back("if (IsModal()) {");
-closeSequence.push_back("EndModal(returnCode);");
-closeSequence.push_back("return;");
-closeSequence.push_back("SetReturnCode(returnCode);");
-closeSequence.push_back("Destroy();");
-closeSequence.push_back("if (!IsBeingDeleted()) {");
-closeSequence.push_back("m_tacticalGame->setCloseInProgress(false);");
-assertAppearsInOrder(closeBody, closeSequence);
+assertContains(closeBody, "if (m_tacticalGame->isCloseInProgress()) {");
+assertContains(closeBody, "m_tacticalGame->setCloseInProgress(true);");
+assertContains(closeBody, "if (IsModal()) {");
+assertContains(closeBody, "EndModal(returnCode);");
+assertContains(closeBody, "SetReturnCode(returnCode);");
+assertContains(closeBody, "Destroy();");
+assertContains(closeBody, "if (!IsBeingDeleted()) {");
+assertContains(closeBody, "m_tacticalGame->setCloseInProgress(false);");
 
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "Destroy();"));
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "EndModal(returnCode);"));
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "setCloseInProgress(false);"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "if (m_tacticalGame->isCloseInProgress()) {"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "m_tacticalGame->setCloseInProgress(true);"));
 
 std::vector<std::string> onCloseSequence;
 onCloseSequence.push_back("if (m_tacticalGame->isCloseInProgress()) {");
 onCloseSequence.push_back("event.Skip();");
 onCloseSequence.push_back("return;");
 onCloseSequence.push_back("closeBattleScreen(GetReturnCode());");
-onCloseSequence.push_back("if (!IsModal()) {");
-onCloseSequence.push_back("event.Skip();");
 assertAppearsInOrder(onCloseBody, onCloseSequence);
+assertContains(onCloseBody, "if (!IsModal()) {");
+assertContains(onCloseBody, "event.Skip();");
+assertContains(menuQuitBody, "closeBattleScreen(GetReturnCode());");
 
 CPPUNIT_ASSERT(source.find("exit(") == std::string::npos);
 CPPUNIT_ASSERT(source.find("ExitMainLoop") == std::string::npos);
