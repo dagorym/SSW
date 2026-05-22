@@ -752,6 +752,9 @@ void FBattleScreen::closeBattleScreen(int returnCode) {
 
 	SetReturnCode(returnCode);
 	Destroy();
+	if (!IsBeingDeleted()) {
+		m_tacticalGame->setCloseInProgress(false);
+	}
 }
 
 void FBattleScreen::onClose(wxCloseEvent & event) {
@@ -761,6 +764,9 @@ void FBattleScreen::onClose(wxCloseEvent & event) {
 	}
 
 	closeBattleScreen(GetReturnCode());
+	if (!IsModal()) {
+		event.Skip();
+	}
 }
 
 void FBattleScreen::onMenuQuit(wxCommandEvent & WXUNUSED(event)) {
