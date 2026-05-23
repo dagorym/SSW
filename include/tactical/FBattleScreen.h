@@ -32,9 +32,10 @@ class WXTacticalUI;
  * `File`, `Settings`, and `Help` menus, with `File -> Quit` acting as the
  * initial active command while the remaining tactical menu entries stay
  * present as disabled placeholders. Both the menu quit command and the native
- * title-bar close vector now funnel through the same shared lifecycle so
- * non-modal tactical screens can destroy normally and modal callers still
- * unwind back to their launch sites.
+ * title-bar close vector now funnel through the same screen-owned close
+ * lifecycle so non-modal tactical screens hide before wx pending-delete
+ * destruction and modal callers unwind back to their launch sites without
+ * allowing default frame destruction to touch stack-owned instances.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
@@ -67,7 +68,7 @@ public:
 	~FBattleScreen();
 	/// Runs a class-owned event loop so legacy blocking launch sites stay source-compatible on wxFrame.
 	int ShowModal();
-	/// Ends frame-backed modal compatibility mode before any non-modal destroy path runs.
+	/// Ends frame-backed modal compatibility mode by hiding the frame and returning to the caller without destroying stack-owned instances.
 	void EndModal(int returnCode);
 	/// Returns true when modal compatibility mode is active.
 	bool IsModal() const;
@@ -300,7 +301,7 @@ protected:
 	int m_modalReturnCode;
 	/// true while wxFrame modal compatibility mode is running
 	bool m_modalActive;
-	/// true while tactical close lifecycle is actively unwinding this surface
+	/// true while the screen-owned shared close lifecycle is actively unwinding this surface
 	bool m_closeInProgress;
 //	/// window disabler object
 //	wxWindowDisabler *m_wd;
@@ -313,9 +314,10 @@ protected:
 	 * Stack-owned launch paths unwind through EndModal(returnCode) and return
 	 * without entering wx default frame destruction. Non-modal launch paths hide
 	 * the frame first so users see immediate closure, then schedule Destroy() for
-	 * wx pending-delete cleanup. If destruction is not scheduled, the local
-	 * close-in-progress guard is cleared so the first valid close request cannot
-	 * leave the tactical top-level stuck open.
+	 * wx pending-delete cleanup. The close-in-progress guard is owned here on
+	 * FBattleScreen rather than in FTacticalGame, and it is cleared if
+	 * destruction is not scheduled so the first valid close request cannot leave
+	 * the tactical top-level stuck open.
 	 *
 	 * @param returnCode Return code propagated back to modal compatibility callers.
 	 *

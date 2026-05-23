@@ -331,8 +331,7 @@ additive tactical state-owner surface for upcoming `FBattleScreen`
 delegation. Newly exposed API categories now cover:
 
 - **State/control:** installed UI access (`installUI(ITacticalUI*)`,
-  `getUI()`), control-mode toggles, done-state tracking, and close-in-progress
-  status.
+  `getUI()`), control-mode toggles, and done-state tracking.
 - **Setup/scenario:** planet choice, planet/station placement, station pointer,
   and direct access to the attacker/defender fleet and ship lists established
   during setup.
@@ -356,9 +355,10 @@ Milestone 7 Subtask 2 keeps that migration additive but moves ownership
 responsibility into `FBattleScreen` itself. The tactical top-level now
 constructs and owns its `FTacticalGame*` and `WXTacticalUI*`, installs the wx
 adapter onto the model during setup, detaches it with `installUI(NULL)` during
-teardown, and then deletes both delegated runtime objects safely. Existing
-guarded close-path behavior is preserved through the `m_closeInProgress` gate.
-The later battle-board menu-bar follow-up keeps that ownership model intact
+teardown, and then deletes both delegated runtime objects safely. The guarded
+close-path gate now lives on `FBattleScreen` itself instead of in
+`FTacticalGame`, keeping UI lifecycle state on the screen surface. The later
+battle-board menu-bar follow-up keeps that ownership model intact
 while moving `FBattleScreen` from `wxDialog` to `wxFrame`, so the tactical
 window can expose native frame features such as `SetMenuBar(...)` /
 `GetMenuBar()` without breaking the established blocking `ShowModal()` launch
@@ -1049,16 +1049,22 @@ while changing the underlying top-level type. `FBattleScreen` now inherits from
 the existing stack-owned `bb.ShowModal()` call sites through a class-owned modal
 event-loop shim and still routes closure through modal-first `EndModal(...)`
 before the non-modal destroy path. The close lifecycle is now explicitly locked
-down for both `File -> Quit` and the native title-bar close vector: each route
-funnels through `FBattleScreen::closeBattleScreen(...)`, non-modal close events
-continue through default wx close processing after the shared helper runs, and
-the close-in-progress guard is cleared if `Destroy()` does not immediately put
-the frame into deletion so a first legitimate close request cannot leave the
-screen stuck open. The focused tactical source-contract checks now guard that
+down for both `File -> Quit` and the native title-bar close vector: the menu
+handler requests `Close(true)`, both close vectors converge in
+`FBattleScreen::onClose(...)`, and accepted close events stay inside
+`FBattleScreen::closeBattleScreen(...)` instead of continuing into default wx
+frame close handling. Non-modal close requests call `Hide()` before `Destroy()`
+so the screen disappears immediately while wx pending-delete cleanup completes,
+modal close requests unwind the stack-owned `ShowModal()` shim through
+`EndModal(...)` without destroying the frame object, and the screen-owned
+`m_closeInProgress` guard is cleared if `Destroy()` does not immediately put the
+frame into deletion so a first legitimate close request cannot leave the screen
+stuck open. The focused tactical source-contract checks now guard that
 non-modal reset behavior, preserve the single `ID_TacticalQuit` binding to
-`closeBattleScreen(GetReturnCode())`, and reject `exit(...)` / `ExitMainLoop()`
-in the tactical close path without freezing incidental event sequencing. The
-GUI live regression now posts the real `ID_TacticalQuit` command and a separate
+`Close(true)` so `onClose(...)` and `closeBattleScreen(GetReturnCode())` remain
+the shared accepted close path, and reject `exit(...)` / `ExitMainLoop()` in
+the tactical close path without freezing incidental event sequencing. The GUI
+live regression now posts the real `ID_TacticalQuit` command and a separate
 posted `wxEVT_CLOSE_WINDOW` title-bar vector against shown battle screens, then
 uses `WXGuiTestHarness::waitForTopLevelWindowClosed(...)` as the bounded proof
 seam for asynchronous frame deletion so the suite no longer depends on a human
