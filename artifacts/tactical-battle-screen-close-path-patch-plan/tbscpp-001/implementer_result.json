@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "subtask": "TBSCPP-001",
+  "branch": "tbscpp-001-implementer-20260522",
+  "implementation_commit_hash": "0012fb6e59a6afcf18aa0244a08ac61f5bd1ab97",
+  "artifact_commit_hash": null,
+  "changed_files": [
+    "include/tactical/FBattleScreen.h",
+    "src/tactical/FBattleScreen.cpp",
+    "include/tactical/FTacticalGame.h",
+    "src/tactical/FTacticalGame.cpp"
+  ],
+  "validation_commands": [
+    "cd tests && make tactical-tests",
+    "cd tests && ./tactical/TacticalTests",
+    "cd tests/gui && make",
+    "cd /home/tstephen/repos/SSW-worktrees/tbscpp-001-implementer-20260522 && xvfb-run -a tests/gui/GuiTests"
+  ],
+  "validation_outcome": "Build commands succeeded. TacticalTests reports 3 expected source-contract failures due to intentional TBSCPP-001 lifecycle changes (close guard moved to FBattleScreen, menu quit now uses Close(true)). GuiTests reports the same 6 pre-existing baseline failures unrelated to edited files.",
+  "artifact_file_paths": [
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/implementer_report.md",
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/tester_prompt.txt",
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/implementer_result.json"
+  ]
+}
