@@ -1,0 +1,84 @@
+You are the Verifier Agent.
+
+Task summary:
+- TBSCPP-002 hardened tactical battle-screen close validation so GUI close waits only pass when the target window is hidden or absent, not when it is merely pending deletion.
+- Tactical live GUI coverage now proves both non-modal close vectors (`ID_TacticalQuit` and posted `wxEVT_CLOSE_WINDOW`) leave no shown `FBattleScreen`, with lifecycle counters settling afterward.
+- BattleSim modal scenario-launch coverage now proves both menu-quit and title-bar close unwind the modal caller and leave no live `FBattleScreen` behind.
+- Documentation was updated in `AGENTS.md`, `tests/gui/WXGuiTestHarness.h`, `tests/gui/TacticalGuiLiveTest.h`, and `tests/gui/BattleSimGuiLiveTest.h` so repository guidance matches the shipped close-oracle and lifecycle expectations.
+
+Acceptance criteria to verify:
+- GUI close tests fail if a tactical battle screen remains visible after a close request.
+- GUI cleanup no longer requires manual operator window closure after tactical close tests.
+- Non-modal tactical `File -> Quit` coverage dispatches `ID_TacticalQuit` and proves the window is no longer shown.
+- Non-modal tactical title-bar close coverage proves the window is no longer shown.
+- Modal tactical `File -> Quit` coverage proves the modal caller returns and no live `FBattleScreen` instance remains afterward.
+- Modal tactical title-bar close coverage proves the modal caller returns and no live `FBattleScreen` instance remains afterward.
+- Harness close waits process idle cleanup sufficiently for wx pending-delete top-level windows.
+- Tactical source-contract coverage rejects accepting `IsBeingDeleted()` alone and rejects skip/default-handling lock-in after accepted close.
+
+Implementation branch or worktree context:
+- Governing plan: `plans/tactical-battle-screen-close-path-patch-plan.md`
+- Coordination branch: `coord-tactical-battle-board-menu-bar-plan-v2-20260522`
+- Implementer branch/worktree: `tbscpp-002-implementer-20260522` at `/home/tstephen/repos/SSW-worktrees/tbscpp-002-implementer-20260522`
+- Tester branch/worktree: `tbscpp-002-tester-20260522` at `/home/tstephen/repos/SSW-worktrees/tbscpp-002-tester-20260522`
+- Documenter branch/worktree: `tbscpp-002-documenter-20260522` at `/home/tstephen/repos/SSW-worktrees/tbscpp-002-documenter-20260522`
+- Documentation commit: `1a90280e23a51f270f1cb835c0af05b98a557743`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `tests/gui/WXGuiTestHarness.h`
+- `tests/gui/WXGuiTestHarness.cpp`
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+- `tests/gui/BattleSimGuiLiveTest.h`
+- `tests/gui/BattleSimGuiLiveTest.cpp`
+- `tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp`
+- `AGENTS.md`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/implementer_report.md`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/implementer_result.json`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/tester_prompt.txt`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/tester_report.md`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/tester_result.json`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/documenter_prompt.txt`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/documenter_report.md`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/documenter_result.json`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/verifier_prompt.txt`
+
+Commands already executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests/gui && make`
+- `xvfb-run -a tests/gui/GuiTests`
+- `cd tests/gui && xvfb-run -a ./GuiTests`
+- `git --no-pager diff coord-tactical-battle-board-menu-bar-plan-v2-20260522...HEAD -- tests/gui/WXGuiTestHarness.h tests/gui/WXGuiTestHarness.cpp tests/gui/TacticalGuiLiveTest.h tests/gui/TacticalGuiLiveTest.cpp tests/gui/BattleSimGuiLiveTest.h tests/gui/BattleSimGuiLiveTest.cpp tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp AGENTS.md`
+- `git diff --check`
+
+Final test outcomes:
+- Tester validated all TBSCPP-002 acceptance criteria.
+- Tactical runner retains one known unrelated baseline failure in `FTacticalGameMechanicsTest` expecting removed token `m_closeInProgress = false;` in `FTacticalGame.cpp`.
+- Root-invoked GUI command (`xvfb-run -a tests/gui/GuiTests`) still hits known cwd-relative source-token failures; module-local GUI execution (`cd tests/gui && xvfb-run -a ./GuiTests`) passed on rerun.
+- Documenter made documentation-only updates and did not rerun tests.
+
+Plan and review context:
+- Review `plans/tactical-battle-screen-close-path-patch-plan.md`, especially the TBSCPP-002 scope and documentation-impact guidance, as a hint rather than source of truth.
+- Review repository guidance in `AGENTS.md`; if any plan-source, convention-file, or artifact-path detail is missing, infer it from repository context when safe and label the choice as an assumption.
+- Treat tester validation plus the combined implementer/tester/documenter diff as the review surface.
+
+Documentation files updated:
+- `AGENTS.md`
+- `tests/gui/WXGuiTestHarness.h`
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/gui/BattleSimGuiLiveTest.h`
+
+Verification scope:
+- Verify implementation behavior, regression coverage, and the updated documentation together.
+- Confirm the documentation accurately describes the shipped close-oracle and lifecycle behavior without overstating what changed.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
