@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/implementer_report.md",
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/tester_prompt.txt",
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-002/implementer_result.json"
+  ],
+  "branch_name": "tbscpp-002-implementer-20260522",
+  "changed_files": [
+    "tests/gui/WXGuiTestHarness.h",
+    "tests/gui/WXGuiTestHarness.cpp",
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/BattleSimGuiLiveTest.h",
+    "tests/gui/BattleSimGuiLiveTest.cpp",
+    "tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp"
+  ],
+  "code_commit_hash": "850cd44",
+  "status": "completed",
+  "task_id": "TBSCPP-002",
+  "validation_commands": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make",
+    "xvfb-run -a tests/gui/GuiTests"
+  ],
+  "validation_outcome": "Targeted close-path regressions now pass with stronger close assertions. Suite-level validation still has pre-existing unrelated failures: tactical runner 1 source-token failure in FTacticalGameMechanicsTest; GUI runner 6 existing source-token failures in StrategicGuiLiveTest/TacticalGuiLiveTest."
+}
