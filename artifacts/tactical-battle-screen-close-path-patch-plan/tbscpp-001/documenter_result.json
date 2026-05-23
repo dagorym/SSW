@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "task_id": "TBSCPP-001",
+  "branch": "tbscpp-001-documenter-20260522",
+  "commit_hash": "1ee224d70b9b76395dc27187855069999e2b1e54",
+  "documentation_files": [
+    "include/tactical/FBattleScreen.h",
+    "doc/DesignNotes.md",
+    "AGENTS.md"
+  ],
+  "artifact_files": [
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/documenter_report.md",
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/documenter_result.json",
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/verifier_prompt.txt"
+  ]
+}
