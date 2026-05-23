@@ -16,7 +16,7 @@ endif
 
 .DEFAULT_GOAL := all
 
-WX_CXXFLAGS ?= -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread
+WX_CXXFLAGS ?= -I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 -I/usr/local/include/wx-3.3 -D_FILE_OFFSET_BITS=64 -D__WXGTK__ -pthread $(shell pkg-config --cflags gtk+-3.0)
 CXXFLAGS = -I../../include -g -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) $(WX_CXXFLAGS)
 DEPFLAGS = -MMD -MP
 

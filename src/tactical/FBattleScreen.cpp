@@ -12,6 +12,9 @@
 #include "wxWidgets.h"
 #include "core/FGameConfig.h"
 #include <wx/evtloop.h>
+#ifdef __WXGTK__
+#include <gtk/gtk.h>
+#endif
 #include "gui/WXTacticalUI.h"
 #include "tactical/ITacticalUI.h"
 #include "tactical/FTacticalGame.h"
@@ -203,26 +206,27 @@ int FBattleScreen::ShowModal() {
 	wxWindowDisabler modalDisabler(this);
 	m_modalDisabler = &modalDisabler;
 
+	// Mirror wxDialog::ShowModal(): mark the window as modal before Show() so
+	// GTK calls gtk_grab_add() during the show phase, which puts FBattleScreen
+	// at the top of the GTK input-grab stack and overrides any existing grab
+	// held by a parent dialog (e.g. SelectCombatGUI).  Without this, the
+	// parent dialog's grab silently swallows menu-item activate signals.
+#ifdef __WXGTK__
+	gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE);
+#endif
+
 	Show(true);
 	Raise();
 
-	// AddGrab() adds an input grab for this window at the GTK level,
-	// overriding any grab held by a parent dialog (e.g. SelectCombatGUI).
-	// This ensures FBattleScreen receives GTK input events — including
-	// menu-item activate signals — even when launched from a modal dialog.
-	// It also blocks here, running its own event loop until RemoveGrab()
-	// is called from EndModal().  On non-GTK platforms we fall back to a
-	// plain wxEventLoop.
-#ifdef __WXGTK__
-	AddGrab();
-#else
 	wxEventLoop modalEventLoop;
 	m_modalEventLoop = &modalEventLoop;
 	m_modalEventLoop->Run();
 	m_modalEventLoop = NULL;
-#endif
-
 	m_modalDisabler = NULL;
+
+#ifdef __WXGTK__
+	gtk_window_set_modal(GTK_WINDOW(m_widget), FALSE);
+#endif
 
 	return m_modalReturnCode;
 }
@@ -234,14 +238,14 @@ void FBattleScreen::EndModal(int returnCode) {
 
 	SetReturnCode(returnCode);
 	m_modalActive = false;
-	Show(false);
-#ifdef __WXGTK__
-	RemoveGrab();
-#else
+
+	// Exit the event loop first (matching wxDialog::EndModal ordering), then
+	// hide the window.  Hiding before exiting can trigger GTK unmap events
+	// that re-enter the event dispatch while the loop is still marked running.
 	if (m_modalEventLoop != NULL && m_modalEventLoop->IsRunning()) {
 		m_modalEventLoop->Exit();
 	}
-#endif
+	Show(false);
 	m_closeInProgress = false;
 }
 

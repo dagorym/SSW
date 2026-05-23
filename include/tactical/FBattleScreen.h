@@ -66,9 +66,9 @@ public:
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 	/// Default destructor
 	~FBattleScreen();
-	/// Runs a class-owned event loop so legacy blocking launch sites stay source-compatible on wxFrame. On GTK, calls AddGrab() to acquire input focus above any parent-dialog grab, ensuring menu events are delivered.
+	/// Runs a class-owned event loop so legacy blocking launch sites stay source-compatible on wxFrame. On GTK, calls gtk_window_set_modal(TRUE) before Show() so the window acquires the input grab during the show phase, ensuring menu events are delivered even when launched from a modal dialog.
 	int ShowModal();
-	/// Ends frame-backed modal compatibility mode: hides the frame and exits the event loop (RemoveGrab() on GTK) without destroying stack-owned instances.
+	/// Ends frame-backed modal compatibility mode: exits the event loop first, then hides the frame (matching wxDialog::EndModal ordering) without destroying stack-owned instances.
 	void EndModal(int returnCode);
 	/// Returns true when modal compatibility mode is active.
 	bool IsModal() const;

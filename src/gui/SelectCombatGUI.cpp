@@ -194,6 +194,21 @@ void SelectCombatGUI::onView( wxCommandEvent& event ){
 	event.Skip();
 }
 
+/**
+ * @brief Handle the Attack! button press to launch a tactical battle.
+ *
+ * Resolves combat location and fleet assignments, then launches an
+ * FBattleScreen for the tactical encounter. This dialog is hidden
+ * before ShowModal() so that GTK releases its modal grab; without
+ * this, FBattleScreen cannot acquire the grab and its File->Quit
+ * menu item never generates wxEVT_MENU events.
+ *
+ * @param event wxCommandEvent from the Attack! button
+ *
+ * @author Claude Sonnet 4.6 (medium)
+ * @date Created: May 23, 2026
+ * @date Last Modified: May 23, 2026
+ */
 void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 	int planet = 0;  // this is the index of the planet in the planet list the attack is against
 	if(m_satharAttacking){
@@ -259,6 +274,11 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 		}
 	} else {
 		///@todo implement boardgame
+		// Hide this dialog before launching FBattleScreen so its GTK modal
+		// grab is released; hiding a modal GtkWindow calls gtk_grab_remove()
+		// internally, allowing FBattleScreen to acquire the grab cleanly and
+		// receive menu-item events (e.g. File->Quit).
+		Hide();
 		FBattleScreen bb;
 //		bb.MakeModal(true);
 		if (m_satharAttacking){
