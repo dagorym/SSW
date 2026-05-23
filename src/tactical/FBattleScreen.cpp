@@ -107,11 +107,13 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_modalDisabler(NULL),
 	m_modalEventLoop(NULL),
 	m_modalReturnCode(wxID_CANCEL),
-	m_modalActive(false)
+	m_modalActive(false),
+	m_closeInProgress(false)
 {
 	g_battleScreenConstructedCount++;
 	g_battleScreenLiveCount++;
 //	m_wd = new wxWindowDisabler(this);
+	SetExtraStyle(GetExtraStyle() | wxTOPLEVEL_EX_DIALOG);
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 //	this->MakeModal(true);
 	wxColour black(wxT("#000000"));// black
@@ -196,9 +198,7 @@ int FBattleScreen::ShowModal() {
 
 	m_modalActive = true;
 	m_modalReturnCode = wxID_CANCEL;
-	if (m_tacticalGame != NULL) {
-		m_tacticalGame->setCloseInProgress(false);
-	}
+	m_closeInProgress = false;
 
 	wxWindowDisabler modalDisabler(this);
 	m_modalDisabler = &modalDisabler;
@@ -225,9 +225,7 @@ void FBattleScreen::EndModal(int returnCode) {
 	if (m_modalEventLoop != NULL && m_modalEventLoop->IsRunning()) {
 		m_modalEventLoop->Exit();
 	}
-	if (m_tacticalGame != NULL) {
-		m_tacticalGame->setCloseInProgress(false);
-	}
+	m_closeInProgress = false;
 }
 
 bool FBattleScreen::IsModal() const {
@@ -739,38 +737,36 @@ void FBattleScreen::declareWinner(){
 }
 
 void FBattleScreen::closeBattleScreen(int returnCode) {
-	if (m_tacticalGame->isCloseInProgress()) {
+	if (m_closeInProgress) {
 		return;
 	}
 
-	m_tacticalGame->setCloseInProgress(true);
+	m_closeInProgress = true;
+	SetReturnCode(returnCode);
 
 	if (IsModal()) {
 		EndModal(returnCode);
 		return;
 	}
 
-	SetReturnCode(returnCode);
+	Hide();
 	Destroy();
 	if (!IsBeingDeleted()) {
-		m_tacticalGame->setCloseInProgress(false);
+		m_closeInProgress = false;
 	}
 }
 
 void FBattleScreen::onClose(wxCloseEvent & event) {
-	if (m_tacticalGame->isCloseInProgress()) {
-		event.Skip();
+	(void)event;
+	if (m_closeInProgress) {
 		return;
 	}
 
 	closeBattleScreen(GetReturnCode());
-	if (!IsModal()) {
-		event.Skip();
-	}
 }
 
 void FBattleScreen::onMenuQuit(wxCommandEvent & WXUNUSED(event)) {
-	closeBattleScreen(GetReturnCode());
+	Close(true);
 }
 
 void FBattleScreen::fireICM() {

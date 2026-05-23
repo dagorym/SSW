@@ -92,9 +92,6 @@ void setControlState(bool control) { m_control = control; }
 void setDone(bool done) { m_done = done; }
 bool getDone() const { return m_done; }
 
-void setCloseInProgress(bool closeInProgress) { m_closeInProgress = closeInProgress; }
-bool isCloseInProgress() const { return m_closeInProgress; }
-
 void setPlanet(int c) { m_planetChoice = c; }
 const int & getPlanetChoice() const { return m_planetChoice; }
 void setPlanetPosition(FPoint h) { m_planetPos = h; }
@@ -257,7 +254,6 @@ bool m_activePlayer;
 bool m_movingPlayer;
 bool m_moveComplete;
 bool m_done;
-bool m_closeInProgress;
 bool m_hasWinner;
 unsigned int m_winnerID;
 

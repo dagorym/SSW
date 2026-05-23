@@ -251,7 +251,6 @@ void FTacticalGame::reset() {
 	m_movingPlayer = true;
 	m_moveComplete = true;
 	m_done = false;
-	m_closeInProgress = false;
 	m_hasWinner = false;
 	m_winnerID = 0;
 	m_hasPlanet = false;

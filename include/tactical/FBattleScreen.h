@@ -38,7 +38,7 @@ class WXTacticalUI;
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 22, 2026
+ * @date Last Modified:  May 23, 2026
  */
 class FBattleScreen : public wxFrame
 {
@@ -59,7 +59,7 @@ public:
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  May 22, 2026
+	 * @date Last Modified:  May 23, 2026
 	 */
 	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1200,900 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxRESIZE_BORDER );
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
@@ -300,6 +300,8 @@ protected:
 	int m_modalReturnCode;
 	/// true while wxFrame modal compatibility mode is running
 	bool m_modalActive;
+	/// true while tactical close lifecycle is actively unwinding this surface
+	bool m_closeInProgress;
 //	/// window disabler object
 //	wxWindowDisabler *m_wd;
 
@@ -308,45 +310,46 @@ protected:
 	/**
 	 * @brief Close the tactical top-level through the shared modal and non-modal lifecycle.
 	 *
-	 * Stack-owned launch paths must unwind through EndModal(returnCode) before the
-	 * frame falls back to the non-modal destroy path used by heap-owned callers.
-	 * If the wx destroy request does not immediately mark the frame for deletion,
-	 * the close-in-progress guard is cleared so the first legitimate close request
-	 * cannot strand the tactical window behind stale guard state.
+	 * Stack-owned launch paths unwind through EndModal(returnCode) and return
+	 * without entering wx default frame destruction. Non-modal launch paths hide
+	 * the frame first so users see immediate closure, then schedule Destroy() for
+	 * wx pending-delete cleanup. If destruction is not scheduled, the local
+	 * close-in-progress guard is cleared so the first valid close request cannot
+	 * leave the tactical top-level stuck open.
 	 *
 	 * @param returnCode Return code propagated back to modal compatibility callers.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  May 22, 2026
-	 * @date Last Modified:  May 22, 2026
+	 * @date Last Modified:  May 23, 2026
 	 */
 	void closeBattleScreen(int returnCode = 0);
 	/**
 	 * @brief Handle title-bar close events through the shared battle-screen lifecycle.
 	 *
 	 * The native close event reuses closeBattleScreen(GetReturnCode()) so menu and
-	 * title-bar shutdown stay centralized in FBattleScreen. Non-modal callers then
-	 * continue through wxWidgets' default close handling instead of forcing an
-	 * application-loop shutdown path.
+	 * title-bar shutdown stay centralized in FBattleScreen. Accepted close events
+	 * are fully handled in this method and do not continue into wx default close
+	 * handling afterward.
 	 *
 	 * @param event wxWidgets top-level close event for the tactical frame.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  May 22, 2026
-	 * @date Last Modified:  May 22, 2026
+	 * @date Last Modified:  May 23, 2026
 	 */
 	void onClose(wxCloseEvent & event);
 	/**
-	 * @brief Handle `File -> Quit` by delegating into the shared battle-screen close path.
+	 * @brief Handle `File -> Quit` by requesting the same close path as title-bar close.
 	 *
-	 * Keeps tactical menu shutdown aligned with the existing modal and non-modal
-	 * close behavior instead of introducing a separate exit path.
+	 * Keeps tactical menu shutdown aligned with the native title-bar close event
+	 * by routing through wxWidgets Close(true) and the shared onClose(...) handler.
 	 *
 	 * @param event wxWidgets menu event raised for the tactical quit command.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  May 22, 2026
-	 * @date Last Modified:  May 22, 2026
+	 * @date Last Modified:  May 23, 2026
 	 */
 	void onMenuQuit(wxCommandEvent & event);
 
