@@ -1,0 +1,51 @@
+You are the Verifier Agent.
+
+Task summary:
+- Verify TBSCPP-001 close-lifecycle repair for `FBattleScreen` on tester branch `tbscpp-001-tester-20260522`.
+- Confirm menu quit and title-bar close share one accepted path, non-modal close hides then destroys, and modal close unwinds via `ShowModal()` return without destroying stack-owned instances.
+
+Acceptance criteria to verify:
+- Non-modal tactical screens visibly disappear after `File -> Quit`.
+- Non-modal tactical screens visibly disappear after title-bar `X`.
+- Stack-owned modal tactical screens return from `FBattleScreen::ShowModal()` for both close vectors.
+- Modal title-bar close does not destroy stack-owned `FBattleScreen` objects.
+- Close guard cannot strand first valid close request.
+- Close-in-progress state is not owned by tactical model state.
+- No `exit(...)`, no `ExitMainLoop(...)`, and no unrelated parent-window closure.
+
+Implementation and tester context:
+- Upstream implementer branch: `tbscpp-001-implementer-20260522`
+- Tester branch: `tbscpp-001-tester-20260522`
+- Worktree: `/home/tstephen/repos/SSW-worktrees/tbscpp-001-tester-20260522`
+- Implementation commit validated: `0012fb61ca1cf18746a5a74a07e5e1f51c2a8bb3` (short: `0012fb6`)
+
+Files modified by Implementer and Tester to inspect:
+- `include/tactical/FBattleScreen.h`
+- `src/tactical/FBattleScreen.cpp`
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/tester_report.md`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/tester_result.json`
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/verifier_prompt.txt`
+
+Commands executed by Tester:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests/gui && make`
+- `cd /home/tstephen/repos/SSW-worktrees/tbscpp-001-tester-20260522 && xvfb-run -a tests/gui/GuiTests`
+- `rg -n "setCloseInProgress|isCloseInProgress|m_closeInProgress" include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp`
+- `rg -n "ExitMainLoop|\\bexit\\s*\\(" include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp`
+
+Observed results:
+- TacticalTests: `Run: 157, Failures: 3` (expected source-contract failures tied to intentional lifecycle-contract updates in `FTacticalBattleScreenElectricalFireTest` and `FTacticalGameMechanicsTest`).
+- GuiTests: `Run: 40, Failures: 6` (known pre-existing baseline source-token failures unrelated to TBSCPP-001 changed files).
+- Build steps for tactical and GUI test runners succeeded.
+
+Tester conclusion:
+- TBSCPP-001 acceptance criteria validated by combined implementation-path inspection plus existing live close-path coverage.
+- No tester-side test-file edits were required.
+
+Shared artifact directory:
+- `artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
