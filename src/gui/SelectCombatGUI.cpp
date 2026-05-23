@@ -274,11 +274,6 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 		}
 	} else {
 		///@todo implement boardgame
-		// Hide this dialog before launching FBattleScreen so its GTK modal
-		// grab is released; hiding a modal GtkWindow calls gtk_grab_remove()
-		// internally, allowing FBattleScreen to acquire the grab cleanly and
-		// receive menu-item events (e.g. File->Quit).
-		Hide();
 		FBattleScreen bb;
 //		bb.MakeModal(true);
 		if (m_satharAttacking){

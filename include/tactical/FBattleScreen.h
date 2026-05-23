@@ -1,8 +1,9 @@
 /**
  * @file FBattleScreen.h
  * @brief Header file for BattleScreen class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified: May 23, 2026
  *
  */
 
@@ -293,8 +294,6 @@ protected:
 	FTacticalGame * m_tacticalGame;
 	/// wx tactical UI adapter owner during delegation migration
 	WXTacticalUI * m_tacticalUI;
-	/// modal shim disabler for wxFrame modal compatibility paths
-	wxWindowDisabler * m_modalDisabler;
 	/// modal shim event loop pointer for wxFrame modal compatibility paths
 	wxEventLoopBase * m_modalEventLoop;
 	/// modal shim return code storage for wxFrame modal compatibility paths
@@ -303,8 +302,6 @@ protected:
 	bool m_modalActive;
 	/// true while the screen-owned shared close lifecycle is actively unwinding this surface
 	bool m_closeInProgress;
-//	/// window disabler object
-//	wxWindowDisabler *m_wd;
 
 	/// Print a winner message and exit the battle screen through the shared close path.
 	void declareWinner();

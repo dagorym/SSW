@@ -12,6 +12,7 @@
 #include "wxWidgets.h"
 #include "core/FGameConfig.h"
 #include <wx/evtloop.h>
+#include <wx/modalhook.h>
 #ifdef __WXGTK__
 #include <gtk/gtk.h>
 #endif
@@ -107,7 +108,6 @@ void declareWinnerForCleanup(void * context) {
 }
 
 FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( (wxFrame *)NULL, -1, title, pos, size, style ),
-	m_modalDisabler(NULL),
 	m_modalEventLoop(NULL),
 	m_modalReturnCode(wxID_CANCEL),
 	m_modalActive(false),
@@ -178,6 +178,46 @@ TacticalUI(this);
 	Bind(wxEVT_CLOSE_WINDOW, &FBattleScreen::onClose, this);
 	Bind(wxEVT_SIZE, &FBattleScreen::onSize, this);
 
+#ifdef __WXGTK__
+	// wxWidgets' IsMenuEventAllowed() (src/gtk/menu.cpp) blocks menu events
+	// from wxFrame windows whenever wxModalDialogHook::GetOpenCount() > 0,
+	// i.e. whenever any wxDialog is running ShowModal().  FBattleScreen is a
+	// wxFrame acting as a modal window launched from within SelectCombatGUI's
+	// modal loop, so wx silently drops Quit menu events.
+	//
+	// Fix: connect an "activate" handler AFTER wx's own handler.  wx's handler
+	// returns early without dispatching the event when a modal dialog is open.
+	// Our after-handler detects that condition (GetOpenCount() > 0) and
+	// dispatches the wxCommandEvent directly, bypassing IsMenuEventAllowed.
+	{
+		GtkWidget* gtkMenuBar = GTK_WIDGET(menuBar->GetHandle());
+		GList* barItems = gtk_container_get_children(GTK_CONTAINER(gtkMenuBar));
+		if (barItems) {
+			GtkWidget* fileMenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(barItems->data));
+			if (fileMenu) {
+				GList* items = gtk_container_get_children(GTK_CONTAINER(fileMenu));
+				// File menu: Load(0), Save(1), Separator(2), Quit(3)
+				GList* quitNode = g_list_nth(items, 3);
+				if (quitNode) {
+					g_signal_connect_after(quitNode->data, "activate",
+						G_CALLBACK(+[](GtkMenuItem*, void* data) {
+							FBattleScreen* self = static_cast<FBattleScreen*>(data);
+							// Only dispatch when wx's handler was blocked.
+							// When GetOpenCount()==0, wx already dispatched normally.
+							if (wxModalDialogHook::GetOpenCount() > 0) {
+								wxCommandEvent evt(wxEVT_MENU, ID_TacticalQuit);
+								evt.SetEventObject(self);
+								self->HandleWindowEvent(evt);
+							}
+						}), this);
+				}
+				g_list_free(items);
+			}
+			g_list_free(barItems);
+		}
+	}
+#endif
+
 }
 
 FBattleScreen::~FBattleScreen(){
@@ -203,14 +243,12 @@ int FBattleScreen::ShowModal() {
 	m_modalReturnCode = wxID_CANCEL;
 	m_closeInProgress = false;
 
-	wxWindowDisabler modalDisabler(this);
-	m_modalDisabler = &modalDisabler;
+	// NOTE: wxDialog::ShowModal() on GTK does NOT use wxWindowDisabler — it
+	// relies purely on gtk_window_set_modal() for input restriction.  We
+	// follow the same pattern: no wxWindowDisabler here.
 
 	// Mirror wxDialog::ShowModal(): mark the window as modal before Show() so
-	// GTK calls gtk_grab_add() during the show phase, which puts FBattleScreen
-	// at the top of the GTK input-grab stack and overrides any existing grab
-	// held by a parent dialog (e.g. SelectCombatGUI).  Without this, the
-	// parent dialog's grab silently swallows menu-item activate signals.
+	// GTK calls gtk_grab_add() during the show phase.
 #ifdef __WXGTK__
 	gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE);
 #endif
@@ -222,7 +260,6 @@ int FBattleScreen::ShowModal() {
 	m_modalEventLoop = &modalEventLoop;
 	m_modalEventLoop->Run();
 	m_modalEventLoop = NULL;
-	m_modalDisabler = NULL;
 
 #ifdef __WXGTK__
 	gtk_window_set_modal(GTK_WINDOW(m_widget), FALSE);
