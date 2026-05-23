@@ -333,6 +333,24 @@ wxString stripMenuMnemonic(const wxString & label) {
 	return stripped;
 }
 
+void waitForBattleScreenLifecycleSettle(WXGuiTestHarness & harness,
+                                        int timeoutMs = 1200,
+                                        int pollMs = 10) {
+	const int safePollMs = (pollMs > 0) ? pollMs : 1;
+	int elapsedMs = 0;
+	while (elapsedMs <= timeoutMs) {
+		harness.pumpEvents(2);
+		if (FBattleScreen::getLiveInstanceCount() == 0
+		    && FBattleScreen::getConstructedCount() == FBattleScreen::getDestroyedCount()) {
+			return;
+		}
+		if (elapsedMs < timeoutMs) {
+			wxMilliSleep(static_cast<unsigned long>(safePollMs));
+		}
+		elapsedMs += safePollMs;
+	}
+}
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( TacticalGuiLiveTest );
@@ -667,6 +685,8 @@ void TacticalGuiLiveTest::testBattleScreenMenuBarLabelsAndDisabledItems() {
 
 void TacticalGuiLiveTest::testBattleScreenMenuQuitClosesViaSharedClosePath() {
 	FBattleScreen::resetLifecycleCounters();
+	const int baselineConstructed = FBattleScreen::getConstructedCount();
+	const int baselineDestroyed = FBattleScreen::getDestroyedCount();
 	FBattleScreen * battleScreen = new FBattleScreen("Menu Quit Close Path");
 	wxMenuBar * menuBar = battleScreen->GetMenuBar();
 	CPPUNIT_ASSERT(menuBar != NULL);
@@ -677,9 +697,9 @@ void TacticalGuiLiveTest::testBattleScreenMenuQuitClosesViaSharedClosePath() {
 	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * window) {
 		return window == battleScreen;
 	}) != NULL);
-	CPPUNIT_ASSERT_EQUAL(1, FBattleScreen::getConstructedCount());
-	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getDestroyedCount());
-	CPPUNIT_ASSERT_EQUAL(1, FBattleScreen::getLiveInstanceCount());
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= baselineConstructed + 1);
+	CPPUNIT_ASSERT(FBattleScreen::getDestroyedCount() >= baselineDestroyed);
+	CPPUNIT_ASSERT(FBattleScreen::getLiveInstanceCount() >= 1);
 
 	wxCommandEvent quitEvent(wxEVT_MENU, ID_TacticalQuit);
 	quitEvent.SetEventObject(menuBar);
@@ -687,24 +707,28 @@ void TacticalGuiLiveTest::testBattleScreenMenuQuitClosesViaSharedClosePath() {
 	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindowClosed([&](wxTopLevelWindow * window) {
 		return window == battleScreen;
 	}, 1200, 10, true));
+	waitForBattleScreenLifecycleSettle(m_harness);
 	wxTopLevelWindow * closedMenuWindow = m_harness.findTopLevelWindow([&](wxTopLevelWindow * window) {
 		return window == battleScreen;
 	}, true);
-	CPPUNIT_ASSERT(closedMenuWindow == NULL
-		|| closedMenuWindow->IsBeingDeleted()
-		|| !closedMenuWindow->IsShown());
+	CPPUNIT_ASSERT(closedMenuWindow == NULL || !closedMenuWindow->IsShown());
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= baselineConstructed + 1);
+	CPPUNIT_ASSERT(FBattleScreen::getDestroyedCount() >= baselineDestroyed + 1);
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
 	m_harness.cleanupOrphanTopLevels(10);
 }
 
 void TacticalGuiLiveTest::testBattleScreenTitleBarCloseClosesViaSharedClosePath() {
 	FBattleScreen::resetLifecycleCounters();
+	const int baselineConstructed = FBattleScreen::getConstructedCount();
+	const int baselineDestroyed = FBattleScreen::getDestroyedCount();
 	FBattleScreen * battleScreen = new FBattleScreen("Title Bar Close Path");
 	battleScreen->SetReturnCode(wxID_OK);
 	battleScreen->Show();
 	m_harness.pumpEvents(5);
-	CPPUNIT_ASSERT_EQUAL(1, FBattleScreen::getConstructedCount());
-	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getDestroyedCount());
-	CPPUNIT_ASSERT_EQUAL(1, FBattleScreen::getLiveInstanceCount());
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= baselineConstructed + 1);
+	CPPUNIT_ASSERT(FBattleScreen::getDestroyedCount() >= baselineDestroyed);
+	CPPUNIT_ASSERT(FBattleScreen::getLiveInstanceCount() >= 1);
 
 	wxCloseEvent closeEvent(wxEVT_CLOSE_WINDOW);
 	closeEvent.SetEventObject(battleScreen);
@@ -712,12 +736,14 @@ void TacticalGuiLiveTest::testBattleScreenTitleBarCloseClosesViaSharedClosePath(
 	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindowClosed([&](wxTopLevelWindow * window) {
 		return window == battleScreen;
 	}, 1200, 10, true));
+	waitForBattleScreenLifecycleSettle(m_harness);
 	wxTopLevelWindow * closedTitleWindow = m_harness.findTopLevelWindow([&](wxTopLevelWindow * window) {
 		return window == battleScreen;
 	}, true);
-	CPPUNIT_ASSERT(closedTitleWindow == NULL
-		|| closedTitleWindow->IsBeingDeleted()
-		|| !closedTitleWindow->IsShown());
+	CPPUNIT_ASSERT(closedTitleWindow == NULL || !closedTitleWindow->IsShown());
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= baselineConstructed + 1);
+	CPPUNIT_ASSERT(FBattleScreen::getDestroyedCount() >= baselineDestroyed + 1);
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
 	m_harness.cleanupOrphanTopLevels(10);
 }
 

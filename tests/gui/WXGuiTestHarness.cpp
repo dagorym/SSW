@@ -235,17 +235,23 @@ bool WXGuiTestHarness::waitForTopLevelWindowClosed(const std::function<bool(wxTo
 	int elapsedMs = 0;
 	while (elapsedMs <= timeoutMs) {
 		wxTopLevelWindow * observed = findTopLevelWindow(predicate, includeBeingDeleted);
-		if (observed == NULL || observed->IsBeingDeleted() || !observed->IsShown()) {
+		if (observed == NULL || !observed->IsShown()) {
 			return true;
 		}
 		pumpEvents(1);
+		if (wxTheApp != NULL) {
+			wxTheApp->ProcessIdle();
+		}
 		if (elapsedMs < timeoutMs) {
 			wxMilliSleep(static_cast<unsigned long>(safePollMs));
 		}
 		elapsedMs += safePollMs;
 	}
+	if (wxTheApp != NULL) {
+		wxTheApp->ProcessIdle();
+	}
 	wxTopLevelWindow * observed = findTopLevelWindow(predicate, includeBeingDeleted);
-	return observed == NULL || observed->IsBeingDeleted() || !observed->IsShown();
+	return observed == NULL || !observed->IsShown();
 }
 
 wxDialog * WXGuiTestHarness::findModalDialog() const {
@@ -265,18 +271,31 @@ wxDialog * WXGuiTestHarness::waitForModalDialog(int timeoutMs, int pollMs) {
 }
 
 int WXGuiTestHarness::cleanupOrphanTopLevels(int pumpIterations) {
-	const std::vector<wxTopLevelWindow *> topLevels = getTopLevelWindows(false);
+	const std::vector<wxTopLevelWindow *> topLevels = getTopLevelWindows(true);
 	for (std::vector<wxTopLevelWindow *>::const_iterator itr = topLevels.begin();
 	     itr != topLevels.end();
 	     ++itr) {
-		if (*itr != NULL && !(*itr)->IsBeingDeleted() && (*itr)->IsShown()) {
-			(*itr)->Destroy();
+		wxTopLevelWindow * topLevel = *itr;
+		if (topLevel == NULL || !topLevel->IsShown()) {
+			continue;
+		}
+
+		wxDialog * dialog = dynamic_cast<wxDialog *>(topLevel);
+		if (dialog != NULL && dialog->IsModal()) {
+			dialog->EndModal(wxID_CANCEL);
+		}
+
+		if (topLevel->IsShown()) {
+			topLevel->Hide();
+		}
+		if (!topLevel->IsBeingDeleted()) {
+			topLevel->Close(true);
 		}
 	}
 	pumpEvents(pumpIterations);
 
 	int shownTopLevels = 0;
-	const std::vector<wxTopLevelWindow *> remainingTopLevels = getTopLevelWindows(false);
+	const std::vector<wxTopLevelWindow *> remainingTopLevels = getTopLevelWindows(true);
 	for (std::vector<wxTopLevelWindow *>::const_iterator itr = remainingTopLevels.begin();
 	     itr != remainingTopLevels.end();
 	     ++itr) {

@@ -73,9 +73,9 @@ public:
 	 *
 	 * @param iterations Number of pump iterations to perform.
 	 *
-	 * @author gpt-5.3-codex (medium)
+	 * @author gpt-5.3-codex (medium), gpt-5.4 (high)
 	 * @date Created: Apr 04, 2026
-	 * @date Last Modified: Apr 04, 2026
+	 * @date Last Modified: May 23, 2026
 	 */
 	void pumpEvents(int iterations = 5);
 	/**
@@ -118,17 +118,17 @@ public:
 	                                         int timeoutMs = 250,
 	                                         int pollMs = 5);
 	/**
-	 * @brief Waits until a matching top-level window is no longer present.
+	 * @brief Waits until a matching top-level window is hidden or fully removed.
 	 *
 	 * @param predicate Callback that identifies the window to observe.
 	 * @param timeoutMs Total wait budget in milliseconds.
 	 * @param pollMs Poll interval in milliseconds.
 	 * @param includeBeingDeleted When true, waits for pending-delete windows to be removed too.
-	 * @return True when the target window is gone before timeout, otherwise false.
+	 * @return True when the target window is absent or no longer shown before timeout.
 	 *
 	 * @author gpt-5.4 (high)
 	 * @date Created: May 22, 2026
-	 * @date Last Modified: May 22, 2026
+	 * @date Last Modified: May 23, 2026
 	 */
 	bool waitForTopLevelWindowClosed(const std::function<bool(wxTopLevelWindow *)> & predicate,
 	                                 int timeoutMs = 250,
@@ -157,14 +157,14 @@ public:
 	 */
 	wxDialog * waitForModalDialog(int timeoutMs = 250, int pollMs = 5);
 	/**
-	 * @brief Destroys shown top-level windows and reports how many remain visible.
+	 * @brief Requests close for shown top-level windows and reports how many remain visible.
 	 *
 	 * @param pumpIterations Number of event-pump iterations after destroy requests.
 	 * @return Count of shown top-level windows remaining after cleanup.
 	 *
-	 * @author gpt-5.3-codex (medium)
+	 * @author gpt-5.3-codex (medium), gpt-5.4 (high)
 	 * @date Created: Apr 04, 2026
-	 * @date Last Modified: Apr 04, 2026
+	 * @date Last Modified: May 23, 2026
 	 */
 	int cleanupOrphanTopLevels(int pumpIterations = 10);
 	/**

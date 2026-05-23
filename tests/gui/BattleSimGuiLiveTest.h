@@ -22,7 +22,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 22, 2026
+ * @date Last Modified: May 23, 2026
  */
 class BattleSimGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( BattleSimGuiLiveTest );
@@ -31,6 +31,7 @@ CPPUNIT_TEST( testLocalGameDialogLaunchesPredefinedAndCustomModalChains );
 CPPUNIT_TEST( testBattleSimLaunchDialogsRetainFirstShowSizingContracts );
 CPPUNIT_TEST( testStartupLaunchCreatesCenteredSplashAndBattleSimFrame );
 CPPUNIT_TEST( testScenarioDialogMenuQuitUnwindsBattleScreenModalCaller );
+CPPUNIT_TEST( testScenarioDialogTitleBarCloseUnwindsBattleScreenModalCaller );
 CPPUNIT_TEST( testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage );
 CPPUNIT_TEST( testScenarioEditorStartBattleLaunchesBattleScreenWithLifecycleCoverage );
 CPPUNIT_TEST_SUITE_END();
@@ -97,6 +98,14 @@ public:
 	 * @date Last Modified: May 22, 2026
 	 */
 	void testScenarioDialogMenuQuitUnwindsBattleScreenModalCaller();
+	/**
+	 * @brief Verifies scenario-launched battle screen unwinds modal caller via title-bar close.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 23, 2026
+	 * @date Last Modified: May 23, 2026
+	 */
+	void testScenarioDialogTitleBarCloseUnwindsBattleScreenModalCaller();
 	/**
 	 * @brief Validates scenario-dialog flow launches battle screen with lifecycle checks.
 	 *

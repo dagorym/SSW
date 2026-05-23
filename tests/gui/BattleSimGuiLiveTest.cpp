@@ -111,6 +111,24 @@ void forceCloseShownTopLevels(WXGuiTestHarness & harness, int attempts = 3) {
 	}
 }
 
+void waitForBattleScreenLifecycleSettle(WXGuiTestHarness & harness,
+                                        int timeoutMs = 1500,
+                                        int pollMs = 10) {
+	const int safePollMs = (pollMs > 0) ? pollMs : 1;
+	int elapsedMs = 0;
+	while (elapsedMs <= timeoutMs) {
+		harness.pumpEvents(2);
+		if (FBattleScreen::getLiveInstanceCount() == 0
+		    && FBattleScreen::getConstructedCount() == FBattleScreen::getDestroyedCount()) {
+			return;
+		}
+		if (elapsedMs < timeoutMs) {
+			wxMilliSleep(static_cast<unsigned long>(safePollMs));
+		}
+		elapsedMs += safePollMs;
+	}
+}
+
 bool wasTopLevelPresent(const std::vector<wxTopLevelWindow *> & existingTopLevels, wxTopLevelWindow * candidate) {
 	for (std::vector<wxTopLevelWindow *>::const_iterator itr = existingTopLevels.begin();
 	     itr != existingTopLevels.end();
@@ -623,6 +641,7 @@ void BattleSimGuiLiveTest::testScenarioDialogMenuQuitUnwindsBattleScreenModalCal
 
 	bool battleScreenPresented = false;
 	bool quitPosted = false;
+	FBattleScreen * launchedBattleScreen = NULL;
 	m_harness.runVoidFunctionWithAction([&]() {
 		dialog->clickScenario1();
 	}, [&]() {
@@ -632,14 +651,81 @@ void BattleSimGuiLiveTest::testScenarioDialogMenuQuitUnwindsBattleScreenModalCal
 		FBattleScreen * battleScreen = dynamic_cast<FBattleScreen *>(launchedTopLevel);
 		battleScreenPresented = (battleScreen != NULL);
 		if (battleScreen != NULL) {
+			launchedBattleScreen = battleScreen;
 			wxCommandEvent quitEvent(wxEVT_MENU, ID_TacticalQuit);
-			battleScreen->ProcessWindowEvent(quitEvent);
+			quitEvent.SetEventObject(battleScreen->GetMenuBar());
+			wxPostEvent(battleScreen, quitEvent);
 			quitPosted = true;
 		}
 	}, wxID_CANCEL, 350);
 
 	CPPUNIT_ASSERT(battleScreenPresented);
 	CPPUNIT_ASSERT(quitPosted);
+	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindowClosed([&](wxTopLevelWindow * window) {
+		return window == launchedBattleScreen;
+	}, 1500, 10, true));
+	waitForBattleScreenLifecycleSettle(m_harness);
+	wxTopLevelWindow * closedBattleScreen = m_harness.findTopLevelWindow([&](wxTopLevelWindow * window) {
+		return window == launchedBattleScreen;
+	}, true);
+	CPPUNIT_ASSERT(closedBattleScreen == NULL || !closedBattleScreen->IsShown());
+	CPPUNIT_ASSERT(dialog->IsShown());
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
+	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
+
+	dialog->Hide();
+	dialog->Destroy();
+	parent->Hide();
+	parent->Destroy();
+	m_harness.pumpEvents(10);
+	stabilizeTopLevels(m_harness);
+	forceCloseShownTopLevels(m_harness);
+	CPPUNIT_ASSERT_EQUAL(0, countShownTopLevelsNotInBaseline(m_harness, baselineTopLevels));
+}
+
+void BattleSimGuiLiveTest::testScenarioDialogTitleBarCloseUnwindsBattleScreenModalCaller() {
+	const std::vector<wxTopLevelWindow *> baselineTopLevels = m_harness.getTopLevelWindows(false);
+	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Scenario Title Close Parent");
+	parent->Show();
+	m_harness.pumpEvents();
+
+	FBattleScreen::resetLifecycleCounters();
+	ScenarioDialogTestPeer * dialog = new ScenarioDialogTestPeer(parent);
+	dialog->Show();
+	m_harness.pumpEvents();
+	CPPUNIT_ASSERT(dialog->IsShown());
+
+	bool battleScreenPresented = false;
+	bool closePosted = false;
+	FBattleScreen * launchedBattleScreen = NULL;
+	m_harness.runVoidFunctionWithAction([&]() {
+		dialog->clickScenario1();
+	}, [&]() {
+		wxTopLevelWindow * launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
+			return dynamic_cast<FBattleScreen *>(topLevel) != NULL;
+		}, 250, 5);
+		FBattleScreen * battleScreen = dynamic_cast<FBattleScreen *>(launchedTopLevel);
+		battleScreenPresented = (battleScreen != NULL);
+		if (battleScreen != NULL) {
+			launchedBattleScreen = battleScreen;
+			wxCloseEvent closeEvent(wxEVT_CLOSE_WINDOW);
+			closeEvent.SetEventObject(battleScreen);
+			wxPostEvent(battleScreen, closeEvent);
+			closePosted = true;
+		}
+	}, wxID_CANCEL, 350);
+
+	CPPUNIT_ASSERT(battleScreenPresented);
+	CPPUNIT_ASSERT(closePosted);
+	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindowClosed([&](wxTopLevelWindow * window) {
+		return window == launchedBattleScreen;
+	}, 1500, 10, true));
+	waitForBattleScreenLifecycleSettle(m_harness);
+	wxTopLevelWindow * closedBattleScreen = m_harness.findTopLevelWindow([&](wxTopLevelWindow * window) {
+		return window == launchedBattleScreen;
+	}, true);
+	CPPUNIT_ASSERT(closedBattleScreen == NULL || !closedBattleScreen->IsShown());
 	CPPUNIT_ASSERT(dialog->IsShown());
 	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
 	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());

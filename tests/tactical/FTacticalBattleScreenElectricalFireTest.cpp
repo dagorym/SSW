@@ -107,36 +107,38 @@ CPPUNIT_ASSERT(body.find("wxMessageBox") == std::string::npos);
 }
 
 void FTacticalBattleScreenElectricalFireTest::testCloseBattleScreenUsesModelCloseGuardWithModalFirstPath() {
-// AC: close logic stays behind one guarded helper with close-in-progress protection and shared vector routing.
+// AC: close logic stays behind one guarded helper with FBattleScreen-owned close state and shared vector routing.
 const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string closeBody = extractFunctionBody(source, "void FBattleScreen::closeBattleScreen(int returnCode)");
 const std::string onCloseBody = extractFunctionBody(source, "void FBattleScreen::onClose(wxCloseEvent & event)");
 const std::string menuQuitBody = extractFunctionBody(source, "void FBattleScreen::onMenuQuit(wxCommandEvent & WXUNUSED(event))");
 
-assertContains(closeBody, "if (m_tacticalGame->isCloseInProgress()) {");
-assertContains(closeBody, "m_tacticalGame->setCloseInProgress(true);");
+assertContains(closeBody, "if (m_closeInProgress) {");
+assertContains(closeBody, "m_closeInProgress = true;");
 assertContains(closeBody, "if (IsModal()) {");
 assertContains(closeBody, "EndModal(returnCode);");
 assertContains(closeBody, "SetReturnCode(returnCode);");
+assertContains(closeBody, "Hide();");
 assertContains(closeBody, "Destroy();");
 assertContains(closeBody, "if (!IsBeingDeleted()) {");
-assertContains(closeBody, "m_tacticalGame->setCloseInProgress(false);");
+assertContains(closeBody, "m_closeInProgress = false;");
 
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "Destroy();"));
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "EndModal(returnCode);"));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "setCloseInProgress(false);"));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "if (m_tacticalGame->isCloseInProgress()) {"));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "m_tacticalGame->setCloseInProgress(true);"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "if (m_closeInProgress) {"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "m_closeInProgress = true;"));
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(closeBody, "m_closeInProgress = false;"));
+CPPUNIT_ASSERT(closeBody.find("m_tacticalGame->isCloseInProgress()") == std::string::npos);
+CPPUNIT_ASSERT(closeBody.find("m_tacticalGame->setCloseInProgress(") == std::string::npos);
 
 std::vector<std::string> onCloseSequence;
-onCloseSequence.push_back("if (m_tacticalGame->isCloseInProgress()) {");
-onCloseSequence.push_back("event.Skip();");
-onCloseSequence.push_back("return;");
+onCloseSequence.push_back("if (m_closeInProgress) {");
 onCloseSequence.push_back("closeBattleScreen(GetReturnCode());");
 assertAppearsInOrder(onCloseBody, onCloseSequence);
-assertContains(onCloseBody, "if (!IsModal()) {");
-assertContains(onCloseBody, "event.Skip();");
-assertContains(menuQuitBody, "closeBattleScreen(GetReturnCode());");
+CPPUNIT_ASSERT(onCloseBody.find("event.Skip();") == std::string::npos);
+CPPUNIT_ASSERT(onCloseBody.find("m_tacticalGame->isCloseInProgress()") == std::string::npos);
+assertContains(menuQuitBody, "Close(true);");
+CPPUNIT_ASSERT(menuQuitBody.find("closeBattleScreen(") == std::string::npos);
 
 CPPUNIT_ASSERT(source.find("exit(") == std::string::npos);
 CPPUNIT_ASSERT(source.find("ExitMainLoop") == std::string::npos);
@@ -231,7 +233,7 @@ CPPUNIT_ASSERT(ctorBody.find("m_tacticalUI = NULL") == std::string::npos);
 
 void FTacticalBattleScreenElectricalFireTest::testBattleScreenConstructorBuildsMenuBarAndQuitBinding() {
 // AC: FBattleScreen constructor installs File/Settings/Help menu bar with disabled non-Quit entries.
-// AC: Quit command is the only active wxEVT_MENU binding and routes to closeBattleScreen(GetReturnCode()).
+// AC: Quit command is the only active wxEVT_MENU binding and routes to the shared close event path.
 const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string ctorBody = extractFunctionBody(source, "FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wxSize& size, long style )");
 const std::string menuQuitBody = extractFunctionBody(source, "void FBattleScreen::onMenuQuit(wxCommandEvent & WXUNUSED(event))");
@@ -259,7 +261,8 @@ assertAppearsInOrder(ctorBody, std::vector<std::string>{
 });
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(ctorBody, "Bind(wxEVT_MENU, &FBattleScreen::onMenuQuit, this, ID_TacticalQuit);"));
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(ctorBody, "Bind(wxEVT_MENU,"));
-assertContains(menuQuitBody, "closeBattleScreen(GetReturnCode());");
+assertContains(menuQuitBody, "Close(true);");
+CPPUNIT_ASSERT(menuQuitBody.find("closeBattleScreen(") == std::string::npos);
 CPPUNIT_ASSERT(menuQuitBody.find("exit(") == std::string::npos);
 CPPUNIT_ASSERT(source.find("exit(") == std::string::npos);
 }
