@@ -16,12 +16,13 @@ namespace FrontierTests {
  * @brief Validates tactical live-GUI adapter flows, geometry, and modal behavior.
  *
  * The fixture drives parent-backed tactical dialogs and button-layout assertions to keep
- * tactical runtime interactions deterministic across redraw, prompt-spacing, and selection
- * scenarios.
+ * tactical runtime interactions deterministic across redraw, prompt-spacing, selection, and
+ * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
+ * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 22, 2026
+ * @date Last Modified: May 23, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -78,17 +79,23 @@ void testBattleScreenMenuBarLabelsAndDisabledItems();
 /**
  * @brief Verifies tactical Quit menu command closes through the shared close path.
  *
+ * The launched `FBattleScreen` must become hidden or absent, and lifecycle counters must
+ * settle so the test fails if a shown pending-delete frame is left behind.
+ *
  * @author gpt-5.4 (high)
  * @date Created: May 22, 2026
- * @date Last Modified: May 22, 2026
+ * @date Last Modified: May 23, 2026
  */
 void testBattleScreenMenuQuitClosesViaSharedClosePath();
 /**
  * @brief Verifies tactical title-bar close uses shared close lifecycle handling.
  *
+ * The launched `FBattleScreen` must become hidden or absent, and lifecycle counters must
+ * settle so the test exercises the real close event path instead of a pending-delete shortcut.
+ *
  * @author gpt-5.4 (high)
  * @date Created: May 22, 2026
- * @date Last Modified: May 22, 2026
+ * @date Last Modified: May 23, 2026
  */
 void testBattleScreenTitleBarCloseClosesViaSharedClosePath();
 /**

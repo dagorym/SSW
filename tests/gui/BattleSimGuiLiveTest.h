@@ -18,7 +18,9 @@ namespace FrontierTests {
  *
  * The fixture validates BattleSim launcher dialogs, startup splash/frame creation, and
  * scenario-to-battle-screen launch paths while keeping top-level window lifecycle cleanup
- * deterministic under the shared GUI harness.
+ * deterministic under the shared GUI harness. Modal tactical close-path coverage now requires
+ * the caller to unwind and the launched `FBattleScreen` instance to stop showing and fully
+ * settle its lifecycle counters.
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
@@ -93,13 +95,18 @@ public:
 	/**
 	 * @brief Verifies scenario-launched battle screen unwinds modal caller via File->Quit.
 	 *
+	 * The modal caller must return with no shown or live `FBattleScreen` left behind.
+	 *
 	 * @author gpt-5.4 (high)
 	 * @date Created: May 22, 2026
-	 * @date Last Modified: May 22, 2026
+	 * @date Last Modified: May 23, 2026
 	 */
 	void testScenarioDialogMenuQuitUnwindsBattleScreenModalCaller();
 	/**
 	 * @brief Verifies scenario-launched battle screen unwinds modal caller via title-bar close.
+	 *
+	 * The modal caller must return with no shown or live `FBattleScreen` left behind after a
+	 * real posted close event.
 	 *
 	 * @author gpt-5.4 (high)
 	 * @date Created: May 23, 2026

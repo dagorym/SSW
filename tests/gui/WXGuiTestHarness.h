@@ -20,11 +20,12 @@ namespace FrontierTests {
  *
  * The harness centralizes wx runtime lifecycle management, event-pump utilities, and
  * deterministic modal dialog helpers so GUI fixtures can assert runtime behavior without
- * duplicating setup and teardown scaffolding.
+ * duplicating setup and teardown scaffolding. Close-wait helpers treat shown pending-delete
+ * top-level windows as still open until wx idle cleanup hides or removes them.
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 22, 2026
+ * @date Last Modified: May 23, 2026
  */
 class WXGuiTestHarness {
 private:
@@ -123,7 +124,8 @@ public:
 	 * @param predicate Callback that identifies the window to observe.
 	 * @param timeoutMs Total wait budget in milliseconds.
 	 * @param pollMs Poll interval in milliseconds.
-	 * @param includeBeingDeleted When true, waits for pending-delete windows to be removed too.
+	 * @param includeBeingDeleted When true, keeps observing pending-delete windows until they are
+	 *        hidden or absent instead of treating `IsBeingDeleted()` alone as success.
 	 * @return True when the target window is absent or no longer shown before timeout.
 	 *
 	 * @author gpt-5.4 (high)
@@ -159,7 +161,10 @@ public:
 	/**
 	 * @brief Requests close for shown top-level windows and reports how many remain visible.
 	 *
-	 * @param pumpIterations Number of event-pump iterations after destroy requests.
+	 * Modal dialogs are unwound before close requests, and shown pending-delete top levels are
+	 * hidden so teardown waits for wx idle cleanup instead of leaving visible orphan windows.
+	 *
+	 * @param pumpIterations Number of event-pump iterations after close requests.
 	 * @return Count of shown top-level windows remaining after cleanup.
 	 *
 	 * @author gpt-5.3-codex (medium), gpt-5.4 (high)
