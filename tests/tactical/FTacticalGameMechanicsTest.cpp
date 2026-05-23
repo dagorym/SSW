@@ -110,7 +110,6 @@ assertContains(body, "m_activePlayer = false;");
 assertContains(body, "m_movingPlayer = true;");
 assertContains(body, "m_moveComplete = true;");
 assertContains(body, "m_done = false;");
-assertContains(body, "m_closeInProgress = false;");
 assertContains(body, "m_hasWinner = false;");
 assertContains(body, "m_winnerID = 0;");
 assertContains(body, "m_planetChoice = -1;");

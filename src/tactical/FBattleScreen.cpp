@@ -1,8 +1,9 @@
 /**
  * @file FBattleScreen.cpp
  * @brief Implementation file for BattleScreen class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified:  May 23, 2026
  *
  */
 
@@ -11,8 +12,7 @@
 #include "wxWidgets.h"
 #include "core/FGameConfig.h"
 #include <wx/evtloop.h>
-#include "gui/WX\
-TacticalUI.h"
+#include "gui/WXTacticalUI.h"
 #include "tactical/ITacticalUI.h"
 #include "tactical/FTacticalGame.h"
 
@@ -202,13 +202,26 @@ int FBattleScreen::ShowModal() {
 
 	wxWindowDisabler modalDisabler(this);
 	m_modalDisabler = &modalDisabler;
+
 	Show(true);
 	Raise();
 
+	// AddGrab() adds an input grab for this window at the GTK level,
+	// overriding any grab held by a parent dialog (e.g. SelectCombatGUI).
+	// This ensures FBattleScreen receives GTK input events — including
+	// menu-item activate signals — even when launched from a modal dialog.
+	// It also blocks here, running its own event loop until RemoveGrab()
+	// is called from EndModal().  On non-GTK platforms we fall back to a
+	// plain wxEventLoop.
+#ifdef __WXGTK__
+	AddGrab();
+#else
 	wxEventLoop modalEventLoop;
 	m_modalEventLoop = &modalEventLoop;
 	m_modalEventLoop->Run();
 	m_modalEventLoop = NULL;
+#endif
+
 	m_modalDisabler = NULL;
 
 	return m_modalReturnCode;
@@ -222,9 +235,13 @@ void FBattleScreen::EndModal(int returnCode) {
 	SetReturnCode(returnCode);
 	m_modalActive = false;
 	Show(false);
+#ifdef __WXGTK__
+	RemoveGrab();
+#else
 	if (m_modalEventLoop != NULL && m_modalEventLoop->IsRunning()) {
 		m_modalEventLoop->Exit();
 	}
+#endif
 	m_closeInProgress = false;
 }
 

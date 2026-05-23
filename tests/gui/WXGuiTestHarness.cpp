@@ -5,6 +5,7 @@
 
 #include "WXGuiTestHarness.h"
 
+#include "tactical/FBattleScreen.h"
 #include <wx/app.h>
 #include <wx/debug.h>
 #include <wx/dialog.h>
@@ -49,9 +50,11 @@ class AnyModalDismissTimer : public wxTimer {
 private:
 	int m_returnCode;
 	wxDialog * m_lastClosedDialog;
+	Frontier::FBattleScreen * m_lastClosedBattleScreen;
 
 public:
-	explicit AnyModalDismissTimer(int returnCode) : m_returnCode(returnCode), m_lastClosedDialog(NULL) {
+	explicit AnyModalDismissTimer(int returnCode)
+		: m_returnCode(returnCode), m_lastClosedDialog(NULL), m_lastClosedBattleScreen(NULL) {
 	}
 
 	virtual void Notify() wxOVERRIDE;
@@ -64,6 +67,30 @@ void ModalDismissTimer::Notify() {
 }
 
 void AnyModalDismissTimer::Notify() {
+	// Check for FBattleScreen custom-modal instances first (FBattleScreen is a
+	// wxFrame, not a wxDialog, so the standard wxDialog scan below misses it).
+	{
+		wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
+		Frontier::FBattleScreen * lastModalBattleScreen = NULL;
+		while (node != NULL) {
+			Frontier::FBattleScreen * bs = dynamic_cast<Frontier::FBattleScreen *>(node->GetData());
+			if (bs != NULL && bs->IsModal()) {
+				lastModalBattleScreen = bs;
+			}
+			node = node->GetNext();
+		}
+		if (lastModalBattleScreen != NULL) {
+			if (lastModalBattleScreen == m_lastClosedBattleScreen) {
+				return;
+			}
+			m_lastClosedBattleScreen = lastModalBattleScreen;
+			lastModalBattleScreen->EndModal(m_returnCode);
+			return;
+		} else {
+			m_lastClosedBattleScreen = NULL;
+		}
+	}
+
 	wxWindow * active = wxGetActiveWindow();
 	wxDialog * activeDialog = dynamic_cast<wxDialog *>(active);
 	if (activeDialog != NULL && activeDialog->IsModal()) {

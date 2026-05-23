@@ -37,7 +37,7 @@ class WXTacticalUI;
  * destruction and modal callers unwind back to their launch sites without
  * allowing default frame destruction to touch stack-owned instances.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium)
  * @date Created:  Jul 11, 2008
  * @date Last Modified:  May 23, 2026
  */
@@ -66,9 +66,9 @@ public:
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 	/// Default destructor
 	~FBattleScreen();
-	/// Runs a class-owned event loop so legacy blocking launch sites stay source-compatible on wxFrame.
+	/// Runs a class-owned event loop so legacy blocking launch sites stay source-compatible on wxFrame. On GTK, calls AddGrab() to acquire input focus above any parent-dialog grab, ensuring menu events are delivered.
 	int ShowModal();
-	/// Ends frame-backed modal compatibility mode by hiding the frame and returning to the caller without destroying stack-owned instances.
+	/// Ends frame-backed modal compatibility mode: hides the frame and exits the event loop (RemoveGrab() on GTK) without destroying stack-owned instances.
 	void EndModal(int returnCode);
 	/// Returns true when modal compatibility mode is active.
 	bool IsModal() const;
