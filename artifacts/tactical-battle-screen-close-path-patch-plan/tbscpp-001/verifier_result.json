@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "task_id": "TBSCPP-001",
+  "branch": "tbscpp-001-verifier-20260522",
+  "verdict": "PASS",
+  "blocking_findings": 0,
+  "warning_findings": 0,
+  "note_findings": 1,
+  "test_sufficiency_summary": "Adequate for TBSCPP-001 acceptance: verifier reruns matched tester evidence (3 expected stale tactical source-contract failures, 6 unrelated GUI baseline failures), existing live GUI tests prove the non-modal close vectors and modal menu-quit unwind, and modal title-bar unwind is supported by the shared FBattleScreen close path implementation.",
+  "documentation_accuracy_summary": "Accurate: FBattleScreen header docs, DesignNotes, and AGENTS now describe the shared Close(true) -> onClose(...) -> closeBattleScreen(...) lifecycle, non-modal Hide-before-Destroy behavior, modal EndModal(...) unwind, and screen-owned close guard without stale FTacticalGame ownership claims.",
+  "artifact_files": [
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/verifier_report.md",
+    "artifacts/tactical-battle-screen-close-path-patch-plan/tbscpp-001/verifier_result.json"
+  ]
+}
