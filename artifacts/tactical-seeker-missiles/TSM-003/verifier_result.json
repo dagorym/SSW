@@ -6,17 +6,16 @@
   "blocking_finding_count": 0,
   "branch_name": "seekers-tsm-003-verifier-20260523",
   "documentation_accuracy_summary": [
-    "`doc/UsersGuide.md:370-371`, `doc/DesignNotes.md:425-433`, and `include/tactical/FBattleBoard.h:20-105` accurately describe the shipped setup-placement flow: per-weapon mine/seeker rows, exact slot ammo display, row-index source selection, setup undo restoring launcher ammo, and source-derived board marker coloring.",
-    "`doc/rules/tactical_operations_manual.md` remains unchanged, satisfying the repository's immutable-rules constraint."
+    "`doc/UsersGuide.md:370-371`, `doc/DesignNotes.md:425-434`, and `include/tactical/FBattleBoard.h:23-35,79-114` now match the shipped setup-placement behavior: one row per mine/seeker launcher slot, exact-slot ammo display, row-index source selection, undo restoring ammo to the same launcher, and source-specific board colors that no longer collapse through the legacy modulo mapping.",
+    "`doc/rules/tactical_operations_manual.md` was verified unchanged, so the repository's immutable-rules constraint remains satisfied."
   ],
   "note_finding_count": 0,
   "status": "success",
   "task_id": "TSM-003",
   "test_sufficiency_summary": [
-    "Coverage is broadly sufficient for the shipped row-selection and ammo/undo lifecycle: the updated tactical fixture checks model/display forwarding, placement-source selection, ammo reads, mine-only preservation, and the source-colored rendering seam, and verifier rerun of `./tactical/TacticalTests` passed with `OK (159 tests)`.",
-    "`tests/gui/TacticalGuiLiveTest.cpp:921-957` and the GUI build confirm the wx surface still emits the expected source-row and color-rendering tokens without regressing the existing action-button layout pattern, although the environment still lacks `xvfb-run` for a live GUI runtime pass.",
-    "The remaining gap is uniqueness coverage for placement colors: current tests assert that a source-based color function exists, but they do not exercise collision cases across multiple ship/weapon combos."
+    "Coverage is sufficient for the accepted behavior: `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp:371-429` asserts deployable source rows, exact-slot ammo display, row-index selection, undo restoration through `placeOrdnanceAtHex(...)`, mine-only source rebuild behavior, and the collision-free source-color rendering path, and the verifier rerun passed with `OK (159 tests)`.",
+    "`tests/gui/TacticalGuiLiveTest.cpp:921-957` plus the successful `make gui-tests` build keep the wx-side source-row/color contracts under regression coverage. A live GUI runtime pass was still unavailable here because `xvfb-run` is not installed, but no remaining acceptance-criteria gap was found in the reviewed implementation or test surface."
   ],
   "verdict": "PASS",
-  "warning_finding_count": 1
+  "warning_finding_count": 0
 }
