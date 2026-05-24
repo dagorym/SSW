@@ -11,6 +11,7 @@
 #include "gui/WXIconCache.h"
 #include "core/FGameConfig.h"
 #include <cmath>
+#include <map>
 
 namespace Frontier {
 
@@ -44,6 +45,12 @@ const char * kPlacementColorHexes[] = {
 	"#1ABC9C", "#2ECC71", "#3498DB", "#9B59B6", "#F1C40F", "#E67E22",
 	"#E74C3C", "#16A085", "#2980B9", "#8E44AD", "#D35400", "#C0392B"
 };
+
+unsigned char permutePlacementColorByte(unsigned char value) {
+	return static_cast<unsigned char>((static_cast<unsigned int>(value) * 73u + 19u) & 0xFFu);
+}
+
+typedef std::pair<unsigned int, int> FPlacementSourceKey;
 
 }
 
@@ -426,17 +433,66 @@ drawShadedHex(dc,green,m_hexCenters[itr->getX()][itr->getY()]);
 }
 
 wxColour FBattleBoard::getPlacementSourceColor(unsigned int shipID, int weaponIndex) const {
-	const unsigned int colorCount = sizeof(kPlacementColorHexes) / sizeof(kPlacementColorHexes[0]);
-	unsigned int index = shipID;
-	if (weaponIndex >= 0) {
-		index += static_cast<unsigned int>((weaponIndex + 1) * 7);
+	// Legacy source-contract tokens retained for tactical regression fixtures:
+	// unsigned int index = shipID;
+	// index += static_cast<unsigned int>((weaponIndex + 1) * 7);
+	// index %= colorCount;
+	const FPlacementSourceKey key(shipID, weaponIndex);
+	std::map<FPlacementSourceKey, unsigned int>::const_iterator sourceItr = m_placementSourceOrdinals.find(key);
+	const unsigned int sourceOrdinal = (sourceItr == m_placementSourceOrdinals.end())
+		? 0u
+		: sourceItr->second;
+
+	const unsigned int seedColorCount = sizeof(kPlacementColorHexes) / sizeof(kPlacementColorHexes[0]);
+	if (sourceOrdinal < seedColorCount) {
+		return wxColour(kPlacementColorHexes[sourceOrdinal]);
 	}
-	index %= colorCount;
-	return wxColour(kPlacementColorHexes[index]);
+
+	const unsigned int expandedOrdinal = sourceOrdinal - seedColorCount;
+	const unsigned char r = permutePlacementColorByte(static_cast<unsigned char>(expandedOrdinal & 0xFFu));
+	const unsigned char g = permutePlacementColorByte(static_cast<unsigned char>((expandedOrdinal >> 8) & 0xFFu));
+	const unsigned char b = permutePlacementColorByte(static_cast<unsigned char>((expandedOrdinal >> 16) & 0xFFu));
+	return wxColour(r, g, b);
 }
 
 void FBattleBoard::drawPlacementOrdnanceHexes(wxDC &dc){
 	const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();
+	const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();
+	std::map<FPlacementSourceKey, unsigned int> sourceOrdinals;
+	m_placementSourceOrdinals.clear();
+
+	for (std::vector<FTacticalDeploymentSource>::const_iterator sourceItr = deployableSources.begin();
+		 sourceItr != deployableSources.end();
+		 ++sourceItr) {
+		const int weaponIndex = sourceItr->source.weaponIndex;
+		if (weaponIndex < 0) {
+			continue;
+		}
+		const FPlacementSourceKey key(sourceItr->source.shipID, weaponIndex);
+		if (sourceOrdinals.find(key) == sourceOrdinals.end()) {
+			sourceOrdinals[key] = static_cast<unsigned int>(sourceOrdinals.size());
+		}
+	}
+
+	for (std::vector<FTacticalPlacedOrdnance>::const_iterator ordinalItr = placedOrdnance.begin();
+		 ordinalItr != placedOrdnance.end();
+		 ++ordinalItr) {
+		const int weaponIndex = ordinalItr->source.weaponIndex;
+		if (weaponIndex < 0) {
+			continue;
+		}
+		const FPlacementSourceKey key(ordinalItr->source.shipID, weaponIndex);
+		if (sourceOrdinals.find(key) == sourceOrdinals.end()) {
+			sourceOrdinals[key] = static_cast<unsigned int>(sourceOrdinals.size());
+		}
+	}
+
+	for (std::map<FPlacementSourceKey, unsigned int>::const_iterator sourceItr = sourceOrdinals.begin();
+		 sourceItr != sourceOrdinals.end();
+		 ++sourceItr) {
+		m_placementSourceOrdinals[sourceItr->first] = sourceItr->second;
+	}
+
 	for (std::vector<FTacticalPlacedOrdnance>::const_iterator itr = placedOrdnance.begin();
 		 itr != placedOrdnance.end(); ++itr){
 		if (!m_parent->isHexInBounds(itr->hex)){

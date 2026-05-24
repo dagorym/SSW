@@ -9,6 +9,9 @@
 #ifndef __FBattleBoard__
 #define __FBattleBoard__
 
+#include <map>
+#include <utility>
+
 #include "gui/GuiTypes.h"
 #include "Frontier.h"
 #include "strategic/FFleet.h"
@@ -87,11 +90,10 @@ void drawMinedHexes(wxDC &dc);
 	 */
 	void drawPlacementOrdnanceHexes(wxDC &dc);
 	/**
-	 * @brief Derive a deterministic placement color for one setup source slot.
+	 * @brief Derive the placement color for one setup source slot.
 	 *
-	 * Uses the source ship identifier plus weapon-slot index so the lower-panel
-	 * row selection and board marker colors stay stable across placement and undo
-	 * operations even when ammo counts change and rows are rebuilt.
+	 * Resolves the source ship/weapon combo to a deterministic ordinal built
+	 * during placement rendering, then maps that ordinal to a stable color.
 	 *
 	 * @param shipID Source ship identifier.
 	 * @param weaponIndex Zero-based weapon slot on that ship.
@@ -103,6 +105,9 @@ void drawMinedHexes(wxDC &dc);
 	 * @date Last Modified: May 24, 2026
 	 */
 	wxColour getPlacementSourceColor(unsigned int shipID, int weaponIndex) const;
+
+	/// deterministic source-slot ordinal map rebuilt each placement draw pass
+	std::map<std::pair<unsigned int, int>, unsigned int> m_placementSourceOrdinals;
 };
 
 }
