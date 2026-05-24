@@ -1,7 +1,7 @@
 /**
  * @file FTacticalGame.h
  * @brief Header file for FTacticalGame class
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
  * @date Created:  Mar 29, 2026
  * @date Last Modified: May 24, 2026
  *
@@ -88,6 +88,23 @@ unsigned int weaponID;
 } FTacticalOrdnanceSource;
 
 /**
+ * @brief Deployable weapon-slot metadata for tactical placement setup.
+ *
+ * Captures owner, ship, exact weapon slot, and weapon type for one placement
+ * source so setup placement can target either mines or seekers without
+ * changing wx-owned row rendering code in this milestone.
+ *
+ * @author Tom Stephens, gpt-5.3-codex (standard)
+ * @date Created: May 24, 2026
+ * @date Last Modified: May 24, 2026
+ */
+typedef struct {
+	unsigned int ownerID;
+	FWeapon::Weapon weaponType;
+	FTacticalOrdnanceSource source;
+} FTacticalDeploymentSource;
+
+/**
  * @brief Model record for a placed tactical ordnance item.
  *
  * This lightweight record is intended for tactical model ownership of placed
@@ -136,7 +153,7 @@ FTacticalOrdnanceSource source;
  * combat-report bookkeeping, and lightweight source-tracked ordnance and
  * seeker-missile records used by later rendering and activation subtasks.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
  * @date Created: Mar 29, 2026
  * @date Last Modified: May 24, 2026
  */
@@ -210,6 +227,11 @@ bool isMoveComplete() const { return m_moveComplete; }
 	bool setShipPlacementHeading(int heading);
 	bool setShipPlacementHeadingByHex(const FPoint & hex);
 	bool beginMinePlacement();
+	bool beginOrdnancePlacement();
+	bool selectPlacementSource(unsigned int shipID, unsigned int weaponIndex);
+	bool selectPlacementSourceByIndex(unsigned int sourceIndex);
+	int getSelectedPlacementSourceIndex() const { return m_selectedPlacementSource; }
+	const std::vector<FTacticalDeploymentSource> & getDeployablePlacementSources() const { return m_deployablePlacementSources; }
 	void completeMinePlacement();
 	/// Canonical post-move resolution seam; PH_FINALIZE_MOVE delegates here.
 	void completeMovePhase();
@@ -218,7 +240,9 @@ bool isMoveComplete() const { return m_moveComplete; }
 	void completeOffensiveFirePhase();
 	void computeWeaponRange();
 	bool assignTargetFromHex(const FPoint & hex);
+	bool placeOrdnanceAtHex(const FPoint & hex);
 	bool placeMineAtHex(const FPoint & hex);
+	bool isHexDeployable(const FPoint & hex);
 	bool isHexMinable(const FPoint & hex);
 	const VehicleList & getHexOccupants(const FPoint & hex) const;
 	const std::vector<FPoint> & getMovementHexes() const { return m_movementHexes; }
@@ -353,6 +377,20 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	void applyMineDamage();
 	void clearStoppedShipPreviewRoutes();
 	void rebuildStoppedShipPreviewRoutes();
+	void rebuildDeployablePlacementSources();
+	bool isDeployableWeapon(const FWeapon * weapon) const;
+	bool sourceMatchesWeapon(const FTacticalOrdnanceSource & source, const FVehicle * ship, const FWeapon * weapon, int weaponIndex) const;
+	bool sourceMatchesSelection(const FTacticalOrdnanceSource & source) const;
+	FVehicle * findShipByID(unsigned int shipID) const;
+	FWeapon * findWeaponBySource(const FTacticalOrdnanceSource & source, FVehicle ** ship = NULL) const;
+	bool buildSelectedPlacementSource(FTacticalDeploymentSource & source) const;
+	void appendPlacedOrdnanceRecord(FWeapon::Weapon weaponType, const FPoint & hex, const FTacticalOrdnanceSource & source);
+	bool removePlacedOrdnanceForSelection(const FPoint & hex, FTacticalPlacedOrdnance & removed);
+	void removePlacedMineRecordsAtHex(const FPoint & hex);
+	bool placeMineFromSelection(const FPoint & hex, const FTacticalDeploymentSource & selectedSource);
+	bool placeSeekerFromSelection(const FPoint & hex, const FTacticalDeploymentSource & selectedSource);
+	bool restoreAmmoForSource(const FTacticalOrdnanceSource & source);
+	unsigned int nextSeekerID() const;
 	void computeFFRange(const FPoint & pos, PointSet & targetHexes, PointSet & headOnHexes, int heading = -1) const;
 	void computeBatteryRange(const FPoint & pos, PointSet & targetHexes) const;
 	bool setIfValidTarget(FVehicle * target, const FPoint & targetHex);
@@ -415,6 +453,8 @@ bool m_gravityTurnFlag;
 	FHexMap m_mineTargetList;
 	unsigned int m_mineOwner;
 	VehicleList m_shipsWithMines;
+	std::vector<FTacticalDeploymentSource> m_deployablePlacementSources;
+	int m_selectedPlacementSource;
 	std::vector<FTacticalPlacedOrdnance> m_placedOrdnance;
 	std::vector<FTacticalSeekerMissileState> m_seekerMissiles;
 };

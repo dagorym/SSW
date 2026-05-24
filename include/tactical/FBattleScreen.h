@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.h
  * @brief Header file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: May 23, 2026
+ * @date Last Modified: May 24, 2026
  *
  */
 
@@ -38,9 +38,9 @@ class WXTacticalUI;
  * destruction and modal callers unwind back to their launch sites without
  * allowing default frame destruction to touch stack-owned instances.
  *
- * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 23, 2026
+ * @date Last Modified:  May 24, 2026
  */
 class FBattleScreen : public wxFrame
 {
@@ -224,6 +224,11 @@ public:
 	bool setShipPlacementHeading(int heading);
 	bool setShipPlacementHeadingByHex(const FPoint & hex);
 	bool beginMinePlacement();
+	bool beginOrdnancePlacement();
+	bool selectPlacementSource(unsigned int shipID, unsigned int weaponIndex);
+	bool selectPlacementSourceByIndex(unsigned int sourceIndex);
+	int getSelectedPlacementSourceIndex() const;
+	const std::vector<FTacticalDeploymentSource> & getDeployablePlacementSources() const;
 	void completeMinePlacement();
 	void completeMovePhase();
 	FTacticalCombatReportSummary resolveCurrentFirePhase();
@@ -231,7 +236,9 @@ public:
 	void completeOffensiveFirePhase();
 	void computeWeaponRange();
 	bool assignTargetFromHex(const FPoint & hex);
+	bool placeOrdnanceAtHex(const FPoint & hex);
 	bool placeMineAtHex(const FPoint & hex);
+	bool isHexDeployable(const FPoint & hex);
 	bool isHexMinable(const FPoint & hex);
 	const VehicleList & getHexOccupants(const FPoint & hex) const;
 	const std::vector<FPoint> & getMovementHexes() const;

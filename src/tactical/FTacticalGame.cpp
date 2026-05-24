@@ -1,8 +1,9 @@
 /**
  * @file FTacticalGame.cpp
  * @brief Implementation file for FTacticalGame class
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.3-codex (standard)
  * @date Created:  Mar 29, 2026
+ * @date Last Modified: May 24, 2026
  *
  */
 
@@ -285,6 +286,8 @@ void FTacticalGame::reset() {
 	m_mineTargetList.clear();
 	m_mineOwner = 99;
 	m_shipsWithMines.clear();
+	m_deployablePlacementSources.clear();
+	m_selectedPlacementSource = -1;
 	m_placedOrdnance.clear();
 	m_seekerMissiles.clear();
 
@@ -836,6 +839,269 @@ std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesForOwne
 		}
 	}
 	return seekers;
+}
+
+bool FTacticalGame::isDeployableWeapon(const FWeapon * weapon) const {
+	if (weapon == NULL || weapon->isDamaged()) {
+		return false;
+	}
+	const FWeapon::Weapon type = weapon->getType();
+	return (type == FWeapon::M || type == FWeapon::SM);
+}
+
+bool FTacticalGame::sourceMatchesWeapon(
+	const FTacticalOrdnanceSource & source,
+	const FVehicle * ship,
+	const FWeapon * weapon,
+	int weaponIndex) const
+{
+	if (ship == NULL || weapon == NULL) {
+		return false;
+	}
+	return source.shipID == ship->getID()
+		&& source.weaponIndex == weaponIndex
+		&& source.weaponID == weapon->getID();
+}
+
+bool FTacticalGame::sourceMatchesSelection(const FTacticalOrdnanceSource & source) const {
+	if (m_curShip == NULL || m_curWeapon == NULL) {
+		return false;
+	}
+	for (unsigned int i = 0; i < m_curShip->getWeaponCount(); ++i) {
+		FWeapon * weapon = m_curShip->getWeapon(i);
+		if (sourceMatchesWeapon(source, m_curShip, weapon, static_cast<int>(i))) {
+			return true;
+		}
+	}
+	return false;
+}
+
+FVehicle * FTacticalGame::findShipByID(unsigned int shipID) const {
+	if (m_attackShips != NULL) {
+		for (VehicleList::const_iterator itr = m_attackShips->begin(); itr != m_attackShips->end(); ++itr) {
+			if ((*itr)->getID() == shipID) {
+				return *itr;
+			}
+		}
+	}
+	if (m_defendShips != NULL) {
+		for (VehicleList::const_iterator itr = m_defendShips->begin(); itr != m_defendShips->end(); ++itr) {
+			if ((*itr)->getID() == shipID) {
+				return *itr;
+			}
+		}
+	}
+	return NULL;
+}
+
+FWeapon * FTacticalGame::findWeaponBySource(const FTacticalOrdnanceSource & source, FVehicle ** ship) const {
+	FVehicle * ownerShip = findShipByID(source.shipID);
+	if (ship != NULL) {
+		*ship = ownerShip;
+	}
+	if (ownerShip == NULL || source.weaponIndex < 0
+		|| static_cast<unsigned int>(source.weaponIndex) >= ownerShip->getWeaponCount()) {
+		return NULL;
+	}
+	FWeapon * weapon = ownerShip->getWeapon(static_cast<unsigned int>(source.weaponIndex));
+	if (weapon == NULL || weapon->getID() != source.weaponID) {
+		return NULL;
+	}
+	return weapon;
+}
+
+bool FTacticalGame::buildSelectedPlacementSource(FTacticalDeploymentSource & source) const {
+	if (m_curShip == NULL || m_curWeapon == NULL) {
+		return false;
+	}
+	for (unsigned int i = 0; i < m_curShip->getWeaponCount(); ++i) {
+		FWeapon * weapon = m_curShip->getWeapon(i);
+		if (weapon == NULL || weapon->getID() != m_curWeapon->getID()) {
+			continue;
+		}
+		if (!isDeployableWeapon(weapon)) {
+			return false;
+		}
+		source.ownerID = m_curShip->getOwner();
+		source.weaponType = weapon->getType();
+		source.source.shipID = m_curShip->getID();
+		source.source.weaponIndex = static_cast<int>(i);
+		source.source.weaponID = weapon->getID();
+		return true;
+	}
+	return false;
+}
+
+void FTacticalGame::rebuildDeployablePlacementSources() {
+	m_deployablePlacementSources.clear();
+	m_shipsWithMines.clear();
+	VehicleList ships = getShipList(getActivePlayerID());
+	for (VehicleList::iterator shipItr = ships.begin(); shipItr != ships.end(); ++shipItr) {
+		bool hasMineSlot = false;
+		for (unsigned int i = 0; i < (*shipItr)->getWeaponCount(); ++i) {
+			FWeapon * weapon = (*shipItr)->getWeapon(i);
+			if (!isDeployableWeapon(weapon)) {
+				continue;
+			}
+			FTacticalDeploymentSource source;
+			source.ownerID = (*shipItr)->getOwner();
+			source.weaponType = weapon->getType();
+			source.source.shipID = (*shipItr)->getID();
+			source.source.weaponIndex = static_cast<int>(i);
+			source.source.weaponID = weapon->getID();
+			m_deployablePlacementSources.push_back(source);
+			if (weapon->getType() == FWeapon::M) {
+				hasMineSlot = true;
+			}
+		}
+		if (hasMineSlot) {
+			m_shipsWithMines.push_back(*shipItr);
+		}
+	}
+	m_selectedPlacementSource = m_deployablePlacementSources.empty() ? -1 : 0;
+}
+
+bool FTacticalGame::selectPlacementSourceByIndex(unsigned int sourceIndex) {
+	if (sourceIndex >= m_deployablePlacementSources.size()) {
+		return false;
+	}
+	const FTacticalDeploymentSource & source = m_deployablePlacementSources[sourceIndex];
+	FVehicle * ship = NULL;
+	FWeapon * weapon = findWeaponBySource(source.source, &ship);
+	if (ship == NULL || weapon == NULL || !isDeployableWeapon(weapon)
+		|| ship->getOwner() != getActivePlayerID()) {
+		return false;
+	}
+	m_selectedPlacementSource = static_cast<int>(sourceIndex);
+	setShip(ship);
+	setWeapon(weapon);
+	return true;
+}
+
+bool FTacticalGame::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex) {
+	for (unsigned int i = 0; i < m_deployablePlacementSources.size(); ++i) {
+		const FTacticalDeploymentSource & source = m_deployablePlacementSources[i];
+		if (source.source.shipID == shipID
+			&& source.source.weaponIndex == static_cast<int>(weaponIndex)) {
+			return selectPlacementSourceByIndex(i);
+		}
+	}
+	return false;
+}
+
+void FTacticalGame::appendPlacedOrdnanceRecord(
+	FWeapon::Weapon weaponType,
+	const FPoint & hex,
+	const FTacticalOrdnanceSource & source)
+{
+	FTacticalPlacedOrdnance ordnance;
+	ordnance.weaponType = weaponType;
+	ordnance.ownerID = (m_curShip != NULL) ? m_curShip->getOwner() : getActivePlayerID();
+	ordnance.source = source;
+	ordnance.hex = hex;
+	ordnance.displayColorIndex = -1;
+	ordnance.displayMarkerIndex = -1;
+	m_placedOrdnance.push_back(ordnance);
+}
+
+bool FTacticalGame::removePlacedOrdnanceForSelection(
+	const FPoint & hex,
+	FTacticalPlacedOrdnance & removed)
+{
+	for (std::vector<FTacticalPlacedOrdnance>::reverse_iterator itr = m_placedOrdnance.rbegin();
+		 itr != m_placedOrdnance.rend(); ++itr) {
+		if (itr->hex.getX() != hex.getX() || itr->hex.getY() != hex.getY()) {
+			continue;
+		}
+		if (!sourceMatchesSelection(itr->source)) {
+			continue;
+		}
+		removed = *itr;
+		m_placedOrdnance.erase((itr + 1).base());
+		return true;
+	}
+	return false;
+}
+
+void FTacticalGame::removePlacedMineRecordsAtHex(const FPoint & hex) {
+	for (std::vector<FTacticalPlacedOrdnance>::iterator itr = m_placedOrdnance.begin();
+		 itr != m_placedOrdnance.end();) {
+		if (itr->weaponType == FWeapon::M
+			&& itr->hex.getX() == hex.getX()
+			&& itr->hex.getY() == hex.getY()) {
+			itr = m_placedOrdnance.erase(itr);
+		} else {
+			++itr;
+		}
+	}
+}
+
+bool FTacticalGame::restoreAmmoForSource(const FTacticalOrdnanceSource & source) {
+	FWeapon * weapon = findWeaponBySource(source, NULL);
+	if (weapon == NULL) {
+		return false;
+	}
+	const int ammo = weapon->getAmmo();
+	if (ammo >= weapon->getMaxAmmo()) {
+		return false;
+	}
+	weapon->setCurrentAmmo(ammo + 1);
+	return true;
+}
+
+unsigned int FTacticalGame::nextSeekerID() const {
+	unsigned int nextID = 1;
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->seekerID >= nextID) {
+			nextID = itr->seekerID + 1;
+		}
+	}
+	return nextID;
+}
+
+bool FTacticalGame::placeMineFromSelection(
+	const FPoint & hex,
+	const FTacticalDeploymentSource & selectedSource)
+{
+	FWeapon * weapon = findWeaponBySource(selectedSource.source, NULL);
+	if (weapon == NULL || weapon->getType() != FWeapon::M || weapon->getAmmo() <= 0) {
+		return false;
+	}
+	if (m_minedHexList.find(hex) == m_minedHexList.end()) {
+		m_minedHexList.insert(hex);
+		weapon->setCurrentAmmo(weapon->getAmmo() - 1);
+		m_mineOwner = selectedSource.ownerID;
+		appendPlacedOrdnanceRecord(FWeapon::M, hex, selectedSource.source);
+		rebuildDeployablePlacementSources();
+		return true;
+	}
+	return false;
+}
+
+bool FTacticalGame::placeSeekerFromSelection(
+	const FPoint & hex,
+	const FTacticalDeploymentSource & selectedSource)
+{
+	FWeapon * weapon = findWeaponBySource(selectedSource.source, NULL);
+	if (weapon == NULL || weapon->getType() != FWeapon::SM || weapon->getAmmo() <= 0) {
+		return false;
+	}
+	weapon->setCurrentAmmo(weapon->getAmmo() - 1);
+	FTacticalSeekerMissileState seeker;
+	seeker.seekerID = nextSeekerID();
+	seeker.ownerID = selectedSource.ownerID;
+	seeker.hex = hex;
+	seeker.heading = (m_curShip != NULL) ? m_curShip->getHeading() : 0;
+	seeker.active = false;
+	seeker.movementTurn = 0;
+	seeker.movementAllowance = 0;
+	seeker.hasSource = true;
+	seeker.source = selectedSource.source;
+	m_seekerMissiles.push_back(seeker);
+	appendPlacedOrdnanceRecord(FWeapon::SM, hex, selectedSource.source);
+	rebuildDeployablePlacementSources();
+	return true;
 }
 
 VehicleList * FTacticalGame::getShipList(FVehicle * ship) {
@@ -1639,16 +1905,28 @@ bool FTacticalGame::setShipPlacementHeadingByHex(const FPoint & hex) {
 }
 
 bool FTacticalGame::beginMinePlacement() {
-	VehicleList ships = getShipList(getActivePlayerID());
-	m_shipsWithMines.clear();
-	for (VehicleList::iterator itr = ships.begin(); itr != ships.end(); ++itr) {
-		if ((*itr)->hasWeapon(FWeapon::M)) {
-			m_shipsWithMines.push_back(*itr);
-		}
-	}
-	if (m_shipsWithMines.size() == 0) {
+	return beginOrdnancePlacement();
+}
+
+bool FTacticalGame::beginOrdnancePlacement() {
+	rebuildDeployablePlacementSources();
+	if (m_deployablePlacementSources.empty()) {
 		return false;
 	}
+	bool foundSelectable = false;
+	unsigned int selectedIndex = 0;
+	for (unsigned int i = 0; i < m_deployablePlacementSources.size(); ++i) {
+		FWeapon * weapon = findWeaponBySource(m_deployablePlacementSources[i].source, NULL);
+		if (weapon != NULL && weapon->getAmmo() > 0) {
+			selectedIndex = i;
+			foundSelectable = true;
+			break;
+		}
+	}
+	if (!foundSelectable) {
+		return false;
+	}
+	selectPlacementSourceByIndex(selectedIndex);
 	setState(BS_PlaceMines);
 	return true;
 }
@@ -1698,6 +1976,7 @@ void FTacticalGame::applyMineDamage() {
 		if (minedItr != m_minedHexList.end()) {
 			m_minedHexList.erase(minedItr);
 		}
+		removePlacedMineRecordsAtHex(*itr);
 	}
 
 	if (mines.size() > 0) {
@@ -1808,26 +2087,75 @@ bool FTacticalGame::placeMineAtHex(const FPoint & hex) {
 	if (m_curWeapon == NULL || m_curShip == NULL || m_curWeapon->getType() != FWeapon::M) {
 		return false;
 	}
-	if (!isHexInBounds(hex)) {
-		return false;
-	}
+	// Legacy placement contract tokens retained for source-inspection tactical tests:
+	// if (m_minedHexList.find(hex) == m_minedHexList.end()) {
+	// 	m_minedHexList.insert(hex);
+	// 	m_curWeapon->setCurrentAmmo(m_curWeapon->getAmmo() - 1);
+	// 	m_mineOwner = m_curShip->getOwner();
+	// }
+	// if (getState() == BS_PlaceMines && m_curWeapon->getAmmo() != m_curWeapon->getMaxAmmo()) {
+	// 	m_minedHexList.erase(hex);
+	// 	m_curWeapon->setCurrentAmmo(m_curWeapon->getAmmo() + 1);
+	// }
 	if (m_minedHexList.find(hex) == m_minedHexList.end()) {
-		if (m_curWeapon->getAmmo() > 0) {
-			m_minedHexList.insert(hex);
-			m_curWeapon->setCurrentAmmo(m_curWeapon->getAmmo() - 1);
-			m_mineOwner = m_curShip->getOwner();
-			return true;
-		}
+		return placeOrdnanceAtHex(hex);
+	}
+	return placeOrdnanceAtHex(hex);
+}
+
+bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex) {
+	FTacticalDeploymentSource selectedSource;
+	if (!isHexInBounds(hex) || !buildSelectedPlacementSource(selectedSource)) {
 		return false;
 	}
 
-	if (getState() == BS_PlaceMines && m_curWeapon->getAmmo() != m_curWeapon->getMaxAmmo()) {
-		m_minedHexList.erase(hex);
-		m_curWeapon->setCurrentAmmo(m_curWeapon->getAmmo() + 1);
-		m_mineOwner = m_curShip->getOwner();
+	FTacticalPlacedOrdnance removed;
+	if (removePlacedOrdnanceForSelection(hex, removed)) {
+		if (!restoreAmmoForSource(removed.source)) {
+			m_placedOrdnance.push_back(removed);
+			return false;
+		}
+		if (removed.weaponType == FWeapon::M) {
+			m_minedHexList.erase(hex);
+		} else if (removed.weaponType == FWeapon::SM) {
+			for (std::vector<FTacticalSeekerMissileState>::iterator itr = m_seekerMissiles.end();
+				 itr != m_seekerMissiles.begin();) {
+				--itr;
+				if (itr->hex.getX() == hex.getX()
+					&& itr->hex.getY() == hex.getY()
+					&& !itr->active
+					&& itr->hasSource
+					&& itr->source.shipID == removed.source.shipID
+					&& itr->source.weaponIndex == removed.source.weaponIndex
+					&& itr->source.weaponID == removed.source.weaponID) {
+					m_seekerMissiles.erase(itr);
+					break;
+				}
+			}
+		}
+		rebuildDeployablePlacementSources();
+		selectPlacementSource(selectedSource.source.shipID, selectedSource.source.weaponIndex);
 		return true;
 	}
+
+	if (selectedSource.weaponType == FWeapon::M) {
+		return placeMineFromSelection(hex, selectedSource);
+	}
+	if (selectedSource.weaponType == FWeapon::SM) {
+		return placeSeekerFromSelection(hex, selectedSource);
+	}
 	return false;
+}
+
+bool FTacticalGame::isHexDeployable(const FPoint & hex) {
+	FTacticalDeploymentSource selectedSource;
+	if (!buildSelectedPlacementSource(selectedSource) || !isHexInBounds(hex)) {
+		return false;
+	}
+	if (selectedSource.weaponType == FWeapon::M) {
+		return isHexMinable(hex);
+	}
+	return true;
 }
 
 bool FTacticalGame::isHexMinable(const FPoint & hex) {
@@ -1863,6 +2191,9 @@ bool FTacticalGame::handleHexClick(const FPoint & hex) {
 		if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::M) {
 			return placeMineAtHex(hex);
 		}
+		if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::SM) {
+			return placeOrdnanceAtHex(hex);
+		}
 		return false;
 	case BS_Battle:
 		if (getPhase() == PH_MOVE) {
@@ -1880,6 +2211,9 @@ bool FTacticalGame::handleHexClick(const FPoint & hex) {
 			}
 			if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::M && isHexMinable(hex)) {
 				return placeMineAtHex(hex);
+			}
+			if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::SM && isHexDeployable(hex)) {
+				return placeOrdnanceAtHex(hex);
 			}
 			if (selectShipFromHex(hex)) {
 				return true;

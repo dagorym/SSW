@@ -638,6 +638,38 @@ bool FBattleScreen::beginMinePlacement() {
 	return changed;
 }
 
+bool FBattleScreen::beginOrdnancePlacement() {
+	const bool changed = m_tacticalGame->beginOrdnancePlacement();
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex) {
+	const bool changed = m_tacticalGame->selectPlacementSource(shipID, weaponIndex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::selectPlacementSourceByIndex(unsigned int sourceIndex) {
+	const bool changed = m_tacticalGame->selectPlacementSourceByIndex(sourceIndex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+int FBattleScreen::getSelectedPlacementSourceIndex() const {
+	return m_tacticalGame->getSelectedPlacementSourceIndex();
+}
+
+const std::vector<FTacticalDeploymentSource> & FBattleScreen::getDeployablePlacementSources() const {
+	return m_tacticalGame->getDeployablePlacementSources();
+}
+
 void FBattleScreen::completeMinePlacement() {
 	m_tacticalGame->completeMinePlacement();
 	reDraw();
@@ -676,12 +708,24 @@ bool FBattleScreen::assignTargetFromHex(const FPoint & hex) {
 	return changed;
 }
 
+bool FBattleScreen::placeOrdnanceAtHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->placeOrdnanceAtHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
 bool FBattleScreen::placeMineAtHex(const FPoint & hex) {
 	const bool changed = m_tacticalGame->placeMineAtHex(hex);
 	if (changed) {
 		reDraw();
 	}
 	return changed;
+}
+
+bool FBattleScreen::isHexDeployable(const FPoint & hex) {
+	return m_tacticalGame->isHexDeployable(hex);
 }
 
 bool FBattleScreen::isHexMinable(const FPoint & hex) {
