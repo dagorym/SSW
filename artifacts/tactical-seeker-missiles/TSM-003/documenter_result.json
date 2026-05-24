@@ -5,8 +5,8 @@
     "artifacts/tactical-seeker-missiles/TSM-003/verifier_prompt.txt"
   ],
   "branch_name": "seekers-tsm-003-documenter-20260523",
-  "comparison_base": "Assumption: compare TSM-003 implementer/tester/documenter-stage changes against branch 'seekers' at merge-base commit 84279b0b60caaed047619089f674324b3122897e because no origin/main ref exists in this worktree.",
-  "documentation_commit_hash": "3f5335db3ed68826d4bf481a1a236c89857a0631",
+  "comparison_base": "Assumption: compare TSM-003 remediation changes against branch 'seekers' at merge-base commit 84279b0b60caaed047619089f674324b3122897e because no origin/main ref exists in this worktree.",
+  "documentation_commit_hash": "877108202820d80f6dfe5d9389bc37f9b06040b9",
   "documentation_files_changed": [
     "doc/DesignNotes.md",
     "doc/UsersGuide.md",
