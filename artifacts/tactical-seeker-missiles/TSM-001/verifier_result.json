@@ -1,0 +1,21 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-001/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-001/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "seekers-tsm-001-verifier-20260523",
+  "documentation_accuracy_summary": [
+    "Accurate: `include/tactical/FTacticalGame.h` now documents the new `FTacticalOrdnanceSource`, `FTacticalPlacedOrdnance`, and `FTacticalSeekerMissileState` records plus the filtered accessor declarations without claiming live deployment, activation, or damage behavior is already implemented.",
+    "The reviewed diff matches the plan's documentation impact for TSM-001 and does not touch `doc/rules/tactical_operations_manual.md`."
+  ],
+  "note_finding_count": 0,
+  "status": "success",
+  "task_id": "TSM-001",
+  "test_sufficiency_summary": [
+    "Sufficient for this model-only slice: `tests/tactical/FTacticalGameMechanicsTest.cpp` locks the new ordnance/seeker record fields, reset clearing, and filtered accessor declarations/definitions in `FTacticalGame`, while `tests/tactical/FTacticalGameHeaderTest.cpp` locks the new header surface and compile-without-wx smoke coverage.",
+    "Read-only verifier constraints were respected by relying on the recorded tactical validation already executed upstream: `cd tests && make tactical-tests && ./tactical/TacticalTests` passed before tester edits, after tester edits, and after the documenter comment-only update (`OK (157 tests)` each time)."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
