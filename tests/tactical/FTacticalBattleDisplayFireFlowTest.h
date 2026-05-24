@@ -18,7 +18,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 22, 2026
- * @date Last Modified: May 16, 2026
+ * @date Last Modified: May 24, 2026
  */
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
@@ -34,6 +34,7 @@ CPPUNIT_TEST( testWeaponSelectionDelegatesToBattleScreenModelApi );
 CPPUNIT_TEST( testDefenseSelectionDelegatesToBattleScreenModelApi );
 CPPUNIT_TEST( testMinePlacementFlowUsesModelMinePlacementApis );
 CPPUNIT_TEST( testMinePlacementDisplayUsesModelShipList );
+CPPUNIT_TEST( testSetupPlacementBoardUsesSourceSpecificOrdnanceRendering );
 CPPUNIT_TEST( testDisplayClickFlowUsesModelForwardingApis );
 CPPUNIT_TEST( testMoveDoneDelegatesToBattleScreenCompleteMovePhase );
 CPPUNIT_TEST( testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation );
@@ -186,6 +187,16 @@ void testMinePlacementFlowUsesModelMinePlacementApis();
  * @date Last Modified: Apr 01, 2026
  */
 void testMinePlacementDisplayUsesModelShipList();
+/**
+ * @brief Verifies setup-board rendering uses source-indexed placed ordnance colors.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 24, 2026
+ * @date Last Modified: May 24, 2026
+ */
+void testSetupPlacementBoardUsesSourceSpecificOrdnanceRendering();
 /**
  * @brief Verifies display Click Flow Uses Model Forwarding Apis.
  *

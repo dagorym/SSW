@@ -22,7 +22,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 23, 2026
+ * @date Last Modified: May 24, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -32,6 +32,7 @@ CPPUNIT_TEST( testBattleScreenMenuQuitClosesViaSharedClosePath );
 CPPUNIT_TEST( testBattleScreenTitleBarCloseClosesViaSharedClosePath );
 CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
 CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
+CPPUNIT_TEST( testSetupPlacementSourceRowsAndOrdnanceColorContracts );
 CPPUNIT_TEST( testBattleScreenDefaultSizeAndLayoutPolicyRuntime );
 CPPUNIT_TEST( testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges );
 CPPUNIT_TEST( testBattleDisplayNarrowWidthStacksShipStatsBelowButtons );
@@ -114,6 +115,14 @@ void testTacticalActionButtonsRemainSizerPositionedWhenShown();
  * @date Last Modified: Apr 08, 2026
  */
 void testTacticalActionButtonsStayBelowPromptReservationAcrossPhases();
+/**
+ * @brief Verifies setup placement source-row and source-color source-contract tokens.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 24, 2026
+ * @date Last Modified: May 24, 2026
+ */
+void testSetupPlacementSourceRowsAndOrdnanceColorContracts();
 /**
  * @brief Verifies FBattleScreen default sizing and parent layout policy behavior at runtime.
  *

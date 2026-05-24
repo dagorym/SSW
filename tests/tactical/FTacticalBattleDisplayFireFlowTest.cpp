@@ -333,17 +333,58 @@ assertContains(doneBody, "m_parent->completeMinePlacement();");
 
 void FTacticalBattleDisplayFireFlowTest::testMinePlacementDisplayUsesModelShipList() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string gameSource = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
 const std::string placeMinesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
 const std::string shipSelectionBody = extractFunctionBody(source, "void FBattleDisplay::checkShipSelection(wxMouseEvent &event)");
+const std::string placeOrdnanceBody = extractFunctionBody(gameSource, "bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex)");
+const std::string rebuildSourcesBody = extractFunctionBody(gameSource, "void FTacticalGame::rebuildDeployablePlacementSources()");
+const std::string beginPlacementBody = extractFunctionBody(gameSource, "bool FTacticalGame::beginOrdnancePlacement()");
 
-assertContains(placeMinesBody, "const VehicleList & shipsWithMines = m_parent->getShipsWithMines();");
-assertContains(shipSelectionBody, "const VehicleList & shipsWithMines = m_parent->getShipsWithMines();");
-assertContains(shipSelectionBody, "m_parent->setShip(shipsWithMines[i]);");
+assertContains(placeMinesBody, "const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();");
+assertContains(placeMinesBody, "const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();");
+assertContains(placeMinesBody, "getDeploymentWeaponLabel(source.weaponType)");
+assertContains(placeMinesBody, "os << \"Ammo: \" << weapon->getAmmo();");
+assertContains(placeMinesBody, "m_shipSelectionSourceIndices.push_back(static_cast<int>(i));");
+assertContains(shipSelectionBody, "m_parent->selectPlacementSourceByIndex(static_cast<unsigned int>(m_shipSelectionSourceIndices[i]));");
+assertNotContains(shipSelectionBody, "m_parent->setWeapon(");
+
+assertContains(placeOrdnanceBody, "if (removePlacedOrdnanceForSelection(hex, removed)) {");
+assertContains(placeOrdnanceBody, "if (!restoreAmmoForSource(removed.source)) {");
+assertContains(placeOrdnanceBody, "if (selectedSource.weaponType == FWeapon::M) {");
+assertContains(placeOrdnanceBody, "if (selectedSource.weaponType == FWeapon::SM) {");
+assertContains(rebuildSourcesBody, "if (weapon->getType() == FWeapon::M) {");
+assertContains(rebuildSourcesBody, "m_shipsWithMines.push_back(*shipItr);");
+assertContains(beginPlacementBody, "setState(BS_PlaceMines);");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testSetupPlacementBoardUsesSourceSpecificOrdnanceRendering() {
+const std::string boardSource = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string drawBody = extractFunctionBody(boardSource, "void FBattleBoard::draw(wxDC &dc)");
+const std::string drawOrdnanceBody = extractFunctionBody(boardSource, "void FBattleBoard::drawPlacementOrdnanceHexes(wxDC &dc)");
+const std::string colorBody = extractFunctionBody(boardSource, "wxColour FBattleBoard::getPlacementSourceColor(unsigned int shipID, int weaponIndex) const");
+
+assertContains(drawBody, "if (m_parent->getState() == BS_PlaceMines) {");
+assertContains(drawBody, "drawPlacementOrdnanceHexes(dc);");
+assertContains(drawOrdnanceBody, "const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();");
+assertContains(drawOrdnanceBody, "getPlacementSourceColor(itr->source.shipID, itr->source.weaponIndex)");
+assertContains(colorBody, "unsigned int index = shipID;");
+assertContains(colorBody, "index += static_cast<unsigned int>((weaponIndex + 1) * 7);");
+assertContains(colorBody, "index %= colorCount;");
+
+assertContains(screenSource, "const std::vector<FTacticalPlacedOrdnance> & FBattleScreen::getPlacedOrdnance() const {");
+assertContains(screenSource, "return m_tacticalGame->getPlacedOrdnance();");
+assertContains(screenSource, "std::vector<FTacticalPlacedOrdnance> FBattleScreen::getPlacedOrdnanceAtHex(const FPoint & hex) const {");
+assertContains(screenSource, "return m_tacticalGame->getPlacedOrdnanceAtHex(hex);");
+assertContains(screenSource, "std::vector<FTacticalSeekerMissileState> FBattleScreen::getSeekerMissilesAtHex(");
+assertContains(screenSource, "return m_tacticalGame->getSeekerMissilesAtHex(hex, activeOnly);");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testDisplayClickFlowUsesModelForwardingApis() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string onLeftUpBody = extractFunctionBody(source, "void FBattleDisplay::onLeftUp(wxMouseEvent & event)");
+const std::string handleHexClickBody = extractFunctionBody(screenSource, "bool FBattleScreen::handleHexClick(const FPoint & hex)");
 
 assertContains(onLeftUpBody, "checkWeaponSelection(event);");
 assertContains(onLeftUpBody, "checkDefenseSelection(event);");
@@ -352,6 +393,10 @@ assertNotContains(onLeftUpBody, "m_parent->setWeapon(");
 assertNotContains(onLeftUpBody, "m_parent->setDefense(");
 assertNotContains(onLeftUpBody, "m_parent->assignTargetFromHex(");
 assertNotContains(onLeftUpBody, "m_parent->placeMineAtHex(");
+assertContains(handleHexClickBody, "const bool changed = m_tacticalGame->handleHexClick(hex);");
+assertContains(handleHexClickBody, "if (changed) {");
+assertContains(handleHexClickBody, "reDraw();");
+assertContains(handleHexClickBody, "return changed;");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testMoveDoneDelegatesToBattleScreenCompleteMovePhase() {

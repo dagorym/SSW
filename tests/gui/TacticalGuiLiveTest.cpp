@@ -918,6 +918,44 @@ for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
 m_harness.cleanupOrphanTopLevels(10);
 }
 
+void TacticalGuiLiveTest::testSetupPlacementSourceRowsAndOrdnanceColorContracts() {
+CPPUNIT_ASSERT_MESSAGE(
+	"Setup placement panel should render deployable source rows.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Setup placement panel should read selected placement source index.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Setup placement rows should display per-slot ammo values.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"os << \"Ammo: \" << weapon->getAmmo();"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Setup placement row clicks should change active source by row index.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"m_parent->selectPlacementSourceByIndex(static_cast<unsigned int>(m_shipSelectionSourceIndices[i]));"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Setup placement board should render placed ordnance from source-tracked records.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		"const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Setup placement board should shade ordnance by source ship/weapon color.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		"getPlacementSourceColor(itr->source.shipID, itr->source.weaponIndex)"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Setup placement board should invoke source-colored ordnance rendering in BS_PlaceMines.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		"drawPlacementOrdnanceHexes(dc);"));
+}
+
 void TacticalGuiLiveTest::testBattleScreenDefaultSizeAndLayoutPolicyRuntime() {
 FBattleScreen * battleScreen = new FBattleScreen();
 battleScreen->Show();
