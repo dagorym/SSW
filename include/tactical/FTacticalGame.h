@@ -295,8 +295,10 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 *
 	 * Creates a source-tracked mine record or inactive seeker when the selected
 	 * source can deploy into the requested hex, or undoes the matching selected
-	 * source's placed item and restores ammo when the same source clicks an
-	 * existing marker it owns.
+	 * ship/weapon-slot source's placed item and restores ammo when that same
+	 * source clicks an existing marker it owns. Successful placements rebuild the
+	 * deployable-source list and reselect the same ship/weapon slot so the
+	 * active source index stays aligned with the current ship/weapon pointers.
 	 *
 	 * @param hex Tactical hex to place into or undo from.
 	 *
@@ -485,9 +487,35 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	void applyMineDamage();
 	void clearStoppedShipPreviewRoutes();
 	void rebuildStoppedShipPreviewRoutes();
+	/**
+	 * @brief Rebuild the deployable mine/seeker placement-source list.
+	 *
+	 * Refreshes the exact ship/weapon-slot entries after ammo changes and keeps
+	 * the current selection aligned with the same source when that slot remains
+	 * deployable.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	void rebuildDeployablePlacementSources();
 	bool isDeployableWeapon(const FWeapon * weapon) const;
 	bool sourceMatchesWeapon(const FTacticalOrdnanceSource & source, const FVehicle * ship, const FWeapon * weapon, int weaponIndex) const;
+	/**
+	 * @brief Check whether stored source provenance matches the active selection.
+	 *
+	 * Resolves the currently selected ship/weapon-slot identity before comparing
+	 * against stored ordnance provenance so undo restores ammo only to the exact
+	 * selected launcher slot, even if pointer identity has been rebuilt.
+	 *
+	 * @param source Stored placed-ordnance source metadata to compare.
+	 *
+	 * @return True when the active selection refers to the same source slot.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool sourceMatchesSelection(const FTacticalOrdnanceSource & source) const;
 	FVehicle * findShipByID(unsigned int shipID) const;
 	FWeapon * findWeaponBySource(const FTacticalOrdnanceSource & source, FVehicle ** ship = NULL) const;

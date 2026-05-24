@@ -418,6 +418,10 @@ remaining non-view interactions through the existing forwarding seam:
   selection through `selectPlacementSource(...)` or
   `selectPlacementSourceByIndex(...)`, and map clicks now have a generalized
   `placeOrdnanceAtHex()` path behind the legacy `placeMineAtHex()` wrapper.
+  Setup placement undo is keyed to the exact selected ship/weapon slot rather
+  than only ship ownership, and successful mine/seeker placement rebuilds the
+  deployable-source list while reselecting that same source slot so wx-side row
+  indices and model-side ship/weapon pointers stay aligned after ammo changes.
   The current setup UI still reads the selectable mine-ship list from
   `getShipsWithMines()` rather than caching a local copy because the wx row
   redesign lands in a later seeker subtask.
