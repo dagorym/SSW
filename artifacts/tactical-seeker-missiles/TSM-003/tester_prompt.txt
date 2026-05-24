@@ -1,52 +1,42 @@
 Your role is 'tester'. Your task is as follows:
 
 Task summary:
-- Update setup ordnance placement UI/board to list deployable mine+seeker sources per weapon slot, select active source by row, and render placed setup ordnance with source-specific colors.
+- Verifier remediation for TSM-003 WARNING: eliminate setup placement marker color collisions caused by the old 12-color modulo mapping so different ship/weapon source combos stay distinct.
 
-Modified files:
-- include/tactical/FBattleDisplay.h
-- src/tactical/FBattleDisplay.cpp
+Remediation changes to validate:
 - include/tactical/FBattleBoard.h
 - src/tactical/FBattleBoard.cpp
-- include/tactical/FBattleScreen.h
-- src/tactical/FBattleScreen.cpp
 
-Acceptance criteria to validate (from Planner):
-- The placement panel lists mine and seeker missile rows per ship/weapon slot.
-- Each row shows the current ammo for that exact weapon slot.
-- Clicking a row changes the active placement source.
-- Board placement markers use distinct colors per source ship/weapon combo.
-- Map-click placement and undo update the visible ammo counts.
-- Existing mine-only cases still work when no seeker launchers are present.
-- Placement controls relayout after visibility changes following the existing action-button pattern.
+Acceptance criteria to validate (from Planner/verifier warning):
+- The placement panel still lists mine and seeker missile rows per ship/weapon slot.
+- Each row still shows current ammo for that exact weapon slot.
+- Clicking a row still changes active placement source.
+- Board placement markers now remain distinct per source ship/weapon combo during setup placement rendering (no 12-color modulo collisions).
+- Map-click placement and undo still update visible ammo counts.
+- Existing mine-only setup flows still work when no seeker launchers are present.
+- Placement controls still relayout after visibility changes following the existing action-button pattern.
 
-Create test files in:
+Suggested test-file focus:
 - tests/tactical/FTacticalBattleDisplayFireFlowTest.*
 - tests/gui/TacticalGuiLiveTest.*
 
-Implementation context for testing:
-- Setup placement panel now renders one clickable row per FTacticalDeploymentSource instead of mine-only ship rows.
-- Each row resolves exact ship+weapon slot and displays slot ammo; row clicks call selectPlacementSourceByIndex(...) to drive map-click source selection.
-- FBattleBoard now renders setup ordnance markers from getPlacedOrdnance() and assigns deterministic per-source colors using shipID+weaponIndex.
-- FBattleScreen now forwards placed-ordnance/seeker accessors used by board rendering.
-- Mine placement done button visibility and completion lifecycle are unchanged; layout calls remain in the existing show/hide path.
-- Legacy source-token lines are preserved as comments for existing tactical source-contract fixtures.
-
-Suggested test command(s):
+Suggested validation commands:
 - cd tests && make tactical-tests && ./tactical/TacticalTests
 - cd tests/gui && make
-- cd tests/gui && xvfb-run -a ./GuiTests (xvfb-run unavailable in environment)
+- cd tests/gui && xvfb-run -a ./GuiTests (xvfb-run unavailable in current environment)
 
-Existing validations expected to fail only because approved behavior changed:
-- None
-
-Startup behavior:
-- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
-- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
-- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+Implementation validation context:
+- Tactical tests pass after remediation (`OK (159 tests)`).
+- GUI test build succeeds.
+- GUI runtime execution remains pending only because xvfb-run is unavailable here.
 
 Shared artifact directory:
 - artifacts/tactical-seeker-missiles/TSM-003
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or command details from repository conventions when evidence is sufficient, and label those choices as assumptions instead of blockers.
+- Do not stop after activation, directory discovery, or artifact confirmation when testing can proceed.
 
 Completion gate:
 - Do not report success unless all required artifacts exist and all changes are committed.
