@@ -1,36 +1,23 @@
 {
-  "status": "success",
-  "task": "tactical-seeker-missiles/TSM-002",
-  "branch": "seekers-tsm-002-tester-20260523",
-  "test_commit_hash": "8528350a94d57facfd1387a4339c15a1ce7f8214",
-  "test_files_added_or_modified": [
-    "tests/tactical/FTacticalGameMechanicsTest.h",
-    "tests/tactical/FTacticalGameMechanicsTest.cpp",
-    "tests/tactical/FTacticalBattleScreenDelegationTest.cpp"
-  ],
-  "commands_run": [
-    "cd tests && make tactical-tests && ./tactical/TacticalTests"
-  ],
-  "totals": {
-    "tests_written": 3,
-    "tacticaltests_passed": 158,
-    "tacticaltests_failed": 0
-  },
-  "acceptance_criteria": {
-    "deployable_mine_and_seeker_slot_discovery": "pass",
-    "placement_source_selection_by_ship_and_weapon_slot": "pass",
-    "mine_placement_source_tracking_and_ammo_decrement": "pass",
-    "seeker_placement_inactive_state_and_ammo_decrement": "pass",
-    "undo_restores_exact_source_weapon_ammo": "pass",
-    "mine_single_group_per_hex_limit": "pass",
-    "seeker_hex_stacking_supported": "pass",
-    "inactive_seekers_excluded_from_mine_trigger_flow": "pass",
-    "compatibility_mine_placement_and_forwarding_preserved": "pass"
-  },
-  "unmet_acceptance_criteria": [],
-  "artifact_files_written": [
+  "artifact_file_paths": [
     "artifacts/tactical-seeker-missiles/TSM-002/tester_report.md",
     "artifacts/tactical-seeker-missiles/TSM-002/tester_result.json",
     "artifacts/tactical-seeker-missiles/TSM-002/documenter_prompt.txt"
-  ]
+  ],
+  "branch_name": "seekers-tsm-002-tester-20260523",
+  "commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && ./tactical/TacticalTests"
+  ],
+  "pass_fail_totals": {
+    "tacticaltests_failed": 0,
+    "tacticaltests_passed": 158
+  },
+  "status": "success",
+  "task_id": "TSM-002",
+  "test_commit_hash": "9c8aaae38e0c355e6a3a10f74aeaa25213de92c1",
+  "test_files_changed": [
+    "tests/tactical/FTacticalGameMechanicsTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
 }

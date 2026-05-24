@@ -1,54 +1,59 @@
-You are the Documenter Agent.
+Your role is 'documenter'. Your task is as follows:
 
-Task context:
-- Repository root: /home/tstephen/repos/SSW-worktrees/seekers-tsm-002-tester-20260523
+Task summary:
+- Validated TSM-002 remediation retry for exact-slot ordnance undo matching and post-placement source-selection index/pointer consistency in FTacticalGame tactical placement flows.
+
+Acceptance criteria validated:
+- Model discovers deployable mine and seeker missile weapon slots.
+- Model can select the current deployment source by ship and weapon slot.
+- Placing a mine records a source-tracked mine and decrements the selected mine ammo.
+- Placing a seeker creates an inactive seeker and decrements the selected seeker missile ammo.
+- Undoing a placed item restores ammo to the exact source weapon slot.
+- Mines remain limited to one mine group per hex.
+- Seekers can stack without limit in a hex.
+- Inactive seekers are not considered by checkForMines(...) or mine damage.
+- Existing mine placement behavior remains available through compatibility methods or updated forwarding methods.
+
+Implementation branch or worktree context:
 - Tester worktree: /home/tstephen/repos/SSW-worktrees/seekers-tsm-002-tester-20260523
 - Tester branch: seekers-tsm-002-tester-20260523
-- Parent implementer branch: seekers-tsm-002-implementer-20260523
-- Shared artifact directory (repo-root-relative): artifacts/tactical-seeker-missiles/TSM-002
+- Upstream implementer branch/worktree: seekers-tsm-002-implementer-20260523 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-002-implementer-20260523
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FTacticalGame.cpp (implementer remediation)
+- tests/tactical/FTacticalGameMechanicsTest.cpp (tester regression coverage)
+- artifacts/tactical-seeker-missiles/TSM-002/tester_report.md
+- artifacts/tactical-seeker-missiles/TSM-002/tester_result.json
+- artifacts/tactical-seeker-missiles/TSM-002/documenter_prompt.txt
+
+Test commit:
+- 9c8aaae38e0c355e6a3a10f74aeaa25213de92c1
+
+Commands executed:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests && ./tactical/TacticalTests
+
+Final test outcomes:
+- Tactical test suite passed: OK (158 tests).
+- Added source-contract coverage ensuring sourceMatchesSelection resolves selected weapon-slot identity before undo matching.
+- Added coverage ensuring successful mine/seeker placement reselects the same source slot after rebuildDeployablePlacementSources(), keeping selected index aligned with active ship/weapon pointers.
+- No acceptance criteria regressions observed in tactical placement compatibility behavior.
+
+Documentation context:
+- Remediation narrows source matching to the exact selected weapon slot during undo and keeps source-selection index synchronized after successful placement rebuilds.
+- Behavioral compatibility for mine placement forwarding remains intact while allowing seeker stacking and inactive seeker exclusion semantics.
+
+Plan and diff context:
 - Coordination plan path: plans/tactical-seeker-missiles-plan.md
+- Use implementer branch seekers-tsm-002-implementer-20260523 and prior baseline commit 399ac91 as comparison context for remediation retry assumptions.
 
-Original task summary:
-- Generalize tactical placement flow so placement supports both mines and seeker missiles from source-tracked ship/weapon slots, including exact-slot ammo decrement and undo restore.
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
 
-Acceptance criteria to document against:
-1. Model discovers deployable mine and seeker missile weapon slots.
-2. Model can select the current deployment source by ship and weapon slot.
-3. Placing a mine records a source-tracked mine and decrements selected mine ammo.
-4. Placing a seeker creates an inactive seeker and decrements selected seeker ammo.
-5. Undoing a placed item restores ammo to the exact source weapon slot.
-6. Mines remain limited to one mine group per hex.
-7. Seekers can stack without limit in a hex.
-8. Inactive seekers are not considered by `checkForMines(...)` or mine damage.
-9. Existing mine placement behavior remains available through compatibility methods or updated forwarding methods.
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-002
 
-Files modified by Implementer and/or Tester that may affect documentation review:
-- include/tactical/FTacticalGame.h (implementer)
-- src/tactical/FTacticalGame.cpp (implementer)
-- include/tactical/FBattleScreen.h (implementer)
-- src/tactical/FBattleScreen.cpp (implementer)
-- tests/tactical/FTacticalGameMechanicsTest.h (tester)
-- tests/tactical/FTacticalGameMechanicsTest.cpp (tester)
-- tests/tactical/FTacticalBattleScreenDelegationTest.cpp (tester)
-- artifacts/tactical-seeker-missiles/TSM-002/tester_report.md (tester)
-- artifacts/tactical-seeker-missiles/TSM-002/tester_result.json (tester)
-- artifacts/tactical-seeker-missiles/TSM-002/documenter_prompt.txt (tester)
-
-Testing performed by Tester:
-- `cd tests && make tactical-tests && ./tactical/TacticalTests` -> `OK (158 tests)`
-
-Final test outcome:
-- Acceptance criteria validated with added tactical source-contract coverage and forwarding checks.
-- No known unmet criteria.
-
-Commit context:
-- Test-change commit hash: 8528350a94d57facfd1387a4339c15a1ce7f8214
-- Artifact commit hash: infer from current branch HEAD after tester artifact commit
-
-Guidance for your workflow:
-- Reuse shared artifact directory exactly as: artifacts/tactical-seeker-missiles/TSM-002
-- Continue in the same run when required blocking inputs are present; do not stop after activation metadata, scope confirmation, documentation-target discovery, or diff review.
-- Infer missing documentation-target details from repository evidence when safe and label assumptions explicitly.
-
-Completion gate (mandatory):
-- Do not report success unless all required artifacts exist in artifacts/tactical-seeker-missiles/TSM-002 and all changes are committed.
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
