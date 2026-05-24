@@ -77,6 +77,24 @@ void FTacticalGameMechanicsTest::testHeaderExposesAdditiveMechanicsApiSurface() 
 // AC: additive mechanics methods exist for setup/state, movement, report lifecycle, fire, and winner helpers.
 const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
 
+assertContains(header, "} FTacticalOrdnanceSource;");
+assertContains(header, "unsigned int shipID;");
+assertContains(header, "int weaponIndex;");
+assertContains(header, "unsigned int weaponID;");
+assertContains(header, "} FTacticalPlacedOrdnance;");
+assertContains(header, "FWeapon::Weapon weaponType;");
+assertContains(header, "unsigned int ownerID;");
+assertContains(header, "FTacticalOrdnanceSource source;");
+assertContains(header, "FPoint hex;");
+assertContains(header, "int displayColorIndex;");
+assertContains(header, "int displayMarkerIndex;");
+assertContains(header, "} FTacticalSeekerMissileState;");
+assertContains(header, "unsigned int seekerID;");
+assertContains(header, "int heading;");
+assertContains(header, "bool active;");
+assertContains(header, "int movementTurn;");
+assertContains(header, "int movementAllowance;");
+assertContains(header, "bool hasSource;");
 assertContains(header, "int setupFleets(FleetList * aList, FleetList * dList, bool planet = false, FVehicle * station = NULL);");
 assertContains(header, "void setState(int s);");
 assertContains(header, "void setPhase(int p);");
@@ -97,6 +115,13 @@ assertContains(header, "bool isCombatOver() const;");
 assertContains(header, "bool hasWinner() const { return m_hasWinner; }");
 assertContains(header, "unsigned int getWinnerID() const { return m_winnerID; }");
 assertContains(header, "void clearWinner();");
+assertContains(header, "const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const { return m_placedOrdnance; }");
+assertContains(header, "const std::vector<FTacticalSeekerMissileState> & getSeekerMissiles() const { return m_seekerMissiles; }");
+assertContains(header, "std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;");
+assertContains(header, "std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;");
+assertContains(header, "std::vector<FTacticalSeekerMissileState> getSeekerMissilesForOwner(unsigned int ownerID, bool activeOnly = false) const;");
+assertContains(header, "std::vector<FTacticalPlacedOrdnance> m_placedOrdnance;");
+assertContains(header, "std::vector<FTacticalSeekerMissileState> m_seekerMissiles;");
 }
 
 void FTacticalGameMechanicsTest::testResetInitializesSafeLegacyCompatibleDefaults() {
@@ -124,6 +149,8 @@ assertContains(body, "clearICMVector(m_ICMData);");
 assertContains(body, "m_tacticalReport.clear();");
 assertContains(body, "m_turnInfo.clear();");
 assertContains(body, "m_mineOwner = 99;");
+assertContains(body, "m_placedOrdnance.clear();");
+assertContains(body, "m_seekerMissiles.clear();");
 }
 
 void FTacticalGameMechanicsTest::testTacticalReportLifecycleUsesSharedReportTypes() {
@@ -308,6 +335,9 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 		extractFunctionBody(source, "void buildPathHeadings(const FTacticalTurnData & turnData, PointList & path, std::vector<int> & headings)");
 	const std::string computeRangeBody = extractFunctionBody(source, "void FTacticalGame::computeWeaponRange()");
 	const std::string setIfValidTargetBody = extractFunctionBody(source, "bool FTacticalGame::setIfValidTarget(FVehicle * target, const FPoint & targetHex)");
+	const std::string ordnanceAtHexBody = extractFunctionBody(source, "std::vector<FTacticalPlacedOrdnance> FTacticalGame::getPlacedOrdnanceAtHex(const FPoint & hex) const");
+	const std::string seekersAtHexBody = extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesAtHex(");
+	const std::string seekersForOwnerBody = extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesForOwner(");
 
 	assertContains(header, "bool selectWeapon(unsigned int weaponIndex);");
 	assertContains(header, "bool selectDefense(unsigned int defenseIndex);");
@@ -344,6 +374,11 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(header, "bool hasShipPlacementPendingRotation() const");
 	assertContains(header, "const FPoint & getSelectedShipHex() const");
 	assertContains(header, "const VehicleList & getShipsWithMines() const");
+	assertContains(header, "const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const");
+	assertContains(header, "const std::vector<FTacticalSeekerMissileState> & getSeekerMissiles() const");
+	assertContains(header, "std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;");
+	assertContains(header, "std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;");
+	assertContains(header, "std::vector<FTacticalSeekerMissileState> getSeekerMissilesForOwner(unsigned int ownerID, bool activeOnly = false) const;");
 	assertContains(header, "bool isHexInBounds(const FPoint & hex) const;");
 	assertContains(header, "bool isHexOccupied(const FPoint & hex) const;");
 
@@ -351,8 +386,17 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(source, "bool FTacticalGame::selectDefense(unsigned int defenseIndex)");
 	assertContains(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
 	assertContains(source, "const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const");
+	assertContains(source, "std::vector<FTacticalPlacedOrdnance> FTacticalGame::getPlacedOrdnanceAtHex(const FPoint & hex) const");
+	assertContains(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesAtHex(");
+	assertContains(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesForOwner(");
 	assertContains(source, "const std::vector<int> & FTacticalGame::getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const");
 	assertContains(source, "return EMPTY_PREVIEW_HEADING_LIST;");
+	assertContains(ordnanceAtHexBody, "if (itr->hex.getX() == hex.getX() && itr->hex.getY() == hex.getY()) {");
+	assertContains(ordnanceAtHexBody, "ordnance.push_back(*itr);");
+	assertContains(seekersAtHexBody, "if (itr->hex.getX() == hex.getX() && itr->hex.getY() == hex.getY() && (!activeOnly || itr->active)) {");
+	assertContains(seekersAtHexBody, "seekers.push_back(*itr);");
+	assertContains(seekersForOwnerBody, "if (itr->ownerID == ownerID && (!activeOnly || itr->active)) {");
+	assertContains(seekersForOwnerBody, "seekers.push_back(*itr);");
 	assertContains(buildPathHeadingsBody, "headings.push_back(lastPoint ? turnData.finalHeading : heading);");
 	assertContains(buildPathHeadingsBody, "heading = FHexMap::computeHeading(path[i], path[i + 1]);");
 	assertContains(buildPathHeadingsBody, "heading = turnData.finalHeading;");
@@ -527,6 +571,10 @@ CPPUNIT_ASSERT(source.find("#include \"tactical/FBattleDisplay.h\"") == std::str
 CPPUNIT_ASSERT(source.find("FBattleScreen::") == std::string::npos);
 CPPUNIT_ASSERT(source.find("FBattleBoard::") == std::string::npos);
 CPPUNIT_ASSERT(source.find("FBattleDisplay::") == std::string::npos);
+	CPPUNIT_ASSERT(header.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(header.find("#include \"wx/") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("#include \"wx/") == std::string::npos);
 }
 
 }
