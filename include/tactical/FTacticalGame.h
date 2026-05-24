@@ -226,11 +226,61 @@ bool isMoveComplete() const { return m_moveComplete; }
 	bool placeShip(const FPoint & hex);
 	bool setShipPlacementHeading(int heading);
 	bool setShipPlacementHeadingByHex(const FPoint & hex);
+	/**
+	 * @brief Enter setup placement through the generalized ordnance-placement flow.
+	 *
+	 * Preserves the legacy mine-placement entry point while routing setup
+	 * placement through the shared source-tracked ordnance selection logic.
+	 *
+	 * @return True when at least one deployable source with ammo can enter
+	 *         placement mode.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool beginMinePlacement();
+	/**
+	 * @brief Discover deployable mine and seeker sources and enter placement mode.
+	 *
+	 * Rebuilds the exact ship/weapon-slot placement-source list, selects the
+	 * first source that still has ammo, and transitions tactical setup into the
+	 * existing placement state.
+	 *
+	 * @return True when placement mode was entered successfully.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool beginOrdnancePlacement();
+	/**
+	 * @brief Select the active placement source by ship ID and weapon slot.
+	 *
+	 * @param shipID Source ship identifier.
+	 * @param weaponIndex Zero-based weapon-slot index on the source ship.
+	 *
+	 * @return True when the requested source exists and becomes current.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool selectPlacementSource(unsigned int shipID, unsigned int weaponIndex);
+	/**
+	 * @brief Select the active placement source by deployable-source list index.
+	 *
+	 * @param sourceIndex Zero-based index into getDeployablePlacementSources().
+	 *
+	 * @return True when the requested list entry exists and becomes current.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool selectPlacementSourceByIndex(unsigned int sourceIndex);
 	int getSelectedPlacementSourceIndex() const { return m_selectedPlacementSource; }
+	/// get the current deployable mine/seeker placement-source list
 	const std::vector<FTacticalDeploymentSource> & getDeployablePlacementSources() const { return m_deployablePlacementSources; }
 	void completeMinePlacement();
 	/// Canonical post-move resolution seam; PH_FINALIZE_MOVE delegates here.
@@ -240,9 +290,67 @@ bool isMoveComplete() const { return m_moveComplete; }
 	void completeOffensiveFirePhase();
 	void computeWeaponRange();
 	bool assignTargetFromHex(const FPoint & hex);
+	/**
+	 * @brief Place or undo ordnance at a hex for the currently selected source.
+	 *
+	 * Creates a source-tracked mine record or inactive seeker when the selected
+	 * source can deploy into the requested hex, or undoes the matching selected
+	 * source's placed item and restores ammo when the same source clicks an
+	 * existing marker it owns.
+	 *
+	 * @param hex Tactical hex to place into or undo from.
+	 *
+	 * @return True when model placement state changed.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool placeOrdnanceAtHex(const FPoint & hex);
+	/**
+	 * @brief Compatibility wrapper for legacy mine-placement callers.
+	 *
+	 * Delegates to the generalized ordnance-placement path while preserving the
+	 * legacy tactical setup API used by existing wx flows and source-contract
+	 * tests.
+	 *
+	 * @param hex Tactical hex to place into or undo from.
+	 *
+	 * @return True when the underlying ordnance-placement state changed.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool placeMineAtHex(const FPoint & hex);
+	/**
+	 * @brief Check whether the currently selected source may interact with a hex.
+	 *
+	 * Applies the generalized placement rules for the active source, including
+	 * mine single-hex exclusivity and same-source undo of existing placed
+	 * ordnance markers.
+	 *
+	 * @param hex Tactical hex to inspect.
+	 *
+	 * @return True when placement or selected-source undo is legal at hex.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool isHexDeployable(const FPoint & hex);
+	/**
+	 * @brief Compatibility wrapper for legacy mine-only placement checks.
+	 *
+	 * @param hex Tactical hex to inspect.
+	 *
+	 * @return True when the generalized placement rules allow mine interaction
+	 *         for the current selection at hex.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool isHexMinable(const FPoint & hex);
 	const VehicleList & getHexOccupants(const FPoint & hex) const;
 	const std::vector<FPoint> & getMovementHexes() const { return m_movementHexes; }

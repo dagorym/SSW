@@ -223,11 +223,57 @@ public:
 	bool placeShip(const FPoint & hex);
 	bool setShipPlacementHeading(int heading);
 	bool setShipPlacementHeadingByHex(const FPoint & hex);
+	/**
+	 * @brief Enter setup placement through the shared ordnance-placement seam.
+	 *
+	 * Preserves the legacy mine-placement entry point while forwarding to the
+	 * model's generalized mine/seeker setup placement flow.
+	 *
+	 * @return True when tactical setup enters placement mode.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: Jul 11, 2008
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool beginMinePlacement();
+	/**
+	 * @brief Forward generalized setup ordnance placement entry to FTacticalGame.
+	 *
+	 * @return True when a deployable source with ammo is available and placement
+	 *         mode is entered.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool beginOrdnancePlacement();
+	/**
+	 * @brief Select the active placement source by ship ID and weapon slot.
+	 *
+	 * @param shipID Source ship identifier.
+	 * @param weaponIndex Zero-based weapon-slot index on the source ship.
+	 *
+	 * @return True when the requested source becomes current.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool selectPlacementSource(unsigned int shipID, unsigned int weaponIndex);
+	/**
+	 * @brief Select the active placement source by deployable-source index.
+	 *
+	 * @param sourceIndex Zero-based index into getDeployablePlacementSources().
+	 *
+	 * @return True when the requested source becomes current.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool selectPlacementSourceByIndex(unsigned int sourceIndex);
 	int getSelectedPlacementSourceIndex() const;
+	/// get the current deployable mine/seeker placement-source list
 	const std::vector<FTacticalDeploymentSource> & getDeployablePlacementSources() const;
 	void completeMinePlacement();
 	void completeMovePhase();
@@ -236,9 +282,54 @@ public:
 	void completeOffensiveFirePhase();
 	void computeWeaponRange();
 	bool assignTargetFromHex(const FPoint & hex);
+	/**
+	 * @brief Forward generalized ordnance placement or undo at a tactical hex.
+	 *
+	 * @param hex Tactical hex to place into or undo from.
+	 *
+	 * @return True when the model placement state changed.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool placeOrdnanceAtHex(const FPoint & hex);
+	/**
+	 * @brief Preserve the legacy mine-placement forwarder on the screen seam.
+	 *
+	 * @param hex Tactical hex to place into or undo from.
+	 *
+	 * @return True when the delegated ordnance-placement state changed.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: Jul 11, 2008
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool placeMineAtHex(const FPoint & hex);
+	/**
+	 * @brief Query whether the selected placement source can interact with a hex.
+	 *
+	 * @param hex Tactical hex to inspect.
+	 *
+	 * @return True when the delegated generalized placement rules allow the
+	 *         interaction.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool isHexDeployable(const FPoint & hex);
+	/**
+	 * @brief Preserve the legacy mine-only placement query on the screen seam.
+	 *
+	 * @param hex Tactical hex to inspect.
+	 *
+	 * @return True when the delegated placement rules allow mine interaction.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: Jul 11, 2008
+	 * @date Last Modified: May 24, 2026
+	 */
 	bool isHexMinable(const FPoint & hex);
 	const VehicleList & getHexOccupants(const FPoint & hex) const;
 	const std::vector<FPoint> & getMovementHexes() const;

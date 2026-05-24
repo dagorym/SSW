@@ -380,9 +380,11 @@ surface now includes:
 - **Setup and placement APIs:** planet placement, station placement, ship
   placement, pending-rotation heading confirmation, and setup-oriented
   state access needed during scenario initialization.
-- **Movement and fire progression APIs:** hex-click dispatch, mine placement
-  start/completion helpers, move completion, defensive/offensive fire phase
-  completion, and model-owned weapon-range computation.
+- **Movement and fire progression APIs:** hex-click dispatch, generalized
+  ordnance-placement start/source-selection/placement helpers (with legacy
+  mine-placement compatibility entry points), move completion,
+  defensive/offensive fire phase completion, and model-owned weapon-range
+  computation.
 - **Renderer-facing state accessors:** read access to hex occupancy, current
   selected ship hex, route and turn highlight lists, target and head-on range
   sets, mined hexes, mine targets/ownership, mine-capable ship lists, turn
@@ -409,10 +411,16 @@ remaining non-view interactions through the existing forwarding seam:
   still had a blocking runtime cleanup-order bug in this seam; the explicit
   single-clear lifecycle contract was added later by Milestone 8 remediation
   Subtasks 1/2/4.
-- **Mine placement/setup:** setup-speed completion now calls
-  `beginMinePlacement()`, mine placement completion calls
-  `completeMinePlacement()`, and the mine-placement UI reads the selectable
-  ship list from `getShipsWithMines()` rather than caching a local copy.
+- **Mine/ordnance placement setup:** setup-speed completion still reaches the
+  legacy `beginMinePlacement()` seam, but that compatibility entry point now
+  delegates to generalized source-tracked setup placement through
+  `beginOrdnancePlacement()`. The display can also forward exact source
+  selection through `selectPlacementSource(...)` or
+  `selectPlacementSourceByIndex(...)`, and map clicks now have a generalized
+  `placeOrdnanceAtHex()` path behind the legacy `placeMineAtHex()` wrapper.
+  The current setup UI still reads the selectable mine-ship list from
+  `getShipsWithMines()` rather than caching a local copy because the wx row
+  redesign lands in a later seeker subtask.
 
 Milestone 8 Subtask 3 then applies that forwarding surface to
 `FBattleBoard`. The board now keeps only wx-side geometry, scaling,
@@ -593,11 +601,13 @@ earlier Milestone 8 rewiring steps. The updated tactical tests now verify that:
   the click-flow forwarding APIs that remain authoritative on the wx side.
 - `FTacticalBattleScreenDelegationTest` explicitly covers the selection and
   hex-interaction mutators (`selectShipFromHex()`, `assignTargetFromHex()`,
-  and `placeMineAtHex()`) as redraw-gated forwarders into `FTacticalGame`.
+  `placeOrdnanceAtHex()`, and the legacy `placeMineAtHex()` wrapper) as
+  redraw-gated forwarders into `FTacticalGame`.
 - `FTacticalModelSelectionHexClickSurfaceTest` validates the canonical
   `FTacticalGame` header/implementation API for weapon selection, defense
-  selection, ship selection, target assignment, mine placement, occupancy
-  queries, in-bounds checks, and `handleHexClick()` routing.
+  selection, ship selection, target assignment, generalized ordnance
+  placement/source selection, occupancy queries, in-bounds checks, and
+  `handleHexClick()` routing.
 - Tactical test registration now includes that new suite in both
   `tests/tactical/TacticalTests.cpp` and `tests/tactical/Makefile`, matching
   repository test-runner conventions.
