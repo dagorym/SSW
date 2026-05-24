@@ -1,15 +1,39 @@
-## Documenter Report
+# Documenter Report
 
-### Files Updated
-- **`include/tactical/FTacticalGame.h`** — Added Doxygen comments for the generalized placement-source discovery, selection, ordnance placement, deployable-hex checks, and legacy mine-compatibility entry points introduced by TSM-002.
-- **`include/tactical/FBattleScreen.h`** — Documented the forwarding seam for generalized ordnance placement/source-selection APIs and the retained mine-compatibility wrappers.
-- **`doc/DesignNotes.md`** — Updated the tactical delegation notes so the architecture narrative now reflects generalized ordnance placement, exact source selection, and the expanded delegation-test surface.
+Status:
+- success
 
-### Summary
-Documented the shipped TSM-002 behavior without changing runtime logic: setup placement now generalizes from mines to source-tracked mines and inactive seekers, legacy mine entry points remain compatibility wrappers, and the tactical design notes now describe the broader ordnance-placement seam and related delegation coverage. Assumption: the safest comparison base is commit `b838b18`, the direct parent of implementation commit `d9c2e41fb18f2ab4f90579583c06f438123217d7`, because it is the last shared commit before TSM-002 work begins on this branch stack. Per repository policy and plan guidance, `doc/rules/tactical_operations_manual.md` was reviewed for scope only and was not edited.
+Task summary:
+- Validated TSM-002 remediation retry for exact-slot ordnance undo matching and post-placement source-selection index/pointer consistency in FTacticalGame tactical placement flows.
 
-### Validation
-- `cd tests && make tactical-tests && ./tactical/TacticalTests` → `OK (158 tests)`
+Branch name:
+- seekers-tsm-002-documenter-20260523
 
-### Commit Message
-`docs: document tactical ordnance placement`
+Documentation commit hash:
+- a747b07c3aab33b07b44c08ddb29a7def22ee046
+
+Documentation files added or modified:
+- include/tactical/FTacticalGame.h
+- doc/DesignNotes.md
+
+Commands run:
+- myteam get role documenter
+- python .myteam/documenter/preflight/resolve_preflight.py --input artifacts/tactical-seeker-missiles/TSM-002/documenter_prompt.txt --repo-root .
+- python .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base 399ac91 --head HEAD
+- git --no-pager diff 399ac91..HEAD -- src/tactical/FTacticalGame.cpp
+- git --no-pager diff 399ac91..HEAD -- tests/tactical/FTacticalGameMechanicsTest.cpp
+- git commit -m "docs: clarify TSM-002 ordnance selection"
+
+Final test outcomes:
+- Tactical test suite passed: OK (158 tests).
+- Added source-contract coverage ensuring sourceMatchesSelection resolves selected weapon-slot identity before undo matching.
+- Added coverage ensuring successful mine/seeker placement reselects the same source slot after rebuildDeployablePlacementSources(), keeping selected index aligned with active ship/weapon pointers.
+- No acceptance criteria regressions observed in tactical placement compatibility behavior.
+
+Assumptions:
+- None
+
+Artifacts written:
+- artifacts/tactical-seeker-missiles/TSM-002/documenter_report.md
+- artifacts/tactical-seeker-missiles/TSM-002/documenter_result.json
+- artifacts/tactical-seeker-missiles/TSM-002/verifier_prompt.txt

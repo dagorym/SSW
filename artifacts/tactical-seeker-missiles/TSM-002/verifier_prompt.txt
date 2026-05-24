@@ -1,74 +1,80 @@
-You are the Verifier Agent.
+Your role is 'verifier'. Your task is as follows:
 
-Task summary:
-- Verify TSM-002 after the Documenter pass on generalized tactical setup placement for mines and seeker missiles from source-tracked ship/weapon slots.
-- The Implementer generalized setup placement so deployable mine and seeker sources are discovered by exact ship/weapon slot, placement decrements the selected slot, undo restores ammo to the exact slot, mine exclusivity remains one group per hex, seeker stacking is allowed, inactive seekers stay out of mine-trigger flow, and legacy mine entry points still forward through compatibility methods.
-- The Tester added tactical mechanics and FBattleScreen delegation coverage and reported `OK (158 tests)`.
-- The Documenter updated in-code Doxygen comments and `doc/DesignNotes.md` so the documented tactical placement seam now matches the shipped generalized ordnance behavior. Do not edit `doc/rules/tactical_operations_manual.md`.
+Original task summary:
+- Validated TSM-002 remediation retry for exact-slot ordnance undo matching and post-placement source-selection index/pointer consistency in FTacticalGame tactical placement flows.
 
 Acceptance criteria to verify:
-1. Model discovers deployable mine and seeker missile weapon slots.
-2. Model can select the current deployment source by ship and weapon slot.
-3. Placing a mine records a source-tracked mine and decrements selected mine ammo.
-4. Placing a seeker creates an inactive seeker and decrements selected seeker ammo.
-5. Undoing a placed item restores ammo to the exact source weapon slot.
-6. Mines remain limited to one mine group per hex.
-7. Seekers can stack without limit in a hex.
-8. Inactive seekers are not considered by `checkForMines(...)` or mine damage.
-9. Existing mine placement behavior remains available through compatibility methods or updated forwarding methods.
-10. Documentation now accurately describes the generalized ordnance-placement seam, source-selection APIs, and compatibility wrappers without overstating any unimplemented seeker-UI work.
+- Model discovers deployable mine and seeker missile weapon slots.
+- Model can select the current deployment source by ship and weapon slot.
+- Placing a mine records a source-tracked mine and decrements the selected mine ammo.
+- Placing a seeker creates an inactive seeker and decrements the selected seeker missile ammo.
+- Undoing a placed item restores ammo to the exact source weapon slot.
+- Mines remain limited to one mine group per hex.
+- Seekers can stack without limit in a hex.
+- Inactive seekers are not considered by checkForMines(...) or mine damage.
+- Existing mine placement behavior remains available through compatibility methods or updated forwarding methods.
 
-Repository/worktree context:
-- Shared artifact directory: `artifacts/tactical-seeker-missiles/TSM-002`
-- Coordination plan path: `plans/tactical-seeker-missiles-plan.md`
-- Implementer branch/worktree: `seekers-tsm-002-implementer-20260523` at `/home/tstephen/repos/SSW-worktrees/seekers-tsm-002-implementer-20260523`
-- Tester branch/worktree: `seekers-tsm-002-tester-20260523` at `/home/tstephen/repos/SSW-worktrees/seekers-tsm-002-tester-20260523`
-- Documenter branch/worktree: `seekers-tsm-002-documenter-20260523` at `/home/tstephen/repos/SSW-worktrees/seekers-tsm-002-documenter-20260523`
-- Comparison-base assumption: use commit `b838b18`, the direct parent of implementation commit `d9c2e41fb18f2ab4f90579583c06f438123217d7`, as the safest story-specific base because it is the last shared commit before TSM-002 work starts on this stacked branch.
+Implementation branch or worktree context:
+- Documenter worktree: /home/tstephen/repos/SSW-worktrees/seekers-tsm-002-documenter-20260523
+- Documenter branch: seekers-tsm-002-documenter-20260523
+- Tester worktree: /home/tstephen/repos/SSW-worktrees/seekers-tsm-002-tester-20260523
+- Tester branch: seekers-tsm-002-tester-20260523
+- Implementer worktree: /home/tstephen/repos/SSW-worktrees/seekers-tsm-002-implementer-20260523
+- Implementer branch: seekers-tsm-002-implementer-20260523
+- Tester commit: 9c8aaae38e0c355e6a3a10f74aeaa25213de92c1
+- Documentation commit: a747b07c3aab33b07b44c08ddb29a7def22ee046
+- Comparison-base context: use baseline commit 399ac91 for remediation-retry review.
 
-Commit context:
-- Implementation commit: `d9c2e41fb18f2ab4f90579583c06f438123217d7`
-- Tester test commit: `8528350a94d57facfd1387a4339c15a1ce7f8214`
-- Documenter documentation commit: `a5765a990c4b299e654892de02626e68955c8ff7`
-- Documenter artifact commit: infer from current branch `HEAD` after the documenter artifact commit.
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- artifacts/tactical-seeker-missiles/TSM-002/implementer_report.md
+- artifacts/tactical-seeker-missiles/TSM-002/implementer_result.json
+- artifacts/tactical-seeker-missiles/TSM-002/tester_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-002/tester_report.md
+- artifacts/tactical-seeker-missiles/TSM-002/tester_result.json
+- artifacts/tactical-seeker-missiles/TSM-002/documenter_prompt.txt
+- include/tactical/FTacticalGame.h
+- doc/DesignNotes.md
+- artifacts/tactical-seeker-missiles/TSM-002/documenter_report.md
+- artifacts/tactical-seeker-missiles/TSM-002/documenter_result.json
+- artifacts/tactical-seeker-missiles/TSM-002/verifier_prompt.txt
 
-Files modified by Implementer, Tester, and Documenter that may affect verification scope:
-- Implementer:
-  - `include/tactical/FTacticalGame.h`
-  - `src/tactical/FTacticalGame.cpp`
-  - `include/tactical/FBattleScreen.h`
-  - `src/tactical/FBattleScreen.cpp`
-- Tester:
-  - `tests/tactical/FTacticalGameMechanicsTest.h`
-  - `tests/tactical/FTacticalGameMechanicsTest.cpp`
-  - `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
-  - `artifacts/tactical-seeker-missiles/TSM-002/tester_report.md`
-  - `artifacts/tactical-seeker-missiles/TSM-002/tester_result.json`
-  - `artifacts/tactical-seeker-missiles/TSM-002/documenter_prompt.txt`
-- Documenter:
-  - `include/tactical/FTacticalGame.h`
-  - `include/tactical/FBattleScreen.h`
-  - `doc/DesignNotes.md`
-  - `artifacts/tactical-seeker-missiles/TSM-002/documenter_report.md`
-  - `artifacts/tactical-seeker-missiles/TSM-002/documenter_result.json`
-  - `artifacts/tactical-seeker-missiles/TSM-002/verifier_prompt.txt`
+Commands executed:
+- myteam get role documenter
+- python .myteam/documenter/preflight/resolve_preflight.py --input artifacts/tactical-seeker-missiles/TSM-002/documenter_prompt.txt --repo-root .
+- python .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base 399ac91 --head HEAD
+- git --no-pager diff 399ac91..HEAD -- src/tactical/FTacticalGame.cpp
+- git --no-pager diff 399ac91..HEAD -- tests/tactical/FTacticalGameMechanicsTest.cpp
+- git commit -m "docs: clarify TSM-002 ordnance selection"
 
-Commands already executed:
-- Tester: `cd tests && make tactical-tests && ./tactical/TacticalTests` → `OK (158 tests)`
-- Documenter: `git --no-pager diff --stat b838b18..HEAD`
-- Documenter: `cd tests && make tactical-tests && ./tactical/TacticalTests` → `OK (158 tests)`
+Final test outcomes:
+- Tactical test suite passed: OK (158 tests).
+- Added source-contract coverage ensuring sourceMatchesSelection resolves selected weapon-slot identity before undo matching.
+- Added coverage ensuring successful mine/seeker placement reselects the same source slot after rebuildDeployablePlacementSources(), keeping selected index aligned with active ship/weapon pointers.
+- No acceptance criteria regressions observed in tactical placement compatibility behavior.
 
-Documentation updates to verify:
-- `include/tactical/FTacticalGame.h` now documents the generalized placement-source discovery/selection APIs, ordnance placement/undo path, and legacy mine-compatibility wrappers.
-- `include/tactical/FBattleScreen.h` now documents the forwarding seam for generalized ordnance placement and exact source selection.
-- `doc/DesignNotes.md` now describes generalized ordnance placement in the tactical delegation architecture and notes the broader delegation-test surface.
-- The documentation intentionally does not claim that the wx placement row redesign or seeker activation UI shipped in TSM-002.
+Plan or evaluation context guidance:
+- Plan path: plans/tactical-seeker-missiles-plan.md.
+- Use TSM-002 Documentation Impact as a hint only; the implemented/tested diff is authoritative.
+- Baseline comparison context for the remediation retry is commit 399ac91.
 
-Verification instructions:
-- Verify the implementation, tests, and documentation together.
-- Treat the plan's Documentation Impact section as a hint only; confirm the shipped diff and docs against actual code/test behavior.
-- Continue in the same run when the blocking inputs above are present; do not stop after review-scope setup, convention discovery, or diff inspection.
-- Infer any missing review details from repository evidence when safe and label those inferences as assumptions instead of treating them as blockers.
+Convention-file guidance:
+- AGENTS.md requires Doxygen comment updates when edited declarations or interfaces need refreshed in-code documentation.
+- AGENTS.md marks doc/rules/tactical_operations_manual.md as a protected external artifact that must not be edited.
+- Verification should confirm implementation, regression tests, and the updated documentation comments/DesignNotes together.
+
+Updated documentation files:
+- include/tactical/FTacticalGame.h
+- doc/DesignNotes.md
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-002
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
 
 Completion gate:
-- Do not report success unless all required artifacts exist in `artifacts/tactical-seeker-missiles/TSM-002` and all changes are committed.
+- Do not report success unless all required artifacts exist and all changes are committed.
