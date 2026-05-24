@@ -867,13 +867,27 @@ bool FTacticalGame::sourceMatchesSelection(const FTacticalOrdnanceSource & sourc
 	if (m_curShip == NULL || m_curWeapon == NULL) {
 		return false;
 	}
+	int selectedWeaponIndex = -1;
 	for (unsigned int i = 0; i < m_curShip->getWeaponCount(); ++i) {
 		FWeapon * weapon = m_curShip->getWeapon(i);
-		if (sourceMatchesWeapon(source, m_curShip, weapon, static_cast<int>(i))) {
-			return true;
+		if (weapon == m_curWeapon) {
+			selectedWeaponIndex = static_cast<int>(i);
+			break;
 		}
 	}
-	return false;
+	if (selectedWeaponIndex < 0) {
+		for (unsigned int i = 0; i < m_curShip->getWeaponCount(); ++i) {
+			FWeapon * weapon = m_curShip->getWeapon(i);
+			if (weapon != NULL && weapon->getID() == m_curWeapon->getID()) {
+				selectedWeaponIndex = static_cast<int>(i);
+				break;
+			}
+		}
+	}
+	if (selectedWeaponIndex < 0) {
+		return false;
+	}
+	return sourceMatchesWeapon(source, m_curShip, m_curWeapon, selectedWeaponIndex);
 }
 
 FVehicle * FTacticalGame::findShipByID(unsigned int shipID) const {
@@ -1074,6 +1088,8 @@ bool FTacticalGame::placeMineFromSelection(
 		m_mineOwner = selectedSource.ownerID;
 		appendPlacedOrdnanceRecord(FWeapon::M, hex, selectedSource.source);
 		rebuildDeployablePlacementSources();
+		selectPlacementSource(selectedSource.source.shipID,
+			static_cast<unsigned int>(selectedSource.source.weaponIndex));
 		return true;
 	}
 	return false;
@@ -1101,6 +1117,8 @@ bool FTacticalGame::placeSeekerFromSelection(
 	m_seekerMissiles.push_back(seeker);
 	appendPlacedOrdnanceRecord(FWeapon::SM, hex, selectedSource.source);
 	rebuildDeployablePlacementSources();
+	selectPlacementSource(selectedSource.source.shipID,
+		static_cast<unsigned int>(selectedSource.source.weaponIndex));
 	return true;
 }
 
