@@ -1,0 +1,21 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-002/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-002/verifier_result.json"
+  ],
+  "blocking_finding_count": 1,
+  "branch_name": "seekers-tsm-002-verifier-20260523",
+  "documentation_accuracy_summary": [
+    "The documenter updates correctly describe the intended generalized ordnance-placement seam, source-selection APIs, compatibility wrappers, and they do not claim the later seeker placement-row redesign or seeker activation UI shipped in TSM-002.",
+    "However, the new Doxygen/design-note descriptions overstate shipped behavior for exact source-slot selection and undo because the implementation still misidentifies the selected slot during stacked same-ship undo and can desynchronize the reported selected source after placement."
+  ],
+  "note_finding_count": 0,
+  "status": "success",
+  "task_id": "tactical-seeker-missiles/TSM-002",
+  "test_sufficiency_summary": [
+    "The verifier reran `cd tests && make tactical-tests && ./tactical/TacticalTests` successfully (OK (158 tests)).",
+    "Coverage is not sufficient for TSM-002 acceptance because the added tests rely on source-token inspection instead of exercising runtime placement/undo behavior for same-ship multi-slot and post-placement selection-state scenarios."
+  ],
+  "verdict": "CONDITIONAL PASS",
+  "warning_finding_count": 2
+}
