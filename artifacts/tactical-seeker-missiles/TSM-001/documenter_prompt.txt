@@ -1,0 +1,47 @@
+You are the Documenter Agent.
+
+Task summary:
+- Review documentation impact for TSM-001 after tester validation.
+- The Implementer added tactical model records for source-tracked placed ordnance and active/inactive seeker missiles in `FTacticalGame` without changing live tactical behavior.
+- The Tester added tactical regression assertions covering model-state shape, reset clearing, readonly/filter accessors, and no-wx boundary contracts.
+
+Acceptance criteria validated:
+- Model state can represent placed ordnance with weapon type, owner ID, source ship ID, source weapon index, source weapon ID, hex, and display color/index metadata.
+- Model state can represent a seeker missile with unique seeker ID, owner ID, hex, heading, active flag, movement turn/allowance state, and optional source provenance.
+- `FTacticalGame::reset()` clears the new collections.
+- Read-only accessors expose the new collections or filtered views needed by later renderers.
+- Non-GUI tactical model code remains free of direct wx includes.
+
+Implementation branch or worktree context:
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/seekers-tsm-001-tester-20260523`
+- Branch: `seekers-tsm-001-tester-20260523`
+- Shared artifact directory to reuse: `artifacts/tactical-seeker-missiles/TSM-001`
+- Plan artifact path for provenance: `plans/tactical-seeker-missiles-plan.md`
+- Comparison-base guidance: inspect the current branch against its parent/base as needed; infer the safest base from repository context if not explicitly available.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+- `tests/tactical/FTacticalGameHeaderTest.cpp`
+- Existing context file: `plans/tactical-seeker-missiles-plan.md`
+- Non-editable rules artifact to respect: `doc/rules/tactical_operations_manual.md`
+
+Test commit:
+- `5d4280e0c44c6f707156774c3e3cc2f236b18816`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (baseline): `OK (157 tests)`.
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` (post-change): `OK (157 tests)`.
+
+Final test outcomes:
+- Tester updated tactical regression coverage in two files.
+- No unmet acceptance criteria remain from the tester perspective.
+
+Startup behavior:
+- If documentation scope, changed files, plan path, and artifact path are present, begin documentation review immediately and continue in the same run.
+- Infer missing documentation-convention, plan, base-branch, or artifact-path details from repository context when safe, and label assumptions instead of treating them as blockers.
+- Do not stop after activation metadata, scope confirmation, documentation discovery, or diff review when the next documentation step can be performed.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
