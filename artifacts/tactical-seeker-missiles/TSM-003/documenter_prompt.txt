@@ -1,0 +1,68 @@
+You are the Documenter Agent.
+
+Task summary:
+- Review documentation impact for TSM-003 after implementation and tester validation of setup ordnance placement source-row behavior and source-specific board marker rendering.
+- Implementer updated tactical setup placement UI/board to list deployable mine+seeker sources per weapon slot, select active source by row, and render placed setup ordnance with source-specific colors.
+- Tester added/updated tactical and GUI source-contract coverage for placement row sourcing, slot-ammo display, row-index selection, source-colored board rendering, and placement/undo ammo lifecycle path assertions.
+
+Acceptance criteria validated:
+- The placement panel lists mine and seeker missile rows per ship/weapon slot.
+- Each row shows the current ammo for that exact weapon slot.
+- Clicking a row changes the active placement source.
+- Board placement markers use distinct colors per source ship/weapon combo.
+- Map-click placement and undo update the visible ammo counts.
+- Existing mine-only cases still work when no seeker launchers are present.
+- Placement controls relayout after visibility changes following the existing action-button pattern.
+
+Implementation branch/worktree context:
+- Tester branch: `seekers-tsm-003-tester-20260523`
+- Tester worktree: `/home/tstephen/repos/SSW-worktrees/seekers-tsm-003-tester-20260523`
+- Implementer code commit from handoff: `1d4b31c3d8720c417a3b6a960a5b34eeb61f8c00`
+- Tester commit: `b534eac52acd7c142f098948bbbfbf0b3af7cad8`
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- `include/tactical/FBattleDisplay.h`
+- `src/tactical/FBattleDisplay.cpp`
+- `include/tactical/FBattleBoard.h`
+- `src/tactical/FBattleBoard.cpp`
+- `include/tactical/FBattleScreen.h`
+- `src/tactical/FBattleScreen.cpp`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h`
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp`
+- `tests/gui/TacticalGuiLiveTest.h`
+- `tests/gui/TacticalGuiLiveTest.cpp`
+
+Test commit:
+- `b534eac52acd7c142f098948bbbfbf0b3af7cad8`
+
+Commands executed:
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`: passed, `OK (159 tests)`.
+- `cd tests/gui && make`: passed.
+- `cd tests/gui && xvfb-run -a ./GuiTests`: not run because `xvfb-run` is unavailable in this environment.
+
+Final test outcomes:
+- 2 tests added.
+- 159 tests passed across executed suites.
+- 0 tests failed.
+- No unmet acceptance criteria.
+- No implementation defects identified.
+
+Documentation context:
+- Coordination plan path: `plans/tactical-seeker-missiles-plan.md`.
+- Do not edit `doc/rules/tactical_operations_manual.md`; repository instructions mark it non-volatile and immutable.
+- Determine whether user-facing docs, design notes, or artifact docs need updates for this behavior change; if none are needed, document that explicit decision in documenter artifacts.
+
+Plan and diff context:
+- Shared artifact directory to reuse: `artifacts/tactical-seeker-missiles/TSM-003`.
+- If formal comparison base is not explicit, infer the safest git comparison base and label it as an assumption.
+
+Startup behavior:
+- If branch/worktree and sufficient diff context are present, begin documentation review immediately and continue in the same run.
+- Infer missing documentation-convention or comparison-base details from repository evidence when safe, and label them as assumptions instead of blockers.
+- Do not stop after scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-seeker-missiles/TSM-003`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
