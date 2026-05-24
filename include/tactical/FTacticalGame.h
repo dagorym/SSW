@@ -1,8 +1,9 @@
 /**
  * @file FTacticalGame.h
  * @brief Header file for FTacticalGame class
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Mar 29, 2026
+ * @date Last Modified: May 24, 2026
  *
  */
 
@@ -130,6 +131,14 @@ FTacticalOrdnanceSource source;
 
 /**
  * @brief Pure C++ tactical mechanics state container.
+ *
+ * Owns non-wx tactical battle state, including ship placement, movement,
+ * combat-report bookkeeping, and lightweight source-tracked ordnance and
+ * seeker-missile records used by later rendering and activation subtasks.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: May 24, 2026
  */
 class FTacticalGame {
 public:
@@ -230,11 +239,46 @@ bool isMoveComplete() const { return m_moveComplete; }
 	const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const { return m_placedOrdnance; }
 	/// get all seeker missile model records
 	const std::vector<FTacticalSeekerMissileState> & getSeekerMissiles() const { return m_seekerMissiles; }
-	/// get all placed ordnance records for the requested hex
+	/**
+	 * @brief Get all placed ordnance records in the requested hex.
+	 *
+	 * Returns a copy of the model-side placed-ordnance records whose stored
+	 * placement hex matches the requested coordinates.
+	 *
+	 * @param hex Tactical hex to inspect for placed ordnance.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;
-	/// get seeker missiles in a specific hex, optionally filtering to active seekers only
+	/**
+	 * @brief Get seeker missiles in a specific hex.
+	 *
+	 * Returns a copy of the seeker records located in the requested hex, with
+	 * optional filtering that limits the result to active seekers only.
+	 *
+	 * @param hex Tactical hex to inspect for seekers.
+	 * @param activeOnly When true, only active seekers are returned.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;
-	/// get seeker missiles for a specific owner, optionally filtering to active seekers only
+	/**
+	 * @brief Get seeker missiles owned by a specific player.
+	 *
+	 * Returns a copy of the seeker records for the requested owner, with
+	 * optional filtering that limits the result to active seekers only.
+	 *
+	 * @param ownerID Player identifier to match.
+	 * @param activeOnly When true, only active seekers are returned.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
 	std::vector<FTacticalSeekerMissileState> getSeekerMissilesForOwner(unsigned int ownerID, bool activeOnly = false) const;
 	bool isHexInBounds(const FPoint & hex) const;
 	bool isHexOccupied(const FPoint & hex) const;
