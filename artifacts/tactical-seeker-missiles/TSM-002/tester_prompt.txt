@@ -1,0 +1,61 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Generalize tactical placement flow so placement supports both mines and seeker missiles from source-tracked ship/weapon slots, including exact-slot ammo decrement and undo restore.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate (from Planner):
+- The model discovers deployable mine and seeker missile weapon slots.
+- The model can select the current deployment source by ship and weapon slot.
+- Placing a mine records a source-tracked mine and decrements the selected mine ammo.
+- Placing a seeker creates an inactive seeker and decrements the selected seeker missile ammo.
+- Undoing a placed item restores ammo to the exact source weapon slot.
+- Mines remain limited to one mine group per hex.
+- Seekers can stack without limit in a hex.
+- Inactive seekers are not considered by `checkForMines(...)` or mine damage.
+- Existing mine placement behavior remains available through compatibility methods or updated forwarding methods.
+
+Create/update test files in:
+- tests/tactical/FTacticalGameMechanicsTest.* (or focused tactical placement fixture)
+- tests/weapons/FSeekerMissileLauncherTest.* only if seeker launcher metadata behavior needs coverage
+
+Implementation context for testing:
+- Added new placement metadata type `FTacticalDeploymentSource` and `FTacticalGame` APIs:
+  - `beginOrdnancePlacement()`
+  - `selectPlacementSource(shipID, weaponIndex)`
+  - `selectPlacementSourceByIndex(sourceIndex)`
+  - `getDeployablePlacementSources()`
+  - `getSelectedPlacementSourceIndex()`
+  - `placeOrdnanceAtHex(hex)`
+  - `isHexDeployable(hex)`
+- Compatibility APIs remain and now route through generalized behavior:
+  - `beginMinePlacement()`
+  - `placeMineAtHex(hex)`
+  - `isHexMinable(hex)`
+- Generalized placement now creates source-tracked mine/seeker placement records in `m_placedOrdnance`, creates inactive seekers in `m_seekerMissiles`, and restores exact source ammo on source-matched undo.
+- Setup placement source discovery now includes both mine and seeker slots per active player, with source identity tracked by ship ID + weapon index + weapon ID.
+- Mine damage cleanup removes consumed mine ordnance records; seekers remain excluded from mine trigger/damage flow.
+- `FBattleScreen` now forwards generalized placement/source-selection APIs for later wx integration without introducing the TSM-003 UI redesign.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/weapons && make   (only if seeker launcher metadata/behavior coverage is touched)
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-002
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
