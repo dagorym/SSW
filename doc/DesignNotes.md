@@ -429,8 +429,9 @@ remaining non-view interactions through the existing forwarding seam:
   rather than relying on the legacy `getShipsWithMines()` list alone.
   `FBattleBoard` also reads `getPlacedOrdnance()` during setup placement and
   shades placed mines and inactive seekers with deterministic source-specific
-  colors derived from the source ship/weapon combo so same-hex markers remain
-  visually attributable to their launching slot.
+  colors derived from per-source ordinals rather than the old 12-color modulo
+  wrap, so same-hex markers remain visually attributable to their launching
+  slot even when many deployable rows are present.
 
 Milestone 8 Subtask 3 then applies that forwarding surface to
 `FBattleBoard`. The board now keeps only wx-side geometry, scaling,

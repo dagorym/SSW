@@ -27,7 +27,8 @@ class FBattleScreen;
  * ship/overlay rendering, and mouse hit-testing. The board now also renders
  * setup ordnance markers from model-owned placed-ordnance records so mine and
  * seeker deployment colors stay tied to the exact source ship/weapon slot
- * selected in the lower display panel.
+ * selected in the lower display panel, even when the setup list grows beyond
+ * the legacy 12-color seed palette.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created: Jul 11, 2008
@@ -78,9 +79,10 @@ void drawMinedHexes(wxDC &dc);
 	/**
 	 * @brief Draw placed setup ordnance markers using their source-specific colors.
 	 *
-	 * Reads the model-owned placed-ordnance list through `FBattleScreen` and
-	 * shades each in-bounds mine or inactive seeker hex with the deterministic
-	 * color assigned to that source ship/weapon slot during setup placement.
+	 * Reads the model-owned placed-ordnance list through `FBattleScreen`, rebuilds
+	 * the source-slot ordinal map for the current setup view, and shades each
+	 * in-bounds mine or inactive seeker hex with the deterministic color assigned
+	 * to that exact source ship/weapon slot during setup placement.
 	 *
 	 * @param dc Device context used for tactical board drawing.
 	 *
@@ -93,7 +95,9 @@ void drawMinedHexes(wxDC &dc);
 	 * @brief Derive the placement color for one setup source slot.
 	 *
 	 * Resolves the source ship/weapon combo to a deterministic ordinal built
-	 * during placement rendering, then maps that ordinal to a stable color.
+	 * during placement rendering, then maps that ordinal to a stable color that
+	 * expands beyond the seed palette instead of wrapping back onto the legacy
+	 * modulo-collision mapping.
 	 *
 	 * @param shipID Source ship identifier.
 	 * @param weaponIndex Zero-based weapon slot on that ship.
