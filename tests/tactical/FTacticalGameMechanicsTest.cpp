@@ -522,6 +522,7 @@ void FTacticalGameMechanicsTest::testOrdnancePlacementSourceTrackingAndCompatibi
 	const std::string placeOrdnanceBody = extractFunctionBody(source, "bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex)");
 	const std::string removePlacedBody = extractFunctionBody(source, "bool FTacticalGame::removePlacedOrdnanceForSelection(");
 	const std::string restoreAmmoBody = extractFunctionBody(source, "bool FTacticalGame::restoreAmmoForSource(const FTacticalOrdnanceSource & source)");
+	const std::string sourceMatchesSelectionBody = extractFunctionBody(source, "bool FTacticalGame::sourceMatchesSelection(const FTacticalOrdnanceSource & source) const");
 	const std::string deployableBody = extractFunctionBody(source, "bool FTacticalGame::isHexDeployable(const FPoint & hex)");
 	const std::string beginMineBody = extractFunctionBody(source, "bool FTacticalGame::beginMinePlacement()");
 	const std::string placeMineBody = extractFunctionBody(source, "bool FTacticalGame::placeMineAtHex(const FPoint & hex)");
@@ -558,13 +559,20 @@ void FTacticalGameMechanicsTest::testOrdnancePlacementSourceTrackingAndCompatibi
 	assertContains(placeMineFromSelectionBody, "weapon->setCurrentAmmo(weapon->getAmmo() - 1);");
 	assertContains(placeMineFromSelectionBody, "appendPlacedOrdnanceRecord(FWeapon::M, hex, selectedSource.source);");
 	assertContains(placeMineFromSelectionBody, "rebuildDeployablePlacementSources();");
+	assertContains(placeMineFromSelectionBody, "selectPlacementSource(selectedSource.source.shipID,");
+	assertContains(placeMineFromSelectionBody, "static_cast<unsigned int>(selectedSource.source.weaponIndex));");
 	assertContains(placeSeekerFromSelectionBody, "weapon->setCurrentAmmo(weapon->getAmmo() - 1);");
 	assertContains(placeSeekerFromSelectionBody, "seeker.active = false;");
 	assertContains(placeSeekerFromSelectionBody, "seeker.source = selectedSource.source;");
 	assertContains(placeSeekerFromSelectionBody, "m_seekerMissiles.push_back(seeker);");
 	assertContains(placeSeekerFromSelectionBody, "appendPlacedOrdnanceRecord(FWeapon::SM, hex, selectedSource.source);");
+	assertContains(placeSeekerFromSelectionBody, "selectPlacementSource(selectedSource.source.shipID,");
+	assertContains(placeSeekerFromSelectionBody, "static_cast<unsigned int>(selectedSource.source.weaponIndex));");
 
 	assertContains(removePlacedBody, "if (!sourceMatchesSelection(itr->source)) {");
+	assertContains(sourceMatchesSelectionBody, "if (weapon == m_curWeapon) {");
+	assertContains(sourceMatchesSelectionBody, "if (weapon != NULL && weapon->getID() == m_curWeapon->getID()) {");
+	assertContains(sourceMatchesSelectionBody, "return sourceMatchesWeapon(source, m_curShip, m_curWeapon, selectedWeaponIndex);");
 	assertContains(restoreAmmoBody, "FWeapon * weapon = findWeaponBySource(source, NULL);");
 	assertContains(restoreAmmoBody, "weapon->setCurrentAmmo(ammo + 1);");
 	assertContains(placeOrdnanceBody, "if (removePlacedOrdnanceForSelection(hex, removed)) {");
