@@ -768,6 +768,21 @@ const PointSet & FBattleScreen::getMinedHexes() const {
 	return m_tacticalGame->getMinedHexes();
 }
 
+const std::vector<FTacticalPlacedOrdnance> & FBattleScreen::getPlacedOrdnance() const {
+	return m_tacticalGame->getPlacedOrdnance();
+}
+
+std::vector<FTacticalPlacedOrdnance> FBattleScreen::getPlacedOrdnanceAtHex(const FPoint & hex) const {
+	return m_tacticalGame->getPlacedOrdnanceAtHex(hex);
+}
+
+std::vector<FTacticalSeekerMissileState> FBattleScreen::getSeekerMissilesAtHex(
+	const FPoint & hex,
+	bool activeOnly) const
+{
+	return m_tacticalGame->getSeekerMissilesAtHex(hex, activeOnly);
+}
+
 const FHexMap & FBattleScreen::getMineTargets() const {
 	return m_tacticalGame->getMineTargets();
 }

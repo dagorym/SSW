@@ -340,6 +340,12 @@ public:
 	const PointSet & getTargetHexes() const;
 	const PointSet & getHeadOnHexes() const;
 	const PointSet & getMinedHexes() const;
+	/// get all source-tracked placed ordnance records
+	const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const;
+	/// get placed ordnance records for a specific tactical hex
+	std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;
+	/// get seeker missile records in a specific tactical hex
+	std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;
 	const FHexMap & getMineTargets() const;
 	unsigned int getMineOwner() const;
 	const std::map<unsigned int, FTacticalTurnData> & getTurnInfo() const;

@@ -90,8 +90,10 @@ protected:
 	std::vector<wxRect> m_defenseRegions;
 	/// button for signaling completion of placing mines phase
 	wxButton* m_buttonMinePlacementDone;
-	/// list of active regions for selection of a ship's name
+	/// list of active regions for selection of a placement-source row
 	std::vector<wxRect> m_shipNameRegions;
+	/// placement-source index for each selectable row region
+	std::vector<int> m_shipSelectionSourceIndices;
 
 	/// top pixel where tactical action prompts begin
 	static const int ACTION_PROMPT_TOP_MARGIN = 5;
@@ -408,31 +410,31 @@ protected:
 	void drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int textSize);
 
 	/**
-	 * @brief Draws the display for placing mines
+	 * @brief Draws the display for placing mines and seekers
 	 *
-	 * This method draws the display for placing mines on the field during setup.
-	 * It shows each ship that has mines and the number available for deployment.
+	 * This method draws the setup placement panel for deployable mine and seeker
+	 * weapon slots. It renders one row per ship/weapon source and shows ammo for
+	 * that exact slot.
 	 *
 	 * @param dc The device context to draw on
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  Feb 22, 2011
+	 * @date Last Modified:  May 24, 2026
 	 */
 	void drawPlaceMines(wxDC &dc);
 
 	/**
-	 * @brief runs through current list of ship names to find if the user selected one
+	 * @brief runs through placement source rows to find if the user selected one
 	 *
-	 * This method runs through the current ship list to see if the user
-	 * selected one of the ships.  If so it sets the current ship pointer to the
-	 * selected ship.
+	 * This method checks the current placement-source rows and updates the
+	 * selected source when the user clicks a row.
 	 *
 	 * @param event The mouse event with the click position.
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  Feb 22, 2011
+	 * @date Last Modified:  May 24, 2026
 	 */
 	void checkShipSelection(wxMouseEvent &event);
 

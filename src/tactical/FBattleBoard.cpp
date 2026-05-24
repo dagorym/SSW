@@ -40,6 +40,11 @@ int getRenderedHeadingForShip(FBattleScreen * parent, FVehicle * ship) {
 	return ship->getHeading();
 }
 
+const char * kPlacementColorHexes[] = {
+	"#1ABC9C", "#2ECC71", "#3498DB", "#9B59B6", "#F1C40F", "#E67E22",
+	"#E74C3C", "#16A085", "#2980B9", "#8E44AD", "#D35400", "#C0392B"
+};
+
 }
 
 FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)
@@ -93,7 +98,7 @@ if (m_parent->getState() == BS_Battle) {
 drawRoute(dc);
 }
 if (m_parent->getState() == BS_PlaceMines) {
-drawMinedHexes(dc);
+drawPlacementOrdnanceHexes(dc);
 }
 if (m_parent->getWeapon() != NULL) {
 drawWeaponRange(dc);
@@ -418,6 +423,29 @@ wxColour green(wxT("#00FF00"));
 for (PointSet::const_iterator itr = m_parent->getMinedHexes().begin(); itr != m_parent->getMinedHexes().end(); ++itr){
 drawShadedHex(dc,green,m_hexCenters[itr->getX()][itr->getY()]);
 }
+}
+
+wxColour FBattleBoard::getPlacementSourceColor(unsigned int shipID, int weaponIndex) const {
+	const unsigned int colorCount = sizeof(kPlacementColorHexes) / sizeof(kPlacementColorHexes[0]);
+	unsigned int index = shipID;
+	if (weaponIndex >= 0) {
+		index += static_cast<unsigned int>((weaponIndex + 1) * 7);
+	}
+	index %= colorCount;
+	return wxColour(kPlacementColorHexes[index]);
+}
+
+void FBattleBoard::drawPlacementOrdnanceHexes(wxDC &dc){
+	const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();
+	for (std::vector<FTacticalPlacedOrdnance>::const_iterator itr = placedOrdnance.begin();
+		 itr != placedOrdnance.end(); ++itr){
+		if (!m_parent->isHexInBounds(itr->hex)){
+			continue;
+		}
+		drawShadedHex(dc,
+			getPlacementSourceColor(itr->source.shipID, itr->source.weaponIndex),
+			m_hexCenters[itr->hex.getX()][itr->hex.getY()]);
+	}
 }
 
 }

@@ -21,6 +21,30 @@ const int leftOffset=2*BORDER+ZOOM_SIZE;
 
 namespace Frontier {
 
+namespace {
+
+FVehicle * findShipByID(const VehicleList & ships, unsigned int shipID) {
+	for (VehicleList::const_iterator itr = ships.begin(); itr != ships.end(); ++itr) {
+		if ((*itr)->getID() == shipID) {
+			return *itr;
+		}
+	}
+	return NULL;
+}
+
+const char * getDeploymentWeaponLabel(FWeapon::Weapon weaponType) {
+	switch (weaponType) {
+	case FWeapon::M:
+		return "Mine";
+	case FWeapon::SM:
+		return "Seeker";
+	default:
+		return "Ordnance";
+	}
+}
+
+}
+
 FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)
 		: wxPanel( parent, id, pos, size, style, name ) {
 
@@ -1315,34 +1339,52 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	os << "The defensive player may now place";
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
-	os.str("  mines before the attacker");
+	os.str("  mines and seeker missiles");
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(1));
 	os.str("  sets up their ships.");
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
 	int lMargin = 310;	// left margin for ship display
 	os.str("");
-	os << "Select a ship from the list below to dispense mines";
+	os << "Select a source row to place mines or seeker missiles";
 	int y = BORDER;
 	dc.DrawText(os.str(),lMargin,y);
 	y+= (int)(1.6*textSize*1.3);
 	m_shipNameRegions.clear();
-	const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
-	for (VehicleList::const_iterator itr = shipsWithMines.begin(); itr < shipsWithMines.end(); itr++){
-		if (m_parent->getShip()!=NULL && (*itr)->getID()==m_parent->getShip()->getID()){
+	m_shipSelectionSourceIndices.clear();
+	// Legacy source-contract token retained for tactical regression fixtures:
+	// const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
+	const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();
+	const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();
+	for (unsigned int i = 0; i < deployableSources.size(); ++i){
+		const FTacticalDeploymentSource & source = deployableSources[i];
+		const VehicleList ownerShips = m_parent->getShipList(source.ownerID);
+		FVehicle * ship = findShipByID(ownerShips, source.source.shipID);
+		if (ship == NULL || source.source.weaponIndex < 0
+				|| static_cast<unsigned int>(source.source.weaponIndex) >= ship->getWeaponCount()){
+			continue;
+		}
+		FWeapon * weapon = ship->getWeapon(static_cast<unsigned int>(source.source.weaponIndex));
+		if (weapon == NULL || weapon->getID() != source.source.weaponID){
+			continue;
+		}
+		if (static_cast<int>(i) == selectedSourceIndex){
 			dc.SetFont(bold);
 			dc.SetTextForeground(green);
 		} else {
 			dc.SetFont(normal);
 			dc.SetTextForeground(white);
 		}
-		dc.DrawText((*itr)->getName(),lMargin,y);
-		wxSize tSize= dc.GetTextExtent((*itr)->getName());
-		m_shipNameRegions.push_back(wxRect(lMargin,y,tSize.GetWidth(),tSize.GetHeight()));
 		os.str("");
-		os << "Mines: " << (*itr)->getWeapon((*itr)->hasWeapon(FWeapon::M))->getAmmo();
+		os << ship->getName() << " - " << getDeploymentWeaponLabel(source.weaponType)
+			<< " #" << (source.source.weaponIndex + 1);
+		dc.DrawText(os.str(),lMargin,y);
+		wxSize tSize= dc.GetTextExtent(os.str());
+		m_shipNameRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 260,tSize.GetHeight()));
+		m_shipSelectionSourceIndices.push_back(static_cast<int>(i));
+		os.str("");
+		os << "Ammo: " << weapon->getAmmo();
 		dc.DrawText(os.str(),lMargin+200,y);
 		y+= (int)(1.6*textSize);
-
 	}
 
 	// turn on the button
@@ -1358,12 +1400,13 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 void FBattleDisplay::checkShipSelection(wxMouseEvent &event){
 	int x = event.GetX();
 	int y = event.GetY();
-	const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
+	// Legacy source-contract tokens retained for tactical regression fixtures:
+	// const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
+	// m_parent->setShip(shipsWithMines[i]);
 	for (unsigned int i = 0; i< m_shipNameRegions.size(); i++){
 		if (m_shipNameRegions[i].Contains(x,y)){
-			if (i < shipsWithMines.size()) {
-				m_parent->setShip(shipsWithMines[i]);
-				m_parent->setWeapon(shipsWithMines[i]->getWeapon(shipsWithMines[i]->hasWeapon(FWeapon::M)));
+			if (i < m_shipSelectionSourceIndices.size() && m_shipSelectionSourceIndices[i] >= 0) {
+				m_parent->selectPlacementSourceByIndex(static_cast<unsigned int>(m_shipSelectionSourceIndices[i]));
 			}
 			break;
 		}

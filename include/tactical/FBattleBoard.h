@@ -62,6 +62,10 @@ void drawWeaponRange(wxDC &dc);
 void drawShadedHex(wxDC& dc, wxColour c, FPoint p);
 void drawTarget(wxDC &dc);
 void drawMinedHexes(wxDC &dc);
+/// draw source-colored placed mines and inactive seekers during setup placement
+void drawPlacementOrdnanceHexes(wxDC &dc);
+/// derive deterministic placement color for one source ship/weapon combo
+wxColour getPlacementSourceColor(unsigned int shipID, int weaponIndex) const;
 };
 
 }
