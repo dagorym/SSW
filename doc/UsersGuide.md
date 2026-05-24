@@ -367,7 +367,8 @@ Placing a ship consists of four steps:
 ![Frame6](images/figure20.png)
 *Figure 22: Data display area for selecting the ship's inital speed.  Use the control to select the speed and click on the "Set Speed" button to save the value.*
 This cycle continues allowing you to select another ship until the last ship is placed.  At that point control either shifts to the other player allowing them to place their ships (if you were the defender) or the combat phases begin with the attacker having the first move.
-Note:  At the current time all set-up decisions are final.  There is no way to go back and move things around or change speeds before passing control onto the next phase.
+If the defending force still has deployable mines or seeker missiles after ship setup, the data display switches to an ordnance-placement panel before tactical play begins.  Each mine or seeker launcher appears as its own clickable source row, including the ship name, weapon type/slot, and current ammo for that exact launcher.  Click a row to choose the active source, then click a legal hex on the map to place that mine or seeker.  Setup markers are tinted by source so you can distinguish which ship and launcher placed each one, and clicking a marker for the currently selected source undoes that placement and restores the ammo to that exact launcher until you press **Mine Placement Done**.
+Note:  Planet, station, ship position, heading, and initial-speed decisions are still final once accepted.  The only setup-stage undo currently available is the defensive mine/seeker placement step described above, and that undo window ends when you press **Mine Placement Done**.
 
 ## Moving your ships
 ![Frame7](images/figure27.png)

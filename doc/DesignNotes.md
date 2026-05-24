@@ -422,9 +422,15 @@ remaining non-view interactions through the existing forwarding seam:
   than only ship ownership, and successful mine/seeker placement rebuilds the
   deployable-source list while reselecting that same source slot so wx-side row
   indices and model-side ship/weapon pointers stay aligned after ammo changes.
-  The current setup UI still reads the selectable mine-ship list from
-  `getShipsWithMines()` rather than caching a local copy because the wx row
-  redesign lands in a later seeker subtask.
+  The shipped TSM-003 wx follow-up now renders one lower-panel row per
+  deployable ship/weapon slot, labels each row with the exact mine or seeker
+  source plus its live ammo count, switches the active source through row
+  clicks, and keeps the visible row state synchronized with map placement/undo
+  rather than relying on the legacy `getShipsWithMines()` list alone.
+  `FBattleBoard` also reads `getPlacedOrdnance()` during setup placement and
+  shades placed mines and inactive seekers with deterministic source-specific
+  colors derived from the source ship/weapon combo so same-hex markers remain
+  visually attributable to their launching slot.
 
 Milestone 8 Subtask 3 then applies that forwarding surface to
 `FBattleBoard`. The board now keeps only wx-side geometry, scaling,

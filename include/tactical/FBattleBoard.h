@@ -19,6 +19,16 @@ class FBattleScreen;
 
 /**
  * @brief Tactical board renderer and hit tester.
+ *
+ * Owns the wx-side tactical battlefield presentation: hex geometry, scrolling,
+ * ship/overlay rendering, and mouse hit-testing. The board now also renders
+ * setup ordnance markers from model-owned placed-ordnance records so mine and
+ * seeker deployment colors stay tied to the exact source ship/weapon slot
+ * selected in the lower display panel.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: Jul 11, 2008
+ * @date Last Modified: May 24, 2026
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -62,10 +72,37 @@ void drawWeaponRange(wxDC &dc);
 void drawShadedHex(wxDC& dc, wxColour c, FPoint p);
 void drawTarget(wxDC &dc);
 void drawMinedHexes(wxDC &dc);
-/// draw source-colored placed mines and inactive seekers during setup placement
-void drawPlacementOrdnanceHexes(wxDC &dc);
-/// derive deterministic placement color for one source ship/weapon combo
-wxColour getPlacementSourceColor(unsigned int shipID, int weaponIndex) const;
+	/**
+	 * @brief Draw placed setup ordnance markers using their source-specific colors.
+	 *
+	 * Reads the model-owned placed-ordnance list through `FBattleScreen` and
+	 * shades each in-bounds mine or inactive seeker hex with the deterministic
+	 * color assigned to that source ship/weapon slot during setup placement.
+	 *
+	 * @param dc Device context used for tactical board drawing.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
+	void drawPlacementOrdnanceHexes(wxDC &dc);
+	/**
+	 * @brief Derive a deterministic placement color for one setup source slot.
+	 *
+	 * Uses the source ship identifier plus weapon-slot index so the lower-panel
+	 * row selection and board marker colors stay stable across placement and undo
+	 * operations even when ammo counts change and rows are rebuilt.
+	 *
+	 * @param shipID Source ship identifier.
+	 * @param weaponIndex Zero-based weapon slot on that ship.
+	 *
+	 * @return wxWidgets color used for source-specific setup marker shading.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: May 24, 2026
+	 */
+	wxColour getPlacementSourceColor(unsigned int shipID, int weaponIndex) const;
 };
 
 }
