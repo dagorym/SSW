@@ -1,13 +1,20 @@
+You are operating as the downstream Tester stage for coordinator subtask TSM-002 remediation retry.
+
+Repository worktree: /home/tstephen/repos/SSW-worktrees/seekers-tsm-002-implementer-20260523
+Branch: seekers-tsm-002-implementer-20260523
+Shared artifact directory (repo-root-relative): artifacts/tactical-seeker-missiles/TSM-002
+Coordination plan path: plans/tactical-seeker-missiles-plan.md
+
 Your role is 'tester'. Your task is as follows:
 
-Task summary:
-- Generalize tactical placement flow so placement supports both mines and seeker missiles from source-tracked ship/weapon slots, including exact-slot ammo decrement and undo restore.
+Remediation context:
+- This retry addresses one prior BLOCKING defect and one related selection-state warning in `src/tactical/FTacticalGame.cpp`.
+- Product code changed only in:
+  - src/tactical/FTacticalGame.cpp
 
-Modified files:
-- include/tactical/FTacticalGame.h
-- src/tactical/FTacticalGame.cpp
-- include/tactical/FBattleScreen.h
-- src/tactical/FBattleScreen.cpp
+Verifier-targeted fixes implemented:
+- `sourceMatchesSelection(...)` now requires exact selected weapon-slot identity (selected ship + exact selected weapon slot) before undo removes/restocks placed ordnance.
+- Successful `placeMineFromSelection(...)` and `placeSeekerFromSelection(...)` now reselect the same source slot after `rebuildDeployablePlacementSources()` so selected-source index and active ship/weapon pointers stay synchronized.
 
 Acceptance criteria to validate (from Planner):
 - The model discovers deployable mine and seeker missile weapon slots.
@@ -20,27 +27,13 @@ Acceptance criteria to validate (from Planner):
 - Inactive seekers are not considered by `checkForMines(...)` or mine damage.
 - Existing mine placement behavior remains available through compatibility methods or updated forwarding methods.
 
-Create/update test files in:
-- tests/tactical/FTacticalGameMechanicsTest.* (or focused tactical placement fixture)
-- tests/weapons/FSeekerMissileLauncherTest.* only if seeker launcher metadata behavior needs coverage
+Priority runtime scenarios for this retry:
+- Same ship with multiple deployable slots stacking ordnance in one hex, then undo from a specific selected slot; confirm only that exact slot is undone/restocked.
+- Post-placement selected-source consistency: after successful mine/seeker placement from nonzero source index, confirm reported selected index remains aligned with active ship/weapon pointers.
 
-Implementation context for testing:
-- Added new placement metadata type `FTacticalDeploymentSource` and `FTacticalGame` APIs:
-  - `beginOrdnancePlacement()`
-  - `selectPlacementSource(shipID, weaponIndex)`
-  - `selectPlacementSourceByIndex(sourceIndex)`
-  - `getDeployablePlacementSources()`
-  - `getSelectedPlacementSourceIndex()`
-  - `placeOrdnanceAtHex(hex)`
-  - `isHexDeployable(hex)`
-- Compatibility APIs remain and now route through generalized behavior:
-  - `beginMinePlacement()`
-  - `placeMineAtHex(hex)`
-  - `isHexMinable(hex)`
-- Generalized placement now creates source-tracked mine/seeker placement records in `m_placedOrdnance`, creates inactive seekers in `m_seekerMissiles`, and restores exact source ammo on source-matched undo.
-- Setup placement source discovery now includes both mine and seeker slots per active player, with source identity tracked by ship ID + weapon index + weapon ID.
-- Mine damage cleanup removes consumed mine ordnance records; seekers remain excluded from mine trigger/damage flow.
-- `FBattleScreen` now forwards generalized placement/source-selection APIs for later wx integration without introducing the TSM-003 UI redesign.
+Tester test-file location guidance:
+- Placement model coverage belongs in `tests/tactical/FTacticalGameMechanicsTest.*` or a focused tactical placement fixture.
+- Weapon launcher behavior coverage belongs in `tests/weapons/FSeekerMissileLauncherTest.*` only if launcher metadata/selection behavior changes are required.
 
 Suggested test command(s):
 - cd tests && make tactical-tests && ./tactical/TacticalTests
@@ -49,13 +42,5 @@ Suggested test command(s):
 Existing validations expected to fail only because approved behavior changed:
 - None
 
-Startup behavior:
-- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
-- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
-- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
-
-Shared artifact directory:
-- artifacts/tactical-seeker-missiles/TSM-002
-
 Completion gate:
-- Do not report success unless all required artifacts exist and all changes are committed.
+- Do not report success unless all required artifacts exist and all tester changes are committed.

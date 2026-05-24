@@ -6,16 +6,13 @@
   ],
   "branch_name": "seekers-tsm-002-implementer-20260523",
   "changed_files": [
-    "include/tactical/FTacticalGame.h",
-    "src/tactical/FTacticalGame.cpp",
-    "include/tactical/FBattleScreen.h",
-    "src/tactical/FBattleScreen.cpp"
+    "src/tactical/FTacticalGame.cpp"
   ],
-  "code_commit_hash": "d9c2e41fb18f2ab4f90579583c06f438123217d7",
+  "code_commit_hash": "9aeafa3166cabba03eb84f287509d8602dd68de6",
   "status": "success",
   "task_id": "TSM-002",
   "validation_commands": [
     "cd tests && make tactical-tests && ./tactical/TacticalTests"
   ],
-  "validation_outcome": "pass (tactical-tests build succeeded and TacticalTests passed: OK (157 tests))"
+  "validation_outcome": "pass (tactical-tests build succeeded and TacticalTests passed: OK (158 tests))"
 }
