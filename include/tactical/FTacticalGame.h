@@ -70,6 +70,65 @@ PointList routeHexes;
 } FTacticalMovePreviewRoute;
 
 /**
+ * @brief Source provenance metadata for placed tactical ordnance.
+ *
+ * Stores the source ship and exact weapon slot that created a placed
+ * ordnance marker so later placement undo and rendering steps can retain
+ * source identity without depending on wx types.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: May 24, 2026
+ * @date Last Modified: May 24, 2026
+ */
+typedef struct {
+unsigned int shipID;
+int weaponIndex;
+unsigned int weaponID;
+} FTacticalOrdnanceSource;
+
+/**
+ * @brief Model record for a placed tactical ordnance item.
+ *
+ * This lightweight record is intended for tactical model ownership of placed
+ * ordnance metadata regardless of eventual rendering implementation.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: May 24, 2026
+ * @date Last Modified: May 24, 2026
+ */
+typedef struct {
+FWeapon::Weapon weaponType;
+unsigned int ownerID;
+FTacticalOrdnanceSource source;
+FPoint hex;
+int displayColorIndex;
+int displayMarkerIndex;
+} FTacticalPlacedOrdnance;
+
+/**
+ * @brief Model record for one tactical seeker missile instance.
+ *
+ * Tracks active/inactive seeker position and movement state with optional
+ * source provenance so later subtasks can reconcile setup/offensive-fire
+ * deployments to their launching weapon slot.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: May 24, 2026
+ * @date Last Modified: May 24, 2026
+ */
+typedef struct {
+unsigned int seekerID;
+unsigned int ownerID;
+FPoint hex;
+int heading;
+bool active;
+int movementTurn;
+int movementAllowance;
+bool hasSource;
+FTacticalOrdnanceSource source;
+} FTacticalSeekerMissileState;
+
+/**
  * @brief Pure C++ tactical mechanics state container.
  */
 class FTacticalGame {
@@ -167,6 +226,16 @@ bool isMoveComplete() const { return m_moveComplete; }
 	bool hasShipPlacementPendingRotation() const { return m_setRotation; }
 	const FPoint & getSelectedShipHex() const { return m_shipPos; }
 	const VehicleList & getShipsWithMines() const { return m_shipsWithMines; }
+	/// get all source-tracked placed ordnance records
+	const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const { return m_placedOrdnance; }
+	/// get all seeker missile model records
+	const std::vector<FTacticalSeekerMissileState> & getSeekerMissiles() const { return m_seekerMissiles; }
+	/// get all placed ordnance records for the requested hex
+	std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;
+	/// get seeker missiles in a specific hex, optionally filtering to active seekers only
+	std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;
+	/// get seeker missiles for a specific owner, optionally filtering to active seekers only
+	std::vector<FTacticalSeekerMissileState> getSeekerMissilesForOwner(unsigned int ownerID, bool activeOnly = false) const;
 	bool isHexInBounds(const FPoint & hex) const;
 	bool isHexOccupied(const FPoint & hex) const;
 
@@ -302,6 +371,8 @@ bool m_gravityTurnFlag;
 	FHexMap m_mineTargetList;
 	unsigned int m_mineOwner;
 	VehicleList m_shipsWithMines;
+	std::vector<FTacticalPlacedOrdnance> m_placedOrdnance;
+	std::vector<FTacticalSeekerMissileState> m_seekerMissiles;
 };
 
 }

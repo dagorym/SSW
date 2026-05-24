@@ -285,6 +285,8 @@ void FTacticalGame::reset() {
 	m_mineTargetList.clear();
 	m_mineOwner = 99;
 	m_shipsWithMines.clear();
+	m_placedOrdnance.clear();
+	m_seekerMissiles.clear();
 
 	for (int i = 0; i < 100; ++i) {
 		for (int j = 0; j < 100; ++j) {
@@ -795,6 +797,45 @@ const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const {
 		return empty;
 	}
 	return m_hexData[hex.getX()][hex.getY()].ships;
+}
+
+std::vector<FTacticalPlacedOrdnance> FTacticalGame::getPlacedOrdnanceAtHex(const FPoint & hex) const {
+	std::vector<FTacticalPlacedOrdnance> ordnance;
+	for (std::vector<FTacticalPlacedOrdnance>::const_iterator itr = m_placedOrdnance.begin();
+		 itr != m_placedOrdnance.end(); ++itr) {
+		if (itr->hex.getX() == hex.getX() && itr->hex.getY() == hex.getY()) {
+			ordnance.push_back(*itr);
+		}
+	}
+	return ordnance;
+}
+
+std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesAtHex(
+	const FPoint & hex,
+	bool activeOnly) const
+{
+	std::vector<FTacticalSeekerMissileState> seekers;
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->hex.getX() == hex.getX() && itr->hex.getY() == hex.getY() && (!activeOnly || itr->active)) {
+			seekers.push_back(*itr);
+		}
+	}
+	return seekers;
+}
+
+std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesForOwner(
+	unsigned int ownerID,
+	bool activeOnly) const
+{
+	std::vector<FTacticalSeekerMissileState> seekers;
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->ownerID == ownerID && (!activeOnly || itr->active)) {
+			seekers.push_back(*itr);
+		}
+	}
+	return seekers;
 }
 
 VehicleList * FTacticalGame::getShipList(FVehicle * ship) {
