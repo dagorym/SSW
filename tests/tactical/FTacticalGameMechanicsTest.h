@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 29, 2026
- * @date Last Modified: May 09, 2026
+ * @date Last Modified: May 24, 2026
  */
 class FTacticalGameMechanicsTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalGameMechanicsTest );
@@ -35,6 +35,7 @@ CPPUNIT_TEST( testFireICMCollectsOnlyActionableHexInterceptions );
 CPPUNIT_TEST( testInteractionApisAndRendererAccessorsAreExposed );
 CPPUNIT_TEST( testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState );
 CPPUNIT_TEST( testMinePlacementAndMoveFireProgressionUpdateModelState );
+CPPUNIT_TEST( testOrdnancePlacementSourceTrackingAndCompatibilityFlows );
 CPPUNIT_TEST( testStoppedShipFreeRotationGuardsAndFacingSelectionFlow );
 CPPUNIT_TEST( testImplementationRemainsSelfContainedWithoutLegacyWxRewire );
 CPPUNIT_TEST_SUITE_END();
@@ -178,6 +179,16 @@ void testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState();
  * @date Last Modified: Apr 01, 2026
  */
 void testMinePlacementAndMoveFireProgressionUpdateModelState();
+/**
+ * @brief Verifies ordnance Placement Source Tracking And Compatibility Flows.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 24, 2026
+ * @date Last Modified: May 24, 2026
+ */
+void testOrdnancePlacementSourceTrackingAndCompatibilityFlows();
 /**
  * @brief Verifies stopped Ship Free Rotation Guards And Facing Selection Flow.
  *

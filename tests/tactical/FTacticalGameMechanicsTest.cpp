@@ -349,6 +349,11 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(header, "bool setShipPlacementHeading(int heading);");
 	assertContains(header, "bool setShipPlacementHeadingByHex(const FPoint & hex);");
 	assertContains(header, "bool beginMinePlacement();");
+	assertContains(header, "bool beginOrdnancePlacement();");
+	assertContains(header, "bool selectPlacementSource(unsigned int shipID, unsigned int weaponIndex);");
+	assertContains(header, "bool selectPlacementSourceByIndex(unsigned int sourceIndex);");
+	assertContains(header, "int getSelectedPlacementSourceIndex() const");
+	assertContains(header, "const std::vector<FTacticalDeploymentSource> & getDeployablePlacementSources() const");
 	assertContains(header, "void completeMinePlacement();");
 	assertContains(header, "void completeMovePhase();");
 	assertContains(header, "FTacticalCombatReportSummary resolveCurrentFirePhase();");
@@ -357,6 +362,8 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(header, "void computeWeaponRange();");
 	assertContains(header, "bool assignTargetFromHex(const FPoint & hex);");
 	assertContains(header, "bool placeMineAtHex(const FPoint & hex);");
+	assertContains(header, "bool placeOrdnanceAtHex(const FPoint & hex);");
+	assertContains(header, "bool isHexDeployable(const FPoint & hex);");
 	assertContains(header, "bool isHexMinable(const FPoint & hex);");
 
 	assertContains(header, "const VehicleList & getHexOccupants(const FPoint & hex) const;");
@@ -384,7 +391,12 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 
 	assertContains(source, "bool FTacticalGame::selectWeapon(unsigned int weaponIndex)");
 	assertContains(source, "bool FTacticalGame::selectDefense(unsigned int defenseIndex)");
+	assertContains(source, "bool FTacticalGame::beginOrdnancePlacement()");
+	assertContains(source, "bool FTacticalGame::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex)");
+	assertContains(source, "bool FTacticalGame::selectPlacementSourceByIndex(unsigned int sourceIndex)");
 	assertContains(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
+	assertContains(source, "bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex)");
+	assertContains(source, "bool FTacticalGame::isHexDeployable(const FPoint & hex)");
 	assertContains(source, "const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const");
 	assertContains(source, "std::vector<FTacticalPlacedOrdnance> FTacticalGame::getPlacedOrdnanceAtHex(const FPoint & hex) const");
 	assertContains(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesAtHex(");
@@ -495,6 +507,88 @@ void FTacticalGameMechanicsTest::testMinePlacementAndMoveFireProgressionUpdateMo
 	assertContains(offensiveBody, "setWeapon(NULL);");
 	assertContains(offensiveBody, "toggleMovingPlayer();");
 	assertContains(offensiveBody, "setPhase(PH_MOVE);");
+}
+
+void FTacticalGameMechanicsTest::testOrdnancePlacementSourceTrackingAndCompatibilityFlows() {
+// AC: generalized placement supports mine/seeker sources, source-slot ammo accounting, and compatibility wrappers.
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string rebuildSourcesBody = extractFunctionBody(source, "void FTacticalGame::rebuildDeployablePlacementSources()");
+	const std::string beginOrdnanceBody = extractFunctionBody(source, "bool FTacticalGame::beginOrdnancePlacement()");
+	const std::string selectByIndexBody = extractFunctionBody(source, "bool FTacticalGame::selectPlacementSourceByIndex(unsigned int sourceIndex)");
+	const std::string selectBySlotBody = extractFunctionBody(source, "bool FTacticalGame::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex)");
+	const std::string placeMineFromSelectionBody = extractFunctionBody(source, "bool FTacticalGame::placeMineFromSelection(");
+	const std::string placeSeekerFromSelectionBody = extractFunctionBody(source, "bool FTacticalGame::placeSeekerFromSelection(");
+	const std::string placeOrdnanceBody = extractFunctionBody(source, "bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex)");
+	const std::string removePlacedBody = extractFunctionBody(source, "bool FTacticalGame::removePlacedOrdnanceForSelection(");
+	const std::string restoreAmmoBody = extractFunctionBody(source, "bool FTacticalGame::restoreAmmoForSource(const FTacticalOrdnanceSource & source)");
+	const std::string deployableBody = extractFunctionBody(source, "bool FTacticalGame::isHexDeployable(const FPoint & hex)");
+	const std::string beginMineBody = extractFunctionBody(source, "bool FTacticalGame::beginMinePlacement()");
+	const std::string placeMineBody = extractFunctionBody(source, "bool FTacticalGame::placeMineAtHex(const FPoint & hex)");
+	const std::string checkForMinesBody = extractFunctionBody(source, "void FTacticalGame::checkForMines(FVehicle * ship)");
+	const std::string applyMineDamageBody = extractFunctionBody(source, "void FTacticalGame::applyMineDamage()");
+
+	assertContains(header, "} FTacticalDeploymentSource;");
+	assertContains(header, "FWeapon::Weapon weaponType;");
+	assertContains(header, "std::vector<FTacticalDeploymentSource> m_deployablePlacementSources;");
+	assertContains(header, "int m_selectedPlacementSource;");
+
+	assertContains(rebuildSourcesBody, "if (!isDeployableWeapon(weapon)) {");
+	assertContains(rebuildSourcesBody, "source.weaponType = weapon->getType();");
+	assertContains(rebuildSourcesBody, "source.source.shipID = (*shipItr)->getID();");
+	assertContains(rebuildSourcesBody, "source.source.weaponIndex = static_cast<int>(i);");
+	assertContains(rebuildSourcesBody, "source.source.weaponID = weapon->getID();");
+	assertContains(rebuildSourcesBody, "m_deployablePlacementSources.push_back(source);");
+	assertContains(rebuildSourcesBody, "if (weapon->getType() == FWeapon::M) {");
+	assertContains(rebuildSourcesBody, "m_shipsWithMines.push_back(*shipItr);");
+
+	assertContains(beginOrdnanceBody, "rebuildDeployablePlacementSources();");
+	assertContains(beginOrdnanceBody, "if (weapon != NULL && weapon->getAmmo() > 0) {");
+	assertContains(beginOrdnanceBody, "selectPlacementSourceByIndex(selectedIndex);");
+	assertContains(beginOrdnanceBody, "setState(BS_PlaceMines);");
+
+	assertContains(selectByIndexBody, "m_selectedPlacementSource = static_cast<int>(sourceIndex);");
+	assertContains(selectByIndexBody, "setShip(ship);");
+	assertContains(selectByIndexBody, "setWeapon(weapon);");
+	assertContains(selectBySlotBody, "if (source.source.shipID == shipID");
+	assertContains(selectBySlotBody, "&& source.source.weaponIndex == static_cast<int>(weaponIndex)) {");
+	assertContains(selectBySlotBody, "return selectPlacementSourceByIndex(i);");
+
+	assertContains(placeMineFromSelectionBody, "if (m_minedHexList.find(hex) == m_minedHexList.end()) {");
+	assertContains(placeMineFromSelectionBody, "weapon->setCurrentAmmo(weapon->getAmmo() - 1);");
+	assertContains(placeMineFromSelectionBody, "appendPlacedOrdnanceRecord(FWeapon::M, hex, selectedSource.source);");
+	assertContains(placeMineFromSelectionBody, "rebuildDeployablePlacementSources();");
+	assertContains(placeSeekerFromSelectionBody, "weapon->setCurrentAmmo(weapon->getAmmo() - 1);");
+	assertContains(placeSeekerFromSelectionBody, "seeker.active = false;");
+	assertContains(placeSeekerFromSelectionBody, "seeker.source = selectedSource.source;");
+	assertContains(placeSeekerFromSelectionBody, "m_seekerMissiles.push_back(seeker);");
+	assertContains(placeSeekerFromSelectionBody, "appendPlacedOrdnanceRecord(FWeapon::SM, hex, selectedSource.source);");
+
+	assertContains(removePlacedBody, "if (!sourceMatchesSelection(itr->source)) {");
+	assertContains(restoreAmmoBody, "FWeapon * weapon = findWeaponBySource(source, NULL);");
+	assertContains(restoreAmmoBody, "weapon->setCurrentAmmo(ammo + 1);");
+	assertContains(placeOrdnanceBody, "if (removePlacedOrdnanceForSelection(hex, removed)) {");
+	assertContains(placeOrdnanceBody, "if (!restoreAmmoForSource(removed.source)) {");
+	assertContains(placeOrdnanceBody, "if (removed.weaponType == FWeapon::M) {");
+	assertContains(placeOrdnanceBody, "m_minedHexList.erase(hex);");
+	assertContains(placeOrdnanceBody, "} else if (removed.weaponType == FWeapon::SM) {");
+	assertContains(placeOrdnanceBody, "&& !itr->active");
+	assertContains(placeOrdnanceBody, "&& itr->source.weaponIndex == removed.source.weaponIndex");
+	assertContains(placeOrdnanceBody, "m_seekerMissiles.erase(itr);");
+	assertContains(placeOrdnanceBody, "rebuildDeployablePlacementSources();");
+	assertContains(placeOrdnanceBody, "selectPlacementSource(selectedSource.source.shipID, selectedSource.source.weaponIndex);");
+	assertContains(placeOrdnanceBody, "if (selectedSource.weaponType == FWeapon::M) {");
+	assertContains(placeOrdnanceBody, "if (selectedSource.weaponType == FWeapon::SM) {");
+
+	assertContains(deployableBody, "if (selectedSource.weaponType == FWeapon::M) {");
+	assertContains(deployableBody, "return isHexMinable(hex);");
+	assertContains(deployableBody, "return true;");
+
+	assertContains(beginMineBody, "return beginOrdnancePlacement();");
+	assertContains(placeMineBody, "return placeOrdnanceAtHex(hex);");
+
+	assertContains(checkForMinesBody, "for (PointSet::iterator itr = m_minedHexList.begin(); itr != m_minedHexList.end(); ++itr) {");
+	assertContains(applyMineDamageBody, "removePlacedMineRecordsAtHex(*itr);");
 }
 
 void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelectionFlow() {

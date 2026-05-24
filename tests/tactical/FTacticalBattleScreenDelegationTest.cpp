@@ -131,6 +131,8 @@ assertContains(resolveFireBody, "reDraw();");
 
 assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexMinable(const FPoint & hex)"),
 "return m_tacticalGame->isHexMinable(hex);");
+assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexDeployable(const FPoint & hex)"),
+"return m_tacticalGame->isHexDeployable(hex);");
 assertContains(extractFunctionBody(source, "const VehicleList & FBattleScreen::getHexOccupants(const FPoint & hex) const"),
 "return m_tacticalGame->getHexOccupants(hex);");
 assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getMovementHexes() const"),
@@ -192,6 +194,36 @@ const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 	assertContains(assignTargetBody, "const bool changed = m_tacticalGame->assignTargetFromHex(hex);");
 	assertContains(assignTargetBody, "if (changed) {");
 	assertContains(assignTargetBody, "reDraw();");
+
+const std::string beginMineBody = extractFunctionBody(source, "bool FBattleScreen::beginMinePlacement()");
+assertContains(beginMineBody, "const bool changed = m_tacticalGame->beginMinePlacement();");
+assertContains(beginMineBody, "if (changed) {");
+assertContains(beginMineBody, "reDraw();");
+
+const std::string beginOrdnanceBody = extractFunctionBody(source, "bool FBattleScreen::beginOrdnancePlacement()");
+assertContains(beginOrdnanceBody, "const bool changed = m_tacticalGame->beginOrdnancePlacement();");
+assertContains(beginOrdnanceBody, "if (changed) {");
+assertContains(beginOrdnanceBody, "reDraw();");
+
+const std::string selectSourceBody = extractFunctionBody(source, "bool FBattleScreen::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex)");
+assertContains(selectSourceBody, "const bool changed = m_tacticalGame->selectPlacementSource(shipID, weaponIndex);");
+assertContains(selectSourceBody, "if (changed) {");
+assertContains(selectSourceBody, "reDraw();");
+
+const std::string selectSourceIndexBody = extractFunctionBody(source, "bool FBattleScreen::selectPlacementSourceByIndex(unsigned int sourceIndex)");
+assertContains(selectSourceIndexBody, "const bool changed = m_tacticalGame->selectPlacementSourceByIndex(sourceIndex);");
+assertContains(selectSourceIndexBody, "if (changed) {");
+assertContains(selectSourceIndexBody, "reDraw();");
+
+assertContains(extractFunctionBody(source, "int FBattleScreen::getSelectedPlacementSourceIndex() const"),
+"return m_tacticalGame->getSelectedPlacementSourceIndex();");
+assertContains(extractFunctionBody(source, "const std::vector<FTacticalDeploymentSource> & FBattleScreen::getDeployablePlacementSources() const"),
+"return m_tacticalGame->getDeployablePlacementSources();");
+
+const std::string placeOrdnanceBody = extractFunctionBody(source, "bool FBattleScreen::placeOrdnanceAtHex(const FPoint & hex)");
+assertContains(placeOrdnanceBody, "const bool changed = m_tacticalGame->placeOrdnanceAtHex(hex);");
+assertContains(placeOrdnanceBody, "if (changed) {");
+assertContains(placeOrdnanceBody, "reDraw();");
 
 const std::string placeMineBody = extractFunctionBody(source, "bool FBattleScreen::placeMineAtHex(const FPoint & hex)");
 assertContains(placeMineBody, "const bool changed = m_tacticalGame->placeMineAtHex(hex);");
