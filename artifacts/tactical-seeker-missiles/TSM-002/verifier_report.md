@@ -1,45 +1,39 @@
 Verifier Report
 
 Scope reviewed:
-- Reviewed the combined TSM-002 implementation, tester, and documenter diffs from base b838b18 through documenter HEAD d6f74f4 across FTacticalGame, FBattleScreen, tactical tests, and DesignNotes.
-- Validated the subtask against plans/tactical-seeker-missiles-plan.md acceptance criteria and reran `cd tests && make tactical-tests && ./tactical/TacticalTests` (OK (158 tests)).
-- Assumption: b838b18 is the correct story-specific comparison base, matching the handoff and documenter summary.
+- Reviewed the combined TSM-002 remediation-retry implementation, tester, and documenter changes from base `399ac91` through current HEAD `0910d41` across `src/tactical/FTacticalGame.cpp`, `tests/tactical/FTacticalGameMechanicsTest.cpp`, `include/tactical/FTacticalGame.h`, and `doc/DesignNotes.md`.
+- Validated the subtask against `plans/tactical-seeker-missiles-plan.md` acceptance criteria for generalized mine/seeker placement, exact-source undo, inactive seeker mine immunity, and legacy mine-placement compatibility.
+- Rebuilt and reran `cd tests && make tactical-tests && ./tactical/TacticalTests` in this verifier worktree: `OK (158 tests)`.
 
 Acceptance criteria / plan reference:
-- plans/tactical-seeker-missiles-plan.md (TSM-002 acceptance criteria)
-- Comparison base assumption: b838b18, the last shared commit before TSM-002 work started on this stack.
+- `plans/tactical-seeker-missiles-plan.md` (TSM-002 acceptance criteria)
+- Comparison base: `399ac91`
 
 Convention files considered:
-- AGENTS.md
-- .myteam/role.md
-- .myteam/verifier/role.md
+- `AGENTS.md`
+- Loaded `myteam get role verifier` instructions for this worktree
 
 Findings
 
 BLOCKING
-- src/tactical/FTacticalGame.cpp:866-877 - Exact-slot undo is broken when one ship has multiple deployable weapon slots stacked in the same hex.
-  `sourceMatchesSelection(...)` never checks that the placed record matches `m_curWeapon`; it matches any deployable slot on the selected ship. In the stacked-seeker case, clicking undo from slot A can remove slot B's most recent record and restore ammo to the wrong launcher, violating the exact-source-slot undo acceptance criterion.
+- None.
 
 WARNING
-- src/tactical/FTacticalGame.cpp:961,1076,1103,2136-2137 - Successful placement resets the reported selected-source index to 0 without re-synchronizing the actual selected ship/weapon pointers.
-  `rebuildDeployablePlacementSources()` unconditionally resets `m_selectedPlacementSource`, and the placement paths do not call `selectPlacementSource(...)` afterward. The screen seam can therefore report a different selected row than the active ship/weapon after placing from a nonzero source index, which risks misleading follow-up interactions and documentation about exact source selection.
-- tests/tactical/FTacticalGameMechanicsTest.cpp:512-592 - The new tactical coverage is source-inspection only and does not execute the multi-slot runtime scenarios needed to catch the shipped undo bug.
-  This test body checks for code tokens in helper functions rather than instantiating FTacticalGame behavior. As a result, the suite passed while the exact-slot undo regression remained present, so coverage is insufficient for the highest-risk TSM-002 source-tracking cases.
+- `tests/tactical/FTacticalGameMechanicsTest.cpp:516-587` - The remediation coverage still verifies the new slot-matching and reselection logic via source-token inspection rather than executing runtime multi-slot placement/undo scenarios.
+  The implementation now appears correct and the tactical suite passes, but this test style is weaker than a behavioral regression test for the highest-risk TSM-002 cases (same-ship multi-slot undo and post-placement selection alignment).
 
 NOTE
-- None
+- None.
 
 Test sufficiency assessment:
-- The verifier reran `cd tests && make tactical-tests && ./tactical/TacticalTests` successfully (OK (158 tests)).
-- Coverage is not sufficient for TSM-002 acceptance because the added tests rely on source-token inspection instead of exercising runtime placement/undo behavior for same-ship multi-slot and post-placement selection-state scenarios.
+- `cd tests && make tactical-tests && ./tactical/TacticalTests` passed in the verifier worktree (`OK (158 tests)`).
+- The new source-contract assertions specifically cover the repaired exact-slot undo path and the post-placement reselection calls.
+- Coverage is acceptable for this retry because the repaired logic is straightforward and directly inspected, but runtime regression coverage for same-ship multi-slot placement/undo would still strengthen future protection.
 
 Documentation accuracy assessment:
-- The documenter updates correctly describe the intended generalized ordnance-placement seam, source-selection APIs, compatibility wrappers, and they do not claim the later seeker placement-row redesign or seeker activation UI shipped in TSM-002.
-- However, the new Doxygen/design-note descriptions overstate shipped behavior for exact source-slot selection and undo because the implementation still misidentifies the selected slot during stacked same-ship undo and can desynchronize the reported selected source after placement.
-
-Artifacts written:
-- artifacts/tactical-seeker-missiles/TSM-002/verifier_report.md
-- artifacts/tactical-seeker-missiles/TSM-002/verifier_result.json
+- `include/tactical/FTacticalGame.h` now documents the repaired exact-slot undo comparison and the post-placement reselection behavior.
+- `doc/DesignNotes.md` now matches the implemented behavior: exact ship/weapon-slot undo is restored, successful mine/seeker placement reselects the same source slot, and legacy mine entry points remain the compatibility seam.
+- No documentation contradictions were found, and the protected rules document was not modified.
 
 Verdict:
 - CONDITIONAL PASS
