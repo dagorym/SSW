@@ -1,0 +1,22 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-003/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-003/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "seekers-tsm-003-verifier-20260523",
+  "documentation_accuracy_summary": [
+    "`doc/UsersGuide.md:370-371`, `doc/DesignNotes.md:425-433`, and `include/tactical/FBattleBoard.h:20-105` accurately describe the shipped setup-placement flow: per-weapon mine/seeker rows, exact slot ammo display, row-index source selection, setup undo restoring launcher ammo, and source-derived board marker coloring.",
+    "`doc/rules/tactical_operations_manual.md` remains unchanged, satisfying the repository's immutable-rules constraint."
+  ],
+  "note_finding_count": 0,
+  "status": "success",
+  "task_id": "TSM-003",
+  "test_sufficiency_summary": [
+    "Coverage is broadly sufficient for the shipped row-selection and ammo/undo lifecycle: the updated tactical fixture checks model/display forwarding, placement-source selection, ammo reads, mine-only preservation, and the source-colored rendering seam, and verifier rerun of `./tactical/TacticalTests` passed with `OK (159 tests)`.",
+    "`tests/gui/TacticalGuiLiveTest.cpp:921-957` and the GUI build confirm the wx surface still emits the expected source-row and color-rendering tokens without regressing the existing action-button layout pattern, although the environment still lacks `xvfb-run` for a live GUI runtime pass.",
+    "The remaining gap is uniqueness coverage for placement colors: current tests assert that a source-based color function exists, but they do not exercise collision cases across multiple ship/weapon combos."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 1
+}
