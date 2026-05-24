@@ -182,6 +182,43 @@ pos += needle.size();
 return count;
 }
 
+std::string stripCppComments(const std::string & source) {
+	std::string result;
+	result.reserve(source.size());
+	bool inLineComment = false;
+	bool inBlockComment = false;
+
+	for (std::string::size_type i = 0; i < source.size(); ++i) {
+		if (inLineComment) {
+			if (source[i] == '\n') {
+				inLineComment = false;
+				result.push_back('\n');
+			}
+			continue;
+		}
+		if (inBlockComment) {
+			if (source[i] == '*' && (i + 1) < source.size() && source[i + 1] == '/') {
+				inBlockComment = false;
+				++i;
+			}
+			continue;
+		}
+		if (source[i] == '/' && (i + 1) < source.size() && source[i + 1] == '/') {
+			inLineComment = true;
+			++i;
+			continue;
+		}
+		if (source[i] == '/' && (i + 1) < source.size() && source[i + 1] == '*') {
+			inBlockComment = true;
+			++i;
+			continue;
+		}
+		result.push_back(source[i]);
+	}
+
+	return result;
+}
+
 void FTacticalBattleDisplayFireFlowTest::testDrawAndOnPaintUseBattleScreenStateAccessors() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
@@ -363,14 +400,25 @@ const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.c
 const std::string drawBody = extractFunctionBody(boardSource, "void FBattleBoard::draw(wxDC &dc)");
 const std::string drawOrdnanceBody = extractFunctionBody(boardSource, "void FBattleBoard::drawPlacementOrdnanceHexes(wxDC &dc)");
 const std::string colorBody = extractFunctionBody(boardSource, "wxColour FBattleBoard::getPlacementSourceColor(unsigned int shipID, int weaponIndex) const");
+const std::string drawOrdnanceBodyWithoutComments = stripCppComments(drawOrdnanceBody);
+const std::string colorBodyWithoutComments = stripCppComments(colorBody);
 
 assertContains(drawBody, "if (m_parent->getState() == BS_PlaceMines) {");
 assertContains(drawBody, "drawPlacementOrdnanceHexes(dc);");
 assertContains(drawOrdnanceBody, "const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();");
+assertContains(drawOrdnanceBody, "const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();");
+assertContains(drawOrdnanceBody, "std::map<FPlacementSourceKey, unsigned int> sourceOrdinals;");
+assertContains(drawOrdnanceBody, "m_placementSourceOrdinals.clear();");
+assertContains(drawOrdnanceBody, "sourceOrdinals[key] = static_cast<unsigned int>(sourceOrdinals.size());");
+assertContains(drawOrdnanceBody, "m_placementSourceOrdinals[sourceItr->first] = sourceItr->second;");
 assertContains(drawOrdnanceBody, "getPlacementSourceColor(itr->source.shipID, itr->source.weaponIndex)");
-assertContains(colorBody, "unsigned int index = shipID;");
-assertContains(colorBody, "index += static_cast<unsigned int>((weaponIndex + 1) * 7);");
-assertContains(colorBody, "index %= colorCount;");
+assertContains(colorBody, "const unsigned int seedColorCount = sizeof(kPlacementColorHexes) / sizeof(kPlacementColorHexes[0]);");
+assertContains(colorBody, "if (sourceOrdinal < seedColorCount) {");
+assertContains(colorBody, "const unsigned int expandedOrdinal = sourceOrdinal - seedColorCount;");
+assertContains(colorBody, "permutePlacementColorByte");
+assertNotContains(colorBodyWithoutComments, "index %= colorCount;");
+assertNotContains(colorBodyWithoutComments, "unsigned int index = shipID;");
+assertNotContains(drawOrdnanceBodyWithoutComments, "index %= colorCount;");
 
 assertContains(screenSource, "const std::vector<FTacticalPlacedOrdnance> & FBattleScreen::getPlacedOrdnance() const {");
 assertContains(screenSource, "return m_tacticalGame->getPlacedOrdnance();");
