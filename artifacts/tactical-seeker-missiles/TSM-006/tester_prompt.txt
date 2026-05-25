@@ -1,15 +1,10 @@
 Your role is 'tester'. Your task is as follows:
 
 Task summary:
-- Validate offensive-fire-only seeker missile deployment/undo for selected SM launchers, including selected-ship path legality, pending recall restrictions, and lower-panel pending rows.
+- Remediate TSM-006 so offensive-fire seeker deployment allows stacking multiple pending seekers in the same legal path hex while keeping explicit row-based recall.
 
 Modified files:
-- include/tactical/FTacticalGame.h
 - src/tactical/FTacticalGame.cpp
-- include/tactical/FBattleScreen.h
-- src/tactical/FBattleScreen.cpp
-- include/tactical/FBattleDisplay.h
-- src/tactical/FBattleDisplay.cpp
 
 Acceptance criteria to validate (from Planner):
 - Selecting an undamaged SM launcher with ammo during PH_ATTACK_FIRE for the moving player enters seeker deployment mode rather than normal weapon targeting.
@@ -25,17 +20,15 @@ Acceptance criteria to validate (from Planner):
 - Completing offensive fire commits pending deployments so they become ordinary inactive seekers for future activation.
 
 Create test files in:
-- tests/tactical/FTacticalGameMechanicsTest.* (or focused tactical seeker placement fixture)
-- tests/tactical/FTacticalBattleDisplayFireFlowTest.* (or adjacent board/display source-contract tests)
-- tests/gui/TacticalGuiLiveTest.* (if live interaction coverage is needed)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.*
+- tests/tactical/FTacticalGameMechanicsTest.*
+- tests/gui/TacticalGuiLiveTest.* (if display-backed regression checks are needed)
 
 Implementation context for testing:
-- FTacticalGame now has offensive seeker deployment mode detection and path-only highlight generation through computeWeaponRange() when selected SM is valid in PH_ATTACK_FIRE for the moving player.
-- assignTargetFromHex() rejects SM target assignment so offensive-fire SM clicks route to deployment/recall behavior.
-- SM selection is rejected outside offensive fire; defensive fire cannot use SM deployment or targeting.
-- Pending offensive seeker deployments are tracked as launcher/phase-scoped records and are recalled only from that same launcher and current offensive phase.
-- Offensive fire completion clears pending-recall bookkeeping while preserving created inactive seekers in m_seekerMissiles.
-- FBattleDisplay attack-fire panel now draws grouped pending recall rows and clicks call FBattleScreen::recallSelectedOffensivePendingSeekerAtHex(...).
+- FTacticalGame::placeOrdnanceAtHex no longer toggles/removes pending offensive SM seekers when clicking the same legal hex in battle mode.
+- Battle-mode SM ordnance placement now hard-gates on canUseOffensiveFireSeekerDeployment(), preserving offensive-fire-only behavior and blocking defensive placement entry points.
+- Pending seeker recall remains explicit through recallSelectedOffensivePendingSeekerAtHex(), so same-hex repeat clicks consume ammo and create additional pending seekers until ammo is exhausted.
+- Tester-added runtime coverage in FTacticalBattleDisplayFireFlowTest is preserved and now passes at the previously failing same-hex second-click assertion.
 
 Suggested test command(s):
 - cd tests && make tactical-tests && ./tactical/TacticalTests

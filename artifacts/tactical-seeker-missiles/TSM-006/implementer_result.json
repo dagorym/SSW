@@ -6,14 +6,9 @@
   ],
   "branch_name": "seekers-tsm-006-implementer-20260524",
   "changed_files": [
-    "include/tactical/FTacticalGame.h",
-    "src/tactical/FTacticalGame.cpp",
-    "include/tactical/FBattleScreen.h",
-    "src/tactical/FBattleScreen.cpp",
-    "include/tactical/FBattleDisplay.h",
-    "src/tactical/FBattleDisplay.cpp"
+    "src/tactical/FTacticalGame.cpp"
   ],
-  "code_commit_hash": "8e3130cefd200aeffa0e942b9c28d4983ec440ef",
+  "code_commit_hash": "5db2333",
   "status": "success",
   "task_id": "TSM-006",
   "validation_commands": [

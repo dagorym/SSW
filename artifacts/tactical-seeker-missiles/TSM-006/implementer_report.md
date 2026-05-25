@@ -4,15 +4,10 @@ Status:
 - success
 
 Task summary:
-- Added offensive-fire-only seeker missile deployment/undo flow for selected SM launchers, with legal deployment constrained to the selected moving ship's current-turn path.
+- Remediate TSM-006 so offensive-fire seeker deployment allows stacking multiple pending seekers in the same legal path hex while keeping explicit row-based recall.
 
 Changed files:
-- include/tactical/FTacticalGame.h
 - src/tactical/FTacticalGame.cpp
-- include/tactical/FBattleScreen.h
-- src/tactical/FBattleScreen.cpp
-- include/tactical/FBattleDisplay.h
-- src/tactical/FBattleDisplay.cpp
 
 Validation commands run:
 - cd tests && make tactical-tests && ./tactical/TacticalTests
@@ -23,7 +18,7 @@ Validation outcome:
 - pass
 
 Implementation/code commit hash:
-- 8e3130cefd200aeffa0e942b9c28d4983ec440ef
+- 5db2333
 
 Artifacts written:
 - artifacts/tactical-seeker-missiles/TSM-006/implementer_report.md
@@ -31,12 +26,10 @@ Artifacts written:
 - artifacts/tactical-seeker-missiles/TSM-006/implementer_result.json
 
 Implementation context:
-- FTacticalGame now exposes offensive seeker deployment mode and grouped pending deployment rows for the selected launcher.
-- Selecting SM in defensive fire is blocked; selecting SM in offensive fire routes to deployment mode and highlights only selected ship current-turn path hexes.
-- Offensive-fire SM map clicks now place pending inactive seekers (ammo decremented immediately) or recall one pending seeker at clicked hex for the same launcher/current offensive phase.
-- Pending deployments are tracked by source launcher and offensive-fire phase ID, preventing pre-battle/earlier-turn recall.
-- Pending deployments are committed on Offensive Fire Done by clearing pending-recall bookkeeping while leaving created inactive seekers in model state.
-- FBattleDisplay now shows grouped pending seeker recall rows in attack fire and routes row clicks through FBattleScreen to model recall.
+- FTacticalGame::placeOrdnanceAtHex no longer toggles/removes pending offensive SM seekers when clicking the same legal hex in battle mode.
+- Battle-mode SM ordnance placement now hard-gates on canUseOffensiveFireSeekerDeployment(), preserving offensive-fire-only behavior and blocking defensive placement entry points.
+- Pending seeker recall remains explicit through recallSelectedOffensivePendingSeekerAtHex(), so same-hex repeat clicks consume ammo and create additional pending seekers until ammo is exhausted.
+- Tester-added runtime coverage in FTacticalBattleDisplayFireFlowTest is preserved and now passes at the previously failing same-hex second-click assertion.
 
 Expected validation failures carried forward:
 - None
