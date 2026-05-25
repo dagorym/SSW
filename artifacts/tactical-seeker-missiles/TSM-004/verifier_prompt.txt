@@ -1,0 +1,73 @@
+Task summary:
+- Verify TSM-004 end-to-end after implementer, tester, and documenter follow-up for the seeker-activation pre-phase, model activation-stack APIs, and FBattleScreen forwarding updates before normal movement.
+- Confirm the refreshed documentation matches the implemented/tested behavior for PH_SEEKER_ACTIVATION ordering, auto-skip resolution, one-way activation, and the non-wx forwarding seam.
+
+Acceptance criteria to verify:
+- A seeker activation phase exists before PH_MOVE.
+- Movement phase entry can skip visible activation when the moving player has no inactive seekers while still calling the active-seeker resolution seam.
+- Model APIs expose inactive seeker hexes and selected activation stack state for the moving player.
+- Model APIs can activate an individual inactive seeker from the selected stack.
+- Active seekers cannot be deactivated.
+- FBattleScreen forwards the new model APIs needed by the display and board.
+- Existing movement/fire phase progression remains source-compatible.
+- Updated documentation accurately describes the shipped pre-movement seeker-activation behavior without contradicting the implementation or the immutable rules document.
+
+Implementation, test, and documentation context:
+- Implementer branch/worktree: seekers-tsm-004-implementer-20260523 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-004-implementer-20260523
+- Implementer code commit: 429324db2acd91a1a95a17fde796ca6e3c2d34f4
+- Tester branch/worktree: seekers-tsm-004-tester-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-004-tester-20260524
+- Tester test-change commit: ca46930259cc47ca6dee73e59e0def10d2f69199
+- Documenter branch/worktree: seekers-tsm-004-documenter-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-004-documenter-20260524
+- Documentation commit: e3fe33950948862fd2125f267e827661b98e80f0
+- Comparison-base assumption: use implementer commit 429324db2acd91a1a95a17fde796ca6e3c2d34f4 as the subtask net-diff baseline because the handoff explicitly named 429324d for TSM-004 comparison.
+
+Files modified by Implementer, Tester, and Documenter that may affect verification scope:
+- include/Frontier.h
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalGameMechanicsTest.h
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- tests/tactical/FTacticalBattleScreenDelegationTest.h
+- tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+- doc/DesignNotes.md
+- artifacts/tactical-seeker-missiles/TSM-004/implementer_report.md
+- artifacts/tactical-seeker-missiles/TSM-004/implementer_result.json
+- artifacts/tactical-seeker-missiles/TSM-004/tester_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-004/tester_report.md
+- artifacts/tactical-seeker-missiles/TSM-004/tester_result.json
+- artifacts/tactical-seeker-missiles/TSM-004/documenter_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-004/documenter_report.md
+- artifacts/tactical-seeker-missiles/TSM-004/documenter_result.json
+- artifacts/tactical-seeker-missiles/TSM-004/verifier_prompt.txt
+
+Commands executed:
+- myteam get role documenter
+- python .myteam/documenter/preflight/resolve_preflight.py --input artifacts/tactical-seeker-missiles/TSM-004/documenter_prompt.txt --repo-root .
+- python .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base 429324d --head HEAD
+- git --no-pager diff bf58716..HEAD -- include/Frontier.h include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp tests/tactical/FTacticalGameMechanicsTest.cpp tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Final test outcomes:
+- Tactical validation passed: OK (162 tests).
+- Regression coverage verifies PH_SEEKER_ACTIVATION ordering and PH_MOVE entry routing through seeker activation.
+- Coverage verifies auto-skip from seeker activation still calls resolveActiveSeekersForMovingPlayer() before movement.
+- Coverage verifies inactive seeker stack APIs, selected stack filtering, one-way activation, completion flow, and FBattleScreen forwarding behavior.
+
+Plan and documentation context:
+- Plan path: plans/tactical-seeker-missiles-plan.md
+- TSM-004 documentation-impact guidance called for Doxygen updates for the new phase helpers and activation APIs, with no edit to doc/rules/tactical_operations_manual.md.
+- Documenter updated include/Frontier.h, include/tactical/FTacticalGame.h, include/tactical/FBattleScreen.h, and doc/DesignNotes.md to describe the shipped pre-movement seeker-activation model behavior and forwarding seam.
+- doc/rules/tactical_operations_manual.md is immutable and must remain unchanged.
+
+Verification scope:
+- Review implementation behavior, tester coverage, and the updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe, and label those choices as assumptions instead of blockers.
+- Continue in the same run when blocking inputs are present; do not stop after review-scope establishment, convention discovery, or diff inspection.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-004
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
