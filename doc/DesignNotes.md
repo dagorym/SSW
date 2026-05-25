@@ -274,6 +274,13 @@ All three combat phases and their supporting mechanics are fully implemented:
   If the moving player has no inactive seekers, the model still calls
   `resolveActiveSeekersForMovingPlayer()` and then auto-enters `PH_MOVE`, so
   the active-seeker seam runs even when no visible activation stop is needed.
+  The shipped TSM-005 wx follow-up makes that stop user-visible: the board now
+  renders only the moving player's inactive seeker stacks during
+  `PH_SEEKER_ACTIVATION`, board clicks select one activation hex stack, and the
+  lower panel renders instructional text plus one clickable row per inactive
+  seeker in the selected stack together with a `Seeker Activation Done` action
+  button. Once tactical play leaves that phase, normal battle rendering hides
+  inactive seekers again and shows only active seekers on the map.
 - **Defensive fire phase** (`PH_DEFENSE_FIRE`): closest-approach range
   checking in `setIfValidTarget()`; FF weapon arc validation in
   `computeFFRange()`.
@@ -458,6 +465,17 @@ inactive-stack discovery, activation-hex selection, selected-stack inspection,
 one-way individual seeker activation, and activation completion so the later
 board/display subtasks can render and drive the activation UI without
 reintroducing wx state ownership into `FTacticalGame`.
+
+The shipped TSM-005 wx follow-up consumes that forwarding seam. `FBattleBoard`
+loads `icons/SeekerMissile.png` through `FGameConfig::resolveAssetPath(...)`
+and applies phase-specific seeker visibility rules: only inactive stacks owned
+by the moving player render during `PH_SEEKER_ACTIVATION`, while normal battle
+phases render only active seekers. `FBattleBoard::onLeftUp()` also routes
+activation-phase hex clicks to `FBattleScreen::selectSeekerActivationHex(...)`
+instead of the generic tactical click handler. `FBattleDisplay` now adds the
+activation instructions, selected-stack readout, per-seeker clickable rows, and
+`Seeker Activation Done` button so board and lower-panel refresh stay aligned
+after both activation-hex changes and one-way seeker activation clicks.
 
 This leaves the originally shipped Milestone 8 runtime tactical wx path only
 partially rewired: `FBattleDisplay` behaved as a wx renderer/input translator

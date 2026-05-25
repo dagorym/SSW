@@ -24,11 +24,11 @@ class FBattleScreen;
  * @brief Tactical board renderer and hit tester.
  *
  * Owns the wx-side tactical battlefield presentation: hex geometry, scrolling,
- * ship/overlay rendering, and mouse hit-testing. The board now also renders
- * setup ordnance markers from model-owned placed-ordnance records so mine and
- * seeker deployment colors stay tied to the exact source ship/weapon slot
- * selected in the lower display panel, even when the setup list grows beyond
- * the legacy 12-color seed palette.
+ * ship/overlay rendering, seeker visibility rendering, and mouse hit-testing.
+ * The board now also renders setup ordnance markers from model-owned
+ * placed-ordnance records so mine and seeker deployment colors stay tied to the
+ * exact source ship/weapon slot selected in the lower display panel, even when
+ * the setup list grows beyond the legacy 12-color seed palette.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created: Jul 11, 2008
@@ -40,8 +40,34 @@ public:
 FBattleBoard(wxWindow * parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxHSCROLL|wxRAISED_BORDER|wxVSCROLL, const wxString &name = "BattleBoard" );
 ~FBattleBoard();
 
+/**
+ * @brief Draw the tactical board overlays for the current state and phase.
+ *
+ * Setup placement draws source-colored ordnance markers, seeker activation
+ * draws only inactive seekers for the moving player, and normal battle phases
+ * draw only active seekers.
+ *
+ * @param dc Device context used for tactical board drawing.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
 void draw(wxDC &dc);
 void onPaint(wxPaintEvent & event);
+/**
+ * @brief Handle tactical-board clicks for setup, battle, and seeker activation.
+ *
+ * Seeker-activation clicks now select the clicked inactive-seeker stack hex for
+ * the lower panel, while all other board clicks continue through the existing
+ * delegated tactical hex handler.
+ *
+ * @param event Mouse-release event carrying the clicked board position.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
 void onLeftUp(wxMouseEvent & event);
 void onMotion(wxMouseEvent & event);
 
@@ -81,7 +107,9 @@ void drawMinedHexes(wxDC &dc);
  * @brief Draw seeker missiles with phase-based visibility filtering.
  *
  * During seeker activation, only inactive seekers owned by the moving player
- * are shown. During normal battle phases, only active seekers are shown.
+ * are shown. During normal battle phases, only active seekers are shown. The
+ * icon is loaded through the shared asset-resolution policy used elsewhere in
+ * the tactical wx surfaces.
  *
  * @param dc Device context used for tactical board drawing.
  *

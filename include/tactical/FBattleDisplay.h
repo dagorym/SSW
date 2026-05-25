@@ -20,8 +20,8 @@ class FBattleScreen;
 /**
  * @brief Class for the Main tactical combat board
  *
- * This class implements the code for the FBattleDisplay, the main
- * board used for the tactical combat game..
+ * This class implements the lower tactical display panel used for combat
+ * prompts, ship status, setup placement controls, and seeker-activation UI.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
@@ -41,8 +41,34 @@ public:
 	/// Default destructor
 	~FBattleDisplay();
 
+	/**
+	 * @brief Draw the current lower-panel surface for the active tactical state.
+	 *
+	 * This includes the existing movement/fire/setup prompts plus the seeker
+	 * activation instructions, per-seeker activation rows, and completion button
+	 * during `PH_SEEKER_ACTIVATION`.
+	 *
+	 * @param dc Device context used for lower-panel drawing.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void draw(wxDC &dc);
 	void onPaint(wxPaintEvent & event);
+	/**
+	 * @brief Handle lower-panel clicks for the current tactical phase.
+	 *
+	 * Setup placement clicks still select deployment-source rows, while seeker
+	 * activation clicks now prioritize per-seeker activation rows so the panel
+	 * can refresh after each one-way activation.
+	 *
+	 * @param event Mouse-release event carrying the click position.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void onLeftUp(wxMouseEvent & event);
 
 	/**
@@ -154,7 +180,18 @@ protected:
 
 	/// event handler for mine placement complete button
 	void onMinePlacementDone( wxCommandEvent& event );
-	/// event handler for seeker activation complete button
+	/**
+	 * @brief Finish the visible seeker-activation stop and return to movement flow.
+	 *
+	 * Hides and disconnects the button using the existing tactical action-button
+	 * lifecycle, then delegates completion to `FBattleScreen`.
+	 *
+	 * @param event Button-click event from the activation completion control.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void onSeekerActivationDone( wxCommandEvent& event );
 
 	/**
