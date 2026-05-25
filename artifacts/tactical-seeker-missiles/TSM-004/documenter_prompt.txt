@@ -1,0 +1,64 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated model-owned seeker activation phase and activation/delegation APIs before movement.
+
+Acceptance criteria validated:
+- A seeker activation phase exists before PH_MOVE.
+- Movement phase entry can skip visible activation when the moving player has no inactive seekers while still calling the active-seeker resolution seam.
+- Model APIs expose inactive seeker hexes and selected activation stack state for the moving player.
+- Model APIs can activate an individual inactive seeker from the selected stack.
+- Active seekers cannot be deactivated.
+- FBattleScreen forwards the new model APIs needed by the display and board.
+- Existing movement/fire phase progression remains source-compatible.
+
+Implementation branch or worktree context:
+- Branch/worktree under test: seekers-tsm-004-tester-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-004-tester-20260524.
+- Upstream implementer context: seekers-tsm-004-implementer-20260523 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-004-implementer-20260523.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/Frontier.h
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalGameMechanicsTest.h
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- tests/tactical/FTacticalBattleScreenDelegationTest.h
+- tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+
+Test commit:
+- ca46930259cc47ca6dee73e59e0def10d2f69199
+
+Commands executed:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- python .myteam/tester/test-execution/run_test_command.py --repo-root . -- tests/tactical/TacticalTests
+
+Final test outcomes:
+- tactical/TacticalTests passed: OK (162 tests)
+- New regression coverage verifies PH_SEEKER_ACTIVATION ordering and PH_MOVE entry routing through seeker activation.
+- Coverage verifies auto-skip from seeker activation still calls resolveActiveSeekersForMovingPlayer before move phase.
+- Coverage verifies inactive seeker stack APIs, selected stack filtering, one-way activation, and completion flow.
+- Coverage verifies FBattleScreen forwards seeker activation APIs with redraw behavior on mutating calls.
+- Existing move/fire progression assertions remain source-compatible, including completeOffensiveFirePhase calling setPhase(PH_MOVE).
+
+Documentation context:
+- Tactical phase model now includes a seeker activation phase inserted before PH_MOVE entry.
+- FTacticalGame adds seeker activation stack selection and one-way seeker activation APIs plus completion behavior.
+- FBattleScreen now forwards seeker activation APIs for board/display integration in subsequent subtasks.
+- Tests now lock source contracts for seeker activation phase entry, auto-skip seam invocation, and delegation behavior.
+
+Plan and diff context:
+- Coordination plan path: plans/tactical-seeker-missiles-plan.md
+- Comparison base assumption: compare tester branch against seekers or prior implementer commit 429324d for this subtask's net diff.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-004
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

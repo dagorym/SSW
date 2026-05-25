@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-004/tester_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-004/tester_result.json",
+    "artifacts/tactical-seeker-missiles/TSM-004/documenter_prompt.txt"
+  ],
+  "branch_name": "seekers-tsm-004-tester-20260524",
+  "commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "python .myteam/tester/test-execution/run_test_command.py --repo-root . -- tests/tactical/TacticalTests"
+  ],
+  "pass_fail_totals": {
+    "failed": 0,
+    "passed": 162,
+    "total": 162
+  },
+  "status": "success",
+  "task_id": "TSM-004",
+  "test_commit_hash": "ca46930259cc47ca6dee73e59e0def10d2f69199",
+  "test_files_changed": [
+    "tests/tactical/FTacticalGameMechanicsTest.h",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp",
+    "tests/tactical/FTacticalBattleScreenDelegationTest.h",
+    "tests/tactical/FTacticalBattleScreenDelegationTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
