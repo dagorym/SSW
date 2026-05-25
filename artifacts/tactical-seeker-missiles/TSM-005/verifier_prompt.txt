@@ -1,0 +1,95 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Updated TSM-005 documentation for the seeker activation wx surface, phase-based seeker visibility rules, and the new lower-panel activation flow.
+
+Acceptance criteria to verify:
+- During seeker activation, the board renders only inactive seekers owned by the moving player.
+- Active seekers are not rendered during seeker activation.
+- During normal battle phases, the board renders active seekers and does not render inactive seekers.
+- The activation lower panel provides instructional text, a Seeker Activation Done button, and clickable rows for the inactive seekers in the selected stack.
+- Clicking a visible inactive seeker stack on the board selects that stack for lower-panel row display.
+- Clicking a row activates that seeker and updates the board/lower-panel state.
+- Same-hex multiple seekers remain distinguishable through the lower-panel rows.
+- Updated documentation accurately describes the shipped seeker activation wx surface and visibility rules without changing doc/rules/tactical_operations_manual.md.
+
+Implementation branch or worktree context:
+- Implementer branch/worktree: seekers-tsm-005-implementer-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-005-implementer-20260524 (worktree path inferred from branch naming and artifact context).
+- Implementer code commit: 30be446db4d8f66252e286779fdd7bd9aba11b42.
+- Tester branch/worktree: seekers-tsm-005-tester-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-005-tester-20260524.
+- Tester test commit: 9a5a44318efa570494f6b77cb721df0d9d844ad4.
+- Documenter branch/worktree: seekers-tsm-005-documenter-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-005-documenter-20260524.
+- Documentation commit: 0ad7d93a8a06e14a1c7b0230faaf85cc31371cd9.
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.h
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+- doc/UsersGuide.md
+- doc/DesignNotes.md
+- artifacts/tactical-seeker-missiles/TSM-005/implementer_report.md
+- artifacts/tactical-seeker-missiles/TSM-005/implementer_result.json
+- artifacts/tactical-seeker-missiles/TSM-005/tester_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-005/tester_report.md
+- artifacts/tactical-seeker-missiles/TSM-005/tester_result.json
+- artifacts/tactical-seeker-missiles/TSM-005/documenter_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-005/documenter_report.md
+- artifacts/tactical-seeker-missiles/TSM-005/documenter_result.json
+- artifacts/tactical-seeker-missiles/TSM-005/verifier_prompt.txt
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill documenter/preflight
+- myteam get skill documenter/diff-review
+- myteam get skill documenter/doc-editing
+- myteam get skill documenter/agents-guidance
+- myteam get skill documenter/commit-flow
+- myteam get skill documenter/artifact-writing
+- myteam get skill documenter/verifier-handoff
+- python .myteam/documenter/preflight/resolve_preflight.py --repo-root .
+- python .myteam/documenter/agents-guidance/scan_in_code_doc_requirements.py --root .
+- git --no-pager diff master..seekers-tsm-005-tester-20260524 -- include/tactical/FBattleDisplay.h src/tactical/FBattleDisplay.cpp include/tactical/FBattleBoard.h src/tactical/FBattleBoard.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.h tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp tests/tactical/FTacticalBattleBoardRendererDelegationTest.h tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp tests/gui/TacticalGuiLiveTest.h tests/gui/TacticalGuiLiveTest.cpp
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make && ./GuiTests
+- git commit -m "docs: capture TSM-005 seeker activation UI"
+
+Final test outcomes:
+- tactical/TacticalTests passed after documentation updates: OK (168 tests).
+- gui/GuiTests passed after documentation updates: OK (43 tests).
+- Regression coverage still verifies activation-phase rendering, activation-row click behavior, Seeker Activation Done button lifecycle, and normal-phase active-seeker rendering.
+- GUI validation ran directly with ./GuiTests because xvfb-run is unavailable in this environment.
+
+Plan or evaluation context guidance:
+- Plan path: plans/tactical-seeker-missiles-plan.md.
+- TSM-005 documentation impact called for Doxygen updates for new FBattleDisplay and FBattleBoard seeker rendering/input helpers.
+- User-visible documentation was updated only where directly relevant to the shipped seeker activation interface and visibility rules.
+- doc/rules/tactical_operations_manual.md is immutable and must remain unchanged.
+
+Convention-file guidance:
+- AGENTS.md requires Doxygen-style file/function comment updates when editing functions or class behavior in header files, including author and Last Modified metadata.
+- Changed product-file edits in this stage were limited to documentation-only comments in include/tactical/FBattleDisplay.h and include/tactical/FBattleBoard.h.
+- Verifier should confirm that doc/rules/tactical_operations_manual.md was not modified.
+
+Updated documentation files:
+- include/tactical/FBattleDisplay.h
+- include/tactical/FBattleBoard.h
+- doc/UsersGuide.md
+- doc/DesignNotes.md
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-005
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
