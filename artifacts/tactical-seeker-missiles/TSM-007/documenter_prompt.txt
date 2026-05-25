@@ -1,0 +1,58 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Added and executed tactical regression coverage for model-side seeker targeting and movement helpers; tactical suite now validates TSM-007 acceptance criteria.
+
+Acceptance criteria validated:
+- Closest target selection considers non-station ships from both sides.
+- Planets, stations, and non-ship objects are ignored by seeker targeting.
+- Equal-distance target ties use automatic RNG through a narrow helper.
+- Initial facing can adjust up to three hexsides toward the selected target.
+- Per-hex movement turns at most one hexside and greedily reduces distance where possible.
+- Movement allowances progress as 2, 4, 6, 8, 10, and 12.
+- Helpers can be tested without wx runtime.
+- Any new FHexMap helper remains generic and non-wx.
+
+Implementation branch or worktree context:
+- Tester worktree: /home/tstephen/repos/SSW-worktrees/seekers-tsm-007-tester-20260524
+- Branch: seekers-tsm-007-tester-20260524
+- Upstream implementation worktree: /home/tstephen/repos/SSW-worktrees/seekers-tsm-007-implementer-20260524
+- Implementer code commit in branch history: bcd76a7 (Implement seeker model targeting and movement helpers)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalSeekerMovementTest.h
+- tests/tactical/FTacticalSeekerMovementTest.cpp
+- tests/tactical/TacticalTests.cpp
+
+Test commit:
+- 0329a87
+
+Commands executed:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Final test outcomes:
+- tactical/TacticalTests: OK (173 tests)
+- New FTacticalSeekerMovementTest source-contract coverage validates target filtering, tie-breaking RNG helper use, heading clamp, greedy one-hexside turning, movement allowance progression, and non-wx helper boundaries.
+
+Documentation context:
+- Seeker model behavior documentation should now reflect cross-side closest-target selection with station filtering and RNG tie-break handling.
+- Movement behavior documentation should capture initial three-hexside facing adjustment and per-step greedy one-hexside turn resolution with capped allowance progression.
+- No edits are permitted to doc/rules/tactical_operations_manual.md; update other documentation surfaces only if they describe this seeker helper behavior.
+
+Plan and diff context:
+- Coordination plan path: plans/tactical-seeker-missiles-plan.md
+- Compare tester branch against seekers baseline and implementer commit bcd76a7 for the tested behavior.
+- Reuse shared artifact directory artifacts/tactical-seeker-missiles/TSM-007 for downstream outputs.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-007
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
