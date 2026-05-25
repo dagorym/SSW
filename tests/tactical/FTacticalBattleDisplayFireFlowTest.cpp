@@ -9,8 +9,10 @@
 #include <iterator>
 #include <vector>
 
+#include "core/FHexMap.h"
 #include "strategic/FFleet.h"
 #include "tactical/FTacticalGame.h"
+#include "weapons/FSeekerMissileLauncher.h"
 
 namespace FrontierTests {
 
@@ -110,6 +112,91 @@ fixture.defendFleet->addShip(fixture.defender);
 fixture.game.setupFleets(&fixture.attackFleets, &fixture.defendFleets, false, NULL);
 fixture.game.setPhase(firePhase);
 fixture.game.setActivePlayer(true);
+}
+
+class FSeekerFlowShipHarness : public FVehicle {
+public:
+FSeekerFlowShipHarness(const std::string & name) {
+	m_name = name;
+	m_type = "SeekerFlowHarness";
+}
+
+void configureForMovement(int speed, int adf, int heading) {
+	m_maxHP = 10;
+	m_currentHP = 10;
+	m_maxADF = adf;
+	m_currentADF = adf;
+	m_maxMR = 1;
+	m_currentMR = 1;
+	m_maxDCR = 1;
+	m_currentDCR = 1;
+	m_speed = speed;
+	m_heading = heading;
+}
+
+void addWeapon(FWeapon * weapon) {
+	m_weapons.push_back(weapon);
+	weapon->setParent(this);
+}
+};
+
+struct SeekerFlowRuntimeFixture {
+FTacticalGame game;
+FleetList attackFleets;
+FleetList defendFleets;
+FFleet * attackFleet;
+FFleet * defendFleet;
+FSeekerFlowShipHarness * attacker;
+FSeekerFlowShipHarness * defender;
+FSeekerMissileLauncher * launcher;
+FPoint attackerHex;
+FPoint defenderHex;
+};
+
+void destroySeekerFixture(SeekerFlowRuntimeFixture & fixture) {
+for (FleetList::iterator itr = fixture.attackFleets.begin(); itr != fixture.attackFleets.end(); ++itr) {
+	delete *itr;
+}
+for (FleetList::iterator itr = fixture.defendFleets.begin(); itr != fixture.defendFleets.end(); ++itr) {
+	delete *itr;
+}
+fixture.attackFleets.clear();
+fixture.defendFleets.clear();
+}
+
+void placeShip(FTacticalGame & game, FVehicle * ship, const FPoint & hex, int heading, int state) {
+game.setState(state);
+game.setControlState(true);
+game.setShip(ship);
+CPPUNIT_ASSERT(game.placeShip(hex));
+CPPUNIT_ASSERT(game.setShipPlacementHeading(heading));
+}
+
+void setupSeekerFlowRuntimeScenario(SeekerFlowRuntimeFixture & fixture) {
+fixture.attackFleet = new FFleet();
+fixture.defendFleet = new FFleet();
+fixture.attackFleets.push_back(fixture.attackFleet);
+fixture.defendFleets.push_back(fixture.defendFleet);
+
+fixture.attacker = new FSeekerFlowShipHarness("SeekerAttacker");
+fixture.defender = new FSeekerFlowShipHarness("SeekerDefender");
+fixture.attacker->configureForMovement(2, 0, 0);
+fixture.defender->configureForMovement(0, 0, 3);
+
+fixture.launcher = new FSeekerMissileLauncher();
+fixture.launcher->setMaxAmmo(3);
+fixture.launcher->setCurrentAmmo(3);
+fixture.attacker->addWeapon(fixture.launcher);
+
+fixture.attackFleet->addShip(fixture.attacker);
+fixture.defendFleet->addShip(fixture.defender);
+
+fixture.game.setupFleets(&fixture.attackFleets, &fixture.defendFleets, false, NULL);
+fixture.attackerHex = FPoint(20, 20);
+fixture.defenderHex = FPoint(10, 10);
+placeShip(fixture.game, fixture.defender, fixture.defenderHex, 3, BS_SetupDefendFleet);
+placeShip(fixture.game, fixture.attacker, fixture.attackerHex, 0, BS_SetupAttackFleet);
+fixture.game.setState(BS_Battle);
 }
 
 }
@@ -433,15 +520,20 @@ void FTacticalBattleDisplayFireFlowTest::testDisplayClickFlowUsesModelForwarding
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string onLeftUpBody = extractFunctionBody(source, "void FBattleDisplay::onLeftUp(wxMouseEvent & event)");
+const std::string pendingSelectionBody = extractFunctionBody(source, "bool FBattleDisplay::checkOffensiveSeekerPendingSelection(wxMouseEvent &event)");
 const std::string handleHexClickBody = extractFunctionBody(screenSource, "bool FBattleScreen::handleHexClick(const FPoint & hex)");
 
 assertContains(onLeftUpBody, "checkWeaponSelection(event);");
 assertContains(onLeftUpBody, "checkDefenseSelection(event);");
 assertContains(onLeftUpBody, "checkShipSelection(event);");
+assertContains(onLeftUpBody, "if (m_parent->getPhase() == PH_ATTACK_FIRE && checkOffensiveSeekerPendingSelection(event)) {");
 assertNotContains(onLeftUpBody, "m_parent->setWeapon(");
 assertNotContains(onLeftUpBody, "m_parent->setDefense(");
 assertNotContains(onLeftUpBody, "m_parent->assignTargetFromHex(");
 assertNotContains(onLeftUpBody, "m_parent->placeMineAtHex(");
+assertContains(pendingSelectionBody, "for (unsigned int i = 0; i < m_pendingSeekerRecallRegions.size(); ++i) {");
+assertContains(pendingSelectionBody, "const wxPoint & pendingHex = m_pendingSeekerRecallHexes[i];");
+assertContains(pendingSelectionBody, "return m_parent->recallSelectedOffensivePendingSeekerAtHex(FPoint(pendingHex.x, pendingHex.y));");
 assertContains(handleHexClickBody, "const bool changed = m_tacticalGame->handleHexClick(hex);");
 assertContains(handleHexClickBody, "if (changed) {");
 assertContains(handleHexClickBody, "reDraw();");
@@ -546,10 +638,13 @@ assertContains(defenseBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);"
 
 assertContains(attackBody, "getActionPromptLineY(0)");
 assertContains(attackBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
+assertContains(attackBody, "if (m_parent->isOffensiveSeekerDeploymentMode()) {");
+assertContains(attackBody, "Select legal path hexes to deploy seeker missiles.");
 
 assertContains(minesBody, "getActionPromptLineY(0)");
 assertContains(minesBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
 assertContains(statsBody, "largestMarginWithStatsRoom");
+assertContains(statsBody, "drawOffensiveSeekerPendingRows(dc, lMargin, y + (int)(1.8*textSize), textSize);");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {
@@ -642,6 +737,88 @@ assertContains(doneBody, "m_buttonSeekerActivationDone->Hide();");
 assertBefore(doneBody, "m_buttonSeekerActivationDone->Hide();", "Layout();");
 assertContains(doneBody, "m_parent->completeSeekerActivationPhase();");
 assertContains(doneBody, "m_first = true;");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit() {
+	SeekerFlowRuntimeFixture fixture;
+	setupSeekerFlowRuntimeScenario(fixture);
+
+	const bool attackerSide = (fixture.attacker->getOwner() == fixture.game.getAttackerID());
+	fixture.game.setPhase(PH_DEFENSE_FIRE);
+	fixture.game.setMovingPlayer(!attackerSide);
+	fixture.game.setActivePlayer(attackerSide);
+	CPPUNIT_ASSERT(fixture.game.selectShipFromHex(fixture.attackerHex));
+	CPPUNIT_ASSERT(!fixture.game.selectWeapon(0));
+
+	fixture.game.setPhase(PH_ATTACK_FIRE);
+	fixture.game.setMovingPlayer(attackerSide);
+	fixture.game.setActivePlayer(attackerSide);
+	CPPUNIT_ASSERT(fixture.game.selectShipFromHex(fixture.attackerHex));
+
+	FTacticalTurnData * turnData = fixture.game.findTurnData(fixture.attacker->getID());
+	CPPUNIT_ASSERT(turnData != NULL);
+	const FPoint firstMoveHex = FHexMap::findNextHex(fixture.attackerHex, fixture.attacker->getHeading());
+	const FPoint secondMoveHex = FHexMap::findNextHex(firstMoveHex, fixture.attacker->getHeading());
+	turnData->path.clear();
+	turnData->path.addPoint(fixture.attackerHex);
+	turnData->path.addPoint(firstMoveHex);
+	turnData->path.addPoint(secondMoveHex);
+	turnData->startHeading = fixture.attacker->getHeading();
+	turnData->curHeading = fixture.attacker->getHeading();
+	turnData->finalHeading = fixture.attacker->getHeading();
+	turnData->nMoved = 2;
+
+	CPPUNIT_ASSERT(fixture.game.selectWeapon(0));
+	CPPUNIT_ASSERT(fixture.game.isOffensiveSeekerDeploymentMode());
+	CPPUNIT_ASSERT(fixture.game.getTargetHexes().find(fixture.attackerHex) != fixture.game.getTargetHexes().end());
+	CPPUNIT_ASSERT(fixture.game.getTargetHexes().find(firstMoveHex) != fixture.game.getTargetHexes().end());
+	CPPUNIT_ASSERT(fixture.game.getTargetHexes().find(secondMoveHex) != fixture.game.getTargetHexes().end());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), fixture.game.getTargetHexes().size());
+	CPPUNIT_ASSERT(!fixture.game.assignTargetFromHex(fixture.defenderHex));
+	CPPUNIT_ASSERT(!fixture.game.isHexDeployable(fixture.defenderHex));
+	CPPUNIT_ASSERT(fixture.game.isHexDeployable(firstMoveHex));
+
+	const size_t seekersAtHexBefore = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false).size();
+	CPPUNIT_ASSERT(fixture.game.handleHexClick(firstMoveHex));
+	CPPUNIT_ASSERT_EQUAL(2, fixture.launcher->getAmmo());
+	std::vector<FTacticalSeekerMissileState> seekersAtHex = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false);
+	CPPUNIT_ASSERT_EQUAL(seekersAtHexBefore + 1u, seekersAtHex.size());
+	CPPUNIT_ASSERT(!seekersAtHex.back().active);
+	std::vector<FTacticalPendingSeekerHexGroup> pendingGroups = fixture.game.getSelectedOffensivePendingSeekerHexGroups();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pendingGroups.size());
+	CPPUNIT_ASSERT_EQUAL(1u, pendingGroups[0].count);
+
+	CPPUNIT_ASSERT(fixture.game.handleHexClick(firstMoveHex));
+	CPPUNIT_ASSERT_EQUAL(1, fixture.launcher->getAmmo());
+	seekersAtHex = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false);
+	CPPUNIT_ASSERT_EQUAL(seekersAtHexBefore + 2u, seekersAtHex.size());
+	pendingGroups = fixture.game.getSelectedOffensivePendingSeekerHexGroups();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pendingGroups.size());
+	CPPUNIT_ASSERT_EQUAL(2u, pendingGroups[0].count);
+
+	CPPUNIT_ASSERT(fixture.game.recallSelectedOffensivePendingSeekerAtHex(firstMoveHex));
+	CPPUNIT_ASSERT_EQUAL(2, fixture.launcher->getAmmo());
+	seekersAtHex = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false);
+	CPPUNIT_ASSERT_EQUAL(seekersAtHexBefore + 1u, seekersAtHex.size());
+	pendingGroups = fixture.game.getSelectedOffensivePendingSeekerHexGroups();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pendingGroups.size());
+	CPPUNIT_ASSERT_EQUAL(1u, pendingGroups[0].count);
+
+	fixture.game.setWeapon(NULL);
+	CPPUNIT_ASSERT(fixture.game.selectWeapon(0));
+	pendingGroups = fixture.game.getSelectedOffensivePendingSeekerHexGroups();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pendingGroups.size());
+	CPPUNIT_ASSERT_EQUAL(1u, pendingGroups[0].count);
+
+	fixture.game.completeOffensiveFirePhase();
+	CPPUNIT_ASSERT(!fixture.game.isOffensiveSeekerDeploymentMode());
+	CPPUNIT_ASSERT(fixture.game.getSelectedOffensivePendingSeekerHexGroups().empty());
+	CPPUNIT_ASSERT(!fixture.game.recallSelectedOffensivePendingSeekerAtHex(firstMoveHex));
+	seekersAtHex = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false);
+	CPPUNIT_ASSERT_EQUAL(seekersAtHexBefore + 1u, seekersAtHex.size());
+	CPPUNIT_ASSERT(!seekersAtHex.back().active);
+
+	destroySeekerFixture(fixture);
 }
 
 void FTacticalBattleDisplayFireFlowTest::testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields() {

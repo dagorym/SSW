@@ -46,6 +46,7 @@ CPPUNIT_TEST( testActionButtonHidePathsRelayoutAfterVisibilityChange );
 CPPUNIT_TEST( testSeekerActivationDrawAndClickFlowUseActivationPhaseRouting );
 CPPUNIT_TEST( testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker );
 CPPUNIT_TEST( testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern );
+CPPUNIT_TEST( testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit );
 CPPUNIT_TEST( testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields );
 CPPUNIT_TEST( testLowerPanelLayoutStatePersistsSplitUntilGeometryInvalidatesIt );
 CPPUNIT_TEST( testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize );
@@ -310,6 +311,16 @@ void testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker();
  * @date Last Modified: May 25, 2026
  */
 void testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern();
+/**
+ * @brief Verifies offensive-fire seeker deployment supports pending placement, recall, and commit.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit();
 /**
  * @brief Verifies FBattleDisplay declares shared lower-panel prompt/stats/height state.
  *
