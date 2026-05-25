@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 30, 2026
- * @date Last Modified: Apr 01, 2026
+ * @date Last Modified: May 25, 2026
  */
 class FTacticalBattleScreenDelegationTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleScreenDelegationTest );
@@ -27,6 +27,7 @@ CPPUNIT_TEST( testBattleScreenDetachesTacticalUIBeforeTeardown );
 CPPUNIT_TEST( testBattleScreenStateAndSelectionApiDelegatesToTacticalModel );
 CPPUNIT_TEST( testBattleScreenForwardsInteractionAndRendererAccessorsToModel );
 CPPUNIT_TEST( testBattleScreenForwardsSelectionAndHexInteractionMutatorsToModel );
+CPPUNIT_TEST( testBattleScreenForwardsSeekerActivationApisToModel );
 CPPUNIT_TEST( testBattleScreenDamageSummaryDialogDelegatesThroughInstalledUI );
 CPPUNIT_TEST( testBattleScreenPhaseWeaponAndCleanupFlowDelegatesToTacticalModel );
 CPPUNIT_TEST_SUITE_END();
@@ -90,6 +91,16 @@ void testBattleScreenForwardsInteractionAndRendererAccessorsToModel();
  * @date Last Modified: Apr 01, 2026
  */
 void testBattleScreenForwardsSelectionAndHexInteractionMutatorsToModel();
+/**
+ * @brief Verifies battle Screen Forwards Seeker Activation Apis To Model.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testBattleScreenForwardsSeekerActivationApisToModel();
 /**
  * @brief Verifies battle Screen Damage Summary Dialog Delegates Through Installed UI.
  *

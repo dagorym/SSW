@@ -231,6 +231,35 @@ assertContains(placeMineBody, "if (changed) {");
 assertContains(placeMineBody, "reDraw();");
 }
 
+void FTacticalBattleScreenDelegationTest::testBattleScreenForwardsSeekerActivationApisToModel() {
+// AC: seeker activation phase APIs are forwarded for display/board usage with redraw on state changes.
+const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+
+assertContains(header, "std::vector<FPoint> getInactiveSeekerActivationHexes() const;");
+assertContains(header, "bool selectSeekerActivationHex(const FPoint & hex);");
+assertContains(header, "const FPoint & getSelectedSeekerActivationHex() const;");
+assertContains(header, "std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;");
+assertContains(header, "bool activateSelectedInactiveSeeker(unsigned int seekerID);");
+assertContains(header, "void completeSeekerActivationPhase();");
+
+assertContains(extractFunctionBody(source, "std::vector<FPoint> FBattleScreen::getInactiveSeekerActivationHexes() const"),
+"return m_tacticalGame->getInactiveSeekerActivationHexes();");
+const std::string selectActivationBody = extractFunctionBody(source, "bool FBattleScreen::selectSeekerActivationHex(const FPoint & hex)");
+assertContains(selectActivationBody, "const bool changed = m_tacticalGame->selectSeekerActivationHex(hex);");
+assertContains(selectActivationBody, "reDraw();");
+assertContains(extractFunctionBody(source, "const FPoint & FBattleScreen::getSelectedSeekerActivationHex() const"),
+"return m_tacticalGame->getSelectedSeekerActivationHex();");
+assertContains(extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FBattleScreen::getSelectedInactiveSeekerActivationStack() const"),
+"return m_tacticalGame->getSelectedInactiveSeekerActivationStack();");
+const std::string activateSeekerBody = extractFunctionBody(source, "bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID)");
+assertContains(activateSeekerBody, "const bool changed = m_tacticalGame->activateSelectedInactiveSeeker(seekerID);");
+assertContains(activateSeekerBody, "reDraw();");
+const std::string completeActivationBody = extractFunctionBody(source, "void FBattleScreen::completeSeekerActivationPhase()");
+assertContains(completeActivationBody, "m_tacticalGame->completeSeekerActivationPhase();");
+assertContains(completeActivationBody, "reDraw();");
+}
+
 void FTacticalBattleScreenDelegationTest::testBattleScreenDamageSummaryDialogDelegatesThroughInstalledUI() {
 // AC: FBattleScreen uses ITacticalUI seam owned by FTacticalGame for summary dialogs.
 const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));

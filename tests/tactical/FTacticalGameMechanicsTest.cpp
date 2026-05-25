@@ -153,6 +153,40 @@ assertContains(body, "m_placedOrdnance.clear();");
 assertContains(body, "m_seekerMissiles.clear();");
 }
 
+void FTacticalGameMechanicsTest::testSeekerActivationPhaseEntryAndAutoSkipFlow() {
+// AC: movement phase entry routes through seeker activation and auto-skip still resolves active seekers.
+	const std::string frontierHeader = readFile(repoFile("include/Frontier.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string setPhaseBody = extractFunctionBody(source, "void FTacticalGame::setPhase(int p)");
+	const std::string beginSeekerBody = extractFunctionBody(source, "void FTacticalGame::beginSeekerActivationPhase()");
+	const std::string beginMoveBody = extractFunctionBody(source, "void FTacticalGame::beginMovePhase()");
+	const std::string resolveActiveBody = extractFunctionBody(source, "void FTacticalGame::resolveActiveSeekersForMovingPlayer()");
+
+	assertContains(frontierHeader, "PH_SET_SPEED,");
+	assertContains(frontierHeader, "PH_SEEKER_ACTIVATION,");
+	assertContains(frontierHeader, "PH_MOVE,");
+	CPPUNIT_ASSERT(frontierHeader.find("PH_SEEKER_ACTIVATION,") < frontierHeader.find("PH_MOVE,"));
+
+	assertContains(setPhaseBody, "if (p == PH_MOVE) {");
+	assertContains(setPhaseBody, "beginSeekerActivationPhase();");
+	assertContains(setPhaseBody, "if (p == PH_SEEKER_ACTIVATION) {");
+	assertContains(setPhaseBody, "m_selectedSeekerActivationHex.setPoint(-1, -1);");
+
+	assertContains(beginSeekerBody, "const std::vector<FPoint> inactiveHexes = getInactiveSeekerActivationHexes();");
+	assertContains(beginSeekerBody, "if (inactiveHexes.empty()) {");
+	assertContains(beginSeekerBody, "resolveActiveSeekersForMovingPlayer();");
+	assertContains(beginSeekerBody, "beginMovePhase();");
+	assertContains(beginSeekerBody, "m_phase = PH_SEEKER_ACTIVATION;");
+	assertContains(beginSeekerBody, "m_selectedSeekerActivationHex = inactiveHexes[0];");
+
+	assertContains(beginMoveBody, "m_phase = PH_MOVE;");
+	assertContains(beginMoveBody, "applyFireDamage();");
+	assertContains(beginMoveBody, "toggleActivePlayer();");
+	assertContains(beginMoveBody, "resetMovementState();");
+
+	assertContains(resolveActiveBody, "TSM-004 placeholder seam:");
+}
+
 void FTacticalGameMechanicsTest::testTacticalReportLifecycleUsesSharedReportTypes() {
 // AC: reuses FTacticalCombatReport types and lifecycle helpers without duplicate structures.
 const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
@@ -597,6 +631,50 @@ void FTacticalGameMechanicsTest::testOrdnancePlacementSourceTrackingAndCompatibi
 
 	assertContains(checkForMinesBody, "for (PointSet::iterator itr = m_minedHexList.begin(); itr != m_minedHexList.end(); ++itr) {");
 	assertContains(applyMineDamageBody, "removePlacedMineRecordsAtHex(*itr);");
+}
+
+void FTacticalGameMechanicsTest::testSeekerActivationApisExposeSelectionAndOneWayActivation() {
+// AC: model-owned seeker activation APIs expose stack selection and enforce one-way activation behavior.
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string inactiveHexesBody = extractFunctionBody(source, "std::vector<FPoint> FTacticalGame::getInactiveSeekerActivationHexes() const");
+	const std::string selectHexBody = extractFunctionBody(source, "bool FTacticalGame::selectSeekerActivationHex(const FPoint & hex)");
+	const std::string selectedStackBody =
+		extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSelectedInactiveSeekerActivationStack() const");
+	const std::string activateBody = extractFunctionBody(source, "bool FTacticalGame::activateSelectedInactiveSeeker(unsigned int seekerID)");
+	const std::string completeActivationBody = extractFunctionBody(source, "void FTacticalGame::completeSeekerActivationPhase()");
+
+	assertContains(header, "std::vector<FPoint> getInactiveSeekerActivationHexes() const;");
+	assertContains(header, "bool selectSeekerActivationHex(const FPoint & hex);");
+	assertContains(header, "const FPoint & getSelectedSeekerActivationHex() const { return m_selectedSeekerActivationHex; }");
+	assertContains(header, "std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;");
+	assertContains(header, "bool activateSelectedInactiveSeeker(unsigned int seekerID);");
+	assertContains(header, "void completeSeekerActivationPhase();");
+	assertContains(header, "FPoint m_selectedSeekerActivationHex;");
+
+	assertContains(inactiveHexesBody, "if (itr->ownerID != getMovingPlayerID() || itr->active) {");
+	assertContains(inactiveHexesBody, "if (uniqueHexes.insert(itr->hex).second) {");
+	assertContains(inactiveHexesBody, "hexes.push_back(itr->hex);");
+
+	assertContains(selectHexBody, "if (!isHexInBounds(hex)) {");
+	assertContains(selectHexBody, "if (itr->ownerID == getMovingPlayerID()");
+	assertContains(selectHexBody, "&& !itr->active");
+	assertContains(selectHexBody, "m_selectedSeekerActivationHex = hex;");
+
+	assertContains(selectedStackBody, "if (!isHexInBounds(m_selectedSeekerActivationHex)) {");
+	assertContains(selectedStackBody, "if (itr->ownerID == getMovingPlayerID()");
+	assertContains(selectedStackBody, "&& !itr->active");
+	assertContains(selectedStackBody, "seekers.push_back(*itr);");
+
+	assertContains(activateBody, "if (!isHexInBounds(m_selectedSeekerActivationHex)) {");
+	assertContains(activateBody, "|| itr->active");
+	assertContains(activateBody, "itr->active = true;");
+	CPPUNIT_ASSERT(activateBody.find("itr->active = false;") == std::string::npos);
+
+	assertContains(completeActivationBody, "if (m_phase != PH_SEEKER_ACTIVATION) {");
+	assertContains(completeActivationBody, "resolveActiveSeekersForMovingPlayer();");
+	assertContains(completeActivationBody, "m_selectedSeekerActivationHex.setPoint(-1, -1);");
+	assertContains(completeActivationBody, "beginMovePhase();");
 }
 
 void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelectionFlow() {

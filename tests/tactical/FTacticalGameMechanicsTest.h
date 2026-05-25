@@ -18,13 +18,14 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 29, 2026
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 25, 2026
  */
 class FTacticalGameMechanicsTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalGameMechanicsTest );
 CPPUNIT_TEST( testFTacticalGameImplementationCompilesStandalone );
 CPPUNIT_TEST( testHeaderExposesAdditiveMechanicsApiSurface );
 CPPUNIT_TEST( testResetInitializesSafeLegacyCompatibleDefaults );
+CPPUNIT_TEST( testSeekerActivationPhaseEntryAndAutoSkipFlow );
 CPPUNIT_TEST( testTacticalReportLifecycleUsesSharedReportTypes );
 CPPUNIT_TEST( testFireAllWeaponsOwnsCombatReportLifecycleAndCleanup );
 CPPUNIT_TEST( testDestroyedShipBookkeepingLifecycleContractIsExplicit );
@@ -36,6 +37,7 @@ CPPUNIT_TEST( testInteractionApisAndRendererAccessorsAreExposed );
 CPPUNIT_TEST( testHexClickDispatchAndTargetSelectionRulesFlowThroughModelState );
 CPPUNIT_TEST( testMinePlacementAndMoveFireProgressionUpdateModelState );
 CPPUNIT_TEST( testOrdnancePlacementSourceTrackingAndCompatibilityFlows );
+CPPUNIT_TEST( testSeekerActivationApisExposeSelectionAndOneWayActivation );
 CPPUNIT_TEST( testStoppedShipFreeRotationGuardsAndFacingSelectionFlow );
 CPPUNIT_TEST( testImplementationRemainsSelfContainedWithoutLegacyWxRewire );
 CPPUNIT_TEST_SUITE_END();
@@ -79,6 +81,16 @@ void testHeaderExposesAdditiveMechanicsApiSurface();
  * @date Last Modified: Mar 29, 2026
  */
 void testResetInitializesSafeLegacyCompatibleDefaults();
+/**
+ * @brief Verifies seeker Activation Phase Entry And Auto Skip Flow.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testSeekerActivationPhaseEntryAndAutoSkipFlow();
 /**
  * @brief Verifies tactical Report Lifecycle Uses Shared Report Types.
  *
@@ -189,6 +201,16 @@ void testMinePlacementAndMoveFireProgressionUpdateModelState();
  * @date Last Modified: May 24, 2026
  */
 void testOrdnancePlacementSourceTrackingAndCompatibilityFlows();
+/**
+ * @brief Verifies seeker Activation Apis Expose Selection And One Way Activation.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testSeekerActivationApisExposeSelectionAndOneWayActivation();
 /**
  * @brief Verifies stopped Ship Free Rotation Guards And Facing Selection Flow.
  *
