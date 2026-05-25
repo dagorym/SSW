@@ -1,0 +1,98 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Updated TSM-006 documentation for offensive-fire seeker deployment, same-hex pending stacking, and explicit per-row recall/commit behavior.
+
+Acceptance criteria to verify:
+- Selecting an undamaged SM launcher with ammo during PH_ATTACK_FIRE for the moving player enters seeker deployment mode rather than normal weapon targeting.
+- SM launchers do not deploy seekers or perform normal target assignment during defensive fire.
+- Legal deployment hexes are exactly the selected ship's current-turn path: start hex, moved-through hexes, and final/current hex.
+- Board highlights legal deployment hexes while the SM launcher remains selected.
+- Clicking a legal hex creates an inactive seeker in that hex, decrements selected launcher ammo, and records it as pending for that launcher/current offensive fire phase.
+- Multiple pending seekers may be placed in the same legal hex if ammo allows.
+- The lower/status panel shows pending seeker deployments for the selected launcher grouped by hex with counts or rows.
+- Clicking a pending row/display item removes one current-phase pending seeker from that hex and restores ammo to the selected launcher.
+- Pending seekers from the current phase reappear/highlight if the user reselects the same launcher before Offensive Fire Done.
+- Seekers deployed pre-battle or in earlier turns are not highlighted and cannot be recalled.
+- Completing offensive fire commits pending deployments so they become ordinary inactive seekers for future activation.
+- Updated documentation accurately describes same-hex offensive-fire seeker stacking, explicit grouped recall rows, and phase-end commit behavior without changing doc/rules/tactical_operations_manual.md.
+
+Implementation branch or worktree context:
+- Implementer branch/worktree: seekers-tsm-006-implementer-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-006-implementer-20260524.
+- Implementer remediation code commit: 5db2333 (Fix offensive seeker same-hex placement).
+- Tester branch/worktree: seekers-tsm-006-tester-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-006-tester-20260524.
+- Tester test commit: No Changes Made.
+- Documenter branch/worktree: seekers-tsm-006-documenter-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-006-documenter-20260524.
+- Documentation commit: 1d07d91e24b3bcebe7d64380d44051d099745f24.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- include/tactical/FBattleDisplay.h
+- include/tactical/FBattleScreen.h
+- include/tactical/FTacticalGame.h
+- doc/UsersGuide.md
+- doc/DesignNotes.md
+- artifacts/tactical-seeker-missiles/TSM-006/implementer_report.md
+- artifacts/tactical-seeker-missiles/TSM-006/implementer_result.json
+- artifacts/tactical-seeker-missiles/TSM-006/tester_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-006/tester_report.md
+- artifacts/tactical-seeker-missiles/TSM-006/tester_result.json
+- artifacts/tactical-seeker-missiles/TSM-006/documenter_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-006/documenter_report.md
+- artifacts/tactical-seeker-missiles/TSM-006/documenter_result.json
+- artifacts/tactical-seeker-missiles/TSM-006/verifier_prompt.txt
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill documenter/preflight
+- myteam get skill documenter/diff-review
+- myteam get skill documenter/doc-editing
+- myteam get skill documenter/agents-guidance
+- myteam get skill documenter/commit-flow
+- myteam get skill two-commit-artifact-flow
+- myteam get skill documenter/artifact-writing
+- myteam get skill documenter/verifier-handoff
+- myteam get skill handoff-prompt-contract
+- python .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base 0dffb92 --head HEAD
+- python .myteam/documenter/agents-guidance/scan_in_code_doc_requirements.py --root .
+- python .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root . --phase docs --artifact-dir artifacts/tactical-seeker-missiles/TSM-006
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make && ./GuiTests
+- git commit -m "docs: capture TSM-006 offensive seeker deployment"
+
+Final test outcomes:
+- tactical/TacticalTests passed after documentation updates: OK (169 tests).
+- gui/GuiTests passed after documentation updates: OK (43 tests).
+- Regression coverage still verifies same-hex offensive-fire seeker stacking plus explicit lower-panel recall behavior.
+- GUI validation ran directly with ./GuiTests because xvfb-run is unavailable in this environment.
+
+Plan or evaluation context guidance:
+- Plan path: plans/tactical-seeker-missiles-plan.md.
+- TSM-006 documentation impact called for Doxygen updates for offensive-fire seeker deployment, pending placement, and undo APIs.
+- Repository docs were updated only where directly relevant to the shipped offensive-fire seeker deployment and recall/commit behavior.
+- doc/rules/tactical_operations_manual.md is immutable and must remain unchanged.
+
+Convention-file guidance:
+- AGENTS.md requires Doxygen-style comment updates in touched headers when behavior changes, including author and Last Modified metadata.
+- Changed product-file edits in this stage were limited to documentation-only comments in include/tactical/FBattleDisplay.h, include/tactical/FBattleScreen.h, and include/tactical/FTacticalGame.h.
+- Verifier should confirm that doc/rules/tactical_operations_manual.md was not modified.
+
+Updated documentation files:
+- include/tactical/FBattleDisplay.h
+- include/tactical/FBattleScreen.h
+- include/tactical/FTacticalGame.h
+- doc/UsersGuide.md
+- doc/DesignNotes.md
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-006
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
