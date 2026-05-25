@@ -192,7 +192,19 @@ public:
 	void toggleActivePlayer();
 	/// get the current battle phase
 	int getPhase();
-	/// set the battle phase
+	/**
+	 * @brief Forward a phase-transition request to the tactical model.
+	 *
+	 * Requests for `PH_MOVE` preserve source compatibility for legacy callers
+	 * while allowing `FTacticalGame` to insert the new seeker-activation prephase
+	 * before movement when required.
+	 *
+	 * @param p Requested tactical phase constant.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: Jul 11, 2008
+	 * @date Last Modified: May 25, 2026
+	 */
 	void setPhase(int p);
 	/// redraw the screen
 	void reDraw() { m_map->Refresh(); m_display->Refresh(); }
@@ -346,17 +358,55 @@ public:
 	std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;
 	/// get seeker missile records in a specific tactical hex
 	std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;
-	/// get unique hexes containing inactive seekers owned by the moving player
+	/**
+	 * @brief Get inactive seeker-stack hexes for the current moving player.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	std::vector<FPoint> getInactiveSeekerActivationHexes() const;
-	/// set the currently selected inactive seeker activation stack hex
+	/**
+	 * @brief Select the inactive seeker stack hex shown by later wx surfaces.
+	 *
+	 * @param hex Tactical hex to select.
+	 *
+	 * @return True when the delegated model selection changed.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool selectSeekerActivationHex(const FPoint & hex);
 	/// get the currently selected inactive seeker activation stack hex
 	const FPoint & getSelectedSeekerActivationHex() const;
-	/// get the currently selected inactive seeker activation stack records
+	/**
+	 * @brief Get the selected inactive seeker stack records from the model.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;
-	/// activate one inactive seeker in the selected stack by seekerID
+	/**
+	 * @brief Activate one seeker in the selected inactive stack.
+	 *
+	 * @param seekerID Unique seeker identifier to activate.
+	 *
+	 * @return True when the delegated model activation changed state.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool activateSelectedInactiveSeeker(unsigned int seekerID);
-	/// complete seeker activation and enter normal movement
+	/**
+	 * @brief Finish seeker activation and enter normal movement via FTacticalGame.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void completeSeekerActivationPhase();
 	const FHexMap & getMineTargets() const;
 	unsigned int getMineOwner() const;

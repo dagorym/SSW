@@ -266,6 +266,14 @@ All three combat phases and their supporting mechanics are fully implemented:
   model-owned `m_movementHexes`, `m_leftHexes`, `m_rightHexes` on
   `FTacticalGame` and rendered by `FBattleBoard` through `FBattleScreen`
   accessors.
+- **Seeker activation pre-phase** (`PH_SEEKER_ACTIVATION`): `FTacticalGame`
+  now intercepts `setPhase(PH_MOVE)` and routes movement entry through
+  `beginSeekerActivationPhase()` first. The model exposes one selected
+  inactive-seeker stack hex plus filtered stack records and one-way activation
+  helpers so later wx surfaces can activate individual seekers before movement.
+  If the moving player has no inactive seekers, the model still calls
+  `resolveActiveSeekersForMovingPlayer()` and then auto-enters `PH_MOVE`, so
+  the active-seeker seam runs even when no visible activation stop is needed.
 - **Defensive fire phase** (`PH_DEFENSE_FIRE`): closest-approach range
   checking in `setIfValidTarget()`; FF weapon arc validation in
   `computeFFRange()`.
@@ -443,6 +451,13 @@ ranges, and mined hex overlays are read from `FTacticalGame` through
 handled by computing the clicked board hex in `FBattleBoard::onLeftUp()` and
 forwarding that `FPoint` to `FBattleScreen::handleHexClick()`, which delegates
 the behavior to `FTacticalGame::handleHexClick()`.
+
+The shipped TSM-004 follow-up extends that forwarding seam again for the new
+pre-movement seeker-activation model state. `FBattleScreen` now forwards
+inactive-stack discovery, activation-hex selection, selected-stack inspection,
+one-way individual seeker activation, and activation completion so the later
+board/display subtasks can render and drive the activation UI without
+reintroducing wx state ownership into `FTacticalGame`.
 
 This leaves the originally shipped Milestone 8 runtime tactical wx path only
 partially rewired: `FBattleDisplay` behaved as a wx renderer/input translator

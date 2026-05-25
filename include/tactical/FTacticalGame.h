@@ -187,9 +187,32 @@ void setStation(FVehicle * station) { m_station = station; }
 FVehicle * getStation() const { return m_station; }
 bool hasPlanet() const { return m_hasPlanet; }
 
+/**
+ * @brief Transition the tactical model into a new combat phase.
+ *
+ * Requests for `PH_MOVE` route through the additive seeker-activation entry
+ * logic so inactive seeker stacks can be surfaced for the moving player before
+ * normal movement begins. When no inactive stacks exist, the model still runs
+ * the active-seeker resolution seam and then enters `PH_MOVE` automatically.
+ *
+ * @param p Requested tactical phase constant.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: May 25, 2026
+ */
 void setPhase(int p);
 int getPhase() const { return m_phase; }
-/// complete seeker activation and enter normal movement for the moving player
+/**
+ * @brief Finish seeker activation and enter normal movement.
+ *
+ * Resolves active seekers for the moving player, clears the selected activation
+ * stack, and advances into the ordinary movement-phase entry path.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
 void completeSeekerActivationPhase();
 
 VehicleList getShipList() const;
@@ -431,6 +454,9 @@ bool isMoveComplete() const { return m_moveComplete; }
 	/**
 	 * @brief Get inactive seeker missiles from the selected activation stack.
 	 *
+	 * Returns only inactive seeker records owned by the current moving player for
+	 * the currently selected activation hex.
+	 *
 	 * @author gpt-5.4 (high)
 	 * @date Created: May 25, 2026
 	 * @date Last Modified: May 25, 2026
@@ -570,8 +596,41 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	bool sourceMatchesSelection(const FTacticalOrdnanceSource & source) const;
 	FVehicle * findShipByID(unsigned int shipID) const;
 	FWeapon * findWeaponBySource(const FTacticalOrdnanceSource & source, FVehicle ** ship = NULL) const;
+	/**
+	 * @brief Enter the pre-movement seeker activation phase when needed.
+	 *
+	 * Selects the first inactive seeker stack for the moving player when one is
+	 * available, or auto-skips directly into the normal movement entry path after
+	 * resolving the active-seeker seam when no inactive stacks remain.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void beginSeekerActivationPhase();
+	/**
+	 * @brief Enter the normal movement phase for the current moving player.
+	 *
+	 * Applies end-of-fire cleanup, updates the active-player toggle, and resets
+	 * movement-state bookkeeping after seeker activation has completed or been
+	 * auto-skipped.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void beginMovePhase();
+	/**
+	 * @brief Placeholder seam for resolving active seekers before movement.
+	 *
+	 * TSM-004 adds the mandatory pre-movement call site even when activation UI
+	 * is skipped, while later subtasks will replace this stub with full seeker
+	 * movement and contact behavior.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void resolveActiveSeekersForMovingPlayer();
 	bool buildSelectedPlacementSource(FTacticalDeploymentSource & source) const;
 	void appendPlacedOrdnanceRecord(FWeapon::Weapon weaponType, const FPoint & hex, const FTacticalOrdnanceSource & source);
