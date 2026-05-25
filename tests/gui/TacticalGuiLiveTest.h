@@ -22,7 +22,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 25, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -32,6 +32,7 @@ CPPUNIT_TEST( testBattleScreenMenuQuitClosesViaSharedClosePath );
 CPPUNIT_TEST( testBattleScreenTitleBarCloseClosesViaSharedClosePath );
 CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
 CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
+CPPUNIT_TEST( testSeekerActivationPanelSourceContracts );
 CPPUNIT_TEST( testSetupPlacementSourceRowsAndOrdnanceColorContracts );
 CPPUNIT_TEST( testBattleScreenDefaultSizeAndLayoutPolicyRuntime );
 CPPUNIT_TEST( testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges );
@@ -115,6 +116,14 @@ void testTacticalActionButtonsRemainSizerPositionedWhenShown();
  * @date Last Modified: Apr 08, 2026
  */
 void testTacticalActionButtonsStayBelowPromptReservationAcrossPhases();
+/**
+ * @brief Verifies seeker activation panel and board source contracts for activation UI and rendering.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testSeekerActivationPanelSourceContracts();
 /**
  * @brief Verifies setup placement source-row and source-color source-contract tokens.
  *

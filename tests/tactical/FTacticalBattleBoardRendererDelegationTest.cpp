@@ -127,6 +127,25 @@ assertContains(helperBody, "return ship->getHeading();");
 assertContains(drawShipsBody, "drawCenteredOnHex(*icon,hex,getRenderedHeadingForShip(m_parent, *itr));");
 }
 
+void FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules() {
+// AC: seeker icon rendering switches from inactive activation stacks to active seeker-only battle rendering.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleBoard::draw(wxDC &dc)");
+const std::string seekerBody = extractFunctionBody(source, "void FBattleBoard::drawSeekerMissiles(wxDC &dc)");
+
+assertContains(drawBody, "if (m_parent->getState() == BS_Battle) {");
+assertContains(drawBody, "drawSeekerMissiles(dc);");
+assertContains(seekerBody, "if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {");
+assertContains(seekerBody, "const std::vector<FPoint> inactiveHexes = m_parent->getInactiveSeekerActivationHexes();");
+assertContains(seekerBody, "if (!m_parent->isHexInBounds(*itr)) {");
+assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, *itr);");
+assertContains(seekerBody, "return;");
+assertContains(seekerBody, "const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);");
+assertContains(seekerBody, "if (!activeSeekers.empty()) {");
+assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon,hex);");
+CPPUNIT_ASSERT(seekerBody.find("getSeekerMissilesAtHex(hex, false)") == std::string::npos);
+}
+
 void FTacticalBattleBoardRendererDelegationTest::testOnLeftUpOnlyHitTestsAndForwardsHexClick() {
 // AC: onLeftUp computes clicked hex and forwards to model click handler through FBattleScreen.
 const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
@@ -140,6 +159,18 @@ CPPUNIT_ASSERT(body.find("placeShip(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("placePlanet(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("placeMineAtHex(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("setShipPlacementHeadingByHex(") == std::string::npos);
+}
+
+void FTacticalBattleBoardRendererDelegationTest::testOnLeftUpRoutesActivationPhaseThroughSeekerSelection() {
+// AC: battle activation clicks route through seeker activation hex selection while preserving legacy source token.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleBoard::onLeftUp(wxMouseEvent & event)");
+
+assertContains(body, "if (m_parent->getState() == BS_Battle && m_parent->getPhase() == PH_SEEKER_ACTIVATION) {");
+assertContains(body, "m_parent->selectSeekerActivationHex(hex);");
+assertContains(body, "} else {");
+assertContains(body, "m_parent->handleHexClick(hex);");
+assertContains(body, "m_parent->handleHexClick(FPoint(a,b));");
 }
 
 void FTacticalBattleBoardRendererDelegationTest::testHeaderRemovesDuplicatedMechanicsState() {
@@ -169,6 +200,17 @@ CPPUNIT_ASSERT(body.find("computeWeaponRange(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("resetMovementState(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("setShipPlacementHeading(") == std::string::npos);
 CPPUNIT_ASSERT(body.find("handleHexClick(") == std::string::npos);
+}
+
+void FTacticalBattleBoardRendererDelegationTest::testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath() {
+// AC: seeker icon uses the shared asset path resolver in FBattleBoard constructor.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string ctorBody = extractFunctionBody(
+	source,
+	"FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+
+assertContains(ctorBody, "FGameConfig &gc = FGameConfig::create();");
+assertContains(ctorBody, "m_seekerMissileIcon = new wxImage(gc.resolveAssetPath(\"icons/SeekerMissile.png\"));");
 }
 
 }

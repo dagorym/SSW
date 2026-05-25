@@ -256,6 +256,7 @@ const std::string boardSource = readFile(repoFile("src/tactical/FBattleBoard.cpp
 const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 
 assertContains(boardSource, "m_maskingScreenIcon = new wxImage(gc.resolveAssetPath(\"icons/MaskingScreen.png\"));");
+assertContains(boardSource, "m_seekerMissileIcon = new wxImage(gc.resolveAssetPath(\"icons/SeekerMissile.png\"));");
 assertNotContains(boardSource, "gc.getBasePath() + \"icons/");
 assertNotContains(boardSource, "../icons/");
 assertNotContains(boardSource, "/home/");
@@ -583,6 +584,64 @@ assertContains(attackBody, "m_buttonOffensiveFireDone->Hide();");
 assertBefore(attackBody, "m_buttonOffensiveFireDone->Hide();", "Layout();");
 assertContains(minesBody, "m_buttonMinePlacementDone->Hide();");
 assertBefore(minesBody, "m_buttonMinePlacementDone->Hide();", "Layout();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testSeekerActivationDrawAndClickFlowUseActivationPhaseRouting() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
+const std::string onLeftUpBody = extractFunctionBody(source, "void FBattleDisplay::onLeftUp(wxMouseEvent & event)");
+const std::string selectionBody = extractFunctionBody(source, "void FBattleDisplay::checkSeekerActivationSelection(wxMouseEvent &event)");
+const std::string activateBody = extractFunctionBody(screenSource, "bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID)");
+
+assertContains(drawBody, "case PH_SEEKER_ACTIVATION:");
+assertContains(drawBody, "drawSeekerActivation(dc);");
+assertContains(onLeftUpBody, "if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {");
+assertContains(onLeftUpBody, "checkSeekerActivationSelection(event);");
+assertBefore(onLeftUpBody, "checkSeekerActivationSelection(event);", "checkWeaponSelection(event);");
+assertContains(selectionBody, "for (unsigned int i = 0; i < m_seekerActivationRegions.size(); ++i) {");
+assertContains(selectionBody, "if (!m_seekerActivationRegions[i].Contains(x,y)) {");
+assertContains(selectionBody, "m_parent->activateSelectedInactiveSeeker(m_seekerActivationSeekerIDs[i]);");
+assertContains(activateBody, "if (changed) {");
+assertContains(activateBody, "reDraw();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
+
+assertContains(body, "dc.DrawText(\"Seeker activation phase.\",leftOffset,getActionPromptLineY(0));");
+assertContains(body, "dc.DrawText(\"Click a seeker stack on the board to select a hex.\",leftOffset,getActionPromptLineY(1));");
+assertContains(body, "dc.DrawText(\"Click a row below to activate one seeker.\",leftOffset,getActionPromptLineY(2));");
+assertContains(body, "const std::vector<FTacticalSeekerMissileState> stack = m_parent->getSelectedInactiveSeekerActivationStack();");
+assertContains(body, "if (stack.empty()) {");
+assertContains(body, "dc.DrawText(\"No inactive seekers in selected stack.\",lMargin,y);");
+assertContains(body, "for (unsigned int i = 0; i < stack.size(); ++i) {");
+assertContains(body, "os << \"Activate seeker #\" << seeker.seekerID");
+assertContains(body, "m_seekerActivationRegions.push_back(wxRect(");
+assertContains(body, "m_seekerActivationSeekerIDs.push_back(seeker.seekerID);");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string ctorBody = extractFunctionBody(
+source,
+"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
+const std::string doneBody = extractFunctionBody(source, "void FBattleDisplay::onSeekerActivationDone( wxCommandEvent& event )");
+
+assertContains(ctorBody, "m_buttonSeekerActivationDone = new wxButton( this, wxID_ANY, wxT(\"Seeker Activation Done\"), wxDefaultPosition, wxDefaultSize, 0 );");
+assertContains(ctorBody, "actionSizer->Add(m_buttonSeekerActivationDone, 0, wxALIGN_CENTER_VERTICAL);");
+assertContains(ctorBody, "m_buttonSeekerActivationDone->Hide();");
+assertContains(drawBody, "m_buttonSeekerActivationDone->Connect(");
+assertContains(drawBody, "wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),");
+assertContains(drawBody, "m_buttonSeekerActivationDone->Show();");
+assertBefore(drawBody, "m_buttonSeekerActivationDone->Show();", "Layout();");
+assertContains(doneBody, "m_buttonSeekerActivationDone->Disconnect(");
+assertContains(doneBody, "m_buttonSeekerActivationDone->Hide();");
+assertBefore(doneBody, "m_buttonSeekerActivationDone->Hide();", "Layout();");
+assertContains(doneBody, "m_parent->completeSeekerActivationPhase();");
+assertContains(doneBody, "m_first = true;");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields() {

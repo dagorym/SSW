@@ -16,18 +16,21 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Apr 01, 2026
- * @date Last Modified: May 09, 2026
+ * @date Last Modified: May 25, 2026
  */
 class FTacticalBattleBoardRendererDelegationTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleBoardRendererDelegationTest );
 CPPUNIT_TEST( testDrawUsesBattleScreenModelAccessors );
 CPPUNIT_TEST( testOverlayDrawingUsesModelStateAccessors );
 CPPUNIT_TEST( testDrawShipsUsesTemporaryFacingForStoppedSelectedMover );
+CPPUNIT_TEST( testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules );
 CPPUNIT_TEST( testOnLeftUpOnlyHitTestsAndForwardsHexClick );
+CPPUNIT_TEST( testOnLeftUpRoutesActivationPhaseThroughSeekerSelection );
 CPPUNIT_TEST( testHeaderRemovesDuplicatedMechanicsState );
 CPPUNIT_TEST( testOnMotionUsesPlacementForwardersOnly );
+CPPUNIT_TEST( testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -70,6 +73,16 @@ void testOverlayDrawingUsesModelStateAccessors();
  */
 void testDrawShipsUsesTemporaryFacingForStoppedSelectedMover();
 /**
+ * @brief Verifies draw Seeker Missiles Uses Activation And Battle Visibility Rules.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules();
+/**
  * @brief Verifies on Left Up Only Hit Tests And Forwards Hex Click.
  *
  * Exercises the tactical regression behavior covered by this fixture case.
@@ -79,6 +92,16 @@ void testDrawShipsUsesTemporaryFacingForStoppedSelectedMover();
  * @date Last Modified: Apr 01, 2026
  */
 void testOnLeftUpOnlyHitTestsAndForwardsHexClick();
+/**
+ * @brief Verifies activation-phase board clicks route to seeker-activation selection.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testOnLeftUpRoutesActivationPhaseThroughSeekerSelection();
 /**
  * @brief Verifies header Removes Duplicated Mechanics State.
  *
@@ -99,6 +122,16 @@ void testHeaderRemovesDuplicatedMechanicsState();
  * @date Last Modified: Apr 01, 2026
  */
 void testOnMotionUsesPlacementForwardersOnly();
+/**
+ * @brief Verifies board constructor loads seeker icon via shared asset resolution.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath();
 };
 
 }

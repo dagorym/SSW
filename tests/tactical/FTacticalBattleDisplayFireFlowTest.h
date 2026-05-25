@@ -18,7 +18,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 22, 2026
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 25, 2026
  */
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
@@ -43,6 +43,9 @@ CPPUNIT_TEST( testActionPromptSpacingContractConstantsAndHelpersDefined );
 CPPUNIT_TEST( testActionPromptSpacingContractAppliedAcrossActionPhases );
 CPPUNIT_TEST( testActionButtonShowPathsRelayoutAfterVisibilityChange );
 CPPUNIT_TEST( testActionButtonHidePathsRelayoutAfterVisibilityChange );
+CPPUNIT_TEST( testSeekerActivationDrawAndClickFlowUseActivationPhaseRouting );
+CPPUNIT_TEST( testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker );
+CPPUNIT_TEST( testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern );
 CPPUNIT_TEST( testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields );
 CPPUNIT_TEST( testLowerPanelLayoutStatePersistsSplitUntilGeometryInvalidatesIt );
 CPPUNIT_TEST( testRequestedDisplayHeightFlowsFromLayoutStateIntoMinSize );
@@ -277,6 +280,36 @@ void testActionButtonShowPathsRelayoutAfterVisibilityChange();
  * @date Last Modified: Apr 08, 2026
  */
 void testActionButtonHidePathsRelayoutAfterVisibilityChange();
+/**
+ * @brief Verifies seeker activation lower-panel draw/click flow routes through activation-specific handlers.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testSeekerActivationDrawAndClickFlowUseActivationPhaseRouting();
+/**
+ * @brief Verifies seeker activation panel instructions and one-row-per-inactive-seeker stack rendering.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker();
+/**
+ * @brief Verifies seeker activation done button follows the standard connect/show/hide/disconnect/relayout contract.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern();
 /**
  * @brief Verifies FBattleDisplay declares shared lower-panel prompt/stats/height state.
  *

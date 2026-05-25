@@ -757,6 +757,7 @@ struct Scenario {
 	wxString label;
 } scenarios[] = {
 	{BS_Battle, PH_MOVE, wxT("Movement Done")},
+	{BS_Battle, PH_SEEKER_ACTIVATION, wxT("Seeker Activation Done")},
 	{BS_Battle, PH_DEFENSE_FIRE, wxT("Defensive Fire Done")},
 	{BS_Battle, PH_ATTACK_FIRE, wxT("Offensive Fire Done")},
 	{BS_PlaceMines, PH_NONE, wxT("Mine Placement Done")}
@@ -849,6 +850,7 @@ struct Scenario {
 	wxString label;
 } scenarios[] = {
 	{BS_Battle, PH_MOVE, 2, wxT("Movement Done")},
+	{BS_Battle, PH_SEEKER_ACTIVATION, 3, wxT("Seeker Activation Done")},
 	{BS_Battle, PH_DEFENSE_FIRE, 3, wxT("Defensive Fire Done")},
 	{BS_Battle, PH_ATTACK_FIRE, 3, wxT("Offensive Fire Done")},
 	{BS_PlaceMines, PH_NONE, 3, wxT("Mine Placement Done")}
@@ -916,6 +918,44 @@ for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); i++) {
 }
 
 m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testSeekerActivationPanelSourceContracts() {
+CPPUNIT_ASSERT_MESSAGE(
+	"Seeker activation panel should display instructional prompt text.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"Seeker activation phase."));
+CPPUNIT_ASSERT_MESSAGE(
+	"Seeker activation panel should explain row-based activation.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"Click a row below to activate one seeker."));
+CPPUNIT_ASSERT_MESSAGE(
+	"Seeker activation panel should register one clickable row per seeker.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"m_seekerActivationRegions.push_back"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Seeker activation clicks should activate the selected seeker ID.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		"activateSelectedInactiveSeeker(m_seekerActivationSeekerIDs[i])"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Battle-board activation rendering should use moving-player inactive seeker stacks.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		"getInactiveSeekerActivationHexes()"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Battle-board battle rendering should draw active seekers only.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		"getSeekerMissilesAtHex(hex, true)"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Activation-phase board clicks should route through seeker activation selection.",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		"m_parent->selectSeekerActivationHex(hex);"));
 }
 
 void TacticalGuiLiveTest::testSetupPlacementSourceRowsAndOrdnanceColorContracts() {
