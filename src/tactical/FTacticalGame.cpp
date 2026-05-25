@@ -2445,8 +2445,8 @@ bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex) {
 	}
 
 	if (getState() == BS_Battle && selectedSource.weaponType == FWeapon::SM) {
-		if (removeOffensiveFirePendingSeekerAtHex(hex)) {
-			return true;
+		if (!canUseOffensiveFireSeekerDeployment()) {
+			return false;
 		}
 		return placeOffensiveFirePendingSeekerAtHex(hex);
 	}
