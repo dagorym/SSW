@@ -166,6 +166,10 @@ typedef struct {
 /**
  * @brief Grouped pending-seeker row data for the selected launcher.
  *
+ * Each record represents one lower-panel recall row, combining all pending
+ * seeker deployments from the current offensive-fire phase that share the same
+ * legal path hex for the selected launcher.
+ *
  * @author gpt-5.4 (high)
  * @date Created: May 25, 2026
  * @date Last Modified: May 25, 2026
@@ -179,8 +183,9 @@ typedef struct {
  * @brief Pure C++ tactical mechanics state container.
  *
  * Owns non-wx tactical battle state, including ship placement, movement,
- * combat-report bookkeeping, and lightweight source-tracked ordnance and
- * seeker-missile records used by later rendering and activation subtasks.
+ * combat-report bookkeeping, and lightweight source-tracked ordnance,
+ * seeker-missile records, and pending offensive-fire deployment state used by
+ * the wx rendering and interaction layers.
  *
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
  * @date Created: Mar 29, 2026
@@ -506,11 +511,52 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * @date Last Modified: May 25, 2026
 	 */
 	bool activateSelectedInactiveSeeker(unsigned int seekerID);
-	/// true when selected weapon is an offensive-fire SM deployment launcher
+	/**
+	 * @brief Report whether the current selection is offensive-fire seeker deployment.
+	 *
+	 * This mode is available only while the moving player has selected one of its
+	 * own undamaged `SM` launchers during `PH_ATTACK_FIRE`. In that state the
+	 * board highlights legal deployment hexes along the current-turn path instead
+	 * of normal target-selection ranges.
+	 *
+	 * @return True when board clicks should place or recall pending offensive-fire
+	 *         seekers for the selected launcher.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool isOffensiveSeekerDeploymentMode() const;
-	/// grouped pending offensive-fire seeker deployments for selected launcher
+	/**
+	 * @brief Group pending offensive-fire seeker deployments by hex for the selected launcher.
+	 *
+	 * Returns only current-phase pending seekers owned by the selected `SM`
+	 * launcher. Multiple pending seekers stacked in the same legal path hex are
+	 * combined into one row with a count so the lower panel can render explicit
+	 * recall actions without treating same-hex board clicks as undo.
+	 *
+	 * @return Grouped pending deployment rows for the currently selected launcher.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	std::vector<FTacticalPendingSeekerHexGroup> getSelectedOffensivePendingSeekerHexGroups() const;
-	/// recall one pending selected-launcher seeker from a grouped hex row
+	/**
+	 * @brief Recall one pending seeker from the selected launcher's grouped row.
+	 *
+	 * Removes exactly one current-phase pending seeker from the requested hex,
+	 * restores one ammo to that launcher, and leaves any earlier-turn or
+	 * pre-battle seekers in the same hex untouched.
+	 *
+	 * @param hex Legal-path hex represented by the clicked recall row.
+	 *
+	 * @return True when one pending seeker was removed from that grouped row.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex);
 	/**
 	 * @brief Get seeker missiles owned by a specific player.
@@ -668,11 +714,92 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 */
 	void resolveActiveSeekersForMovingPlayer();
 	bool buildSelectedPlacementSource(FTacticalDeploymentSource & source) const;
+	/**
+	 * @brief Check whether the current selection can deploy seekers during offensive fire.
+	 *
+	 * Defensive fire, non-moving ships, damaged launchers, and non-`SM` weapons
+	 * never enter this mode.
+	 *
+	 * @return True when the selected launcher may place pending offensive-fire seekers.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool canUseOffensiveFireSeekerDeployment() const;
+	/**
+	 * @brief Check whether a hex is on the selected ship's current-turn path.
+	 *
+	 * Offensive-fire seeker deployment is legal only on the selected moving
+	 * ship's start, traversed, and final path hexes for the current turn.
+	 *
+	 * @param hex Tactical hex to validate against the selected path.
+	 *
+	 * @return True when the requested hex is a legal offensive-fire deployment hex.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool isHexOnSelectedShipCurrentPath(const FPoint & hex);
+	/**
+	 * @brief Check whether a launcher already owns current-phase pending deployments.
+	 *
+	 * This keeps empty-ammo `SM` launchers selectable long enough to recall their
+	 * own pending seekers before `Offensive Fire Done` commits the phase.
+	 *
+	 * @param source Source launcher provenance to match.
+	 *
+	 * @return True when that launcher already has current offensive-fire pending seekers.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool hasPendingOffensiveDeploymentForSource(const FTacticalOrdnanceSource & source) const;
+	/**
+	 * @brief Place one pending offensive-fire seeker for the selected launcher.
+	 *
+	 * Each successful click on a legal path hex consumes one ammo and creates one
+	 * inactive seeker plus one current-phase pending record. Same-hex clicks add
+	 * more seekers to that hex instead of toggling an undo path.
+	 *
+	 * @param hex Legal current-path hex chosen for deployment.
+	 *
+	 * @return True when one pending seeker was created in that hex.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool placeOffensiveFirePendingSeekerAtHex(const FPoint & hex);
+	/**
+	 * @brief Recall one pending offensive-fire seeker from a selected hex.
+	 *
+	 * Removes only the most recent matching current-phase pending seeker for the
+	 * selected launcher in that hex, restoring one ammo and preserving any other
+	 * stacked pending seekers there.
+	 *
+	 * @param hex Grouped pending hex to recall from.
+	 *
+	 * @return True when one pending seeker was removed.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool removeOffensiveFirePendingSeekerAtHex(const FPoint & hex);
+	/**
+	 * @brief Clear phase-tracking records for offensive-fire pending seekers.
+	 *
+	 * The inactive seeker model records remain on the board so surviving pending
+	 * deployments become ordinary inactive seekers once the offensive-fire phase
+	 * is completed.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void clearPendingOffensiveFireSeekers();
 	void appendPlacedOrdnanceRecord(FWeapon::Weapon weaponType, const FPoint & hex, const FTacticalOrdnanceSource & source);
 	bool removePlacedOrdnanceForSelection(const FPoint & hex, FTacticalPlacedOrdnance & removed);

@@ -359,8 +359,38 @@ protected:
 	/// Draws prompt to select ship to fire defensive shots
 	void drawDefensiveFire(wxDC &dc);
 
-	/// Draws prompt to select ship to fire defensive shots
+	/**
+	 * @brief Draw the offensive-fire lower-panel prompt and seeker deployment status.
+	 *
+	 * Normal offensive fire still prompts for ship and weapon targeting, but when
+	 * an `SM` launcher is selected this prompt switches to seeker deployment
+	 * instructions and the lower panel adds grouped pending recall rows for that
+	 * launcher.
+	 *
+	 * @param dc The device context to draw on.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: Apr 15, 2009
+	 * @date Last Modified: May 25, 2026
+	 */
 	void drawAttackFire(wxDC &dc);
+	/**
+	 * @brief Draw grouped recall rows for pending offensive-fire seekers.
+	 *
+	 * Each row corresponds to one legal path hex for the currently selected `SM`
+	 * launcher and recalls exactly one current-phase pending seeker from that hex.
+	 * Same-hex stacks are shown through the per-row pending count instead of
+	 * treating same-hex board clicks as undo.
+	 *
+	 * @param dc The device context to draw on.
+	 * @param lMargin The x position to start drawing text.
+	 * @param startY The y position to start drawing the pending rows.
+	 * @param textSize The font size to use.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize);
 
 	/**
@@ -513,6 +543,17 @@ protected:
 	 * @date Last Modified: May 25, 2026
 	 */
 	void checkSeekerActivationSelection(wxMouseEvent &event);
+	/**
+	 * @brief Check whether the user clicked a grouped pending-seeker recall row.
+	 *
+	 * @param event The mouse event with the click position.
+	 *
+	 * @return True when one pending seeker was recalled for the selected launcher.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool checkOffensiveSeekerPendingSelection(wxMouseEvent &event);
 
 	/// returns y-position for the indexed action prompt line

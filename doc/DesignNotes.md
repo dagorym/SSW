@@ -287,6 +287,13 @@ All three combat phases and their supporting mechanics are fully implemented:
 - **Offensive fire phase** (`PH_ATTACK_FIRE`): moving ship fires from the
   optimal point along its path via `computeMovedWeaponRange()`; iterates
   every hex in the ship's path and checks weapon range/arc at each position.
+  Selecting an `SM` launcher during the moving player's offensive fire phase
+  now enters seeker deployment mode instead of normal target assignment:
+  legal board clicks are limited to the selected ship's current path, each
+  click adds one inactive pending seeker for that launcher, same-hex clicks
+  keep stacking more pending seekers if ammo remains, and the lower panel
+  exposes explicit grouped recall rows until `Offensive Fire Done` commits the
+  surviving pending deployments as ordinary inactive seekers.
 - **ICM interception**: `fireICM()` in `FBattleScreen.cpp` presents
   `ICMSelectionGUI` before weapon damage is resolved.
 - **End-of-phase cleanup**: `toggleActivePlayer()` and `toggleMovingPlayer()`
@@ -476,6 +483,18 @@ instead of the generic tactical click handler. `FBattleDisplay` now adds the
 activation instructions, selected-stack readout, per-seeker clickable rows, and
 `Seeker Activation Done` button so board and lower-panel refresh stay aligned
 after both activation-hex changes and one-way seeker activation clicks.
+
+The shipped TSM-006 follow-up extends the same runtime delegation seam for
+offensive-fire seeker deployment. `FTacticalGame` now tracks
+`m_pendingOffensiveSeekerDeployments` keyed by `m_offensiveFirePhaseID`, exposes
+`isOffensiveSeekerDeploymentMode()`,
+`getSelectedOffensivePendingSeekerHexGroups()`, and
+`recallSelectedOffensivePendingSeekerAtHex(...)`, and treats legal path-hex
+clicks as additive pending seeker placement for the selected `SM` launcher.
+`FBattleScreen` forwards those model APIs and `FBattleDisplay` renders grouped
+per-hex recall rows, so same-hex repeat clicks keep adding pending seekers
+while undo remains an explicit lower-panel action instead of a board-click
+toggle.
 
 This leaves the originally shipped Milestone 8 runtime tactical wx path only
 partially rewired: `FBattleDisplay` behaved as a wx renderer/input translator

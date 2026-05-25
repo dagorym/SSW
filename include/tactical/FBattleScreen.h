@@ -388,11 +388,45 @@ public:
 	 * @date Last Modified: May 25, 2026
 	 */
 	std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;
-	/// true when selected weapon is offensive-fire seeker deployment launcher
+	/**
+	 * @brief Report whether the selected weapon is in offensive-fire seeker deployment mode.
+	 *
+	 * When true, the board and lower panel should treat the selected `SM`
+	 * launcher as a path-based seeker deployment source instead of a normal
+	 * target-assignment weapon.
+	 *
+	 * @return True when offensive-fire seeker deployment UI should be active.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool isOffensiveSeekerDeploymentMode() const;
-	/// grouped pending deployment rows for selected offensive-fire seeker launcher
+	/**
+	 * @brief Get grouped pending offensive-fire seeker rows for the selected launcher.
+	 *
+	 * Each returned row groups the selected launcher's current-phase pending
+	 * seekers by hex so the lower panel can render explicit one-at-a-time recall
+	 * actions while allowing multiple seekers to remain stacked in the same hex.
+	 *
+	 * @return Pending seeker groups for the selected offensive-fire launcher.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	std::vector<FTacticalPendingSeekerHexGroup> getSelectedOffensivePendingSeekerHexGroups() const;
-	/// recall one selected-launcher pending seeker from a grouped pending row
+	/**
+	 * @brief Recall one pending offensive-fire seeker from a grouped lower-panel row.
+	 *
+	 * @param hex Hex represented by the clicked grouped recall row.
+	 *
+	 * @return True when one current-phase pending seeker was removed and ammo restored.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex);
 	/**
 	 * @brief Activate one seeker in the selected inactive stack.
