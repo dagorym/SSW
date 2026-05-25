@@ -595,6 +595,8 @@ void FBattleDisplay::draw(wxDC &dc){
 	wxColour black(wxT("#000000"));// black
 	m_weaponRegions.clear();
 	m_defenseRegions.clear();
+	m_pendingSeekerRecallRegions.clear();
+	m_pendingSeekerRecallHexes.clear();
 	dc.SetBackground(wxBrush(black));
 	int w,h;
 	dc.GetSize(&w,&h);
@@ -696,6 +698,9 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 	case BS_Battle:
 		if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
 			checkSeekerActivationSelection(event);
+			break;
+		}
+		if (m_parent->getPhase() == PH_ATTACK_FIRE && checkOffensiveSeekerPendingSelection(event)) {
 			break;
 		}
 		if (m_parent->getShip()!=NULL
@@ -1083,6 +1088,9 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 		x = lMargin+110;
 		y += (int)(1.6*textSize);
 		drawOtherStatus(dc,x,y,textSize);
+		if (m_parent->getPhase() == PH_ATTACK_FIRE) {
+			drawOffensiveSeekerPendingRows(dc, lMargin, y + (int)(1.8*textSize), textSize);
+		}
 
 	}
 }
@@ -1146,7 +1154,11 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
 	dc.DrawText("declare offensive fire.",leftOffset,getActionPromptLineY(1));
-	os.str("Please select a ship to fire weapons.");
+	if (m_parent->isOffensiveSeekerDeploymentMode()) {
+		os.str("Select legal path hexes to deploy seeker missiles.");
+	} else {
+		os.str("Please select a ship to fire weapons.");
+	}
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
 	m_buttonOffensiveFireDone->Enable(m_parent->isMoveComplete());
 	if (m_first){
@@ -1213,6 +1225,11 @@ void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int text
 				dc.SetTextForeground(yellow);
 			}
 			if (w->isMPO() && m_parent->getPhase()==PH_DEFENSE_FIRE){
+				dc.SetTextForeground(white);
+			}
+			if (w->getType() == FWeapon::SM
+				&& (m_parent->getPhase() != PH_ATTACK_FIRE
+					|| m_parent->getActivePlayerID() != m_parent->getMovingPlayerID())){
 				dc.SetTextForeground(white);
 			}
 			if (w->getMaxAmmo() && w->getAmmo()==0){ // all the ammo is used up.
@@ -1482,6 +1499,44 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 	}
 }
 
+void FBattleDisplay::drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize){
+	m_pendingSeekerRecallRegions.clear();
+	m_pendingSeekerRecallHexes.clear();
+
+	if (!m_parent->isOffensiveSeekerDeploymentMode()){
+		return;
+	}
+
+	const std::vector<FTacticalPendingSeekerHexGroup> pending = m_parent->getSelectedOffensivePendingSeekerHexGroups();
+	wxColour white(wxT("#FFFFFF"));
+	wxColour green(wxT("#00FF00"));
+	std::ostringstream os;
+	int y = startY;
+
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD));
+	dc.SetTextForeground(white);
+	dc.DrawText("Pending seeker deployments:",lMargin,y);
+	y += (int)(1.6*textSize);
+
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	if (pending.empty()){
+		dc.DrawText("None",lMargin,y);
+		return;
+	}
+
+	for (unsigned int i = 0; i < pending.size(); ++i){
+		os.str("");
+		os << "Recall 1 at (" << pending[i].hex.getX() << ", " << pending[i].hex.getY()
+			<< ") [pending: " << pending[i].count << "]";
+		dc.SetTextForeground((i % 2 == 0) ? white : green);
+		dc.DrawText(os.str(),lMargin,y);
+		wxSize tSize = dc.GetTextExtent(os.str());
+		m_pendingSeekerRecallRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 16,tSize.GetHeight()));
+		m_pendingSeekerRecallHexes.push_back(wxPoint(pending[i].hex.getX(), pending[i].hex.getY()));
+		y += (int)(1.6*textSize);
+	}
+}
+
 void FBattleDisplay::checkShipSelection(wxMouseEvent &event){
 	int x = event.GetX();
 	int y = event.GetY();
@@ -1511,6 +1566,22 @@ void FBattleDisplay::checkSeekerActivationSelection(wxMouseEvent &event){
 		}
 		break;
 	}
+}
+
+bool FBattleDisplay::checkOffensiveSeekerPendingSelection(wxMouseEvent &event){
+	const int x = event.GetX();
+	const int y = event.GetY();
+	for (unsigned int i = 0; i < m_pendingSeekerRecallRegions.size(); ++i) {
+		if (!m_pendingSeekerRecallRegions[i].Contains(x,y)) {
+			continue;
+		}
+		if (i < m_pendingSeekerRecallHexes.size()) {
+			const wxPoint & pendingHex = m_pendingSeekerRecallHexes[i];
+			return m_parent->recallSelectedOffensivePendingSeekerAtHex(FPoint(pendingHex.x, pendingHex.y));
+		}
+		return false;
+	}
+	return false;
 }
 
 

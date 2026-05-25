@@ -290,6 +290,8 @@ void FTacticalGame::reset() {
 	m_selectedPlacementSource = -1;
 	m_placedOrdnance.clear();
 	m_seekerMissiles.clear();
+	m_offensiveFirePhaseID = 0;
+	m_pendingOffensiveSeekerDeployments.clear();
 	m_selectedSeekerActivationHex.setPoint(-1, -1);
 
 	for (int i = 0; i < 100; ++i) {
@@ -372,6 +374,10 @@ void FTacticalGame::setPhase(int p) {
 		return;
 	}
 
+	if (m_phase == PH_ATTACK_FIRE && p != PH_ATTACK_FIRE) {
+		clearPendingOffensiveFireSeekers();
+	}
+
 	m_phase = p;
 	if (p == PH_SEEKER_ACTIVATION) {
 		m_selectedSeekerActivationHex.setPoint(-1, -1);
@@ -381,6 +387,8 @@ void FTacticalGame::setPhase(int p) {
 	} else if (p == PH_DEFENSE_FIRE) {
 		toggleActivePlayer();
 	} else if (p == PH_ATTACK_FIRE) {
+		++m_offensiveFirePhaseID;
+		clearPendingOffensiveFireSeekers();
 		toggleActivePlayer();
 	}
 }
@@ -944,6 +952,49 @@ bool FTacticalGame::activateSelectedInactiveSeeker(unsigned int seekerID) {
 	return false;
 }
 
+bool FTacticalGame::isOffensiveSeekerDeploymentMode() const {
+	return canUseOffensiveFireSeekerDeployment();
+}
+
+std::vector<FTacticalPendingSeekerHexGroup> FTacticalGame::getSelectedOffensivePendingSeekerHexGroups() const {
+	std::vector<FTacticalPendingSeekerHexGroup> groups;
+	if (!canUseOffensiveFireSeekerDeployment()) {
+		return groups;
+	}
+
+	FTacticalDeploymentSource selectedSource;
+	if (!buildSelectedPlacementSource(selectedSource)) {
+		return groups;
+	}
+
+	std::map<FPoint, unsigned int> countsByHex;
+	for (std::vector<FTacticalPendingSeekerDeployment>::const_iterator itr = m_pendingOffensiveSeekerDeployments.begin();
+		 itr != m_pendingOffensiveSeekerDeployments.end(); ++itr) {
+		if (itr->offensiveFirePhaseID != m_offensiveFirePhaseID) {
+			continue;
+		}
+		if (!sourceMatchesWeapon(itr->source, m_curShip, m_curWeapon, selectedSource.source.weaponIndex)) {
+			continue;
+		}
+		countsByHex[itr->hex] += 1;
+	}
+
+	for (std::map<FPoint, unsigned int>::const_iterator itr = countsByHex.begin(); itr != countsByHex.end(); ++itr) {
+		FTacticalPendingSeekerHexGroup group;
+		group.hex = itr->first;
+		group.count = itr->second;
+		groups.push_back(group);
+	}
+	return groups;
+}
+
+bool FTacticalGame::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex) {
+	if (!isHexInBounds(hex)) {
+		return false;
+	}
+	return removeOffensiveFirePendingSeekerAtHex(hex);
+}
+
 void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 	// TSM-004 placeholder seam:
 	// active seeker movement/detonation resolution is intentionally deferred.
@@ -1052,6 +1103,132 @@ bool FTacticalGame::buildSelectedPlacementSource(FTacticalDeploymentSource & sou
 		return true;
 	}
 	return false;
+}
+
+bool FTacticalGame::canUseOffensiveFireSeekerDeployment() const {
+	if (getState() != BS_Battle
+		|| getPhase() != PH_ATTACK_FIRE
+		|| m_curShip == NULL
+		|| m_curWeapon == NULL
+		|| m_curShip->getOwner() != getActivePlayerID()
+		|| getActivePlayerID() != getMovingPlayerID()) {
+		return false;
+	}
+	if (m_curWeapon->getType() != FWeapon::SM
+		|| m_curWeapon->isDamaged()) {
+		return false;
+	}
+	FTacticalDeploymentSource source;
+	return buildSelectedPlacementSource(source);
+}
+
+bool FTacticalGame::isHexOnSelectedShipCurrentPath(const FPoint & hex) {
+	if (!canUseOffensiveFireSeekerDeployment() || !isHexInBounds(hex)) {
+		return false;
+	}
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL || turnData->path.getPathLength() == 0) {
+		return false;
+	}
+	return turnData->path.isPointOnPath(hex);
+}
+
+bool FTacticalGame::hasPendingOffensiveDeploymentForSource(const FTacticalOrdnanceSource & source) const {
+	for (std::vector<FTacticalPendingSeekerDeployment>::const_iterator itr = m_pendingOffensiveSeekerDeployments.begin();
+		 itr != m_pendingOffensiveSeekerDeployments.end(); ++itr) {
+		if (itr->offensiveFirePhaseID == m_offensiveFirePhaseID
+			&& itr->source.shipID == source.shipID
+			&& itr->source.weaponIndex == source.weaponIndex
+			&& itr->source.weaponID == source.weaponID) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool FTacticalGame::placeOffensiveFirePendingSeekerAtHex(const FPoint & hex) {
+	if (!isHexOnSelectedShipCurrentPath(hex)) {
+		return false;
+	}
+
+	FTacticalDeploymentSource selectedSource;
+	if (!buildSelectedPlacementSource(selectedSource)) {
+		return false;
+	}
+
+	FWeapon * weapon = findWeaponBySource(selectedSource.source, NULL);
+	if (weapon == NULL || weapon->getType() != FWeapon::SM || weapon->getAmmo() <= 0 || weapon->isDamaged()) {
+		return false;
+	}
+
+	weapon->setCurrentAmmo(weapon->getAmmo() - 1);
+	FTacticalSeekerMissileState seeker;
+	seeker.seekerID = nextSeekerID();
+	seeker.ownerID = selectedSource.ownerID;
+	seeker.hex = hex;
+	seeker.heading = m_curShip->getHeading();
+	seeker.active = false;
+	seeker.movementTurn = 0;
+	seeker.movementAllowance = 0;
+	seeker.hasSource = true;
+	seeker.source = selectedSource.source;
+	m_seekerMissiles.push_back(seeker);
+
+	FTacticalPendingSeekerDeployment pending;
+	pending.seekerID = seeker.seekerID;
+	pending.source = selectedSource.source;
+	pending.hex = hex;
+	pending.offensiveFirePhaseID = m_offensiveFirePhaseID;
+	m_pendingOffensiveSeekerDeployments.push_back(pending);
+
+	computeWeaponRange();
+	return true;
+}
+
+bool FTacticalGame::removeOffensiveFirePendingSeekerAtHex(const FPoint & hex) {
+	if (!canUseOffensiveFireSeekerDeployment() || !isHexInBounds(hex)) {
+		return false;
+	}
+
+	FTacticalDeploymentSource selectedSource;
+	if (!buildSelectedPlacementSource(selectedSource)) {
+		return false;
+	}
+
+	for (std::vector<FTacticalPendingSeekerDeployment>::reverse_iterator itr = m_pendingOffensiveSeekerDeployments.rbegin();
+		 itr != m_pendingOffensiveSeekerDeployments.rend(); ++itr) {
+		if (itr->offensiveFirePhaseID != m_offensiveFirePhaseID
+			|| itr->hex.getX() != hex.getX()
+			|| itr->hex.getY() != hex.getY()
+			|| !sourceMatchesWeapon(itr->source, m_curShip, m_curWeapon, selectedSource.source.weaponIndex)) {
+			continue;
+		}
+
+		const FTacticalPendingSeekerDeployment pending = *itr;
+		const std::vector<FTacticalPendingSeekerDeployment>::iterator eraseItr = (itr + 1).base();
+
+		if (!restoreAmmoForSource(pending.source)) {
+			return false;
+		}
+
+		for (std::vector<FTacticalSeekerMissileState>::iterator seekerItr = m_seekerMissiles.begin();
+			 seekerItr != m_seekerMissiles.end(); ++seekerItr) {
+			if (seekerItr->seekerID == pending.seekerID) {
+				m_seekerMissiles.erase(seekerItr);
+				break;
+			}
+		}
+
+		m_pendingOffensiveSeekerDeployments.erase(eraseItr);
+		computeWeaponRange();
+		return true;
+	}
+
+	return false;
+}
+
+void FTacticalGame::clearPendingOffensiveFireSeekers() {
+	m_pendingOffensiveSeekerDeployments.clear();
 }
 
 void FTacticalGame::rebuildDeployablePlacementSources() {
@@ -1747,6 +1924,17 @@ void FTacticalGame::computeWeaponRange() {
 	if (m_curWeapon == NULL || m_curShip == NULL || m_shipPos.getX() < 0) {
 		return;
 	}
+	if (canUseOffensiveFireSeekerDeployment()) {
+		FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+		if (turnData == NULL || turnData->path.getPathLength() == 0) {
+			return;
+		}
+		const PointList path = turnData->path.getFullPath();
+		for (PointList::const_iterator itr = path.begin(); itr != path.end(); ++itr) {
+			m_targetHexes.insert(*itr);
+		}
+		return;
+	}
 	if (m_curWeapon->isFF()) {
 		computeFFRange(m_shipPos, m_targetHexes, m_headOnHexes);
 	} else {
@@ -1845,6 +2033,9 @@ bool FTacticalGame::assignTargetFromHex(const FPoint & hex) {
 	if (!isHexInBounds(hex) || m_curWeapon == NULL) {
 		return false;
 	}
+	if (m_curWeapon->getType() == FWeapon::SM) {
+		return false;
+	}
 	const VehicleList & occupants = getHexOccupants(hex);
 	if (occupants.size() == 0) {
 		return false;
@@ -1875,7 +2066,24 @@ bool FTacticalGame::selectWeapon(unsigned int weaponIndex) {
 	if (weapon->isMPO() && getActivePlayerID() != getMovingPlayerID()) {
 		return false;
 	}
-	if (weapon->isDamaged() || (weapon->getMaxAmmo() && weapon->getAmmo() == 0)) {
+	if (weapon->getType() == FWeapon::SM
+		&& (getState() != BS_Battle
+			|| getPhase() != PH_ATTACK_FIRE
+			|| getActivePlayerID() != getMovingPlayerID())) {
+		return false;
+	}
+	bool allowEmptyAmmoSelection = false;
+	if (weapon->getType() == FWeapon::SM
+		&& getState() == BS_Battle
+		&& getPhase() == PH_ATTACK_FIRE) {
+		FTacticalOrdnanceSource source;
+		source.shipID = m_curShip->getID();
+		source.weaponIndex = static_cast<int>(weaponIndex);
+		source.weaponID = weapon->getID();
+		allowEmptyAmmoSelection = hasPendingOffensiveDeploymentForSource(source);
+	}
+	if (weapon->isDamaged()
+		|| (weapon->getMaxAmmo() && weapon->getAmmo() == 0 && !allowEmptyAmmoSelection)) {
 		return false;
 	}
 	m_curWeapon = weapon;
@@ -2204,6 +2412,7 @@ void FTacticalGame::completeDefensiveFirePhase() {
 
 void FTacticalGame::completeOffensiveFirePhase() {
 	clearMovementHighlights();
+	clearPendingOffensiveFireSeekers();
 	setWeapon(NULL);
 	toggleMovingPlayer();
 	setPhase(PH_MOVE);
@@ -2233,6 +2442,13 @@ bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex) {
 	FTacticalDeploymentSource selectedSource;
 	if (!isHexInBounds(hex) || !buildSelectedPlacementSource(selectedSource)) {
 		return false;
+	}
+
+	if (getState() == BS_Battle && selectedSource.weaponType == FWeapon::SM) {
+		if (removeOffensiveFirePendingSeekerAtHex(hex)) {
+			return true;
+		}
+		return placeOffensiveFirePendingSeekerAtHex(hex);
 	}
 
 	FTacticalPlacedOrdnance removed;
@@ -2280,6 +2496,9 @@ bool FTacticalGame::isHexDeployable(const FPoint & hex) {
 	}
 	if (selectedSource.weaponType == FWeapon::M) {
 		return isHexMinable(hex);
+	}
+	if (selectedSource.weaponType == FWeapon::SM && getState() == BS_Battle) {
+		return isHexOnSelectedShipCurrentPath(hex);
 	}
 	return true;
 }
@@ -2338,7 +2557,10 @@ bool FTacticalGame::handleHexClick(const FPoint & hex) {
 			if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::M && isHexMinable(hex)) {
 				return placeMineAtHex(hex);
 			}
-			if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::SM && isHexDeployable(hex)) {
+			if (canUseOffensiveFireSeekerDeployment()
+				&& m_curWeapon != NULL
+				&& m_curWeapon->getType() == FWeapon::SM
+				&& isHexDeployable(hex)) {
 				return placeOrdnanceAtHex(hex);
 			}
 			if (selectShipFromHex(hex)) {

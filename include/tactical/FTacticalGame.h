@@ -147,6 +147,35 @@ FTacticalOrdnanceSource source;
 } FTacticalSeekerMissileState;
 
 /**
+ * @brief One pending offensive-fire seeker deployment tied to a launcher slot.
+ *
+ * Tracks the seeker instance and source launcher for undo/recall during the
+ * current offensive-fire phase only.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+typedef struct {
+	unsigned int seekerID;
+	FTacticalOrdnanceSource source;
+	FPoint hex;
+	int offensiveFirePhaseID;
+} FTacticalPendingSeekerDeployment;
+
+/**
+ * @brief Grouped pending-seeker row data for the selected launcher.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+typedef struct {
+	FPoint hex;
+	unsigned int count;
+} FTacticalPendingSeekerHexGroup;
+
+/**
  * @brief Pure C++ tactical mechanics state container.
  *
  * Owns non-wx tactical battle state, including ship placement, movement,
@@ -477,6 +506,12 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * @date Last Modified: May 25, 2026
 	 */
 	bool activateSelectedInactiveSeeker(unsigned int seekerID);
+	/// true when selected weapon is an offensive-fire SM deployment launcher
+	bool isOffensiveSeekerDeploymentMode() const;
+	/// grouped pending offensive-fire seeker deployments for selected launcher
+	std::vector<FTacticalPendingSeekerHexGroup> getSelectedOffensivePendingSeekerHexGroups() const;
+	/// recall one pending selected-launcher seeker from a grouped hex row
+	bool recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex);
 	/**
 	 * @brief Get seeker missiles owned by a specific player.
 	 *
@@ -633,6 +668,12 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 */
 	void resolveActiveSeekersForMovingPlayer();
 	bool buildSelectedPlacementSource(FTacticalDeploymentSource & source) const;
+	bool canUseOffensiveFireSeekerDeployment() const;
+	bool isHexOnSelectedShipCurrentPath(const FPoint & hex);
+	bool hasPendingOffensiveDeploymentForSource(const FTacticalOrdnanceSource & source) const;
+	bool placeOffensiveFirePendingSeekerAtHex(const FPoint & hex);
+	bool removeOffensiveFirePendingSeekerAtHex(const FPoint & hex);
+	void clearPendingOffensiveFireSeekers();
 	void appendPlacedOrdnanceRecord(FWeapon::Weapon weaponType, const FPoint & hex, const FTacticalOrdnanceSource & source);
 	bool removePlacedOrdnanceForSelection(const FPoint & hex, FTacticalPlacedOrdnance & removed);
 	void removePlacedMineRecordsAtHex(const FPoint & hex);
@@ -706,6 +747,8 @@ bool m_gravityTurnFlag;
 	int m_selectedPlacementSource;
 	std::vector<FTacticalPlacedOrdnance> m_placedOrdnance;
 	std::vector<FTacticalSeekerMissileState> m_seekerMissiles;
+	int m_offensiveFirePhaseID;
+	std::vector<FTacticalPendingSeekerDeployment> m_pendingOffensiveSeekerDeployments;
 	FPoint m_selectedSeekerActivationHex;
 };
 

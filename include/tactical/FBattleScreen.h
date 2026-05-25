@@ -388,6 +388,12 @@ public:
 	 * @date Last Modified: May 25, 2026
 	 */
 	std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;
+	/// true when selected weapon is offensive-fire seeker deployment launcher
+	bool isOffensiveSeekerDeploymentMode() const;
+	/// grouped pending deployment rows for selected offensive-fire seeker launcher
+	std::vector<FTacticalPendingSeekerHexGroup> getSelectedOffensivePendingSeekerHexGroups() const;
+	/// recall one selected-launcher pending seeker from a grouped pending row
+	bool recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex);
 	/**
 	 * @brief Activate one seeker in the selected inactive stack.
 	 *

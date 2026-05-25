@@ -126,6 +126,10 @@ protected:
 	std::vector<wxRect> m_seekerActivationRegions;
 	/// seeker ID for each activation row region
 	std::vector<unsigned int> m_seekerActivationSeekerIDs;
+	/// list of active regions for recalling pending offensive-fire seekers
+	std::vector<wxRect> m_pendingSeekerRecallRegions;
+	/// grouped hex entry for each pending offensive-fire recall region
+	std::vector<wxPoint> m_pendingSeekerRecallHexes;
 
 	/// top pixel where tactical action prompts begin
 	static const int ACTION_PROMPT_TOP_MARGIN = 5;
@@ -357,6 +361,7 @@ protected:
 
 	/// Draws prompt to select ship to fire defensive shots
 	void drawAttackFire(wxDC &dc);
+	void drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize);
 
 	/**
 	 * @brief Draws the ships weapons in the tactical display
@@ -508,6 +513,7 @@ protected:
 	 * @date Last Modified: May 25, 2026
 	 */
 	void checkSeekerActivationSelection(wxMouseEvent &event);
+	bool checkOffensiveSeekerPendingSelection(wxMouseEvent &event);
 
 	/// returns y-position for the indexed action prompt line
 	int getActionPromptLineY(int lineIndex) const;

@@ -805,6 +805,22 @@ std::vector<FTacticalSeekerMissileState> FBattleScreen::getSelectedInactiveSeeke
 	return m_tacticalGame->getSelectedInactiveSeekerActivationStack();
 }
 
+bool FBattleScreen::isOffensiveSeekerDeploymentMode() const {
+	return m_tacticalGame->isOffensiveSeekerDeploymentMode();
+}
+
+std::vector<FTacticalPendingSeekerHexGroup> FBattleScreen::getSelectedOffensivePendingSeekerHexGroups() const {
+	return m_tacticalGame->getSelectedOffensivePendingSeekerHexGroups();
+}
+
+bool FBattleScreen::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->recallSelectedOffensivePendingSeekerAtHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
 bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID) {
 	const bool changed = m_tacticalGame->activateSelectedInactiveSeeker(seekerID);
 	if (changed) {
