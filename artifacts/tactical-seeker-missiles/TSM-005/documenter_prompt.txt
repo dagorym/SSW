@@ -1,0 +1,48 @@
+You are operating as the downstream Documenter stage for coordinator subtask TSM-005.
+
+Repository worktree: /home/tstephen/repos/SSW-worktrees/seekers-tsm-005-tester-20260524
+Branch: seekers-tsm-005-tester-20260524
+Shared artifact directory (repo-root-relative): artifacts/tactical-seeker-missiles/TSM-005
+Coordination plan path: plans/tactical-seeker-missiles-plan.md
+
+Tester outcome summary:
+- Status: success
+- Tester test commit: 9a5a44318efa570494f6b77cb721df0d9d844ad4
+- Tactical tests: OK (168 tests)
+- GUI tests: OK (43 tests)
+- `xvfb-run` unavailable; GUI suite was executed directly via `./GuiTests`.
+
+Acceptance criteria validated by tester:
+- Activation phase board rendering shows only inactive seekers owned by the moving player.
+- Active seekers are not rendered during activation.
+- Normal battle rendering shows active seekers and hides inactive seekers.
+- Activation lower panel includes instructional text, clickable rows for selected inactive stack, and Seeker Activation Done button.
+- Clicking a row activates exactly that seeker and refreshes panel/board.
+- Multiple inactive seekers in one hex are handled through distinct rows.
+- `icons/SeekerMissile.png` loads via `FGameConfig::resolveAssetPath(...)`.
+- Seeker activation button follows show/hide/disconnect/relayout patterns.
+
+Implementation files changed (inspect for docs impact):
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+
+Tester files changed (new/updated regression coverage):
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.h
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Tester artifacts now present:
+- artifacts/tactical-seeker-missiles/TSM-005/tester_report.md
+- artifacts/tactical-seeker-missiles/TSM-005/tester_result.json
+- artifacts/tactical-seeker-missiles/TSM-005/documenter_prompt.txt
+
+Documenter instructions:
+- Continue immediately when blocking inputs are present; do not stop after scope confirmation, documentation discovery, or diff review.
+- Reuse the same shared artifact directory path exactly as repository-root-relative: `artifacts/tactical-seeker-missiles/TSM-005`.
+- Update only documentation needed for TSM-005 seeker activation behavior and rendering rules.
+- Completion gate: do not report success unless all required artifacts exist and all changes are committed.
