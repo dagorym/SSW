@@ -702,17 +702,32 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 */
 	void beginMovePhase();
 	/**
-	 * @brief Placeholder seam for resolving active seekers before movement.
+	 * @brief Resolve active seeker targeting and movement before movement phase.
 	 *
-	 * TSM-004 adds the mandatory pre-movement call site even when activation UI
-	 * is skipped, while later subtasks will replace this stub with full seeker
-	 * movement and contact behavior.
+	 * Active seekers owned by the moving player advance each turn by selecting
+	 * the closest non-station ship target across both sides, applying random
+	 * tie-breaking when needed, adjusting initial facing up to three hexsides
+	 * toward the chosen target, then moving with greedy one-hexside turn limits.
 	 *
-	 * @author gpt-5.4 (high)
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
 	 * @date Created: May 25, 2026
 	 * @date Last Modified: May 25, 2026
 	 */
 	void resolveActiveSeekersForMovingPlayer();
+	/// map seeker activation turn (1+) to capped allowance sequence 2,4,6,8,10,12
+	unsigned int computeSeekerMovementAllowance(int movementTurn) const;
+	/// choose one candidate index using built-in RNG for automatic tie-breaking
+	unsigned int chooseRandomSeekerIndex(unsigned int candidateCount) const;
+	/// locate the current tactical hex for a model ship id
+	bool findShipHex(unsigned int shipID, FPoint & hex) const;
+	/// return true for live non-station ship candidates only
+	bool isValidSeekerTarget(const FVehicle * ship) const;
+	/// pick closest valid ship target, using RNG on equal-distance ties
+	FVehicle * selectClosestSeekerTarget(const FTacticalSeekerMissileState & seeker, const VehicleList & candidates) const;
+	/// rotate seeker heading up to three hexsides toward the selected target
+	void adjustSeekerHeadingTowardTarget(FTacticalSeekerMissileState & seeker, const FPoint & targetHex) const;
+	/// spend movement allowance using one-hexside greedy turns toward the target
+	void moveSeekerTowardTarget(FTacticalSeekerMissileState & seeker, const FPoint & targetHex) const;
 	bool buildSelectedPlacementSource(FTacticalDeploymentSource & source) const;
 	/**
 	 * @brief Check whether the current selection can deploy seekers during offensive fire.
