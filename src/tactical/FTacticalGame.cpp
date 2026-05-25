@@ -1,9 +1,9 @@
 /**
  * @file FTacticalGame.cpp
  * @brief Implementation file for FTacticalGame class
- * @author Tom Stephens, gpt-5.3-codex (standard)
+ * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 25, 2026
  *
  */
 
@@ -290,6 +290,7 @@ void FTacticalGame::reset() {
 	m_selectedPlacementSource = -1;
 	m_placedOrdnance.clear();
 	m_seekerMissiles.clear();
+	m_selectedSeekerActivationHex.setPoint(-1, -1);
 
 	for (int i = 0; i < 100; ++i) {
 		for (int j = 0; j < 100; ++j) {
@@ -366,13 +367,14 @@ void FTacticalGame::setState(int s) {
 }
 
 void FTacticalGame::setPhase(int p) {
-	m_phase = p;
 	if (p == PH_MOVE) {
-		applyFireDamage();
-		if (!m_activePlayer) {
-		}
-		toggleActivePlayer();
-		resetMovementState();
+		beginSeekerActivationPhase();
+		return;
+	}
+
+	m_phase = p;
+	if (p == PH_SEEKER_ACTIVATION) {
+		m_selectedSeekerActivationHex.setPoint(-1, -1);
 	} else if (p == PH_FINALIZE_MOVE) {
 		completeMovePhase();
 		return;
@@ -381,6 +383,35 @@ void FTacticalGame::setPhase(int p) {
 	} else if (p == PH_ATTACK_FIRE) {
 		toggleActivePlayer();
 	}
+}
+
+void FTacticalGame::beginSeekerActivationPhase() {
+	m_selectedSeekerActivationHex.setPoint(-1, -1);
+	const std::vector<FPoint> inactiveHexes = getInactiveSeekerActivationHexes();
+	if (inactiveHexes.empty()) {
+		resolveActiveSeekersForMovingPlayer();
+		beginMovePhase();
+		return;
+	}
+
+	m_phase = PH_SEEKER_ACTIVATION;
+	m_selectedSeekerActivationHex = inactiveHexes[0];
+}
+
+void FTacticalGame::beginMovePhase() {
+	m_phase = PH_MOVE;
+	applyFireDamage();
+	toggleActivePlayer();
+	resetMovementState();
+}
+
+void FTacticalGame::completeSeekerActivationPhase() {
+	if (m_phase != PH_SEEKER_ACTIVATION) {
+		return;
+	}
+	resolveActiveSeekersForMovingPlayer();
+	m_selectedSeekerActivationHex.setPoint(-1, -1);
+	beginMovePhase();
 }
 
 VehicleList FTacticalGame::getShipList() const {
@@ -839,6 +870,83 @@ std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesForOwne
 		}
 	}
 	return seekers;
+}
+
+std::vector<FPoint> FTacticalGame::getInactiveSeekerActivationHexes() const {
+	std::vector<FPoint> hexes;
+	PointSet uniqueHexes;
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->ownerID != getMovingPlayerID() || itr->active) {
+			continue;
+		}
+		if (uniqueHexes.insert(itr->hex).second) {
+			hexes.push_back(itr->hex);
+		}
+	}
+	return hexes;
+}
+
+bool FTacticalGame::selectSeekerActivationHex(const FPoint & hex) {
+	if (!isHexInBounds(hex)) {
+		return false;
+	}
+
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->ownerID == getMovingPlayerID()
+			&& !itr->active
+			&& itr->hex.getX() == hex.getX()
+			&& itr->hex.getY() == hex.getY()) {
+			m_selectedSeekerActivationHex = hex;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+std::vector<FTacticalSeekerMissileState> FTacticalGame::getSelectedInactiveSeekerActivationStack() const {
+	std::vector<FTacticalSeekerMissileState> seekers;
+	if (!isHexInBounds(m_selectedSeekerActivationHex)) {
+		return seekers;
+	}
+
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->ownerID == getMovingPlayerID()
+			&& !itr->active
+			&& itr->hex.getX() == m_selectedSeekerActivationHex.getX()
+			&& itr->hex.getY() == m_selectedSeekerActivationHex.getY()) {
+			seekers.push_back(*itr);
+		}
+	}
+	return seekers;
+}
+
+bool FTacticalGame::activateSelectedInactiveSeeker(unsigned int seekerID) {
+	if (!isHexInBounds(m_selectedSeekerActivationHex)) {
+		return false;
+	}
+
+	for (std::vector<FTacticalSeekerMissileState>::iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->seekerID != seekerID
+			|| itr->ownerID != getMovingPlayerID()
+			|| itr->active
+			|| itr->hex.getX() != m_selectedSeekerActivationHex.getX()
+			|| itr->hex.getY() != m_selectedSeekerActivationHex.getY()) {
+			continue;
+		}
+		itr->active = true;
+		return true;
+	}
+	return false;
+}
+
+void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
+	// TSM-004 placeholder seam:
+	// active seeker movement/detonation resolution is intentionally deferred.
 }
 
 bool FTacticalGame::isDeployableWeapon(const FWeapon * weapon) const {

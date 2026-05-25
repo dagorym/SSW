@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.h
  * @brief Header file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 25, 2026
  *
  */
 
@@ -40,7 +40,7 @@ class WXTacticalUI;
  *
  * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 24, 2026
+ * @date Last Modified:  May 25, 2026
  */
 class FBattleScreen : public wxFrame
 {
@@ -346,6 +346,18 @@ public:
 	std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;
 	/// get seeker missile records in a specific tactical hex
 	std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;
+	/// get unique hexes containing inactive seekers owned by the moving player
+	std::vector<FPoint> getInactiveSeekerActivationHexes() const;
+	/// set the currently selected inactive seeker activation stack hex
+	bool selectSeekerActivationHex(const FPoint & hex);
+	/// get the currently selected inactive seeker activation stack hex
+	const FPoint & getSelectedSeekerActivationHex() const;
+	/// get the currently selected inactive seeker activation stack records
+	std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;
+	/// activate one inactive seeker in the selected stack by seekerID
+	bool activateSelectedInactiveSeeker(unsigned int seekerID);
+	/// complete seeker activation and enter normal movement
+	void completeSeekerActivationPhase();
 	const FHexMap & getMineTargets() const;
 	unsigned int getMineOwner() const;
 	const std::map<unsigned int, FTacticalTurnData> & getTurnInfo() const;

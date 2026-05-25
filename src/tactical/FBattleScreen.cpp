@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.cpp
  * @brief Implementation file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 23, 2026
+ * @date Last Modified:  May 25, 2026
  *
  */
 
@@ -488,7 +488,9 @@ const unsigned int & FBattleScreen::getActivePlayerID() const {
 void FBattleScreen::setPhase(int p){
 	m_tacticalGame->setPhase(p);
 	if (p==PH_MOVE) { // we just ended a turn
-		m_tacticalGame->resetMovementState();
+		if (m_tacticalGame->getPhase() == PH_MOVE) {
+			m_tacticalGame->resetMovementState();
+		}
 	}
 	m_map->Refresh();
 	m_display->Refresh();
@@ -781,6 +783,39 @@ std::vector<FTacticalSeekerMissileState> FBattleScreen::getSeekerMissilesAtHex(
 	bool activeOnly) const
 {
 	return m_tacticalGame->getSeekerMissilesAtHex(hex, activeOnly);
+}
+
+std::vector<FPoint> FBattleScreen::getInactiveSeekerActivationHexes() const {
+	return m_tacticalGame->getInactiveSeekerActivationHexes();
+}
+
+bool FBattleScreen::selectSeekerActivationHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->selectSeekerActivationHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+const FPoint & FBattleScreen::getSelectedSeekerActivationHex() const {
+	return m_tacticalGame->getSelectedSeekerActivationHex();
+}
+
+std::vector<FTacticalSeekerMissileState> FBattleScreen::getSelectedInactiveSeekerActivationStack() const {
+	return m_tacticalGame->getSelectedInactiveSeekerActivationStack();
+}
+
+bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID) {
+	const bool changed = m_tacticalGame->activateSelectedInactiveSeeker(seekerID);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+void FBattleScreen::completeSeekerActivationPhase() {
+	m_tacticalGame->completeSeekerActivationPhase();
+	reDraw();
 }
 
 const FHexMap & FBattleScreen::getMineTargets() const {

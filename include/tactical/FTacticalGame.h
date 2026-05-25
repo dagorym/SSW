@@ -155,7 +155,7 @@ FTacticalOrdnanceSource source;
  *
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
  * @date Created: Mar 29, 2026
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 25, 2026
  */
 class FTacticalGame {
 public:
@@ -189,6 +189,8 @@ bool hasPlanet() const { return m_hasPlanet; }
 
 void setPhase(int p);
 int getPhase() const { return m_phase; }
+/// complete seeker activation and enter normal movement for the moving player
+void completeSeekerActivationPhase();
 
 VehicleList getShipList() const;
 VehicleList getShipList(unsigned int id) const;
@@ -401,6 +403,55 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 */
 	std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;
 	/**
+	 * @brief Get inactive seeker stack hexes owned by the current moving player.
+	 *
+	 * Returns one entry per tactical hex containing at least one inactive seeker
+	 * owned by getMovingPlayerID().
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
+	std::vector<FPoint> getInactiveSeekerActivationHexes() const;
+	/**
+	 * @brief Set the selected seeker-activation stack hex for the moving player.
+	 *
+	 * @param hex Tactical hex to select.
+	 *
+	 * @return True when hex contains at least one inactive seeker for the moving
+	 *         player and becomes the selected activation stack.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
+	bool selectSeekerActivationHex(const FPoint & hex);
+	/// get the selected activation stack hex, or (-1, -1) when none is selected
+	const FPoint & getSelectedSeekerActivationHex() const { return m_selectedSeekerActivationHex; }
+	/**
+	 * @brief Get inactive seeker missiles from the selected activation stack.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
+	std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;
+	/**
+	 * @brief Activate one seeker in the selected activation stack.
+	 *
+	 * Activation is one-way: only currently inactive seekers can transition to
+	 * active state, and already-active seekers are never deactivated here.
+	 *
+	 * @param seekerID Unique model seeker identifier to activate.
+	 *
+	 * @return True when the requested inactive owned seeker was activated.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
+	bool activateSelectedInactiveSeeker(unsigned int seekerID);
+	/**
 	 * @brief Get seeker missiles owned by a specific player.
 	 *
 	 * Returns a copy of the seeker records for the requested owner, with
@@ -519,6 +570,9 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	bool sourceMatchesSelection(const FTacticalOrdnanceSource & source) const;
 	FVehicle * findShipByID(unsigned int shipID) const;
 	FWeapon * findWeaponBySource(const FTacticalOrdnanceSource & source, FVehicle ** ship = NULL) const;
+	void beginSeekerActivationPhase();
+	void beginMovePhase();
+	void resolveActiveSeekersForMovingPlayer();
 	bool buildSelectedPlacementSource(FTacticalDeploymentSource & source) const;
 	void appendPlacedOrdnanceRecord(FWeapon::Weapon weaponType, const FPoint & hex, const FTacticalOrdnanceSource & source);
 	bool removePlacedOrdnanceForSelection(const FPoint & hex, FTacticalPlacedOrdnance & removed);
@@ -593,6 +647,7 @@ bool m_gravityTurnFlag;
 	int m_selectedPlacementSource;
 	std::vector<FTacticalPlacedOrdnance> m_placedOrdnance;
 	std::vector<FTacticalSeekerMissileState> m_seekerMissiles;
+	FPoint m_selectedSeekerActivationHex;
 };
 
 }
