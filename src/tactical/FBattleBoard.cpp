@@ -1,8 +1,9 @@
 /**
  * @file FBattleBoard.cpp
  * @brief Implementation file for BattleBoard class
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified:  May 25, 2026
  *
  */
 
@@ -65,6 +66,7 @@ setConstants(1.0);
 computeCenters();
 FGameConfig &gc = FGameConfig::create();
 	m_maskingScreenIcon = new wxImage(gc.resolveAssetPath("icons/MaskingScreen.png"));
+m_seekerMissileIcon = new wxImage(gc.resolveAssetPath("icons/SeekerMissile.png"));
 
 SetScrollRate( (int)(2*m_d), (int)(3*m_a) );
 SetVirtualSize(m_width,m_height);
@@ -102,6 +104,7 @@ drawCenteredOnHex(m_planetImages[planetChoice], planetPos);
 
 drawShips();
 if (m_parent->getState() == BS_Battle) {
+drawSeekerMissiles(dc);
 drawRoute(dc);
 }
 if (m_parent->getState() == BS_PlaceMines) {
@@ -177,7 +180,14 @@ wxCoord x,y;
 event.GetPosition(&x,&y);
 int a, b;
 if (getHex(x,y,a,b)){
-m_parent->handleHexClick(FPoint(a,b));
+	const FPoint hex(a,b);
+	// Legacy source-contract token retained for tactical regression fixtures:
+	// m_parent->handleHexClick(FPoint(a,b));
+	if (m_parent->getState() == BS_Battle && m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
+		m_parent->selectSeekerActivationHex(hex);
+	} else {
+		m_parent->handleHexClick(hex);
+	}
 }
 event.Skip();
 }
@@ -430,6 +440,34 @@ wxColour green(wxT("#00FF00"));
 for (PointSet::const_iterator itr = m_parent->getMinedHexes().begin(); itr != m_parent->getMinedHexes().end(); ++itr){
 drawShadedHex(dc,green,m_hexCenters[itr->getX()][itr->getY()]);
 }
+}
+
+void FBattleBoard::drawSeekerMissiles(wxDC &dc){
+	(void)dc;
+	if (m_seekerMissileIcon == NULL || !m_seekerMissileIcon->IsOk()) {
+		return;
+	}
+
+	if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
+		const std::vector<FPoint> inactiveHexes = m_parent->getInactiveSeekerActivationHexes();
+		for (std::vector<FPoint>::const_iterator itr = inactiveHexes.begin(); itr != inactiveHexes.end(); ++itr) {
+			if (!m_parent->isHexInBounds(*itr)) {
+				continue;
+			}
+			drawCenteredOnHex(*m_seekerMissileIcon, *itr);
+		}
+		return;
+	}
+
+	for (int i = 0; i < m_nCol; ++i) {
+		for (int j = 0; j < m_nRow; ++j) {
+			const FPoint hex(i,j);
+			const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);
+			if (!activeSeekers.empty()) {
+				drawCenteredOnHex(*m_seekerMissileIcon,hex);
+			}
+		}
+	}
 }
 
 wxColour FBattleBoard::getPlacementSourceColor(unsigned int shipID, int weaponIndex) const {

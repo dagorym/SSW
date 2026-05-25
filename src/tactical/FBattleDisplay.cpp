@@ -1,8 +1,9 @@
 /**
  * @file FBattleDisplay.cpp
  * @brief Implementation file for BattleDispaly class
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified:  May 25, 2026
  *
  */
 
@@ -76,6 +77,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonDefensiveFireDone = new wxButton( this, wxID_ANY, wxT("Defensive Fire Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonOffensiveFireDone = new wxButton( this, wxID_ANY, wxT("Offensive Fire Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMinePlacementDone = new wxButton( this, wxID_ANY, wxT("Mine Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonSeekerActivationDone = new wxButton( this, wxID_ANY, wxT("Seeker Activation Done"), wxDefaultPosition, wxDefaultSize, 0 );
 
 	wxBoxSizer * rootSizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer * speedSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -90,6 +92,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	actionSizer->Add(m_buttonDefensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonOffensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonMinePlacementDone, 0, wxALIGN_CENTER_VERTICAL);
+	actionSizer->Add(m_buttonSeekerActivationDone, 0, wxALIGN_CENTER_VERTICAL);
 	rootSizer->AddSpacer(getActionButtonTopSpacerHeight());
 	m_actionButtonExtraSpacerItem = rootSizer->AddSpacer(getActionButtonExtraSpacerHeight());
 	rootSizer->Add(actionSizer, 0, wxTOP, BORDER);
@@ -101,6 +104,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonDefensiveFireDone->Hide();
 	m_buttonOffensiveFireDone->Hide();
 	m_buttonMinePlacementDone->Hide();
+	m_buttonSeekerActivationDone->Hide();
 	Layout();
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
@@ -483,7 +487,8 @@ int FBattleDisplay::getActionButtonRowBottom() const{
 		m_buttonMoveDone,
 		m_buttonDefensiveFireDone,
 		m_buttonOffensiveFireDone,
-		m_buttonMinePlacementDone
+		m_buttonMinePlacementDone,
+		m_buttonSeekerActivationDone
 	};
 	for (size_t i = 0; i < sizeof(buttons) / sizeof(buttons[0]); i++){
 		if (buttons[i] != NULL && buttons[i]->IsShown()){
@@ -629,6 +634,9 @@ void FBattleDisplay::draw(wxDC &dc){
 		break;
 	case BS_Battle: {
 		switch (m_parent->getPhase()){
+		case PH_SEEKER_ACTIVATION:
+			drawSeekerActivation(dc);
+			break;
 		case PH_MOVE:
 			drawMoveShip(dc);
 			break;
@@ -686,6 +694,10 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 		checkShipSelection(event);
 		break;
 	case BS_Battle:
+		if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
+			checkSeekerActivationSelection(event);
+			break;
+		}
 		if (m_parent->getShip()!=NULL
 				&& m_weaponRegions.size()>0
 				&& m_parent->getShip()->getOwner()==m_parent->getActivePlayerID()){
@@ -1327,6 +1339,18 @@ void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event ){
 	m_first=true;
 }
 
+void FBattleDisplay::onSeekerActivationDone( wxCommandEvent& event ){
+	m_buttonSeekerActivationDone->Disconnect(
+		wxEVT_COMMAND_BUTTON_CLICKED,
+		wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),
+		NULL,
+		this);
+	m_buttonSeekerActivationDone->Hide();
+	Layout();
+	m_parent->completeSeekerActivationPhase();
+	m_first = true;
+}
+
 void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	wxColour green(wxT("#00FF00"));
@@ -1397,6 +1421,67 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	}
 }
 
+void FBattleDisplay::drawSeekerActivation(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour green(wxT("#00FF00"));
+	const int textSize = 10;
+	const int lMargin = 310;
+	int y = BORDER;
+	std::ostringstream os;
+
+	m_shipNameRegions.clear();
+	m_shipSelectionSourceIndices.clear();
+	m_seekerActivationRegions.clear();
+	m_seekerActivationSeekerIDs.clear();
+	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
+
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	dc.SetTextForeground(white);
+	dc.DrawText("Seeker activation phase.",leftOffset,getActionPromptLineY(0));
+	dc.DrawText("Click a seeker stack on the board to select a hex.",leftOffset,getActionPromptLineY(1));
+	dc.DrawText("Click a row below to activate one seeker.",leftOffset,getActionPromptLineY(2));
+
+	const FPoint selectedHex = m_parent->getSelectedSeekerActivationHex();
+	if (m_parent->isHexInBounds(selectedHex)) {
+		os.str("");
+		os << "Selected stack: (" << selectedHex.getX() << ", " << selectedHex.getY() << ")";
+	} else {
+		os.str("Selected stack: none");
+	}
+	dc.DrawText(os.str(),lMargin,y);
+	y += (int)(1.6*textSize*1.3);
+
+	const std::vector<FTacticalSeekerMissileState> stack = m_parent->getSelectedInactiveSeekerActivationStack();
+	if (stack.empty()) {
+		dc.DrawText("No inactive seekers in selected stack.",lMargin,y);
+	} else {
+		for (unsigned int i = 0; i < stack.size(); ++i) {
+			const FTacticalSeekerMissileState & seeker = stack[i];
+			os.str("");
+			os << "Activate seeker #" << seeker.seekerID
+				<< " (heading " << seeker.heading << ", allowance " << seeker.movementAllowance << ")";
+			dc.SetTextForeground((i % 2 == 0) ? white : green);
+			dc.DrawText(os.str(),lMargin,y);
+			wxSize tSize = dc.GetTextExtent(os.str());
+			m_seekerActivationRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 16,tSize.GetHeight()));
+			m_seekerActivationSeekerIDs.push_back(seeker.seekerID);
+			y += (int)(1.6*textSize);
+		}
+	}
+
+	m_buttonSeekerActivationDone->Enable(true);
+	if (m_first){
+		m_buttonSeekerActivationDone->Connect(
+			wxEVT_COMMAND_BUTTON_CLICKED,
+			wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),
+			NULL,
+			this);
+		m_buttonSeekerActivationDone->Show();
+		Layout();
+		m_first=false;
+	}
+}
+
 void FBattleDisplay::checkShipSelection(wxMouseEvent &event){
 	int x = event.GetX();
 	int y = event.GetY();
@@ -1412,6 +1497,20 @@ void FBattleDisplay::checkShipSelection(wxMouseEvent &event){
 		}
 	}
 	m_parent->reDraw();
+}
+
+void FBattleDisplay::checkSeekerActivationSelection(wxMouseEvent &event){
+	const int x = event.GetX();
+	const int y = event.GetY();
+	for (unsigned int i = 0; i < m_seekerActivationRegions.size(); ++i) {
+		if (!m_seekerActivationRegions[i].Contains(x,y)) {
+			continue;
+		}
+		if (i < m_seekerActivationSeekerIDs.size()) {
+			m_parent->activateSelectedInactiveSeeker(m_seekerActivationSeekerIDs[i]);
+		}
+		break;
+	}
 }
 
 

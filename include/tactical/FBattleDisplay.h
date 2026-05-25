@@ -23,9 +23,9 @@ class FBattleScreen;
  * This class implements the code for the FBattleDisplay, the main
  * board used for the tactical combat game..
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Feb 22, 2011
+ * @date Last Modified:  May 25, 2026
  */
 class FBattleDisplay : public wxPanel
 {
@@ -90,10 +90,16 @@ protected:
 	std::vector<wxRect> m_defenseRegions;
 	/// button for signaling completion of placing mines phase
 	wxButton* m_buttonMinePlacementDone;
+	/// button for signaling completion of seeker activation phase
+	wxButton* m_buttonSeekerActivationDone;
 	/// list of active regions for selection of a placement-source row
 	std::vector<wxRect> m_shipNameRegions;
 	/// placement-source index for each selectable row region
 	std::vector<int> m_shipSelectionSourceIndices;
+	/// list of active regions for selecting inactive seekers in activation stack
+	std::vector<wxRect> m_seekerActivationRegions;
+	/// seeker ID for each activation row region
+	std::vector<unsigned int> m_seekerActivationSeekerIDs;
 
 	/// top pixel where tactical action prompts begin
 	static const int ACTION_PROMPT_TOP_MARGIN = 5;
@@ -148,6 +154,8 @@ protected:
 
 	/// event handler for mine placement complete button
 	void onMinePlacementDone( wxCommandEvent& event );
+	/// event handler for seeker activation complete button
+	void onSeekerActivationDone( wxCommandEvent& event );
 
 	/**
 	 * @brief Draws choice of planet icons on display
@@ -425,6 +433,21 @@ protected:
 	void drawPlaceMines(wxDC &dc);
 
 	/**
+	 * @brief Draw seeker activation panel content and selectable seeker rows.
+	 *
+	 * Renders the activation instructions, selected stack indicator, and one
+	 * clickable row for each inactive seeker in the selected stack. Each row maps
+	 * to exactly one seeker ID so activation is one-way and per-seeker.
+	 *
+	 * @param dc The device context to draw on.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
+	void drawSeekerActivation(wxDC &dc);
+
+	/**
 	 * @brief runs through placement source rows to find if the user selected one
 	 *
 	 * This method checks the current placement-source rows and updates the
@@ -437,6 +460,17 @@ protected:
 	 * @date Last Modified:  May 24, 2026
 	 */
 	void checkShipSelection(wxMouseEvent &event);
+
+	/**
+	 * @brief Activate one seeker when the user clicks an activation-row region.
+	 *
+	 * @param event Mouse click event from the lower panel.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
+	void checkSeekerActivationSelection(wxMouseEvent &event);
 
 	/// returns y-position for the indexed action prompt line
 	int getActionPromptLineY(int lineIndex) const;

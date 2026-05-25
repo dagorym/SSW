@@ -32,7 +32,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created: Jul 11, 2008
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 25, 2026
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -62,6 +62,7 @@ int m_height;
 FPoint m_hexCenters[100][100];
 ImageList m_planetImages;
 wxImage * m_maskingScreenIcon;
+wxImage * m_seekerMissileIcon;
 
 void drawGrid(wxDC &dc);
 void setConstants(double scale);
@@ -76,6 +77,19 @@ void drawWeaponRange(wxDC &dc);
 void drawShadedHex(wxDC& dc, wxColour c, FPoint p);
 void drawTarget(wxDC &dc);
 void drawMinedHexes(wxDC &dc);
+/**
+ * @brief Draw seeker missiles with phase-based visibility filtering.
+ *
+ * During seeker activation, only inactive seekers owned by the moving player
+ * are shown. During normal battle phases, only active seekers are shown.
+ *
+ * @param dc Device context used for tactical board drawing.
+ *
+ * @author Tom Stephens, gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void drawSeekerMissiles(wxDC &dc);
 	/**
 	 * @brief Draw placed setup ordnance markers using their source-specific colors.
 	 *
