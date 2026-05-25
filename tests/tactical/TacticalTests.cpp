@@ -20,6 +20,7 @@
 #include "FTacticalForwardFireFinalOrientationTest.h"
 #include "FTacticalGameHeaderTest.h"
 #include "FTacticalGameMechanicsTest.h"
+#include "FTacticalSeekerMovementTest.h"
 #include "FTacticalGameMockUITest.h"
 #include "FTacticalCombatReportTest.h"
 #include "FTacticalDamageSummaryGUITest.h"
@@ -47,6 +48,7 @@ runner.addTest(FTacticalMoveRouteSelectionTest::suite());
 runner.addTest(FTacticalForwardFireFinalOrientationTest::suite());
 runner.addTest(FTacticalGameHeaderTest::suite());
 runner.addTest(FTacticalGameMechanicsTest::suite());
+runner.addTest(FTacticalSeekerMovementTest::suite());
 runner.addTest(FTacticalGameMockUITest::suite());
 runner.addTest(FTacticalCombatReportTest::suite());
 runner.addTest(FTacticalDamageSummaryGUITest::suite());
