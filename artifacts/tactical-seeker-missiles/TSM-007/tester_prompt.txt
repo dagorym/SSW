@@ -1,0 +1,47 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Implemented model-side seeker target selection and greedy movement resolution for active seekers.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- Closest target selection considers non-station ships from both sides.
+- Planets, stations, and non-ship objects are ignored by seeker targeting.
+- Equal-distance target ties use automatic RNG through a narrow helper.
+- Initial facing can adjust up to three hexsides toward the selected target.
+- Per-hex movement turns at most one hexside and greedily reduces distance where possible.
+- Movement allowances progress as 2, 4, 6, 8, 10, and 12.
+- Helpers can be tested without wx runtime.
+- Any new FHexMap helper remains generic and non-wx.
+
+Create test files in:
+- tests/tactical/FTacticalSeekerMovementTest.* or existing tactical mechanics tests
+- tests/core/* only if generic FHexMap helper coverage is added
+
+Implementation context for testing:
+- resolveActiveSeekersForMovingPlayer now processes active seekers owned by the moving player before movement phase.
+- Closest target selection scans both attacker and defender ship lists, filters out stations and destroyed or missing ships, and resolves equal-distance ties via chooseRandomSeekerIndex using irand.
+- Seeker movement turn allowance is computed by computeSeekerMovementAllowance with capped progression 2,4,6,8,10,12.
+- Initial seeker heading rotates toward target by the shortest direction capped at three hexsides before movement.
+- Per-step movement evaluates forward/left/right heading options, applies at most one hexside turn, and greedily chooses the lowest resulting hex distance.
+- Damage or UI wiring is intentionally unchanged in this subtask.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-007
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
