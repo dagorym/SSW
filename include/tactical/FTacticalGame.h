@@ -3,7 +3,7 @@
  * @brief Header file for FTacticalGame class
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 25, 2026
  *
  */
 
@@ -714,19 +714,117 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * @date Last Modified: May 25, 2026
 	 */
 	void resolveActiveSeekersForMovingPlayer();
-	/// map seeker activation turn (1+) to capped allowance sequence 2,4,6,8,10,12
+	/**
+	 * @brief Map seeker activation turn count to the capped movement allowance.
+	 *
+	 * Converts the 1-based seeker movement turn counter into the tactical rules
+	 * helper allowance sequence `2, 4, 6, 8, 10, 12`, clamping higher turns to
+	 * the final 12-hex allowance and returning zero for inactive or invalid turn
+	 * counts.
+	 *
+	 * @param movementTurn One-based seeker movement turn counter.
+	 *
+	 * @return The movement allowance to use for the helper step.
+	 *
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	unsigned int computeSeekerMovementAllowance(int movementTurn) const;
-	/// choose one candidate index using built-in RNG for automatic tie-breaking
+	/**
+	 * @brief Choose one seeker-target candidate index with the existing RNG.
+	 *
+	 * Keeps seeker tie-breaking model-side and wx-free by narrowing the random
+	 * choice to a single zero-based index within the provided candidate set.
+	 *
+	 * @param candidateCount Number of tied candidates available.
+	 *
+	 * @return Zero-based winner index, or zero when fewer than two candidates exist.
+	 *
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	unsigned int chooseRandomSeekerIndex(unsigned int candidateCount) const;
-	/// locate the current tactical hex for a model ship id
+	/**
+	 * @brief Locate the tactical hex currently occupied by a specific ship.
+	 *
+	 * Scans the model-owned hex occupancy grid so seeker targeting helpers can
+	 * stay within `FTacticalGame` and avoid any wx-owned renderer state.
+	 *
+	 * @param shipID Model identifier for the ship to locate.
+	 * @param hex Output hex set when the ship is found.
+	 *
+	 * @return True when the ship currently occupies a tactical hex.
+	 *
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool findShipHex(unsigned int shipID, FPoint & hex) const;
-	/// return true for live non-station ship candidates only
+	/**
+	 * @brief Validate whether a ship can be targeted by seeker helper logic.
+	 *
+	 * The helper currently accepts only live, non-station ships. This keeps
+	 * planets, stations, destroyed ships, and null pointers out of the seeker
+	 * closest-target calculation.
+	 *
+	 * @param ship Candidate ship pointer.
+	 *
+	 * @return True when the candidate is a live non-station ship.
+	 *
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	bool isValidSeekerTarget(const FVehicle * ship) const;
-	/// pick closest valid ship target, using RNG on equal-distance ties
+	/**
+	 * @brief Select the closest valid ship target for one active seeker.
+	 *
+	 * Evaluates candidate ships from both sides using hex distance from the
+	 * seeker's current position, then applies the narrow random-index helper to
+	 * break equal-distance ties without pulling in any UI dependencies.
+	 *
+	 * @param seeker Active seeker whose target is being chosen.
+	 * @param candidates Combined ship-candidate list to inspect.
+	 *
+	 * @return Pointer to the chosen target ship, or `NULL` when none qualify.
+	 *
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	FVehicle * selectClosestSeekerTarget(const FTacticalSeekerMissileState & seeker, const VehicleList & candidates) const;
-	/// rotate seeker heading up to three hexsides toward the selected target
+	/**
+	 * @brief Rotate a seeker's facing toward the selected target before movement.
+	 *
+	 * Applies the model-side pre-move turn rule by taking the shortest wrapped
+	 * heading delta toward the target hex and clamping that adjustment to at most
+	 * three hexsides.
+	 *
+	 * @param seeker Active seeker state to update in place.
+	 * @param targetHex Current tactical hex of the chosen target.
+	 *
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void adjustSeekerHeadingTowardTarget(FTacticalSeekerMissileState & seeker, const FPoint & targetHex) const;
-	/// spend movement allowance using one-hexside greedy turns toward the target
+	/**
+	 * @brief Move a seeker toward its chosen target with greedy one-step turns.
+	 *
+	 * For each point of movement allowance, the helper evaluates straight,
+	 * left-turn, and right-turn entries, chooses the candidate hex that most
+	 * reduces distance to the target, and prefers the smallest turn magnitude on
+	 * equal-distance results.
+	 *
+	 * @param seeker Active seeker state to update in place.
+	 * @param targetHex Current tactical hex of the chosen target.
+	 *
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void moveSeekerTowardTarget(FTacticalSeekerMissileState & seeker, const FPoint & targetHex) const;
 	bool buildSelectedPlacementSource(FTacticalDeploymentSource & source) const;
 	/**
