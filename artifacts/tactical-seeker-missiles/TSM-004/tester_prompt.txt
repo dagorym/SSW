@@ -1,0 +1,49 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Add model-owned seeker activation phase and activation APIs before normal movement.
+
+Modified files:
+- include/Frontier.h
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate (from Planner):
+- A seeker activation phase exists before PH_MOVE.
+- Movement phase entry can skip visible activation when the moving player has no inactive seekers while still calling the active-seeker resolution seam.
+- Model APIs expose inactive seeker hexes and selected activation stack state for the moving player.
+- Model APIs can activate an individual inactive seeker from the selected stack.
+- Active seekers cannot be deactivated.
+- FBattleScreen forwards the new model APIs needed by the display and board.
+- Existing movement/fire phase progression remains source-compatible.
+
+Create test files in:
+- tests/tactical/FTacticalGameMechanicsTest.* (or a new tactical seeker activation fixture)
+- tests/tactical/FTacticalBattleScreenDelegationTest.*
+
+Implementation context for testing:
+- Added PH_SEEKER_ACTIVATION before PH_MOVE in include/Frontier.h.
+- FTacticalGame::setPhase(PH_MOVE) now enters model-owned seeker activation first; if no inactive seekers for moving player it auto-calls resolveActiveSeekersForMovingPlayer() (stub seam) then enters PH_MOVE.
+- Added model APIs to list inactive seeker activation hexes, select activation hex, inspect selected stack, activate one inactive seeker by seekerID, and complete seeker activation into movement.
+- Activation is one-way: activateSelectedInactiveSeeker only transitions matching inactive moving-player seekers to active=true and never deactivates active seekers.
+- FBattleScreen now forwards seeker activation APIs (hex discovery/selection, selected stack read, seeker activation, completion) for board/display use in later subtasks.
+- Existing move/fire progression APIs remain callable; offensive fire still ends with setPhase(PH_MOVE) and now routes through seeker activation entry logic.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-004
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
