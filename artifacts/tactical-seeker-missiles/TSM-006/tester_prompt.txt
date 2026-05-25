@@ -1,0 +1,57 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Validate offensive-fire-only seeker missile deployment/undo for selected SM launchers, including selected-ship path legality, pending recall restrictions, and lower-panel pending rows.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- Selecting an undamaged SM launcher with ammo during PH_ATTACK_FIRE for the moving player enters seeker deployment mode rather than normal weapon targeting.
+- SM launchers do not deploy seekers or perform normal target assignment during defensive fire.
+- Legal deployment hexes are exactly the selected ship's current-turn path: start hex, moved-through hexes, and final/current hex.
+- Board highlights legal deployment hexes while the SM launcher remains selected.
+- Clicking a legal hex creates an inactive seeker in that hex, decrements selected launcher ammo, and records it as pending for that launcher/current offensive fire phase.
+- Multiple pending seekers may be placed in the same legal hex if ammo allows.
+- The lower/status panel shows pending seeker deployments for the selected launcher grouped by hex with counts or rows.
+- Clicking a pending row/display item removes one current-phase pending seeker from that hex and restores ammo to the selected launcher.
+- Pending seekers from the current phase reappear/highlight if the user reselects the same launcher before Offensive Fire Done.
+- Seekers deployed pre-battle or in earlier turns are not highlighted and cannot be recalled.
+- Completing offensive fire commits pending deployments so they become ordinary inactive seekers for future activation.
+
+Create test files in:
+- tests/tactical/FTacticalGameMechanicsTest.* (or focused tactical seeker placement fixture)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.* (or adjacent board/display source-contract tests)
+- tests/gui/TacticalGuiLiveTest.* (if live interaction coverage is needed)
+
+Implementation context for testing:
+- FTacticalGame now has offensive seeker deployment mode detection and path-only highlight generation through computeWeaponRange() when selected SM is valid in PH_ATTACK_FIRE for the moving player.
+- assignTargetFromHex() rejects SM target assignment so offensive-fire SM clicks route to deployment/recall behavior.
+- SM selection is rejected outside offensive fire; defensive fire cannot use SM deployment or targeting.
+- Pending offensive seeker deployments are tracked as launcher/phase-scoped records and are recalled only from that same launcher and current offensive phase.
+- Offensive fire completion clears pending-recall bookkeeping while preserving created inactive seekers in m_seekerMissiles.
+- FBattleDisplay attack-fire panel now draws grouped pending recall rows and clicks call FBattleScreen::recallSelectedOffensivePendingSeekerAtHex(...).
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && xvfb-run -a ./GuiTests (skipped: xvfb-run not available in environment)
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-006
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

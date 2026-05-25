@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-006/implementer_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-006/tester_prompt.txt",
+    "artifacts/tactical-seeker-missiles/TSM-006/implementer_result.json"
+  ],
+  "branch_name": "seekers-tsm-006-implementer-20260524",
+  "changed_files": [
+    "include/tactical/FTacticalGame.h",
+    "src/tactical/FTacticalGame.cpp",
+    "include/tactical/FBattleScreen.h",
+    "src/tactical/FBattleScreen.cpp",
+    "include/tactical/FBattleDisplay.h",
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "code_commit_hash": "8e3130cefd200aeffa0e942b9c28d4983ec440ef",
+  "status": "success",
+  "task_id": "TSM-006",
+  "validation_commands": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make",
+    "cd tests/gui && xvfb-run -a ./GuiTests (skipped: xvfb-run not available in environment)"
+  ],
+  "validation_outcome": "pass"
+}
