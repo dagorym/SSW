@@ -3,7 +3,7 @@
  * @brief Implementation file for FTacticalGame class
  * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  *
  */
 
@@ -1019,7 +1019,8 @@ bool FTacticalGame::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex
 
 void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 	// TSM-004 placeholder seam:
-	// active seeker movement/detonation resolution is intentionally deferred.
+	// active seeker movement now executes through the implemented TSM-007
+	// model helpers in this method body.
 	VehicleList candidateTargets;
 	if (m_attackShips != NULL) {
 		candidateTargets.insert(candidateTargets.end(), m_attackShips->begin(), m_attackShips->end());
@@ -1136,6 +1137,7 @@ void FTacticalGame::adjustSeekerHeadingTowardTarget(
 	if (delta > 3) {
 		delta = 3;
 	} else if (delta < -3) {
+		// Defensive clamp for future heading-delta helper changes.
 		delta = -3;
 	}
 	seeker.heading = normalizeHeading(seeker.heading + delta);
@@ -1181,6 +1183,77 @@ void FTacticalGame::moveSeekerTowardTarget(FTacticalSeekerMissileState & seeker,
 		seeker.heading = bestHeading;
 		seeker.hex = bestHex;
 	}
+}
+
+std::vector<unsigned int> FTacticalGame::collectClosestSeekerTargetIDs(
+	const FTacticalSeekerMissileState & seeker,
+	const std::vector<FTacticalSeekerTargetSnapshot> & candidates) const
+{
+	std::vector<unsigned int> closestIDs;
+	if (!isHexInBounds(seeker.hex)) {
+		return closestIDs;
+	}
+
+	int closestDistance = -1;
+	for (std::vector<FTacticalSeekerTargetSnapshot>::const_iterator itr = candidates.begin();
+		 itr != candidates.end(); ++itr) {
+		if (itr->hp <= 0 || itr->isStation || !isHexInBounds(itr->hex)) {
+			continue;
+		}
+		const int distance = FHexMap::computeHexDistance(seeker.hex, itr->hex);
+		if (closestDistance < 0 || distance < closestDistance) {
+			closestDistance = distance;
+			closestIDs.clear();
+			closestIDs.push_back(itr->shipID);
+		} else if (distance == closestDistance) {
+			closestIDs.push_back(itr->shipID);
+		}
+	}
+	return closestIDs;
+}
+
+bool FTacticalGame::computeSeekerGreedyNextStep(
+	const FTacticalSeekerMissileState & seeker,
+	const FPoint & targetHex,
+	FTacticalSeekerMissileState & nextState) const
+{
+	nextState = seeker;
+	if (!isHexInBounds(seeker.hex) || !isHexInBounds(targetHex)) {
+		return false;
+	}
+	const int currentDistance = FHexMap::computeHexDistance(seeker.hex, targetHex);
+	if (currentDistance <= 0) {
+		return false;
+	}
+
+	int bestHeading = seeker.heading;
+	FPoint bestHex(-1, -1);
+	int bestDistance = -1;
+	int bestTurnMagnitude = 99;
+	for (int turn = -1; turn <= 1; ++turn) {
+		const int candidateHeading = normalizeHeading(seeker.heading + turn);
+		const FPoint candidateHex = FHexMap::findNextHex(seeker.hex, candidateHeading);
+		if (!isHexInBounds(candidateHex)) {
+			continue;
+		}
+		const int candidateDistance = FHexMap::computeHexDistance(candidateHex, targetHex);
+		const int turnMagnitude = (turn < 0) ? -turn : turn;
+		if (bestDistance < 0
+			|| candidateDistance < bestDistance
+			|| (candidateDistance == bestDistance && turnMagnitude < bestTurnMagnitude)) {
+			bestDistance = candidateDistance;
+			bestHeading = candidateHeading;
+			bestHex = candidateHex;
+			bestTurnMagnitude = turnMagnitude;
+		}
+	}
+	if (bestDistance < 0) {
+		return false;
+	}
+
+	nextState.heading = bestHeading;
+	nextState.hex = bestHex;
+	return true;
 }
 
 bool FTacticalGame::isDeployableWeapon(const FWeapon * weapon) const {

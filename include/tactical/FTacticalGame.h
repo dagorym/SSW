@@ -3,7 +3,7 @@
  * @brief Header file for FTacticalGame class
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  *
  */
 
@@ -145,6 +145,24 @@ int movementAllowance;
 bool hasSource;
 FTacticalOrdnanceSource source;
 } FTacticalSeekerMissileState;
+
+/**
+ * @brief Lightweight seeker-target snapshot for wx-free behavioral tests.
+ *
+ * Captures only the model attributes needed by seeker closest-target helpers
+ * so tests can validate targeting output deterministically without constructing
+ * full tactical occupancy state or wx runtime objects.
+ *
+ * @author gpt-5.3-codex (standard)
+ * @date Created: May 27, 2026
+ * @date Last Modified: May 27, 2026
+ */
+typedef struct {
+	unsigned int shipID;
+	FPoint hex;
+	int hp;
+	bool isStation;
+} FTacticalSeekerTargetSnapshot;
 
 /**
  * @brief One pending offensive-fire seeker deployment tied to a launcher slot.
@@ -826,6 +844,47 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * @date Last Modified: May 25, 2026
 	 */
 	void moveSeekerTowardTarget(FTacticalSeekerMissileState & seeker, const FPoint & targetHex) const;
+	/**
+	 * @brief Collect closest valid target ship IDs from snapshot candidate data.
+	 *
+	 * Filters out destroyed and station candidates, computes seeker-to-candidate
+	 * hex distance, and returns all ship IDs tied for closest distance without
+	 * applying random tie-breaking. This keeps deterministic targeting outputs
+	 * available to behavioral tests.
+	 *
+	 * @param seeker Active seeker state to evaluate.
+	 * @param candidates Snapshot candidate list containing hex and validity fields.
+	 *
+	 * @return Ship IDs for all closest valid candidates (empty when none qualify).
+	 *
+	 * @author gpt-5.3-codex (standard)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	std::vector<unsigned int> collectClosestSeekerTargetIDs(
+		const FTacticalSeekerMissileState & seeker,
+		const std::vector<FTacticalSeekerTargetSnapshot> & candidates) const;
+	/**
+	 * @brief Compute one greedy seeker movement step toward a target hex.
+	 *
+	 * Evaluates left/straight/right heading options, selects the candidate that
+	 * minimizes distance to the target, and returns the resulting seeker heading
+	 * and hex without mutating the input state.
+	 *
+	 * @param seeker Current seeker state.
+	 * @param targetHex Target hex to approach.
+	 * @param nextState Output seeker state after one legal greedy step.
+	 *
+	 * @return True when a legal next step exists and `nextState` was updated.
+	 *
+	 * @author gpt-5.3-codex (standard)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	bool computeSeekerGreedyNextStep(
+		const FTacticalSeekerMissileState & seeker,
+		const FPoint & targetHex,
+		FTacticalSeekerMissileState & nextState) const;
 	bool buildSelectedPlacementSource(FTacticalDeploymentSource & source) const;
 	/**
 	 * @brief Check whether the current selection can deploy seekers during offensive fire.
