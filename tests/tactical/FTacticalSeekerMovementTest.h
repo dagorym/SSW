@@ -19,13 +19,15 @@ namespace FrontierTests {
  *
  * @author gpt-5.4 (high)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  */
 class FTacticalSeekerMovementTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalSeekerMovementTest );
 CPPUNIT_TEST( testSeekerTargetSelectionFiltersAndTieBreaksAcrossSides );
 CPPUNIT_TEST( testSeekerHeadingAndMovementGreedyTurnLimits );
 CPPUNIT_TEST( testSeekerMovementAllowanceProgression );
+CPPUNIT_TEST( testDeterministicTargetSelectionHelperFiltersAndReturnsTies );
+CPPUNIT_TEST( testDeterministicGreedyNextStepHelperReturnsOneStepMove );
 CPPUNIT_TEST( testSeekerHelpersRemainModelOnlyAndFHexMapGeneric );
 CPPUNIT_TEST_SUITE_END();
 
@@ -52,7 +54,7 @@ void testSeekerTargetSelectionFiltersAndTieBreaksAcrossSides();
  *
  * @author gpt-5.4 (high)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  */
 void testSeekerHeadingAndMovementGreedyTurnLimits();
 
@@ -61,9 +63,27 @@ void testSeekerHeadingAndMovementGreedyTurnLimits();
  *
  * @author gpt-5.4 (high)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  */
 void testSeekerMovementAllowanceProgression();
+
+/**
+ * @brief Verifies deterministic target helper ignores invalid entries and preserves ties.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 27, 2026
+ * @date Last Modified: May 27, 2026
+ */
+void testDeterministicTargetSelectionHelperFiltersAndReturnsTies();
+
+/**
+ * @brief Verifies deterministic greedy helper returns a legal one-step move.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 27, 2026
+ * @date Last Modified: May 27, 2026
+ */
+void testDeterministicGreedyNextStepHelperReturnsOneStepMove();
 
 /**
  * @brief Verifies seeker helpers and FHexMap surface remain non-wx model code.
