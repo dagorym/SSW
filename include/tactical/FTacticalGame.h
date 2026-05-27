@@ -147,11 +147,12 @@ FTacticalOrdnanceSource source;
 } FTacticalSeekerMissileState;
 
 /**
- * @brief Lightweight seeker-target snapshot for wx-free behavioral tests.
+ * @brief Lightweight seeker-target snapshot for deterministic helper tests.
  *
- * Captures only the model attributes needed by seeker closest-target helpers
- * so tests can validate targeting output deterministically without constructing
- * full tactical occupancy state or wx runtime objects.
+ * Captures only the model attributes needed by the seeker closest-target
+ * helper seam so behavioral tests can validate filtering and closest-distance
+ * ties deterministically without constructing full tactical occupancy state or
+ * wx runtime objects.
  *
  * @author gpt-5.3-codex (standard)
  * @date Created: May 27, 2026
@@ -202,12 +203,13 @@ typedef struct {
  *
  * Owns non-wx tactical battle state, including ship placement, movement,
  * combat-report bookkeeping, and lightweight source-tracked ordnance,
- * seeker-missile records, and pending offensive-fire deployment state used by
- * the wx rendering and interaction layers.
+ * seeker-missile records, deterministic seeker helper seams used by
+ * behavioral tests, and pending offensive-fire deployment state used by the
+ * wx rendering and interaction layers.
  *
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
  * @date Created: Mar 29, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  */
 class FTacticalGame {
 public:
@@ -724,12 +726,13 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 *
 	 * Active seekers owned by the moving player advance each turn by selecting
 	 * the closest non-station ship target across both sides, applying random
-	 * tie-breaking when needed, adjusting initial facing up to three hexsides
-	 * toward the chosen target, then moving with greedy one-hexside turn limits.
+	 * tie-breaking only after the deterministic closest-target helper narrows the
+	 * candidate set, adjusting initial facing up to three hexsides toward the
+	 * chosen target, then moving with greedy one-hexside turn limits.
 	 *
 	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: May 27, 2026
 	 */
 	void resolveActiveSeekersForMovingPlayer();
 	/**
@@ -738,7 +741,7 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * Converts the 1-based seeker movement turn counter into the tactical rules
 	 * helper allowance sequence `2, 4, 6, 8, 10, 12`, clamping higher turns to
 	 * the final 12-hex allowance and returning zero for inactive or invalid turn
-	 * counts.
+	 * counts so live movement and deterministic helper coverage share one rule.
 	 *
 	 * @param movementTurn One-based seeker movement turn counter.
 	 *
@@ -746,7 +749,7 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 *
 	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: May 27, 2026
 	 */
 	unsigned int computeSeekerMovementAllowance(int movementTurn) const;
 	/**
@@ -801,7 +804,8 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 *
 	 * Evaluates candidate ships from both sides using hex distance from the
 	 * seeker's current position, then applies the narrow random-index helper to
-	 * break equal-distance ties without pulling in any UI dependencies.
+	 * break equal-distance ties without pulling in any UI dependencies after the
+	 * deterministic closest-target helper rules have been applied.
 	 *
 	 * @param seeker Active seeker whose target is being chosen.
 	 * @param candidates Combined ship-candidate list to inspect.
@@ -810,7 +814,7 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 *
 	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: May 27, 2026
 	 */
 	FVehicle * selectClosestSeekerTarget(const FTacticalSeekerMissileState & seeker, const VehicleList & candidates) const;
 	/**
@@ -834,23 +838,24 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * For each point of movement allowance, the helper evaluates straight,
 	 * left-turn, and right-turn entries, chooses the candidate hex that most
 	 * reduces distance to the target, and prefers the smallest turn magnitude on
-	 * equal-distance results.
+	 * equal-distance results by repeatedly applying the same one-step rule
+	 * exposed through computeSeekerGreedyNextStep(...).
 	 *
 	 * @param seeker Active seeker state to update in place.
 	 * @param targetHex Current tactical hex of the chosen target.
 	 *
 	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: May 27, 2026
 	 */
 	void moveSeekerTowardTarget(FTacticalSeekerMissileState & seeker, const FPoint & targetHex) const;
 	/**
 	 * @brief Collect closest valid target ship IDs from snapshot candidate data.
 	 *
-	 * Filters out destroyed and station candidates, computes seeker-to-candidate
-	 * hex distance, and returns all ship IDs tied for closest distance without
-	 * applying random tie-breaking. This keeps deterministic targeting outputs
-	 * available to behavioral tests.
+	 * Filters out destroyed, out-of-bounds, and station candidates, computes
+	 * seeker-to-candidate hex distance, and returns all ship IDs tied for
+	 * closest distance without applying random tie-breaking. This keeps the
+	 * deterministic portion of seeker targeting available to behavioral tests.
 	 *
 	 * @param seeker Active seeker state to evaluate.
 	 * @param candidates Snapshot candidate list containing hex and validity fields.
@@ -869,7 +874,8 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 *
 	 * Evaluates left/straight/right heading options, selects the candidate that
 	 * minimizes distance to the target, and returns the resulting seeker heading
-	 * and hex without mutating the input state.
+	 * and hex without mutating the input state so tests can inspect a single
+	 * greedy move independently of the live allowance loop.
 	 *
 	 * @param seeker Current seeker state.
 	 * @param targetHex Target hex to approach.
