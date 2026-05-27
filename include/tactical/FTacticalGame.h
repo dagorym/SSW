@@ -147,6 +147,27 @@ FTacticalOrdnanceSource source;
 } FTacticalSeekerMissileState;
 
 /**
+ * @brief Model-owned seeker contact outcome captured during activation resolve.
+ *
+ * Stores the minimal non-wx seam data needed for follow-on damage/ICM/report
+ * integration work after seeker movement determines a ship contact.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 27, 2026
+ * @date Last Modified: May 27, 2026
+ */
+typedef struct {
+	unsigned int seekerID;
+	unsigned int seekerOwnerID;
+	unsigned int targetShipID;
+	unsigned int targetOwnerID;
+	FPoint contactHex;
+	bool preMovementContact;
+	unsigned int movementStep;
+	int movementTurn;
+} FTacticalSeekerContactOutcome;
+
+/**
  * @brief Lightweight seeker-target snapshot for deterministic helper tests.
  *
  * Captures only the model attributes needed by the seeker closest-target
@@ -592,6 +613,10 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * @date Last Modified: May 24, 2026
 	 */
 	std::vector<FTacticalSeekerMissileState> getSeekerMissilesForOwner(unsigned int ownerID, bool activeOnly = false) const;
+	/// get seeker contact outcomes captured by the last active-seeker resolution pass
+	const std::vector<FTacticalSeekerContactOutcome> & getPendingSeekerContactOutcomes() const { return m_pendingSeekerContactOutcomes; }
+	/// clear pending seeker contact outcomes after downstream resolution consumes them
+	void clearPendingSeekerContactOutcomes();
 	bool isHexInBounds(const FPoint & hex) const;
 	bool isHexOccupied(const FPoint & hex) const;
 
@@ -735,6 +760,39 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * @date Last Modified: May 27, 2026
 	 */
 	void resolveActiveSeekersForMovingPlayer();
+	/**
+	 * @brief Select one valid contact ship currently occupying a seeker hex.
+	 *
+	 * Filters the requested hex occupancy to live non-station ships and applies
+	 * the same random tie-break helper used by closest-target selection.
+	 *
+	 * @param seeker Seeker attempting contact resolution.
+	 * @param hex Tactical hex being evaluated for immediate contact.
+	 *
+	 * @return One valid ship in that hex, or `NULL` when none qualify.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	FVehicle * selectSeekerContactTargetAtHex(const FTacticalSeekerMissileState & seeker, const FPoint & hex) const;
+	/**
+	 * @brief Append one model-owned seeker contact outcome to the pending seam.
+	 *
+	 * @param seeker Contacting seeker state.
+	 * @param target Ship chosen for contact.
+	 * @param preMovementContact True when contact happened before movement steps.
+	 * @param movementStep One-based step index for movement contact, zero otherwise.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	void appendSeekerContactOutcome(
+		const FTacticalSeekerMissileState & seeker,
+		const FVehicle * target,
+		bool preMovementContact,
+		unsigned int movementStep);
 	/**
 	 * @brief Map seeker activation turn count to the capped movement allowance.
 	 *
@@ -1052,6 +1110,7 @@ bool m_gravityTurnFlag;
 	int m_selectedPlacementSource;
 	std::vector<FTacticalPlacedOrdnance> m_placedOrdnance;
 	std::vector<FTacticalSeekerMissileState> m_seekerMissiles;
+	std::vector<FTacticalSeekerContactOutcome> m_pendingSeekerContactOutcomes;
 	int m_offensiveFirePhaseID;
 	std::vector<FTacticalPendingSeekerDeployment> m_pendingOffensiveSeekerDeployments;
 	FPoint m_selectedSeekerActivationHex;

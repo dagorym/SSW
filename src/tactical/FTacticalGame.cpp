@@ -312,6 +312,7 @@ void FTacticalGame::reset() {
 	m_selectedPlacementSource = -1;
 	m_placedOrdnance.clear();
 	m_seekerMissiles.clear();
+	m_pendingSeekerContactOutcomes.clear();
 	m_offensiveFirePhaseID = 0;
 	m_pendingOffensiveSeekerDeployments.clear();
 	m_selectedSeekerActivationHex.setPoint(-1, -1);
@@ -902,6 +903,10 @@ std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesForOwne
 	return seekers;
 }
 
+void FTacticalGame::clearPendingSeekerContactOutcomes() {
+	m_pendingSeekerContactOutcomes.clear();
+}
+
 std::vector<FPoint> FTacticalGame::getInactiveSeekerActivationHexes() const {
 	std::vector<FPoint> hexes;
 	PointSet uniqueHexes;
@@ -1019,8 +1024,10 @@ bool FTacticalGame::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex
 
 void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 	// TSM-004 placeholder seam:
-	// active seeker movement now executes through the implemented TSM-007
-	// model helpers in this method body.
+	// active seeker movement now executes through the implemented helper-driven
+	// model resolution in this method body.
+	clearPendingSeekerContactOutcomes();
+
 	VehicleList candidateTargets;
 	if (m_attackShips != NULL) {
 		candidateTargets.insert(candidateTargets.end(), m_attackShips->begin(), m_attackShips->end());
@@ -1029,28 +1036,107 @@ void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 		candidateTargets.insert(candidateTargets.end(), m_defendShips->begin(), m_defendShips->end());
 	}
 
+	std::vector<FTacticalSeekerMissileState> nextStates;
+	nextStates.reserve(m_seekerMissiles.size());
+
 	for (std::vector<FTacticalSeekerMissileState>::iterator itr = m_seekerMissiles.begin();
 		 itr != m_seekerMissiles.end(); ++itr) {
 		if (!itr->active || itr->ownerID != getMovingPlayerID()) {
+			nextStates.push_back(*itr);
 			continue;
 		}
 
 		itr->movementTurn += 1;
 		itr->movementAllowance = static_cast<int>(computeSeekerMovementAllowance(itr->movementTurn));
 
+		FVehicle * sameHexContactTarget = selectSeekerContactTargetAtHex(*itr, itr->hex);
+		if (sameHexContactTarget != NULL) {
+			appendSeekerContactOutcome(*itr, sameHexContactTarget, true, 0);
+			continue;
+		}
+
 		FVehicle * target = selectClosestSeekerTarget(*itr, candidateTargets);
-		if (target == NULL) {
+		bool seekerContacted = false;
+		if (target != NULL) {
+			FPoint targetHex;
+			if (findShipHex(target->getID(), targetHex)) {
+				adjustSeekerHeadingTowardTarget(*itr, targetHex);
+				for (int step = 0; step < itr->movementAllowance; ++step) {
+					FTacticalSeekerMissileState nextState;
+					if (!computeSeekerGreedyNextStep(*itr, targetHex, nextState)) {
+						break;
+					}
+					itr->heading = nextState.heading;
+					itr->hex = nextState.hex;
+
+					FVehicle * movementContactTarget = selectSeekerContactTargetAtHex(*itr, itr->hex);
+					if (movementContactTarget != NULL) {
+						appendSeekerContactOutcome(*itr, movementContactTarget, false, static_cast<unsigned int>(step + 1));
+						seekerContacted = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if (seekerContacted) {
 			continue;
 		}
 
-		FPoint targetHex;
-		if (!findShipHex(target->getID(), targetHex)) {
+		if (itr->movementAllowance >= 12) {
 			continue;
 		}
 
-		adjustSeekerHeadingTowardTarget(*itr, targetHex);
-		moveSeekerTowardTarget(*itr, targetHex);
+		nextStates.push_back(*itr);
 	}
+
+	m_seekerMissiles.swap(nextStates);
+}
+
+FVehicle * FTacticalGame::selectSeekerContactTargetAtHex(
+	const FTacticalSeekerMissileState & seeker,
+	const FPoint & hex) const
+{
+	if (!isHexInBounds(hex) || !isHexInBounds(seeker.hex)) {
+		return NULL;
+	}
+	const VehicleList occupants = getHexOccupants(hex);
+	VehicleList validTargets;
+	for (VehicleList::const_iterator itr = occupants.begin(); itr != occupants.end(); ++itr) {
+		if (!isValidSeekerTarget(*itr)) {
+			continue;
+		}
+		validTargets.push_back(*itr);
+	}
+	if (validTargets.empty()) {
+		return NULL;
+	}
+	if (validTargets.size() == 1) {
+		return validTargets[0];
+	}
+	return validTargets[chooseRandomSeekerIndex(static_cast<unsigned int>(validTargets.size()))];
+}
+
+void FTacticalGame::appendSeekerContactOutcome(
+	const FTacticalSeekerMissileState & seeker,
+	const FVehicle * target,
+	bool preMovementContact,
+	unsigned int movementStep)
+{
+	if (target == NULL) {
+		return;
+	}
+
+	FTacticalSeekerContactOutcome outcome;
+	outcome.seekerID = seeker.seekerID;
+	outcome.seekerOwnerID = seeker.ownerID;
+	outcome.targetShipID = target->getID();
+	outcome.targetOwnerID = target->getOwner();
+	outcome.contactHex = seeker.hex;
+	outcome.preMovementContact = preMovementContact;
+	outcome.movementStep = movementStep;
+	outcome.movementTurn = seeker.movementTurn;
+	m_pendingSeekerContactOutcomes.push_back(outcome);
 }
 
 unsigned int FTacticalGame::computeSeekerMovementAllowance(int movementTurn) const {
