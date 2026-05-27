@@ -6,6 +6,7 @@
 #include "FTacticalSeekerMovementTest.h"
 
 #include "core/FHexMap.h"
+#include "ships/FVehicle.h"
 #include "tactical/FTacticalGame.h"
 
 #include <algorithm>
@@ -24,10 +25,50 @@ return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
 class TestableTacticalGame : public Frontier::FTacticalGame {
 public:
 	using Frontier::FTacticalGame::adjustSeekerHeadingTowardTarget;
+	using Frontier::FTacticalGame::completeSeekerActivationPhase;
 	using Frontier::FTacticalGame::moveSeekerTowardTarget;
 	using Frontier::FTacticalGame::computeSeekerMovementAllowance;
 	using Frontier::FTacticalGame::collectClosestSeekerTargetIDs;
 	using Frontier::FTacticalGame::computeSeekerGreedyNextStep;
+	using Frontier::FTacticalGame::resolveActiveSeekersForMovingPlayer;
+
+	void configureSides(unsigned int defenderID, unsigned int attackerID, bool movingAttacker) {
+		m_playerID[0] = defenderID;
+		m_playerID[1] = attackerID;
+		m_movingPlayer = movingAttacker;
+	}
+
+	void installShipLists(Frontier::VehicleList * attackShips, Frontier::VehicleList * defendShips) {
+		m_attackShips = attackShips;
+		m_defendShips = defendShips;
+	}
+
+	void placeShipAtHex(Frontier::FVehicle * ship, const Frontier::FPoint & hex) {
+		m_hexData[hex.getX()][hex.getY()].pos = hex;
+		m_hexData[hex.getX()][hex.getY()].ships.push_back(ship);
+	}
+
+	void seedSeeker(const Frontier::FTacticalSeekerMissileState & seeker) {
+		m_seekerMissiles.push_back(seeker);
+	}
+};
+
+class FSeekerHarnessShip : public Frontier::FVehicle {
+public:
+	FSeekerHarnessShip(unsigned int ownerID, const std::string & type) {
+		m_owner = ownerID;
+		m_type = type;
+		m_name = "SeekerHarnessShip";
+		m_maxHP = 25;
+		m_currentHP = 25;
+		m_speed = 0;
+		m_maxADF = 0;
+		m_currentADF = 0;
+		m_maxMR = 0;
+		m_currentMR = 0;
+		m_maxDCR = 1;
+		m_currentDCR = 1;
+	}
 };
 
 }
@@ -237,6 +278,142 @@ const std::vector<int> legalHeadings = {
 };
 CPPUNIT_ASSERT(std::find(legalHeadings.begin(), legalHeadings.end(), nextState.heading) != legalHeadings.end());
 CPPUNIT_ASSERT(nextState.hex == Frontier::FHexMap::findNextHex(seeker.hex, nextState.heading));
+}
+
+void FTacticalSeekerMovementTest::testActiveSeekerResolutionHandlesPremoveContactAndEnemySkipRuntime() {
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+	FSeekerHarnessShip * attackerShip = new FSeekerHarnessShip(1u, "Frigate");
+	FSeekerHarnessShip * defenderShip = new FSeekerHarnessShip(0u, "Destroyer");
+	attackShips->push_back(attackerShip);
+	defendShips->push_back(defenderShip);
+
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+	game.placeShipAtHex(attackerShip, Frontier::FPoint(10, 10));
+	game.placeShipAtHex(defenderShip, Frontier::FPoint(30, 30));
+
+	Frontier::FTacticalSeekerMissileState movingSideSeeker;
+	movingSideSeeker.seekerID = 9001u;
+	movingSideSeeker.ownerID = 1u;
+	movingSideSeeker.hex = Frontier::FPoint(30, 30);
+	movingSideSeeker.heading = 0;
+	movingSideSeeker.active = true;
+	movingSideSeeker.movementTurn = 0;
+	movingSideSeeker.movementAllowance = 0;
+	movingSideSeeker.hasSource = false;
+
+	Frontier::FTacticalSeekerMissileState enemySeeker;
+	enemySeeker.seekerID = 9002u;
+	enemySeeker.ownerID = 0u;
+	enemySeeker.hex = Frontier::FPoint(40, 40);
+	enemySeeker.heading = 4;
+	enemySeeker.active = true;
+	enemySeeker.movementTurn = 3;
+	enemySeeker.movementAllowance = 6;
+	enemySeeker.hasSource = false;
+
+	game.seedSeeker(movingSideSeeker);
+	game.seedSeeker(enemySeeker);
+
+	game.resolveActiveSeekersForMovingPlayer();
+
+	const std::vector<Frontier::FTacticalSeekerContactOutcome> & outcomes = game.getPendingSeekerContactOutcomes();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), outcomes.size());
+	CPPUNIT_ASSERT_EQUAL(9001u, outcomes[0].seekerID);
+	CPPUNIT_ASSERT(outcomes[0].preMovementContact);
+	CPPUNIT_ASSERT_EQUAL(0u, outcomes[0].movementStep);
+	CPPUNIT_ASSERT_EQUAL(1, outcomes[0].movementTurn);
+	CPPUNIT_ASSERT_EQUAL(defenderShip->getID(), outcomes[0].targetShipID);
+
+	const std::vector<Frontier::FTacticalSeekerMissileState> remainingSeekers = game.getSeekerMissiles();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), remainingSeekers.size());
+	CPPUNIT_ASSERT_EQUAL(9002u, remainingSeekers[0].seekerID);
+	CPPUNIT_ASSERT_EQUAL(Frontier::FPoint(40, 40).getX(), remainingSeekers[0].hex.getX());
+	CPPUNIT_ASSERT_EQUAL(Frontier::FPoint(40, 40).getY(), remainingSeekers[0].hex.getY());
+	CPPUNIT_ASSERT_EQUAL(4, remainingSeekers[0].heading);
+	CPPUNIT_ASSERT_EQUAL(3, remainingSeekers[0].movementTurn);
+	CPPUNIT_ASSERT_EQUAL(6, remainingSeekers[0].movementAllowance);
+
+	delete attackerShip;
+	delete defenderShip;
+}
+
+void FTacticalSeekerMovementTest::testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRuntime() {
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+	FSeekerHarnessShip * attackerShip = new FSeekerHarnessShip(1u, "Frigate");
+	FSeekerHarnessShip * closeDefender = new FSeekerHarnessShip(0u, "Destroyer");
+	FSeekerHarnessShip * farDefender = new FSeekerHarnessShip(0u, "Destroyer");
+	attackShips->push_back(attackerShip);
+	defendShips->push_back(closeDefender);
+	defendShips->push_back(farDefender);
+
+	const Frontier::FPoint closeDefenderHex(12, 10);
+	const Frontier::FPoint farDefenderHex(90, 90);
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+	game.placeShipAtHex(closeDefender, closeDefenderHex);
+	game.placeShipAtHex(farDefender, farDefenderHex);
+
+	Frontier::FTacticalSeekerMissileState contactDuringMove;
+	contactDuringMove.seekerID = 9101u;
+	contactDuringMove.ownerID = 1u;
+	contactDuringMove.hex = Frontier::FPoint(10, 10);
+	contactDuringMove.heading = Frontier::FHexMap::computeHeading(contactDuringMove.hex, closeDefenderHex);
+	contactDuringMove.active = true;
+	contactDuringMove.movementTurn = 0;
+	contactDuringMove.movementAllowance = 0;
+	contactDuringMove.hasSource = false;
+
+	Frontier::FTacticalSeekerMissileState survivorSeeker;
+	survivorSeeker.seekerID = 9102u;
+	survivorSeeker.ownerID = 1u;
+	survivorSeeker.hex = Frontier::FPoint(80, 80);
+	survivorSeeker.heading = Frontier::FHexMap::computeHeading(survivorSeeker.hex, farDefenderHex);
+	survivorSeeker.active = true;
+	survivorSeeker.movementTurn = 0;
+	survivorSeeker.movementAllowance = 0;
+	survivorSeeker.hasSource = false;
+
+	Frontier::FTacticalSeekerMissileState expiringSeeker;
+	expiringSeeker.seekerID = 9103u;
+	expiringSeeker.ownerID = 1u;
+	expiringSeeker.hex = Frontier::FPoint(1, 1);
+	expiringSeeker.heading = 0;
+	expiringSeeker.active = true;
+	expiringSeeker.movementTurn = 5;
+	expiringSeeker.movementAllowance = 10;
+	expiringSeeker.hasSource = false;
+
+	game.seedSeeker(contactDuringMove);
+	game.seedSeeker(survivorSeeker);
+	game.seedSeeker(expiringSeeker);
+	game.setPhase(PH_SEEKER_ACTIVATION);
+	game.completeSeekerActivationPhase();
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<int>(PH_MOVE), game.getPhase());
+
+	const std::vector<Frontier::FTacticalSeekerContactOutcome> & outcomes = game.getPendingSeekerContactOutcomes();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), outcomes.size());
+	CPPUNIT_ASSERT_EQUAL(9101u, outcomes[0].seekerID);
+	CPPUNIT_ASSERT(!outcomes[0].preMovementContact);
+	CPPUNIT_ASSERT(outcomes[0].movementStep >= 1u);
+
+	const std::vector<Frontier::FTacticalSeekerMissileState> seekers = game.getSeekerMissiles();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), seekers.size());
+	CPPUNIT_ASSERT_EQUAL(9102u, seekers[0].seekerID);
+	CPPUNIT_ASSERT_EQUAL(1, seekers[0].movementTurn);
+	CPPUNIT_ASSERT_EQUAL(2, seekers[0].movementAllowance);
+	CPPUNIT_ASSERT(
+		seekers[0].hex.getX() != survivorSeeker.hex.getX()
+		|| seekers[0].hex.getY() != survivorSeeker.hex.getY());
+
+	delete attackerShip;
+	delete closeDefender;
+	delete farDefender;
 }
 
 void FTacticalSeekerMovementTest::testSeekerHelpersRemainModelOnlyAndFHexMapGeneric() {

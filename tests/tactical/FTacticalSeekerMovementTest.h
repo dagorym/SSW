@@ -28,6 +28,8 @@ CPPUNIT_TEST( testSeekerHeadingAndMovementGreedyTurnLimits );
 CPPUNIT_TEST( testSeekerMovementAllowanceProgression );
 CPPUNIT_TEST( testDeterministicTargetSelectionHelperFiltersAndReturnsTies );
 CPPUNIT_TEST( testDeterministicGreedyNextStepHelperReturnsOneStepMove );
+CPPUNIT_TEST( testActiveSeekerResolutionHandlesPremoveContactAndEnemySkipRuntime );
+CPPUNIT_TEST( testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRuntime );
 CPPUNIT_TEST( testSeekerHelpersRemainModelOnlyAndFHexMapGeneric );
 CPPUNIT_TEST_SUITE_END();
 
@@ -84,6 +86,24 @@ void testDeterministicTargetSelectionHelperFiltersAndReturnsTies();
  * @date Last Modified: May 27, 2026
  */
 void testDeterministicGreedyNextStepHelperReturnsOneStepMove();
+
+/**
+ * @brief Verifies runtime pre-movement contact outcomes and enemy-seeker skip behavior.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 27, 2026
+ * @date Last Modified: May 27, 2026
+ */
+void testActiveSeekerResolutionHandlesPremoveContactAndEnemySkipRuntime();
+
+/**
+ * @brief Verifies seeker-activation completion resolves movement contact and survivor progression.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 27, 2026
+ * @date Last Modified: May 27, 2026
+ */
+void testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRuntime();
 
 /**
  * @brief Verifies seeker helpers and FHexMap surface remain non-wx model code.
