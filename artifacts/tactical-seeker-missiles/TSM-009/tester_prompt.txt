@@ -1,0 +1,53 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Resolve seeker detonation outcomes through SM weapon fire, ICM allocation, immediate tactical reporting, and post-summary destroyed-ship cleanup.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate (from Planner):
+- Seeker detonations create temporary FWeapon::SM attacks with parent NULL.
+- Same-hex target selection chooses highest getMaxHP() and uses RNG for same-max-HP ties.
+- ICM allocation uses the existing ITacticalUI::runICMSelection(...) path.
+- The seeker -8/ICM modifier is applied through existing weapon/defense mechanics.
+- Seeker damage reports have seeker-specific report labels and are not mislabeled as mine damage.
+- Multiple seeker detonations from one seeker step are batched into one immediate report where practical.
+- Destroyed-ship cleanup happens after the immediate summary path.
+- Detonated seekers are removed exactly once.
+
+Create test files in:
+- tests/tactical/FTacticalSeekerDamage* (focused tactical seeker damage fixture)
+- tests/tactical/FTacticalCombatReportTest.* (report labels)
+- tests/tactical/FTacticalMineDamageFlowTest.* (ICM interaction flow mirror)
+
+Implementation context for testing:
+- Added TRT_SeekerDamage report typing/labeling so immediate seeker summaries are labeled as seeker damage, not mine damage.
+- FTacticalGame now resolves pending seeker contacts into temporary createWeapon(FWeapon::SM) attacks with setParent(NULL), setTarget(target, 0, false), and one immediate batched report context.
+- Same-hex seeker contact targeting now selects the highest max HP valid ship and uses RNG tie-breaking among equal-max-HP candidates.
+- Seeker detonation flow reuses existing UI seams by calling ITacticalUI::runICMSelection(...) before seeker weapon fire and ITacticalUI::showDamageSummary(...) afterward.
+- Destroyed ships from seeker detonations are captured after the summary path in FTacticalGame, and FBattleScreen now consumes that bookkeeping immediately after seeker activation completion via clearDestroyedShips().
+- Pending seeker contact outcomes remain queryable after resolution for existing seeker movement seam consumers and are cleared on the next seeker-resolution pass.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && xvfb-run -a ./GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-009
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
