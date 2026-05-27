@@ -285,9 +285,11 @@ int getPhase() const { return m_phase; }
  *
  * Resolves only the moving player's active seekers, recording any same-hex or
  * movement-step contacts in the pending seeker-contact seam, removing seekers
- * that contact or expire on their 12-hex movement turn, then clears the
- * selected activation stack and advances into the ordinary movement-phase entry
- * path.
+ * that contact or expire on their 12-hex movement turn, and, when an
+ * `ITacticalUI` is installed, resolves those pending contacts into the
+ * immediate seeker-damage summary before destroyed-ship cleanup is handed back
+ * to wx callers. The method then clears the selected activation stack and
+ * advances into the ordinary movement-phase entry path.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created: May 25, 2026
@@ -808,8 +810,8 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * Converts each pending seeker contact to a temporary `FWeapon::SM` attack,
 	 * runs the existing ICM-allocation seam, appends all fired attacks to one
 	 * immediate seeker-damage report, shows the report summary through
-	 * `ITacticalUI`, and then captures destroyed-ship bookkeeping for wx-side
-	 * cleanup.
+	 * `ITacticalUI`, and only then captures destroyed-ship bookkeeping for
+	 * wx-side cleanup so the summary remains visible before removal.
 	 *
 	 * @author gpt-5.4 (high)
 	 * @date Created: May 27, 2026

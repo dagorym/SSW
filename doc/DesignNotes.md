@@ -486,6 +486,17 @@ moving-side active seeker resolution pass, records pending contact outcomes for
 later damage handling, expires 12-hex seekers, and only then enters ordinary
 movement and redraw.
 
+TSM-009 completes that detonation handoff. Pending
+`FTacticalSeekerContactOutcome` records now resolve through
+`FTacticalGame::resolvePendingSeekerDetonationDamage()`, which creates
+temporary parentless `FWeapon::SM` attacks, reuses
+`ITacticalUI::runICMSelection(...)`, batches the resulting attacks into one
+immediate `TRT_SeekerDamage` summary, and captures destroyed-ship IDs only
+after the summary dialog path finishes. `FBattleScreen` then consumes that
+destroyed-ship bookkeeping before its final redraw, preserving the same
+summary-before-cleanup ordering used by the existing immediate mine-damage
+flow.
+
 The shipped TSM-005 wx follow-up consumes that forwarding seam. `FBattleBoard`
 loads `icons/SeekerMissile.png` through `FGameConfig::resolveAssetPath(...)`
 and applies phase-specific seeker visibility rules: only inactive stacks owned
