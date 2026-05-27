@@ -9,11 +9,11 @@
     "include/tactical/FTacticalGame.h",
     "src/tactical/FTacticalGame.cpp"
   ],
-  "code_commit_hash": "bcd76a7",
+  "code_commit_hash": "c76b96b",
   "status": "success",
   "task_id": "TSM-007",
   "validation_commands": [
     "cd tests && make tactical-tests && ./tactical/TacticalTests"
   ],
-  "validation_outcome": "pass (169 tests)"
+  "validation_outcome": "pass (173 tests)"
 }

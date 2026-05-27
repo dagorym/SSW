@@ -1,7 +1,7 @@
 Your role is 'tester'. Your task is as follows:
 
 Task summary:
-- Implemented model-side seeker target selection and greedy movement resolution for active seekers.
+- Remediated verifier warnings for seeker movement helpers by correcting stale comments and adding deterministic wx-free helper seams for behavioral targeting/movement tests.
 
 Modified files:
 - include/tactical/FTacticalGame.h
@@ -18,16 +18,15 @@ Acceptance criteria to validate (from Planner):
 - Any new FHexMap helper remains generic and non-wx.
 
 Create test files in:
-- tests/tactical/FTacticalSeekerMovementTest.* or existing tactical mechanics tests
-- tests/core/* only if generic FHexMap helper coverage is added
+- tests/tactical/FTacticalSeekerMovementTest.*
+- tests/tactical/FTacticalGameMechanicsTest.*
 
 Implementation context for testing:
-- resolveActiveSeekersForMovingPlayer now processes active seekers owned by the moving player before movement phase.
-- Closest target selection scans both attacker and defender ship lists, filters out stations and destroyed or missing ships, and resolves equal-distance ties via chooseRandomSeekerIndex using irand.
-- Seeker movement turn allowance is computed by computeSeekerMovementAllowance with capped progression 2,4,6,8,10,12.
-- Initial seeker heading rotates toward target by the shortest direction capped at three hexsides before movement.
-- Per-step movement evaluates forward/left/right heading options, applies at most one hexside turn, and greedily chooses the lowest resulting hex distance.
-- Damage or UI wiring is intentionally unchanged in this subtask.
+- Updated the stale TSM-004 seam comment in resolveActiveSeekersForMovingPlayer() so it no longer claims seeker resolution is deferred.
+- Added FTacticalSeekerTargetSnapshot plus collectClosestSeekerTargetIDs(...) so tests can exercise closest-target filtering/tie candidate output without wx runtime or full board occupancy setup.
+- Added computeSeekerGreedyNextStep(...) to expose one-step greedy heading/hex movement outputs for deterministic behavioral assertions.
+- Kept existing seeker targeting/movement helper behavior and movement-allowance progression unchanged while preserving current tactical test coverage expectations.
+- No damage or UI wiring changes were introduced in this remediation.
 
 Suggested test command(s):
 - cd tests && make tactical-tests && ./tactical/TacticalTests
