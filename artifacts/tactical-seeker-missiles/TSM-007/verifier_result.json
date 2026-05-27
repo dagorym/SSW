@@ -1,0 +1,56 @@
+{
+  "task_id": "TSM-007",
+  "verdict": "CONDITIONAL PASS",
+  "status": "complete",
+  "branch_name": "seekers-tsm-007-verifier-20260527",
+  "upstream_commits_reviewed": {
+    "implementer": "bcd76a7",
+    "tester": "0329a87",
+    "documenter": "cc5b19ef22264c7defd2a62287f2c0daa7ecbae7"
+  },
+  "validation_commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
+  ],
+  "validation_outcome": "pass (173 tests)",
+  "acceptance_criteria_satisfied": [
+    "Closest target selection considers non-station ships from both sides.",
+    "Planets, stations, and non-ship objects are ignored by seeker targeting.",
+    "Equal-distance target ties use automatic RNG through a narrow helper.",
+    "Initial facing can adjust up to three hexsides toward the selected target.",
+    "Per-hex movement turns at most one hexside and greedily reduces distance where possible.",
+    "Movement allowances progress as 2, 4, 6, 8, 10, and 12.",
+    "Helpers can be tested without wx runtime.",
+    "Any new FHexMap helper remains generic and non-wx."
+  ],
+  "findings": [
+    {
+      "id": "W1",
+      "severity": "WARNING",
+      "file": "src/tactical/FTacticalGame.cpp",
+      "lines": "1020-1021",
+      "summary": "Stale TSM-004 placeholder comment in now-implemented resolveActiveSeekersForMovingPlayer()."
+    },
+    {
+      "id": "W2",
+      "severity": "WARNING",
+      "file": "tests/tactical/FTacticalSeekerMovementTest.cpp",
+      "lines": "all test methods",
+      "summary": "All four test cases are source-inspection only; no behavioral exercise of targeting or movement logic with concrete inputs and outputs."
+    },
+    {
+      "id": "N1",
+      "severity": "NOTE",
+      "file": "src/tactical/FTacticalGame.cpp",
+      "lines": "1138-1139",
+      "summary": "Dead negative-clamp guard (delta < -3) in adjustSeekerHeadingTowardTarget(); shortestHeadingDelta never returns values below -2."
+    }
+  ],
+  "blocking_findings": 0,
+  "warning_findings": 2,
+  "note_findings": 1,
+  "protected_file_unchanged": true,
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-007/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-007/verifier_result.json"
+  ]
+}
