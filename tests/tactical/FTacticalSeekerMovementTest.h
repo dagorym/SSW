@@ -27,6 +27,7 @@ CPPUNIT_TEST( testSeekerTargetSelectionFiltersAndTieBreaksAcrossSides );
 CPPUNIT_TEST( testSeekerHeadingAndMovementGreedyTurnLimits );
 CPPUNIT_TEST( testSeekerMovementAllowanceProgression );
 CPPUNIT_TEST( testDeterministicTargetSelectionHelperFiltersAndReturnsTies );
+CPPUNIT_TEST( testSameHexContactTargetSelectionPrioritizesMaxHPAtRuntime );
 CPPUNIT_TEST( testDeterministicGreedyNextStepHelperReturnsOneStepMove );
 CPPUNIT_TEST( testActiveSeekerResolutionHandlesPremoveContactAndEnemySkipRuntime );
 CPPUNIT_TEST( testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRuntime );
@@ -77,6 +78,15 @@ void testSeekerMovementAllowanceProgression();
  * @date Last Modified: May 27, 2026
  */
 void testDeterministicTargetSelectionHelperFiltersAndReturnsTies();
+
+/**
+ * @brief Verifies same-hex seeker contact selection excludes lower-max-HP ships at runtime.
+ *
+ * @author gpt-5.4 (high), GPT-5
+ * @date Created: May 27, 2026
+ * @date Last Modified: May 27, 2026
+ */
+void testSameHexContactTargetSelectionPrioritizesMaxHPAtRuntime();
 
 /**
  * @brief Verifies deterministic greedy helper returns a legal one-step move.

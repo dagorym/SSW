@@ -25,6 +25,7 @@ return std::string(TACTICAL_TEST_REPO_ROOT) + "/" + relativePath;
 class TestableTacticalGame : public Frontier::FTacticalGame {
 public:
 	using Frontier::FTacticalGame::adjustSeekerHeadingTowardTarget;
+	using Frontier::FTacticalGame::selectSeekerContactTargetAtHex;
 	using Frontier::FTacticalGame::completeSeekerActivationPhase;
 	using Frontier::FTacticalGame::moveSeekerTowardTarget;
 	using Frontier::FTacticalGame::computeSeekerMovementAllowance;
@@ -68,6 +69,11 @@ public:
 		m_currentMR = 0;
 		m_maxDCR = 1;
 		m_currentDCR = 1;
+	}
+
+	void configureHP(int hp) {
+		m_maxHP = hp;
+		m_currentHP = hp;
 	}
 
 };
@@ -148,6 +154,7 @@ assertContains(tieBreakBody, "return static_cast<unsigned int>(irand(candidateCo
 assertContains(contactTargetBody, "const int maxHP = (*itr)->getMaxHP();");
 assertContains(contactTargetBody, "if (maxHP > highestMaxHP) {");
 assertContains(contactTargetBody, "toughestTargets.push_back(*itr);");
+assertContains(contactTargetBody, "validTargets = toughestTargets;");
 assertContains(contactTargetBody, "randomTargetIndex = chooseRandomSeekerIndex(static_cast<unsigned int>(validTargets.size()));");
 assertContains(contactTargetBody, "return toughestTargets[randomTargetIndex % toughestTargets.size()];");
 }
@@ -249,6 +256,47 @@ CPPUNIT_ASSERT(closestIDs.find(303u) == closestIDs.end());
 CPPUNIT_ASSERT(closestIDs.find(404u) == closestIDs.end());
 CPPUNIT_ASSERT(closestIDs.find(505u) == closestIDs.end());
 CPPUNIT_ASSERT(closestIDs.find(606u) == closestIDs.end());
+}
+
+void FTacticalSeekerMovementTest::testSameHexContactTargetSelectionPrioritizesMaxHPAtRuntime() {
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+	FSeekerHarnessShip * lowerHP = new FSeekerHarnessShip(0u, "Scout");
+	FSeekerHarnessShip * highHPA = new FSeekerHarnessShip(0u, "DestroyerA");
+	FSeekerHarnessShip * highHPB = new FSeekerHarnessShip(0u, "DestroyerB");
+
+	lowerHP->configureHP(15);
+	highHPA->configureHP(30);
+	highHPB->configureHP(30);
+
+	attackShips->push_back(highHPA);
+	defendShips->push_back(lowerHP);
+	defendShips->push_back(highHPB);
+
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+
+	const Frontier::FPoint contactHex(22, 22);
+	game.placeShipAtHex(lowerHP, contactHex);
+	game.placeShipAtHex(highHPA, contactHex);
+	game.placeShipAtHex(highHPB, contactHex);
+
+	Frontier::FTacticalSeekerMissileState seeker;
+	seeker.ownerID = 1u;
+	seeker.hex = contactHex;
+	seeker.active = true;
+
+	for (unsigned int i = 0; i < 64; ++i) {
+		Frontier::FVehicle * target = game.selectSeekerContactTargetAtHex(seeker, contactHex);
+		CPPUNIT_ASSERT(target != NULL);
+		CPPUNIT_ASSERT(target->getMaxHP() == 30);
+		CPPUNIT_ASSERT(target->getID() != lowerHP->getID());
+	}
+
+	delete lowerHP;
+	delete highHPA;
+	delete highHPB;
 }
 
 void FTacticalSeekerMovementTest::testDeterministicGreedyNextStepHelperReturnsOneStepMove() {
