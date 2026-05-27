@@ -238,4 +238,54 @@ CPPUNIT_ASSERT(fixture.game.getLastDestroyedShipIDs().empty());
 destroyFixture(fixture);
 }
 
+void FTacticalMineDamageFlowTest::testSeekerDetonationDamageResolutionUsesSMWeaponsICMAndImmediateReporting() {
+// AC: seeker contacts resolve through SM weapon fire, existing ICM UI seam, immediate seeker report, and single cleanup pass.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::resolvePendingSeekerDetonationDamage()");
+
+assertContains(body, "const std::vector<FTacticalSeekerContactOutcome> outcomes = m_pendingSeekerContactOutcomes;");
+assertContains(body, "FWeapon * seeker = createWeapon(FWeapon::SM);");
+assertContains(body, "seeker->setTarget(target, 0, false);");
+assertContains(body, "seeker->setParent(NULL);");
+assertContains(body, "context.reportType = TRT_SeekerDamage;");
+assertContains(body, "context.immediate = true;");
+assertContains(body, "beginTacticalReport(context);");
+assertContains(body, "m_ui->runICMSelection(icmData, defenders);");
+assertContains(body, "appendTacticalAttackReport(buildTacticalAttackReport(result));");
+assertContains(body, "m_ui->showDamageSummary(summary);");
+assertContains(body, "clearTacticalReport();");
+assertContains(body, "clearDestroyedShips();");
+assertContains(body, "delete (*itr)->weapon;");
+assertContains(body, "delete *itr;");
+assertContains(body, "delete *itr;");
+assertContains(body, "if (m_pendingSeekerContactOutcomes.empty()) {");
+
+assertBefore(body, "m_ui->runICMSelection(icmData, defenders);", "FTacticalAttackResult result = (*itr)->fire();");
+assertBefore(body, "appendTacticalAttackReport(buildTacticalAttackReport(result));", "FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();");
+assertBefore(body, "FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();", "m_ui->showDamageSummary(summary);");
+assertBefore(body, "m_ui->showDamageSummary(summary);", "clearTacticalReport();");
+assertBefore(body, "clearTacticalReport();", "clearDestroyedShips();");
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "clearDestroyedShips();"));
+}
+
+void FTacticalMineDamageFlowTest::testSeekerActivationPhaseResolvesPendingDamageWhenModelHasUI() {
+// AC: seeker activation completion paths call the shared pending-detonation resolver when ITacticalUI is installed.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string beginBody = extractFunctionBody(source, "void FTacticalGame::beginSeekerActivationPhase()");
+const std::string completeBody = extractFunctionBody(source, "void FTacticalGame::completeSeekerActivationPhase()");
+
+assertContains(beginBody, "if (inactiveHexes.empty()) {");
+assertContains(beginBody, "resolveActiveSeekersForMovingPlayer();");
+assertContains(beginBody, "if (m_ui != NULL) {");
+assertContains(beginBody, "resolvePendingSeekerDetonationDamage();");
+assertBefore(beginBody, "resolveActiveSeekersForMovingPlayer();", "resolvePendingSeekerDetonationDamage();");
+assertBefore(beginBody, "resolvePendingSeekerDetonationDamage();", "beginMovePhase();");
+
+assertContains(completeBody, "resolveActiveSeekersForMovingPlayer();");
+assertContains(completeBody, "if (m_ui != NULL) {");
+assertContains(completeBody, "resolvePendingSeekerDetonationDamage();");
+assertBefore(completeBody, "resolveActiveSeekersForMovingPlayer();", "resolvePendingSeekerDetonationDamage();");
+assertBefore(completeBody, "resolvePendingSeekerDetonationDamage();", "beginMovePhase();");
+}
+
 }

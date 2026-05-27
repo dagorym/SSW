@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 22, 2026
- * @date Last Modified: Apr 02, 2026
+ * @date Last Modified: May 27, 2026
  */
 class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalMineDamageFlowTest );
@@ -27,6 +27,8 @@ class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testFinalizeMovePhaseStateDelegatesToCanonicalCompletionPath );
 	CPPUNIT_TEST( testMineDamageAttackReportBuilderLeavesNestedEventsUnattachedUntilBattleScreenStoresThem );
 	CPPUNIT_TEST( testRuntimeMoveDonePathUsesCanonicalCompletionAndResolvesOffBoardOutcome );
+	CPPUNIT_TEST( testSeekerDetonationDamageResolutionUsesSMWeaponsICMAndImmediateReporting );
+	CPPUNIT_TEST( testSeekerActivationPhaseResolvesPendingDamageWhenModelHasUI );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -88,6 +90,26 @@ public:
 	 * @date Last Modified: Apr 02, 2026
 	 */
 	void testRuntimeMoveDonePathUsesCanonicalCompletionAndResolvesOffBoardOutcome();
+	/**
+	 * @brief Verifies seeker Detonation Damage Resolution Uses Sm Weapons Icm And Immediate Reporting.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	void testSeekerDetonationDamageResolutionUsesSMWeaponsICMAndImmediateReporting();
+	/**
+	 * @brief Verifies seeker Activation Phase Resolves Pending Damage When Model Has Ui.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	void testSeekerActivationPhaseResolvesPendingDamageWhenModelHasUI();
 };
 
 }

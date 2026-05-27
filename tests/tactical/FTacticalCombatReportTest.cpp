@@ -253,16 +253,24 @@ void FTacticalCombatReportTest::testTacticalCombatReportSummaryHitDetailToggleDe
 }
 
 void FTacticalCombatReportTest::testReportModelSupportsAllPlannedReportingModes() {
-	// AC: support defensive fire, offensive fire, electrical fire, and mine damage reporting.
+	// AC: support defensive fire, offensive fire, electrical fire, mine damage, and seeker damage reporting.
 	CPPUNIT_ASSERT(TRT_DefensiveFire != TRT_None);
 	CPPUNIT_ASSERT(TRT_OffensiveFire != TRT_None);
 	CPPUNIT_ASSERT(TRT_ElectricalFire != TRT_None);
 	CPPUNIT_ASSERT(TRT_MineDamage != TRT_None);
+	CPPUNIT_ASSERT(TRT_SeekerDamage != TRT_None);
 	CPPUNIT_ASSERT(TRET_InternalDamage != TRET_None);
 	CPPUNIT_ASSERT(TRET_ElectricalFire != TRET_None);
 	CPPUNIT_ASSERT(TRET_MineDamage != TRET_None);
 	CPPUNIT_ASSERT(TRET_DefenseEffect != TRET_None);
 	CPPUNIT_ASSERT(TRET_Note != TRET_None);
+}
+
+void FTacticalCombatReportTest::testReportTypeLabelsDistinguishSeekerAndMineDamage() {
+	// AC: seeker detonations use seeker-specific summary labels and not mine labels.
+	CPPUNIT_ASSERT_EQUAL(std::string("Seeker Damage"), tacticalCombatReportTypeLabel(TRT_SeekerDamage));
+	CPPUNIT_ASSERT_EQUAL(std::string("Mine Damage"), tacticalCombatReportTypeLabel(TRT_MineDamage));
+	CPPUNIT_ASSERT(tacticalCombatReportTypeLabel(TRT_SeekerDamage) != tacticalCombatReportTypeLabel(TRT_MineDamage));
 }
 
 void FTacticalCombatReportTest::testBattleScreenExposesTacticalReportLifecycleApi() {

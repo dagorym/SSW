@@ -257,7 +257,16 @@ assertContains(activateSeekerBody, "const bool changed = m_tacticalGame->activat
 assertContains(activateSeekerBody, "reDraw();");
 const std::string completeActivationBody = extractFunctionBody(source, "void FBattleScreen::completeSeekerActivationPhase()");
 assertContains(completeActivationBody, "m_tacticalGame->completeSeekerActivationPhase();");
+assertContains(completeActivationBody, "if (!m_tacticalGame->getLastDestroyedShipIDs().empty()) {");
+assertContains(completeActivationBody, "clearDestroyedShips();");
+assertContains(completeActivationBody, "if (m_tacticalGame->hasWinner()) {");
+assertContains(completeActivationBody, "return;");
 assertContains(completeActivationBody, "reDraw();");
+const std::string::size_type clearDestroyedPos = completeActivationBody.find("clearDestroyedShips();");
+const std::string::size_type redrawPos = completeActivationBody.find("reDraw();");
+CPPUNIT_ASSERT(clearDestroyedPos != std::string::npos);
+CPPUNIT_ASSERT(redrawPos != std::string::npos);
+CPPUNIT_ASSERT(clearDestroyedPos < redrawPos);
 }
 
 void FTacticalBattleScreenDelegationTest::testBattleScreenDamageSummaryDialogDelegatesThroughInstalledUI() {

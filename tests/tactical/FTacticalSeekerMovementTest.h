@@ -47,7 +47,7 @@ void tearDown();
  *
  * @author gpt-5.4 (high)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  */
 void testSeekerTargetSelectionFiltersAndTieBreaksAcrossSides();
 

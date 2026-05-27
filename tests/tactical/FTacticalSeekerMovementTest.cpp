@@ -69,6 +69,7 @@ public:
 		m_maxDCR = 1;
 		m_currentDCR = 1;
 	}
+
 };
 
 }
@@ -125,6 +126,8 @@ const std::string selectTargetBody = extractFunctionBody(source,
 "FVehicle * FTacticalGame::selectClosestSeekerTarget(");
 const std::string tieBreakBody = extractFunctionBody(source,
 "unsigned int FTacticalGame::chooseRandomSeekerIndex(unsigned int candidateCount) const");
+const std::string contactTargetBody = extractFunctionBody(source,
+"FVehicle * FTacticalGame::selectSeekerContactTargetAtHex(");
 
 assertContains(resolveBody, "candidateTargets.insert(candidateTargets.end(), m_attackShips->begin(), m_attackShips->end());");
 assertContains(resolveBody, "candidateTargets.insert(candidateTargets.end(), m_defendShips->begin(), m_defendShips->end());");
@@ -142,6 +145,11 @@ assertContains(selectTargetBody, "return closestShips[chooseRandomSeekerIndex(st
 
 assertContains(tieBreakBody, "if (candidateCount <= 1) {");
 assertContains(tieBreakBody, "return static_cast<unsigned int>(irand(candidateCount) - 1);");
+assertContains(contactTargetBody, "const int maxHP = (*itr)->getMaxHP();");
+assertContains(contactTargetBody, "if (maxHP > highestMaxHP) {");
+assertContains(contactTargetBody, "toughestTargets.push_back(*itr);");
+assertContains(contactTargetBody, "randomTargetIndex = chooseRandomSeekerIndex(static_cast<unsigned int>(validTargets.size()));");
+assertContains(contactTargetBody, "return toughestTargets[randomTargetIndex % toughestTargets.size()];");
 }
 
 void FTacticalSeekerMovementTest::testSeekerHeadingAndMovementGreedyTurnLimits() {
