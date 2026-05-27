@@ -1,0 +1,52 @@
+{
+  "status": "success",
+  "task": "tactical-seeker-missiles/TSM-008",
+  "subtask_id": "TSM-008",
+  "branch": "seekers-tsm-008-verifier-20260527",
+  "reviewed_head": "af1c196",
+  "baseline": "d4fe29b",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "findings": [],
+  "acceptance_criteria_reference": [
+    "plans/tactical-seeker-missiles-plan.md",
+    "artifacts/tactical-seeker-missiles/TSM-008/verifier_prompt.txt"
+  ],
+  "convention_files_considered": [
+    "AGENTS.md",
+    "myteam get role verifier"
+  ],
+  "review_scope": {
+    "implementation_files": [
+      "include/tactical/FTacticalGame.h",
+      "src/tactical/FTacticalGame.cpp"
+    ],
+    "forwarding_files": [
+      "include/tactical/FBattleScreen.h",
+      "src/tactical/FBattleScreen.cpp"
+    ],
+    "test_files": [
+      "tests/tactical/FTacticalSeekerMovementTest.h",
+      "tests/tactical/FTacticalSeekerMovementTest.cpp"
+    ],
+    "documentation_files": [
+      "doc/DesignNotes.md",
+      "doc/UsersGuide.md"
+    ]
+  },
+  "test_sufficiency_summary": "Sufficient: focused tactical seeker tests cover same-hex pre-movement contact, movement-step contact, survivor state progression, 12-hex expiry, enemy active-seeker non-movement, and phase progression; verifier rerun TacticalTests passed with OK (177 tests).",
+  "documentation_accuracy_summary": "Accurate: DesignNotes and UsersGuide describe activation-completion seeker resolution, the wx-free model seam, and the player-visible Seeker Activation Done behavior; the protected tactical operations manual was not modified.",
+  "validation_commands_run": [
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "status": "passed",
+      "result": "OK (177 tests)"
+    }
+  ],
+  "artifact_file_paths_written": [
+    "artifacts/tactical-seeker-missiles/TSM-008/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-008/verifier_result.json"
+  ]
+}
