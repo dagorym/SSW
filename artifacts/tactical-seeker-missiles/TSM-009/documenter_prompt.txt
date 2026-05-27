@@ -1,0 +1,67 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validate seeker detonation outcomes through SM weapon fire, ICM allocation, immediate tactical reporting, cleanup ordering, and single seeker removal semantics.
+
+Acceptance criteria validated:
+- Seeker detonations create temporary FWeapon::SM attacks with parent NULL.
+- Same-hex target selection chooses highest getMaxHP() and uses RNG for same-max-HP ties.
+- ICM allocation uses the existing ITacticalUI::runICMSelection(...) path.
+- The seeker -8/ICM modifier is applied through existing weapon/defense mechanics.
+- Seeker damage reports have seeker-specific report labels and are not mislabeled as mine damage.
+- Multiple seeker detonations from one seeker step are batched into one immediate report where practical.
+- Destroyed-ship cleanup happens after the immediate summary path.
+- Detonated seekers are removed exactly once.
+
+Implementation branch or worktree context:
+- Upstream implementation branch/worktree: seekers-tsm-009-implementer-20260527 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-009-implementer-20260527.
+- Tester validation branch/worktree: seekers-tsm-009-tester-20260527 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-009-tester-20260527.
+- Implementer code commit under test: 81a13bf (plus existing implementer artifacts commit 21076e7).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalCombatReport.h
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalMineDamageFlowTest.cpp
+- tests/tactical/FTacticalMineDamageFlowTest.h
+- tests/tactical/FTacticalSeekerMovementTest.cpp
+- tests/tactical/FTacticalSeekerMovementTest.h
+
+Test commit:
+- 5d5cd2c
+
+Commands executed:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && ./GuiTests
+
+Final test outcomes:
+- Tactical suite passed: OK (180 tests).
+- GUI build succeeded via tests/gui make.
+- GUI runtime suite passed directly: OK (43 tests).
+- New/updated tactical fixtures validate seeker SM detonation setup, same-hex highest-max-HP target selection logic with RNG tie handling, ITacticalUI runICMSelection usage, seeker-specific TRT_SeekerDamage labeling, immediate summary batching/ordering, post-summary destroyed-ship cleanup ordering, and single cleanup invocation in seeker detonation resolution.
+
+Documentation context:
+- Tactical report-type surface now includes seeker-specific labeling (TRT_SeekerDamage) distinct from mine-damage labeling.
+- Seeker activation flow now triggers immediate seeker detonation summaries and deferred destroyed-ship cleanup ordering through FTacticalGame/FBattleScreen seams.
+- No direct tactical operations manual edits are required; behavior was validated through tactical and GUI regression suites.
+
+Plan and diff context:
+- Coordination plan path: plans/tactical-seeker-missiles-plan.md.
+- Compare tester branch against upstream implementer branch seekers-tsm-009-implementer-20260527 for test-only changes and against seekers for overall subtask documentation context.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-009
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
