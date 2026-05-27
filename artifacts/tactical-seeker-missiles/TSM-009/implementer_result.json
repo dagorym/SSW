@@ -6,19 +6,14 @@
   ],
   "branch_name": "seekers-tsm-009-implementer-20260527",
   "changed_files": [
-    "include/tactical/FTacticalCombatReport.h",
     "include/tactical/FTacticalGame.h",
-    "src/tactical/FTacticalGame.cpp",
-    "include/tactical/FBattleScreen.h",
-    "src/tactical/FBattleScreen.cpp"
+    "src/tactical/FTacticalGame.cpp"
   ],
-  "code_commit_hash": "81a13bf2a01f2cd572ae479f0033c38ecf77caad",
+  "code_commit_hash": "70c2223bffa898cbd93788249c580893b836a1dc",
   "status": "success",
   "task_id": "TSM-009",
   "validation_commands": [
-    "cd tests && make tactical-tests && ./tactical/TacticalTests",
-    "cd tests/gui && make",
-    "cd tests/gui && xvfb-run -a ./GuiTests"
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
   ],
-  "validation_outcome": "pass (tactical tests OK: 177 tests; gui build pass; GuiTests skipped because xvfb-run is unavailable in this environment)"
+  "validation_outcome": "pass (tactical tests OK: 180 tests)"
 }
