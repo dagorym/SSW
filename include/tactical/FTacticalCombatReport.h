@@ -16,7 +16,8 @@ enum TacticalReportType {
 	TRT_DefensiveFire,
 	TRT_OffensiveFire,
 	TRT_ElectricalFire,
-	TRT_MineDamage
+	TRT_MineDamage,
+	TRT_SeekerDamage
 };
 
 enum TacticalReportEventType {
@@ -179,6 +180,8 @@ inline std::string tacticalCombatReportTypeLabel(TacticalReportType reportType) 
 		return "Electrical Fire Damage";
 	case TRT_MineDamage:
 		return "Mine Damage";
+	case TRT_SeekerDamage:
+		return "Seeker Damage";
 	default:
 		return "Tactical Damage Summary";
 	}

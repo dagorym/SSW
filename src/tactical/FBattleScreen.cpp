@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleScreen class
  * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 25, 2026
+ * @date Last Modified:  May 27, 2026
  *
  */
 
@@ -831,6 +831,12 @@ bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID) {
 
 void FBattleScreen::completeSeekerActivationPhase() {
 	m_tacticalGame->completeSeekerActivationPhase();
+	if (!m_tacticalGame->getLastDestroyedShipIDs().empty()) {
+		clearDestroyedShips();
+		if (m_tacticalGame->hasWinner()) {
+			return;
+		}
+	}
 	reDraw();
 }
 

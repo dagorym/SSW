@@ -444,9 +444,9 @@ public:
 	 * @brief Finish seeker activation and refresh the post-resolution movement view.
 	 *
 	 * Delegates the moving-side-only active seeker resolution step to
-	 * `FTacticalGame`, allowing same-hex contacts, movement-step contacts, and
-	 * 12-hex expiry removal to settle before the screen redraws in normal
-	 * movement state.
+	 * `FTacticalGame`, allowing same-hex contacts, movement-step contacts,
+	 * immediate seeker-detonation summary reporting, and 12-hex expiry removal
+	 * to settle before the screen redraws in normal movement state.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created: May 25, 2026

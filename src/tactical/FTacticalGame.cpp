@@ -421,6 +421,9 @@ void FTacticalGame::beginSeekerActivationPhase() {
 	const std::vector<FPoint> inactiveHexes = getInactiveSeekerActivationHexes();
 	if (inactiveHexes.empty()) {
 		resolveActiveSeekersForMovingPlayer();
+		if (m_ui != NULL) {
+			resolvePendingSeekerDetonationDamage();
+		}
 		beginMovePhase();
 		return;
 	}
@@ -441,6 +444,9 @@ void FTacticalGame::completeSeekerActivationPhase() {
 		return;
 	}
 	resolveActiveSeekersForMovingPlayer();
+	if (m_ui != NULL) {
+		resolvePendingSeekerDetonationDamage();
+	}
 	m_selectedSeekerActivationHex.setPoint(-1, -1);
 	beginMovePhase();
 }
@@ -1093,6 +1099,92 @@ void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 	m_seekerMissiles.swap(nextStates);
 }
 
+void FTacticalGame::resolvePendingSeekerDetonationDamage() {
+	if (m_pendingSeekerContactOutcomes.empty()) {
+		return;
+	}
+
+	const std::vector<FTacticalSeekerContactOutcome> outcomes = m_pendingSeekerContactOutcomes;
+
+	WeaponList seekerDetonations;
+	std::vector<ICMData *> icmData;
+	std::vector<VehicleList *> detonationTargetGroups;
+	for (std::vector<FTacticalSeekerContactOutcome>::const_iterator itr = outcomes.begin();
+		 itr != outcomes.end();
+		 ++itr) {
+		FVehicle * target = findShipByID(itr->targetShipID);
+		if (!isValidSeekerTarget(target)) {
+			continue;
+		}
+
+		FPoint targetHex;
+		if (!findShipHex(target->getID(), targetHex)) {
+			continue;
+		}
+
+		FWeapon * seeker = createWeapon(FWeapon::SM);
+		seeker->setTarget(target, 0, false);
+		seeker->setParent(NULL);
+		seekerDetonations.push_back(seeker);
+
+		VehicleList * targets = new VehicleList;
+		*targets = getHexOccupants(targetHex);
+		detonationTargetGroups.push_back(targets);
+
+		ICMData * iData = new ICMData;
+		iData->weapon = seeker;
+		iData->vehicles = targets;
+		icmData.push_back(iData);
+	}
+
+	if (!seekerDetonations.empty()) {
+		FTacticalCombatReportContext context;
+		context.reportType = TRT_SeekerDamage;
+		context.phase = getPhase();
+		context.actingPlayerID = getMovingPlayerID();
+		context.immediate = true;
+		beginTacticalReport(context);
+
+		if (m_ui != NULL && !icmData.empty()) {
+			VehicleList * defenders = icmData[0]->vehicles;
+			m_ui->runICMSelection(icmData, defenders);
+		}
+
+		bool resolvedAttack = false;
+		for (WeaponList::iterator itr = seekerDetonations.begin(); itr != seekerDetonations.end(); ++itr) {
+			FTacticalAttackResult result = (*itr)->fire();
+			if (!result.fired()) {
+				continue;
+			}
+			resolvedAttack = true;
+			appendTacticalAttackReport(buildTacticalAttackReport(result));
+		}
+
+		FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();
+		if (summary.ships.size() > 0 && m_ui != NULL) {
+			m_ui->showDamageSummary(summary);
+		}
+		clearTacticalReport();
+
+		if (resolvedAttack) {
+			if (m_lastDestroyedShipIDsConsumed) {
+				m_lastDestroyedShipIDs.clear();
+			}
+			clearDestroyedShips();
+		}
+	}
+
+	for (std::vector<ICMData *>::iterator itr = icmData.begin(); itr != icmData.end(); ++itr) {
+		delete (*itr)->weapon;
+		delete *itr;
+	}
+	for (std::vector<VehicleList *>::iterator itr = detonationTargetGroups.begin();
+		 itr != detonationTargetGroups.end();
+		 ++itr) {
+		delete *itr;
+	}
+}
+
 FVehicle * FTacticalGame::selectSeekerContactTargetAtHex(
 	const FTacticalSeekerMissileState & seeker,
 	const FPoint & hex) const
@@ -1111,10 +1203,27 @@ FVehicle * FTacticalGame::selectSeekerContactTargetAtHex(
 	if (validTargets.empty()) {
 		return NULL;
 	}
-	if (validTargets.size() == 1) {
-		return validTargets[0];
+	unsigned int randomTargetIndex = 0;
+	if (validTargets.size() > 1) {
+		randomTargetIndex = chooseRandomSeekerIndex(static_cast<unsigned int>(validTargets.size()));
 	}
-	return validTargets[chooseRandomSeekerIndex(static_cast<unsigned int>(validTargets.size()))];
+
+	int highestMaxHP = -1;
+	VehicleList toughestTargets;
+	for (VehicleList::const_iterator itr = validTargets.begin(); itr != validTargets.end(); ++itr) {
+		const int maxHP = (*itr)->getMaxHP();
+		if (maxHP > highestMaxHP) {
+			highestMaxHP = maxHP;
+			toughestTargets.clear();
+			toughestTargets.push_back(*itr);
+		} else if (maxHP == highestMaxHP) {
+			toughestTargets.push_back(*itr);
+		}
+	}
+	if (toughestTargets.size() == 1) {
+		return toughestTargets[0];
+	}
+	return toughestTargets[randomTargetIndex % toughestTargets.size()];
 }
 
 void FTacticalGame::appendSeekerContactOutcome(

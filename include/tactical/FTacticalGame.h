@@ -747,11 +747,12 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 *
 	 * Selects the first inactive seeker stack for the moving player when one is
 	 * available, or auto-skips directly into the normal movement entry path after
-	 * resolving the active-seeker seam when no inactive stacks remain.
+	 * resolving the active-seeker seam and pending detonation damage when no
+	 * inactive stacks remain.
 	 *
 	 * @author gpt-5.4 (high)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: May 27, 2026
 	 */
 	void beginSeekerActivationPhase();
 	/**
@@ -787,8 +788,9 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	/**
 	 * @brief Select one valid contact ship currently occupying a seeker hex.
 	 *
-	 * Filters the requested hex occupancy to live non-station ships and applies
-	 * the same random tie-break helper used by closest-target selection.
+	 * Filters the requested hex occupancy to live non-station ships, chooses the
+	 * highest-max-HP target, and applies random tie-breaking only among
+	 * same-max-HP candidates.
 	 *
 	 * @param seeker Seeker attempting contact resolution.
 	 * @param hex Tactical hex being evaluated for immediate contact.
@@ -800,6 +802,20 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * @date Last Modified: May 27, 2026
 	 */
 	FVehicle * selectSeekerContactTargetAtHex(const FTacticalSeekerMissileState & seeker, const FPoint & hex) const;
+	/**
+	 * @brief Resolve pending seeker contact outcomes into immediate damage reports.
+	 *
+	 * Converts each pending seeker contact to a temporary `FWeapon::SM` attack,
+	 * runs the existing ICM-allocation seam, appends all fired attacks to one
+	 * immediate seeker-damage report, shows the report summary through
+	 * `ITacticalUI`, and then captures destroyed-ship bookkeeping for wx-side
+	 * cleanup.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	void resolvePendingSeekerDetonationDamage();
 	/**
 	 * @brief Append one model-owned seeker contact outcome to the pending seam.
 	 *
