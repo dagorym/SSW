@@ -1,0 +1,94 @@
+{
+  "status": "failed",
+  "task": "tactical-seeker-missiles/TSM-009",
+  "subtask_id": "TSM-009",
+  "branch": "seekers-tsm-009-verifier-20260527",
+  "reviewed_head": "8112bc0",
+  "baseline": "d26276d",
+  "verdict": "FAIL",
+  "blocking_finding_count": 1,
+  "warning_finding_count": 1,
+  "note_finding_count": 0,
+  "findings": [
+    {
+      "id": "B1",
+      "severity": "BLOCKING",
+      "file": "src/tactical/FTacticalGame.cpp",
+      "lines": "1206-1226",
+      "summary": "Same-hex seeker tie-breaking is biased because the RNG index is chosen from all valid targets before filtering to the highest-max-HP ships."
+    },
+    {
+      "id": "W1",
+      "severity": "WARNING",
+      "file": "tests/tactical/FTacticalSeekerMovementTest.cpp",
+      "lines": "146-152",
+      "summary": "The test suite source-locks the biased modulo tie-break and lacks executable coverage for mixed-size same-hex highest-max-HP ties."
+    }
+  ],
+  "acceptance_criteria_reference": [
+    "plans/tactical-seeker-missiles-plan.md",
+    "artifacts/tactical-seeker-missiles/TSM-009/verifier_prompt.txt"
+  ],
+  "convention_files_considered": [
+    "AGENTS.md",
+    "myteam get role verifier"
+  ],
+  "review_scope": {
+    "implementation_files": [
+      "include/tactical/FTacticalCombatReport.h",
+      "include/tactical/FTacticalGame.h",
+      "src/tactical/FTacticalGame.cpp",
+      "include/tactical/FBattleScreen.h",
+      "src/tactical/FBattleScreen.cpp",
+      "src/weapons/FSeekerMissileLauncher.cpp"
+    ],
+    "test_files": [
+      "tests/tactical/FTacticalSeekerMovementTest.h",
+      "tests/tactical/FTacticalSeekerMovementTest.cpp",
+      "tests/tactical/FTacticalMineDamageFlowTest.h",
+      "tests/tactical/FTacticalMineDamageFlowTest.cpp",
+      "tests/tactical/FTacticalCombatReportTest.h",
+      "tests/tactical/FTacticalCombatReportTest.cpp",
+      "tests/tactical/FTacticalBattleScreenDelegationTest.cpp"
+    ],
+    "documentation_files": [
+      "doc/DesignNotes.md",
+      "doc/UsersGuide.md"
+    ]
+  },
+  "upstream_commits_reviewed": {
+    "implementer": "81a13bf",
+    "tester": "5d5cd2c",
+    "documenter": "46de48f",
+    "documenter_artifacts": "8112bc0"
+  },
+  "test_sufficiency_summary": "Insufficient for one acceptance criterion: the rerun tactical and GUI suites passed, but the tests do not execute a mixed-size same-hex case with two equal-largest ships and a smaller ship, so the biased highest-max-HP tie-break escaped coverage.",
+  "documentation_accuracy_summary": "Partially accurate: DesignNotes correctly describes the intended seeker detonation/report flow, but UsersGuide.md overstates the current implementation by claiming equal-largest same-hex ties are broken randomly when the code is biased by smaller valid occupants.",
+  "validation_commands_run": [
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "status": "passed",
+      "result": "OK (180 tests)"
+    },
+    {
+      "command": "cd tests/gui && make && ./GuiTests",
+      "status": "passed",
+      "result": "OK (43 tests)"
+    },
+    {
+      "command": "git diff --check master...HEAD -- include/tactical/FTacticalCombatReport.h include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp src/weapons/FSeekerMissileLauncher.cpp tests/tactical/FTacticalSeekerMovementTest.* tests/tactical/FTacticalMineDamageFlowTest.* tests/tactical/FTacticalCombatReportTest.* tests/tactical/FTacticalBattleScreenDelegationTest.cpp doc/DesignNotes.md doc/UsersGuide.md doc/rules/tactical_operations_manual.md",
+      "status": "passed",
+      "result": "clean"
+    },
+    {
+      "command": "git diff --name-status master...HEAD -- doc/rules/tactical_operations_manual.md",
+      "status": "passed",
+      "result": "no changes"
+    }
+  ],
+  "artifact_file_paths_written": [
+    "artifacts/tactical-seeker-missiles/TSM-009/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-009/verifier_result.json"
+  ],
+  "protected_file_unchanged": true
+}
