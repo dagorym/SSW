@@ -4,8 +4,8 @@
     "artifacts/tactical-seeker-missiles/TSM-007/documenter_result.json",
     "artifacts/tactical-seeker-missiles/TSM-007/verifier_prompt.txt"
   ],
-  "branch_name": "seekers-tsm-007-documenter-20260524",
-  "documentation_commit_hash": "cc5b19ef22264c7defd2a62287f2c0daa7ecbae7",
+  "branch_name": "seekers-tsm-007-documenter-20260527",
+  "documentation_commit_hash": "3c099334054e024e819c219d3bcc4d0f45a3dc55",
   "documentation_files_changed": [
     "include/tactical/FTacticalGame.h"
   ],

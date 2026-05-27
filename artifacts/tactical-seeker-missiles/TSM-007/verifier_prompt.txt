@@ -1,7 +1,7 @@
 Your role is 'verifier'. Your task is as follows:
 
 Original task summary:
-- Updated TSM-007 documentation for model-side seeker targeting and greedy movement helper contracts.
+- Updated TSM-007 documentation for deterministic seeker targeting and greedy movement helper seams.
 
 Acceptance criteria to verify:
 - Target selection considers live non-station ships from both attacker and defender sides using hex distance from the seeker.
@@ -9,15 +9,15 @@ Acceptance criteria to verify:
 - Initial seeker facing can adjust by at most three hexsides before movement toward the chosen target.
 - Per-step seeker movement evaluates straight, left, and right entries and applies at most one hexside of turning while greedily reducing distance where possible.
 - Movement allowance progression remains the capped 2, 4, 6, 8, 10, 12 sequence.
-- Updated documentation accurately describes the seeker helper contracts in include/tactical/FTacticalGame.h without modifying doc/rules/tactical_operations_manual.md.
+- Updated documentation accurately describes the deterministic helper seams in include/tactical/FTacticalGame.h without modifying doc/rules/tactical_operations_manual.md.
 
 Implementation branch or worktree context:
 - Implementer branch/worktree: seekers-tsm-007-implementer-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-007-implementer-20260524.
-- Implementer code commit: bcd76a7 (Implement seeker model targeting and movement helpers).
-- Tester branch/worktree: seekers-tsm-007-tester-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-007-tester-20260524.
-- Tester test commit: 0329a87 (Add tactical seeker movement regression tests).
-- Documenter branch/worktree: seekers-tsm-007-documenter-20260524 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-007-documenter-20260524.
-- Documentation commit: cc5b19ef22264c7defd2a62287f2c0daa7ecbae7.
+- Implementer remediation code commit: c76b96b (Remediate TSM-007 seeker helper warnings).
+- Tester branch/worktree: seekers-tsm-007-tester-20260527 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-007-tester-20260527.
+- Tester test/artifact commit: ad34662 (artifacts: refresh TSM-007 tester outputs) on top of behavioral test commit acbe3ad.
+- Documenter branch/worktree: seekers-tsm-007-documenter-20260527 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-007-documenter-20260527.
+- Documentation commit: 3c099334054e024e819c219d3bcc4d0f45a3dc55.
 
 Files modified by the Implementer, Tester, and Documenter:
 - include/tactical/FTacticalGame.h
@@ -37,6 +37,7 @@ Files modified by the Implementer, Tester, and Documenter:
 
 Commands executed:
 - myteam get role documenter
+- myteam get skill execution-start
 - myteam get skill documenter/preflight
 - myteam get skill documenter/diff-review
 - myteam get skill documenter/doc-editing
@@ -45,20 +46,22 @@ Commands executed:
 - myteam get skill two-commit-artifact-flow
 - myteam get skill documenter/artifact-writing
 - myteam get skill documenter/verifier-handoff
+- myteam get skill handoff-prompt-contract
 - python .myteam/documenter/preflight/resolve_preflight.py --repo-root . --input artifacts/tactical-seeker-missiles/TSM-007/documenter_prompt.txt
-- python .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base seekers --head HEAD
+- python .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base c76b96b --head HEAD
 - python .myteam/documenter/agents-guidance/scan_in_code_doc_requirements.py --root .
 - python .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root . --phase docs --artifact-dir artifacts/tactical-seeker-missiles/TSM-007
 - cd tests && make tactical-tests && ./tactical/TacticalTests
-- git commit -m "docs: capture TSM-007 seeker helper contracts"
+- git commit -m "docs: capture TSM-007 seeker helper seams"
 
 Final test outcomes:
-- tactical/TacticalTests passed after documentation updates: OK (173 tests).
-- Regression coverage still verifies cross-side seeker target filtering, RNG tie-breaking helper use, three-hexside heading adjustment, greedy one-hexside turns, capped allowance progression, and non-wx helper boundaries.
+- tactical/TacticalTests passed after documentation updates: OK (175 tests).
+- Regression coverage still verifies deterministic closest-target filtering, RNG tie-break helper use, three-hexside pre-move heading adjustment, greedy one-step movement choices, capped allowance progression, and non-wx helper boundaries.
 
 Plan or evaluation context guidance:
 - Plan path: plans/tactical-seeker-missiles-plan.md.
-- TSM-007 documentation impact called for Doxygen comments for targeting and movement helper declarations.
+- TSM-007 documentation impact called for Doxygen comments on targeting and movement helper declarations.
+- The remediation-plus-tester diff adds deterministic closest-target snapshot and one-step greedy movement seams used by behavioral tests; the header comments now describe that testability surface.
 - doc/rules/tactical_operations_manual.md is immutable and must remain unchanged.
 
 Convention-file guidance:
