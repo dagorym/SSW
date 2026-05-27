@@ -1203,11 +1203,6 @@ FVehicle * FTacticalGame::selectSeekerContactTargetAtHex(
 	if (validTargets.empty()) {
 		return NULL;
 	}
-	unsigned int randomTargetIndex = 0;
-	if (validTargets.size() > 1) {
-		randomTargetIndex = chooseRandomSeekerIndex(static_cast<unsigned int>(validTargets.size()));
-	}
-
 	int highestMaxHP = -1;
 	VehicleList toughestTargets;
 	for (VehicleList::const_iterator itr = validTargets.begin(); itr != validTargets.end(); ++itr) {
@@ -1222,6 +1217,12 @@ FVehicle * FTacticalGame::selectSeekerContactTargetAtHex(
 	}
 	if (toughestTargets.size() == 1) {
 		return toughestTargets[0];
+	}
+
+	validTargets = toughestTargets;
+	unsigned int randomTargetIndex = 0;
+	if (validTargets.size() > 1) {
+		randomTargetIndex = chooseRandomSeekerIndex(static_cast<unsigned int>(validTargets.size()));
 	}
 	return toughestTargets[randomTargetIndex % toughestTargets.size()];
 }
@@ -1378,6 +1379,25 @@ void FTacticalGame::moveSeekerTowardTarget(FTacticalSeekerMissileState & seeker,
 		seeker.heading = bestHeading;
 		seeker.hex = bestHex;
 	}
+}
+
+VehicleList FTacticalGame::collectHighestMaxHPSeekerTargets(const VehicleList & candidates) const {
+	int highestMaxHP = -1;
+	VehicleList toughestTargets;
+	for (VehicleList::const_iterator itr = candidates.begin(); itr != candidates.end(); ++itr) {
+		if (!isValidSeekerTarget(*itr)) {
+			continue;
+		}
+		const int maxHP = (*itr)->getMaxHP();
+		if (maxHP > highestMaxHP) {
+			highestMaxHP = maxHP;
+			toughestTargets.clear();
+			toughestTargets.push_back(*itr);
+		} else if (maxHP == highestMaxHP) {
+			toughestTargets.push_back(*itr);
+		}
+	}
+	return toughestTargets;
 }
 
 std::vector<unsigned int> FTacticalGame::collectClosestSeekerTargetIDs(

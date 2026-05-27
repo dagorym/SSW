@@ -950,6 +950,23 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 */
 	void moveSeekerTowardTarget(FTacticalSeekerMissileState & seeker, const FPoint & targetHex) const;
 	/**
+	 * @brief Collect highest-max-HP valid seeker contact candidates.
+	 *
+	 * Filters the provided ship list to live non-station targets and returns all
+	 * ships tied for the largest `getMaxHP()` value. This isolates deterministic
+	 * contact filtering from random tie-breaking so behavioral tests can validate
+	 * mixed-size same-hex target stacks without relying on RNG outcomes.
+	 *
+	 * @param candidates Candidate ships sharing a contact hex.
+	 *
+	 * @return Valid ships tied at the highest max HP (empty when none qualify).
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	VehicleList collectHighestMaxHPSeekerTargets(const VehicleList & candidates) const;
+	/**
 	 * @brief Collect closest valid target ship IDs from snapshot candidate data.
 	 *
 	 * Filters out destroyed, out-of-bounds, and station candidates, computes
