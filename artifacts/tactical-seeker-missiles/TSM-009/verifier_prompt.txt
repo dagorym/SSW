@@ -1,0 +1,90 @@
+You are the Verifier Agent.
+
+Task summary:
+- TSM-009 resolves seeker detonation outcomes through temporary `FWeapon::SM` attacks, shared ICM allocation, immediate seeker-specific tactical reporting, and post-summary destroyed-ship cleanup.
+- The Documenter stage updated the in-code and repository docs to match the shipped behavior without changing implementation or tests.
+
+Acceptance criteria to verify:
+- Seeker detonations create temporary `FWeapon::SM` attacks with parent `NULL`.
+- Same-hex target selection chooses the highest `getMaxHP()` ship and uses RNG for same-max-HP ties.
+- ICM allocation uses the existing `ITacticalUI::runICMSelection(...)` path.
+- The seeker `-8/ICM` modifier is applied through existing weapon/defense mechanics.
+- Seeker damage reports use seeker-specific report labels and are not mislabeled as mine damage.
+- Multiple seeker detonations from one seeker step are batched into one immediate report where practical.
+- Destroyed-ship cleanup happens after the immediate summary path.
+- Detonated seekers are removed exactly once.
+- Documentation now accurately reflects the shipped seeker-detonation reporting flow in the touched headers plus `doc/DesignNotes.md` and `doc/UsersGuide.md`.
+
+Implementation branch or worktree context:
+- Current branch: `seekers-tsm-009-documenter-20260527`
+- Current worktree: `/home/tstephen/repos/SSW-worktrees/seekers-tsm-009-documenter-20260527`
+- Tester branch/worktree: `seekers-tsm-009-tester-20260527` at `/home/tstephen/repos/SSW-worktrees/seekers-tsm-009-tester-20260527`
+- Implementer code commit: `81a13bf2a01f2cd572ae479f0033c38ecf77caad`
+- Tester commit: `5d5cd2c`
+- Documentation commit: `46de48f1314e8aaeeb37dbe53fb4d041ba6803f3`
+
+Files modified by Implementer, Tester, and Documenter to inspect:
+- `include/tactical/FTacticalCombatReport.h`
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+- `include/tactical/FBattleScreen.h`
+- `src/tactical/FBattleScreen.cpp`
+- `tests/tactical/FTacticalBattleScreenDelegationTest.cpp`
+- `tests/tactical/FTacticalCombatReportTest.cpp`
+- `tests/tactical/FTacticalCombatReportTest.h`
+- `tests/tactical/FTacticalMineDamageFlowTest.cpp`
+- `tests/tactical/FTacticalMineDamageFlowTest.h`
+- `tests/tactical/FTacticalSeekerMovementTest.cpp`
+- `tests/tactical/FTacticalSeekerMovementTest.h`
+- `doc/DesignNotes.md`
+- `doc/UsersGuide.md`
+- `artifacts/tactical-seeker-missiles/TSM-009/implementer_report.md`
+- `artifacts/tactical-seeker-missiles/TSM-009/implementer_result.json`
+- `artifacts/tactical-seeker-missiles/TSM-009/tester_prompt.txt`
+- `artifacts/tactical-seeker-missiles/TSM-009/tester_report.md`
+- `artifacts/tactical-seeker-missiles/TSM-009/tester_result.json`
+- `artifacts/tactical-seeker-missiles/TSM-009/documenter_prompt.txt`
+- `artifacts/tactical-seeker-missiles/TSM-009/documenter_report.md`
+- `artifacts/tactical-seeker-missiles/TSM-009/documenter_result.json`
+- `artifacts/tactical-seeker-missiles/TSM-009/verifier_prompt.txt`
+
+Commands executed:
+- `git --no-pager diff seekers...HEAD -- include/tactical/FTacticalCombatReport.h include/tactical/FTacticalGame.h include/tactical/FBattleScreen.h src/tactical/FTacticalGame.cpp src/tactical/FBattleScreen.cpp tests/tactical/FTacticalBattleScreenDelegationTest.cpp tests/tactical/FTacticalCombatReportTest.cpp tests/tactical/FTacticalCombatReportTest.h tests/tactical/FTacticalMineDamageFlowTest.cpp tests/tactical/FTacticalMineDamageFlowTest.h tests/tactical/FTacticalSeekerMovementTest.cpp tests/tactical/FTacticalSeekerMovementTest.h doc/DesignNotes.md doc/UsersGuide.md`
+- `git --no-pager diff --check`
+- `cd tests && make tactical-tests && ./tactical/TacticalTests`
+- `cd tests/gui && make`
+- `cd tests/gui && ./GuiTests`
+
+Final test outcomes:
+- Tactical suite passed upstream: `OK (180 tests)`.
+- GUI build succeeded upstream via `tests/gui make`.
+- GUI runtime suite passed upstream: `OK (43 tests)`.
+- Documenter stage made documentation-only edits and confirmed a clean patch with `git --no-pager diff --check`.
+
+Plan and review context:
+- Plan path: `plans/tactical-seeker-missiles-plan.md`.
+- Comparison base assumption: `seekers`, inferred from the local branch graph and the tester/documenter branch ancestry.
+- Do not edit `doc/rules/tactical_operations_manual.md`; treat it as a protected external artifact.
+- Review `AGENTS.md` for repository conventions if needed, and infer any missing convention or artifact-path details from repository context when evidence is sufficient.
+
+Documentation files updated:
+- `include/tactical/FTacticalCombatReport.h`
+- `include/tactical/FTacticalGame.h`
+- `include/tactical/FBattleScreen.h`
+- `doc/DesignNotes.md`
+- `doc/UsersGuide.md`
+
+Verification scope:
+- Verify implementation behavior, regression coverage, and the documentation updates together.
+- Confirm the docs match the shipped behavior: seeker-specific summary labeling, highest-max-HP same-hex target selection, normal ICM dialog reuse, and summary-before-cleanup ordering for seeker detonations.
+
+Startup behavior:
+- If enough combined diff context, evaluation criteria context, and repository context are present, begin review work immediately and continue in the same run.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, review-scope establishment, convention discovery, or diff inspection when review work can proceed.
+
+Shared artifact directory:
+- `artifacts/tactical-seeker-missiles/TSM-009`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
