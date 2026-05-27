@@ -4,24 +4,21 @@
     "artifacts/tactical-seeker-missiles/TSM-007/tester_result.json",
     "artifacts/tactical-seeker-missiles/TSM-007/documenter_prompt.txt"
   ],
-  "branch_name": "seekers-tsm-007-tester-20260524",
+  "branch_name": "seekers-tsm-007-tester-20260527",
   "commands_run": [
     "cd tests && make tactical-tests && ./tactical/TacticalTests"
   ],
   "pass_fail_totals": {
-    "tactical": {
-      "failed": 0,
-      "passed": 173,
-      "total": 173
-    }
+    "tests_failed": 0,
+    "tests_passed": 175,
+    "tests_run": 175
   },
   "status": "success",
   "task_id": "TSM-007",
-  "test_commit_hash": "0329a87",
+  "test_commit_hash": "acbe3ad",
   "test_files_changed": [
     "tests/tactical/FTacticalSeekerMovementTest.h",
-    "tests/tactical/FTacticalSeekerMovementTest.cpp",
-    "tests/tactical/TacticalTests.cpp"
+    "tests/tactical/FTacticalSeekerMovementTest.cpp"
   ],
   "unmet_acceptance_criteria": []
 }
