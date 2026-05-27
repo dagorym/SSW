@@ -150,7 +150,9 @@ FTacticalOrdnanceSource source;
  * @brief Model-owned seeker contact outcome captured during activation resolve.
  *
  * Stores the minimal non-wx seam data needed for follow-on damage/ICM/report
- * integration work after seeker movement determines a ship contact.
+ * integration work after the moving player's seeker-activation completion
+ * detects either an immediate same-hex contact or a later movement-step
+ * contact.
  *
  * @author gpt-5.4 (high)
  * @date Created: May 27, 2026
@@ -281,12 +283,15 @@ int getPhase() const { return m_phase; }
 /**
  * @brief Finish seeker activation and enter normal movement.
  *
- * Resolves active seekers for the moving player, clears the selected activation
- * stack, and advances into the ordinary movement-phase entry path.
+ * Resolves only the moving player's active seekers, recording any same-hex or
+ * movement-step contacts in the pending seeker-contact seam, removing seekers
+ * that contact or expire on their 12-hex movement turn, then clears the
+ * selected activation stack and advances into the ordinary movement-phase entry
+ * path.
  *
  * @author Tom Stephens, gpt-5.4 (high)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  */
 void completeSeekerActivationPhase();
 
@@ -613,9 +618,24 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * @date Last Modified: May 24, 2026
 	 */
 	std::vector<FTacticalSeekerMissileState> getSeekerMissilesForOwner(unsigned int ownerID, bool activeOnly = false) const;
-	/// get seeker contact outcomes captured by the last active-seeker resolution pass
+	/**
+	 * @brief Get seeker contact outcomes captured by the last activation resolve.
+	 *
+	 * Returns the moving player's pending same-hex and movement-step contact
+	 * outcomes produced by the most recent active-seeker resolution pass.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
 	const std::vector<FTacticalSeekerContactOutcome> & getPendingSeekerContactOutcomes() const { return m_pendingSeekerContactOutcomes; }
-	/// clear pending seeker contact outcomes after downstream resolution consumes them
+	/**
+	 * @brief Clear pending seeker contact outcomes after downstream resolution.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
 	void clearPendingSeekerContactOutcomes();
 	bool isHexInBounds(const FPoint & hex) const;
 	bool isHexOccupied(const FPoint & hex) const;
@@ -749,11 +769,15 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	/**
 	 * @brief Resolve active seeker targeting and movement before movement phase.
 	 *
-	 * Active seekers owned by the moving player advance each turn by selecting
-	 * the closest non-station ship target across both sides, applying random
-	 * tie-breaking only after the deterministic closest-target helper narrows the
-	 * candidate set, adjusting initial facing up to three hexsides toward the
-	 * chosen target, then moving with greedy one-hexside turn limits.
+	 * Advances only the moving player's active seekers by first checking
+	 * same-hex contact, then selecting the closest non-station ship target
+	 * across both sides, applying random tie-breaking only after the
+	 * deterministic closest-target helper narrows the candidate set, adjusting
+	 * initial facing up to three hexsides toward the chosen target, and moving
+	 * with greedy one-hexside turn limits until contact occurs or the current
+	 * allowance is exhausted. Seekers that contact are removed after recording a
+	 * pending outcome, seekers that reach the 12-hex allowance without contact
+	 * expire, and all other seeker state is preserved for later turns.
 	 *
 	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
 	 * @date Created: May 25, 2026

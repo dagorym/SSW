@@ -280,7 +280,13 @@ All three combat phases and their supporting mechanics are fully implemented:
   lower panel renders instructional text plus one clickable row per inactive
   seeker in the selected stack together with a `Seeker Activation Done` action
   button. Once tactical play leaves that phase, normal battle rendering hides
-  inactive seekers again and shows only active seekers on the map.
+  inactive seekers again and shows only active seekers on the map. TSM-008
+  extends activation completion so `completeSeekerActivationPhase()` resolves
+  the moving player's active seekers before `PH_MOVE`: same-hex contacts are
+  captured first, movement-step contacts append pending
+  `FTacticalSeekerContactOutcome` records for downstream damage work, seekers
+  that contact are removed, and seekers that reach their 12-hex allowance
+  without contact expire.
 - **Defensive fire phase** (`PH_DEFENSE_FIRE`): closest-approach range
   checking in `setIfValidTarget()`; FF weapon arc validation in
   `computeFFRange()`.
@@ -472,6 +478,13 @@ inactive-stack discovery, activation-hex selection, selected-stack inspection,
 one-way individual seeker activation, and activation completion so the later
 board/display subtasks can render and drive the activation UI without
 reintroducing wx state ownership into `FTacticalGame`.
+
+TSM-008 keeps that boundary intact while making activation completion
+behaviorful: `FBattleScreen::completeSeekerActivationPhase()` still remains a
+thin forwarding seam, but the delegated `FTacticalGame` path now performs the
+moving-side active seeker resolution pass, records pending contact outcomes for
+later damage handling, expires 12-hex seekers, and only then enters ordinary
+movement and redraw.
 
 The shipped TSM-005 wx follow-up consumes that forwarding seam. `FBattleBoard`
 loads `icons/SeekerMissile.png` through `FGameConfig::resolveAssetPath(...)`

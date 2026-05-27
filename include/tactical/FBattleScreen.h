@@ -3,7 +3,7 @@
  * @brief Header file for BattleScreen class
  * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 27, 2026
  *
  */
 
@@ -40,7 +40,7 @@ class WXTacticalUI;
  *
  * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 25, 2026
+ * @date Last Modified:  May 27, 2026
  */
 class FBattleScreen : public wxFrame
 {
@@ -441,11 +441,16 @@ public:
 	 */
 	bool activateSelectedInactiveSeeker(unsigned int seekerID);
 	/**
-	 * @brief Finish seeker activation and enter normal movement via FTacticalGame.
+	 * @brief Finish seeker activation and refresh the post-resolution movement view.
+	 *
+	 * Delegates the moving-side-only active seeker resolution step to
+	 * `FTacticalGame`, allowing same-hex contacts, movement-step contacts, and
+	 * 12-hex expiry removal to settle before the screen redraws in normal
+	 * movement state.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: May 27, 2026
 	 */
 	void completeSeekerActivationPhase();
 	const FHexMap & getMineTargets() const;
