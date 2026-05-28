@@ -729,12 +729,19 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	/**
 	 * @brief Resolve all pending seeker contacts gathered during movement finalization.
 	 *
-	 * Clears any outcomes left over from pre-movement activation, then calls
-	 * `resolvePendingSeekerDetonationDamage()` so ship-triggered seeker contacts
-	 * use exactly the same SM-weapon fire, ICM allocation, immediate report, and
-	 * post-summary destroyed-ship cleanup path used for activation-phase contacts.
+	 * Collects detonating seeker IDs from `m_pendingSeekerContactOutcomes`, then
+	 * calls `resolvePendingSeekerDetonationDamage()` when an `ITacticalUI` is
+	 * installed so ship-triggered seeker contacts use exactly the same SM-weapon
+	 * fire, ICM allocation, immediate `TRT_SeekerDamage` report, and post-summary
+	 * destroyed-ship cleanup path used for activation-phase contacts. When no UI
+	 * is installed, clears the pending outcomes directly without damage resolution.
+	 * After resolution, removes each detonated seeker from `m_seekerMissiles`
+	 * exactly once. The caller (`completeMovePhase()`) is responsible for clearing
+	 * any pre-move leftover outcomes before building the per-ship path contact
+	 * list that this method consumes.
 	 * Must be called after all ships in the moving player's list have had their
-	 * paths checked and before `applyMineDamage()` executes.
+	 * paths checked via `checkForActiveSeekersOnPath` and before `applyMineDamage()`
+	 * executes.
 	 *
 	 * @author claude-sonnet-4-6 (medium)
 	 * @date Created: May 28, 2026

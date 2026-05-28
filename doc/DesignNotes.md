@@ -497,6 +497,21 @@ destroyed-ship bookkeeping before its final redraw, preserving the same
 summary-before-cleanup ordering used by the existing immediate mine-damage
 flow.
 
+TSM-010 integrates active seeker path contact into normal ship movement
+finalization. `FTacticalGame::completeMovePhase()` now clears any leftover
+`m_pendingSeekerContactOutcomes` at the start of finalization, then calls the
+new `checkForActiveSeekersOnPath(FVehicle*)` for each moving ship alongside
+the existing `checkForMines()` check. `checkForActiveSeekersOnPath` scans the
+ship's finalized turn path and appends a `FTacticalSeekerContactOutcome` for
+the first active opposing seeker encountered in each path hex; inactive seekers
+are skipped via an explicit `active` flag guard so they never trigger movement
+contact. After all ships are scanned, `completeMovePhase()` calls the new
+`applyMovementSeekerDamage()` to resolve the collected contacts through the
+same `resolvePendingSeekerDetonationDamage()` seam established by TSM-009,
+removing each detonated seeker from `m_seekerMissiles` exactly once. Seeker
+contact damage is therefore resolved before `applyMineDamage()` and before the
+phase advances to `PH_DEFENSE_FIRE`.
+
 The shipped TSM-005 wx follow-up consumes that forwarding seam. `FBattleBoard`
 loads `icons/SeekerMissile.png` through `FGameConfig::resolveAssetPath(...)`
 and applies phase-specific seeker visibility rules: only inactive stacks owned
