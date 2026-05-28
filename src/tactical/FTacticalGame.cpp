@@ -1,9 +1,9 @@
 /**
  * @file FTacticalGame.cpp
  * @brief Implementation file for FTacticalGame class
- * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 27, 2026
+ * @date Last Modified: May 28, 2026
  *
  */
 
@@ -2758,6 +2758,71 @@ void FTacticalGame::checkForMines(FVehicle * ship) {
 	}
 }
 
+void FTacticalGame::checkForActiveSeekersOnPath(FVehicle * ship) {
+	if (ship == NULL) {
+		return;
+	}
+	FTacticalTurnData * turnData = findTurnData(ship->getID());
+	if (turnData == NULL || turnData->path.getPathLength() == 0) {
+		return;
+	}
+	const PointList path = turnData->path.getFullPath();
+	for (PointList::const_iterator hexItr = path.begin(); hexItr != path.end(); ++hexItr) {
+		if (!isHexInBounds(*hexItr)) {
+			continue;
+		}
+		for (std::vector<FTacticalSeekerMissileState>::const_iterator seekerItr = m_seekerMissiles.begin();
+			 seekerItr != m_seekerMissiles.end(); ++seekerItr) {
+			if (!seekerItr->active) {
+				continue;
+			}
+			if (seekerItr->ownerID == ship->getOwner()) {
+				continue;
+			}
+			if (seekerItr->hex.getX() != hexItr->getX() || seekerItr->hex.getY() != hexItr->getY()) {
+				continue;
+			}
+			if (!isValidSeekerTarget(ship)) {
+				continue;
+			}
+			appendSeekerContactOutcome(*seekerItr, ship, false, 0);
+			break;
+		}
+	}
+}
+
+void FTacticalGame::applyMovementSeekerDamage() {
+	if (m_pendingSeekerContactOutcomes.empty()) {
+		return;
+	}
+
+	// Collect the seeker IDs that will detonate so they can be removed after resolution.
+	std::vector<unsigned int> detonatedSeekerIDs;
+	detonatedSeekerIDs.reserve(m_pendingSeekerContactOutcomes.size());
+	for (std::vector<FTacticalSeekerContactOutcome>::const_iterator itr = m_pendingSeekerContactOutcomes.begin();
+		 itr != m_pendingSeekerContactOutcomes.end(); ++itr) {
+		detonatedSeekerIDs.push_back(itr->seekerID);
+	}
+
+	if (m_ui != NULL) {
+		resolvePendingSeekerDetonationDamage();
+	} else {
+		clearPendingSeekerContactOutcomes();
+	}
+
+	// Remove each detonated seeker from the live missile list exactly once.
+	for (std::vector<unsigned int>::const_iterator idItr = detonatedSeekerIDs.begin();
+		 idItr != detonatedSeekerIDs.end(); ++idItr) {
+		for (std::vector<FTacticalSeekerMissileState>::iterator seekerItr = m_seekerMissiles.begin();
+			 seekerItr != m_seekerMissiles.end(); ++seekerItr) {
+			if (seekerItr->seekerID == *idItr) {
+				m_seekerMissiles.erase(seekerItr);
+				break;
+			}
+		}
+	}
+}
+
 void FTacticalGame::applyMineDamage() {
 	WeaponList mines;
 	std::vector<ICMData *> icmData;
@@ -2823,8 +2888,10 @@ void FTacticalGame::applyMineDamage() {
 
 void FTacticalGame::completeMovePhase() {
 	finalizeMovementState();
+	clearPendingSeekerContactOutcomes();
 	VehicleList ships = getShipList(getMovingPlayerID());
 	for (VehicleList::iterator itr = ships.begin(); itr < ships.end(); ++itr) {
+		checkForActiveSeekersOnPath(*itr);
 		checkForMines(*itr);
 		FTacticalTurnData * turnData = findTurnData((*itr)->getID());
 		if (turnData == NULL || turnData->path.getPathLength() == 0) {
@@ -2865,6 +2932,7 @@ void FTacticalGame::completeMovePhase() {
 			}
 		}
 	}
+	applyMovementSeekerDamage();
 	applyMineDamage();
 	m_drawRoute = false;
 	setPhase(PH_DEFENSE_FIRE);

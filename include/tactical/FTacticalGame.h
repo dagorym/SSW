@@ -1,9 +1,9 @@
 /**
  * @file FTacticalGame.h
  * @brief Header file for FTacticalGame class
- * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
+ * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 27, 2026
+ * @date Last Modified: May 28, 2026
  *
  */
 
@@ -230,9 +230,9 @@ typedef struct {
  * behavioral tests, and pending offensive-fire deployment state used by the
  * wx rendering and interaction layers.
  *
- * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard)
+ * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium)
  * @date Created: Mar 29, 2026
- * @date Last Modified: May 27, 2026
+ * @date Last Modified: May 28, 2026
  */
 class FTacticalGame {
 public:
@@ -710,6 +710,37 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	void checkMoveStatus();
 	void checkForMines(FVehicle * ship);
 	void applyMineDamage();
+	/**
+	 * @brief Check whether a moving ship's path enters any active-seeker hex.
+	 *
+	 * Scans the ship's current-turn path for hexes that contain at least one
+	 * active seeker owned by the opposing side, appending a
+	 * `FTacticalSeekerContactOutcome` for the first qualifying active seeker
+	 * encountered in each such hex. Inactive seekers are ignored entirely so
+	 * they cannot trigger movement contact.
+	 *
+	 * @param ship Moving ship whose finalized turn path is being checked.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: May 28, 2026
+	 * @date Last Modified: May 28, 2026
+	 */
+	void checkForActiveSeekersOnPath(FVehicle * ship);
+	/**
+	 * @brief Resolve all pending seeker contacts gathered during movement finalization.
+	 *
+	 * Clears any outcomes left over from pre-movement activation, then calls
+	 * `resolvePendingSeekerDetonationDamage()` so ship-triggered seeker contacts
+	 * use exactly the same SM-weapon fire, ICM allocation, immediate report, and
+	 * post-summary destroyed-ship cleanup path used for activation-phase contacts.
+	 * Must be called after all ships in the moving player's list have had their
+	 * paths checked and before `applyMineDamage()` executes.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: May 28, 2026
+	 * @date Last Modified: May 28, 2026
+	 */
+	void applyMovementSeekerDamage();
 	void clearStoppedShipPreviewRoutes();
 	void rebuildStoppedShipPreviewRoutes();
 	/**
