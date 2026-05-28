@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(myteam *)",
+      "Bash(venv/bin/python -m myteam *)",
+      "Bash(python3 .myteam/*)",
+      "Bash(bash .myteam/*)"
+    ]
+  }
+}
