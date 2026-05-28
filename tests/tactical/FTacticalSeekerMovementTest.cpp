@@ -6,6 +6,7 @@
 #include "FTacticalSeekerMovementTest.h"
 
 #include "core/FHexMap.h"
+#include "core/FHexPath.h"
 #include "ships/FVehicle.h"
 #include "tactical/FTacticalGame.h"
 
@@ -32,6 +33,8 @@ public:
 	using Frontier::FTacticalGame::collectClosestSeekerTargetIDs;
 	using Frontier::FTacticalGame::computeSeekerGreedyNextStep;
 	using Frontier::FTacticalGame::resolveActiveSeekersForMovingPlayer;
+	using Frontier::FTacticalGame::checkForActiveSeekersOnPath;
+	using Frontier::FTacticalGame::applyMovementSeekerDamage;
 
 	void configureSides(unsigned int defenderID, unsigned int attackerID, bool movingAttacker) {
 		m_playerID[0] = defenderID;
@@ -51,6 +54,25 @@ public:
 
 	void seedSeeker(const Frontier::FTacticalSeekerMissileState & seeker) {
 		m_seekerMissiles.push_back(seeker);
+	}
+
+	// Seed a minimal turn data record so checkForActiveSeekersOnPath can find the ship's path.
+	void seedTurnDataWithPath(unsigned int shipID, const Frontier::PointList & path) {
+		Frontier::FTacticalTurnData data;
+		data.hasMoved = true;
+		data.speed = 1;
+		data.startHeading = 0;
+		data.finalHeading = 0;
+		data.curHeading = 0;
+		data.nMoved = 1;
+		for (Frontier::PointList::const_iterator itr = path.begin(); itr != path.end(); ++itr) {
+			data.path.addPoint(*itr);
+		}
+		m_turnInfo[shipID] = data;
+	}
+
+	void clearPendingOutcomes() {
+		clearPendingSeekerContactOutcomes();
 	}
 };
 
@@ -495,6 +517,130 @@ CPPUNIT_ASSERT(selectTargetBody.find("wx") == std::string::npos);
 CPPUNIT_ASSERT(moveBody.find("wx") == std::string::npos);
 CPPUNIT_ASSERT(mapHeader.find("wx") == std::string::npos);
 CPPUNIT_ASSERT(mapSource.find("wx") == std::string::npos);
+}
+
+void FTacticalSeekerMovementTest::testInactiveSeekerIgnoredByPathContactCheck() {
+	// AC: inactive seeker hexes do not trigger contact or damage.
+	// An inactive seeker placed in a ship's movement path must not generate any
+	// pending contact outcome.
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+	FSeekerHarnessShip * movingShip = new FSeekerHarnessShip(1u, "Frigate");
+	attackShips->push_back(movingShip);
+
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+
+	// Place the ship at hex (10,10).
+	const Frontier::FPoint shipHex(10, 10);
+	game.placeShipAtHex(movingShip, shipHex);
+
+	// Build a path that passes through (11,10) and (12,10).
+	Frontier::PointList path;
+	path.push_back(shipHex);
+	path.push_back(Frontier::FPoint(11, 10));
+	path.push_back(Frontier::FPoint(12, 10));
+	game.seedTurnDataWithPath(movingShip->getID(), path);
+
+	// Seed an INACTIVE seeker owned by the defender (opposing side) directly on the path.
+	Frontier::FTacticalSeekerMissileState inactiveSeeker;
+	inactiveSeeker.seekerID = 5001u;
+	inactiveSeeker.ownerID = 0u;
+	inactiveSeeker.hex = Frontier::FPoint(11, 10);
+	inactiveSeeker.heading = 0;
+	inactiveSeeker.active = false;    // <-- inactive: must be ignored
+	inactiveSeeker.movementTurn = 0;
+	inactiveSeeker.movementAllowance = 0;
+	inactiveSeeker.hasSource = false;
+	game.seedSeeker(inactiveSeeker);
+
+	game.clearPendingOutcomes();
+	game.checkForActiveSeekersOnPath(movingShip);
+
+	// The inactive seeker must not generate any contact outcome.
+	const std::vector<Frontier::FTacticalSeekerContactOutcome> & outcomes = game.getPendingSeekerContactOutcomes();
+	CPPUNIT_ASSERT_MESSAGE("Inactive seeker must not trigger path contact", outcomes.empty());
+
+	// The inactive seeker must still be in the model (not removed).
+	const std::vector<Frontier::FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), seekers.size());
+	CPPUNIT_ASSERT_EQUAL(5001u, seekers[0].seekerID);
+
+	delete movingShip;
+}
+
+void FTacticalSeekerMovementTest::testSeekerRemovedFromModelAfterMovementContact() {
+	// AC: detonated seekers are removed exactly once after movement-path contact.
+	// An active opposing seeker in the ship's path must produce a contact outcome,
+	// and applyMovementSeekerDamage must remove it from m_seekerMissiles exactly once
+	// (without a UI installed, outcomes are cleared and seeker is still removed).
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+	FSeekerHarnessShip * movingShip = new FSeekerHarnessShip(1u, "Frigate");
+	attackShips->push_back(movingShip);
+
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+
+	// Place the ship at hex (20,20).
+	const Frontier::FPoint shipHex(20, 20);
+	game.placeShipAtHex(movingShip, shipHex);
+
+	// Build a path that passes through the seeker hex.
+	const Frontier::FPoint seekerHex(21, 20);
+	Frontier::PointList path;
+	path.push_back(shipHex);
+	path.push_back(seekerHex);
+	game.seedTurnDataWithPath(movingShip->getID(), path);
+
+	// Seed an ACTIVE seeker owned by the defender (opposing side) on the path.
+	Frontier::FTacticalSeekerMissileState activeSeeker;
+	activeSeeker.seekerID = 7001u;
+	activeSeeker.ownerID = 0u;       // owned by defender (opposing the moving attacker)
+	activeSeeker.hex = seekerHex;
+	activeSeeker.heading = 0;
+	activeSeeker.active = true;      // <-- active: must trigger contact
+	activeSeeker.movementTurn = 2;
+	activeSeeker.movementAllowance = 4;
+	activeSeeker.hasSource = false;
+	game.seedSeeker(activeSeeker);
+
+	// Seed a second seeker that is NOT on the path so we can verify it survives.
+	Frontier::FTacticalSeekerMissileState bystander;
+	bystander.seekerID = 7002u;
+	bystander.ownerID = 0u;
+	bystander.hex = Frontier::FPoint(50, 50);
+	bystander.heading = 0;
+	bystander.active = true;
+	bystander.movementTurn = 1;
+	bystander.movementAllowance = 2;
+	bystander.hasSource = false;
+	game.seedSeeker(bystander);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), game.getSeekerMissiles().size());
+
+	// Check the path -- should produce exactly one contact outcome for the active seeker.
+	game.clearPendingOutcomes();
+	game.checkForActiveSeekersOnPath(movingShip);
+
+	const std::vector<Frontier::FTacticalSeekerContactOutcome> & outcomes = game.getPendingSeekerContactOutcomes();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), outcomes.size());
+	CPPUNIT_ASSERT_EQUAL(7001u, outcomes[0].seekerID);
+
+	// Apply the movement seeker damage (no UI installed, so outcomes are cleared without dialog).
+	game.applyMovementSeekerDamage();
+
+	// The contacting seeker must be removed; the bystander seeker must survive.
+	const std::vector<Frontier::FTacticalSeekerMissileState> remainingSeekers = game.getSeekerMissiles();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), remainingSeekers.size());
+	CPPUNIT_ASSERT_EQUAL(7002u, remainingSeekers[0].seekerID);
+
+	// Outcomes must be cleared after applyMovementSeekerDamage.
+	CPPUNIT_ASSERT(game.getPendingSeekerContactOutcomes().empty());
+
+	delete movingShip;
 }
 
 }

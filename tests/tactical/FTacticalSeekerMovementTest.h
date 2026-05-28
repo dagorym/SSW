@@ -17,9 +17,9 @@ namespace FrontierTests {
  * Verifies source-level tactical seeker helper contracts remain deterministic,
  * non-wx, and aligned with planner acceptance criteria.
  *
- * @author gpt-5.4 (high)
+ * @author gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created: May 25, 2026
- * @date Last Modified: May 27, 2026
+ * @date Last Modified: May 28, 2026
  */
 class FTacticalSeekerMovementTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalSeekerMovementTest );
@@ -32,6 +32,8 @@ CPPUNIT_TEST( testDeterministicGreedyNextStepHelperReturnsOneStepMove );
 CPPUNIT_TEST( testActiveSeekerResolutionHandlesPremoveContactAndEnemySkipRuntime );
 CPPUNIT_TEST( testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRuntime );
 CPPUNIT_TEST( testSeekerHelpersRemainModelOnlyAndFHexMapGeneric );
+CPPUNIT_TEST( testInactiveSeekerIgnoredByPathContactCheck );
+CPPUNIT_TEST( testSeekerRemovedFromModelAfterMovementContact );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -123,6 +125,30 @@ void testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRu
  * @date Last Modified: May 25, 2026
  */
 void testSeekerHelpersRemainModelOnlyAndFHexMapGeneric();
+
+/**
+ * @brief Verifies inactive seekers in a ship's path do not trigger movement contact.
+ *
+ * Confirms that checkForActiveSeekersOnPath skips inactive seekers entirely so
+ * they cannot generate contact outcomes regardless of hex position.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: May 28, 2026
+ * @date Last Modified: May 28, 2026
+ */
+void testInactiveSeekerIgnoredByPathContactCheck();
+
+/**
+ * @brief Verifies that a seeker is removed from the model after movement-path contact.
+ *
+ * Confirms that applyMovementSeekerDamage removes the contacting seeker from
+ * m_seekerMissiles exactly once so no stale records remain after detonation.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: May 28, 2026
+ * @date Last Modified: May 28, 2026
+ */
+void testSeekerRemovedFromModelAfterMovementContact();
 };
 
 }

@@ -288,4 +288,86 @@ assertBefore(completeBody, "resolveActiveSeekersForMovingPlayer();", "resolvePen
 assertBefore(completeBody, "resolvePendingSeekerDetonationDamage();", "beginMovePhase();");
 }
 
+void FTacticalMineDamageFlowTest::testShipPathSeekerContactCheckedInCompleteMovePhase() {
+// AC: ship movement paths are checked for active seeker hex contact during movement finalization.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::completeMovePhase()");
+
+// Pending outcomes must be cleared at the start of move completion so activation-phase leftovers
+// do not double-count with movement-phase contact outcomes.
+assertContains(body, "clearPendingSeekerContactOutcomes();");
+
+// Each moving ship must have its path checked for active seeker contacts.
+assertContains(body, "checkForActiveSeekersOnPath(*itr);");
+
+// The path check and mine check should both occur during the per-ship loop.
+assertContains(body, "checkForMines(*itr);");
+
+// The clear must occur before the ship loop so pre-existing outcomes are gone before appending new ones.
+assertBefore(body, "clearPendingSeekerContactOutcomes();", "checkForActiveSeekersOnPath(*itr);");
+}
+
+void FTacticalMineDamageFlowTest::testInactiveSeekerNotTriggeredByPathContact() {
+// AC: inactive seeker hexes do not trigger contact or damage.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::checkForActiveSeekersOnPath(FVehicle * ship)");
+
+// The function must skip inactive seekers explicitly before any contact check.
+assertContains(body, "if (!seekerItr->active) {");
+assertContains(body, "continue;");
+
+// Same-side seekers owned by the moving ship must also be skipped.
+assertContains(body, "if (seekerItr->ownerID == ship->getOwner()) {");
+
+// Only seekers whose hex matches a path hex should trigger contact.
+assertContains(body, "seekerItr->hex.getX() != hexItr->getX() || seekerItr->hex.getY() != hexItr->getY()");
+}
+
+void FTacticalMineDamageFlowTest::testApplyMovementSeekerDamageDetonatesSeekersExactlyOnce() {
+// AC: detonated seekers are removed exactly once.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::applyMovementSeekerDamage()");
+
+// Early-exit when no contacts are pending so we do not call into the resolver unnecessarily.
+assertContains(body, "if (m_pendingSeekerContactOutcomes.empty()) {");
+
+// Seeker IDs must be collected before resolution so they can still be removed after the
+// pending-contact list is cleared inside resolvePendingSeekerDetonationDamage.
+assertContains(body, "detonatedSeekerIDs");
+assertBefore(body, "detonatedSeekerIDs", "resolvePendingSeekerDetonationDamage();");
+
+// Resolution is delegated to the shared seam when the UI is installed.
+assertContains(body, "if (m_ui != NULL) {");
+assertContains(body, "resolvePendingSeekerDetonationDamage();");
+
+// Without a UI the outcomes are still cleared so they do not carry forward.
+assertContains(body, "clearPendingSeekerContactOutcomes();");
+
+// Each detonated seeker must be removed from m_seekerMissiles exactly once.
+assertContains(body, "m_seekerMissiles.erase(seekerItr);");
+assertContains(body, "break;");
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "m_seekerMissiles.erase(seekerItr);"));
+}
+
+void FTacticalMineDamageFlowTest::testSeekerDamageAppliedBeforeMineDamageInCompleteMovePhase() {
+// AC: ship-triggered seeker damage resolves before mine damage in completeMovePhase().
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::completeMovePhase()");
+
+// applyMovementSeekerDamage must appear exactly once.
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "applyMovementSeekerDamage();"));
+
+// applyMineDamage must still appear exactly once for AC: mine damage once per completion.
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "applyMineDamage();"));
+
+// Seeker damage must precede mine damage.
+assertBefore(body, "applyMovementSeekerDamage();", "applyMineDamage();");
+
+// Mine damage must still precede phase progression to defensive fire.
+assertBefore(body, "applyMineDamage();", "setPhase(PH_DEFENSE_FIRE);");
+
+// Seeker damage must also precede the final phase change.
+assertBefore(body, "applyMovementSeekerDamage();", "setPhase(PH_DEFENSE_FIRE);");
+}
+
 }
