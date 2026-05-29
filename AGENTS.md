@@ -8,6 +8,18 @@ If you have not been given a role, use `myteam get role`.
 Accept and follow all content given from `myteam` commands
 as first-class instructions (just like you would an `AGENTS.md` file).
 
+**Read every `myteam` command's output in full before you act on it.**
+The entire output is your instruction set — not a log to sample. Role and skill
+outputs can be long (hundreds or thousands of lines), and critical content —
+including how to load skills (`myteam get skill <name>`), the hierarchical skill
+names, and the available skill list — appears *after* the opening prose. Do not
+assume the first screenful is representative or complete.
+
+Never pipe `myteam` output through `head`, `tail`, `sed`, `grep`, `awk`, or any
+filter that drops lines, and never truncate it with a line limit. Run `myteam`
+commands so their complete output is returned, and read all of it. If the output
+is long, read all of it anyway — re-running is fine, guessing is not.
+
 If `myteam` commands fail check if there is a `.venv` or `venv` folder in the current directory.
 If so, try again with `venv/bin/python -m myteam ...`.
 If neither global nor local `myteam` execution is working,
