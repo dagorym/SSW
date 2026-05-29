@@ -48,7 +48,7 @@ Keep role-specific orchestration gates, remediation limits, branch policies, and
 - Load skill `model-selection` immediately after plan intake and before branch selection or downstream launches.
 - Load skill `branch-and-artifacts` immediately after plan intake and before creating any worktree or stage branch.
 - Load skill `subtask-scheduling` only when deciding sequencing, parallelization, or pause-on-failure behavior.
-- Load skill `stage-launches` **before** creating any stage worktree or launching any downstream agent; this skill provides the required `create_worktree.sh` script and mandatory wrapper lines.
+- Load skill `stage-launches` **before** creating any stage worktree or launching any downstream agent; `stage-launches` loads `coordinator/worktree-tools` which provides `create_worktree.py`, plus mandatory wrapper lines.
 - Load skill `stage-validation` only when validating stage completion, artifacts, branch cleanliness, or handoff prompt provenance.
 - Load skill `remediation` only when a Tester or Verifier result triggers a permitted remediation cycle.
 - Load skill `merge-and-cleanup` only when a stage chain has completed successfully or stale worktrees must be cleaned up after remediation.
@@ -71,8 +71,8 @@ Keep role-specific orchestration gates, remediation limits, branch policies, and
 ## Constraints
 - Do not parallelize stages within a subtask.
 - Do not use `main` or `master` as the coordination base branch after plan intake; if the current branch is not `main` or `master`, use it as-is, otherwise create and check out a dedicated per-plan coordination branch before any worktree or stage-branch creation.
-- Do not create any stage worktree without first loading `stage-launches` skill and reading its tool documentation (provides `create_worktree.sh`).
-- Do not use `EnterWorktree`, `git worktree add`, or other direct worktree-creation tools; use only the `create_worktree.sh` script provided by the `stage-launches` skill.
+- Do not create any stage worktree without first loading `stage-launches` skill; it loads `coordinator/worktree-tools` to provide `create_worktree.py`.
+- Do not use `EnterWorktree`, `git worktree add`, or other direct worktree-creation tools; use only `create_worktree.py` from `coordinator/worktree-tools`.
 - Do not launch a new stage worktree for a subtask before the previous stage has completed successfully, committed all required changes and artifacts, and left a clean branch.
 - Do not launch parallel subtasks unless the plan explicitly allows it and the Coordinator finds no ambiguity after plan intake.
 - Do not continue launching new subtasks after any subtask enters a failed or user-decision-required state.
