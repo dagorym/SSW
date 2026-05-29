@@ -22,6 +22,22 @@ This applies to all agents, all sessions, all computers. No exceptions.
 - Follow skill loading rules and required workflow order exactly as specified in your role definition
 - Do not substitute coordinator, implementer, tester, documenter, verifier, or reviewer work across roles
 
+## Skill Loading Hierarchy (ALL AGENTS)
+
+**CRITICAL: This applies to coordinator, implementer, tester, documenter, verifier, and reviewer roles.**
+
+When a role or plan requires loading a skill:
+
+1. **FIRST**: Try to load via myteam using Bash: `myteam get skill <skillname>`
+2. **ONLY IF** myteam cannot find the skill, fall back to Claude Code's Skill tool
+3. **NEVER** skip the myteam lookup and go directly to Claude Code skills
+
+Myteam skills are the project's role-specific, orchestration-critical skills. Claude Code skills (like `/code-review`, `/run`) are general-purpose utilities. Using the wrong system breaks the agent coordination workflow.
+
+Do not confuse:
+- `myteam get skill <name>` (project orchestration, run via Bash)
+- Claude Code's `Skill` tool (general utilities, used when myteam has no match)
+
 ## Critical Constraints (From AGENTS.md)
 
 - The document at `doc/rules/tactical_operations_manual.md` is non-volatile and MUST NOT be edited
