@@ -9,8 +9,8 @@ Load this skill only when creating a stage worktree or launching a downstream ag
 
 ## Tool
 
-- Use the colocated tool `create_worktree.sh` when a new stage worktree must be created.
-  Invoke it as: `./create_worktree.sh <TOP_LEVEL_DIR> <AGENT_NAME>`
+- Load skill `coordinator/worktree-tools` to access `create_worktree.py` when a new stage worktree must be created.
+  Invoke it as: `python create_worktree.py <TOP_LEVEL_DIR> <AGENT_NAME>`
   - If the plan specifies an explicit worktree location, use that as TOP_LEVEL_DIR.
   - Otherwise, default to `~/repos/worktrees` as TOP_LEVEL_DIR.
   - This keeps all stage worktrees isolated outside the repository root, avoiding git confusion and file-system nesting issues.
