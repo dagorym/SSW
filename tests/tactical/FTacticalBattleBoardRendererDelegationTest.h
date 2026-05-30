@@ -77,10 +77,12 @@ void testDrawShipsUsesTemporaryFacingForStoppedSelectedMover();
  * @brief Verifies draw Seeker Missiles Uses Activation And Battle Visibility Rules.
  *
  * Exercises the tactical regression behavior covered by this fixture case.
+ * SMC-02: updated to also assert that active seekers for the moving player
+ * are rendered during PH_SEEKER_ACTIVATION so activations are visible on the board.
  *
- * @author gpt-5.4 (high)
+ * @author gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 30, 2026
  */
 void testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules();
 /**

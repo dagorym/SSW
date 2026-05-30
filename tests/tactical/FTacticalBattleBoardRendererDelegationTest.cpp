@@ -129,6 +129,7 @@ assertContains(drawShipsBody, "drawCenteredOnHex(*icon,hex,getRenderedHeadingFor
 
 void FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules() {
 // AC: seeker icon rendering switches from inactive activation stacks to active seeker-only battle rendering.
+// SMC-02: during PH_SEEKER_ACTIVATION, BOTH inactive stacks and active seekers for the moving player are drawn.
 const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
 const std::string drawBody = extractFunctionBody(source, "void FBattleBoard::draw(wxDC &dc)");
 const std::string seekerBody = extractFunctionBody(source, "void FBattleBoard::drawSeekerMissiles(wxDC &dc)");
@@ -136,10 +137,15 @@ const std::string seekerBody = extractFunctionBody(source, "void FBattleBoard::d
 assertContains(drawBody, "if (m_parent->getState() == BS_Battle) {");
 assertContains(drawBody, "drawSeekerMissiles(dc);");
 assertContains(seekerBody, "if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {");
+// SMC-02 AC4: inactive stacks remain clickable during activation.
 assertContains(seekerBody, "const std::vector<FPoint> inactiveHexes = m_parent->getInactiveSeekerActivationHexes();");
 assertContains(seekerBody, "if (!m_parent->isHexInBounds(*itr)) {");
 assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, *itr);");
+// SMC-02 AC4: active seekers for the moving player are also drawn during activation so activations are visible on the board.
+assertContains(seekerBody, "m_parent->getActiveSeekersByMovingPlayer()");
+assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, itr->hex, itr->heading);");
 assertContains(seekerBody, "return;");
+// Battle-mode rendering: only active seekers, per-hex query.
 assertContains(seekerBody, "const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);");
 assertContains(seekerBody, "if (!activeSeekers.empty()) {");
 // SMC-07: active seeker icon is rotated by its current heading (heading * pi/3 radians).
