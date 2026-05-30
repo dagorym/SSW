@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created: Apr 01, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 30, 2026
  */
 class FTacticalBattleBoardRendererDelegationTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleBoardRendererDelegationTest );
@@ -31,6 +31,7 @@ CPPUNIT_TEST( testOnLeftUpRoutesActivationPhaseThroughSeekerSelection );
 CPPUNIT_TEST( testHeaderRemovesDuplicatedMechanicsState );
 CPPUNIT_TEST( testOnMotionUsesPlacementForwardersOnly );
 CPPUNIT_TEST( testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath );
+CPPUNIT_TEST( testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -132,6 +133,17 @@ void testOnMotionUsesPlacementForwardersOnly();
  * @date Last Modified: May 25, 2026
  */
 void testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath();
+/**
+ * @brief Verifies drawSeekerPaths is gated to PH_MOVE and uses a cyan pen with width 2.
+ *
+ * SMC-07: seeker movement paths are drawn in cyan (pen width 2) and only during the
+ * movement phase, consistent with ship-path behavior but using a distinct color.
+ *
+ * @author claude-sonnet-4-6 (standard)
+ * @date Created: May 30, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen();
 };
 
 }

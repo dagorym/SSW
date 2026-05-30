@@ -17,9 +17,9 @@ namespace FrontierTests {
  * Verifies source-level tactical seeker helper contracts remain deterministic,
  * non-wx, and aligned with planner acceptance criteria.
  *
- * @author gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @author gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
  * @date Created: May 25, 2026
- * @date Last Modified: May 28, 2026
+ * @date Last Modified: May 30, 2026
  */
 class FTacticalSeekerMovementTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalSeekerMovementTest );
@@ -34,6 +34,7 @@ CPPUNIT_TEST( testCompleteSeekerActivationResolvesMovementContactAndSurvivorProg
 CPPUNIT_TEST( testSeekerHelpersRemainModelOnlyAndFHexMapGeneric );
 CPPUNIT_TEST( testInactiveSeekerIgnoredByPathContactCheck );
 CPPUNIT_TEST( testSeekerRemovedFromModelAfterMovementContact );
+CPPUNIT_TEST( testMovementPathPopulatedByResolveActiveSeekers );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -149,6 +150,19 @@ void testInactiveSeekerIgnoredByPathContactCheck();
  * @date Last Modified: May 28, 2026
  */
 void testSeekerRemovedFromModelAfterMovementContact();
+/**
+ * @brief Verifies movementPath is populated during resolveActiveSeekersForMovingPlayer.
+ *
+ * SMC-06 prerequisite: each active seeker's movementPath starts at the seeker's
+ * pre-move hex, ends at the final hex after movement, is reset at the start of
+ * each resolution pass (no stale accumulation), and non-moving (enemy/inactive)
+ * seekers have their paths cleared.
+ *
+ * @author claude-sonnet-4-6 (standard)
+ * @date Created: May 30, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void testMovementPathPopulatedByResolveActiveSeekers();
 };
 
 }

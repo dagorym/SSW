@@ -643,4 +643,101 @@ void FTacticalSeekerMovementTest::testSeekerRemovedFromModelAfterMovementContact
 	delete movingShip;
 }
 
+void FTacticalSeekerMovementTest::testMovementPathPopulatedByResolveActiveSeekers() {
+	// SMC-06 prerequisite + SMC-07: resolveActiveSeekersForMovingPlayer populates
+	// movementPath for each moving seeker and clears it at the start of each resolution
+	// pass so no stale accumulation occurs across turns.
+
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+	FSeekerHarnessShip * targetShip = new FSeekerHarnessShip(0u, "Destroyer");
+	defendShips->push_back(targetShip);
+
+	const Frontier::FPoint targetHex(30, 30);
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+	game.placeShipAtHex(targetShip, targetHex);
+
+	// Active seeker owned by moving player, far enough from target not to contact in 2 hexes.
+	Frontier::FTacticalSeekerMissileState movingSeeker;
+	movingSeeker.seekerID = 8001u;
+	movingSeeker.ownerID = 1u;
+	movingSeeker.hex = Frontier::FPoint(20, 20);
+	movingSeeker.heading = 0;
+	movingSeeker.active = true;
+	movingSeeker.movementTurn = 0;
+	movingSeeker.movementAllowance = 0;
+	movingSeeker.hasSource = false;
+
+	// Inactive seeker owned by enemy (non-moving): should have path cleared.
+	Frontier::FTacticalSeekerMissileState inactiveEnemySeeker;
+	inactiveEnemySeeker.seekerID = 8002u;
+	inactiveEnemySeeker.ownerID = 0u;
+	inactiveEnemySeeker.hex = Frontier::FPoint(40, 40);
+	inactiveEnemySeeker.heading = 0;
+	inactiveEnemySeeker.active = false;
+	inactiveEnemySeeker.movementTurn = 0;
+	inactiveEnemySeeker.movementAllowance = 0;
+	inactiveEnemySeeker.hasSource = false;
+	// Seed a stale movementPath to prove it gets cleared.
+	inactiveEnemySeeker.movementPath.push_back(Frontier::FPoint(99, 99));
+
+	game.seedSeeker(movingSeeker);
+	game.seedSeeker(inactiveEnemySeeker);
+
+	// First resolution pass.
+	game.resolveActiveSeekersForMovingPlayer();
+
+	const std::vector<Frontier::FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+
+	// Find the moving seeker by ID and check its movementPath.
+	bool foundMoving = false;
+	bool foundInactive = false;
+	for (std::vector<Frontier::FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
+		 itr != seekers.end(); ++itr) {
+		if (itr->seekerID == 8001u) {
+			foundMoving = true;
+			// movementPath must start at the pre-move position and have at least 1 point.
+			CPPUNIT_ASSERT_MESSAGE("movementPath must be non-empty after resolution",
+				!itr->movementPath.empty());
+			// First point must be the starting hex (pre-move position).
+			CPPUNIT_ASSERT_EQUAL_MESSAGE("movementPath[0].x must equal pre-move start hex x",
+				20, itr->movementPath[0].getX());
+			CPPUNIT_ASSERT_EQUAL_MESSAGE("movementPath[0].y must equal pre-move start hex y",
+				20, itr->movementPath[0].getY());
+			// Last point must match the seeker's current hex after movement.
+			const Frontier::FPoint & finalPath = itr->movementPath.back();
+			CPPUNIT_ASSERT_EQUAL_MESSAGE("movementPath final point x must match seeker hex x",
+				itr->hex.getX(), finalPath.getX());
+			CPPUNIT_ASSERT_EQUAL_MESSAGE("movementPath final point y must match seeker hex y",
+				itr->hex.getY(), finalPath.getY());
+		} else if (itr->seekerID == 8002u) {
+			foundInactive = true;
+			// Non-moving (inactive/enemy) seeker must have its stale path cleared.
+			CPPUNIT_ASSERT_MESSAGE("Non-moving seeker must have movementPath cleared",
+				itr->movementPath.empty());
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Moving seeker 8001 must remain after first resolution", foundMoving);
+	CPPUNIT_ASSERT_MESSAGE("Inactive enemy seeker 8002 must remain in model", foundInactive);
+
+	// Second resolution pass: verify no stale path accumulation from prior pass.
+	game.clearPendingOutcomes();
+	game.resolveActiveSeekersForMovingPlayer();
+
+	const std::vector<Frontier::FTacticalSeekerMissileState> & seekers2 = game.getSeekerMissiles();
+	for (std::vector<Frontier::FTacticalSeekerMissileState>::const_iterator itr = seekers2.begin();
+		 itr != seekers2.end(); ++itr) {
+		if (itr->seekerID == 8001u) {
+			// Path is repopulated from the current (post-first-move) hex, not accumulated.
+			CPPUNIT_ASSERT_MESSAGE("movementPath must start from current hex (no stale accumulation)",
+				itr->movementPath[0].getX() != 20 || itr->movementPath[0].getY() != 20
+				|| itr->movementTurn >= 2);
+		}
+	}
+
+	delete targetShip;
+}
+
 }

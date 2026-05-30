@@ -142,8 +142,33 @@ assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, *itr);");
 assertContains(seekerBody, "return;");
 assertContains(seekerBody, "const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);");
 assertContains(seekerBody, "if (!activeSeekers.empty()) {");
-assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon,hex);");
+// SMC-07: active seeker icon is rotated by its current heading (heading * pi/3 radians).
+assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, hex, activeSeekers[0].heading)");
 CPPUNIT_ASSERT(seekerBody.find("getSeekerMissilesAtHex(hex, false)") == std::string::npos);
+}
+
+void FTacticalBattleBoardRendererDelegationTest::testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen() {
+// AC: drawSeekerPaths is called only in PH_MOVE and draws using a cyan pen with width 2.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleBoard::draw(wxDC &dc)");
+const std::string seekerPathBody = extractFunctionBody(source, "void FBattleBoard::drawSeekerPaths(wxDC &dc)");
+
+// SMC-07: drawSeekerPaths is gated on PH_MOVE
+assertContains(drawBody, "if (m_parent->getPhase() == PH_MOVE) {");
+assertContains(drawBody, "drawSeekerPaths(dc);");
+
+// SMC-07: path uses getSeekerMissiles() from parent (delegation through FBattleScreen)
+assertContains(seekerPathBody, "m_parent->getSeekerMissiles()");
+
+// SMC-07: cyan pen with width 2 distinct from ship paths
+assertContains(seekerPathBody, "wxColour cyan(wxT(\"#00CCCC\"))");
+assertContains(seekerPathBody, "dc.SetPen(wxPen(cyan, 2))");
+
+// SMC-07: only active seekers with movementPath >= 2 points are drawn
+assertContains(seekerPathBody, "if (!itr->active || itr->movementPath.size() < 2)");
+
+// SMC-07: path draws stepped lines from hex-center to hex-center
+assertContains(seekerPathBody, "dc.DrawLine(lx, ly, x, y)");
 }
 
 void FTacticalBattleBoardRendererDelegationTest::testOnLeftUpOnlyHitTestsAndForwardsHexClick() {
