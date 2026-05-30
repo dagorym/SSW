@@ -535,6 +535,25 @@ per-hex recall rows, so same-hex repeat clicks keep adding pending seekers
 while undo remains an explicit lower-panel action instead of a board-click
 toggle.
 
+SMC-06 extends `FTacticalSeekerMissileState` with a render-supporting
+`movementPath` field (a `std::vector<FPoint>`) populated by
+`resolveActiveSeekersForMovingPlayer()` as each greedy step is taken. Active
+seekers for the moving player have their path cleared and then rebuilt from the
+starting hex through every movement step; inactive or non-moving seekers have
+their path cleared so no stale paths persist across turns. The field is not
+persisted and carries no wx types. `FBattleScreen::getSeekerMissiles()` delegates
+the complete seeker record collection (including `movementPath`) to the board
+layer without copying.
+
+SMC-07 builds on that path data to draw seeker movement on the board. During
+`PH_MOVE`, `FBattleBoard::drawSeekerPaths()` iterates all seeker records with an
+active flag and `movementPath.size() >= 2`, sets a cyan pen (color `#00CCCC`,
+width 2, distinct from the ship-path red/gray tones), and draws stepped
+`dc.DrawLine()` segments through each recorded hex center. Seeker icons rendered
+by `drawSeekerMissiles()` during normal battle phases are now also rotated to
+reflect the seeker's current heading (`heading * pi/3` radians), consistent with
+the six-direction ship icon rotation used elsewhere on the board.
+
 This leaves the originally shipped Milestone 8 runtime tactical wx path only
 partially rewired: `FBattleDisplay` behaved as a wx renderer/input translator
 for delegated fire/setup flows and `FBattleBoard` was narrowed to

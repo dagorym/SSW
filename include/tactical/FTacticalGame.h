@@ -1,7 +1,7 @@
 /**
  * @file FTacticalGame.h
  * @brief Header file for FTacticalGame class
- * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
  * @date Created:  Mar 29, 2026
  * @date Last Modified: May 30, 2026
  *
@@ -875,9 +875,17 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * pending outcome, seekers that reach the 12-hex allowance without contact
 	 * expire, and all other seeker state is preserved for later turns.
 	 *
-	 * @author gpt-5.4 (high), gpt-5.3-codex (standard)
+	 * For each moving seeker, the method clears and then populates
+	 * `FTacticalSeekerMissileState::movementPath` with the start hex followed by
+	 * each step hex taken during this resolution pass. Non-moving seekers (inactive
+	 * or belonging to the non-moving player) have their `movementPath` cleared so
+	 * stale paths do not persist across turns. This render-supporting path state is
+	 * read by `FBattleBoard::drawSeekerPaths()` during `PH_MOVE` to draw cyan path
+	 * lines on the board.
+	 *
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (standard)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 27, 2026
+	 * @date Last Modified: May 30, 2026
 	 */
 	void resolveActiveSeekersForMovingPlayer();
 	/**
