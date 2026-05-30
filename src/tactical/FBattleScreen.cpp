@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.cpp
  * @brief Implementation file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 27, 2026
+ * @date Last Modified:  May 30, 2026
  *
  */
 
@@ -776,6 +776,10 @@ const std::vector<FTacticalPlacedOrdnance> & FBattleScreen::getPlacedOrdnance() 
 
 std::vector<FTacticalPlacedOrdnance> FBattleScreen::getPlacedOrdnanceAtHex(const FPoint & hex) const {
 	return m_tacticalGame->getPlacedOrdnanceAtHex(hex);
+}
+
+const std::vector<FTacticalSeekerMissileState> & FBattleScreen::getSeekerMissiles() const {
+	return m_tacticalGame->getSeekerMissiles();
 }
 
 std::vector<FTacticalSeekerMissileState> FBattleScreen::getSeekerMissilesAtHex(

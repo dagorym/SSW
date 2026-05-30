@@ -3,7 +3,7 @@
  * @brief Header file for BattleScreen class
  * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: May 27, 2026
+ * @date Last Modified: May 30, 2026
  *
  */
 
@@ -356,6 +356,8 @@ public:
 	const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const;
 	/// get placed ordnance records for a specific tactical hex
 	std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;
+	/// get all seeker missile model records (includes movementPath render state)
+	const std::vector<FTacticalSeekerMissileState> & getSeekerMissiles() const;
 	/// get seeker missile records in a specific tactical hex
 	std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;
 	/**

@@ -1,8 +1,9 @@
 /**
  * @file FBattleBoard.h
  * @brief Header file for BattleBoard class
- * @author Tom Stephens
+ * @author Tom Stephens, claude-sonnet-4-6 (standard)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified: May 30, 2026
  *
  */
 
@@ -30,9 +31,9 @@ class FBattleScreen;
  * exact source ship/weapon slot selected in the lower display panel, even when
  * the setup list grows beyond the legacy 12-color seed palette.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created: Jul 11, 2008
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 30, 2026
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -107,17 +108,34 @@ void drawMinedHexes(wxDC &dc);
  * @brief Draw seeker missiles with phase-based visibility filtering.
  *
  * During seeker activation, only inactive seekers owned by the moving player
- * are shown. During normal battle phases, only active seekers are shown. The
- * icon is loaded through the shared asset-resolution policy used elsewhere in
- * the tactical wx surfaces.
+ * are shown. During normal battle phases, only active seekers are shown with
+ * their icon rotated to match their current heading. The icon is loaded
+ * through the shared asset-resolution policy used elsewhere in the tactical
+ * wx surfaces.
  *
  * @param dc Device context used for tactical board drawing.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 30, 2026
  */
 void drawSeekerMissiles(wxDC &dc);
+/**
+ * @brief Draw stepped movement paths for active seekers during movement phase.
+ *
+ * Iterates all seeker missile records that moved this resolution pass
+ * (movementPath.size() > 1) and draws their stepped path as a line in a
+ * color distinct from ship paths (cyan, pen width 2). Only called during
+ * PH_MOVE so paths are refreshed each movement turn and do not persist
+ * across the whole battle, consistent with ship path display behavior.
+ *
+ * @param dc Device context used for tactical board drawing.
+ *
+ * @author claude-sonnet-4-6 (standard)
+ * @date Created: May 30, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void drawSeekerPaths(wxDC &dc);
 	/**
 	 * @brief Draw placed setup ordnance markers using their source-specific colors.
 	 *

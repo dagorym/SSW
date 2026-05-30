@@ -1,9 +1,9 @@
 /**
  * @file FBattleBoard.cpp
  * @brief Implementation file for BattleBoard class
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 25, 2026
+ * @date Last Modified:  May 30, 2026
  *
  */
 
@@ -106,6 +106,9 @@ drawShips();
 if (m_parent->getState() == BS_Battle) {
 drawSeekerMissiles(dc);
 drawRoute(dc);
+if (m_parent->getPhase() == PH_MOVE) {
+drawSeekerPaths(dc);
+}
 }
 if (m_parent->getState() == BS_PlaceMines) {
 drawPlacementOrdnanceHexes(dc);
@@ -464,8 +467,45 @@ void FBattleBoard::drawSeekerMissiles(wxDC &dc){
 			const FPoint hex(i,j);
 			const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);
 			if (!activeSeekers.empty()) {
-				drawCenteredOnHex(*m_seekerMissileIcon,hex);
+				drawCenteredOnHex(*m_seekerMissileIcon, hex, activeSeekers[0].heading);
 			}
+		}
+	}
+}
+
+void FBattleBoard::drawSeekerPaths(wxDC &dc) {
+	const std::vector<FTacticalSeekerMissileState> & seekers = m_parent->getSeekerMissiles();
+	wxColour cyan(wxT("#00CCCC"));
+	dc.SetPen(wxPen(cyan, 2));
+
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
+		 itr != seekers.end(); ++itr) {
+		if (!itr->active || itr->movementPath.size() < 2) {
+			continue;
+		}
+		const std::vector<FPoint> & path = itr->movementPath;
+		const FPoint & first = path[0];
+		if (first.getX() < 0 || first.getX() >= m_nCol || first.getY() < 0 || first.getY() >= m_nRow) {
+			continue;
+		}
+		wxCoord lx, ly;
+		CalcScrolledPosition(
+			m_hexCenters[first.getX()][first.getY()].getX(),
+			m_hexCenters[first.getX()][first.getY()].getY(),
+			&lx, &ly);
+		for (std::size_t k = 1; k < path.size(); ++k) {
+			const FPoint & step = path[k];
+			if (step.getX() < 0 || step.getX() >= m_nCol || step.getY() < 0 || step.getY() >= m_nRow) {
+				break;
+			}
+			wxCoord x, y;
+			CalcScrolledPosition(
+				m_hexCenters[step.getX()][step.getY()].getX(),
+				m_hexCenters[step.getX()][step.getY()].getY(),
+				&x, &y);
+			dc.DrawLine(lx, ly, x, y);
+			lx = x;
+			ly = y;
 		}
 	}
 }

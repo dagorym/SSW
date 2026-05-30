@@ -3,7 +3,7 @@
  * @brief Implementation file for FTacticalGame class
  * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 28, 2026
+ * @date Last Modified: May 30, 2026
  *
  */
 
@@ -1104,9 +1104,15 @@ void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 	for (std::vector<FTacticalSeekerMissileState>::iterator itr = m_seekerMissiles.begin();
 		 itr != m_seekerMissiles.end(); ++itr) {
 		if (!itr->active || itr->ownerID != getMovingPlayerID()) {
+			// Clear movement path for non-moving seekers so stale paths don't persist
+			itr->movementPath.clear();
 			nextStates.push_back(*itr);
 			continue;
 		}
+
+		// Clear and reinitialize path for this resolution pass, starting from current hex
+		itr->movementPath.clear();
+		itr->movementPath.push_back(itr->hex);
 
 		itr->movementTurn += 1;
 		itr->movementAllowance = static_cast<int>(computeSeekerMovementAllowance(itr->movementTurn));
@@ -1130,6 +1136,7 @@ void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 					}
 					itr->heading = nextState.heading;
 					itr->hex = nextState.hex;
+					itr->movementPath.push_back(itr->hex);
 
 					FVehicle * movementContactTarget = selectSeekerContactTargetAtHex(*itr, itr->hex);
 					if (movementContactTarget != NULL) {

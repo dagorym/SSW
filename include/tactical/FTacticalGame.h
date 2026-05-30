@@ -3,7 +3,7 @@
  * @brief Header file for FTacticalGame class
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 28, 2026
+ * @date Last Modified: May 30, 2026
  *
  */
 
@@ -130,9 +130,16 @@ int displayMarkerIndex;
  * source provenance so later subtasks can reconcile setup/offensive-fire
  * deployments to their launching weapon slot.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * The `movementPath` field is render-supporting state: it records the
+ * stepped path traversed by this seeker during the most recent movement
+ * resolution (start hex through final hex), populated by
+ * `resolveActiveSeekersForMovingPlayer` and cleared at the start of each
+ * resolution so it reflects only the current move. It is not persisted and
+ * carries no wx types.
+ *
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created: May 24, 2026
- * @date Last Modified: May 24, 2026
+ * @date Last Modified: May 30, 2026
  */
 typedef struct {
 unsigned int seekerID;
@@ -144,6 +151,8 @@ int movementTurn;
 int movementAllowance;
 bool hasSource;
 FTacticalOrdnanceSource source;
+/// stepped path from start through final hex for the most recent movement resolution
+std::vector<FPoint> movementPath;
 } FTacticalSeekerMissileState;
 
 /**
