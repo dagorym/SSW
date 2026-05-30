@@ -192,7 +192,8 @@ const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
 const std::string body = extractFunctionBody(source, "void FBattleBoard::onLeftUp(wxMouseEvent & event)");
 
 assertContains(body, "if (m_parent->getState() == BS_Battle && m_parent->getPhase() == PH_SEEKER_ACTIVATION) {");
-assertContains(body, "m_parent->selectSeekerActivationHex(hex);");
+assertContains(body, "m_parent->activateInactiveSeekerAtHex(hex);");
+assertContains(body, "m_parent->reDraw();");
 assertContains(body, "} else {");
 assertContains(body, "m_parent->handleHexClick(hex);");
 assertContains(body, "m_parent->handleHexClick(FPoint(a,b));");

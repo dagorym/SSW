@@ -696,7 +696,8 @@ assertContains(onLeftUpBody, "checkSeekerActivationSelection(event);");
 assertBefore(onLeftUpBody, "checkSeekerActivationSelection(event);", "checkWeaponSelection(event);");
 assertContains(selectionBody, "for (unsigned int i = 0; i < m_seekerActivationRegions.size(); ++i) {");
 assertContains(selectionBody, "if (!m_seekerActivationRegions[i].Contains(x,y)) {");
-assertContains(selectionBody, "m_parent->activateSelectedInactiveSeeker(m_seekerActivationSeekerIDs[i]);");
+assertContains(selectionBody, "m_parent->deactivateActiveSeekerByID(m_seekerActivationSeekerIDs[i]);");
+assertContains(selectionBody, "m_parent->reDraw();");
 assertContains(activateBody, "if (changed) {");
 assertContains(activateBody, "reDraw();");
 }
@@ -706,13 +707,13 @@ const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"))
 const std::string body = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
 
 assertContains(body, "dc.DrawText(\"Seeker activation phase.\",leftOffset,getActionPromptLineY(0));");
-assertContains(body, "dc.DrawText(\"Click a seeker stack on the board to select a hex.\",leftOffset,getActionPromptLineY(1));");
-assertContains(body, "dc.DrawText(\"Click a row below to activate one seeker.\",leftOffset,getActionPromptLineY(2));");
-assertContains(body, "const std::vector<FTacticalSeekerMissileState> stack = m_parent->getSelectedInactiveSeekerActivationStack();");
-assertContains(body, "if (stack.empty()) {");
-assertContains(body, "dc.DrawText(\"No inactive seekers in selected stack.\",lMargin,y);");
-assertContains(body, "for (unsigned int i = 0; i < stack.size(); ++i) {");
-assertContains(body, "os << \"Activate seeker #\" << seeker.seekerID");
+assertContains(body, "dc.DrawText(\"Click a seeker stack on the board to activate one seeker.\",leftOffset,getActionPromptLineY(1));");
+assertContains(body, "dc.DrawText(\"Click a row below to deactivate an activated seeker.\",leftOffset,getActionPromptLineY(2));");
+assertContains(body, "const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayer();");
+assertContains(body, "if (activated.empty()) {");
+assertContains(body, "dc.DrawText(\"No seekers activated yet.\",lMargin,y);");
+assertContains(body, "for (unsigned int i = 0; i < activated.size(); ++i) {");
+assertContains(body, "os << \"Deactivate seeker #\" << seeker.seekerID");
 assertContains(body, "m_seekerActivationRegions.push_back(wxRect(");
 assertContains(body, "m_seekerActivationSeekerIDs.push_back(seeker.seekerID);");
 }

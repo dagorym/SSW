@@ -1455,27 +1455,24 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	dc.SetTextForeground(white);
 	dc.DrawText("Seeker activation phase.",leftOffset,getActionPromptLineY(0));
-	dc.DrawText("Click a seeker stack on the board to select a hex.",leftOffset,getActionPromptLineY(1));
-	dc.DrawText("Click a row below to activate one seeker.",leftOffset,getActionPromptLineY(2));
+	dc.DrawText("Click a seeker stack on the board to activate one seeker.",leftOffset,getActionPromptLineY(1));
+	dc.DrawText("Click a row below to deactivate an activated seeker.",leftOffset,getActionPromptLineY(2));
 
-	const FPoint selectedHex = m_parent->getSelectedSeekerActivationHex();
-	if (m_parent->isHexInBounds(selectedHex)) {
-		os.str("");
-		os << "Selected stack: (" << selectedHex.getX() << ", " << selectedHex.getY() << ")";
-	} else {
-		os.str("Selected stack: none");
-	}
-	dc.DrawText(os.str(),lMargin,y);
-	y += (int)(1.6*textSize*1.3);
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD));
+	dc.SetTextForeground(white);
+	dc.DrawText("Activated seekers:",lMargin,y);
+	y += (int)(1.6*textSize);
 
-	const std::vector<FTacticalSeekerMissileState> stack = m_parent->getSelectedInactiveSeekerActivationStack();
-	if (stack.empty()) {
-		dc.DrawText("No inactive seekers in selected stack.",lMargin,y);
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayer();
+	if (activated.empty()) {
+		dc.SetTextForeground(white);
+		dc.DrawText("No seekers activated yet.",lMargin,y);
 	} else {
-		for (unsigned int i = 0; i < stack.size(); ++i) {
-			const FTacticalSeekerMissileState & seeker = stack[i];
+		for (unsigned int i = 0; i < activated.size(); ++i) {
+			const FTacticalSeekerMissileState & seeker = activated[i];
 			os.str("");
-			os << "Activate seeker #" << seeker.seekerID
+			os << "Deactivate seeker #" << seeker.seekerID
 				<< " (heading " << seeker.heading << ", allowance " << seeker.movementAllowance << ")";
 			dc.SetTextForeground((i % 2 == 0) ? white : green);
 			dc.DrawText(os.str(),lMargin,y);
@@ -1562,10 +1559,11 @@ void FBattleDisplay::checkSeekerActivationSelection(wxMouseEvent &event){
 			continue;
 		}
 		if (i < m_seekerActivationSeekerIDs.size()) {
-			m_parent->activateSelectedInactiveSeeker(m_seekerActivationSeekerIDs[i]);
+			m_parent->deactivateActiveSeekerByID(m_seekerActivationSeekerIDs[i]);
 		}
 		break;
 	}
+	m_parent->reDraw();
 }
 
 bool FBattleDisplay::checkOffensiveSeekerPendingSelection(wxMouseEvent &event){

@@ -927,20 +927,20 @@ CPPUNIT_ASSERT_MESSAGE(
 		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
 		"Seeker activation phase."));
 CPPUNIT_ASSERT_MESSAGE(
-	"Seeker activation panel should explain row-based activation.",
+	"Seeker activation panel should explain row-based deactivation.",
 	sourceContainsLineToken(
 		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
-		"Click a row below to activate one seeker."));
+		"Click a row below to deactivate an activated seeker."));
 CPPUNIT_ASSERT_MESSAGE(
-	"Seeker activation panel should register one clickable row per seeker.",
+	"Seeker activation panel should register one clickable row per activated seeker.",
 	sourceContainsLineToken(
 		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
 		"m_seekerActivationRegions.push_back"));
 CPPUNIT_ASSERT_MESSAGE(
-	"Seeker activation clicks should activate the selected seeker ID.",
+	"Seeker activation row clicks should deactivate the selected seeker ID.",
 	sourceContainsLineToken(
 		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
-		"activateSelectedInactiveSeeker(m_seekerActivationSeekerIDs[i])"));
+		"deactivateActiveSeekerByID(m_seekerActivationSeekerIDs[i])"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Battle-board activation rendering should use moving-player inactive seeker stacks.",
 	sourceContainsLineToken(
@@ -952,10 +952,10 @@ CPPUNIT_ASSERT_MESSAGE(
 		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
 		"getSeekerMissilesAtHex(hex, true)"));
 CPPUNIT_ASSERT_MESSAGE(
-	"Activation-phase board clicks should route through seeker activation selection.",
+	"Activation-phase board clicks should activate one seeker at the clicked hex.",
 	sourceContainsLineToken(
 		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
-		"m_parent->selectSeekerActivationHex(hex);"));
+		"m_parent->activateInactiveSeekerAtHex(hex);"));
 }
 
 void TacticalGuiLiveTest::testSetupPlacementSourceRowsAndOrdnanceColorContracts() {

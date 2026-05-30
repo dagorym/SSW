@@ -187,7 +187,8 @@ if (getHex(x,y,a,b)){
 	// Legacy source-contract token retained for tactical regression fixtures:
 	// m_parent->handleHexClick(FPoint(a,b));
 	if (m_parent->getState() == BS_Battle && m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
-		m_parent->selectSeekerActivationHex(hex);
+		m_parent->activateInactiveSeekerAtHex(hex);
+		m_parent->reDraw();
 	} else {
 		m_parent->handleHexClick(hex);
 	}
@@ -452,12 +453,22 @@ void FBattleBoard::drawSeekerMissiles(wxDC &dc){
 	}
 
 	if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
+		// Draw inactive stacks so they remain clickable for activation.
 		const std::vector<FPoint> inactiveHexes = m_parent->getInactiveSeekerActivationHexes();
 		for (std::vector<FPoint>::const_iterator itr = inactiveHexes.begin(); itr != inactiveHexes.end(); ++itr) {
 			if (!m_parent->isHexInBounds(*itr)) {
 				continue;
 			}
 			drawCenteredOnHex(*m_seekerMissileIcon, *itr);
+		}
+		// Also draw active seekers so activated ones are visible on the board.
+		const std::vector<FTacticalSeekerMissileState> activeSeekersForPlayer = m_parent->getActiveSeekersByMovingPlayer();
+		for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = activeSeekersForPlayer.begin();
+			 itr != activeSeekersForPlayer.end(); ++itr) {
+			if (!m_parent->isHexInBounds(itr->hex)) {
+				continue;
+			}
+			drawCenteredOnHex(*m_seekerMissileIcon, itr->hex, itr->heading);
 		}
 		return;
 	}
