@@ -1,0 +1,62 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMC-03: Make the mine placement Done button label reflect deployed ordnance types. The drawPlaceMines() method in FBattleDisplay now scans getDeployablePlacementSources() for FWeapon::SM and FWeapon::M types to derive the label: seekers-only -> 'Seeker Placement Done', mines-only or empty -> 'Mine Placement Done', both SM and M -> 'Weapon Placement Done'. New runtime tests confirm correct labels for the seekers-only (Battleship) and both-type (Minelayer) scenarios.
+
+Acceptance criteria validated:
+- seekers only (FWeapon::SM) in getDeployablePlacementSources() -> button label is 'Seeker Placement Done'
+- mines only (FWeapon::M) -> button label is 'Mine Placement Done'
+- both SM and M present -> button label is 'Weapon Placement Done'
+- empty/unknown sources -> button label is 'Mine Placement Done' (fallback)
+- Existing connect/show/hide flow and onMinePlacementDone handler are unchanged
+- No new test failures introduced
+
+Implementation branch or worktree context:
+- Branch: seeker-fix-tester-smc-03-20260530
+- Worktree: /home/tstephen/repos/worktrees/seeker-fix-tester-smc-03-20260530
+- Compare against master branch
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+
+Test commit:
+- 23b4a3a
+
+Commands executed:
+- make -C tests gui-tests
+- DISPLAY=:0 tests/gui/GuiTests
+- make -C tests tactical-tests
+- DISPLAY=:0 tests/tactical/TacticalTests
+
+Final test outcomes:
+- GUI tests: 44 run, 8 failures (all 8 pre-existing path-dependent source-inspection failures unrelated to SMC-03), 0 new failures, 0 errors
+- New test testMinePlacementDoneButtonLabelReflectsOrdnanceTypes PASSES
+- Tactical tests: 189 run, 0 failures, 0 errors
+- All 6 acceptance criteria validated
+
+Documentation context:
+- The drawPlaceMines() method in FBattleDisplay now sets the placement Done button label dynamically based on the types of deployable ordnance present for the active player
+- This is a UI refinement to the mine/seeker placement phase in tactical combat
+- doc/DesignNotes.md may describe the tactical UI flow and could benefit from a note about ordnance-type-aware button labels
+- doc/UsersGuide.md may describe the mine placement phase and could reference the new context-specific button labels
+- doc/rules/tactical_operations_manual.md must NOT be edited per repository policy
+- Plans reference: plans/seeker-missile-ui-cleanup-plan.md for the SMC task series context
+
+Plan and diff context:
+- Plan path: plans/seeker-missile-ui-cleanup-plan.md (SMC-03 is part of the seeker-missile-ui-cleanup task series)
+- Compare implementation changes in include/tactical/FBattleDisplay.h and src/tactical/FBattleDisplay.cpp against master branch
+- The label logic was added in drawPlaceMines() in a new block before the Enable(true) call, scanning deployableSources for weaponType == FWeapon::SM and FWeapon::M
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-ui-cleanup/smc-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
