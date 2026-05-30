@@ -1422,4 +1422,118 @@ m_harness.pumpEvents(3);
 m_harness.cleanupOrphanTopLevels(10);
 }
 
+void TacticalGuiLiveTest::testMinePlacementDoneButtonLabelReflectsOrdnanceTypes() {
+// SMC-03: Runtime assertions covering the label derived from deployable ordnance types.
+// The empty/fallback "Mine Placement Done" case is already validated by
+// testTacticalActionButtonsRemainSizerPositionedWhenShown and
+// testTacticalActionButtonsStayBelowPromptReservationAcrossPhases which use
+// ships with no deployable ordnance.
+
+// Runtime: Battleship (SM only) -> "Seeker Placement Done"
+// beginOrdnancePlacement() rebuilds deployment sources from the active (defending) player,
+// which is the Battleship with only SM weapons, then sets state to BS_PlaceMines.
+{
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	// Battleship has SM weapon only among deployable types.
+	FVehicle * defenderShip = createShip("Battleship");
+	CPPUNIT_ASSERT(attacker != NULL && defenderShip != NULL);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(defenderShip);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("SMC-03 Seeker-Only Label");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+	// beginOrdnancePlacement rebuilds deployment sources and transitions to BS_PlaceMines.
+	const bool started = battleScreen->beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE(
+		"Battleship has SM weapons so beginOrdnancePlacement() should succeed.",
+		started);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(2);
+
+	// Force a synchronous draw via an offscreen DC to ensure SetLabel is called
+	// before checking the button label, since live paint timing is not deterministic.
+	FBattleDisplay * displayPanelSM = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT(displayPanelSM != NULL);
+	{
+		wxMemoryDC offscreenDC;
+		wxBitmap offscreenBitmap(battleScreen->GetSize().GetWidth(), 120);
+		offscreenDC.SelectObject(offscreenBitmap);
+		displayPanelSM->draw(offscreenDC);
+		offscreenDC.SelectObject(wxNullBitmap);
+	}
+
+	wxButton * doneButton = findButtonByLabel(battleScreen, wxT("Seeker Placement Done"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"Battleship (SM only) in BS_PlaceMines should produce 'Seeker Placement Done' button.",
+		doneButton != NULL);
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(3);
+	delete attackFleet;
+	delete defendFleet;
+}
+
+// Runtime: Minelayer (SM + M) -> "Weapon Placement Done"
+// beginOrdnancePlacement() rebuilds deployment sources from the active (defending) player,
+// which is the Minelayer with both SM and M weapons.
+{
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	// Minelayer has both SM and M weapons among deployable types.
+	FVehicle * defenderShip = createShip("Minelayer");
+	CPPUNIT_ASSERT(attacker != NULL && defenderShip != NULL);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(defenderShip);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("SMC-03 Both SM+M Label");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+	// beginOrdnancePlacement rebuilds deployment sources and transitions to BS_PlaceMines.
+	const bool started = battleScreen->beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE(
+		"Minelayer has SM and M weapons so beginOrdnancePlacement() should succeed.",
+		started);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(2);
+
+	// Force a synchronous draw via an offscreen DC to ensure SetLabel is called
+	// before checking the button label, since live paint timing is not deterministic.
+	FBattleDisplay * displayPanelBoth = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT(displayPanelBoth != NULL);
+	{
+		wxMemoryDC offscreenDC;
+		wxBitmap offscreenBitmap(battleScreen->GetSize().GetWidth(), 120);
+		offscreenDC.SelectObject(offscreenBitmap);
+		displayPanelBoth->draw(offscreenDC);
+		offscreenDC.SelectObject(wxNullBitmap);
+	}
+
+	wxButton * doneButton = findButtonByLabel(battleScreen, wxT("Weapon Placement Done"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"Minelayer (SM + M) in BS_PlaceMines should produce 'Weapon Placement Done' button.",
+		doneButton != NULL);
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(3);
+	delete attackFleet;
+	delete defendFleet;
+}
+
+m_harness.cleanupOrphanTopLevels(10);
+}
+
 }

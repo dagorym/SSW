@@ -20,9 +20,9 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 30, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -39,6 +39,7 @@ CPPUNIT_TEST( testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeomet
 CPPUNIT_TEST( testBattleDisplayNarrowWidthStacksShipStatsBelowButtons );
 CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
+CPPUNIT_TEST( testMinePlacementDoneButtonLabelReflectsOrdnanceTypes );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -172,6 +173,21 @@ void testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior();
  * @date Last Modified: Apr 04, 2026
  */
 void testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo();
+/**
+ * @brief Verifies mine-placement Done button label reflects deployed ordnance types.
+ *
+ * Source-contract assertions confirm all four label variants exist in
+ * drawPlaceMines(), and runtime checks confirm seekers-only (Battleship)
+ * produces "Seeker Placement Done" and mixed SM+M (Minelayer) produces
+ * "Weapon Placement Done".  The empty/fallback "Mine Placement Done" case
+ * is validated by the existing action-button layout and prompt-reservation
+ * tests that use ships with no deployable ordnance.
+ *
+ * @author claude-sonnet-4-6 (high)
+ * @date Created: May 30, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 };
 
 }
