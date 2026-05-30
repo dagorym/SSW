@@ -10,6 +10,7 @@
 #include "tactical/FTacticalGame.h"
 
 #include <algorithm>
+#include <climits>
 
 #include "tactical/ITacticalUI.h"
 #include "tactical/FTacticalAttackResult.h"
@@ -983,6 +984,61 @@ bool FTacticalGame::activateSelectedInactiveSeeker(unsigned int seekerID) {
 		return true;
 	}
 	return false;
+}
+
+bool FTacticalGame::deactivateActiveSeekerByID(unsigned int seekerID) {
+	for (std::vector<FTacticalSeekerMissileState>::iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->seekerID != seekerID
+			|| itr->ownerID != getMovingPlayerID()
+			|| !itr->active) {
+			continue;
+		}
+		itr->active = false;
+		return true;
+	}
+	return false;
+}
+
+bool FTacticalGame::activateInactiveSeekerAtHex(const FPoint & hex) {
+	if (!isHexInBounds(hex)) {
+		return false;
+	}
+
+	unsigned int lowestSeekerID = UINT_MAX;
+	std::vector<FTacticalSeekerMissileState>::iterator targetItr = m_seekerMissiles.end();
+
+	// Find the lowest seekerID among inactive seekers at this hex owned by moving player
+	for (std::vector<FTacticalSeekerMissileState>::iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->ownerID != getMovingPlayerID()
+			|| itr->active
+			|| itr->hex.getX() != hex.getX()
+			|| itr->hex.getY() != hex.getY()) {
+			continue;
+		}
+		if (itr->seekerID < lowestSeekerID) {
+			lowestSeekerID = itr->seekerID;
+			targetItr = itr;
+		}
+	}
+
+	if (targetItr != m_seekerMissiles.end()) {
+		targetItr->active = true;
+		return true;
+	}
+	return false;
+}
+
+std::vector<FTacticalSeekerMissileState> FTacticalGame::getActiveSeekersByMovingPlayer() const {
+	std::vector<FTacticalSeekerMissileState> result;
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->ownerID == getMovingPlayerID() && itr->active) {
+			result.push_back(*itr);
+		}
+	}
+	return result;
 }
 
 bool FTacticalGame::isOffensiveSeekerDeploymentMode() const {

@@ -560,6 +560,52 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 */
 	bool activateSelectedInactiveSeeker(unsigned int seekerID);
 	/**
+	 * @brief Deactivate one active seeker by ID for the moving player.
+	 *
+	 * Deactivation is the inverse of activateSelectedInactiveSeeker; transitions an
+	 * active seeker owned by the moving player to inactive state.
+	 *
+	 * @param seekerID Unique model seeker identifier to deactivate.
+	 *
+	 * @return True when an active, moving-player-owned seeker with that ID was
+	 *         found and flipped to inactive.
+	 *
+	 * @author Claude Haiku 4.5 (standard)
+	 * @date Created: May 30, 2026
+	 * @date Last Modified: May 30, 2026
+	 */
+	bool deactivateActiveSeekerByID(unsigned int seekerID);
+	/**
+	 * @brief Activate exactly one inactive seeker at a given hex.
+	 *
+	 * Selects and activates exactly one inactive seeker located at the requested hex
+	 * owned by the moving player. When multiple inactive seekers share the hex,
+	 * chooses deterministically (lowest seekerID).
+	 *
+	 * @param hex Tactical hex where the seeker to activate is located.
+	 *
+	 * @return True when an inactive, moving-player-owned seeker at that hex was
+	 *         found and activated.
+	 *
+	 * @author Claude Haiku 4.5 (standard)
+	 * @date Created: May 30, 2026
+	 * @date Last Modified: May 30, 2026
+	 */
+	bool activateInactiveSeekerAtHex(const FPoint & hex);
+	/**
+	 * @brief Get all active seekers owned by the moving player.
+	 *
+	 * Returns a copy of all active seeker records owned by the current moving player
+	 * across all hexes, suitable for UI listing and navigation.
+	 *
+	 * @return Vector of active seeker missile state records for the moving player.
+	 *
+	 * @author Claude Haiku 4.5 (standard)
+	 * @date Created: May 30, 2026
+	 * @date Last Modified: May 30, 2026
+	 */
+	std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayer() const;
+	/**
 	 * @brief Report whether the current selection is offensive-fire seeker deployment.
 	 *
 	 * This mode is available only while the moving player has selected one of its

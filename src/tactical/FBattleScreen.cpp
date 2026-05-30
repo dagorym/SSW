@@ -829,6 +829,26 @@ bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID) {
 	return changed;
 }
 
+bool FBattleScreen::deactivateActiveSeekerByID(unsigned int seekerID) {
+	const bool changed = m_tacticalGame->deactivateActiveSeekerByID(seekerID);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::activateInactiveSeekerAtHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->activateInactiveSeekerAtHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+std::vector<FTacticalSeekerMissileState> FBattleScreen::getActiveSeekersByMovingPlayer() const {
+	return m_tacticalGame->getActiveSeekersByMovingPlayer();
+}
+
 void FBattleScreen::completeSeekerActivationPhase() {
 	m_tacticalGame->completeSeekerActivationPhase();
 	if (!m_tacticalGame->getLastDestroyedShipIDs().empty()) {
