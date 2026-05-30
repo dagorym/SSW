@@ -499,9 +499,9 @@ protected:
 	 *
 	 * @param dc The device context to draw on
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium)
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  May 24, 2026
+	 * @date Last Modified:  May 30, 2026
 	 */
 	void drawPlaceMines(wxDC &dc);
 

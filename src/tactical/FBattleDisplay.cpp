@@ -1428,6 +1428,28 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 		y+= (int)(1.6*textSize);
 	}
 
+	// Compute the set of ordnance types present and label the button accordingly.
+	{
+		bool hasMine = false;
+		bool hasSeeker = false;
+		for (unsigned int i = 0; i < deployableSources.size(); ++i){
+			if (deployableSources[i].weaponType == FWeapon::SM){
+				hasSeeker = true;
+			} else if (deployableSources[i].weaponType == FWeapon::M){
+				hasMine = true;
+			}
+		}
+		wxString label;
+		if (hasSeeker && hasMine){
+			label = wxT("Weapon Placement Done");
+		} else if (hasSeeker){
+			label = wxT("Seeker Placement Done");
+		} else {
+			label = wxT("Mine Placement Done");
+		}
+		m_buttonMinePlacementDone->SetLabel(label);
+	}
+
 	// turn on the button
 	m_buttonMinePlacementDone->Enable(true);
 	if (m_first){
