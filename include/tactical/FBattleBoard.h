@@ -59,15 +59,17 @@ void onPaint(wxPaintEvent & event);
 /**
  * @brief Handle tactical-board clicks for setup, battle, and seeker activation.
  *
- * Seeker-activation clicks now select the clicked inactive-seeker stack hex for
- * the lower panel, while all other board clicks continue through the existing
- * delegated tactical hex handler.
+ * During `PH_SEEKER_ACTIVATION`, a board click calls
+ * `activateInactiveSeekerAtHex(hex)` to immediately activate one inactive
+ * seeker at the clicked hex and then triggers a redraw so the lower panel
+ * and board reflect the updated activation state. All other board clicks
+ * continue through the existing delegated tactical hex handler.
  *
  * @param event Mouse-release event carrying the clicked board position.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: May 30, 2026
  */
 void onLeftUp(wxMouseEvent & event);
 void onMotion(wxMouseEvent & event);
@@ -107,11 +109,13 @@ void drawMinedHexes(wxDC &dc);
 /**
  * @brief Draw seeker missiles with phase-based visibility filtering.
  *
- * During seeker activation, only inactive seekers owned by the moving player
- * are shown. During normal battle phases, only active seekers are shown with
- * their icon rotated to match their current heading. The icon is loaded
- * through the shared asset-resolution policy used elsewhere in the tactical
- * wx surfaces.
+ * During `PH_SEEKER_ACTIVATION`, both inactive seeker stacks owned by the
+ * moving player (rendered without rotation for click-to-activate targeting)
+ * and already-active seekers for the moving player (rendered with heading
+ * rotation for visual confirmation) are drawn. During all other battle phases,
+ * only active seekers are shown with their icon rotated to match their current
+ * heading. The icon is loaded through the shared asset-resolution policy used
+ * elsewhere in the tactical wx surfaces.
  *
  * @param dc Device context used for tactical board drawing.
  *

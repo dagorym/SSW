@@ -274,13 +274,16 @@ All three combat phases and their supporting mechanics are fully implemented:
   If the moving player has no inactive seekers, the model still calls
   `resolveActiveSeekersForMovingPlayer()` and then auto-enters `PH_MOVE`, so
   the active-seeker seam runs even when no visible activation stop is needed.
-  The shipped TSM-005 wx follow-up makes that stop user-visible: the board now
-  renders only the moving player's inactive seeker stacks during
-  `PH_SEEKER_ACTIVATION`, board clicks select one activation hex stack, and the
-  lower panel renders instructional text plus one clickable row per inactive
-  seeker in the selected stack together with a `Seeker Activation Done` action
-  button. Once tactical play leaves that phase, normal battle rendering hides
-  inactive seekers again and shows only active seekers on the map. TSM-008
+  The shipped TSM-005 wx follow-up makes that stop user-visible. The SMC-02
+  rework then refined the UX: the board renders the moving player's inactive
+  seeker stacks plus any already-active seekers during `PH_SEEKER_ACTIVATION`
+  so the user can see both clickable targets and their activation progress.
+  Board clicks directly activate one inactive seeker at the clicked hex via
+  `activateInactiveSeekerAtHex`. The lower panel lists all seekers already
+  activated by the moving player and provides one clickable deactivate row per
+  active seeker together with a `Seeker Activation Done` action button. Once
+  tactical play leaves that phase, normal battle rendering hides inactive
+  seekers again and shows only active seekers on the map. TSM-008
   extends activation completion so `completeSeekerActivationPhase()` resolves
   the moving player's active seekers before `PH_MOVE`: same-hex contacts are
   captured first, movement-step contacts append pending
@@ -522,6 +525,19 @@ instead of the generic tactical click handler. `FBattleDisplay` now adds the
 activation instructions, selected-stack readout, per-seeker clickable rows, and
 `Seeker Activation Done` button so board and lower-panel refresh stay aligned
 after both activation-hex changes and one-way seeker activation clicks.
+
+The SMC-02 rework revises the activation UX so board and lower-panel roles are
+split cleanly. `FBattleBoard::onLeftUp()` now calls
+`FBattleScreen::activateInactiveSeekerAtHex(hex)` directly for
+`PH_SEEKER_ACTIVATION` clicks instead of routing through
+`selectSeekerActivationHex`. The lower panel (`FBattleDisplay::drawSeekerActivation`)
+no longer shows a selected-stack readout of inactive seekers; it instead lists
+all seekers already activated by the moving player via
+`getActiveSeekersByMovingPlayer()` and provides one clickable deactivate row per
+active seeker, delegating to `deactivateActiveSeekerByID(id)` on click. Both
+board and lower-panel changes call `reDraw()` after state changes so the board
+(showing both inactive stacks and active seekers during the activation phase) and
+the panel (showing the running list of activated seekers) stay consistent.
 
 The shipped TSM-006 follow-up extends the same runtime delegation seam for
 offensive-fire seeker deployment. `FTacticalGame` now tracks

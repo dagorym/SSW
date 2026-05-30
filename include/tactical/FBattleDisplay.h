@@ -1,8 +1,9 @@
 /**
  * @file FBattleDisplay.h
  * @brief Header file for BattleDisplay class
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified: May 30, 2026
  *
  */
 
@@ -505,17 +506,20 @@ protected:
 	void drawPlaceMines(wxDC &dc);
 
 	/**
-	 * @brief Draw seeker activation panel content and selectable seeker rows.
+	 * @brief Draw seeker activation panel content and deactivate rows.
 	 *
-	 * Renders the activation instructions, selected stack indicator, and one
-	 * clickable row for each inactive seeker in the selected stack. Each row maps
-	 * to exactly one seeker ID so activation is one-way and per-seeker.
+	 * Renders the activation instructions, an "Activated seekers" list, and one
+	 * clickable deactivate row for each seeker already activated by the moving
+	 * player (via `getActiveSeekersByMovingPlayer()`). Board clicks activate
+	 * additional inactive seekers; panel row clicks deactivate individual active
+	 * seekers via `deactivateActiveSeekerByID(id)`. Each row maps to exactly one
+	 * seeker ID so deactivation is one-way and per-seeker.
 	 *
 	 * @param dc The device context to draw on.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: May 30, 2026
 	 */
 	void drawSeekerActivation(wxDC &dc);
 
@@ -534,13 +538,18 @@ protected:
 	void checkShipSelection(wxMouseEvent &event);
 
 	/**
-	 * @brief Activate one seeker when the user clicks an activation-row region.
+	 * @brief Deactivate one active seeker when the user clicks a panel deactivate row.
+	 *
+	 * Checks each region in `m_seekerActivationRegions` against the click
+	 * position and calls `deactivateActiveSeekerByID(id)` for the matching
+	 * seeker, then triggers a redraw. Board clicks activate seekers;
+	 * this method handles the inverse deactivation action from the lower panel.
 	 *
 	 * @param event Mouse click event from the lower panel.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: May 30, 2026
 	 */
 	void checkSeekerActivationSelection(wxMouseEvent &event);
 	/**

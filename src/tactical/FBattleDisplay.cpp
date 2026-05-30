@@ -1,9 +1,9 @@
 /**
  * @file FBattleDisplay.cpp
  * @brief Implementation file for BattleDispaly class
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 25, 2026
+ * @date Last Modified:  May 30, 2026
  *
  */
 
