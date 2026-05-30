@@ -1,0 +1,69 @@
+Your role is 'verifier'. Your task is as follows:
+
+Verify that the SMC-07 seeker path drawing and icon rotation documentation is complete, accurate, and committed. SMC-06 (prerequisite) adds `movementPath` render-supporting state to `FTacticalSeekerMissileState` and populates it in `resolveActiveSeekersForMovingPlayer()`. SMC-07 draws those paths on the board (cyan, PH_MOVE, pen width 2) and rotates seeker icons by heading.
+
+**Branch:** seeker-fix
+
+**Artifact directory:** artifacts/seeker-missile-ui-cleanup/smc-07
+
+**Documentation commit:** b3dc88f
+
+---
+
+## Files Modified (Implementation, Tests, and Documentation)
+
+### Implementation (Implementer)
+- `include/tactical/FTacticalGame.h` — `movementPath` field on `FTacticalSeekerMissileState`; `resolveActiveSeekersForMovingPlayer()` declaration
+- `src/tactical/FTacticalGame.cpp` — `resolveActiveSeekersForMovingPlayer()` populates `movementPath`
+- `include/tactical/FBattleScreen.h` — `getSeekerMissiles()` delegation declaration
+- `src/tactical/FBattleScreen.cpp` — `getSeekerMissiles()` implementation
+- `include/tactical/FBattleBoard.h` — `drawSeekerPaths()` declaration and Doxygen
+- `src/tactical/FBattleBoard.cpp` — `drawSeekerPaths()` implementation; `drawSeekerMissiles()` heading rotation
+
+### Tests (Tester)
+- `tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp` / `.h` — updated `testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules` for heading rotation; new `testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen`
+- `tests/tactical/FTacticalSeekerMovementTest.cpp` / `.h` — new `testMovementPathPopulatedByResolveActiveSeekers`
+
+### Documentation (Documenter — commit b3dc88f)
+- `include/tactical/FTacticalGame.h` — `resolveActiveSeekersForMovingPlayer()` Doxygen updated with movementPath population/clearance notes
+- `doc/DesignNotes.md` — SMC-06 and SMC-07 entries added after TSM-006 paragraph
+- `AGENTS.md` — tactical test bullet extended with new SMC-07 test contracts
+
+---
+
+## Acceptance Criteria to Verify
+
+1. `resolveActiveSeekersForMovingPlayer()` Doxygen in `include/tactical/FTacticalGame.h` accurately describes:
+   - `movementPath` is cleared and rebuilt for each moving seeker (start hex through each greedy step).
+   - `movementPath` is cleared for inactive or non-moving-player seekers to prevent stale paths.
+   - The path state is consumed by `FBattleBoard::drawSeekerPaths()` during `PH_MOVE`.
+2. `drawSeekerPaths()` Doxygen in `include/tactical/FBattleBoard.h` accurately describes cyan pen color `#00CCCC`, width 2, `PH_MOVE` scope, and `movementPath.size() >= 2` filter.
+3. `drawSeekerMissiles()` Doxygen in `include/tactical/FBattleBoard.h` accurately describes heading-rotated icon for active seekers in normal battle phases.
+4. `FTacticalSeekerMissileState` struct Doxygen in `include/tactical/FTacticalGame.h` accurately describes `movementPath` as render-only, non-persistent, wx-free state.
+5. `doc/DesignNotes.md` SMC-06 entry covers `movementPath` field semantics, per-turn clearance/rebuild, and `getSeekerMissiles()` delegation.
+6. `doc/DesignNotes.md` SMC-07 entry covers cyan pen (`#00CCCC`, width 2), `PH_MOVE` scope, `drawSeekerPaths()` mechanics, and heading rotation.
+7. `AGENTS.md` tactical test section mentions `testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen` and `testMovementPathPopulatedByResolveActiveSeekers` with accurate contract descriptions.
+8. All tactical tests pass (189/189) with no documentation-change-induced regressions.
+9. No documentation changes alter executable behavior.
+
+---
+
+## Test Outcomes (from Tester)
+
+Tactical suite: 189 tests, 0 failures, 0 errors. GUI pre-existing failures (8) are unrelated to SMC-07.
+
+---
+
+## Required Artifacts
+
+All of the following must exist and be committed before reporting success:
+- `artifacts/seeker-missile-ui-cleanup/smc-07/verifier_report.md`
+- `artifacts/seeker-missile-ui-cleanup/smc-07/verifier_result.json`
+
+Do not report success unless all required artifacts exist and all changes are committed.
+
+---
+
+## Startup Guidance
+
+Load your role with `myteam get role verifier` before any other action. If blocking inputs are present, continue in the same run without pausing. Infer missing plan-source or convention-file details from repository context when safe (plan at `plans/seeker-missile-ui-cleanup-plan.md`; repository policy in `AGENTS.md`).
