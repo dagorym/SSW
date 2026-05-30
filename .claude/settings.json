@@ -6,5 +6,17 @@
       "Bash(python3 .myteam/*)",
       "Bash(bash .myteam/*)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/load-myteam-role.sh\""
+          }
+        ]
+      }
+    ]
   }
 }
