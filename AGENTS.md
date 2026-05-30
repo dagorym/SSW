@@ -28,6 +28,20 @@ If neither global nor local `myteam` execution is working,
 This repository uses `.myteam/` as its active instruction system.
 Treat the loaded `myteam` role and skill content as the operative repository policy.
 
+### Skill loading order
+
+When a role or plan requires a skill, resolve it in this order:
+
+1. **First**, load it through myteam: `myteam get skill <skillname>`.
+2. **Only if** myteam has no such skill, fall back to your tool's own
+   general-purpose skill/command system (for example, Claude Code's `Skill`
+   tool or an equivalent in another assistant).
+3. **Never** skip the myteam lookup and go straight to a tool-native skill.
+
+Myteam skills are the project's role-specific, orchestration-critical skills.
+Tool-native skills (such as `/code-review` or `/run`) are general utilities;
+using the wrong system breaks the agent coordination workflow.
+
 ## Overview
 
 SSW is a C++ implementation of the Star Frontiers Second Sathar War strategic game along with a tactical component allowing users to play any of the Knight Hawks board game scenarios using wxWidgets 3.3.1 for the GUI. The repository builds two executables:
@@ -40,6 +54,7 @@ Cross-platform: Linux via Makefiles, Windows via Visual Studio 2022.
 ## Non-negotiable Constraints
 
 - Under no cirumstance should the document at `doc/rules/tactical_operations_manual.md` be edited.  This is a non-volitile, external artifact that cannot change.  If implmentation changes occur that would require this document to change, the code is incorrect and discussion must occur with the user to resolve the conflict.
+- Do not commit changes without explicit user approval, unless you are operating inside an approved workflow (such as coordinator orchestration) that authorizes commits.
 
 ## Project Structure
 
