@@ -1,0 +1,57 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMC-05: Render pending offensive-fire seekers on the tactical board. Added getAllPendingOffensiveFireSeekerHexes() read-only query to FTacticalGame (no wx types), delegated through FBattleScreen, and added a PH_ATTACK_FIRE branch in FBattleBoard::drawSeekerMissiles() to draw the seeker icon on each hex holding a current-phase pending offensive-fire seeker. Recalling a pending seeker via the lower-panel recall list removes its icon on the next redraw. Active seeker rendering in all other phases and the drawOffensiveSeekerPendingRows recall list are unchanged.
+
+Acceptance criteria validated:
+- AC1: After deploying a seeker during offensive fire, the seeker icon appears on each deployment hex on the board. MET.
+- AC2: Recalling a pending seeker (via the recall list) removes its icon from the board on redraw. MET.
+- AC3: Committed/active seeker rendering in other phases is unchanged. MET.
+- AC4: Any added model/screen query is read-only and introduces no wx types into the model. MET.
+
+Implementation branch or worktree context:
+- Branch: seeker-fix-smc-05-tester-20260530
+- Implementer changes and tester additions are both on this branch.
+- Comparison base: master branch.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleBoard.h
+- include/tactical/FBattleScreen.h
+- include/tactical/FTacticalGame.h
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FBattleScreen.cpp
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.h
+
+Test commit:
+- 8705963
+
+Commands executed:
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+
+Final test outcomes:
+- 191 tests pass, 0 failures. New test testDrawSeekerMissilesPendingOffensiveFireBranch was added and passes. All pre-existing tactical tests continue to pass. All 4 acceptance criteria validated via source-contract inspection.
+
+Documentation context:
+- AGENTS.md tactical tests section describes FTacticalBattleBoardRendererDelegationTest SMC-07 source contracts; the SMC-05 test additions (testDrawSeekerMissilesPendingOffensiveFireBranch) should be recorded analogously in AGENTS.md.
+- The plan at plans/seeker-missile-ui-cleanup-plan.md documents the SMC-05 feature intent.
+- DesignNotes.md may need a note about the PH_ATTACK_FIRE rendering branch in drawSeekerMissiles().
+- The new FTacticalGame::getAllPendingOffensiveFireSeekerHexes() delegation chain (FTacticalGame -> FBattleScreen -> FBattleBoard) should be documented in AGENTS.md contributor notes.
+- AGENTS.md contributor notes describe FTacticalBattleBoardRendererDelegationTest coverage; the new testDrawSeekerMissilesPendingOffensiveFireBranch assertions covering the PH_ATTACK_FIRE branch, pending-hex drawing without rotation, active-seeker drawing with heading, and early return should be added there.
+
+Plan and diff context:
+- Plan file: plans/seeker-missile-ui-cleanup-plan.md (SMC-05 section)
+- Comparison base: master branch (assumption based on repository conventions)
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-ui-cleanup/smc-05
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
