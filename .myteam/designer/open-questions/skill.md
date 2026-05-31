@@ -10,7 +10,10 @@ Load this skill only when impact analysis identifies unresolved decisions that w
 ## Required Actions
 
 - Present each open question one at a time.
-- Prompt the user for a decision.
+- For each question:
+  - present the viable options, each with explicit pros and cons
+  - recommend the best option, grounded in information already gathered (document context, stated design constraints, known requirements), with explicit rationale for the recommendation
+  - prompt the user for a decision or approval
 - Continue until all open questions are resolved.
 - Incorporate the resolved decisions into the upcoming proposal.
 
