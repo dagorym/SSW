@@ -29,6 +29,8 @@ repository:
   wins.
 - If you cannot read `AGENTS.md` or cannot run the required `myteam` commands,
   **STOP IMMEDIATELY and tell the user.** Do not proceed with guesses.
+- Do not restate project facts or architecture details in this file. This file
+  is a pointer only; canonical documentation belongs in its authoritative source.
 
 Do not duplicate `AGENTS.md`'s contents here — read it directly, every session.
 
