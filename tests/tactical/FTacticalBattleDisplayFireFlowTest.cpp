@@ -1047,4 +1047,31 @@ assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIG
 assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testPlaceMinesSourceListStartsAtActionButtonRowBottom() {
+// AC: During pre-game ordnance placement, the instructions/"Done"-button region and the
+// placement source list region are visually separated with no overlap.
+// AC: The placement source rows remain clickable (hit regions still align with drawn text).
+// AC: No regression to other lower-panel layouts that share the same spacer logic.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
+const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::drawDefensiveFire(wxDC &dc)");
+const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
+
+// AC #1: Source list y-start is getActionButtonRowBottom(), not BORDER, eliminating overlap.
+assertContains(minesBody, "int y = getActionButtonRowBottom();");
+assertNotContains(minesBody, "int y = BORDER;");
+
+// AC #2: Hit regions use the same y variable as the drawn text rows, preserving click alignment.
+// The region push occurs after DrawText at the same y offset in the loop body.
+assertContains(minesBody, "m_shipNameRegions.push_back(wxRect(lMargin,y,");
+
+// AC #3: Other draw phases are not affected by the SMC-04 change.
+// drawMoveShip, drawDefensiveFire, and drawAttackFire must not reference getActionButtonRowBottom()
+// as the y initializer for their own content (they use the action-prompt line helpers instead).
+assertNotContains(moveBody, "int y = getActionButtonRowBottom();");
+assertNotContains(defenseBody, "int y = getActionButtonRowBottom();");
+assertNotContains(attackBody, "int y = getActionButtonRowBottom();");
+}
+
 }
