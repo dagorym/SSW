@@ -6,8 +6,8 @@ Items to Add
     * during strategic game
 
 Items to fix
-* Starting window of each applications (SSW and Battlesim) should open centered on the user's screen under the splash screen image
-* spinners are horizontal, we want them vertical This seems to be a wxWidgits issue.
+* Starting window of each applications (SSW and Battlesim) should open centered on the user's screen under the splash screen image (This is only on WSL linux, it is correct on native windows)
+* spinners are horizontal, we want them vertical This seems to be a wxWidgits issue. (This is only on WSL linux, it is correct on native windows)
 
 ---
 Prompt to launch on copilot (typically uses 1 premium request unless there are issues)
@@ -45,3 +45,11 @@ data:
   Do not begin implementation, planning, or coordination work until you have loaded and understood your role's workflow.
 
   ---
+
+Seeker missiles
+1) No text in button for ending the mines and seeker missles.  It should just say "Weapon Placement Done".  It does not need to be dynamic based on the types of weapons being place.
+2) I the pre game placement phase, clicking on a hex gives no indication that a seeker missile was place.  Nothing is drawn on the board and nothing appears in the status window.
+3) When placing seeker missiles during your movement turn, the list of pending placesments is showing up under the ship summary but is cut off because the status bar doesn't resize. This is preventing delection of placed missiles. This should be placed in a separate widget to the left of the ship status.
+4) On the seeker activation phase before movement, the Activated Seeker widget is still overlapping with the Phase instruction widget.  These should all be dynamically sized and placed.
+5) Is there a damage summary printed for when a seeker missile hits?  And does it activate the ICM launching screen.  I didn't see that happen.
+6) Once a seeker missile is activated, you should never be able to deactivate it.
