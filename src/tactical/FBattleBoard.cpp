@@ -473,6 +473,31 @@ void FBattleBoard::drawSeekerMissiles(wxDC &dc){
 		return;
 	}
 
+	if (m_parent->getPhase() == PH_ATTACK_FIRE) {
+		// Draw the seeker icon on every hex holding a pending offensive-fire
+		// seeker so the player can see deployed seekers during the fire phase.
+		// Recalling a seeker via the lower-panel list removes it here on redraw.
+		const std::vector<FPoint> pendingHexes = m_parent->getAllPendingOffensiveFireSeekerHexes();
+		for (std::vector<FPoint>::const_iterator itr = pendingHexes.begin(); itr != pendingHexes.end(); ++itr) {
+			if (!m_parent->isHexInBounds(*itr)) {
+				continue;
+			}
+			drawCenteredOnHex(*m_seekerMissileIcon, *itr);
+		}
+		// Also draw committed active seekers from previous turns (no rotation
+		// needed for pending; active seekers retain their heading).
+		for (int i = 0; i < m_nCol; ++i) {
+			for (int j = 0; j < m_nRow; ++j) {
+				const FPoint hex(i,j);
+				const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);
+				if (!activeSeekers.empty()) {
+					drawCenteredOnHex(*m_seekerMissileIcon, hex, activeSeekers[0].heading);
+				}
+			}
+		}
+		return;
+	}
+
 	for (int i = 0; i < m_nCol; ++i) {
 		for (int j = 0; j < m_nRow; ++j) {
 			const FPoint hex(i,j);

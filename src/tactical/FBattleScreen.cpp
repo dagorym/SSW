@@ -825,6 +825,10 @@ bool FBattleScreen::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex
 	return changed;
 }
 
+std::vector<FPoint> FBattleScreen::getAllPendingOffensiveFireSeekerHexes() const {
+	return m_tacticalGame->getAllPendingOffensiveFireSeekerHexes();
+}
+
 bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID) {
 	const bool changed = m_tacticalGame->activateSelectedInactiveSeeker(seekerID);
 	if (changed) {

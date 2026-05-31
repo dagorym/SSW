@@ -1,0 +1,47 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- SMC-05: Render pending offensive-fire seekers on the tactical board. Added getAllPendingOffensiveFireSeekerHexes() read-only query to FTacticalGame (no wx types), delegated through FBattleScreen, and added a PH_ATTACK_FIRE branch in FBattleBoard::drawSeekerMissiles() to draw the seeker icon on each hex holding a current-phase pending offensive-fire seeker. Recalling a pending seeker via the lower-panel recall list removes its icon on the next redraw. Active seeker rendering in all other phases and the drawOffensiveSeekerPendingRows recall list are unchanged.
+
+Modified files:
+- include/tactical/FBattleBoard.h
+- include/tactical/FBattleScreen.h
+- include/tactical/FTacticalGame.h
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FBattleScreen.cpp
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- After deploying a seeker during offensive fire, the seeker icon appears on each deployment hex on the board. MET: drawSeekerMissiles calls getAllPendingOffensiveFireSeekerHexes() during PH_ATTACK_FIRE and draws the seeker icon on each in-bounds returned hex.
+- Recalling a pending seeker (via the recall list) removes its icon from the board on redraw. MET: recall removes the pending deployment record from the model so the next redraw finds no entry for that hex in getAllPendingOffensiveFireSeekerHexes() and draws nothing there.
+- Committed/active seeker rendering in other phases is unchanged. MET: the PH_ATTACK_FIRE branch returns early; all other phases continue on the existing active-seeker-only path.
+- Any added model/screen query is read-only and introduces no wx types into the model. MET: getAllPendingOffensiveFireSeekerHexes() in FTacticalGame reads m_pendingOffensiveSeekerDeployments without mutation and uses only std::vector<FPoint>.
+
+Create test files in:
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp - add source-contract assertion for the PH_ATTACK_FIRE branch in drawSeekerMissiles
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.h - register new test method if added
+
+Implementation context for testing:
+- New method FTacticalGame::getAllPendingOffensiveFireSeekerHexes() returns unique hexes for all current-phase pending offensive-fire seeker deployments; returns empty vector outside PH_ATTACK_FIRE.
+- FBattleScreen::getAllPendingOffensiveFireSeekerHexes() is a thin delegation to the model method.
+- FBattleBoard::drawSeekerMissiles() new PH_ATTACK_FIRE branch: draws icon on each pending hex (no rotation), then renders committed active seekers with heading rotation, then returns early.
+- The existing drawOffensiveSeekerPendingRows recall list at FBattleDisplay.cpp:1092 is unmodified and confirmed present by the build.
+- The existing FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules source-token assertions continue to pass because all previously required tokens are still present in the function.
+
+Suggested test command(s):
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-ui-cleanup/smc-05
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
