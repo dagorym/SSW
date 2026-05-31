@@ -57,6 +57,7 @@ CPPUNIT_TEST( testBattleScreenResizeHandlerReflowsLowerPanelBeforeLayoutPolicy )
 CPPUNIT_TEST( testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrentGeometry );
 CPPUNIT_TEST( testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers );
 CPPUNIT_TEST( testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing );
+CPPUNIT_TEST( testPlaceMinesSourceListStartsAtActionButtonRowBottom );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -401,6 +402,19 @@ void testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers();
  * @date Last Modified: May 17, 2026
  */
 void testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing();
+
+/**
+ * @brief Verifies that drawPlaceMines() starts the source list at getActionButtonRowBottom()
+ * rather than BORDER, ensuring no vertical overlap between the instruction/button region and
+ * the placement source list region. Also verifies hit regions and other draw phases are unaffected.
+ *
+ * AC: SMC-04 -- pre-game placement panel layout overlap fix.
+ *
+ * @author claude-sonnet-4-6 (standard)
+ * @date Created: May 30, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void testPlaceMinesSourceListStartsAtActionButtonRowBottom();
 };
 
 }
