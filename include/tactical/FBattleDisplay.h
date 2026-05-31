@@ -497,9 +497,14 @@ protected:
 	 * weapon slots. It renders one row per ship/weapon source and shows ammo for
 	 * that exact slot.
 	 *
+	 * The instruction text (left side) and "Done" button occupy the upper region
+	 * of the panel. The placement source list (right side, at lMargin=310) is
+	 * positioned below getActionButtonRowBottom() so neither region overlaps the
+	 * other vertically.
+	 *
 	 * @param dc The device context to draw on
 	 *
-	 * @author Tom Stephens, claude-sonnet-4-6 (medium)
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
 	 * @date Created:  Feb 22, 2011
 	 * @date Last Modified:  May 30, 2026
 	 */
