@@ -15,4 +15,7 @@ Load this skill before creating any worktree or stage branch.
 - Resolve the top-level shared artifact directory, defaulting to repository-root-relative `artifacts/`.
 - Create the plan-level directory at `artifacts/<plan-identifier>/`.
 - Create each subtask artifact directory at `artifacts/<plan-identifier>/<subtask-identifier>/`.
+- Treat each subtask artifact directory root as the canonical live artifact location for the latest completed pass only.
+- Create a per-subtask history directory at `artifacts/<plan-identifier>/<subtask-identifier>/history/`.
+- Preserve superseded pass artifacts only under the subtask history directory, never as the live root artifacts.
 - Keep reviewer artifacts at the plan-level directory, not inside subtask directories.
