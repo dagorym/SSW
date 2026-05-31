@@ -55,9 +55,19 @@ def main() -> int:
         subtask: (plan_dir / slugify(subtask)).relative_to(repo_root).as_posix()
         for subtask in args.subtask
     }
+    subtask_history_dirs = {
+        subtask: (plan_dir / slugify(subtask) / "history").relative_to(repo_root).as_posix()
+        for subtask in args.subtask
+    }
 
     if args.create_dirs:
-        ensure_dirs([plan_dir, *[repo_root / rel for rel in subtask_dirs.values()]])
+        ensure_dirs(
+            [
+                plan_dir,
+                *[repo_root / rel for rel in subtask_dirs.values()],
+                *[repo_root / rel for rel in subtask_history_dirs.values()],
+            ]
+        )
 
     result = {
         "current_branch": branch,
@@ -66,6 +76,7 @@ def main() -> int:
         "artifact_root": artifact_root.as_posix(),
         "plan_directory": plan_dir.relative_to(repo_root).as_posix(),
         "subtask_directories": subtask_dirs,
+        "subtask_history_directories": subtask_history_dirs,
         "reviewer_directory": plan_dir.relative_to(repo_root).as_posix(),
         "directories_created": args.create_dirs,
     }
