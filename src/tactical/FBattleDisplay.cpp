@@ -1387,7 +1387,11 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	int lMargin = 310;	// left margin for ship display
 	os.str("");
 	os << "Select a source row to place mines or seeker missiles";
-	int y = BORDER;
+	// Start the source list below the instruction+button region so neither area
+	// overlaps the other vertically.  getActionButtonRowBottom() returns the
+	// fallback height when the button is not yet shown (m_first==true) and the
+	// real sizer-measured button bottom on subsequent draws.
+	int y = getActionButtonRowBottom();
 	dc.DrawText(os.str(),lMargin,y);
 	y+= (int)(1.6*textSize*1.3);
 	m_shipNameRegions.clear();
