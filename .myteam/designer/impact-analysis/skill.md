@@ -16,6 +16,7 @@ Load this skill after request intake establishes the in-scope document set.
 - Review the entire in-scope design document set before editing.
 - List every section that must change.
 - List cross-section impacts, assumptions, risks, and downstream effects.
+- Identify security-relevant design implications in impacted sections, including trust boundaries, authentication and authorization assumptions, secret handling, sensitive data flow, misuse cases, and unsafe defaults.
 - Preserve existing structure and terminology while identifying where targeted edits are sufficient.
 
 ## Limits
