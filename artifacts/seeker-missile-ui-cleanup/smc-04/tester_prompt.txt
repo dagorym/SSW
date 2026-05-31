@@ -1,0 +1,59 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- SMC-04: Pre-game placement panel layout overlap fix
+
+Modified files:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- During pre-game ordnance placement, the instructions/"Done"-button region and the placement source list region are visually separated with no overlap.
+- The placement source rows remain clickable (hit regions still align with drawn text).
+- No regression to other lower-panel layouts (move/fire prompts) that share the same spacer logic.
+
+Test file location guidance:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+  (these contain existing source-inspection tests for drawPlaceMines())
+
+Implementation context for testing:
+- Root cause: drawPlaceMines() started the placement source list at y=BORDER (y=5), the same vertical
+  position as the instruction text and action button. With multiple source rows, rows at indices 3+
+  extended into the button's vertical range (y~81+), creating a visually confusing layout where left-side
+  (button, x=40) and right-side (source rows, x=310) content shared the same y positions.
+- Fix: changed `int y = BORDER` to `int y = getActionButtonRowBottom()` in drawPlaceMines(). This moves
+  the source list header and all rows to start below the button region. The fallback value when the button
+  is not yet shown (m_first==true) is computed from getActionButtonTopSpacerHeight(), giving a
+  deterministic lower bound (~101px).
+- Hit regions (m_shipNameRegions) use the same y variable as drawing, so clickability is preserved.
+- No other draw phases (drawMoveShip, drawDefensiveFire, drawAttackFire, drawSeekerActivation) were
+  modified.
+- The fix is a localized one-line change in src/tactical/FBattleDisplay.cpp plus a doxygen comment update.
+
+Key source-inspection assertions already in place (should still pass):
+- minesBody contains "getActionPromptLineY(0)" (instructions remain at leftOffset)
+- minesBody contains "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES)"
+- minesBody contains "m_buttonMinePlacementDone->Show()" before "Layout()"
+- The fix adds: minesBody should contain "getActionButtonRowBottom()" as the y initializer
+
+Suggested test command(s):
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and
+  continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository
+  evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework
+  discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-ui-cleanup/smc-04
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
