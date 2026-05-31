@@ -1,0 +1,39 @@
+Your role is 'tester'. Your task is as follows:
+
+**SMC-06 — Model: capture seeker movement path**
+
+Task summary:
+Added `std::vector<FPoint> movementPath` to `FTacticalSeekerMissileState` and populated it in `resolveActiveSeekersForMovingPlayer()`. Non-moving seekers have path cleared; active moving-player seekers have path cleared and rebuilt each resolution (start hex pushed first, each greedy step appended). Added `getSeekerMissiles()` const delegation through `FBattleScreen`. No wx types; persistence unaffected.
+
+Modified files:
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+- `include/tactical/FBattleScreen.h`
+- `src/tactical/FBattleScreen.cpp`
+
+Implementation commit: 3ef30447605db04fc639fd66c3ad6bcfccd80886
+
+Acceptance criteria to validate (from Planner):
+- After active seekers move, each seeker exposes its stepped path (start hex to final hex) via `getSeekerMissiles()` accessor
+- Path reflects greedy route taken (start hex pushed before loop, each step hex appended inside loop)
+- Path cleared/repopulated each resolution (no stale data)
+- No wx types in any changed file
+- Existing tests green; persistence unaffected
+
+Test file location:
+`tests/tactical/FTacticalSeekerMovementTest.cpp` — `testMovementPathPopulatedByResolveActiveSeekers` covers the SMC-06 runtime model contract verifying: non-empty path after resolution, `movementPath[0]` equals pre-move starting hex, `movementPath.back()` matches the final hex, non-moving seekers have their path cleared, and a second resolution pass starts fresh with no cross-turn accumulation.
+
+Implementation context for testing:
+`movementPath` is populated inside `resolveActiveSeekersForMovingPlayer()` in `src/tactical/FTacticalGame.cpp`. The field is declared in `FTacticalSeekerMissileState` in `include/tactical/FTacticalGame.h`. `FBattleScreen::getSeekerMissiles()` delegates to `m_tacticalGame->getSeekerMissiles()` so renderers can read `movementPath` without direct `FTacticalGame` access. Path semantics: (1) cleared for all seekers at resolution start, (2) active moving-player seekers get start hex pushed before the movement loop begins, (3) each greedy step hex appended after heading/hex update, (4) contacted or expired seekers are removed from `m_seekerMissiles` entirely so their paths are no longer accessible. The `testMovementPathPopulatedByResolveActiveSeekers` test in `FTacticalSeekerMovementTest` already exercises the full SMC-06 contract. The `FTacticalBattleBoardRendererDelegationTest::testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen` source-contract test reads seeker records via `m_parent->getSeekerMissiles()` and filters to active seekers with `movementPath.size() >= 2`.
+
+Suggested test command(s):
+- `make -C tests tactical-tests && tests/tactical/TacticalTests`
+
+Existing validations expected to fail only because approved behavior changed:
+- None — all existing tests green
+
+Shared artifact directory:
+- `artifacts/seeker-missile-ui-cleanup/smc-06`
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
