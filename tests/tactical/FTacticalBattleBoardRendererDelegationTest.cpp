@@ -220,6 +220,43 @@ CPPUNIT_ASSERT(header.find("m_targetHexes") == std::string::npos);
 CPPUNIT_ASSERT(header.find("m_minedHexList") == std::string::npos);
 }
 
+void FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMissilesPendingOffensiveFireBranch() {
+// SMC-05 AC: during PH_ATTACK_FIRE the renderer draws pending offensive-fire seeker hexes
+// (no rotation), then active seekers with heading, then returns early.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string seekerBody = extractFunctionBody(source, "void FBattleBoard::drawSeekerMissiles(wxDC &dc)");
+
+// AC1: PH_ATTACK_FIRE branch exists and calls getAllPendingOffensiveFireSeekerHexes()
+assertContains(seekerBody, "if (m_parent->getPhase() == PH_ATTACK_FIRE) {");
+assertContains(seekerBody, "m_parent->getAllPendingOffensiveFireSeekerHexes()");
+
+// AC1: each in-bounds pending hex is drawn without rotation via drawCenteredOnHex(*m_seekerMissileIcon, *itr)
+assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, *itr);");
+
+// AC2: after pending hexes, committed active seekers are also drawn with heading rotation
+// so the existing active-seeker visual is preserved during PH_ATTACK_FIRE
+assertContains(seekerBody, "m_parent->getSeekerMissilesAtHex(hex, true)");
+
+// AC3: the branch ends with return so the outer battle-phase loop is skipped for PH_ATTACK_FIRE
+// (confirmed by at least two 'return;' occurrences: PH_SEEKER_ACTIVATION and PH_ATTACK_FIRE)
+std::string::size_type firstReturn = seekerBody.find("return;");
+CPPUNIT_ASSERT_MESSAGE("Expected first return; in drawSeekerMissiles", firstReturn != std::string::npos);
+std::string::size_type secondReturn = seekerBody.find("return;", firstReturn + 1);
+CPPUNIT_ASSERT_MESSAGE("Expected second return; in drawSeekerMissiles for PH_ATTACK_FIRE early exit", secondReturn != std::string::npos);
+
+// AC4: the delegation to FBattleScreen is correct — FBattleScreen::getAllPendingOffensiveFireSeekerHexes
+// delegates to FTacticalGame (source-contract: thin forwarding function present)
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+assertContains(screenSource, "FBattleScreen::getAllPendingOffensiveFireSeekerHexes()");
+assertContains(screenSource, "m_tacticalGame->getAllPendingOffensiveFireSeekerHexes()");
+
+// AC4: the model method is read-only (const) and uses only std::vector<FPoint> — confirm in header
+const std::string gameHeader = readFile(repoFile("include/tactical/FTacticalGame.h"));
+assertContains(gameHeader, "std::vector<FPoint> getAllPendingOffensiveFireSeekerHexes() const;");
+const std::string screenHeader = readFile(repoFile("include/tactical/FBattleScreen.h"));
+assertContains(screenHeader, "std::vector<FPoint> getAllPendingOffensiveFireSeekerHexes() const;");
+}
+
 void FTacticalBattleBoardRendererDelegationTest::testOnMotionUsesPlacementForwardersOnly() {
 // AC: setup movement hover handling stays as UI hit-test/rotation forwarding.
 const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));

@@ -1,0 +1,19 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-ui-cleanup/smc-05/verifier_report.md",
+    "artifacts/seeker-missile-ui-cleanup/smc-05/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "seeker-fix-smc-05-verifier-20260530",
+  "documentation_accuracy_summary": [
+    "AGENTS.md is updated with accurate descriptions of the SMC-05 implementation in both the tactical tests section and the Contributor Notes. The Contributor Notes description of the PH_ATTACK_FIRE branch, delegation chain, pending-hex drawing without rotation, active-seeker drawing with heading rotation, early return, and recall behavior all match the implementation. One minor inaccuracy exists in the method signature prose (see NOTE finding). Doxygen headers in all modified files are complete and follow project conventions."
+  ],
+  "note_finding_count": 1,
+  "status": "complete",
+  "task_id": null,
+  "test_sufficiency_summary": [
+    "Test coverage is sufficient. The new source-contract test testDrawSeekerMissilesPendingOffensiveFireBranch directly verifies all four acceptance criteria via source-inspection: PH_ATTACK_FIRE branch existence, getAllPendingOffensiveFireSeekerHexes call, no-rotation draw for pending hexes, heading-rotation draw for active seekers, early return, and the full delegation chain through FBattleScreen to FTacticalGame. All 191 tactical tests pass. The model correctness of the recall path (AC2) is validated indirectly through pre-existing coverage of removeOffensiveFirePendingSeekerAtHex."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

@@ -16,7 +16,7 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (standard)
  * @date Created: Apr 01, 2026
  * @date Last Modified: May 30, 2026
  */
@@ -32,6 +32,7 @@ CPPUNIT_TEST( testHeaderRemovesDuplicatedMechanicsState );
 CPPUNIT_TEST( testOnMotionUsesPlacementForwardersOnly );
 CPPUNIT_TEST( testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath );
 CPPUNIT_TEST( testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen );
+CPPUNIT_TEST( testDrawSeekerMissilesPendingOffensiveFireBranch );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -146,6 +147,20 @@ void testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath();
  * @date Last Modified: May 30, 2026
  */
 void testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen();
+
+/**
+ * @brief Verifies drawSeekerMissiles handles PH_ATTACK_FIRE by drawing pending offensive-fire seeker hexes.
+ *
+ * SMC-05: during PH_ATTACK_FIRE the renderer draws the seeker icon on each in-bounds
+ * hex returned by getAllPendingOffensiveFireSeekerHexes() (no rotation), then also
+ * draws committed active seekers with heading rotation, then returns early so the
+ * normal battle-phase path is skipped.
+ *
+ * @author claude-sonnet-4-6 (standard)
+ * @date Created: May 30, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void testDrawSeekerMissilesPendingOffensiveFireBranch();
 };
 
 }
