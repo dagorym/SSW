@@ -20,3 +20,4 @@ Load this skill only when impact analysis identifies unresolved decisions that w
 ## Limits
 
 - Do not enter the proposal step while any open questions remain unresolved.
+- Do not defer or silently resolve security-relevant design questions — always surface them explicitly and resolve them before the proposal step.

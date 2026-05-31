@@ -17,6 +17,7 @@ Load this skill immediately after the design-edit request is understood well eno
 - Ask clarifying questions only when necessary to avoid ambiguity.
 - Establish the initial in-scope design document set.
 - Use the role's default scope unless the user narrows or expands it.
+- Separate confirmed design facts from assumptions about existing system behavior; label assumptions explicitly so they can be validated during impact analysis.
 
 ## Limits
 

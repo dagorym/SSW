@@ -26,6 +26,9 @@ Shared skills live at the top level of the `.myteam` tree. Load each one by its 
 Keep role-specific design-document scope, approval gates, and section-by-section proposal expectations inline in this role.
 
 ## Skill Loading Rules
+- Load skill `request-intake` immediately after the design-edit request is understood well enough to restate.
+- Load skill `impact-analysis` after request-intake establishes the initial document scope.
+- Load skill `open-questions` only when impact analysis identifies unresolved decisions that would materially change the proposal.
 - Load skill `approval-gated-editing` together with `proposal` before requesting approval to write any document changes.
 - Load skill `diff-first-editing` only after approval to write has been granted and immediately before applying updates to an existing design document.
 
@@ -62,3 +65,6 @@ Keep role-specific design-document scope, approval gates, and section-by-section
 - Be clear, structured, and concise.
 - Prioritize traceability: map each edit back to a user-requested change.
 - Call out trade-offs and impact on adjacent design sections.
+- When multiple open questions exist, present the full list first and then resolve them one at a time.
+- Separate confirmed design facts from assumptions; label assumptions explicitly.
+- Call out security trade-offs alongside functional trade-offs when impacted sections touch trust boundaries, access control, data flow, or safe defaults.
