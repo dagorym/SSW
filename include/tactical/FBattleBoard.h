@@ -112,10 +112,17 @@ void drawMinedHexes(wxDC &dc);
  * During `PH_SEEKER_ACTIVATION`, both inactive seeker stacks owned by the
  * moving player (rendered without rotation for click-to-activate targeting)
  * and already-active seekers for the moving player (rendered with heading
- * rotation for visual confirmation) are drawn. During all other battle phases,
- * only active seekers are shown with their icon rotated to match their current
- * heading. The icon is loaded through the shared asset-resolution policy used
- * elsewhere in the tactical wx surfaces.
+ * rotation for visual confirmation) are drawn. During `PH_ATTACK_FIRE`,
+ * the seeker icon is drawn on every hex holding a current-phase pending
+ * offensive-fire seeker deployment (sourced from
+ * `FBattleScreen::getAllPendingOffensiveFireSeekerHexes()`) so the player
+ * can see where seekers have been placed before committing the phase;
+ * recalling a pending seeker via the lower-panel list removes its icon on
+ * the next redraw. Committed active seekers from previous turns are also
+ * rendered during `PH_ATTACK_FIRE` with heading rotation. During all other
+ * battle phases, only active seekers are shown with their icon rotated to
+ * match their current heading. The icon is loaded through the shared
+ * asset-resolution policy used elsewhere in the tactical wx surfaces.
  *
  * @param dc Device context used for tactical board drawing.
  *

@@ -662,6 +662,22 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 */
 	bool recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex);
 	/**
+	 * @brief Get all unique hexes that hold any pending offensive-fire seeker
+	 *        for the current phase, regardless of which launcher deployed them.
+	 *
+	 * Used by the board renderer during `PH_ATTACK_FIRE` to draw the seeker
+	 * icon on every hex that contains at least one current-phase pending
+	 * deployment. Returns an empty vector outside `PH_ATTACK_FIRE` or when no
+	 * pending deployments exist.
+	 *
+	 * @return Unique hex positions of all current-phase pending seeker deployments.
+	 *
+	 * @author claude-sonnet-4-6 (standard)
+	 * @date Created: May 30, 2026
+	 * @date Last Modified: May 30, 2026
+	 */
+	std::vector<FPoint> getAllPendingOffensiveFireSeekerHexes() const;
+	/**
 	 * @brief Get seeker missiles owned by a specific player.
 	 *
 	 * Returns a copy of the seeker records for the requested owner, with

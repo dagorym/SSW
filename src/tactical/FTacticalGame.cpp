@@ -1084,6 +1084,25 @@ bool FTacticalGame::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex
 	return removeOffensiveFirePendingSeekerAtHex(hex);
 }
 
+std::vector<FPoint> FTacticalGame::getAllPendingOffensiveFireSeekerHexes() const {
+	std::vector<FPoint> hexes;
+	if (m_phase != PH_ATTACK_FIRE) {
+		return hexes;
+	}
+	std::map<FPoint, bool> seen;
+	for (std::vector<FTacticalPendingSeekerDeployment>::const_iterator itr = m_pendingOffensiveSeekerDeployments.begin();
+		 itr != m_pendingOffensiveSeekerDeployments.end(); ++itr) {
+		if (itr->offensiveFirePhaseID != m_offensiveFirePhaseID) {
+			continue;
+		}
+		if (seen.find(itr->hex) == seen.end()) {
+			seen[itr->hex] = true;
+			hexes.push_back(itr->hex);
+		}
+	}
+	return hexes;
+}
+
 void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 	// TSM-004 placeholder seam:
 	// active seeker movement now executes through the implemented helper-driven

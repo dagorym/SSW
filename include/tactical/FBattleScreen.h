@@ -431,6 +431,20 @@ public:
 	 */
 	bool recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex);
 	/**
+	 * @brief Get all unique hexes that hold any current-phase pending offensive-fire seeker.
+	 *
+	 * Delegation to the model read-only query used by the board renderer during
+	 * `PH_ATTACK_FIRE` to draw the seeker icon on every hex that contains at
+	 * least one pending deployment from any launcher.
+	 *
+	 * @return Unique hex positions of all current-phase pending seeker deployments.
+	 *
+	 * @author claude-sonnet-4-6 (standard)
+	 * @date Created: May 30, 2026
+	 * @date Last Modified: May 30, 2026
+	 */
+	std::vector<FPoint> getAllPendingOffensiveFireSeekerHexes() const;
+	/**
 	 * @brief Activate one seeker in the selected inactive stack.
 	 *
 	 * @param seekerID Unique seeker identifier to activate.
