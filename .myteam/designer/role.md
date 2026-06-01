@@ -15,6 +15,7 @@ Shared skills live at the top level of the `.myteam` tree. Load each one by its 
 
 - `diff-first-editing` for diff-first editing and rewrite restraint.
 - `approval-gated-editing` for explicit approval before writes.
+- `decision-tracking` for externalizing open-question queue state during the open-questions resolution loop when bookkeeping would otherwise consume unnecessary context.
 
 ## Child Skills
 - `request-intake` for restating the requested design change and setting document scope.

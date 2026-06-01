@@ -7,6 +7,10 @@ description: "Resolve outstanding design decisions before the edit proposal is p
 
 Load this skill only when impact analysis identifies unresolved decisions that would materially change the proposal.
 
+## Tooling
+
+- Load the `decision-tracking` shared skill and use its `decision_tracker.py` tool to track the current question list, resolved decisions, remaining queue, and decision-dependent notes when that bookkeeping would otherwise consume unnecessary context.
+
 ## Required Actions
 
 - Present each open question one at a time.
@@ -15,6 +19,7 @@ Load this skill only when impact analysis identifies unresolved decisions that w
   - recommend the best option, grounded in information already gathered (document context, stated design constraints, known requirements), with explicit rationale for the recommendation
   - prompt the user for a decision or approval
 - Continue until all open questions are resolved.
+- Keep the decision tracker synchronized with resolved and remaining items when the tool is in use.
 - Incorporate the resolved decisions into the upcoming proposal.
 
 ## Limits
