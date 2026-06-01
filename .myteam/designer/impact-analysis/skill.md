@@ -10,6 +10,7 @@ Load this skill after request intake establishes the in-scope document set.
 ## Tooling
 
 - Use the colocated tool `map_design_impact.py` to enumerate headings, rank likely impacted sections, flag repeated terminology, and surface cross-references before deeper editorial reasoning.
+- When multiple documents are in scope, use the colocated tool `check_design_contradictions.py` with the full document list to surface candidate sections that discuss the same topics across documents; review the candidates for actual logical contradictions rather than loading full documents simultaneously.
 
 ## Required Actions
 
@@ -23,3 +24,4 @@ Load this skill after request intake establishes the in-scope document set.
 ## Limits
 
 - Do not spend prompt tokens manually reconstructing heading inventories or repeated cross-document terminology when the colocated tool already provides that context.
+- Do not load multiple full documents simultaneously to check for contradictions when the colocated contradiction tool can surface candidates first.
