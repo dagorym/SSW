@@ -39,6 +39,7 @@ Load any of these by its bare name with `myteam get skill <skill-name>` (for exa
 - `agent-editing-governance`
 - `approval-gated-editing`
 - `artifact-paths`
+- `decision-tracking`
 - `diff-first-editing`
 - `execution-start`
 - `handoff-prompt-contract`
