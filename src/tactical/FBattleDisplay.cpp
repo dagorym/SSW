@@ -77,6 +77,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonDefensiveFireDone = new wxButton( this, wxID_ANY, wxT("Defensive Fire Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonOffensiveFireDone = new wxButton( this, wxID_ANY, wxT("Offensive Fire Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMinePlacementDone = new wxButton( this, wxID_ANY, wxT("Mine Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonSeekerPlacementDone = new wxButton( this, wxID_ANY, wxT("Seeker Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonSeekerActivationDone = new wxButton( this, wxID_ANY, wxT("Seeker Activation Done"), wxDefaultPosition, wxDefaultSize, 0 );
 
 	wxBoxSizer * rootSizer = new wxBoxSizer(wxVERTICAL);
@@ -92,6 +93,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	actionSizer->Add(m_buttonDefensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonOffensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonMinePlacementDone, 0, wxALIGN_CENTER_VERTICAL);
+	actionSizer->Add(m_buttonSeekerPlacementDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonSeekerActivationDone, 0, wxALIGN_CENTER_VERTICAL);
 	rootSizer->AddSpacer(getActionButtonTopSpacerHeight());
 	m_actionButtonExtraSpacerItem = rootSizer->AddSpacer(getActionButtonExtraSpacerHeight());
@@ -104,6 +106,7 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonDefensiveFireDone->Hide();
 	m_buttonOffensiveFireDone->Hide();
 	m_buttonMinePlacementDone->Hide();
+	m_buttonSeekerPlacementDone->Hide();
 	m_buttonSeekerActivationDone->Hide();
 	Layout();
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
@@ -488,6 +491,7 @@ int FBattleDisplay::getActionButtonRowBottom() const{
 		m_buttonDefensiveFireDone,
 		m_buttonOffensiveFireDone,
 		m_buttonMinePlacementDone,
+		m_buttonSeekerPlacementDone,
 		m_buttonSeekerActivationDone
 	};
 	for (size_t i = 0; i < sizeof(buttons) / sizeof(buttons[0]); i++){
@@ -634,6 +638,9 @@ void FBattleDisplay::draw(wxDC &dc){
 	case BS_PlaceMines:
 		drawPlaceMines(dc);
 		break;
+	case BS_PlaceSeekers:
+		drawPlaceSeekers(dc);
+		break;
 	case BS_Battle: {
 		switch (m_parent->getPhase()){
 		case PH_SEEKER_ACTIVATION:
@@ -693,6 +700,9 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 		}
 		break;
 	case BS_PlaceMines:
+		checkShipSelection(event);
+		break;
+	case BS_PlaceSeekers:
 		checkShipSelection(event);
 		break;
 	case BS_Battle:
@@ -1377,31 +1387,27 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	dc.SetFont(normal);
 	std::ostringstream os;
 	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
-	os << "The defensive player may now place";
 	dc.SetTextForeground(white);
-	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
-	os.str("  mines and seeker missiles");
-	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(1));
-	os.str("  sets up their ships.");
-	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
+	dc.DrawText("The defending player may now place mines before the attacker sets up their ships.",
+		leftOffset, getActionPromptLineY(0));
 	int lMargin = 310;	// left margin for ship display
-	os.str("");
-	os << "Select a source row to place mines or seeker missiles";
 	// Start the source list below the instruction+button region so neither area
 	// overlaps the other vertically.  getActionButtonRowBottom() returns the
 	// fallback height when the button is not yet shown (m_first==true) and the
 	// real sizer-measured button bottom on subsequent draws.
 	int y = getActionButtonRowBottom();
-	dc.DrawText(os.str(),lMargin,y);
-	y+= (int)(1.6*textSize*1.3);
+	dc.DrawText("Select a source row to place mines.", lMargin, y);
+	y += (int)(1.6*textSize*1.3);
 	m_shipNameRegions.clear();
 	m_shipSelectionSourceIndices.clear();
-	// Legacy source-contract token retained for tactical regression fixtures:
-	// const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
 	const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();
 	const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();
 	for (unsigned int i = 0; i < deployableSources.size(); ++i){
 		const FTacticalDeploymentSource & source = deployableSources[i];
+		// Mine phase: show only mine (M-type) sources
+		if (source.weaponType != FWeapon::M){
+			continue;
+		}
 		const VehicleList ownerShips = m_parent->getShipList(source.ownerID);
 		FVehicle * ship = findShipByID(ownerShips, source.source.shipID);
 		if (ship == NULL || source.source.weaponIndex < 0
@@ -1423,45 +1429,99 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 		os << ship->getName() << " - " << getDeploymentWeaponLabel(source.weaponType)
 			<< " #" << (source.source.weaponIndex + 1);
 		dc.DrawText(os.str(),lMargin,y);
-		wxSize tSize= dc.GetTextExtent(os.str());
+		wxSize tSize = dc.GetTextExtent(os.str());
 		m_shipNameRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 260,tSize.GetHeight()));
 		m_shipSelectionSourceIndices.push_back(static_cast<int>(i));
 		os.str("");
 		os << "Ammo: " << weapon->getAmmo();
 		dc.DrawText(os.str(),lMargin+200,y);
-		y+= (int)(1.6*textSize);
+		y += (int)(1.6*textSize);
 	}
 
-	// Compute the set of ordnance types present and label the button accordingly.
-	{
-		bool hasMine = false;
-		bool hasSeeker = false;
-		for (unsigned int i = 0; i < deployableSources.size(); ++i){
-			if (deployableSources[i].weaponType == FWeapon::SM){
-				hasSeeker = true;
-			} else if (deployableSources[i].weaponType == FWeapon::M){
-				hasMine = true;
-			}
-		}
-		wxString label;
-		if (hasSeeker && hasMine){
-			label = wxT("Weapon Placement Done");
-		} else if (hasSeeker){
-			label = wxT("Seeker Placement Done");
-		} else {
-			label = wxT("Mine Placement Done");
-		}
-		m_buttonMinePlacementDone->SetLabel(label);
-	}
-
-	// turn on the button
+	// Show the mine placement done button with its fixed label.
 	m_buttonMinePlacementDone->Enable(true);
 	if (m_first){
 		m_buttonMinePlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
 		m_buttonMinePlacementDone->Show();
 		Layout();
-		m_first=false;
+		m_first = false;
 	}
+}
+
+void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour green(wxT("#00FF00"));
+	int textSize = 10;		// text height
+	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	wxFont bold(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
+	dc.SetFont(normal);
+	std::ostringstream os;
+	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
+	dc.SetTextForeground(white);
+	dc.DrawText("The defending player may now place seeker missiles before the attacker sets up their ships.",
+		leftOffset, getActionPromptLineY(0));
+	int lMargin = 310;	// left margin for ship display
+	// Start the source list below the instruction+button region so neither area
+	// overlaps the other vertically.
+	int y = getActionButtonRowBottom();
+	dc.DrawText("Select a source row to place seeker missiles.", lMargin, y);
+	y += (int)(1.6*textSize*1.3);
+	m_shipNameRegions.clear();
+	m_shipSelectionSourceIndices.clear();
+	const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();
+	const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();
+	for (unsigned int i = 0; i < deployableSources.size(); ++i){
+		const FTacticalDeploymentSource & source = deployableSources[i];
+		// Seeker phase: show only seeker missile (SM-type) sources
+		if (source.weaponType != FWeapon::SM){
+			continue;
+		}
+		const VehicleList ownerShips = m_parent->getShipList(source.ownerID);
+		FVehicle * ship = findShipByID(ownerShips, source.source.shipID);
+		if (ship == NULL || source.source.weaponIndex < 0
+				|| static_cast<unsigned int>(source.source.weaponIndex) >= ship->getWeaponCount()){
+			continue;
+		}
+		FWeapon * weapon = ship->getWeapon(static_cast<unsigned int>(source.source.weaponIndex));
+		if (weapon == NULL || weapon->getID() != source.source.weaponID){
+			continue;
+		}
+		if (static_cast<int>(i) == selectedSourceIndex){
+			dc.SetFont(bold);
+			dc.SetTextForeground(green);
+		} else {
+			dc.SetFont(normal);
+			dc.SetTextForeground(white);
+		}
+		os.str("");
+		os << ship->getName() << " - " << getDeploymentWeaponLabel(source.weaponType)
+			<< " #" << (source.source.weaponIndex + 1);
+		dc.DrawText(os.str(),lMargin,y);
+		wxSize tSize = dc.GetTextExtent(os.str());
+		m_shipNameRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 260,tSize.GetHeight()));
+		m_shipSelectionSourceIndices.push_back(static_cast<int>(i));
+		os.str("");
+		os << "Ammo: " << weapon->getAmmo();
+		dc.DrawText(os.str(),lMargin+200,y);
+		y += (int)(1.6*textSize);
+	}
+
+	// Show the seeker placement done button with its fixed label.
+	m_buttonSeekerPlacementDone->Enable(true);
+	if (m_first){
+		m_buttonSeekerPlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerPlacementDone ), NULL, this );
+		m_buttonSeekerPlacementDone->Show();
+		Layout();
+		m_first = false;
+	}
+}
+
+void FBattleDisplay::onSeekerPlacementDone( wxCommandEvent& event ){
+	m_buttonSeekerPlacementDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerPlacementDone ), NULL, this );
+	m_buttonSeekerPlacementDone->Hide();
+	Layout();
+	m_parent->completeSeekerPlacement();
+	m_first = true;
 }
 
 void FBattleDisplay::drawSeekerActivation(wxDC &dc){

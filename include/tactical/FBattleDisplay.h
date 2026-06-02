@@ -1,9 +1,9 @@
 /**
  * @file FBattleDisplay.h
  * @brief Header file for BattleDisplay class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 02, 2026
  *
  */
 
@@ -24,9 +24,9 @@ class FBattleScreen;
  * This class implements the lower tactical display panel used for combat
  * prompts, ship status, setup placement controls, and seeker-activation UI.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 25, 2026
+ * @date Last Modified:  Jun 02, 2026
  */
 class FBattleDisplay : public wxPanel
 {
@@ -117,6 +117,8 @@ protected:
 	std::vector<wxRect> m_defenseRegions;
 	/// button for signaling completion of placing mines phase
 	wxButton* m_buttonMinePlacementDone;
+	/// button for signaling completion of placing seeker missiles phase
+	wxButton* m_buttonSeekerPlacementDone;
 	/// button for signaling completion of seeker activation phase
 	wxButton* m_buttonSeekerActivationDone;
 	/// list of active regions for selection of a placement-source row
@@ -185,6 +187,20 @@ protected:
 
 	/// event handler for mine placement complete button
 	void onMinePlacementDone( wxCommandEvent& event );
+
+	/**
+	 * @brief Finish the seeker-missile placement phase and advance to attacker setup.
+	 *
+	 * Hides and disconnects the seeker placement done button, then delegates
+	 * completion to `FBattleScreen::completeSeekerPlacement()`.
+	 *
+	 * @param event Button-click event from the seeker placement completion control.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void onSeekerPlacementDone( wxCommandEvent& event );
 	/**
 	 * @brief Finish the visible seeker-activation stop and return to movement flow.
 	 *
@@ -506,9 +522,25 @@ protected:
 	 *
 	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  May 30, 2026
+	 * @date Last Modified:  Jun 02, 2026
 	 */
 	void drawPlaceMines(wxDC &dc);
+
+	/**
+	 * @brief Draws the display for placing seeker missiles (BS_PlaceSeekers phase).
+	 *
+	 * Shows seeker-missile-only deployment source rows with the seeker-specific
+	 * prompt text and the "Seeker Placement Done" button. Mirrors drawPlaceMines
+	 * but filters to SM-type sources only and routes completion through
+	 * FBattleScreen::completeSeekerPlacement().
+	 *
+	 * @param dc The device context to draw on.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void drawPlaceSeekers(wxDC &dc);
 
 	/**
 	 * @brief Draw seeker activation panel content and deactivate rows.
