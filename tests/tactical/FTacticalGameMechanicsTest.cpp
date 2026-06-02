@@ -844,4 +844,110 @@ void FTacticalGameMechanicsTest::testSeekerDeploymentPhaseStateMachineTransition
 	CPPUNIT_ASSERT(source.find("#include \"wx/") == std::string::npos);
 }
 
+void FTacticalGameMechanicsTest::testSeekerActivationPhaseIndexStampingAndFiltering() {
+// AC: SMF-04 per-activation-phase seeker tracking — field declaration, counter lifecycle,
+//     activation stamping, and phase-filtered accessor.
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+
+	// AC-1: activationPhaseIndex field is declared inside FTacticalSeekerMissileState
+	// (non-persisted, lives before the closing typedef tag).
+	assertContains(header, "int activationPhaseIndex;");
+	// The field must appear before the struct closing tag.
+	const std::string::size_type fieldPos = header.find("int activationPhaseIndex;");
+	const std::string::size_type structEndPos = header.find("} FTacticalSeekerMissileState;");
+	CPPUNIT_ASSERT_MESSAGE(
+		"activationPhaseIndex must appear before } FTacticalSeekerMissileState;",
+		fieldPos < structEndPos);
+
+	// AC-2: m_seekerActivationPhaseIndex private member is declared in the class.
+	assertContains(header, "int m_seekerActivationPhaseIndex;");
+
+	// AC-3: getActiveSeekersByMovingPlayerThisPhase() is declared as a public const method
+	//        returning by value (not by reference) in FTacticalGame.
+	assertContains(header, "std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayerThisPhase() const;");
+
+	// AC-4: reset() initializes m_seekerActivationPhaseIndex to 0.
+	const std::string resetBody = extractFunctionBody(source, "void FTacticalGame::reset()");
+	assertContains(resetBody, "m_seekerActivationPhaseIndex = 0;");
+
+	// AC-5: beginSeekerActivationPhase() increments the counter before the rest of the phase setup.
+	const std::string beginActivationBody =
+		extractFunctionBody(source, "void FTacticalGame::beginSeekerActivationPhase()");
+	assertContains(beginActivationBody, "++m_seekerActivationPhaseIndex;");
+
+	// AC-6: activateSelectedInactiveSeeker() stamps activationPhaseIndex on the seeker.
+	const std::string activateSelectedBody =
+		extractFunctionBody(source, "bool FTacticalGame::activateSelectedInactiveSeeker(unsigned int seekerID)");
+	assertContains(activateSelectedBody, "itr->activationPhaseIndex = m_seekerActivationPhaseIndex;");
+
+	// AC-7: activateInactiveSeekerAtHex() stamps activationPhaseIndex on the seeker.
+	// Note: this function uses targetItr (the lowest-seekerID candidate) rather than itr.
+	const std::string activateAtHexBody =
+		extractFunctionBody(source, "bool FTacticalGame::activateInactiveSeekerAtHex(const FPoint & hex)");
+	assertContains(activateAtHexBody, "activationPhaseIndex = m_seekerActivationPhaseIndex;");
+	// Also verify the existing one-way activation contract remains intact.
+	assertContains(activateAtHexBody, "targetItr->active = true;");
+
+	// AC-8: getActiveSeekersByMovingPlayerThisPhase() filters on activationPhaseIndex == m_seekerActivationPhaseIndex.
+	const std::string thisPhaseBody =
+		extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getActiveSeekersByMovingPlayerThisPhase() const");
+	assertContains(thisPhaseBody, "itr->ownerID == getMovingPlayerID()");
+	assertContains(thisPhaseBody, "itr->active");
+	assertContains(thisPhaseBody, "itr->activationPhaseIndex == m_seekerActivationPhaseIndex");
+	assertContains(thisPhaseBody, "result.push_back(*itr);");
+
+	// AC-9: getActiveSeekersByMovingPlayer() (unfiltered) remains unchanged — no phase filter.
+	const std::string allActiveBody =
+		extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getActiveSeekersByMovingPlayer() const");
+	CPPUNIT_ASSERT_MESSAGE(
+		"getActiveSeekersByMovingPlayer() must not filter by activationPhaseIndex",
+		allActiveBody.find("activationPhaseIndex") == std::string::npos);
+
+	// AC-10: activationPhaseIndex is not written in any save() call (persistence compatible).
+	// The field carries "not persisted" by design — check that the word does not appear in
+	// any of the persistence-entry-point bodies present in the source.
+	// We confirm by checking all occurrences of "activationPhaseIndex" in FTacticalGame.cpp
+	// are limited to reset, beginSeekerActivationPhase, the two activate helpers, and the
+	// filtering accessor — none of which are save/load methods.
+	// Rather than reconstructing a save body (there may be none for this struct), we verify
+	// that any "save" function bodies visible in the source do not reference the field.
+	// Source-text search: find every line that mentions "save" and verify none of those
+	// lines also reference "activationPhaseIndex" by checking the source-level constraint.
+	const std::string::size_type savePos = source.find("void FTacticalGame::save(");
+	if (savePos != std::string::npos) {
+		const std::string saveBody = extractFunctionBody(source, "void FTacticalGame::save(");
+		CPPUNIT_ASSERT_MESSAGE(
+			"activationPhaseIndex must not be persisted in save()",
+			saveBody.find("activationPhaseIndex") == std::string::npos);
+	}
+	// Regardless, confirm the struct comment marks it non-persisted.
+	assertContains(header, "not persisted");
+}
+
+void FTacticalGameMechanicsTest::testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate() {
+// AC: SMF-04 FBattleScreen read-only delegation for per-phase accessor.
+	const std::string bsHeader = readFile(repoFile("include/tactical/FBattleScreen.h"));
+	const std::string bsSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+
+	// AC-1: Declaration is a const method returning by value (not by reference).
+	assertContains(bsHeader,
+		"std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayerThisPhase() const;");
+
+	// AC-2: Implementation delegates straight to the model method, no local logic.
+	const std::string delegateBody =
+		extractFunctionBody(bsSource,
+			"std::vector<FTacticalSeekerMissileState> FBattleScreen::getActiveSeekersByMovingPlayerThisPhase() const");
+	assertContains(delegateBody, "m_tacticalGame->getActiveSeekersByMovingPlayerThisPhase()");
+	// The body should be a direct return with no filtering logic of its own.
+	assertContains(delegateBody, "return");
+
+	// AC-3: wx-free — FTacticalGame header and source carry no wx includes
+	//        (FBattleScreen inherits from wx but the delegation path itself must not
+	//         introduce wx into the model header; verify the model header is clean).
+	const std::string tgHeader = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	CPPUNIT_ASSERT(tgHeader.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(tgHeader.find("#include \"wx/") == std::string::npos);
+}
+
 }

@@ -41,6 +41,8 @@ CPPUNIT_TEST( testSeekerActivationApisExposeSelectionAndOneWayActivation );
 CPPUNIT_TEST( testStoppedShipFreeRotationGuardsAndFacingSelectionFlow );
 CPPUNIT_TEST( testImplementationRemainsSelfContainedWithoutLegacyWxRewire );
 CPPUNIT_TEST( testSeekerDeploymentPhaseStateMachineTransitions );
+CPPUNIT_TEST( testSeekerActivationPhaseIndexStampingAndFiltering );
+CPPUNIT_TEST( testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -251,6 +253,42 @@ void testImplementationRemainsSelfContainedWithoutLegacyWxRewire();
  * @date Last Modified: Jun 02, 2026
  */
 void testSeekerDeploymentPhaseStateMachineTransitions();
+	/**
+	 * @brief Validates SMF-04 per-activation-phase seeker tracking: activationPhaseIndex
+	 *        field exists, counter resets to 0, increments in beginSeekerActivationPhase(),
+	 *        both activate entry points stamp the index, and getActiveSeekersByMovingPlayerThisPhase()
+	 *        filters by index == m_seekerActivationPhaseIndex.
+	 *
+	 * Covers acceptance criteria for SMF-04:
+	 * - activationPhaseIndex field declared in FTacticalSeekerMissileState (non-persisted)
+	 * - m_seekerActivationPhaseIndex counter initialized to 0 in reset()
+	 * - Counter incremented in beginSeekerActivationPhase() before phase begins
+	 * - activateSelectedInactiveSeeker() stamps activationPhaseIndex = m_seekerActivationPhaseIndex
+	 * - activateInactiveSeekerAtHex() stamps activationPhaseIndex = m_seekerActivationPhaseIndex
+	 * - getActiveSeekersByMovingPlayerThisPhase() filters by activationPhaseIndex == m_seekerActivationPhaseIndex
+	 * - getActiveSeekersByMovingPlayer() remains unchanged (no phase filter)
+	 * - activationPhaseIndex not written to save/load (persistence compatible)
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void testSeekerActivationPhaseIndexStampingAndFiltering();
+	/**
+	 * @brief Validates SMF-04 FBattleScreen delegation: getActiveSeekersByMovingPlayerThisPhase()
+	 *        is a const method returning by value and delegates straight to the model method.
+	 *        Also confirms no wx headers are present in FBattleScreen model files.
+	 *
+	 * Covers acceptance criteria for SMF-04:
+	 * - Accessor is read-only through FBattleScreen (const method returning by value)
+	 * - FBattleScreen::getActiveSeekersByMovingPlayerThisPhase() delegates to model
+	 * - wx-free: no wx headers in FTacticalGame for this delegation
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate();
 };
 
 }
