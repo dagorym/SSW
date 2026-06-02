@@ -714,7 +714,8 @@ const std::string body = extractFunctionBody(source, "void FBattleDisplay::drawS
 assertContains(body, "dc.DrawText(\"Seeker activation phase.\",leftOffset,getActionPromptLineY(0));");
 assertContains(body, "dc.DrawText(\"Click a seeker stack on the board to activate one seeker.\",leftOffset,getActionPromptLineY(1));");
 assertContains(body, "dc.DrawText(\"Click a row below to deactivate an activated seeker.\",leftOffset,getActionPromptLineY(2));");
-assertContains(body, "const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayer();");
+// SMF-05: switched to this-phase accessor so only current-phase activations are listed
+assertContains(body, "const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayerThisPhase();");
 assertContains(body, "if (activated.empty()) {");
 assertContains(body, "dc.DrawText(\"No seekers activated yet.\",lMargin,y);");
 assertContains(body, "for (unsigned int i = 0; i < activated.size(); ++i) {");

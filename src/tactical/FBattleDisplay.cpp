@@ -1530,7 +1530,9 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 	wxColour green(wxT("#00FF00"));
 	const int textSize = 10;
 	const int lMargin = 310;
-	int y = BORDER;
+	// Start "Activated seekers" block below the reserved action-prompt/button region
+	// so neither area overlaps the other vertically (SMF-05).
+	int y = getActionButtonRowBottom();
 	std::ostringstream os;
 
 	m_shipNameRegions.clear();
@@ -1550,8 +1552,10 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 	dc.DrawText("Activated seekers:",lMargin,y);
 	y += (int)(1.6*textSize);
 
+	// Show only seekers activated during this phase (SMF-05: use this-phase accessor
+	// from SMF-04 so prior-phase activations are not listed here).
 	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-	const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayer();
+	const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayerThisPhase();
 	if (activated.empty()) {
 		dc.SetTextForeground(white);
 		dc.DrawText("No seekers activated yet.",lMargin,y);
