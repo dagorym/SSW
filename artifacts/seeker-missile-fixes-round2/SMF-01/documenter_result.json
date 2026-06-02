@@ -1,0 +1,16 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round2/SMF-01/documenter_report.md",
+    "artifacts/seeker-missile-fixes-round2/SMF-01/documenter_result.json",
+    "artifacts/seeker-missile-fixes-round2/SMF-01/verifier_prompt.txt"
+  ],
+  "branch_name": "sf2-smf-01-documenter-20260602",
+  "documentation_commit_hash": "d70383d",
+  "documentation_files_changed": [
+    "AGENTS.md",
+    "doc/DesignNotes.md"
+  ],
+  "pass_label": null,
+  "status": "success",
+  "task_id": null
+}
