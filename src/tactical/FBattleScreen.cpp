@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleScreen class
  * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 30, 2026
+ * @date Last Modified:  Jun 02, 2026
  *
  */
 
@@ -640,6 +640,14 @@ bool FBattleScreen::beginMinePlacement() {
 	return changed;
 }
 
+bool FBattleScreen::beginSeekerPlacement() {
+	const bool changed = m_tacticalGame->beginSeekerPlacement();
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
 bool FBattleScreen::beginOrdnancePlacement() {
 	const bool changed = m_tacticalGame->beginOrdnancePlacement();
 	if (changed) {
@@ -674,6 +682,11 @@ const std::vector<FTacticalDeploymentSource> & FBattleScreen::getDeployablePlace
 
 void FBattleScreen::completeMinePlacement() {
 	m_tacticalGame->completeMinePlacement();
+	reDraw();
+}
+
+void FBattleScreen::completeSeekerPlacement() {
+	m_tacticalGame->completeSeekerPlacement();
 	reDraw();
 }
 

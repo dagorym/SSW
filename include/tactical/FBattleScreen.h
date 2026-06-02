@@ -3,7 +3,7 @@
  * @brief Header file for BattleScreen class
  * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 02, 2026
  *
  */
 
@@ -236,18 +236,31 @@ public:
 	bool setShipPlacementHeading(int heading);
 	bool setShipPlacementHeadingByHex(const FPoint & hex);
 	/**
-	 * @brief Enter setup placement through the shared ordnance-placement seam.
+	 * @brief Enter the mine-only deployment setup phase (BS_PlaceMines).
 	 *
-	 * Preserves the legacy mine-placement entry point while forwarding to the
-	 * model's generalized mine/seeker setup placement flow.
+	 * Forwards to FTacticalGame::beginMinePlacement() which rebuilds the
+	 * deployable source list filtered to FWeapon::M slots only.
 	 *
-	 * @return True when tactical setup enters placement mode.
+	 * @return True when mine placement mode was entered successfully.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: Jul 11, 2008
-	 * @date Last Modified: May 24, 2026
+	 * @date Last Modified: Jun 02, 2026
 	 */
 	bool beginMinePlacement();
+	/**
+	 * @brief Enter the seeker-only deployment setup phase (BS_PlaceSeekers).
+	 *
+	 * Forwards to FTacticalGame::beginSeekerPlacement() which rebuilds the
+	 * deployable source list filtered to FWeapon::SM slots only.
+	 *
+	 * @return True when seeker placement mode was entered successfully.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	bool beginSeekerPlacement();
 	/**
 	 * @brief Forward generalized setup ordnance placement entry to FTacticalGame.
 	 *
@@ -287,7 +300,28 @@ public:
 	int getSelectedPlacementSourceIndex() const;
 	/// get the current deployable mine/seeker placement-source list
 	const std::vector<FTacticalDeploymentSource> & getDeployablePlacementSources() const;
+	/**
+	 * @brief Complete mine placement and advance to the seeker phase (or skip it).
+	 *
+	 * Forwards to FTacticalGame::completeMinePlacement() which attempts seeker
+	 * placement and, when none are available, advances to BS_SetupAttackFleet.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
+	 * @date Created: Jul 11, 2008
+	 * @date Last Modified: Jun 02, 2026
+	 */
 	void completeMinePlacement();
+	/**
+	 * @brief Complete seeker placement and advance to attacker setup.
+	 *
+	 * Forwards to FTacticalGame::completeSeekerPlacement() which transitions to
+	 * BS_SetupAttackFleet and toggles the active player.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void completeSeekerPlacement();
 	void completeMovePhase();
 	FTacticalCombatReportSummary resolveCurrentFirePhase();
 	void completeDefensiveFirePhase();

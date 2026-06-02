@@ -3,7 +3,7 @@
  * @brief Header file for FTacticalGame class
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 02, 2026
  *
  */
 
@@ -343,31 +343,47 @@ bool isMoveComplete() const { return m_moveComplete; }
 	bool setShipPlacementHeading(int heading);
 	bool setShipPlacementHeadingByHex(const FPoint & hex);
 	/**
-	 * @brief Enter setup placement through the generalized ordnance-placement flow.
+	 * @brief Enter the mine-only deployment setup phase (BS_PlaceMines).
 	 *
-	 * Preserves the legacy mine-placement entry point while routing setup
-	 * placement through the shared source-tracked ordnance selection logic.
+	 * Preserves the legacy mine-placement entry point by delegating to
+	 * beginOrdnancePlacement(), which filters the deployable source list to
+	 * FWeapon::M slots only before entering BS_PlaceMines.
 	 *
-	 * @return True when at least one deployable source with ammo can enter
-	 *         placement mode.
+	 * @return True when mine placement mode was entered successfully.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 24, 2026
-	 * @date Last Modified: May 24, 2026
+	 * @date Last Modified: Jun 02, 2026
 	 */
 	bool beginMinePlacement();
 	/**
-	 * @brief Discover deployable mine and seeker sources and enter placement mode.
+	 * @brief Enter the seeker-only deployment setup phase (BS_PlaceSeekers).
 	 *
-	 * Rebuilds the exact ship/weapon-slot placement-source list, selects the
-	 * first source that still has ammo, and transitions tactical setup into the
-	 * existing placement state.
+	 * Rebuilds the deployable source list filtered to FWeapon::SM slots only.
+	 * When at least one seeker source with ammo exists, selects the first one
+	 * and transitions to BS_PlaceSeekers. Returns false and does not change
+	 * state when no seeker sources with ammo are found.
 	 *
-	 * @return True when placement mode was entered successfully.
+	 * @return True when seeker placement mode was entered successfully.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	bool beginSeekerPlacement();
+	/**
+	 * @brief Discover deployable mine sources and enter mine-placement mode (BS_PlaceMines).
+	 *
+	 * Rebuilds the full ship/weapon-slot deployment list, then filters it to
+	 * FWeapon::M sources only so BS_PlaceMines exposes only mine slots to the
+	 * UI. Selects the first mine source with ammo and transitions to BS_PlaceMines.
+	 * Seeker (SM) sources are deferred to the seeker phase via beginSeekerPlacement().
+	 *
+	 * @return True when mine placement mode was entered successfully.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 24, 2026
-	 * @date Last Modified: May 24, 2026
+	 * @date Last Modified: Jun 02, 2026
 	 */
 	bool beginOrdnancePlacement();
 	/**
@@ -398,7 +414,29 @@ bool isMoveComplete() const { return m_moveComplete; }
 	int getSelectedPlacementSourceIndex() const { return m_selectedPlacementSource; }
 	/// get the current deployable mine/seeker placement-source list
 	const std::vector<FTacticalDeploymentSource> & getDeployablePlacementSources() const { return m_deployablePlacementSources; }
+	/**
+	 * @brief Complete mine placement and advance to the seeker phase (or skip it).
+	 *
+	 * Attempts to enter seeker placement (BS_PlaceSeekers) via beginSeekerPlacement().
+	 * When no seeker sources with ammo exist, advances directly to BS_SetupAttackFleet.
+	 * In either case resets the current ship/weapon selection.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
+	 * @date Created: May 24, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
 	void completeMinePlacement();
+	/**
+	 * @brief Complete seeker placement and advance to attacker setup.
+	 *
+	 * Transitions the model to BS_SetupAttackFleet, toggles the active player,
+	 * and resets the current ship and weapon selection.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void completeSeekerPlacement();
 	/// Canonical post-move resolution seam; PH_FINALIZE_MOVE delegates here.
 	void completeMovePhase();
 	FTacticalCombatReportSummary resolveCurrentFirePhase();
@@ -833,6 +871,20 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * @date Last Modified: May 24, 2026
 	 */
 	void rebuildDeployablePlacementSources();
+	/**
+	 * @brief Rebuild the deployable placement-source list filtered to one weapon type.
+	 *
+	 * Like rebuildDeployablePlacementSources() but only includes sources whose
+	 * weaponType matches the requested filter. Used to populate mine-only (M) or
+	 * seeker-only (SM) phase source lists.
+	 *
+	 * @param filter Weapon type to keep; all other deployable weapon types are excluded.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void rebuildDeployablePlacementSourcesFiltered(FWeapon::Weapon filter);
 	bool isDeployableWeapon(const FWeapon * weapon) const;
 	bool sourceMatchesWeapon(const FTacticalOrdnanceSource & source, const FVehicle * ship, const FWeapon * weapon, int weaponIndex) const;
 	/**

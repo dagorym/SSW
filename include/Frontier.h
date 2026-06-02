@@ -1,9 +1,9 @@
 /**
  * @file Frontier.h
  * @brief Header for the Frontier game
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  May 25, 2026
+ * @date Last Modified:  Jun 02, 2026
  *
  */
 #ifndef _FRONTIER_H_
@@ -21,6 +21,7 @@ enum {
 	BS_SetupStation,
 	BS_SetupDefendFleet,
 	BS_PlaceMines,
+	BS_PlaceSeekers,
 	BS_SetupAttackFleet,
 	BS_Battle
 };

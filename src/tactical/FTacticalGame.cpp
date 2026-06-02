@@ -3,7 +3,7 @@
  * @brief Implementation file for FTacticalGame class
  * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 02, 2026
  *
  */
 
@@ -1813,6 +1813,38 @@ void FTacticalGame::rebuildDeployablePlacementSources() {
 	m_selectedPlacementSource = m_deployablePlacementSources.empty() ? -1 : 0;
 }
 
+void FTacticalGame::rebuildDeployablePlacementSourcesFiltered(FWeapon::Weapon filter) {
+	m_deployablePlacementSources.clear();
+	m_shipsWithMines.clear();
+	VehicleList ships = getShipList(getActivePlayerID());
+	for (VehicleList::iterator shipItr = ships.begin(); shipItr != ships.end(); ++shipItr) {
+		bool hasMineSlot = false;
+		for (unsigned int i = 0; i < (*shipItr)->getWeaponCount(); ++i) {
+			FWeapon * weapon = (*shipItr)->getWeapon(i);
+			if (!isDeployableWeapon(weapon)) {
+				continue;
+			}
+			if (weapon->getType() != filter) {
+				continue;
+			}
+			FTacticalDeploymentSource source;
+			source.ownerID = (*shipItr)->getOwner();
+			source.weaponType = weapon->getType();
+			source.source.shipID = (*shipItr)->getID();
+			source.source.weaponIndex = static_cast<int>(i);
+			source.source.weaponID = weapon->getID();
+			m_deployablePlacementSources.push_back(source);
+			if (weapon->getType() == FWeapon::M) {
+				hasMineSlot = true;
+			}
+		}
+		if (hasMineSlot) {
+			m_shipsWithMines.push_back(*shipItr);
+		}
+	}
+	m_selectedPlacementSource = m_deployablePlacementSources.empty() ? -1 : 0;
+}
+
 bool FTacticalGame::selectPlacementSourceByIndex(unsigned int sourceIndex) {
 	if (sourceIndex >= m_deployablePlacementSources.size()) {
 		return false;
@@ -2795,8 +2827,41 @@ bool FTacticalGame::beginMinePlacement() {
 	return beginOrdnancePlacement();
 }
 
+bool FTacticalGame::beginSeekerPlacement() {
+	rebuildDeployablePlacementSourcesFiltered(FWeapon::SM);
+	if (m_deployablePlacementSources.empty()) {
+		return false;
+	}
+	bool foundSelectable = false;
+	unsigned int selectedIndex = 0;
+	for (unsigned int i = 0; i < m_deployablePlacementSources.size(); ++i) {
+		FWeapon * weapon = findWeaponBySource(m_deployablePlacementSources[i].source, NULL);
+		if (weapon != NULL && weapon->getAmmo() > 0) {
+			selectedIndex = i;
+			foundSelectable = true;
+			break;
+		}
+	}
+	if (!foundSelectable) {
+		return false;
+	}
+	selectPlacementSourceByIndex(selectedIndex);
+	setState(BS_PlaceSeekers);
+	return true;
+}
+
 bool FTacticalGame::beginOrdnancePlacement() {
 	rebuildDeployablePlacementSources();
+	// Mine-phase entry: retain only FWeapon::M sources so BS_PlaceMines exposes
+	// only mine slots to the UI. Seeker slots are deferred to the seeker phase.
+	for (std::vector<FTacticalDeploymentSource>::iterator it = m_deployablePlacementSources.begin();
+		 it != m_deployablePlacementSources.end(); ) {
+		if (it->weaponType != FWeapon::M) {
+			it = m_deployablePlacementSources.erase(it);
+		} else {
+			++it;
+		}
+	}
 	if (m_deployablePlacementSources.empty()) {
 		return false;
 	}
@@ -2819,6 +2884,15 @@ bool FTacticalGame::beginOrdnancePlacement() {
 }
 
 void FTacticalGame::completeMinePlacement() {
+	setShip(NULL);
+	setWeapon(NULL);
+	if (!beginSeekerPlacement()) {
+		setState(BS_SetupAttackFleet);
+		toggleActivePlayer();
+	}
+}
+
+void FTacticalGame::completeSeekerPlacement() {
 	setState(BS_SetupAttackFleet);
 	toggleActivePlayer();
 	setShip(NULL);
