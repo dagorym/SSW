@@ -137,9 +137,15 @@ int displayMarkerIndex;
  * resolution so it reflects only the current move. It is not persisted and
  * carries no wx types.
  *
+ * The `activationPhaseIndex` field is stamped at activation time with the
+ * current `m_seekerActivationPhaseIndex` counter value. It allows
+ * `getActiveSeekersByMovingPlayerThisPhase()` to distinguish seekers activated
+ * in the current phase from those activated in earlier phases of the same turn.
+ * The field is not persisted.
+ *
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created: May 24, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 02, 2026
  */
 typedef struct {
 unsigned int seekerID;

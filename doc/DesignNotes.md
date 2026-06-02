@@ -539,6 +539,25 @@ board and lower-panel changes call `reDraw()` after state changes so the board
 (showing both inactive stacks and active seekers during the activation phase) and
 the panel (showing the running list of activated seekers) stay consistent.
 
+SMF-04 adds per-activation-phase scoping to the seeker-activation list. A
+player may activate seekers across multiple activation phases in a turn, but the
+lower-panel changeable list should show only the seekers activated in the
+**current** phase so the player can still deactivate them. The model tracks this
+with `m_seekerActivationPhaseIndex` on `FTacticalGame`, an integer counter
+initialized to 0 by `reset()` and incremented by `beginSeekerActivationPhase()`
+each time a new activation phase begins. Both activation entry points
+(`activateSelectedInactiveSeeker()` and `activateInactiveSeekerAtHex()`) stamp
+`activationPhaseIndex` on the newly activated `FTacticalSeekerMissileState`
+record with the current counter value. The new
+`getActiveSeekersByMovingPlayerThisPhase()` accessor on `FTacticalGame` (and its
+`FBattleScreen` delegation shim) filters the complete active-seeker list to
+entries whose `activationPhaseIndex` matches the current counter, returning only
+seekers the player can still deactivate this phase. The existing
+`getActiveSeekersByMovingPlayer()` is unchanged and continues to return all
+active seekers for movement driving. The `activationPhaseIndex` field is not
+persisted; `save()` omits it and there are no changes to the serialization
+contract.
+
 The shipped TSM-006 follow-up extends the same runtime delegation seam for
 offensive-fire seeker deployment. `FTacticalGame` now tracks
 `m_pendingOffensiveSeekerDeployments` keyed by `m_offensiveFirePhaseID`, exposes
