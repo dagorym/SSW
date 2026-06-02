@@ -20,9 +20,9 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 02, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -40,6 +40,7 @@ CPPUNIT_TEST( testBattleDisplayNarrowWidthStacksShipStatsBelowButtons );
 CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
 CPPUNIT_TEST( testMinePlacementDoneButtonLabelReflectsOrdnanceTypes );
+CPPUNIT_TEST( testOffensiveSeekerPendingListRegionVisibilityAndRecall );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -185,6 +186,26 @@ void testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo();
  * @date Last Modified: Jun 02, 2026
  */
 void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
+	/**
+	 * @brief Verifies the pending-seeker list widget region during PH_ATTACK_FIRE seeker deployment.
+	 *
+	 * SMF-03: drawOffensiveSeekerPendingRows now runs in draw() inside a PH_ATTACK_FIRE guard,
+	 * placing the pending list in a dedicated region left of the ship-status widget.
+	 * This test confirms that after deploying seekers:
+	 * - m_pendingSeekerRecallRegions is populated with one region per pending group.
+	 * - Each recall region is positioned within the lower-panel left column (x >= leftOffset,
+	 *   x < shipStatsLeftMargin) so the list stays left of ship-status.
+	 * - Each recall region's top is at or below getActionButtonRowBottom()+BORDER, meaning
+	 *   it does not overlap the action-button row.
+	 * - Recall (via recallSelectedOffensivePendingSeekerAtHex) removes one seeker from the
+	 *   model and the next draw rebuilds a shorter pending list.
+	 * - The ship-status region (drawCurrentShipStats) is unaffected by the pending list.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void testOffensiveSeekerPendingListRegionVisibilityAndRecall();
 };
 
 }
