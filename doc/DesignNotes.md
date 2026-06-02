@@ -1533,3 +1533,38 @@ cd tests && ./tactical/TacticalTests
 ```
 
 Result: `OK (33 tests)` GUI, `OK (125 tests)` tactical.
+
+SMF-01 splits the combined pre-game ordnance deployment into two sequential
+model-level setup phases. Before this change, `BS_PlaceMines` combined both
+mine and seeker sources in one phase, and `beginOrdnancePlacement()` rebuilt
+the full mixed source list before entering that state. The new flow is:
+
+1. **Mine phase** (`BS_PlaceMines`): `beginOrdnancePlacement()` now rebuilds
+   the full source list then filters it down to `FWeapon::M` slots only, so
+   the deployable-source set exposed to the UI contains only mine launchers.
+   If no mine sources exist, `beginOrdnancePlacement()` returns `false` and
+   the phase is skipped.
+
+2. **Seeker phase** (`BS_PlaceSeekers`): `beginSeekerPlacement()` calls the
+   new `rebuildDeployablePlacementSourcesFiltered(FWeapon::SM)` helper directly
+   so the deployable-source set contains only seeker-missile launchers.
+   If no SM sources exist, `beginSeekerPlacement()` returns `false` and the
+   phase is skipped.
+
+3. **Transition**: `completeMinePlacement()` attempts `beginSeekerPlacement()`;
+   when that succeeds the model enters `BS_PlaceSeekers`. When it fails (no SM
+   sources), the model advances directly to `BS_SetupAttackFleet` and toggles
+   the active player. `completeSeekerPlacement()` always advances to
+   `BS_SetupAttackFleet` and toggles the active player.
+
+`FBattleScreen` exposes pass-through delegations for `beginSeekerPlacement()`
+and `completeSeekerPlacement()`, each calling `reDraw()` on a state change. The
+tactical model remains wx-free throughout.
+
+Validation command:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+```
+
+Result: `OK (192 tests)`.
