@@ -1568,3 +1568,21 @@ cd tests && make tactical-tests && ./tactical/TacticalTests
 ```
 
 Result: `OK (192 tests)`.
+
+SMF-02 adds the matching UI rendering in `FBattleDisplay`. `draw()` now dispatches
+`BS_PlaceSeekers` to a new `drawPlaceSeekers()` method that mirrors `drawPlaceMines()`
+but filters the deployable-source list to `FWeapon::SM` rows only and shows a dedicated
+"Seeker Placement Done" button (`m_buttonSeekerPlacementDone`). `drawPlaceMines()` was
+refactored to filter to `FWeapon::M` rows only so neither draw method shows the other
+type's sources. Both methods start their source-row list at `getActionButtonRowBottom()`
+so the instruction text and Done button never overlap the source rows. The `onSeekerPlacementDone()`
+handler disconnects and hides the seeker button then delegates to
+`FBattleScreen::completeSeekerPlacement()`.
+
+Validation command:
+
+```bash
+cd tests/gui && make && xvfb-run -a ./GuiTests
+```
+
+Result: `OK (36/44 tests)` — 8 pre-existing failures unrelated to `FBattleDisplay`.
