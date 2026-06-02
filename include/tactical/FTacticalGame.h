@@ -153,6 +153,8 @@ bool hasSource;
 FTacticalOrdnanceSource source;
 /// stepped path from start through final hex for the most recent movement resolution
 std::vector<FPoint> movementPath;
+/// activation-phase index stamped when this seeker was activated (not persisted)
+int activationPhaseIndex;
 } FTacticalSeekerMissileState;
 
 /**
@@ -652,6 +654,21 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * @date Last Modified: May 30, 2026
 	 */
 	std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayer() const;
+	/**
+	 * @brief Get active seekers owned by the moving player that were activated in the current activation phase.
+	 *
+	 * Returns only seekers whose activationPhaseIndex matches the current
+	 * m_seekerActivationPhaseIndex. Used by the UI to show the changeable list —
+	 * seekers from prior phases are excluded. Leave getActiveSeekersByMovingPlayer()
+	 * unchanged for driving actual movement.
+	 *
+	 * @return Vector of active seeker missile state records activated this phase.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayerThisPhase() const;
 	/**
 	 * @brief Report whether the current selection is offensive-fire seeker deployment.
 	 *
@@ -1342,6 +1359,8 @@ bool m_gravityTurnFlag;
 	int m_offensiveFirePhaseID;
 	std::vector<FTacticalPendingSeekerDeployment> m_pendingOffensiveSeekerDeployments;
 	FPoint m_selectedSeekerActivationHex;
+	/// Counter advanced each time a new seeker-activation phase begins; seekers stamp this when activated.
+	int m_seekerActivationPhaseIndex;
 };
 
 }

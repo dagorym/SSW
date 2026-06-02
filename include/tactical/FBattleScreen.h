@@ -539,6 +539,21 @@ public:
 	 */
 	std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayer() const;
 	/**
+	 * @brief Get active seekers owned by the moving player that were activated in the current activation phase.
+	 *
+	 * Pass-through delegation to FTacticalGame model method. Returns only seekers
+	 * activated during the current seeker-activation phase, for use by the changeable
+	 * list in the seeker-activation UI. Does not include seekers activated in prior
+	 * phases.
+	 *
+	 * @return Vector of active seeker missile state records activated this phase.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayerThisPhase() const;
+	/**
 	 * @brief Finish seeker activation and refresh the post-resolution movement view.
 	 *
 	 * Delegates the moving-side-only active seeker resolution step to

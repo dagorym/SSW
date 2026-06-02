@@ -870,6 +870,10 @@ std::vector<FTacticalSeekerMissileState> FBattleScreen::getActiveSeekersByMoving
 	return m_tacticalGame->getActiveSeekersByMovingPlayer();
 }
 
+std::vector<FTacticalSeekerMissileState> FBattleScreen::getActiveSeekersByMovingPlayerThisPhase() const {
+	return m_tacticalGame->getActiveSeekersByMovingPlayerThisPhase();
+}
+
 void FBattleScreen::completeSeekerActivationPhase() {
 	m_tacticalGame->completeSeekerActivationPhase();
 	if (!m_tacticalGame->getLastDestroyedShipIDs().empty()) {

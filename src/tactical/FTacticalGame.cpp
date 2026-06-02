@@ -317,6 +317,7 @@ void FTacticalGame::reset() {
 	m_offensiveFirePhaseID = 0;
 	m_pendingOffensiveSeekerDeployments.clear();
 	m_selectedSeekerActivationHex.setPoint(-1, -1);
+	m_seekerActivationPhaseIndex = 0;
 
 	for (int i = 0; i < 100; ++i) {
 		for (int j = 0; j < 100; ++j) {
@@ -418,6 +419,7 @@ void FTacticalGame::setPhase(int p) {
 }
 
 void FTacticalGame::beginSeekerActivationPhase() {
+	++m_seekerActivationPhaseIndex;
 	m_selectedSeekerActivationHex.setPoint(-1, -1);
 	const std::vector<FPoint> inactiveHexes = getInactiveSeekerActivationHexes();
 	if (inactiveHexes.empty()) {
@@ -981,6 +983,7 @@ bool FTacticalGame::activateSelectedInactiveSeeker(unsigned int seekerID) {
 			continue;
 		}
 		itr->active = true;
+		itr->activationPhaseIndex = m_seekerActivationPhaseIndex;
 		return true;
 	}
 	return false;
@@ -1025,6 +1028,7 @@ bool FTacticalGame::activateInactiveSeekerAtHex(const FPoint & hex) {
 
 	if (targetItr != m_seekerMissiles.end()) {
 		targetItr->active = true;
+		targetItr->activationPhaseIndex = m_seekerActivationPhaseIndex;
 		return true;
 	}
 	return false;
@@ -1035,6 +1039,19 @@ std::vector<FTacticalSeekerMissileState> FTacticalGame::getActiveSeekersByMoving
 	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
 		 itr != m_seekerMissiles.end(); ++itr) {
 		if (itr->ownerID == getMovingPlayerID() && itr->active) {
+			result.push_back(*itr);
+		}
+	}
+	return result;
+}
+
+std::vector<FTacticalSeekerMissileState> FTacticalGame::getActiveSeekersByMovingPlayerThisPhase() const {
+	std::vector<FTacticalSeekerMissileState> result;
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->ownerID == getMovingPlayerID()
+			&& itr->active
+			&& itr->activationPhaseIndex == m_seekerActivationPhaseIndex) {
 			result.push_back(*itr);
 		}
 	}
