@@ -1,0 +1,31 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round2/SMF-03/tester_report.md",
+    "artifacts/seeker-missile-fixes-round2/SMF-03/tester_result.json",
+    "artifacts/seeker-missile-fixes-round2/SMF-03/documenter_prompt.txt"
+  ],
+  "branch_name": "sf2-smf-03-tester-20260602",
+  "commands_run": [
+    "make -C tests tactical-tests && ./tests/tactical/TacticalTests",
+    "DISPLAY=:0 ./tests/gui/GuiTests"
+  ],
+  "pass_fail_totals": {
+    "gui_new_failures": 0,
+    "gui_pre_existing_failures": 8,
+    "gui_tests_failed": 8,
+    "gui_tests_passed": 37,
+    "gui_tests_run": 45,
+    "tactical_tests_failed": 0,
+    "tactical_tests_passed": 196,
+    "tactical_tests_run": 196
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": null,
+  "test_commit_hash": "271844b",
+  "test_files_changed": [
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/gui/TacticalGuiLiveTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}

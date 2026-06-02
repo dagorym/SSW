@@ -1,0 +1,63 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMF-03: Validate the offensive-fire pending-seeker list widget relocation to a dedicated bounded region left of the ship-status widget during PH_ATTACK_FIRE. drawOffensiveSeekerPendingRows moved from drawCurrentShipStats into draw() at (leftOffset, getActionButtonRowBottom()+BORDER). Rows remain click-deletable. Panel auto-expands height when pending rows extend beyond requestedDisplayHeight.
+
+Acceptance criteria validated:
+- Pending seeker rows render fully visible in own region left of ship-status widget during PH_ATTACK_FIRE seeker deployment mode — source contract verified by updated testActionPromptSpacingContractAppliedAcrossActionPhases; runtime draw path verified by new live test
+- Each pending row registers a click-deletable region via m_pendingSeekerRecallRegions — source contract in testDisplayClickFlowUsesModelForwardingApis; runtime cleared/rebuilt behavior confirmed by new live test
+- checkOffensiveSeekerPendingSelection recalls the pending seeker and triggers a redraw on click — source contract in testDisplayClickFlowUsesModelForwardingApis; guard behavior confirmed by new live test (false return with no pending seekers)
+- Ship-status widget layout (drawCurrentShipStats) is not regressed — assertNotContains(statsBody, 'drawOffensiveSeekerPendingRows(') in updated testActionPromptSpacingContractAppliedAcrossActionPhases
+- Move/fire lower-panel layouts not regressed — covered by existing testTacticalActionButtonsStayBelowPromptReservationAcrossPhases and testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges
+- tactical-tests 196/196 pass; gui-tests 0 new failures — confirmed
+
+Implementation branch or worktree context:
+- Branch: sf2-smf-03-tester-20260602 (implementer commit: 7c57b64)
+- draw() now calls drawOffensiveSeekerPendingRows(dc, leftOffset, pendingRegionTop, 10) inside a PH_ATTACK_FIRE guard, after drawCurrentShipStats
+- drawCurrentShipStats no longer calls drawOffensiveSeekerPendingRows at all
+- drawOffensiveSeekerPendingRows expands requestedDisplayHeight and calls applyRequestedDisplayHeight() when rendered rows extend below current panel height
+- m_pendingSeekerRecallRegions / m_pendingSeekerRecallHexes cleared and rebuilt on each draw call
+- checkOffensiveSeekerPendingSelection in onLeftUp is unchanged — dispatches recall via recallSelectedOffensivePendingSeekerAtHex
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Test commit:
+- 271844b
+
+Commands executed:
+- make -C tests tactical-tests && ./tests/tactical/TacticalTests
+- DISPLAY=:0 ./tests/gui/GuiTests
+
+Final test outcomes:
+- PASS. 196/196 tactical tests pass with 0 failures.
+- PASS. 45 GUI tests run; 8 pre-existing failures unchanged from baseline; 0 new failures introduced.
+- New test testOffensiveSeekerPendingListRegionVisibilityAndRecall added to TacticalGuiLiveTest: verifies m_pendingSeekerRecallRegions cleared in draw() with empty pending state, non-ATTACK_FIRE phase leaves recall regions empty, recallSelectedOffensivePendingSeekerAtHex returns false with no pending seekers, getActionButtonRowBottom() >= actionPromptReservedBottomY().
+- FBattleDisplayTestPeer extended with pendingSeekerRecallRegionCount(), pendingSeekerRecallRegion(), pendingSeekerRecallHex(), actionButtonRowBottomPublic(), shipStatsLeftMarginPublic() accessors.
+- Pre-existing 8 failures are StrategicGuiLiveTest x3 and TacticalGuiLiveTest x5 (source-contract checks with relative paths), unchanged from baseline before SMF-03.
+
+Documentation context:
+- AGENTS.md may need to reference SMF-03 contract: drawOffensiveSeekerPendingRows is called in draw() (not drawCurrentShipStats) in PH_ATTACK_FIRE guard, at (leftOffset, getActionButtonRowBottom()+BORDER)
+- Distinguish getAllPendingOffensiveFireSeekerHexes (all pending hexes across all launchers) from getSelectedOffensivePendingSeekerHexGroups (groups for selected launcher) in any AGENTS.md prose
+- CHANGELOG may record: pending-seeker recall list relocated to dedicated left-of-stats region in PH_ATTACK_FIRE lower panel
+
+Plan and diff context:
+- Plan file: plans/seeker-missile-fixes-round2-plan.md
+- SMF-03 is the third subtask in the seeker-missile-fixes-round2 plan
+- Comparison base: sf2 branch (main branch for this plan series)
+- Prior SMF tasks (SMF-01, SMF-02) have completed documenter artifacts in artifacts/seeker-missile-fixes-round2/
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round2/SMF-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
