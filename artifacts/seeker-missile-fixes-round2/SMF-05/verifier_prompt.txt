@@ -1,0 +1,32 @@
+Your role is 'verifier'. Your task is as follows:
+
+## Task summary
+SMF-05: Fix seeker-activation HUD overlap and show only this-phase activations.
+
+## Changes to verify
+- src/tactical/FBattleDisplay.cpp — drawSeekerActivation: y start changed from BORDER to getActionButtonRowBottom()
+- src/tactical/FBattleDisplay.cpp — drawSeekerActivation: activated seeker list source changed from getActiveSeekersByMovingPlayer() to getActiveSeekersByMovingPlayerThisPhase()
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp — added source-contract assertions for y-start and accessor
+
+## Acceptance criteria
+- Activated seekers block starts at getActionButtonRowBottom(), not BORDER
+- Data source is getActiveSeekersByMovingPlayerThisPhase() not getActiveSeekersByMovingPlayer()
+- All 198 tactical tests pass
+- No new GUI test regressions
+
+## Branch
+sf2-smf-05-implementer-20260602
+
+## Commits
+- Implementation: 71cd8c9
+- Tester: 21dc405
+
+## Validation commands
+- make -C tests tactical-tests && ./tests/tactical/TacticalTests
+- make -C tests gui-tests && xvfb-run -a ./tests/gui/GuiTests
+
+## Shared artifact directory
+artifacts/seeker-missile-fixes-round2/SMF-05
+
+## Completion gate
+Do not report success unless all required artifacts exist and all changes are committed.

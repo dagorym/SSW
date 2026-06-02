@@ -548,18 +548,19 @@ protected:
 	/**
 	 * @brief Draw seeker activation panel content and deactivate rows.
 	 *
-	 * Renders the activation instructions, an "Activated seekers" list, and one
-	 * clickable deactivate row for each seeker already activated by the moving
-	 * player (via `getActiveSeekersByMovingPlayer()`). Board clicks activate
-	 * additional inactive seekers; panel row clicks deactivate individual active
-	 * seekers via `deactivateActiveSeekerByID(id)`. Each row maps to exactly one
-	 * seeker ID so deactivation is one-way and per-seeker.
+	 * Renders the activation instructions, an "Activated seekers" list positioned
+	 * below `getActionButtonRowBottom()` (so it never overlaps the action-prompt
+	 * block), and one clickable deactivate row for each seeker activated during
+	 * the current phase (via `getActiveSeekersByMovingPlayerThisPhase()`).
+	 * Board clicks activate additional inactive seekers; panel row clicks deactivate
+	 * individual active seekers via `deactivateActiveSeekerByID(id)`. Each row maps
+	 * to exactly one seeker ID so deactivation is one-way and per-seeker.
 	 *
 	 * @param dc The device context to draw on.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 30, 2026
+	 * @date Last Modified: Jun 02, 2026 (SMF-05: use getActionButtonRowBottom(), this-phase accessor)
 	 */
 	void drawSeekerActivation(wxDC &dc);
 
