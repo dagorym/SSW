@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "subtask": "SMF-05",
+  "branch_name": "sf2-smf-05-implementer-20260602",
+  "test_commit_hash": "21dc405",
+  "changed_test_files": [
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp"
+  ],
+  "acceptance_criteria_results": [
+    {"criterion": "Activated seekers block starts at getActionButtonRowBottom(), not BORDER", "result": "PASS"},
+    {"criterion": "Data source is getActiveSeekersByMovingPlayerThisPhase() not getActiveSeekersByMovingPlayer()", "result": "PASS"},
+    {"criterion": "All 198 tactical tests pass", "result": "PASS (198/198)"},
+    {"criterion": "No new GUI test regressions", "result": "PASS (9 pre-existing unchanged)"}
+  ],
+  "validation_commands": [
+    "make -C tests tactical-tests && ./tests/tactical/TacticalTests",
+    "DISPLAY=:99 ./tests/gui/GuiTests"
+  ],
+  "validation_outcome": "PASS: 198/198 tactical tests, no new GUI regressions"
+}
