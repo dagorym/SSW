@@ -13,6 +13,7 @@
 #include "core/FGameConfig.h"
 #include <cmath>
 #include <map>
+#include <sstream>
 
 namespace Frontier {
 
@@ -110,6 +111,8 @@ drawRoute(dc);
 // seekers remain visible while ICM/damage dialogs are displayed.
 if (m_parent->getPhase() == PH_MOVE || m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
 drawSeekerPaths(dc);
+// SMF-07: draw per-seeker move-count overlay (red upright number, stacked when co-located).
+drawSeekerMoveCountOverlay(dc);
 }
 }
 if (m_parent->getState() == BS_PlaceMines) {
@@ -544,6 +547,57 @@ void FBattleBoard::drawSeekerPaths(wxDC &dc) {
 			dc.DrawLine(lx, ly, x, y);
 			lx = x;
 			ly = y;
+		}
+	}
+}
+
+void FBattleBoard::drawSeekerMoveCountOverlay(wxDC &dc) {
+	// SMF-07: draw upright red move-count number in the upper-right of each
+	// active seeker's hex. Count = movementPath.size() - 1 (hexes moved this turn).
+	// When multiple seekers share a hex, stack their counts vertically.
+	const std::vector<FTacticalSeekerMissileState> & seekers = m_parent->getSeekerMissiles();
+	if (seekers.empty()) {
+		return;
+	}
+
+	// Group seekers with a non-trivial path by their current hex.
+	std::map<std::pair<int,int>, std::vector<int> > hexCounts;
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
+		 itr != seekers.end(); ++itr) {
+		if (!itr->active || itr->movementPath.size() < 2) {
+			continue;
+		}
+		const int count = static_cast<int>(itr->movementPath.size()) - 1;
+		const std::pair<int,int> key(itr->hex.getX(), itr->hex.getY());
+		hexCounts[key].push_back(count);
+	}
+
+	if (hexCounts.empty()) {
+		return;
+	}
+
+	dc.SetFont(wxFont(9, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+	dc.SetTextForeground(wxColour(wxT("#FF0000")));
+	const int lineH = 12;
+
+	for (std::map<std::pair<int,int>, std::vector<int> >::const_iterator mapItr = hexCounts.begin();
+		 mapItr != hexCounts.end(); ++mapItr) {
+		const int col = mapItr->first.first;
+		const int row = mapItr->first.second;
+		if (col < 0 || col >= m_nCol || row < 0 || row >= m_nRow) {
+			continue;
+		}
+		// Upper-right of the hex: center.x + d/2, center.y - a*1.5
+		const wxCoord rawX = static_cast<wxCoord>(m_hexCenters[col][row].getX() + m_d * 0.4);
+		const wxCoord rawY = static_cast<wxCoord>(m_hexCenters[col][row].getY() - m_a * 1.5);
+		wxCoord sx, sy;
+		CalcScrolledPosition(rawX, rawY, &sx, &sy);
+
+		const std::vector<int> & counts = mapItr->second;
+		for (std::size_t k = 0; k < counts.size(); ++k) {
+			std::ostringstream os;
+			os << counts[k];
+			dc.DrawText(wxString(os.str().c_str(), wxConvUTF8), sx, sy + static_cast<wxCoord>(k) * lineH);
 		}
 	}
 }

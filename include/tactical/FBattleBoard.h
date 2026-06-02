@@ -132,6 +132,21 @@ void drawMinedHexes(wxDC &dc);
  */
 void drawSeekerMissiles(wxDC &dc);
 /**
+ * @brief Draw upright red move-count number in each active seeker's hex upper-right.
+ *
+ * Draws the count of hexes moved this turn (movementPath.size()-1) as a red
+ * bold number near the upper-right corner of each active seeker's hex. When
+ * multiple seekers share the same hex, their counts are stacked vertically.
+ * Only seekers with movementPath.size() >= 2 are rendered (SMF-07).
+ *
+ * @param dc Device context used for tactical board drawing.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 02, 2026
+ * @date Last Modified: Jun 02, 2026
+ */
+void drawSeekerMoveCountOverlay(wxDC &dc);
+/**
  * @brief Draw stepped movement paths for active seekers during movement and activation phases.
  *
  * Iterates all seeker missile records that moved this resolution pass

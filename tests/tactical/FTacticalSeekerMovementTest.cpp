@@ -727,6 +727,10 @@ void FTacticalSeekerMovementTest::testMovementPathPopulatedByResolveActiveSeeker
 				20, itr->movementPath[0].getX());
 			CPPUNIT_ASSERT_EQUAL_MESSAGE("movementPath[0].y must equal pre-move start hex y",
 				20, itr->movementPath[0].getY());
+			// movementPath must have at least 2 points (start + at least one step) so
+			// movementPath.size()-1 gives a meaningful move count for overlay display (SMF-07).
+			CPPUNIT_ASSERT_MESSAGE("movementPath must have at least 2 points after movement",
+				itr->movementPath.size() >= 2);
 			// Last point must match the seeker's current hex after movement.
 			const Frontier::FPoint & finalPath = itr->movementPath.back();
 			CPPUNIT_ASSERT_EQUAL_MESSAGE("movementPath final point x must match seeker hex x",
