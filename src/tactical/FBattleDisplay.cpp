@@ -1,9 +1,9 @@
 /**
  * @file FBattleDisplay.cpp
  * @brief Implementation file for BattleDispaly class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 30, 2026
+ * @date Last Modified:  Jun 02, 2026
  *
  */
 
@@ -659,6 +659,10 @@ void FBattleDisplay::draw(wxDC &dc){
 			break;
 		}
 		drawCurrentShipStats(dc);
+		if (m_parent->getPhase() == PH_ATTACK_FIRE) {
+			const int pendingRegionTop = getActionButtonRowBottom() + BORDER;
+			drawOffensiveSeekerPendingRows(dc, leftOffset, pendingRegionTop, 10);
+		}
 		break;
 	}
 	default:
@@ -1098,9 +1102,6 @@ void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
 		x = lMargin+110;
 		y += (int)(1.6*textSize);
 		drawOtherStatus(dc,x,y,textSize);
-		if (m_parent->getPhase() == PH_ATTACK_FIRE) {
-			drawOffensiveSeekerPendingRows(dc, lMargin, y + (int)(1.8*textSize), textSize);
-		}
 
 	}
 }
@@ -1617,6 +1618,11 @@ void FBattleDisplay::drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int s
 		m_pendingSeekerRecallRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 16,tSize.GetHeight()));
 		m_pendingSeekerRecallHexes.push_back(wxPoint(pending[i].hex.getX(), pending[i].hex.getY()));
 		y += (int)(1.6*textSize);
+	}
+	const int pendingRegionBottom = y + BORDER;
+	if (pendingRegionBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+		m_lowerPanelLayoutState.requestedDisplayHeight = pendingRegionBottom;
+		applyRequestedDisplayHeight();
 	}
 }
 

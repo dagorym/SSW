@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 02, 2026
+ * @date Last Modified: Jun 02, 2026 (SMF-03: pending seeker list relocated left of ship-status)
  *
  */
 
@@ -26,7 +26,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 02, 2026
+ * @date Last Modified:  Jun 02, 2026 (SMF-03)
  */
 class FBattleDisplay : public wxPanel
 {
@@ -394,19 +394,22 @@ protected:
 	/**
 	 * @brief Draw grouped recall rows for pending offensive-fire seekers.
 	 *
-	 * Each row corresponds to one legal path hex for the currently selected `SM`
-	 * launcher and recalls exactly one current-phase pending seeker from that hex.
-	 * Same-hex stacks are shown through the per-row pending count instead of
-	 * treating same-hex board clicks as undo.
+	 * Renders a standalone bounded region positioned to the left of the ship-status
+	 * widget in the lower panel during `PH_ATTACK_FIRE`. Each row corresponds to one
+	 * legal path hex for the currently selected `SM` launcher and recalls exactly one
+	 * current-phase pending seeker from that hex when clicked. Same-hex stacks are
+	 * shown through the per-row pending count. If the rendered rows extend below the
+	 * current `requestedDisplayHeight`, the height is expanded and
+	 * `applyRequestedDisplayHeight()` is called automatically.
 	 *
 	 * @param dc The device context to draw on.
 	 * @param lMargin The x position to start drawing text.
 	 * @param startY The y position to start drawing the pending rows.
 	 * @param textSize The font size to use.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: Jun 02, 2026
 	 */
 	void drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize);
 

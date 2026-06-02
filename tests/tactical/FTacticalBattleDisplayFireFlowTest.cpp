@@ -614,6 +614,7 @@ assertBefore(ctorBody, "rootSizer->AddSpacer(getActionButtonTopSpacerHeight());"
 
 void FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractAppliedAcrossActionPhases() {
 // AC: all action prompts route y positioning through helper and keep action row right of zoom column.
+// SMF-03: pending seeker list is now a dedicated region left of ship-status, not inside drawCurrentShipStats.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string ctorBody = extractFunctionBody(
 source,
@@ -623,6 +624,7 @@ const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay
 const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
 const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
 const std::string statsBody = extractFunctionBody(source, "void FBattleDisplay::drawCurrentShipStats(wxDC & dc)");
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
 
 assertContains(ctorBody, "actionSizer->AddSpacer(leftOffset);");
 assertBefore(ctorBody, "actionSizer->AddSpacer(leftOffset);", "actionSizer->Add(m_buttonMoveDone, 0, wxALIGN_CENTER_VERTICAL);");
@@ -644,7 +646,10 @@ assertContains(attackBody, "Select legal path hexes to deploy seeker missiles.")
 assertContains(minesBody, "getActionPromptLineY(0)");
 assertContains(minesBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
 assertContains(statsBody, "largestMarginWithStatsRoom");
-assertContains(statsBody, "drawOffensiveSeekerPendingRows(dc, lMargin, y + (int)(1.8*textSize), textSize);");
+// SMF-03: pending seeker rows moved out of drawCurrentShipStats into draw() left-of-stats region.
+assertNotContains(statsBody, "drawOffensiveSeekerPendingRows(");
+assertContains(drawBody, "PH_ATTACK_FIRE");
+assertContains(drawBody, "drawOffensiveSeekerPendingRows(dc, leftOffset, pendingRegionTop, 10);");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {
