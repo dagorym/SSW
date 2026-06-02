@@ -1,0 +1,70 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMF-04: Add model-side per-activation-phase seeker tracking so the seeker-activation list
+  shows only seekers activated in the current phase. Added activationPhaseIndex field to
+  FTacticalSeekerMissileState, m_seekerActivationPhaseIndex counter incremented in
+  beginSeekerActivationPhase(), stamp in both activate entry points, and
+  getActiveSeekersByMovingPlayerThisPhase() accessor on FTacticalGame and FBattleScreen.
+  Two new tests added to FTacticalGameMechanicsTest verifying all acceptance criteria.
+
+Acceptance criteria validated:
+- Seeker activated in prior phase not returned by this-phase accessor in later phases
+- Seeker activated this phase is returned and remains deactivatable
+- Accessor is read-only through FBattleScreen (const method returning by value)
+- wx-free: no wx headers in model or FBattleScreen delegation
+- Tests pass: 198 tactical tests OK (196 pre-existing + 2 new)
+- Persistence compatible: activationPhaseIndex not persisted (non-persistent by design)
+
+Implementation branch or worktree context:
+- Branch: sf2-smf-04-tester-20260602
+- Worktree: /home/tstephen/repos/worktrees/sf2-smf-04-tester-20260602
+- Implementation commit: 8d2ecdd (SMF-04: Add per-activation-phase tracking for seeker activation list)
+- Test commit: dba732e (SMF-04: Add per-activation-phase seeker tracking tests)
+- Comparison base: branch sf2 (main integration branch for this plan)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalGameMechanicsTest.h
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+
+Test commit:
+- dba732e
+
+Commands executed:
+- make -C /home/tstephen/repos/worktrees/sf2-smf-04-tester-20260602/tests tactical-tests
+- /home/tstephen/repos/worktrees/sf2-smf-04-tester-20260602/tests/tactical/TacticalTests
+
+Final test outcomes:
+- 198 tests run, 0 failures, 0 errors
+- All acceptance criteria validated via source-inspection tests in FTacticalGameMechanicsTest
+
+Documentation context:
+- FTacticalGame.h: new field activationPhaseIndex in FTacticalSeekerMissileState struct;
+  new private member m_seekerActivationPhaseIndex; new public const method
+  getActiveSeekersByMovingPlayerThisPhase() — all need Doxygen-style documentation review
+- FBattleScreen.h: new public const method getActiveSeekersByMovingPlayerThisPhase() — needs
+  Doxygen-style documentation review
+- The activationPhaseIndex comment in the struct notes "not persisted" — confirm wording matches
+  project conventions per AGENTS.md
+- Existing getActiveSeekersByMovingPlayer() is unchanged; documenter should note it remains the
+  full-list accessor for driving movement, while the new method serves the activation UI list
+
+Plan and diff context:
+- Plan: plans/seeker-missile-fixes-round2 (or equivalent plan directory; infer from repository)
+- The task is subtask SMF-04 in that plan
+- Comparison base: branch sf2 before implementation commit 8d2ecdd
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round2/SMF-04
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
