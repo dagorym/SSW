@@ -757,4 +757,91 @@ CPPUNIT_ASSERT(source.find("FBattleDisplay::") == std::string::npos);
 	CPPUNIT_ASSERT(source.find("#include \"wx/") == std::string::npos);
 }
 
+void FTacticalGameMechanicsTest::testSeekerDeploymentPhaseStateMachineTransitions() {
+// AC: SMF-01 seeker deployment state machine - BS_PlaceSeekers state and transition contracts.
+	const std::string frontier = readFile(repoFile("include/Frontier.h"));
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string battleScreenHeader = readFile(repoFile("include/tactical/FBattleScreen.h"));
+	const std::string battleScreenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+
+	// AC-1: BS_PlaceSeekers is declared in Frontier.h after BS_PlaceMines.
+	const std::string::size_type placeMinesPos = frontier.find("BS_PlaceMines");
+	const std::string::size_type placeSeekersPos = frontier.find("BS_PlaceSeekers");
+	CPPUNIT_ASSERT_MESSAGE("BS_PlaceMines must be declared in Frontier.h", placeMinesPos != std::string::npos);
+	CPPUNIT_ASSERT_MESSAGE("BS_PlaceSeekers must be declared in Frontier.h", placeSeekersPos != std::string::npos);
+	CPPUNIT_ASSERT_MESSAGE("BS_PlaceSeekers must appear after BS_PlaceMines in Frontier.h", placeSeekersPos > placeMinesPos);
+
+	// AC-2: beginOrdnancePlacement() erases SM sources before the ammo-check loop (mine-only filter).
+	const std::string beginOrdnanceBody = extractFunctionBody(source, "bool FTacticalGame::beginOrdnancePlacement()");
+	assertContains(beginOrdnanceBody, "rebuildDeployablePlacementSources();");
+	// Filter removes non-M sources before the ammo-check loop.
+	assertContains(beginOrdnanceBody, "weaponType != FWeapon::M");
+	assertContains(beginOrdnanceBody, "setState(BS_PlaceMines);");
+	// beginOrdnancePlacement returns false when source list is empty after filtering.
+	assertContains(beginOrdnanceBody, "if (m_deployablePlacementSources.empty()) {");
+	assertContains(beginOrdnanceBody, "return false;");
+
+	// AC-3: beginSeekerPlacement() filters to SM only via rebuildDeployablePlacementSourcesFiltered.
+	assertContains(source, "bool FTacticalGame::beginSeekerPlacement()");
+	const std::string beginSeekerBody = extractFunctionBody(source, "bool FTacticalGame::beginSeekerPlacement()");
+	assertContains(beginSeekerBody, "rebuildDeployablePlacementSourcesFiltered(FWeapon::SM);");
+	assertContains(beginSeekerBody, "setState(BS_PlaceSeekers);");
+	// beginSeekerPlacement returns false when no SM sources exist.
+	assertContains(beginSeekerBody, "if (m_deployablePlacementSources.empty()) {");
+	assertContains(beginSeekerBody, "return false;");
+
+	// AC-4 & AC-5: completeMinePlacement() chains to BS_PlaceSeekers or skips to BS_SetupAttackFleet.
+	assertContains(source, "void FTacticalGame::completeMinePlacement()");
+	const std::string completeMinePlacementBody = extractFunctionBody(source, "void FTacticalGame::completeMinePlacement()");
+	// Resets ship/weapon before attempting seeker placement.
+	assertContains(completeMinePlacementBody, "setShip(NULL);");
+	assertContains(completeMinePlacementBody, "setWeapon(NULL);");
+	// Tries seeker placement; on failure, advances directly to BS_SetupAttackFleet.
+	assertContains(completeMinePlacementBody, "beginSeekerPlacement()");
+	assertContains(completeMinePlacementBody, "setState(BS_SetupAttackFleet);");
+	assertContains(completeMinePlacementBody, "toggleActivePlayer();");
+	// toggleActivePlayer is only called on BS_SetupAttackFleet branch (not on seeker-phase chain).
+	// The implementation uses: if (!beginSeekerPlacement()) { setState(BS_SetupAttackFleet); toggleActivePlayer(); }
+	// so both setState and toggleActivePlayer appear inside the false branch.
+
+	// AC-6: completeSeekerPlacement() transitions to BS_SetupAttackFleet with toggleActivePlayer.
+	assertContains(source, "void FTacticalGame::completeSeekerPlacement()");
+	const std::string completeSeekerPlacementBody = extractFunctionBody(source, "void FTacticalGame::completeSeekerPlacement()");
+	assertContains(completeSeekerPlacementBody, "setState(BS_SetupAttackFleet);");
+	assertContains(completeSeekerPlacementBody, "toggleActivePlayer();");
+	assertContains(completeSeekerPlacementBody, "setShip(NULL);");
+	assertContains(completeSeekerPlacementBody, "setWeapon(NULL);");
+
+	// AC-7: rebuildDeployablePlacementSourcesFiltered exists as protected helper.
+	assertContains(header, "void rebuildDeployablePlacementSourcesFiltered(FWeapon::Weapon filter);");
+	assertContains(source, "void FTacticalGame::rebuildDeployablePlacementSourcesFiltered(FWeapon::Weapon filter)");
+	const std::string rebuildFilteredBody = extractFunctionBody(source, "void FTacticalGame::rebuildDeployablePlacementSourcesFiltered(FWeapon::Weapon filter)");
+	// Only sources whose weaponType matches filter are kept.
+	assertContains(rebuildFilteredBody, "if (weapon->getType() != filter) {");
+	assertContains(rebuildFilteredBody, "continue;");
+
+	// AC-8: FBattleScreen public API exposes beginSeekerPlacement and completeSeekerPlacement.
+	assertContains(battleScreenHeader, "bool beginSeekerPlacement();");
+	assertContains(battleScreenHeader, "void completeSeekerPlacement();");
+
+	// AC-8 (delegation): FBattleScreen::beginSeekerPlacement delegates to model and calls reDraw.
+	assertContains(battleScreenSource, "bool FBattleScreen::beginSeekerPlacement()");
+	const std::string bsBeginSeekerBody = extractFunctionBody(battleScreenSource, "bool FBattleScreen::beginSeekerPlacement()");
+	assertContains(bsBeginSeekerBody, "m_tacticalGame->beginSeekerPlacement()");
+	assertContains(bsBeginSeekerBody, "reDraw()");
+
+	// AC-8 (delegation): FBattleScreen::completeSeekerPlacement delegates to model and calls reDraw.
+	assertContains(battleScreenSource, "void FBattleScreen::completeSeekerPlacement()");
+	const std::string bsCompleteSeekerBody = extractFunctionBody(battleScreenSource, "void FBattleScreen::completeSeekerPlacement()");
+	assertContains(bsCompleteSeekerBody, "m_tacticalGame->completeSeekerPlacement()");
+	assertContains(bsCompleteSeekerBody, "reDraw()");
+
+	// AC-9: No wx headers in FTacticalGame model files (reinforces testImplementationRemainsSelfContainedWithoutLegacyWxRewire).
+	CPPUNIT_ASSERT(header.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(header.find("#include \"wx/") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("#include \"wx/") == std::string::npos);
+}
+
 }

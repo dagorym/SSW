@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created: Mar 29, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: Jun 02, 2026
  */
 class FTacticalGameMechanicsTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalGameMechanicsTest );
@@ -40,6 +40,7 @@ CPPUNIT_TEST( testOrdnancePlacementSourceTrackingAndCompatibilityFlows );
 CPPUNIT_TEST( testSeekerActivationApisExposeSelectionAndOneWayActivation );
 CPPUNIT_TEST( testStoppedShipFreeRotationGuardsAndFacingSelectionFlow );
 CPPUNIT_TEST( testImplementationRemainsSelfContainedWithoutLegacyWxRewire );
+CPPUNIT_TEST( testSeekerDeploymentPhaseStateMachineTransitions );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -231,6 +232,25 @@ void testStoppedShipFreeRotationGuardsAndFacingSelectionFlow();
  * @date Last Modified: Mar 29, 2026
  */
 void testImplementationRemainsSelfContainedWithoutLegacyWxRewire();
+/**
+ * @brief Validates BS_PlaceSeekers state, ordnance-phase filter contracts, and
+ *        completeMinePlacement/completeSeekerPlacement transition rules.
+ *
+ * Covers acceptance criteria for SMF-01:
+ * - BS_PlaceSeekers constant declared after BS_PlaceMines in Frontier.h
+ * - beginOrdnancePlacement() erases SM sources before the ammo-check loop
+ * - beginSeekerPlacement() filters to SM sources and sets BS_PlaceSeekers
+ * - completeMinePlacement() chains to BS_PlaceSeekers when SM sources exist
+ * - completeMinePlacement() skips to BS_SetupAttackFleet when no SM sources
+ * - completeSeekerPlacement() transitions to BS_SetupAttackFleet with toggleActivePlayer
+ * - FBattleScreen::beginSeekerPlacement() and completeSeekerPlacement() delegate to model
+ * - FTacticalGame model files remain free of wx headers/types
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 02, 2026
+ * @date Last Modified: Jun 02, 2026
+ */
+void testSeekerDeploymentPhaseStateMachineTransitions();
 };
 
 }
