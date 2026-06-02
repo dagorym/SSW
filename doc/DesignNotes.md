@@ -1586,3 +1586,30 @@ cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
 Result: `OK (36/44 tests)` — 8 pre-existing failures unrelated to `FBattleDisplay`.
+
+SMF-03 relocates the offensive-fire pending-seeker recall list out of `drawCurrentShipStats()`
+into `draw()`, giving it a dedicated bounded region in the lower panel left of the ship-status
+widget during `PH_ATTACK_FIRE`. Before this change, `drawOffensiveSeekerPendingRows()` was called
+at the end of `drawCurrentShipStats()`, meaning the recall rows appended below the ship-status
+block and could be obscured or clipped when the stats section was tall.
+
+The new layout places the recall list at `(leftOffset, getActionButtonRowBottom() + BORDER)`,
+which is the same left column used by the deployment-phase source rows (SMF-02), but now active
+only during the attack-fire phase rather than during setup. The ship-status widget continues to
+render unchanged via `drawCurrentShipStats()`. If the rendered recall rows extend below the
+panel's current `requestedDisplayHeight`, `drawOffensiveSeekerPendingRows()` expands the height
+and calls `applyRequestedDisplayHeight()` automatically so rows are never clipped.
+
+Clicking a recall row still invokes `checkOffensiveSeekerPendingSelection()` → `recallSelectedOffensivePendingSeekerAtHex()`,
+which removes one pending seeker from the model and triggers a redraw that rebuilds the shorter
+recall list. `m_pendingSeekerRecallRegions` and `m_pendingSeekerRecallHexes` are cleared and
+repopulated on every call to `drawOffensiveSeekerPendingRows()`.
+
+Validation commands:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+cd tests/gui && make && xvfb-run -a ./GuiTests
+```
+
+Results: `OK (196 tests)` tactical; `OK (37/45 tests)` GUI — 8 pre-existing failures unchanged.
