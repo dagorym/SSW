@@ -405,14 +405,27 @@ void FTacticalSeekerMovementTest::testActiveSeekerResolutionHandlesPremoveContac
 	CPPUNIT_ASSERT_EQUAL(1, outcomes[0].movementTurn);
 	CPPUNIT_ASSERT_EQUAL(defenderShip->getID(), outcomes[0].targetShipID);
 
+	// SMF-06: impacting seeker stays in m_seekerMissiles until after damage summary.
+	// resolveActiveSeekersForMovingPlayer now keeps contacting seekers for
+	// rendering during ICM/damage dialogs; applyMovementSeekerDamage removes them.
 	const std::vector<Frontier::FTacticalSeekerMissileState> remainingSeekers = game.getSeekerMissiles();
-	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), remainingSeekers.size());
-	CPPUNIT_ASSERT_EQUAL(9002u, remainingSeekers[0].seekerID);
-	CPPUNIT_ASSERT_EQUAL(Frontier::FPoint(40, 40).getX(), remainingSeekers[0].hex.getX());
-	CPPUNIT_ASSERT_EQUAL(Frontier::FPoint(40, 40).getY(), remainingSeekers[0].hex.getY());
-	CPPUNIT_ASSERT_EQUAL(4, remainingSeekers[0].heading);
-	CPPUNIT_ASSERT_EQUAL(3, remainingSeekers[0].movementTurn);
-	CPPUNIT_ASSERT_EQUAL(6, remainingSeekers[0].movementAllowance);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), remainingSeekers.size());
+	// Find enemy seeker (9002) and contacting seeker (9001) in the remaining list.
+	bool found9001 = false;
+	bool found9002 = false;
+	for (unsigned int i = 0; i < remainingSeekers.size(); ++i) {
+		if (remainingSeekers[i].seekerID == 9001u) { found9001 = true; }
+		if (remainingSeekers[i].seekerID == 9002u) {
+			found9002 = true;
+			CPPUNIT_ASSERT_EQUAL(Frontier::FPoint(40, 40).getX(), remainingSeekers[i].hex.getX());
+			CPPUNIT_ASSERT_EQUAL(Frontier::FPoint(40, 40).getY(), remainingSeekers[i].hex.getY());
+			CPPUNIT_ASSERT_EQUAL(4, remainingSeekers[i].heading);
+			CPPUNIT_ASSERT_EQUAL(3, remainingSeekers[i].movementTurn);
+			CPPUNIT_ASSERT_EQUAL(6, remainingSeekers[i].movementAllowance);
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Contacting seeker 9001 must remain for damage rendering (SMF-06)", found9001);
+	CPPUNIT_ASSERT_MESSAGE("Enemy seeker 9002 must remain unchanged", found9002);
 
 	delete attackerShip;
 	delete defenderShip;
@@ -480,14 +493,22 @@ void FTacticalSeekerMovementTest::testCompleteSeekerActivationResolvesMovementCo
 	CPPUNIT_ASSERT(!outcomes[0].preMovementContact);
 	CPPUNIT_ASSERT(outcomes[0].movementStep >= 1u);
 
+	// SMF-06: impacting seeker (9101) stays in m_seekerMissiles alongside survivor (9102).
+	// applyMovementSeekerDamage would remove 9101 after dialogs; here no UI is installed
+	// so resolvePendingSeekerDetonationDamage is skipped and 9101 is not yet removed.
 	const std::vector<Frontier::FTacticalSeekerMissileState> seekers = game.getSeekerMissiles();
-	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), seekers.size());
-	CPPUNIT_ASSERT_EQUAL(9102u, seekers[0].seekerID);
-	CPPUNIT_ASSERT_EQUAL(1, seekers[0].movementTurn);
-	CPPUNIT_ASSERT_EQUAL(2, seekers[0].movementAllowance);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), seekers.size());
+	// Find the survivor (9102) and verify its progression.
+	const Frontier::FTacticalSeekerMissileState * survivor = NULL;
+	for (unsigned int i = 0; i < seekers.size(); ++i) {
+		if (seekers[i].seekerID == 9102u) { survivor = &seekers[i]; }
+	}
+	CPPUNIT_ASSERT_MESSAGE("Survivor seeker 9102 must remain", survivor != NULL);
+	CPPUNIT_ASSERT_EQUAL(1, survivor->movementTurn);
+	CPPUNIT_ASSERT_EQUAL(2, survivor->movementAllowance);
 	CPPUNIT_ASSERT(
-		seekers[0].hex.getX() != survivorSeeker.hex.getX()
-		|| seekers[0].hex.getY() != survivorSeeker.hex.getY());
+		survivor->hex.getX() != survivorSeeker.hex.getX()
+		|| survivor->hex.getY() != survivorSeeker.hex.getY());
 
 	delete attackerShip;
 	delete closeDefender;

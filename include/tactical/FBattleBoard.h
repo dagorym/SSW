@@ -132,19 +132,19 @@ void drawMinedHexes(wxDC &dc);
  */
 void drawSeekerMissiles(wxDC &dc);
 /**
- * @brief Draw stepped movement paths for active seekers during movement phase.
+ * @brief Draw stepped movement paths for active seekers during movement and activation phases.
  *
  * Iterates all seeker missile records that moved this resolution pass
  * (movementPath.size() > 1) and draws their stepped path as a line in a
- * color distinct from ship paths (cyan, pen width 2). Only called during
- * PH_MOVE so paths are refreshed each movement turn and do not persist
- * across the whole battle, consistent with ship path display behavior.
+ * color distinct from ship paths (cyan #00CCCC, pen width 2). Called during
+ * PH_MOVE and PH_SEEKER_ACTIVATION (SMF-06) so impacting seekers remain
+ * visible at their final hex while ICM/damage dialogs are displayed.
  *
  * @param dc Device context used for tactical board drawing.
  *
- * @author claude-sonnet-4-6 (standard)
+ * @author claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: May 30, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 02, 2026 (SMF-06: also called during PH_SEEKER_ACTIVATION)
  */
 void drawSeekerPaths(wxDC &dc);
 	/**

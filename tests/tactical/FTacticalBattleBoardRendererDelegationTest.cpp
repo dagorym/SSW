@@ -159,8 +159,9 @@ const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
 const std::string drawBody = extractFunctionBody(source, "void FBattleBoard::draw(wxDC &dc)");
 const std::string seekerPathBody = extractFunctionBody(source, "void FBattleBoard::drawSeekerPaths(wxDC &dc)");
 
-// SMC-07: drawSeekerPaths is gated on PH_MOVE
-assertContains(drawBody, "if (m_parent->getPhase() == PH_MOVE) {");
+// SMF-06: drawSeekerPaths is called in PH_MOVE and PH_SEEKER_ACTIVATION
+// so impacting seekers remain visible during ICM/damage dialogs.
+assertContains(drawBody, "m_parent->getPhase() == PH_MOVE || m_parent->getPhase() == PH_SEEKER_ACTIVATION");
 assertContains(drawBody, "drawSeekerPaths(dc);");
 
 // SMC-07: path uses getSeekerMissiles() from parent (delegation through FBattleScreen)

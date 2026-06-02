@@ -425,6 +425,8 @@ void FTacticalGame::beginSeekerActivationPhase() {
 	if (inactiveHexes.empty()) {
 		resolveActiveSeekersForMovingPlayer();
 		if (m_ui != NULL) {
+			// SMF-06: redraw so impacting seeker is visible before ICM/damage dialogs.
+			m_ui->requestRedraw();
 			resolvePendingSeekerDetonationDamage();
 		}
 		beginMovePhase();
@@ -448,6 +450,8 @@ void FTacticalGame::completeSeekerActivationPhase() {
 	}
 	resolveActiveSeekersForMovingPlayer();
 	if (m_ui != NULL) {
+		// SMF-06: redraw so impacting seeker is visible at its final hex before dialogs.
+		m_ui->requestRedraw();
 		resolvePendingSeekerDetonationDamage();
 	}
 	m_selectedSeekerActivationHex.setPoint(-1, -1);
@@ -1156,6 +1160,10 @@ void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 		FVehicle * sameHexContactTarget = selectSeekerContactTargetAtHex(*itr, itr->hex);
 		if (sameHexContactTarget != NULL) {
 			appendSeekerContactOutcome(*itr, sameHexContactTarget, true, 0);
+			// SMF-06: keep impacting seeker in nextStates so it remains in m_seekerMissiles
+			// (with movementPath intact) for rendering during ICM/damage dialogs.
+			// applyMovementSeekerDamage removes it after the damage summary returns.
+			nextStates.push_back(*itr);
 			continue;
 		}
 
@@ -1185,6 +1193,9 @@ void FTacticalGame::resolveActiveSeekersForMovingPlayer() {
 		}
 
 		if (seekerContacted) {
+			// SMF-06: keep impacting seeker in nextStates so it remains visible
+			// during ICM/damage dialogs; applyMovementSeekerDamage removes it after.
+			nextStates.push_back(*itr);
 			continue;
 		}
 
@@ -2978,6 +2989,9 @@ void FTacticalGame::applyMovementSeekerDamage() {
 	}
 
 	if (m_ui != NULL) {
+		// SMF-06: redraw before showing ICM/damage dialogs so impacting seeker
+		// is visible at its final hex while the dialog is displayed.
+		m_ui->requestRedraw();
 		resolvePendingSeekerDetonationDamage();
 	} else {
 		clearPendingSeekerContactOutcomes();

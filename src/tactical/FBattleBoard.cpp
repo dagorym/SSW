@@ -106,7 +106,9 @@ drawShips();
 if (m_parent->getState() == BS_Battle) {
 drawSeekerMissiles(dc);
 drawRoute(dc);
-if (m_parent->getPhase() == PH_MOVE) {
+// SMF-06: also draw seeker paths during PH_SEEKER_ACTIVATION so impacting
+// seekers remain visible while ICM/damage dialogs are displayed.
+if (m_parent->getPhase() == PH_MOVE || m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
 drawSeekerPaths(dc);
 }
 }

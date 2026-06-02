@@ -862,22 +862,24 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * @brief Resolve all pending seeker contacts gathered during movement finalization.
 	 *
 	 * Collects detonating seeker IDs from `m_pendingSeekerContactOutcomes`, then
-	 * calls `resolvePendingSeekerDetonationDamage()` when an `ITacticalUI` is
-	 * installed so ship-triggered seeker contacts use exactly the same SM-weapon
-	 * fire, ICM allocation, immediate `TRT_SeekerDamage` report, and post-summary
-	 * destroyed-ship cleanup path used for activation-phase contacts. When no UI
-	 * is installed, clears the pending outcomes directly without damage resolution.
-	 * After resolution, removes each detonated seeker from `m_seekerMissiles`
-	 * exactly once. The caller (`completeMovePhase()`) is responsible for clearing
-	 * any pre-move leftover outcomes before building the per-ship path contact
-	 * list that this method consumes.
+	 * calls `requestRedraw()` on the UI and `resolvePendingSeekerDetonationDamage()`
+	 * when an `ITacticalUI` is installed so ship-triggered seeker contacts use
+	 * exactly the same SM-weapon fire, ICM allocation, immediate `TRT_SeekerDamage`
+	 * report, and post-summary destroyed-ship cleanup path used for
+	 * activation-phase contacts. The redraw before dialogs ensures the impacting
+	 * seeker is visible at its final hex while the ICM/damage dialog is displayed
+	 * (SMF-06). When no UI is installed, clears the pending outcomes directly
+	 * without damage resolution. After resolution, removes each detonated seeker
+	 * from `m_seekerMissiles` exactly once. The caller (`completeMovePhase()`) is
+	 * responsible for clearing any pre-move leftover outcomes before building the
+	 * per-ship path contact list that this method consumes.
 	 * Must be called after all ships in the moving player's list have had their
 	 * paths checked via `checkForActiveSeekersOnPath` and before `applyMineDamage()`
 	 * executes.
 	 *
-	 * @author claude-sonnet-4-6 (medium)
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: May 28, 2026
-	 * @date Last Modified: May 28, 2026
+	 * @date Last Modified: Jun 02, 2026 (SMF-06: requestRedraw before dialogs)
 	 */
 	void applyMovementSeekerDamage();
 	void clearStoppedShipPreviewRoutes();
@@ -962,21 +964,24 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * deterministic closest-target helper narrows the candidate set, adjusting
 	 * initial facing up to three hexsides toward the chosen target, and moving
 	 * with greedy one-hexside turn limits until contact occurs or the current
-	 * allowance is exhausted. Seekers that contact are removed after recording a
-	 * pending outcome, seekers that reach the 12-hex allowance without contact
-	 * expire, and all other seeker state is preserved for later turns.
+	 * allowance is exhausted. Seekers that expire (12-hex allowance exhausted
+	 * without contact) are dropped. All other seekers remain in `m_seekerMissiles`.
+	 *
+	 * Impacting seekers are kept in `m_seekerMissiles` (SMF-06) with their
+	 * `movementPath` intact so they remain renderable during ICM/damage dialogs.
+	 * `applyMovementSeekerDamage()` removes them after the damage summary returns.
 	 *
 	 * For each moving seeker, the method clears and then populates
 	 * `FTacticalSeekerMissileState::movementPath` with the start hex followed by
 	 * each step hex taken during this resolution pass. Non-moving seekers (inactive
 	 * or belonging to the non-moving player) have their `movementPath` cleared so
 	 * stale paths do not persist across turns. This render-supporting path state is
-	 * read by `FBattleBoard::drawSeekerPaths()` during `PH_MOVE` to draw cyan path
-	 * lines on the board.
+	 * read by `FBattleBoard::drawSeekerPaths()` during `PH_MOVE` and
+	 * `PH_SEEKER_ACTIVATION` to draw cyan path lines on the board.
 	 *
-	 * @author gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (standard)
+	 * @author gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 30, 2026
+	 * @date Last Modified: Jun 02, 2026 (SMF-06: impacting seekers stay until after damage summary)
 	 */
 	void resolveActiveSeekersForMovingPlayer();
 	/**
