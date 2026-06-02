@@ -174,18 +174,15 @@ void testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior();
  */
 void testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo();
 /**
- * @brief Verifies mine-placement Done button label reflects deployed ordnance types.
+ * @brief Verifies two-phase deployment produces correct Done buttons per phase.
  *
- * Source-contract assertions confirm all four label variants exist in
- * drawPlaceMines(), and runtime checks confirm seekers-only (Battleship)
- * produces "Seeker Placement Done" and mixed SM+M (Minelayer) produces
- * "Weapon Placement Done".  The empty/fallback "Mine Placement Done" case
- * is validated by the existing action-button layout and prompt-reservation
- * tests that use ships with no deployable ordnance.
+ * Runtime checks confirm that a Minelayer (both M and SM weapons) in BS_PlaceMines
+ * shows only the "Mine Placement Done" button, and after transitioning to BS_PlaceSeekers
+ * via completeMinePlacement() shows only the "Seeker Placement Done" button.
  *
- * @author claude-sonnet-4-6 (high)
+ * @author claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium)
  * @date Created: May 30, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 02, 2026
  */
 void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 };

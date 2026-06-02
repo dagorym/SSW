@@ -58,6 +58,10 @@ CPPUNIT_TEST( testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrent
 CPPUNIT_TEST( testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers );
 CPPUNIT_TEST( testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing );
 CPPUNIT_TEST( testPlaceMinesSourceListStartsAtActionButtonRowBottom );
+CPPUNIT_TEST( testTwoPhaseSeekerDeploymentDrawAndClickDispatching );
+CPPUNIT_TEST( testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter );
+CPPUNIT_TEST( testMinePhaseUsesExactPromptTextAndMFilter );
+CPPUNIT_TEST( testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -415,6 +419,57 @@ void testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing();
  * @date Last Modified: May 30, 2026
  */
 void testPlaceMinesSourceListStartsAtActionButtonRowBottom();
+
+/**
+ * @brief Verifies that draw() dispatches BS_PlaceSeekers to drawPlaceSeekers(), onLeftUp()
+ * dispatches BS_PlaceSeekers to checkShipSelection(), and the constructor creates,
+ * adds to actionSizer, and hides m_buttonSeekerPlacementDone at startup.
+ *
+ * AC: SMF-02 -- two-phase deployment state machine rendering.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 02, 2026
+ * @date Last Modified: Jun 02, 2026
+ */
+void testTwoPhaseSeekerDeploymentDrawAndClickDispatching();
+
+/**
+ * @brief Verifies that drawPlaceSeekers() uses the seeker-specific prompt text,
+ * "Select a source row to place seeker missiles." selection line, SM-only filter,
+ * completeSeekerPlacement() route, and the standard show/hide/disconnect button pattern.
+ *
+ * AC: SMF-02 -- seeker phase content and filter correctness.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 02, 2026
+ * @date Last Modified: Jun 02, 2026
+ */
+void testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter();
+
+/**
+ * @brief Verifies that drawPlaceMines() uses the exact mine-specific prompt text,
+ * "Select a source row to place mines." selection line, FWeapon::M-only filter,
+ * and that no combined "Weapon Placement Done" label path remains.
+ *
+ * AC: SMF-02 -- mine phase content and filter correctness.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 02, 2026
+ * @date Last Modified: Jun 02, 2026
+ */
+void testMinePhaseUsesExactPromptTextAndMFilter();
+
+/**
+ * @brief Verifies that getActionButtonRowBottom() scans m_buttonSeekerPlacementDone
+ * along with the other action buttons when computing the shown-button bottom edge.
+ *
+ * AC: SMF-02 -- seeker placement button included in action-button row geometry.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 02, 2026
+ * @date Last Modified: Jun 02, 2026
+ */
+void testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton();
 };
 
 }

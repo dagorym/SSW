@@ -1074,4 +1074,96 @@ assertNotContains(defenseBody, "int y = getActionButtonRowBottom();");
 assertNotContains(attackBody, "int y = getActionButtonRowBottom();");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testTwoPhaseSeekerDeploymentDrawAndClickDispatching() {
+// AC: SMF-02 -- draw() dispatches BS_PlaceSeekers to drawPlaceSeekers(); onLeftUp()
+// dispatches BS_PlaceSeekers to checkShipSelection(); constructor creates, adds to
+// actionSizer, and hides m_buttonSeekerPlacementDone at startup.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
+const std::string onLeftUpBody = extractFunctionBody(source, "void FBattleDisplay::onLeftUp(wxMouseEvent & event)");
+const std::string ctorBody = extractFunctionBody(
+	source,
+	"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+
+// draw() must dispatch BS_PlaceSeekers to drawPlaceSeekers(dc).
+assertContains(drawBody, "case BS_PlaceSeekers:");
+assertContains(drawBody, "drawPlaceSeekers(dc);");
+
+// onLeftUp() must dispatch BS_PlaceSeekers to checkShipSelection().
+assertContains(onLeftUpBody, "case BS_PlaceSeekers:");
+assertContains(onLeftUpBody, "checkShipSelection(event);");
+
+// Constructor must create m_buttonSeekerPlacementDone with the fixed label,
+// add it to the actionSizer, and hide it at startup.
+assertContains(ctorBody, "m_buttonSeekerPlacementDone = new wxButton( this, wxID_ANY, wxT(\"Seeker Placement Done\")");
+assertContains(ctorBody, "actionSizer->Add(m_buttonSeekerPlacementDone,");
+assertContains(ctorBody, "m_buttonSeekerPlacementDone->Hide();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter() {
+// AC: SMF-02 -- drawPlaceSeekers() uses the seeker-specific prompt text, SM-only filter,
+// getActionButtonRowBottom() y-start, completeSeekerPlacement() delegation, and the
+// standard show/disconnect/hide button lifecycle.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string seekersBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceSeekers(wxDC &dc)");
+const std::string onDoneBody = extractFunctionBody(source, "void FBattleDisplay::onSeekerPlacementDone( wxCommandEvent& event )");
+
+// Seeker-specific prompt text (exact string from AC).
+assertContains(seekersBody,
+	"The defending player may now place seeker missiles before the attacker sets up their ships.");
+
+// Seeker-specific selection line (exact string from AC).
+assertContains(seekersBody, "Select a source row to place seeker missiles.");
+
+// SM-only filter: rows whose weaponType is not SM must be skipped.
+assertContains(seekersBody, "if (source.weaponType != FWeapon::SM)");
+
+// Source list y-start uses getActionButtonRowBottom() (same layout contract as mine phase).
+assertContains(seekersBody, "int y = getActionButtonRowBottom();");
+
+// Show m_buttonSeekerPlacementDone on first draw.
+assertContains(seekersBody, "m_buttonSeekerPlacementDone->Show();");
+
+// onSeekerPlacementDone must disconnect, hide, call completeSeekerPlacement(), and reset m_first.
+assertContains(onDoneBody, "m_buttonSeekerPlacementDone->Disconnect(");
+assertContains(onDoneBody, "m_buttonSeekerPlacementDone->Hide();");
+assertContains(onDoneBody, "m_parent->completeSeekerPlacement();");
+assertContains(onDoneBody, "m_first = true;");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testMinePhaseUsesExactPromptTextAndMFilter() {
+// AC: SMF-02 -- drawPlaceMines() uses the mine-specific prompt text, M-only filter,
+// and no combined "Weapon Placement Done" label path remains anywhere in the file.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+
+// Mine-specific prompt text (exact string from AC).
+assertContains(minesBody,
+	"The defending player may now place mines before the attacker sets up their ships.");
+
+// Mine-specific selection line (exact string from AC).
+assertContains(minesBody, "Select a source row to place mines.");
+
+// M-only filter: rows whose weaponType is not M must be skipped.
+assertContains(minesBody, "if (source.weaponType != FWeapon::M)");
+
+// No combined "Weapon Placement Done" label must exist anywhere in the source.
+assertNotContains(source, "Weapon Placement Done");
+
+// Mine done button uses fixed label "Mine Placement Done" set in constructor,
+// confirmed via constructor; the drawPlaceMines path shows m_buttonMinePlacementDone.
+assertContains(minesBody, "m_buttonMinePlacementDone->Show();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton() {
+// AC: SMF-02 -- getActionButtonRowBottom() scans m_buttonSeekerPlacementDone
+// in its shown-button array so the seeker placement button bottom contributes
+// to the source-list y-start just as the mine placement button does.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string rowBottomBody = extractFunctionBody(source, "int FBattleDisplay::getActionButtonRowBottom() const");
+
+// m_buttonSeekerPlacementDone must appear in the scan array inside getActionButtonRowBottom().
+assertContains(rowBottomBody, "m_buttonSeekerPlacementDone,");
+}
+
 }
