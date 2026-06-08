@@ -56,5 +56,3 @@ General UI issues
 
 General Gameplay
 * If a ship still has MR left at the end of its turn, it should be able to make a single facing change without moving.
-
-S
