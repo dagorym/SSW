@@ -18,7 +18,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created: Mar 22, 2026
- * @date Last Modified: May 28, 2026
+ * @date Last Modified: Jun 19, 2026
  */
 class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalMineDamageFlowTest );
@@ -33,6 +33,11 @@ class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testInactiveSeekerNotTriggeredByPathContact );
 	CPPUNIT_TEST( testApplyMovementSeekerDamageDetonatesSeekersExactlyOnce );
 	CPPUNIT_TEST( testSeekerDamageAppliedBeforeMineDamageInCompleteMovePhase );
+	CPPUNIT_TEST( testTriggeredMineHexesInitiallyEmptyOnFreshGame );
+	CPPUNIT_TEST( testTriggeredMineHexesEmptyAfterCompleteMovePhaseWithNoMines );
+	CPPUNIT_TEST( testApplyMineDamageSummaryCalledUnconditionallyWhenMinesFire );
+	CPPUNIT_TEST( testTriggeredMineHexesClearedAfterSummaryDialog );
+	CPPUNIT_TEST( testLastTriggeredMineHexesDelegationInFBattleScreenHeader );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -158,6 +163,69 @@ public:
 	 * @date Last Modified: May 28, 2026
 	 */
 	void testSeekerDamageAppliedBeforeMineDamageInCompleteMovePhase();
+
+	/**
+	 * @brief Behavioral: getLastTriggeredMineHexes() returns empty set on a fresh game instance.
+	 *
+	 * Constructs a real FTacticalGame, calls getLastTriggeredMineHexes(), and asserts empty.
+	 * Verifies the accessor is present and correctly initialized.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testTriggeredMineHexesInitiallyEmptyOnFreshGame();
+
+	/**
+	 * @brief Behavioral: getLastTriggeredMineHexes() is empty after completeMovePhase() with no mines.
+	 *
+	 * Runs the full move-complete path through a real FTacticalGame with no mined hexes
+	 * and asserts the triggered-hex set remains empty. Verifies the SMFR-03 state is
+	 * orthogonal to mine-free movement.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testTriggeredMineHexesEmptyAfterCompleteMovePhaseWithNoMines();
+
+	/**
+	 * @brief Source-contract: applyMineDamage() calls showDamageSummary unconditionally when mines fire.
+	 *
+	 * Source-inspects applyMineDamage to confirm showDamageSummary is called without a guard
+	 * on summary.ships.size(), so zero-damage encounters still show the dialog.
+	 * Supplements the behavioral state tests in this fixture.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testApplyMineDamageSummaryCalledUnconditionallyWhenMinesFire();
+
+	/**
+	 * @brief Source-contract: triggered mine hexes are set before requestRedraw and cleared after showDamageSummary.
+	 *
+	 * Source-inspects applyMineDamage to confirm m_lastTriggeredMineHexes is populated before the
+	 * requestRedraw call and cleared only after showDamageSummary returns, enforcing the
+	 * SMFR-03 highlight lifecycle ordering.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testTriggeredMineHexesClearedAfterSummaryDialog();
+
+	/**
+	 * @brief Source-contract: FBattleScreen.h declares getLastTriggeredMineHexes delegation.
+	 *
+	 * Source-inspects FBattleScreen.h and FBattleScreen.cpp to confirm getLastTriggeredMineHexes
+	 * is declared and delegates to FTacticalGame, per the SMFR-03 board-highlight flow.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testLastTriggeredMineHexesDelegationInFBattleScreenHeader();
 };
 
 }

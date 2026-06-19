@@ -258,6 +258,34 @@ const std::string screenHeader = readFile(repoFile("include/tactical/FBattleScre
 assertContains(screenHeader, "std::vector<FPoint> getAllPendingOffensiveFireSeekerHexes() const;");
 }
 
+void FTacticalBattleBoardRendererDelegationTest::testDrawTriggeredMineHexesCalledInsideBSBattleGuard() {
+// SMFR-03: drawTriggeredMineHexes(dc) must be called from FBattleBoard::draw()
+// inside the BS_Battle state guard so triggered-hex highlights are visible during
+// battle-phase redraws while the mine damage summary dialog is shown.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleBoard::draw(wxDC &dc)");
+
+// The call must appear somewhere in the draw body.
+assertContains(drawBody, "drawTriggeredMineHexes(dc);");
+
+// The call must appear inside the BS_Battle guard.
+const std::string::size_type battleGuardPos = drawBody.find("if (m_parent->getState() == BS_Battle) {");
+const std::string::size_type callPos = drawBody.find("drawTriggeredMineHexes(dc);");
+CPPUNIT_ASSERT_MESSAGE("BS_Battle guard must precede drawTriggeredMineHexes call in draw()",
+battleGuardPos != std::string::npos && callPos != std::string::npos && callPos > battleGuardPos);
+
+// drawTriggeredMineHexes reads getLastTriggeredMineHexes from the parent and applies green shading.
+const std::string triggeredBody = extractFunctionBody(source, "void FBattleBoard::drawTriggeredMineHexes(wxDC &dc)");
+assertContains(triggeredBody, "m_parent->getLastTriggeredMineHexes()");
+assertContains(triggeredBody, "m_parent->isHexInBounds(*itr)");
+assertContains(triggeredBody, "drawShadedHex(");
+assertContains(triggeredBody, "#00FF00");
+
+// Delegation: FBattleScreen exposes getLastTriggeredMineHexes() for board use.
+const std::string screenHeader = readFile(repoFile("include/tactical/FBattleScreen.h"));
+assertContains(screenHeader, "getLastTriggeredMineHexes()");
+}
+
 void FTacticalBattleBoardRendererDelegationTest::testOnMotionUsesPlacementForwardersOnly() {
 // AC: setup movement hover handling stays as UI hit-test/rotation forwarding.
 const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));

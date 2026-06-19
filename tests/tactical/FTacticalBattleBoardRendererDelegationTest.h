@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (standard)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: Apr 01, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 19, 2026
  */
 class FTacticalBattleBoardRendererDelegationTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleBoardRendererDelegationTest );
@@ -33,6 +33,7 @@ CPPUNIT_TEST( testOnMotionUsesPlacementForwardersOnly );
 CPPUNIT_TEST( testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath );
 CPPUNIT_TEST( testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen );
 CPPUNIT_TEST( testDrawSeekerMissilesPendingOffensiveFireBranch );
+CPPUNIT_TEST( testDrawTriggeredMineHexesCalledInsideBSBattleGuard );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -161,6 +162,20 @@ void testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen();
  * @date Last Modified: May 30, 2026
  */
 void testDrawSeekerMissilesPendingOffensiveFireBranch();
+
+/**
+ * @brief Source-contract: drawTriggeredMineHexes is called from draw() inside the BS_Battle guard.
+ *
+ * SMFR-03: verifies that drawTriggeredMineHexes(dc) appears inside the BS_Battle state guard
+ * in FBattleBoard::draw() so the highlight is rendered during battle-phase redraws while the
+ * mine damage summary dialog is shown.  Also verifies the function body reads
+ * getLastTriggeredMineHexes() from the parent (FBattleScreen) and applies green shading.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testDrawTriggeredMineHexesCalledInsideBSBattleGuard();
 };
 
 }
