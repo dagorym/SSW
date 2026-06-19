@@ -62,6 +62,9 @@ CPPUNIT_TEST( testTwoPhaseSeekerDeploymentDrawAndClickDispatching );
 CPPUNIT_TEST( testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter );
 CPPUNIT_TEST( testMinePhaseUsesExactPromptTextAndMFilter );
 CPPUNIT_TEST( testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton );
+CPPUNIT_TEST( testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum );
+CPPUNIT_TEST( testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum );
+CPPUNIT_TEST( testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -470,6 +473,43 @@ void testMinePhaseUsesExactPromptTextAndMFilter();
  * @date Last Modified: Jun 02, 2026
  */
 void testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton();
+
+/**
+ * @brief Source-contract: drawPlaceMines() computes mineListBottom = y + BORDER and expands
+ * requestedDisplayHeight when that value exceeds the current minimum.
+ *
+ * AC: SMFR-01 -- mine placement row list panel-height auto-expansion mirrors
+ * the pattern used by drawOffensiveSeekerPendingRows().
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum();
+
+/**
+ * @brief Source-contract: drawPlaceSeekers() computes seekerListBottom = y + BORDER and
+ * expands requestedDisplayHeight when that value exceeds the current minimum.
+ *
+ * AC: SMFR-01 -- seeker placement row list panel-height auto-expansion.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum();
+
+/**
+ * @brief Source-contract: drawSeekerActivation() computes activationListBottom = y + BORDER and
+ * expands requestedDisplayHeight when that value exceeds the current minimum.
+ *
+ * AC: SMFR-01 -- seeker activation row list panel-height auto-expansion.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum();
 };
 
 }

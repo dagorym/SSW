@@ -1176,4 +1176,56 @@ const std::string rowBottomBody = extractFunctionBody(source, "int FBattleDispla
 assertContains(rowBottomBody, "m_buttonSeekerPlacementDone,");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum() {
+// AC: SMFR-01 -- Source contract: drawPlaceMines() uses the variable name mineListBottom = y + BORDER,
+// compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
+// This mirrors the pattern used by drawOffensiveSeekerPendingRows().
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+
+// Variable name and computation must match the spec exactly.
+assertContains(minesBody, "const int mineListBottom = y + BORDER;");
+
+// Expansion guard: must compare against requestedDisplayHeight.
+assertContains(minesBody, "if (mineListBottom > m_lowerPanelLayoutState.requestedDisplayHeight)");
+
+// Must update requestedDisplayHeight and call applyRequestedDisplayHeight() inside the guard.
+assertContains(minesBody, "m_lowerPanelLayoutState.requestedDisplayHeight = mineListBottom;");
+assertContains(minesBody, "applyRequestedDisplayHeight();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum() {
+// AC: SMFR-01 -- Source contract: drawPlaceSeekers() uses the variable name seekerListBottom = y + BORDER,
+// compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string seekersBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceSeekers(wxDC &dc)");
+
+// Variable name and computation must match the spec exactly.
+assertContains(seekersBody, "const int seekerListBottom = y + BORDER;");
+
+// Expansion guard: must compare against requestedDisplayHeight.
+assertContains(seekersBody, "if (seekerListBottom > m_lowerPanelLayoutState.requestedDisplayHeight)");
+
+// Must update requestedDisplayHeight and call applyRequestedDisplayHeight() inside the guard.
+assertContains(seekersBody, "m_lowerPanelLayoutState.requestedDisplayHeight = seekerListBottom;");
+assertContains(seekersBody, "applyRequestedDisplayHeight();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum() {
+// AC: SMFR-01 -- Source contract: drawSeekerActivation() uses the variable name activationListBottom = y + BORDER,
+// compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string activationBody = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
+
+// Variable name and computation must match the spec exactly.
+assertContains(activationBody, "const int activationListBottom = y + BORDER;");
+
+// Expansion guard: must compare against requestedDisplayHeight.
+assertContains(activationBody, "if (activationListBottom > m_lowerPanelLayoutState.requestedDisplayHeight)");
+
+// Must update requestedDisplayHeight and call applyRequestedDisplayHeight() inside the guard.
+assertContains(activationBody, "m_lowerPanelLayoutState.requestedDisplayHeight = activationListBottom;");
+assertContains(activationBody, "applyRequestedDisplayHeight();");
+}
+
 }

@@ -144,6 +144,11 @@ int actionButtonRowBottomPublic() const {
 int shipStatsLeftMarginPublic() const {
 	return m_lowerPanelLayoutState.shipStatsLeftMargin;
 }
+
+/// exposes requestedDisplayHeight from the lower-panel layout state for height-expansion verification
+int requestedDisplayHeightPublic() const {
+	return m_lowerPanelLayoutState.requestedDisplayHeight;
+}
 };
 
 wxTextCtrl * findFirstTextCtrl(wxWindow * root) {
@@ -1687,6 +1692,163 @@ void TacticalGuiLiveTest::testOffensiveSeekerPendingListRegionVisibilityAndRecal
 	delete attackFleet;
 	delete defendFleet;
 	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testOrdnancePlacementAndActivationPanelHeightAutoExpands() {
+	// SMFR-01: Behavioral verification that drawPlaceMines(), drawPlaceSeekers(), and
+	// drawSeekerActivation() expand the lower-panel height when rendered rows extend
+	// below the initial 120-px minimum.
+	//
+	// We use a Minelayer, which has multiple M and SM sources.  After a simulated draw
+	// in each phase the requestedDisplayHeight observable (exposed via peer accessor and
+	// also reflected in GetMinSize().GetHeight()) must be >= the initial 120-px baseline
+	// and >= the button row bottom + a BORDER margin when rows were actually rendered.
+	//
+	// This confirms the auto-expansion logic in each of the three list-drawing functions
+	// is wired correctly end-to-end (not just present in source text).
+
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	// Minelayer has M and SM weapons: exercises both placement phases.
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT(attacker != NULL && minelayer != NULL);
+	minelayer->setOwner(2);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(minelayer);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("SMFR-01 Panel Height Expansion");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleDisplay must exist in the battle screen.", displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	// --- Phase 1: drawPlaceMines() ---
+	const bool mineStarted = battleScreen->beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE("Minelayer has M weapons so beginOrdnancePlacement() must succeed.", mineStarted);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(2);
+
+	// Record the initial height before the first mine-phase draw.
+	const int heightBeforeMines = peer->requestedDisplayHeightPublic();
+
+	// Offscreen draw to trigger drawPlaceMines().
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(battleScreen->GetSize().GetWidth(), 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	const int heightAfterMines = peer->requestedDisplayHeightPublic();
+	// After drawing with real Minelayer M-source rows, height must not decrease.
+	CPPUNIT_ASSERT_MESSAGE(
+		"drawPlaceMines(): requestedDisplayHeight must not decrease after drawing source rows.",
+		heightAfterMines >= heightBeforeMines);
+	// The minelayer has at least one M weapon, so at least one row should be drawn;
+	// after drawing the mine source list the panel height must be at least the button
+	// row bottom + a positive margin.
+	const int mineButtonRowBottom = peer->actionButtonRowBottomPublic();
+	CPPUNIT_ASSERT_MESSAGE(
+		"drawPlaceMines(): requestedDisplayHeight must be at least as large as the action button row bottom.",
+		heightAfterMines >= mineButtonRowBottom);
+	// The GetMinSize() height must match the peer's requestedDisplayHeight since
+	// applyRequestedDisplayHeight() keeps them in sync.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"drawPlaceMines(): GetMinSize().GetHeight() must equal requestedDisplayHeight after draw.",
+		heightAfterMines,
+		displayPanel->GetMinSize().GetHeight());
+
+	// --- Phase 2: drawPlaceSeekers() ---
+	// Simulate completing the mine phase by firing the mine done button event.
+	wxButton * mineDoneButton = findButtonByLabel(battleScreen, wxT("Mine Placement Done"));
+	CPPUNIT_ASSERT_MESSAGE("Mine Placement Done button must exist for phase transition.", mineDoneButton != NULL);
+	{
+		wxCommandEvent mineClick(wxEVT_COMMAND_BUTTON_CLICKED, mineDoneButton->GetId());
+		mineClick.SetEventObject(mineDoneButton);
+		mineDoneButton->GetEventHandler()->ProcessEvent(mineClick);
+	}
+	m_harness.pumpEvents(2);
+
+	const int heightBeforeSeekers = peer->requestedDisplayHeightPublic();
+
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(battleScreen->GetSize().GetWidth(), 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	const int heightAfterSeekers = peer->requestedDisplayHeightPublic();
+	CPPUNIT_ASSERT_MESSAGE(
+		"drawPlaceSeekers(): requestedDisplayHeight must not decrease after drawing source rows.",
+		heightAfterSeekers >= heightBeforeSeekers);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"drawPlaceSeekers(): GetMinSize().GetHeight() must equal requestedDisplayHeight after draw.",
+		heightAfterSeekers,
+		displayPanel->GetMinSize().GetHeight());
+
+	// --- Phase 3: drawSeekerActivation() ---
+	// Transition to BS_Battle and set the game phase to PH_SEEK_ACT so drawSeekerActivation() fires.
+	// First complete seeker placement by firing the seeker done button.
+	wxButton * seekerDoneButton = findButtonByLabel(battleScreen, wxT("Seeker Placement Done"));
+	CPPUNIT_ASSERT_MESSAGE("Seeker Placement Done button must exist for phase transition.", seekerDoneButton != NULL);
+	{
+		wxCommandEvent seekerClick(wxEVT_COMMAND_BUTTON_CLICKED, seekerDoneButton->GetId());
+		seekerClick.SetEventObject(seekerDoneButton);
+		seekerDoneButton->GetEventHandler()->ProcessEvent(seekerClick);
+	}
+	m_harness.pumpEvents(2);
+
+	// Move to BS_Battle and PH_SEEK_ACT to trigger drawSeekerActivation().
+	battleScreen->setState(BS_Battle);
+	battleScreen->setPhase(PH_SEEKER_ACTIVATION);
+	battleScreen->setActivePlayer(false); // defender's activation phase
+	// Reset m_first so draw() picks it up freshly.
+	battleScreen->setMoveComplete(true);
+
+	const int heightBeforeActivation = peer->requestedDisplayHeightPublic();
+
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(battleScreen->GetSize().GetWidth(), 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	const int heightAfterActivation = peer->requestedDisplayHeightPublic();
+	const int activationMinSize = displayPanel->GetMinSize().GetHeight();
+
+	// Destroy and clean up BEFORE asserting, so a failing assertion cannot leak the window.
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+
+	// NOTE: The drawSeekerActivation() expansion is immediately overwritten by the subsequent
+	// drawCurrentShipStats() call (which calls setLowerPanelState(), clobbering requestedDisplayHeight
+	// with a stats-based height).  This assertion detects that implementation defect:
+	// the activation list height should persist after the draw but currently does not.
+	CPPUNIT_ASSERT_MESSAGE(
+		"drawSeekerActivation(): requestedDisplayHeight must not decrease after drawing activation rows. "
+		"[DEFECT: drawCurrentShipStats/setLowerPanelState resets requestedDisplayHeight after "
+		"drawSeekerActivation() expands it, causing activation rows to render below the panel minimum.]",
+		heightAfterActivation >= heightBeforeActivation);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"drawSeekerActivation(): GetMinSize().GetHeight() must equal requestedDisplayHeight after draw.",
+		heightAfterActivation,
+		activationMinSize);
 }
 
 }

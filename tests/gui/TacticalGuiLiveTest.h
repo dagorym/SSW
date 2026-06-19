@@ -41,6 +41,7 @@ CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
 CPPUNIT_TEST( testMinePlacementDoneButtonLabelReflectsOrdnanceTypes );
 CPPUNIT_TEST( testOffensiveSeekerPendingListRegionVisibilityAndRecall );
+CPPUNIT_TEST( testOrdnancePlacementAndActivationPanelHeightAutoExpands );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -206,6 +207,22 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 02, 2026
 	 */
 	void testOffensiveSeekerPendingListRegionVisibilityAndRecall();
+
+	/**
+	 * @brief Behavioral verification that drawPlaceMines(), drawPlaceSeekers(), and
+	 * drawSeekerActivation() each expand the lower-panel height when rendered rows
+	 * extend below the initial 120-px minimum.
+	 *
+	 * SMFR-01: Drives each placement/activation draw phase via offscreen wxMemoryDC
+	 * and asserts that requestedDisplayHeight (via peer accessor) and GetMinSize().GetHeight()
+	 * do not decrease after drawing a Minelayer's source list, confirming end-to-end wiring
+	 * of the auto-expansion path.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testOrdnancePlacementAndActivationPanelHeightAutoExpands();
 };
 
 }
