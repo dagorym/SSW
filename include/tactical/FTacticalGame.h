@@ -5,6 +5,9 @@
  * @date Created:  Mar 29, 2026
  * @date Last Modified: Jun 19, 2026
  *
+ * SMFR-03: Added m_lastTriggeredMineHexes, getLastTriggeredMineHexes(),
+ * and clearLastTriggeredMineHexes() to expose triggered minefield hexes
+ * for board highlight while the mine damage summary dialog is shown.
  */
 
 #ifndef _FTACTICALGAME_H_
@@ -545,6 +548,10 @@ bool isMoveComplete() const { return m_moveComplete; }
 	const PointSet & getTargetHexes() const { return m_targetHexes; }
 	const PointSet & getHeadOnHexes() const { return m_headOnHexes; }
 	const PointSet & getMinedHexes() const { return m_minedHexList; }
+	/// SMFR-03: get triggered mine hexes pending highlight while damage summary is shown
+	const PointSet & getLastTriggeredMineHexes() const { return m_lastTriggeredMineHexes; }
+	/// SMFR-03: clear triggered mine hexes after the damage summary dialog closes
+	void clearLastTriggeredMineHexes() { m_lastTriggeredMineHexes.clear(); }
 	const FHexMap & getMineTargets() const { return m_mineTargetList; }
 	unsigned int getMineOwner() const { return m_mineOwner; }
 	const std::map<unsigned int, FTacticalTurnData> & getTurnInfo() const { return m_turnInfo; }
@@ -1414,6 +1421,8 @@ PointSet m_headOnHexes;
 std::map<FPoint, int> m_gravityTurns;
 bool m_gravityTurnFlag;
 	PointSet m_minedHexList;
+	/// SMFR-03: hexes that triggered mine damage this move — highlighted while summary is shown
+	PointSet m_lastTriggeredMineHexes;
 	FHexMap m_mineTargetList;
 	unsigned int m_mineOwner;
 	VehicleList m_shipsWithMines;

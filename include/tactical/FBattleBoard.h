@@ -1,9 +1,9 @@
 /**
  * @file FBattleBoard.h
  * @brief Header file for BattleBoard class
- * @author Tom Stephens, claude-sonnet-4-6 (standard)
+ * @author Tom Stephens, claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 19, 2026
  *
  */
 
@@ -106,6 +106,23 @@ void drawWeaponRange(wxDC &dc);
 void drawShadedHex(wxDC& dc, wxColour c, FPoint p);
 void drawTarget(wxDC &dc);
 void drawMinedHexes(wxDC &dc);
+/**
+ * @brief Draw triggered minefield hexes in green while the mine damage summary is shown.
+ *
+ * Reads the model-owned triggered-hex set through FBattleScreen and shades
+ * each in-bounds hex with the pre-game-placement green (#00FF00) using the
+ * existing shaded-hex fill pattern. The set is non-empty only between the
+ * requestRedraw() call before showDamageSummary() and the requestRedraw()
+ * call after it, so the highlight is visible during the dialog and absent
+ * after it closes.
+ *
+ * @param dc Device context used for tactical board drawing.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void drawTriggeredMineHexes(wxDC &dc);
 /**
  * @brief Draw seeker missiles with phase-based visibility filtering.
  *

@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.h
  * @brief Header file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 02, 2026
+ * @date Last Modified: Jun 19, 2026
  *
  */
 
@@ -386,6 +386,8 @@ public:
 	const PointSet & getTargetHexes() const;
 	const PointSet & getHeadOnHexes() const;
 	const PointSet & getMinedHexes() const;
+	/// SMFR-03: get triggered mine hexes pending board highlight while damage summary is shown
+	const PointSet & getLastTriggeredMineHexes() const;
 	/// get all source-tracked placed ordnance records
 	const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const;
 	/// get placed ordnance records for a specific tactical hex

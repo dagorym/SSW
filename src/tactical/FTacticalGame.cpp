@@ -306,6 +306,7 @@ void FTacticalGame::reset() {
 	m_gravityTurns.clear();
 	m_gravityTurnFlag = false;
 	m_minedHexList.clear();
+	m_lastTriggeredMineHexes.clear();
 	m_mineTargetList.clear();
 	m_mineOwner = 99;
 	m_shipsWithMines.clear();
@@ -3014,8 +3015,12 @@ void FTacticalGame::applyMineDamage() {
 	WeaponList mines;
 	std::vector<ICMData *> icmData;
 	std::vector<VehicleList *> mineTargetGroups;
+	// SMFR-03: collect triggered hexes before removing mines so the renderer
+	// can highlight them while the damage summary dialog is shown.
+	m_lastTriggeredMineHexes.clear();
 	PointSet minedHexes = m_mineTargetList.getOccupiedHexList();
 	for (PointSet::iterator itr = minedHexes.begin(); itr != minedHexes.end(); ++itr) {
+		m_lastTriggeredMineHexes.insert(*itr);
 		VehicleList * targets = new VehicleList;
 		mineTargetGroups.push_back(targets);
 		*targets = m_mineTargetList.getShipList(*itr);
@@ -3055,12 +3060,24 @@ void FTacticalGame::applyMineDamage() {
 			appendTacticalAttackReport(buildTacticalAttackReport(result));
 		}
 		FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();
-		if (summary.ships.size() > 0 && m_ui != NULL) {
+		// SMFR-03: redraw before the summary dialog so triggered hexes are
+		// visible in green while the dialog is shown.  Show the dialog for
+		// every mine encounter, including zero-damage outcomes (summary.ships
+		// may be empty when ICM intercepted all damage).
+		if (m_ui != NULL) {
+			m_ui->requestRedraw();
 			m_ui->showDamageSummary(summary);
+			// SMFR-03: clear highlights and redraw to remove them after dialog.
+			m_lastTriggeredMineHexes.clear();
+			m_ui->requestRedraw();
 		}
 		clearTacticalReport();
 		m_lastDestroyedShipIDs.clear();
 		clearDestroyedShips();
+	} else if (!m_lastTriggeredMineHexes.empty()) {
+		// SMFR-03: mines were triggered but produced no weapons (edge case) —
+		// clear the highlight set so stale data is not carried forward.
+		m_lastTriggeredMineHexes.clear();
 	}
 
 	for (std::vector<ICMData *>::iterator itr = icmData.begin(); itr != icmData.end(); ++itr) {

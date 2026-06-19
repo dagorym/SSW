@@ -783,6 +783,10 @@ const PointSet & FBattleScreen::getMinedHexes() const {
 	return m_tacticalGame->getMinedHexes();
 }
 
+const PointSet & FBattleScreen::getLastTriggeredMineHexes() const {
+	return m_tacticalGame->getLastTriggeredMineHexes();
+}
+
 const std::vector<FTacticalPlacedOrdnance> & FBattleScreen::getPlacedOrdnance() const {
 	return m_tacticalGame->getPlacedOrdnance();
 }

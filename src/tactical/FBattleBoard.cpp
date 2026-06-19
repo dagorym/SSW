@@ -114,6 +114,9 @@ drawSeekerPaths(dc);
 // SMF-07: draw per-seeker move-count overlay (red upright number, stacked when co-located).
 drawSeekerMoveCountOverlay(dc);
 }
+// SMFR-03: draw triggered minefield hexes in green while the damage summary
+// dialog is shown; the set is non-empty only during the modal call window.
+drawTriggeredMineHexes(dc);
 }
 if (m_parent->getState() == BS_PlaceMines || m_parent->getState() == BS_PlaceSeekers) {
 drawPlacementOrdnanceHexes(dc);
@@ -448,6 +451,23 @@ void FBattleBoard::drawMinedHexes(wxDC &dc){
 wxColour green(wxT("#00FF00"));
 for (PointSet::const_iterator itr = m_parent->getMinedHexes().begin(); itr != m_parent->getMinedHexes().end(); ++itr){
 drawShadedHex(dc,green,m_hexCenters[itr->getX()][itr->getY()]);
+}
+}
+
+void FBattleBoard::drawTriggeredMineHexes(wxDC &dc){
+// SMFR-03: highlight triggered minefield hexes in pre-game-placement green
+// while the mine damage summary dialog is shown.  The set is cleared by
+// applyMineDamage() after showDamageSummary() returns, so the highlight is
+// automatically absent on subsequent redraws.
+const PointSet & triggered = m_parent->getLastTriggeredMineHexes();
+if (triggered.empty()) {
+return;
+}
+wxColour green(wxT("#00FF00"));
+for (PointSet::const_iterator itr = triggered.begin(); itr != triggered.end(); ++itr) {
+if (m_parent->isHexInBounds(*itr)) {
+drawShadedHex(dc, green, m_hexCenters[itr->getX()][itr->getY()]);
+}
 }
 }
 
