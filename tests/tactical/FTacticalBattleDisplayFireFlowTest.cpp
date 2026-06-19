@@ -491,7 +491,7 @@ const std::string colorBody = extractFunctionBody(boardSource, "wxColour FBattle
 const std::string drawOrdnanceBodyWithoutComments = stripCppComments(drawOrdnanceBody);
 const std::string colorBodyWithoutComments = stripCppComments(colorBody);
 
-assertContains(drawBody, "if (m_parent->getState() == BS_PlaceMines) {");
+assertContains(drawBody, "if (m_parent->getState() == BS_PlaceMines || m_parent->getState() == BS_PlaceSeekers) {");
 assertContains(drawBody, "drawPlacementOrdnanceHexes(dc);");
 assertContains(drawOrdnanceBody, "const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();");
 assertContains(drawOrdnanceBody, "const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();");

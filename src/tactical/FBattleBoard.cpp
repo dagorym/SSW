@@ -1,9 +1,9 @@
 /**
  * @file FBattleBoard.cpp
  * @brief Implementation file for BattleBoard class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 30, 2026
+ * @date Last Modified:  Jun 19, 2026
  *
  */
 
@@ -115,7 +115,7 @@ drawSeekerPaths(dc);
 drawSeekerMoveCountOverlay(dc);
 }
 }
-if (m_parent->getState() == BS_PlaceMines) {
+if (m_parent->getState() == BS_PlaceMines || m_parent->getState() == BS_PlaceSeekers) {
 drawPlacementOrdnanceHexes(dc);
 }
 if (m_parent->getWeapon() != NULL) {

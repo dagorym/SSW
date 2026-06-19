@@ -72,7 +72,7 @@ assertContains(body, "const int planetChoice = m_parent->getPlanetChoice();");
 assertContains(body, "drawShips();");
 assertContains(body, "if (m_parent->getState() == BS_Battle) {");
 assertContains(body, "drawRoute(dc);");
-assertContains(body, "if (m_parent->getState() == BS_PlaceMines) {");
+assertContains(body, "if (m_parent->getState() == BS_PlaceMines || m_parent->getState() == BS_PlaceSeekers) {");
 assertContains(body, "drawMinedHexes(dc);");
 assertContains(body, "if (m_parent->getWeapon() != NULL) {");
 assertContains(body, "drawWeaponRange(dc);");

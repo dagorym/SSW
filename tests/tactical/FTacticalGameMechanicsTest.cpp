@@ -9,6 +9,10 @@
 #include <fstream>
 #include <iterator>
 
+#include "ships/FVehicle.h"
+#include "strategic/FFleet.h"
+#include "tactical/FTacticalGame.h"
+
 namespace FrontierTests {
 
 namespace {
@@ -592,7 +596,7 @@ void FTacticalGameMechanicsTest::testOrdnancePlacementSourceTrackingAndCompatibi
 	assertContains(placeMineFromSelectionBody, "if (m_minedHexList.find(hex) == m_minedHexList.end()) {");
 	assertContains(placeMineFromSelectionBody, "weapon->setCurrentAmmo(weapon->getAmmo() - 1);");
 	assertContains(placeMineFromSelectionBody, "appendPlacedOrdnanceRecord(FWeapon::M, hex, selectedSource.source);");
-	assertContains(placeMineFromSelectionBody, "rebuildDeployablePlacementSources();");
+	assertContains(placeMineFromSelectionBody, "rebuildDeployablePlacementSourcesFiltered(FWeapon::M);");
 	assertContains(placeMineFromSelectionBody, "selectPlacementSource(selectedSource.source.shipID,");
 	assertContains(placeMineFromSelectionBody, "static_cast<unsigned int>(selectedSource.source.weaponIndex));");
 	assertContains(placeSeekerFromSelectionBody, "weapon->setCurrentAmmo(weapon->getAmmo() - 1);");
@@ -948,6 +952,162 @@ void FTacticalGameMechanicsTest::testFBattleScreenGetActiveSeekersByMovingPlayer
 	const std::string tgHeader = readFile(repoFile("include/tactical/FTacticalGame.h"));
 	CPPUNIT_ASSERT(tgHeader.find("#include <wx") == std::string::npos);
 	CPPUNIT_ASSERT(tgHeader.find("#include \"wx/") == std::string::npos);
+}
+
+void FTacticalGameMechanicsTest::testPreGameOrdnancePlacementRecordingBehavior() {
+// AC: SMFR-02 — clicking a valid hex during BS_PlaceMines and BS_PlaceSeekers
+//     records placement, decrements ammo, and updates model state.
+//     This behavioral test must fail against the regression (missing BS_PlaceSeekers
+//     case in handleHexClick) and pass after the fix.
+	using namespace Frontier;
+
+	// Build a Minelayer fleet for the defending side.  The Minelayer carries
+	// SM(x4) and M(x20) launchers so both placement phases can be exercised.
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Minelayer ship must be creatable", minelayer != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Minelayer must have 4 weapons", static_cast<unsigned int>(4), minelayer->getWeaponCount());
+
+	// Locate the mine launcher (M) and seeker launcher (SM) weapon slots.
+	int mineLauncherIndex = -1;
+	int seekerLauncherIndex = -1;
+	for (unsigned int i = 0; i < minelayer->getWeaponCount(); ++i) {
+		FWeapon * w = minelayer->getWeapon(i);
+		if (w != NULL && w->getType() == FWeapon::M && mineLauncherIndex < 0) {
+			mineLauncherIndex = static_cast<int>(i);
+		}
+		if (w != NULL && w->getType() == FWeapon::SM && seekerLauncherIndex < 0) {
+			seekerLauncherIndex = static_cast<int>(i);
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an M launcher", mineLauncherIndex >= 0);
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an SM launcher", seekerLauncherIndex >= 0);
+
+	FWeapon * mineLauncher = minelayer->getWeapon(static_cast<unsigned int>(mineLauncherIndex));
+	FWeapon * seekerLauncher = minelayer->getWeapon(static_cast<unsigned int>(seekerLauncherIndex));
+	const int initialMineAmmo = mineLauncher->getAmmo();
+	const int initialSeekerAmmo = seekerLauncher->getAmmo();
+	CPPUNIT_ASSERT_MESSAGE("Mine launcher must start with ammo > 0", initialMineAmmo > 0);
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must start with ammo > 0", initialSeekerAmmo > 0);
+
+	// Build fleets and initialize the tactical game.
+	FFleet * defendFleet = new FFleet();
+	minelayer->setOwner(0);
+	defendFleet->addShip(minelayer);
+	FleetList defendFleets;
+	defendFleets.push_back(defendFleet);
+
+	FFleet * attackFleet = new FFleet();
+	FVehicle * attacker = createShip("AssaultScout");
+	CPPUNIT_ASSERT_MESSAGE("AttackScout must be creatable", attacker != NULL);
+	attacker->setOwner(1);
+	attackFleet->addShip(attacker);
+	FleetList attackFleets;
+	attackFleets.push_back(attackFleet);
+
+	FTacticalGame game;
+	game.setupFleets(&attackFleets, &defendFleets, false, NULL);
+
+	// Place ships so they have turn-data and occupancy registered.
+	// The minelayer is on the defending side (owner 0 = defender).
+	game.setState(BS_SetupDefendFleet);
+	game.setControlState(true);
+	game.setShip(minelayer);
+	game.placeShip(FPoint(10, 10));
+	game.setShipPlacementHeading(0);
+
+	game.setState(BS_SetupAttackFleet);
+	game.setControlState(true);
+	game.setShip(attacker);
+	game.placeShip(FPoint(30, 10));
+	game.setShipPlacementHeading(3);
+
+	// Enter mine placement phase.  The defender is the active player (owner 0).
+	// Reset active player to defender (owner 0) before entering placement.
+	game.setActivePlayer(false);  // false = defender = owner 0
+
+	const bool enteredMines = game.beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginOrdnancePlacement() must succeed with a Minelayer in fleet", enteredMines);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Model must be in BS_PlaceMines after beginOrdnancePlacement()",
+		static_cast<int>(BS_PlaceMines), game.getState());
+	CPPUNIT_ASSERT_MESSAGE("Mine launcher must be selected as current weapon after entry",
+		game.getWeapon() != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Selected weapon type must be M",
+		FWeapon::M, game.getWeapon()->getType());
+
+	// AC: Click a valid hex — handleHexClick must route to placeMineAtHex/placeOrdnanceAtHex.
+	// Use a hex not occupied by any ship; (5, 5) is clear.
+	const FPoint mineHex(5, 5);
+	const bool mineClicked = game.handleHexClick(mineHex);
+	CPPUNIT_ASSERT_MESSAGE("handleHexClick during BS_PlaceMines must return true for a valid hex", mineClicked);
+
+	// AC: Mine launcher ammo must be decremented by one.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Mine launcher ammo must decrement by 1 after placement",
+		initialMineAmmo - 1, mineLauncher->getAmmo());
+
+	// AC: The hex must appear in getMinedHexes().
+	const PointSet & minedHexes = game.getMinedHexes();
+	CPPUNIT_ASSERT_MESSAGE("Placed mine hex must appear in getMinedHexes()",
+		minedHexes.find(mineHex) != minedHexes.end());
+
+	// AC: A placed-ordnance record must be created.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain exactly one record after one mine placement",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must have weapon type M",
+		FWeapon::M, game.getPlacedOrdnance()[0].weaponType);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must reference the mine hex",
+		mineHex.getX(), game.getPlacedOrdnance()[0].hex.getX());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must reference the mine hex Y",
+		mineHex.getY(), game.getPlacedOrdnance()[0].hex.getY());
+
+	// Advance to seeker placement via completeMinePlacement().
+	game.completeMinePlacement();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("completeMinePlacement() must advance model to BS_PlaceSeekers",
+		static_cast<int>(BS_PlaceSeekers), game.getState());
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must be selected as current weapon in BS_PlaceSeekers",
+		game.getWeapon() != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Selected weapon type in BS_PlaceSeekers must be SM",
+		FWeapon::SM, game.getWeapon()->getType());
+
+	// AC: Click a valid hex during BS_PlaceSeekers.
+	// Use a different hex from the mine so placement is unambiguous.
+	const FPoint seekerHex(7, 7);
+	const bool seekerClicked = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("handleHexClick during BS_PlaceSeekers must return true (regression: missing case)", seekerClicked);
+
+	// AC: Seeker launcher ammo must be decremented by one.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker launcher ammo must decrement by 1 after placement",
+		initialSeekerAmmo - 1, seekerLauncher->getAmmo());
+
+	// AC: An inactive seeker record must be created in getSeekerMissiles().
+	const std::vector<FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getSeekerMissiles() must contain exactly one record after seeker placement",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(seekers.size()));
+	CPPUNIT_ASSERT_MESSAGE("Placed seeker must be inactive",
+		!seekers[0].active);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed seeker must be at the clicked hex X",
+		seekerHex.getX(), seekers[0].hex.getX());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed seeker must be at the clicked hex Y",
+		seekerHex.getY(), seekers[0].hex.getY());
+
+	// AC: A second placed-ordnance record (SM type) must be appended.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain two records after mine + seeker placement",
+		static_cast<unsigned int>(2), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+	const FTacticalPlacedOrdnance & seekerOrdnance = game.getPlacedOrdnance()[1];
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Second placed-ordnance record must have weapon type SM",
+		FWeapon::SM, seekerOrdnance.weaponType);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Second placed-ordnance record must reference the seeker hex X",
+		seekerHex.getX(), seekerOrdnance.hex.getX());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Second placed-ordnance record must reference the seeker hex Y",
+		seekerHex.getY(), seekerOrdnance.hex.getY());
+
+	// AC: Launcher ammo consistency — seeker ammo is now initialSeekerAmmo - 1,
+	//     not re-incremented (the placed seeker is consumed from available ammo).
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker launcher ammo must stay decremented (consistent between placement and battle)",
+		initialSeekerAmmo - 1, seekerLauncher->getAmmo());
+
+	// Clean up heap-allocated objects.
+	delete defendFleet;
+	delete attackFleet;
 }
 
 }

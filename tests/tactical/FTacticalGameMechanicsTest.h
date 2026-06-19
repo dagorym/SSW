@@ -18,7 +18,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created: Mar 29, 2026
- * @date Last Modified: Jun 02, 2026
+ * @date Last Modified: Jun 19, 2026
  */
 class FTacticalGameMechanicsTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalGameMechanicsTest );
@@ -43,6 +43,7 @@ CPPUNIT_TEST( testImplementationRemainsSelfContainedWithoutLegacyWxRewire );
 CPPUNIT_TEST( testSeekerDeploymentPhaseStateMachineTransitions );
 CPPUNIT_TEST( testSeekerActivationPhaseIndexStampingAndFiltering );
 CPPUNIT_TEST( testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate );
+CPPUNIT_TEST( testPreGameOrdnancePlacementRecordingBehavior );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -289,6 +290,30 @@ void testSeekerDeploymentPhaseStateMachineTransitions();
 	 * @date Last Modified: Jun 02, 2026
 	 */
 	void testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate();
+	/**
+	 * @brief Behavioral regression test for pre-game BS_PlaceMines and BS_PlaceSeekers
+	 *        placement recording.
+	 *
+	 * Constructs a real FTacticalGame, loads a Minelayer fleet (SM x4 + M x20),
+	 * enters BS_PlaceMines via beginOrdnancePlacement(), clicks a valid hex, and
+	 * asserts that:
+	 * - mine launcher ammo is decremented by one
+	 * - the hex is recorded in getMinedHexes()
+	 * - a placed-ordnance record is appended to getPlacedOrdnance()
+	 * Then advances to BS_PlaceSeekers via completeMinePlacement(), clicks a
+	 * different valid hex, and asserts that:
+	 * - seeker launcher ammo is decremented by one
+	 * - an inactive seeker record exists in getSeekerMissiles()
+	 * - a placed-ordnance record for that hex is in getPlacedOrdnance()
+	 *
+	 * This test MUST fail against the pre-fix regression (BS_PlaceSeekers missing
+	 * from handleHexClick) and pass after the fix.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testPreGameOrdnancePlacementRecordingBehavior();
 };
 
 }

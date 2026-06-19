@@ -3,7 +3,7 @@
  * @brief Implementation file for FTacticalGame class
  * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: Jun 02, 2026
+ * @date Last Modified: Jun 19, 2026
  *
  */
 
@@ -1985,7 +1985,7 @@ bool FTacticalGame::placeMineFromSelection(
 		weapon->setCurrentAmmo(weapon->getAmmo() - 1);
 		m_mineOwner = selectedSource.ownerID;
 		appendPlacedOrdnanceRecord(FWeapon::M, hex, selectedSource.source);
-		rebuildDeployablePlacementSources();
+		rebuildDeployablePlacementSourcesFiltered(FWeapon::M);
 		selectPlacementSource(selectedSource.source.shipID,
 			static_cast<unsigned int>(selectedSource.source.weaponIndex));
 		return true;
@@ -2014,7 +2014,7 @@ bool FTacticalGame::placeSeekerFromSelection(
 	seeker.source = selectedSource.source;
 	m_seekerMissiles.push_back(seeker);
 	appendPlacedOrdnanceRecord(FWeapon::SM, hex, selectedSource.source);
-	rebuildDeployablePlacementSources();
+	rebuildDeployablePlacementSourcesFiltered(FWeapon::SM);
 	selectPlacementSource(selectedSource.source.shipID,
 		static_cast<unsigned int>(selectedSource.source.weaponIndex));
 	return true;
@@ -3201,7 +3201,13 @@ bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex) {
 				}
 			}
 		}
-		rebuildDeployablePlacementSources();
+		if (getState() == BS_PlaceMines) {
+			rebuildDeployablePlacementSourcesFiltered(FWeapon::M);
+		} else if (getState() == BS_PlaceSeekers) {
+			rebuildDeployablePlacementSourcesFiltered(FWeapon::SM);
+		} else {
+			rebuildDeployablePlacementSources();
+		}
 		selectPlacementSource(selectedSource.source.shipID, selectedSource.source.weaponIndex);
 		return true;
 	}
@@ -3262,6 +3268,11 @@ bool FTacticalGame::handleHexClick(const FPoint & hex) {
 		if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::M) {
 			return placeMineAtHex(hex);
 		}
+		if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::SM) {
+			return placeOrdnanceAtHex(hex);
+		}
+		return false;
+	case BS_PlaceSeekers:
 		if (m_curWeapon != NULL && m_curWeapon->getType() == FWeapon::SM) {
 			return placeOrdnanceAtHex(hex);
 		}
