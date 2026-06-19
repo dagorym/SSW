@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created: Mar 22, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: Jun 19, 2026
  */
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
@@ -479,7 +479,9 @@ void testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton();
  * requestedDisplayHeight when that value exceeds the current minimum.
  *
  * AC: SMFR-01 -- mine placement row list panel-height auto-expansion mirrors
- * the pattern used by drawOffensiveSeekerPendingRows().
+ * the pattern used by drawOffensiveSeekerPendingRows(). This test verifies code
+ * structure only; the authoritative behavioral coverage is
+ * testOrdnancePlacementAndActivationPanelHeightAutoExpands in TacticalGuiLiveTest.
  *
  * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 19, 2026
@@ -491,7 +493,9 @@ void testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum();
  * @brief Source-contract: drawPlaceSeekers() computes seekerListBottom = y + BORDER and
  * expands requestedDisplayHeight when that value exceeds the current minimum.
  *
- * AC: SMFR-01 -- seeker placement row list panel-height auto-expansion.
+ * AC: SMFR-01 -- seeker placement row list panel-height auto-expansion. This test
+ * verifies code structure only; the authoritative behavioral coverage is
+ * testOrdnancePlacementAndActivationPanelHeightAutoExpands in TacticalGuiLiveTest.
  *
  * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 19, 2026
@@ -503,7 +507,9 @@ void testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum();
  * @brief Source-contract: drawSeekerActivation() computes activationListBottom = y + BORDER and
  * expands requestedDisplayHeight when that value exceeds the current minimum.
  *
- * AC: SMFR-01 -- seeker activation row list panel-height auto-expansion.
+ * AC: SMFR-01 -- seeker activation row list panel-height auto-expansion. This test
+ * verifies code structure only; the authoritative behavioral coverage is
+ * testOrdnancePlacementAndActivationPanelHeightAutoExpands in TacticalGuiLiveTest.
  *
  * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 19, 2026

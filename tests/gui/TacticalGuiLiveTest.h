@@ -22,7 +22,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Jun 02, 2026
+ * @date Last Modified: Jun 19, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -216,7 +216,12 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * SMFR-01: Drives each placement/activation draw phase via offscreen wxMemoryDC
 	 * and asserts that requestedDisplayHeight (via peer accessor) and GetMinSize().GetHeight()
 	 * do not decrease after drawing a Minelayer's source list, confirming end-to-end wiring
-	 * of the auto-expansion path.
+	 * of the auto-expansion path. The seeker phase additionally asserts that
+	 * requestedDisplayHeight is at least as large as actionButtonRowBottom(), proving genuine
+	 * expansion occurred rather than merely a non-decrease from the pre-draw baseline.
+	 * This is the authoritative behavioral test for the SMFR-01 height-expansion acceptance
+	 * criterion; the three structural source-contract tests in FTacticalBattleDisplayFireFlowTest
+	 * supplement this test by locking code shape but do not substitute for it.
 	 *
 	 * @author claude-sonnet-4-6 (medium)
 	 * @date Created: Jun 19, 2026
