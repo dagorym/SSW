@@ -1,0 +1,677 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Fix lower-panel list-widget visibility so the placed-ordnance removal list (mine and seeker placement phases) and the seeker activation/deactivation list render in the visible lower-panel middle region instead of being clipped below the ship-status display. Apply the same panel-height auto-expansion approach already used by drawOffensiveSeekerPendingRows() to drawPlaceMines(), drawPlaceSeekers(), and drawSeekerActivation().
+
+Modified files:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- drawPlaceMines() reserves vertical space so rendered rows are fully visible, mirroring the auto-expansion in drawOffensiveSeekerPendingRows()
+- drawPlaceSeekers() reserves vertical space so rendered rows are fully visible
+- drawSeekerActivation() reserves vertical space so rendered rows are fully visible
+- The placed-ordnance removal list is visible right of the phase-ending button widget, left of the ship-status display, and its rows remain clickable during mine and seeker placement
+- The seeker activation/deactivation list is visible in the same region and its rows remain clickable during the seeker activation phase
+- The lists no longer render below or behind the ship-status display
+- Existing phase-ending buttons, ship-status display, and offensive-fire pending list keep their current positions and behavior
+
+Create test files in:
+- S
+- o
+- u
+- r
+- c
+- e
+- -
+- c
+- o
+- n
+- t
+- r
+- a
+- c
+- t
+-  
+- c
+- o
+- v
+- e
+- r
+- a
+- g
+- e
+-  
+- b
+- e
+- l
+- o
+- n
+- g
+- s
+-  
+- i
+- n
+-  
+- t
+- e
+- s
+- t
+- s
+- /
+- t
+- a
+- c
+- t
+- i
+- c
+- a
+- l
+- /
+- F
+- T
+- a
+- c
+- t
+- i
+- c
+- a
+- l
+- B
+- a
+- t
+- t
+- l
+- e
+- D
+- i
+- s
+- p
+- l
+- a
+- y
+- F
+- i
+- r
+- e
+- F
+- l
+- o
+- w
+- T
+- e
+- s
+- t
+- .
+- *
+-  
+- o
+- r
+-  
+- t
+- e
+- s
+- t
+- s
+- /
+- t
+- a
+- c
+- t
+- i
+- c
+- a
+- l
+- /
+- F
+- T
+- a
+- c
+- t
+- i
+- c
+- a
+- l
+- B
+- a
+- t
+- t
+- l
+- e
+- B
+- o
+- a
+- r
+- d
+- R
+- e
+- n
+- d
+- e
+- r
+- e
+- r
+- D
+- e
+- l
+- e
+- g
+- a
+- t
+- i
+- o
+- n
+- T
+- e
+- s
+- t
+- .
+- *
+- .
+-  
+- L
+- i
+- v
+- e
+-  
+- v
+- i
+- s
+- i
+- b
+- i
+- l
+- i
+- t
+- y
+-  
+- b
+- e
+- h
+- a
+- v
+- i
+- o
+- r
+-  
+- c
+- a
+- n
+-  
+- b
+- e
+-  
+- c
+- o
+- v
+- e
+- r
+- e
+- d
+-  
+- i
+- n
+-  
+- t
+- e
+- s
+- t
+- s
+- /
+- g
+- u
+- i
+- /
+- T
+- a
+- c
+- t
+- i
+- c
+- a
+- l
+- G
+- u
+- i
+- L
+- i
+- v
+- e
+- T
+- e
+- s
+- t
+- .
+- *
+-  
+- i
+- f
+-  
+- n
+- e
+- e
+- d
+- e
+- d
+- .
+
+Implementation context for testing:
+- A
+- f
+- t
+- e
+- r
+-  
+- e
+- a
+- c
+- h
+-  
+- f
+- u
+- n
+- c
+- t
+- i
+- o
+- n
+- '
+- s
+-  
+- r
+- o
+- w
+- -
+- d
+- r
+- a
+- w
+- i
+- n
+- g
+-  
+- l
+- o
+- o
+- p
+- ,
+-  
+- a
+-  
+- b
+- o
+- t
+- t
+- o
+- m
+- -
+- e
+- d
+- g
+- e
+-  
+- v
+- a
+- l
+- u
+- e
+-  
+- (
+- y
+-  
+- +
+-  
+- B
+- O
+- R
+- D
+- E
+- R
+- )
+-  
+- i
+- s
+-  
+- c
+- o
+- m
+- p
+- a
+- r
+- e
+- d
+-  
+- a
+- g
+- a
+- i
+- n
+- s
+- t
+-  
+- r
+- e
+- q
+- u
+- e
+- s
+- t
+- e
+- d
+- D
+- i
+- s
+- p
+- l
+- a
+- y
+- H
+- e
+- i
+- g
+- h
+- t
+- .
+-  
+- W
+- h
+- e
+- n
+-  
+- t
+- h
+- e
+-  
+- r
+- o
+- w
+- s
+-  
+- e
+- x
+- t
+- e
+- n
+- d
+-  
+- p
+- a
+- s
+- t
+-  
+- t
+- h
+- e
+-  
+- c
+- u
+- r
+- r
+- e
+- n
+- t
+-  
+- m
+- i
+- n
+- i
+- m
+- u
+- m
+- ,
+-  
+- r
+- e
+- q
+- u
+- e
+- s
+- t
+- e
+- d
+- D
+- i
+- s
+- p
+- l
+- a
+- y
+- H
+- e
+- i
+- g
+- h
+- t
+-  
+- i
+- s
+-  
+- u
+- p
+- d
+- a
+- t
+- e
+- d
+-  
+- a
+- n
+- d
+-  
+- a
+- p
+- p
+- l
+- y
+- R
+- e
+- q
+- u
+- e
+- s
+- t
+- e
+- d
+- D
+- i
+- s
+- p
+- l
+- a
+- y
+- H
+- e
+- i
+- g
+- h
+- t
+- (
+- )
+-  
+- i
+- s
+-  
+- c
+- a
+- l
+- l
+- e
+- d
+- .
+-  
+- V
+- a
+- r
+- i
+- a
+- b
+- l
+- e
+-  
+- n
+- a
+- m
+- e
+- s
+- :
+-  
+- m
+- i
+- n
+- e
+- L
+- i
+- s
+- t
+- B
+- o
+- t
+- t
+- o
+- m
+-  
+- (
+- d
+- r
+- a
+- w
+- P
+- l
+- a
+- c
+- e
+- M
+- i
+- n
+- e
+- s
+- )
+- ,
+-  
+- s
+- e
+- e
+- k
+- e
+- r
+- L
+- i
+- s
+- t
+- B
+- o
+- t
+- t
+- o
+- m
+-  
+- (
+- d
+- r
+- a
+- w
+- P
+- l
+- a
+- c
+- e
+- S
+- e
+- e
+- k
+- e
+- r
+- s
+- )
+- ,
+-  
+- a
+- c
+- t
+- i
+- v
+- a
+- t
+- i
+- o
+- n
+- L
+- i
+- s
+- t
+- B
+- o
+- t
+- t
+- o
+- m
+-  
+- (
+- d
+- r
+- a
+- w
+- S
+- e
+- e
+- k
+- e
+- r
+- A
+- c
+- t
+- i
+- v
+- a
+- t
+- i
+- o
+- n
+- )
+- .
+-  
+- N
+- o
+-  
+- m
+- o
+- d
+- e
+- l
+-  
+- b
+- e
+- h
+- a
+- v
+- i
+- o
+- r
+-  
+- c
+- h
+- a
+- n
+- g
+- e
+- d
+- .
+
+Suggested test command(s):
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+- make -C tests gui-tests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
