@@ -181,6 +181,39 @@ Linux is the primary target (compiled with `-DLINUX` flag); Windows via Visual S
 
 ## Testing
 
+### Behavioral Verification Is Mandatory
+
+Every acceptance criterion and every behavior claim MUST be verified by a
+**behavioral test**: one that constructs the real object, state, or flow,
+executes it, and asserts on the observed runtime result (return values, mutated
+state, emitted output, rendered pixels, etc.). This is a non-negotiable
+requirement, not a stylistic preference.
+
+Source-text or source-structure inspection — for example
+`assertContains(source, "...")` checks that a function body contains a literal
+string, or asserts that a declaration appears in a header — may ONLY supplement
+behavioral coverage. It may **never** be the sole verification of a behavior. A
+source-inspection ("source-contract") test by itself does not prove the code
+works; it only proves the code is shaped a certain way, and it passes green even
+when the behavior is broken at runtime. Several real regressions in this
+repository (most recently pre-game mine/seeker placement) shipped undetected
+precisely because the only coverage was source-string matching.
+
+Concretely:
+
+- If a criterion describes runtime behavior (something records, decrements,
+  moves, renders, triggers, returns, or transitions), there MUST be a test that
+  exercises that behavior end-to-end and asserts the observed outcome.
+- A new or changed behavior is not considered covered until a behavioral test
+  for it exists and fails against the unfixed code (or would have), then passes
+  after the change.
+- Source-contract tests remain allowed as a supplement to lock structural
+  invariants, but they never substitute for the behavioral assertion of the same
+  behavior.
+
+The Tester role authors this behavioral coverage; the Verifier role rejects any
+acceptance criterion whose only backing is source-inspection.
+
 Unit tests use **CppUnit** and are organized under `tests/` by module:
 
 - Core tests: `tests/core/*` — `FPoint`, `FObject`, `FGameConfig` base-path behavior, `resolveAssetPath(...)` regression coverage (repo-asset lookup, normalized relative paths, executable-parent fallback), `WXIconCacheTest` shared-resolver usage (rejects raw `getBasePath() + filename` concatenation), and `WXStrategicUITest` runtime-guard coverage for strategic adapter cancel/early-return when no wx runtime exists.
