@@ -642,7 +642,9 @@ protected:
 	/// draws wrapped prompt text into action-prompt lines and returns consumed lines by reference
 	void drawWrappedActionPrompt(wxDC &dc, const wxString &promptText, int maxWidth, int &lineCursor);
 
-	/// validates or updates the shared lower-panel layout state for the current geometry
+	/// validates or updates the shared lower-panel layout state for the current geometry;
+	/// preserves any requestedDisplayHeight already expanded by draw helpers (drawPlaceMines,
+	/// drawPlaceSeekers, drawSeekerActivation) so their row expansions are not overwritten
 	void ensureLowerPanelLayoutState(int panelWidth, int panelHeight);
 
 	/// measure width/height needed to render current ship stats without clipping
