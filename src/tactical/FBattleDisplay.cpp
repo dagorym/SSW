@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 02, 2026
+ * @date Last Modified:  Jun 19, 2026
  *
  */
 
@@ -1439,6 +1439,13 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 		y += (int)(1.6*textSize);
 	}
 
+	// Expand the panel height if the source list extends below the current minimum.
+	const int mineListBottom = y + BORDER;
+	if (mineListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+		m_lowerPanelLayoutState.requestedDisplayHeight = mineListBottom;
+		applyRequestedDisplayHeight();
+	}
+
 	// Show the mine placement done button with its fixed label.
 	m_buttonMinePlacementDone->Enable(true);
 	if (m_first){
@@ -1507,6 +1514,13 @@ void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
 		y += (int)(1.6*textSize);
 	}
 
+	// Expand the panel height if the source list extends below the current minimum.
+	const int seekerListBottom = y + BORDER;
+	if (seekerListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+		m_lowerPanelLayoutState.requestedDisplayHeight = seekerListBottom;
+		applyRequestedDisplayHeight();
+	}
+
 	// Show the seeker placement done button with its fixed label.
 	m_buttonSeekerPlacementDone->Enable(true);
 	if (m_first){
@@ -1572,6 +1586,13 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 			m_seekerActivationSeekerIDs.push_back(seeker.seekerID);
 			y += (int)(1.6*textSize);
 		}
+	}
+
+	// Expand the panel height if the activation list extends below the current minimum.
+	const int activationListBottom = y + BORDER;
+	if (activationListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+		m_lowerPanelLayoutState.requestedDisplayHeight = activationListBottom;
+		applyRequestedDisplayHeight();
 	}
 
 	m_buttonSeekerActivationDone->Enable(true);

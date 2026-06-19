@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 02, 2026 (SMF-03: pending seeker list relocated left of ship-status)
+ * @date Last Modified: Jun 19, 2026 (SMFR-01: auto-expand panel for placement/activation lists)
  *
  */
 
@@ -26,7 +26,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 02, 2026 (SMF-03)
+ * @date Last Modified:  Jun 19, 2026 (SMFR-01)
  */
 class FBattleDisplay : public wxPanel
 {
@@ -523,9 +523,13 @@ protected:
 	 *
 	 * @param dc The device context to draw on
 	 *
-	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
+	 * If the rendered source rows extend below the current `requestedDisplayHeight`,
+	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
+	 * remain fully visible.
+	 *
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  Jun 02, 2026
+	 * @date Last Modified:  Jun 19, 2026
 	 */
 	void drawPlaceMines(wxDC &dc);
 
@@ -539,9 +543,13 @@ protected:
 	 *
 	 * @param dc The device context to draw on.
 	 *
-	 * @author claude-sonnet-4-6 (medium)
+	 * If the rendered source rows extend below the current `requestedDisplayHeight`,
+	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
+	 * remain fully visible.
+	 *
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: Jun 02, 2026
-	 * @date Last Modified: Jun 02, 2026
+	 * @date Last Modified: Jun 19, 2026
 	 */
 	void drawPlaceSeekers(wxDC &dc);
 
@@ -558,9 +566,13 @@ protected:
 	 *
 	 * @param dc The device context to draw on.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
+	 * If the activation rows extend below the current `requestedDisplayHeight`,
+	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
+	 * remain fully visible.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: Jun 02, 2026 (SMF-05: use getActionButtonRowBottom(), this-phase accessor)
+	 * @date Last Modified: Jun 19, 2026 (SMFR-01: auto-expand panel for activation list)
 	 */
 	void drawSeekerActivation(wxDC &dc);
 
