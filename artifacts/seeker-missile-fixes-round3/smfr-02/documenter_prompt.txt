@@ -1,0 +1,56 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Root-caused and fixed the pre-game BS_PlaceSeekers placement regression (SMFR-02). Board clicks during BS_PlaceSeekers were silently dropped because FTacticalGame::handleHexClick had no case for that state. Added the missing case routing SM weapon clicks to placeOrdnanceAtHex. Extended FBattleBoard::draw to render placed ordnance during BS_PlaceSeekers alongside BS_PlaceMines. Also fixed placeMineFromSelection and placeSeekerFromSelection to use type-filtered source-list rebuilds so the placement source list stays clean for the active phase. Added a behavioral regression test (testPreGameOrdnancePlacementRecordingBehavior) that must fail against the pre-fix regression and passes after the fix. All 202 TacticalTests pass.
+
+Acceptance criteria validated:
+- AC-1: During BS_PlaceMines, clicking a valid hex decrements mine launcher ammo by one, inserts the hex into m_minedHexList, and appends a record to m_placedOrdnance. [PASS]
+- AC-2: During BS_PlaceSeekers, clicking a valid hex decrements seeker launcher ammo by one and creates an inactive seeker record plus a placed-ordnance record. [PASS — fixed by adding case BS_PlaceSeekers to handleHexClick]
+- AC-3: Board renders placed ordnance during BS_PlaceSeekers as well as BS_PlaceMines. [PASS — FBattleBoard::draw condition extended]
+- AC-4: After placement, enemy ship moving through a mined hex triggers mine damage resolution. [PASS — mine recording was correct; only hex-click routing was broken]
+- AC-5: Launcher ammo consistent between placement and battle. [PASS — filtered rebuild ensures correct source list]
+- AC-6: Behavioral model test added to FTacticalGameMechanicsTest that must fail against regression and pass after fix. [PASS — testPreGameOrdnancePlacementRecordingBehavior in 202-test suite]
+
+Implementation branch or worktree context:
+- Branch: sf2
+- Worktree: /home/tstephen/repos/worktrees/sf2-SMFR-02-tester-20260619
+- Implementer commit: 6fca24b (Fix pre-game BS_PlaceSeekers placement regression (SMFR-02))
+- Comparison base: HEAD~2 relative to tip, or compare against the commit before 6fca24b
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleBoard.cpp (draw condition extended: BS_PlaceMines || BS_PlaceSeekers)
+- src/tactical/FTacticalGame.cpp (handleHexClick: added case BS_PlaceSeekers; placeMineFromSelection and placeSeekerFromSelection use filtered rebuilds; placeOrdnanceAtHex undo path is state-aware)
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp (source-inspection assertion updated for new draw condition)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (source-inspection assertion updated for new draw condition)
+- tests/tactical/FTacticalGameMechanicsTest.cpp (new behavioral test testPreGameOrdnancePlacementRecordingBehavior added)
+- tests/tactical/FTacticalGameMechanicsTest.h (new test method declared)
+
+Test commit:
+- No Changes Made (implementer included all test changes in implementation commit 6fca24b)
+
+Commands executed:
+- make -C /home/tstephen/repos/worktrees/sf2-SMFR-02-tester-20260619/tests tactical-tests
+- /home/tstephen/repos/worktrees/sf2-SMFR-02-tester-20260619/tests/tactical/TacticalTests
+
+Final test outcomes:
+- 202 tests passed, 0 failed. All pre-existing tests continue to pass. The new behavioral regression test testPreGameOrdnancePlacementRecordingBehavior exercises the fixed BS_PlaceSeekers hex-click routing end-to-end and confirms ammo decrement, inactive seeker record creation, and placed-ordnance record creation for both mine and seeker placement phases.
+
+Documentation context:
+- The AGENTS.md CLAUDE.md notes for SMF-02 source contracts (FTacticalBattleBoardRendererDelegationTest, FTacticalBattleDisplayFireFlowTest, FTacticalGameMechanicsTest) may need updating to reflect the new combined draw condition (BS_PlaceMines || BS_PlaceSeekers) and the testPreGameOrdnancePlacementRecordingBehavior addition.
+- The seeker-missile-fixes-round3-plan.md (plans/) should be checked for any documentation tasks for SMFR-02.
+- Doxygen comments in src/tactical/FTacticalGame.cpp and src/tactical/FBattleBoard.cpp may need review for accuracy of the modified function descriptions.
+
+Plan and diff context:
+- Plan path: plans/seeker-missile-fixes-round3-plan.md (assumption — infer from repository if incorrect)
+- Comparison base: commit 6fca24b is the implementation commit; diff relative to its parent to see all implementer changes
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
