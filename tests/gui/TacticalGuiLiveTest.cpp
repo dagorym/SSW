@@ -1792,6 +1792,14 @@ void TacticalGuiLiveTest::testOrdnancePlacementAndActivationPanelHeightAutoExpan
 	CPPUNIT_ASSERT_MESSAGE(
 		"drawPlaceSeekers(): requestedDisplayHeight must not decrease after drawing source rows.",
 		heightAfterSeekers >= heightBeforeSeekers);
+	// The Minelayer fixture has at least one SM weapon source row, so at least one row will be
+	// drawn. After drawing the seeker source list the panel height must be at least as large as
+	// the action button row bottom, proving genuine expansion occurred (mirrors the mine phase
+	// assertion above). Authoritative behavioral test for SMFR-01.
+	const int seekerButtonRowBottom = peer->actionButtonRowBottomPublic();
+	CPPUNIT_ASSERT_MESSAGE(
+		"drawPlaceSeekers(): requestedDisplayHeight must be at least as large as the action button row bottom.",
+		heightAfterSeekers >= seekerButtonRowBottom);
 	CPPUNIT_ASSERT_EQUAL_MESSAGE(
 		"drawPlaceSeekers(): GetMinSize().GetHeight() must equal requestedDisplayHeight after draw.",
 		heightAfterSeekers,

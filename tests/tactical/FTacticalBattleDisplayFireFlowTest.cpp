@@ -1180,6 +1180,12 @@ void FTacticalBattleDisplayFireFlowTest::testDrawPlaceMinesExpandsPanelHeightWhe
 // AC: SMFR-01 -- Source contract: drawPlaceMines() uses the variable name mineListBottom = y + BORDER,
 // compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
 // This mirrors the pattern used by drawOffensiveSeekerPendingRows().
+//
+// NOTE: This is a source-contract (structural) test only. It verifies that the code is shaped
+// correctly but does NOT prove the runtime behavior works. The authoritative behavioral coverage
+// for this criterion is testOrdnancePlacementAndActivationPanelHeightAutoExpands in
+// tests/gui/TacticalGuiLiveTest.cpp. Removing that behavioral test would leave only this
+// source-inspection check, which violates AGENTS.md policy (behavioral tests are mandatory).
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
 
@@ -1197,6 +1203,12 @@ assertContains(minesBody, "applyRequestedDisplayHeight();");
 void FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum() {
 // AC: SMFR-01 -- Source contract: drawPlaceSeekers() uses the variable name seekerListBottom = y + BORDER,
 // compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
+//
+// NOTE: This is a source-contract (structural) test only. It verifies that the code is shaped
+// correctly but does NOT prove the runtime behavior works. The authoritative behavioral coverage
+// for this criterion is testOrdnancePlacementAndActivationPanelHeightAutoExpands in
+// tests/gui/TacticalGuiLiveTest.cpp. Removing that behavioral test would leave only this
+// source-inspection check, which violates AGENTS.md policy (behavioral tests are mandatory).
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string seekersBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceSeekers(wxDC &dc)");
 
@@ -1214,6 +1226,12 @@ assertContains(seekersBody, "applyRequestedDisplayHeight();");
 void FTacticalBattleDisplayFireFlowTest::testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum() {
 // AC: SMFR-01 -- Source contract: drawSeekerActivation() uses the variable name activationListBottom = y + BORDER,
 // compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
+//
+// NOTE: This is a source-contract (structural) test only. It verifies that the code is shaped
+// correctly but does NOT prove the runtime behavior works. The authoritative behavioral coverage
+// for this criterion is testOrdnancePlacementAndActivationPanelHeightAutoExpands in
+// tests/gui/TacticalGuiLiveTest.cpp. Removing that behavioral test would leave only this
+// source-inspection check, which violates AGENTS.md policy (behavioral tests are mandatory).
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string activationBody = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
 
