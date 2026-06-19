@@ -1,0 +1,53 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- SMFR-01 pass-3 remediation (Implementer): Re-confirmed production implementation is intact. No code changes required this pass. Production code in src/tactical/FBattleDisplay.cpp and include/tactical/FBattleDisplay.h is correct as committed in d3ee240 (max-preservation guard in ensureLowerPanelLayoutState() and height auto-expansion in drawPlaceMines(), drawPlaceSeekers(), drawSeekerActivation()). Handing off to Tester for two test-robustness improvements directed by the Verifier: (1) add cross-reference comments in the three source-contract tests pointing to the authoritative behavioral test, (2) strengthen the drawPlaceSeekers() phase assertion to assert genuine expansion beyond the pre-draw baseline.
+
+Modified files:
+- None
+
+Acceptance criteria to validate (from Planner):
+- drawPlaceMines(), drawPlaceSeekers(), and drawSeekerActivation() reserve vertical space so their rendered rows are fully visible, mirroring the auto-expansion in drawOffensiveSeekerPendingRows().
+- The placed-ordnance removal list is visible (right of the phase-ending button widget, left of the ship-status display) and its rows remain clickable during mine and seeker placement.
+- The seeker activation/deactivation list is visible in the same region and its rows remain clickable during the seeker activation phase.
+- The lists no longer render below or behind the ship-status display.
+- Existing phase-ending buttons, ship-status display, and offensive-fire pending list keep their current positions and behavior.
+
+Create test files in:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp — add cross-reference comments to the three source-contract tests: testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum, testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum, testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum
+- tests/gui/TacticalGuiLiveTest.cpp — strengthen the drawPlaceSeekers() phase of testOrdnancePlacementAndActivationPanelHeightAutoExpands to assert genuine height expansion beyond the pre-draw baseline
+
+Implementation context for testing:
+- Production code is CORRECT AND MUST NOT BE CHANGED. The max-preservation guard in ensureLowerPanelLayoutState() and the three draw-helper height expansions are correct as-committed (d3ee240). Do not modify src/tactical/FBattleDisplay.cpp or include/tactical/FBattleDisplay.h.
+- Verifier WARNING (finding 1): tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp lines 1179-1229 — the three new tests testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum, testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum, and testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum are source-contract only. The behavioral test testOrdnancePlacementAndActivationPanelHeightAutoExpands (in TacticalGuiLiveTest.cpp) is the authoritative behavioral coverage. Fix: add a brief comment in each of the three source-contract tests (and/or the fixture comment block) cross-referencing testOrdnancePlacementAndActivationPanelHeightAutoExpands as the authoritative behavioral coverage, making it explicit that removing that behavioral test would leave only source-contract coverage in violation of AGENTS.md policy.
+- Verifier NOTE (finding 2): tests/gui/TacticalGuiLiveTest.cpp lines 1791-1798 — the drawPlaceSeekers() phase of testOrdnancePlacementAndActivationPanelHeightAutoExpands currently only asserts non-decrease (heightAfterSeekers >= heightBeforeSeekers) and GetMinSize sync. It does not assert genuine expansion. Fix: add an assertion that heightAfterSeekers >= actionButtonRowBottom (mirroring the mine phase assertion at lines 1759-1762), using peer->actionButtonRowBottomPublic(). The Minelayer fixture has at least one SM weapon source row, so this assertion is deterministic.
+- Pattern to follow: the mine phase (lines 1751-1768) asserts (1) non-decrease, (2) heightAfterMines >= mineButtonRowBottom where mineButtonRowBottom = peer->actionButtonRowBottomPublic(), and (3) GetMinSize sync. The seeker phase must match this pattern for assertion (2).
+- Pre-existing GUI failures (10 of 46) remain out of scope for this pass. These are the same failures documented in the pass-2 tester handoff and are unrelated to SMFR-01.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && xvfb-run -a ./GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- testStrategicDialogsUseStaticBoxChildParents (pre-existing, out of scope)
+- testWXStrategicUISourceGuardsRuntimeAndPreservesParentlessFlow (pre-existing, out of scope)
+- testRemediatedStrategicDialogsUseFirstShowSizingContract (pre-existing, out of scope)
+- testTacticalActionButtonsStayBelowPromptReservationAcrossPhases (pre-existing, out of scope)
+- testSeekerActivationPanelSourceContracts (pre-existing, out of scope)
+- testSetupPlacementSourceRowsAndOrdnanceColorContracts (pre-existing, out of scope)
+- testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges (pre-existing, out of scope)
+- testBattleDisplayNarrowWidthStacksShipStatsBelowButtons (pre-existing, out of scope)
+- testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo (pre-existing, out of scope)
+- testLocalGameDialogLaunchesPredefinedAndCustomModalChains (pre-existing, out of scope)
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
