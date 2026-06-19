@@ -3,7 +3,7 @@
  * @brief Header file for FTacticalGame class
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: Jun 02, 2026
+ * @date Last Modified: Jun 19, 2026
  *
  */
 
@@ -344,6 +344,23 @@ bool isMoveComplete() const { return m_moveComplete; }
 	bool selectWeapon(unsigned int weaponIndex);
 	bool selectDefense(unsigned int defenseIndex);
 	bool selectShipFromHex(const FPoint & hex);
+	/**
+	 * @brief Dispatch a board hex click to the appropriate model action for the current state.
+	 *
+	 * Routes clicks to ship/planet/station placement, mine placement, seeker placement, or
+	 * battle-phase actions depending on the current battle state. During BS_PlaceMines, M weapon
+	 * clicks route to placeMineAtHex() and SM weapon clicks route to placeOrdnanceAtHex().
+	 * During BS_PlaceSeekers, SM weapon clicks route to placeOrdnanceAtHex(). Hex clicks for
+	 * out-of-bounds hexes or states with no valid action return false immediately.
+	 *
+	 * @param hex Tactical hex that was clicked.
+	 *
+	 * @return True when the click produced a model state change.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
 	bool handleHexClick(const FPoint & hex);
 	bool placePlanet(const FPoint & hex);
 	bool placeStation(const FPoint & hex);
@@ -458,17 +475,20 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * Creates a source-tracked mine record or inactive seeker when the selected
 	 * source can deploy into the requested hex, or undoes the matching selected
 	 * ship/weapon-slot source's placed item and restores ammo when that same
-	 * source clicks an existing marker it owns. Successful placements rebuild the
-	 * deployable-source list and reselect the same ship/weapon slot so the
-	 * active source index stays aligned with the current ship/weapon pointers.
+	 * source clicks an existing marker it owns. Successful placements and undos
+	 * rebuild the deployable-source list using a type-filtered rebuild when the
+	 * current state is BS_PlaceMines (M-only filter) or BS_PlaceSeekers (SM-only
+	 * filter), and use the unfiltered rebuild for all other states. The source
+	 * is then reselected so the active source index stays aligned with the current
+	 * ship/weapon pointers.
 	 *
 	 * @param hex Tactical hex to place into or undo from.
 	 *
 	 * @return True when model placement state changed.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 24, 2026
-	 * @date Last Modified: May 24, 2026
+	 * @date Last Modified: Jun 19, 2026
 	 */
 	bool placeOrdnanceAtHex(const FPoint & hex);
 	/**
@@ -1296,7 +1316,42 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	void appendPlacedOrdnanceRecord(FWeapon::Weapon weaponType, const FPoint & hex, const FTacticalOrdnanceSource & source);
 	bool removePlacedOrdnanceForSelection(const FPoint & hex, FTacticalPlacedOrdnance & removed);
 	void removePlacedMineRecordsAtHex(const FPoint & hex);
+	/**
+	 * @brief Place a mine at a hex using the specified deployment source.
+	 *
+	 * Validates weapon type and ammo, inserts the hex into the mined-hex set,
+	 * decrements launcher ammo, records the mine owner, appends a placed-ordnance
+	 * record, rebuilds the deployable source list filtered to M-type weapons only,
+	 * and reselects the same ship/weapon slot. Returns false when the hex is already
+	 * mined, the weapon is wrong type, or ammo is exhausted.
+	 *
+	 * @param hex Tactical hex to mine.
+	 * @param selectedSource Deployment source providing the mine launcher.
+	 *
+	 * @return True when a mine was placed.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
 	bool placeMineFromSelection(const FPoint & hex, const FTacticalDeploymentSource & selectedSource);
+	/**
+	 * @brief Place an inactive seeker missile at a hex using the specified deployment source.
+	 *
+	 * Validates weapon type and ammo, decrements launcher ammo, creates an inactive
+	 * FTacticalSeekerMissileState record, appends a placed-ordnance record, rebuilds
+	 * the deployable source list filtered to SM-type weapons only, and reselects the
+	 * same ship/weapon slot.
+	 *
+	 * @param hex Tactical hex to place the inactive seeker.
+	 * @param selectedSource Deployment source providing the seeker launcher.
+	 *
+	 * @return True when an inactive seeker was placed.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
 	bool placeSeekerFromSelection(const FPoint & hex, const FTacticalDeploymentSource & selectedSource);
 	bool restoreAmmoForSource(const FTacticalOrdnanceSource & source);
 	unsigned int nextSeekerID() const;
