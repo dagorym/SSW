@@ -1,0 +1,54 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- SMFR-01 pass-2 remediation: Fix drawSeekerActivation() height expansion being silently overwritten by ensureLowerPanelLayoutState() in the BS_Battle draw() pass. Added a max-preservation guard so any previously-expanded requestedDisplayHeight survives the stats-based layout pass. This fixes the one remaining failing acceptance criterion (drawSeekerActivation() must reserve vertical space) without regressing the two already-passing criteria (drawPlaceMines and drawPlaceSeekers expansion).
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- drawPlaceMines(), drawPlaceSeekers(), and drawSeekerActivation() reserve vertical space so their rendered rows are fully visible, mirroring the auto-expansion in drawOffensiveSeekerPendingRows().
+- The placed-ordnance removal list is visible (right of the phase-ending button widget, left of the ship-status display) and its rows remain clickable during mine and seeker placement.
+- The seeker activation/deactivation list is visible in the same region and its rows remain clickable during the seeker activation phase.
+- The lists no longer render below or behind the ship-status display.
+- Existing phase-ending buttons, ship-status display, and offensive-fire pending list keep their current positions and behavior.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.cpp — testOrdnancePlacementAndActivationPanelHeightAutoExpands covers the seeker-activation height assertion (previously failing, now fixed)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp — source-contract tests for layout helpers
+
+Implementation context for testing:
+- Root cause: in draw() for BS_Battle, drawSeekerActivation(dc) raised requestedDisplayHeight, then drawCurrentShipStats(dc) called ensureLowerPanelLayoutState() which unconditionally overwrote requestedDisplayHeight with max(buttonRowHeight, statsBottom).
+- Fix: added a max-preservation guard at end of ensureLowerPanelLayoutState() (~line 586): if m_lowerPanelLayoutState.requestedDisplayHeight > newly computed requestedHeight, use the larger value. This ensures list-widget expansions from drawSeekerActivation(), drawPlaceMines(), or drawPlaceSeekers() survive the stats layout pass.
+- Approach chosen: preserve the max in ensureLowerPanelLayoutState (not reorder draw calls) — least invasive, no draw-order changes, generalizes for future draw helpers.
+- drawPlaceMines() and drawPlaceSeekers() run in BS_PlaceMines/BS_PlaceSeekers states where drawCurrentShipStats() is not called, so they were unaffected and remain passing.
+- Pre-existing GUI failures (9 of 46): StrategicGuiLiveTest tests, testTacticalActionButtonsStayBelowPromptReservationAcrossPhases, testSeekerActivationPanelSourceContracts, testSetupPlacementSourceRowsAndOrdnanceColorContracts, testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges, testBattleDisplayNarrowWidthStacksShipStatsBelowButtons, testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo, BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalChains — all pre-existed before this fix (verified by stash baseline).
+
+Suggested test command(s):
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+- make -C tests gui-tests
+- DISPLAY=:0 ./tests/gui/GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- testStrategicDialogsUseStaticBoxChildParents (pre-existing, out of scope)
+- testWXStrategicUISourceGuardsRuntimeAndPreservesParentlessFlow (pre-existing, out of scope)
+- testRemediatedStrategicDialogsUseFirstShowSizingContract (pre-existing, out of scope)
+- testTacticalActionButtonsStayBelowPromptReservationAcrossPhases (pre-existing, out of scope)
+- testSeekerActivationPanelSourceContracts (pre-existing, out of scope)
+- testSetupPlacementSourceRowsAndOrdnanceColorContracts (pre-existing, out of scope)
+- testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges (pre-existing, out of scope)
+- testBattleDisplayNarrowWidthStacksShipStatsBelowButtons (pre-existing, out of scope)
+- testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo (pre-existing, out of scope)
+- testLocalGameDialogLaunchesPredefinedAndCustomModalChains (pre-existing, out of scope)
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
