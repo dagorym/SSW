@@ -579,6 +579,13 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 	if (requestedHeight < 120){
 		requestedHeight = 120;
 	}
+	// Preserve any height expansion already applied by draw helpers such as
+	// drawSeekerActivation(), drawPlaceMines(), or drawPlaceSeekers() that ran
+	// before setLowerPanelState() is called.  Taking the max ensures that a
+	// list-widget expansion is not silently overwritten by the stats-only height.
+	if (m_lowerPanelLayoutState.requestedDisplayHeight > requestedHeight){
+		requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;
+	}
 	m_lowerPanelLayoutState.requestedDisplayHeight = requestedHeight;
 }
 
