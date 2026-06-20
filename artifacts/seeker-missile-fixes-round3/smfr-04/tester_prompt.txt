@@ -1,0 +1,45 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+Persist the seeker speed (move-count) label from activation until impact or movement exhaustion. The label previously disappeared between movement resolution passes and in non-movement phases because drawSeekerMoveCountOverlay() was called only during PH_MOVE/PH_SEEKER_ACTIVATION, and only for seekers with a recorded movementPath (size >= 2). Fixed by: (1) moving the overlay call outside the phase guard so it fires for all BS_Battle phases; (2) removing the movementPath.size() < 2 filter in the overlay function, using movementPath.size()-1 when a path is recorded or movementAllowance as fallback. No change to seeker movement, targeting, or damage behavior.
+
+Modified files:
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+
+Acceptance criteria to validate (from Planner):
+- The speed/move-count label renders for every active seeker whenever active seekers are shown on the board, not only after movement this phase.
+- The label remains visible from activation through subsequent turns until the seeker detonates or is removed at movement exhaustion.
+- The label still renders correctly for multiple co-located seekers (stacked display preserved).
+- No change to seeker movement, targeting, or damage behavior.
+
+Test file location guidance:
+Seeker label render-dispatch coverage belongs in tests/tactical/FTacticalBattleBoardRendererDelegationTest.* or tests/tactical/FTacticalSeekerMovementTest.*
+
+Implementation context for testing:
+drawSeekerMoveCountOverlay() now iterates all active seekers (not just those with movementPath.size() >= 2). Count = movementPath.size()-1 when a path exists, movementAllowance otherwise. The overlay is called unconditionally inside BS_Battle (drawSeekerPaths remains gated on PH_MOVE/PH_SEEKER_ACTIVATION). Doxygen updated in both header and source.
+
+Edge cases:
+- Newly activated seeker (movementTurn=0, movementAllowance=0): label shows 0 until first resolution
+- After first resolution: label shows movementAllowance (2 for turn 1)
+- Multiple seekers in same hex: counts stacked vertically as before
+- PH_ATTACK_FIRE: overlay now fires alongside the active-seeker icon draw in drawSeekerMissiles
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- (if display available) cd tests/gui && xvfb-run -a ./GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-04
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
