@@ -1813,6 +1813,18 @@ void FTacticalGame::clearPendingOffensiveFireSeekers() {
 	m_pendingOffensiveSeekerDeployments.clear();
 }
 
+void FTacticalGame::clearNonImpactingSeekerMovementPaths() {
+	// SMFR-05: After applyMovementSeekerDamage() removes impacting seekers,
+	// the remaining seekers are non-impacting survivors whose displayed path
+	// should clear at the same time as ship movement routes (completeMovePhase).
+	// Only movementPath is cleared; movementAllowance and movementTurn are
+	// preserved for next-turn movement bookkeeping.
+	for (std::vector<FTacticalSeekerMissileState>::iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		itr->movementPath.clear();
+	}
+}
+
 void FTacticalGame::rebuildDeployablePlacementSources() {
 	m_deployablePlacementSources.clear();
 	m_shipsWithMines.clear();
@@ -3137,6 +3149,10 @@ void FTacticalGame::completeMovePhase() {
 		}
 	}
 	applyMovementSeekerDamage();
+	// SMFR-05: after impacting seekers have been removed by applyMovementSeekerDamage(),
+	// clear displayed paths on the remaining non-impacting seekers so they disappear
+	// together with ship movement routes. movementAllowance and movementTurn are preserved.
+	clearNonImpactingSeekerMovementPaths();
 	applyMineDamage();
 	m_drawRoute = false;
 	setPhase(PH_DEFENSE_FIRE);

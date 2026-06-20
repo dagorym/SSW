@@ -8,6 +8,9 @@
  * SMFR-03: Added m_lastTriggeredMineHexes, getLastTriggeredMineHexes(),
  * and clearLastTriggeredMineHexes() to expose triggered minefield hexes
  * for board highlight while the mine damage summary dialog is shown.
+ * SMFR-05: Added clearNonImpactingSeekerMovementPaths() called from
+ * completeMovePhase() after applyMovementSeekerDamage() so non-impacting
+ * seeker displayed paths clear with ship movement routes.
  */
 
 #ifndef _FTACTICALGAME_H_
@@ -465,7 +468,21 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * @date Last Modified: Jun 02, 2026
 	 */
 	void completeSeekerPlacement();
-	/// Canonical post-move resolution seam; PH_FINALIZE_MOVE delegates here.
+	/**
+	 * @brief Canonical post-move resolution seam; PH_FINALIZE_MOVE delegates here.
+	 *
+	 * Finalizes ship positions, checks for active seeker contacts and mine
+	 * interactions, applies movement seeker damage (removing impacting seekers and
+	 * their paths via applyMovementSeekerDamage()), then clears the displayed
+	 * movement path on all surviving non-impacting seekers via
+	 * clearNonImpactingSeekerMovementPaths() so paths disappear together with ship
+	 * movement routes (SMFR-05). The seekers' movementAllowance and movementTurn
+	 * bookkeeping are preserved for subsequent turns.
+	 *
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium)
+	 * @date Created: Mar 29, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
 	void completeMovePhase();
 	FTacticalCombatReportSummary resolveCurrentFirePhase();
 	void completeDefensiveFirePhase();
@@ -1320,6 +1337,24 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 * @date Last Modified: May 25, 2026
 	 */
 	void clearPendingOffensiveFireSeekers();
+	/**
+	 * @brief Clear the displayed movement path on all non-impacting seekers.
+	 *
+	 * After `applyMovementSeekerDamage()` has removed impacting seekers, the
+	 * remaining seekers in `m_seekerMissiles` are non-impacting survivors. This
+	 * helper clears their `movementPath` so the rendered path disappears when the
+	 * moving player's ship movement phase completes (`completeMovePhase`), matching
+	 * the point at which ship movement routes are cleared (SMFR-05).
+	 *
+	 * Only `movementPath` is cleared. The `movementAllowance` and `movementTurn`
+	 * fields are left intact because they are needed for the seeker's movement
+	 * bookkeeping in subsequent turns.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void clearNonImpactingSeekerMovementPaths();
 	void appendPlacedOrdnanceRecord(FWeapon::Weapon weaponType, const FPoint & hex, const FTacticalOrdnanceSource & source);
 	bool removePlacedOrdnanceForSelection(const FPoint & hex, FTacticalPlacedOrdnance & removed);
 	void removePlacedMineRecordsAtHex(const FPoint & hex);

@@ -176,11 +176,18 @@ void drawSeekerMoveCountOverlay(wxDC &dc);
  * PH_MOVE and PH_SEEKER_ACTIVATION (SMF-06) so impacting seekers remain
  * visible at their final hex while ICM/damage dialogs are displayed.
  *
+ * Path lifecycle (SMFR-05): an impacting seeker's path is cleared when the
+ * damage summary closes (the seeker is removed by applyMovementSeekerDamage()).
+ * A non-impacting seeker's path persists through ICM selection and the damage
+ * summary, then is cleared by clearNonImpactingSeekerMovementPaths() called
+ * from completeMovePhase() together with ship movement routes. The seeker's
+ * movementAllowance and movementTurn bookkeeping are not affected.
+ *
  * @param dc Device context used for tactical board drawing.
  *
  * @author claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: May 30, 2026
- * @date Last Modified: Jun 02, 2026 (SMF-06: also called during PH_SEEKER_ACTIVATION)
+ * @date Last Modified: Jun 19, 2026 (SMFR-05: path lifecycle documented)
  */
 void drawSeekerPaths(wxDC &dc);
 	/**
