@@ -162,7 +162,7 @@ void drawSeekerMissiles(wxDC &dc);
  *
  * @param dc Device context used for tactical board drawing.
  *
- * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 02, 2026
  * @date Last Modified: Jun 19, 2026
  */
