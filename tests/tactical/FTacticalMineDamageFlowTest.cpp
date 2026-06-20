@@ -5,12 +5,15 @@
 
 #include "FTacticalMineDamageFlowTest.h"
 
+#include <cstdlib>
 #include <fstream>
 #include <vector>
 
 #include "ships/FVehicle.h"
+#include "ships/FMinelayer.h"
 #include "strategic/FFleet.h"
 #include "tactical/FTacticalGame.h"
+#include "tactical/ITacticalUI.h"
 
 namespace FrontierTests {
 
@@ -68,6 +71,65 @@ FMoveDoneShipHarness * defender;
 };
 
 void destroyFixture(MoveDoneRuntimeFixture & fixture) {
+for (FleetList::iterator itr = fixture.attackFleets.begin(); itr != fixture.attackFleets.end(); ++itr) {
+delete *itr;
+}
+for (FleetList::iterator itr = fixture.defendFleets.begin(); itr != fixture.defendFleets.end(); ++itr) {
+delete *itr;
+}
+fixture.attackFleets.clear();
+fixture.defendFleets.clear();
+}
+
+/**
+ * @brief Capturing mock ITacticalUI for behavioral SMFR-03 lifecycle tests.
+ *
+ * Holds a const pointer to the FTacticalGame being tested so that the
+ * showDamageSummary callback can inspect getLastTriggeredMineHexes() while the
+ * dialog is open and capture whether the set is non-empty at that moment.
+ * The test then verifies the set is empty after applyMineDamage() returns.
+ */
+class FCapturingMineMockUI : public ITacticalUI {
+public:
+explicit FCapturingMineMockUI(const FTacticalGame * game)
+: m_game(game),
+  m_showDamageSummaryCount(0),
+  m_hexesNonEmptyDuringCallback(false) {
+}
+
+void requestRedraw() {}
+void showMessage(const std::string &, const std::string &) {}
+
+int showDamageSummary(const FTacticalCombatReportSummary &) {
+++m_showDamageSummaryCount;
+m_hexesDuringCallback = m_game->getLastTriggeredMineHexes();
+m_hexesNonEmptyDuringCallback = !m_hexesDuringCallback.empty();
+return 0;
+}
+
+int runICMSelection(std::vector<ICMData *> &, VehicleList *) {
+return 0;
+}
+
+void notifyWinner(bool) {}
+
+const FTacticalGame * m_game;
+int m_showDamageSummaryCount;
+bool m_hexesNonEmptyDuringCallback;
+PointSet m_hexesDuringCallback;
+};
+
+struct MineEncounterFixture {
+FTacticalGame game;
+FleetList attackFleets;
+FleetList defendFleets;
+FFleet * attackFleet;
+FFleet * defendFleet;
+FMoveDoneShipHarness * attacker;
+FMinelayer * minelayer;
+};
+
+void destroyMineEncounterFixture(MineEncounterFixture & fixture) {
 for (FleetList::iterator itr = fixture.attackFleets.begin(); itr != fixture.attackFleets.end(); ++itr) {
 delete *itr;
 }
@@ -481,6 +543,130 @@ assertBefore(body, "applyMineDamage();", "setPhase(PH_DEFENSE_FIRE);");
 
 // Seeker damage must also precede the final phase change.
 assertBefore(body, "applyMovementSeekerDamage();", "setPhase(PH_DEFENSE_FIRE);");
+}
+
+void FTacticalMineDamageFlowTest::testMineEncounterHighlightHexesNonEmptyDuringShowDamageSummaryCallback() {
+// SMFR-03 behavioral: AC1/AC2/AC3.
+//
+// Construct a real FTacticalGame with:
+//   - Defender: FMinelayer placed at hex (10,10) — owns the mine (ownerID=0)
+//   - Attacker: FMoveDoneShipHarness placed at hex (54,20) — the moving player (ownerID=1)
+//
+// Place a mine at the attacker's starting hex (54,20) via placeMineFromSelection.
+// checkForMines() is called inside completeMovePhase() and detects the mined hex
+// when it appears in the attacker's movement path.
+//
+// Install a FCapturingMineMockUI that captures getLastTriggeredMineHexes() inside
+// the showDamageSummary callback.
+//
+// After completeMovePhase():
+//   AC2: triggered-hex set was NON-EMPTY inside the showDamageSummary callback
+//   AC3: triggered-hex set is EMPTY after completeMovePhase() returns
+//   AC1: showDamageSummary was called at least once for this mine encounter
+
+// --- Fixture setup ---
+MineEncounterFixture fixture;
+fixture.attackFleet = new FFleet();
+fixture.defendFleet = new FFleet();
+fixture.attackFleets.push_back(fixture.attackFleet);
+fixture.defendFleets.push_back(fixture.defendFleet);
+
+fixture.attacker = new FMoveDoneShipHarness();
+fixture.attacker->setName("AttackerMineTrigger");
+fixture.attacker->configureMove(6, 0, 3);
+
+fixture.minelayer = new FMinelayer();
+fixture.minelayer->setName("DefenderMinelayer");
+
+fixture.attackFleet->addShip(fixture.attacker);
+fixture.defendFleet->addShip(fixture.minelayer);
+
+fixture.game.setupFleets(&fixture.attackFleets, &fixture.defendFleets, false, NULL);
+
+// Place the defender's ships on the board.
+fixture.game.setState(BS_SetupDefendFleet);
+fixture.game.setControlState(true);
+fixture.game.setShip(fixture.minelayer);
+fixture.game.placeShip(FPoint(10, 10));
+fixture.game.setShipPlacementHeading(3);
+
+// Place the attacker on the board.
+fixture.game.setState(BS_SetupAttackFleet);
+fixture.game.setControlState(true);
+fixture.game.setShip(fixture.attacker);
+const FPoint attackerStartHex(54, 20);
+fixture.game.placeShip(attackerStartHex);
+fixture.game.setShipPlacementHeading(3);
+
+// --- Mine placement via the pre-game placement state ---
+// Use the public BS_PlaceMines + handleHexClick() flow so we can place the mine
+// without needing access to the protected placeMineFromSelection() method directly.
+// FMinelayer sets up weapons: [0]=LB, [1]=LB, [2]=SM, [3]=M.
+const unsigned int mineWeaponIndex = 3;
+FWeapon * mineWeapon = fixture.minelayer->getWeapon(mineWeaponIndex);
+CPPUNIT_ASSERT_MESSAGE("FMinelayer must have a mine launcher at index 3", mineWeapon != NULL);
+CPPUNIT_ASSERT_MESSAGE("Mine launcher must be type FWeapon::M",
+mineWeapon->getType() == FWeapon::M);
+
+// Transition to mine-placement state and select the minelayer's mine launcher.
+fixture.game.setState(BS_PlaceMines);
+fixture.game.setShip(fixture.minelayer);
+fixture.game.setWeapon(mineWeapon);
+
+// Place the mine at the attacker's starting hex so the attacker's movement path
+// (which includes the starting hex after setInitialRoute()) triggers the mine.
+const bool minePlaced = fixture.game.handleHexClick(attackerStartHex);
+CPPUNIT_ASSERT_MESSAGE(
+"handleHexClick in BS_PlaceMines must place the mine at the attacker's starting hex",
+minePlaced);
+
+// Verify the mine is recorded in the model's mined-hex set.
+CPPUNIT_ASSERT_MESSAGE("Mine must appear in getMinedHexes() after placement",
+fixture.game.getMinedHexes().find(attackerStartHex) != fixture.game.getMinedHexes().end());
+
+// --- Install capturing mock UI and enter the movement phase ---
+// Clear the current weapon selection left over from mine-placement state so that
+// selectShipFromHex() in the battle phase treats the hex click as ship selection,
+// not weapon targeting.
+fixture.game.setWeapon(NULL);
+
+FCapturingMineMockUI mockUI(&fixture.game);
+fixture.game.installUI(&mockUI);
+
+fixture.game.setState(BS_Battle);
+fixture.game.setPhase(PH_MOVE);
+
+// Select the attacker ship to build the initial route (adds attackerStartHex to the path).
+// After setInitialRoute(), the path is [attackerStartHex].
+// checkForMines() in completeMovePhase() will then detect the mine at attackerStartHex.
+fixture.game.handleHexClick(attackerStartHex);
+
+// --- Trigger mine encounter via completeMovePhase() ---
+fixture.game.completeMovePhase();
+
+// AC1: showDamageSummary must have been called at least once for the mine encounter.
+CPPUNIT_ASSERT_MESSAGE(
+"showDamageSummary must be called at least once when a mine is triggered",
+mockUI.m_showDamageSummaryCount >= 1);
+
+// AC2: triggered-hex set must be NON-EMPTY inside the showDamageSummary callback,
+// proving the highlight is live while the dialog is displayed.
+CPPUNIT_ASSERT_MESSAGE(
+"getLastTriggeredMineHexes() must be NON-EMPTY inside showDamageSummary callback (AC2: highlight visible during dialog)",
+mockUI.m_hexesNonEmptyDuringCallback);
+
+// AC3: triggered-hex set must be EMPTY after completeMovePhase() returns,
+// proving the highlight is cleared after the dialog closes.
+CPPUNIT_ASSERT_MESSAGE(
+"getLastTriggeredMineHexes() must be EMPTY after completeMovePhase() returns (AC3: highlight cleared after dialog)",
+fixture.game.getLastTriggeredMineHexes().empty());
+
+fixture.game.installUI(NULL);
+destroyMineEncounterFixture(fixture);
+
+// Reseed rand() so mine-fire dice rolls in this test do not disturb the
+// random sequence seen by subsequent tests that rely on specific outcomes.
+srand(1);
 }
 
 }

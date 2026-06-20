@@ -38,6 +38,7 @@ class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testApplyMineDamageSummaryCalledUnconditionallyWhenMinesFire );
 	CPPUNIT_TEST( testTriggeredMineHexesClearedAfterSummaryDialog );
 	CPPUNIT_TEST( testLastTriggeredMineHexesDelegationInFBattleScreenHeader );
+	CPPUNIT_TEST( testMineEncounterHighlightHexesNonEmptyDuringShowDamageSummaryCallback );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -226,6 +227,22 @@ public:
 	 * @date Last Modified: Jun 19, 2026
 	 */
 	void testLastTriggeredMineHexesDelegationInFBattleScreenHeader();
+
+	/**
+	 * @brief Behavioral: triggered mine hexes are non-empty inside showDamageSummary callback and empty after.
+	 *
+	 * Constructs a real FTacticalGame with an FMinelayer (defender) and an attacker ship.
+	 * Places a mine at the attacker's starting hex via placeMineFromSelection, installs a
+	 * capturing mock ITacticalUI, then calls completeMovePhase() to trigger the mine encounter.
+	 * Asserts (AC2) getLastTriggeredMineHexes() is NON-EMPTY inside the showDamageSummary callback,
+	 * (AC3) getLastTriggeredMineHexes() is EMPTY after completeMovePhase() returns, and
+	 * (AC1) showDamageSummary was invoked at least once for the mine encounter.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testMineEncounterHighlightHexesNonEmptyDuringShowDamageSummaryCallback();
 };
 
 }
