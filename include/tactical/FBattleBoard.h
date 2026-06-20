@@ -149,18 +149,22 @@ void drawTriggeredMineHexes(wxDC &dc);
  */
 void drawSeekerMissiles(wxDC &dc);
 /**
- * @brief Draw upright red move-count number in each active seeker's hex upper-right.
+ * @brief Draw upright red speed label in each active seeker's hex upper-right.
  *
- * Draws the count of hexes moved this turn (movementPath.size()-1) as a red
- * bold number near the upper-right corner of each active seeker's hex. When
- * multiple seekers share the same hex, their counts are stacked vertically.
- * Only seekers with movementPath.size() >= 2 are rendered (SMF-07).
+ * Draws the seeker's speed (move-count) as a red bold number near the
+ * upper-right corner of each active seeker's hex, continuously from
+ * activation until the seeker impacts a target or exhausts its movement
+ * allowance (SMFR-04). When a movement path has been recorded this phase
+ * (movementPath.size() >= 2), the label shows movementPath.size()-1 (hexes
+ * moved this phase). Otherwise the label shows movementAllowance as the
+ * fallback between resolution passes. When multiple seekers share the same
+ * hex, their counts are stacked vertically.
  *
  * @param dc Device context used for tactical board drawing.
  *
- * @author claude-sonnet-4-6 (medium)
+ * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Jun 02, 2026
- * @date Last Modified: Jun 02, 2026
+ * @date Last Modified: Jun 19, 2026
  */
 void drawSeekerMoveCountOverlay(wxDC &dc);
 /**

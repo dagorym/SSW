@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleBoard class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
  *
  */
 
@@ -111,9 +111,10 @@ drawRoute(dc);
 // seekers remain visible while ICM/damage dialogs are displayed.
 if (m_parent->getPhase() == PH_MOVE || m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
 drawSeekerPaths(dc);
-// SMF-07: draw per-seeker move-count overlay (red upright number, stacked when co-located).
-drawSeekerMoveCountOverlay(dc);
 }
+// SMFR-04: draw per-seeker move-count overlay for all active seekers whenever
+// active seekers are shown, not only after movement this phase.
+drawSeekerMoveCountOverlay(dc);
 // SMFR-03: draw triggered minefield hexes in green while the damage summary
 // dialog is shown; the set is non-empty only during the modal call window.
 drawTriggeredMineHexes(dc);
@@ -572,22 +573,33 @@ void FBattleBoard::drawSeekerPaths(wxDC &dc) {
 }
 
 void FBattleBoard::drawSeekerMoveCountOverlay(wxDC &dc) {
-	// SMF-07: draw upright red move-count number in the upper-right of each
-	// active seeker's hex. Count = movementPath.size() - 1 (hexes moved this turn).
+	// SMFR-04: draw upright red speed label in the upper-right of each active
+	// seeker's hex, continuously from activation through impact or exhaustion.
+	// When the seeker has a path recorded this phase, count = movementPath.size()-1.
+	// Otherwise count = movementAllowance (fallback between resolution passes).
 	// When multiple seekers share a hex, stack their counts vertically.
 	const std::vector<FTacticalSeekerMissileState> & seekers = m_parent->getSeekerMissiles();
 	if (seekers.empty()) {
 		return;
 	}
 
-	// Group seekers with a non-trivial path by their current hex.
+	// Group all active seekers by their current hex.
+	// SMFR-04: show the label for every active seeker from activation through
+	// impact or exhaustion, not only after it has moved this phase.
+	// Count = movementPath.size()-1 when a path is recorded this phase, or
+	// movementAllowance as the fallback between resolution passes.
 	std::map<std::pair<int,int>, std::vector<int> > hexCounts;
 	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
 		 itr != seekers.end(); ++itr) {
-		if (!itr->active || itr->movementPath.size() < 2) {
+		if (!itr->active) {
 			continue;
 		}
-		const int count = static_cast<int>(itr->movementPath.size()) - 1;
+		int count;
+		if (itr->movementPath.size() >= 2) {
+			count = static_cast<int>(itr->movementPath.size()) - 1;
+		} else {
+			count = itr->movementAllowance;
+		}
 		const std::pair<int,int> key(itr->hex.getX(), itr->hex.getY());
 		hexCounts[key].push_back(count);
 	}
