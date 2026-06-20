@@ -1,0 +1,65 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- SMFR-05: Correct seeker movement-path persistence lifecycle so paths are visible through ICM selection and the damage summary, impacting seekers' paths clear when the damage summary closes, and non-impacting seekers' paths clear with ship movement routes at completeMovePhase without discarding movementAllowance/movementTurn bookkeeping. Implementation added clearNonImpactingSeekerMovementPaths() to FTacticalGame, called from completeMovePhase() after applyMovementSeekerDamage(). FBattleBoard::drawSeekerPaths is gated on PH_MOVE || PH_SEEKER_ACTIVATION so impacting-seeker paths remain visible during ICM and damage dialogs. 3 new tests added to FTacticalSeekerMovementTest (2 behavioral, 1 source-contract). All 214 tests pass.
+
+Acceptance criteria to verify:
+- A seeker's movement path is visible from movement resolution, through ICM selection, and while the damage summary dialog is displayed.
+- An impacting seeker's path clears when the damage summary dialog closes (seeker removed by applyMovementSeekerDamage which erases the record and its movementPath).
+- A non-impacting seeker's path remains drawn until completeMovePhase clears ship movement paths, then clears with them (clearNonImpactingSeekerMovementPaths called from completeMovePhase after applyMovementSeekerDamage).
+- Clearing a non-impacting seeker's displayed path preserves its movementAllowance and movementTurn for next-turn movement bookkeeping.
+- Seeker path rendering continues to work for multiple simultaneous seekers during PH_SEEKER_ACTIVATION and PH_MOVE.
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/sf2-SMFR-05-documenter-20260619
+- Implementer commit: cf2afb8 (SMFR-05: Clear non-impacting seeker paths with ship routes at completeMovePhase)
+- Tester commit: e60a4fb7872fda608f673efce76c5b64e9c12aed
+- Documenter documentation commit: de32f66dbd004d1d9c55ee2075f6db302faaaf58
+- Comparison base: sf2 branch prior to SMFR-05 implementer commit
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/tactical/FBattleBoard.h — drawSeekerPaths docblock: path lifecycle documented (SMFR-05), PH_MOVE || PH_SEEKER_ACTIVATION gate noted
+- include/tactical/FTacticalGame.h — file header updated with SMFR-05 note; completeMovePhase() docblock expanded; clearNonImpactingSeekerMovementPaths() added with full Doxygen block
+- src/tactical/FTacticalGame.cpp — clearNonImpactingSeekerMovementPaths() implementation; completeMovePhase() calls it after applyMovementSeekerDamage()
+- tests/tactical/FTacticalSeekerMovementTest.h — 3 new test declarations with Doxygen blocks: testClearNonImpactingSeekerMovementPathsPreservesBookkeeping, testNonImpactingSeekerPathClearedAfterDamageApplied, testCompleteMovePhaseCallsNonImpactingClearAfterDamageSourceContract
+- tests/tactical/FTacticalSeekerMovementTest.cpp — 3 new test implementations
+- AGENTS.md — SMC-07 updated (drawSeekerPaths gated on PH_MOVE || PH_SEEKER_ACTIVATION); TSM-010 updated (clearNonImpactingSeekerMovementPaths lifecycle); SMFR-05 new entry
+
+Commands executed:
+- git diff sf2..HEAD --name-only (changed-file inspection)
+- git diff sf2..HEAD -- <files> (diff review for each changed file)
+- Read AGENTS.md lines 230-245 (tactical test invariants section)
+- Edit AGENTS.md SMC-07 line (PH_MOVE || PH_SEEKER_ACTIVATION gate)
+- Edit AGENTS.md TSM-010 line (clearNonImpactingSeekerMovementPaths lifecycle)
+- Edit AGENTS.md (added SMFR-05 entry after SMFR-04)
+- git add AGENTS.md && git commit (documentation commit de32f66)
+
+Final test outcomes:
+- 214 tests pass, 0 failures
+- 3 new tests added: testClearNonImpactingSeekerMovementPathsPreservesBookkeeping (behavioral), testNonImpactingSeekerPathClearedAfterDamageApplied (behavioral), testCompleteMovePhaseCallsNonImpactingClearAfterDamageSourceContract (source-contract supplement)
+- 211 pre-existing tests continue to pass
+
+Plan or evaluation context guidance:
+- Plan path: plans/seeker-missile-fixes-round3-plan.md, subtask SMFR-05
+- doc/rules/tactical_operations_manual.md was NOT edited (this is an internal lifecycle fix, not a rules change)
+- AGENTS.md tactical test invariants section (lines 230-245) was the primary documentation target
+
+Convention-file guidance:
+- AGENTS.md is the canonical project guidance file; documenter must update it when source contracts or test invariants change
+- Doxygen-style docblocks are mandatory for all header functions; in-code docs were verified accurate for clearNonImpactingSeekerMovementPaths() and completeMovePhase()
+- Behavioral tests are mandatory for acceptance criteria; source-contract tests may supplement but not replace behavioral coverage
+- doc/rules/tactical_operations_manual.md must NOT be edited per AGENTS.md non-negotiable constraint
+
+Updated documentation files:
+- AGENTS.md (SMC-07, TSM-010 updated; SMFR-05 new entry — documentation commit de32f66)
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-05
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

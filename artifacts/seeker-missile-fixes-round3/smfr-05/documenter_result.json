@@ -1,0 +1,15 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round3/smfr-05/documenter_report.md",
+    "artifacts/seeker-missile-fixes-round3/smfr-05/documenter_result.json",
+    "artifacts/seeker-missile-fixes-round3/smfr-05/verifier_prompt.txt"
+  ],
+  "branch_name": "sf2-SMFR-05-documenter-20260619",
+  "documentation_commit_hash": "de32f66dbd004d1d9c55ee2075f6db302faaaf58",
+  "documentation_files_changed": [
+    "AGENTS.md (SMC-07, TSM-010 updated; SMFR-05 new entry \u2014 documentation commit de32f66)"
+  ],
+  "pass_label": null,
+  "status": "success",
+  "task_id": "SMFR-05"
+}
