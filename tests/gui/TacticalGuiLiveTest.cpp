@@ -2071,4 +2071,215 @@ void TacticalGuiLiveTest::testSeekerMoveCountOverlayRendersInAllBattlePhases() {
 	m_harness.cleanupOrphanTopLevels(10);
 }
 
+
+
+void TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath() {
+	// SMFR-05 AC1 render-side behavioral test.
+	//
+	// drawSeekerPaths() renders a cyan path line when a seeker has movementPath.size() >= 2.
+	// The path is populated by resolveActiveSeekersForMovingPlayer() which is called inside
+	// setPhase(PH_MOVE) -> beginSeekerActivationPhase() -> resolveActiveSeekersForMovingPlayer().
+	// So the correct test pattern is:
+	//   1. Set phase to PH_MOVE first (which resolves/clears existing paths).
+	//   2. THEN seed the seeker with a pre-populated movementPath.
+	//   3. draw() in PH_MOVE calls drawSeekerPaths which finds the path (size >= 2) and draws it.
+	//
+	// The test uses a before/after approach:
+	//   Before: draw with NO seeker at all (black bitmap minus hex grid).
+	//   After seeding: draw with seeker+path (adds cyan path line AND red count label).
+	//
+	// Regression: if drawSeekerPaths is removed or gated out of PH_MOVE, the path band
+	// diffs disappear. If the movementPath is size < 2, drawSeekerPaths skips the seeker.
+	//
+	// A platform DrawLine pre-check confirms dc.DrawLine works on wxMemoryDC at these coords.
+
+	// --- Platform DrawLine pre-check ---
+	bool drawLineWorks = false;
+	{
+		wxBitmap testBmp(2000, 1500);
+		wxMemoryDC testDC;
+		testDC.SelectObject(testBmp);
+		testDC.SetBackground(*wxBLACK_BRUSH);
+		testDC.Clear();
+		wxColour cyanCheck(wxT("#00CCCC"));
+		testDC.SetPen(wxPen(cyanCheck, 2));
+		testDC.DrawLine(350, 295, 350, 381);
+		testDC.SelectObject(wxNullBitmap);
+		const wxImage testImg = testBmp.ConvertToImage();
+		for (int py = 290; py <= 385 && !drawLineWorks; ++py)
+			for (int px = 344; px <= 356 && !drawLineWorks; ++px)
+				if (testImg.GetRed(px,py) < 80 && testImg.GetGreen(px,py) >= 150 && testImg.GetBlue(px,py) >= 150)
+					drawLineWorks = true;
+	}
+	CPPUNIT_ASSERT_MESSAGE(
+		"Platform pre-check: DrawLine at (350,295)-(350,381) must produce cyan pixels in path band.",
+		drawLineWorks);
+
+	// --- Board setup ---
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	FVehicle * defender = createShip("Frigate");
+	CPPUNIT_ASSERT(attacker != NULL && defender != NULL);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(defender);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	TestableBattleScreen * screen =
+		new TestableBattleScreen("SMFR-05 Seeker Path Render");
+	screen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	screen->Show();
+	m_harness.pumpEvents(2);
+
+	FBattleBoard * board = findFirstBattleBoard(screen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleBoard must exist.", board != NULL);
+	board->Scroll(0, 0);
+
+	screen->setState(BS_Battle);
+	// setPhase(PH_MOVE) triggers resolveActiveSeekersForMovingPlayer which clears
+	// any existing seeker paths. So we draw the baseline FIRST (before seeding),
+	// then seed AFTER setPhase so the path survives to the draw call.
+	screen->setPhase(PH_MOVE);
+	m_harness.pumpEvents(1);
+
+	// Step 1: draw BEFORE seeding any seeker (baseline - no seekers in model).
+	wxImage baselinePHMove;
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+		baselinePHMove = bmp.ConvertToImage();
+	}
+
+	// Step 2: seed a seeker WITH movementPath AFTER setPhase(PH_MOVE) so the path
+	// is not cleared by resolveActiveSeekersForMovingPlayer.
+	// Path: (5,5) -> (5,7). Both rows are odd so x=350 for both centers.
+	// Hex (5,5) center: (350,295), hex (5,7) center: (350,381).
+	// drawSeekerPaths draws a vertical cyan line at x~350, y in [295..381].
+	FTacticalSeekerMissileState seeker;
+	seeker.seekerID           = 8001;
+	seeker.ownerID            = 1;
+	seeker.hex                = FPoint(5, 7);
+	seeker.heading            = 0;
+	seeker.active             = true;
+	seeker.movementTurn       = 1;
+	seeker.movementAllowance  = 2;
+	seeker.hasSource          = false;
+	seeker.activationPhaseIndex = 0;
+	seeker.movementPath.push_back(FPoint(5, 5));
+	seeker.movementPath.push_back(FPoint(5, 7));
+	screen->seedSeeker(seeker);
+
+	// Verify seeder and path preserved (no resolveActive call after seedSeeker).
+	CPPUNIT_ASSERT_MESSAGE(
+		"Seeker must be in model after seedSeeker.",
+		!screen->getSeekerMissiles().empty());
+	CPPUNIT_ASSERT_MESSAGE(
+		"Seeker movementPath must have size >= 2 after seeding.",
+		screen->getSeekerMissiles()[0].movementPath.size() >= 2u);
+
+	// Step 3: draw in PH_MOVE with seeker+path (phase already set to PH_MOVE).
+	wxImage afterSeedPHMove;
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+		afterSeedPHMove = bmp.ConvertToImage();
+	}
+
+	// Step 4: set PH_SEEKER_ACTIVATION (does NOT call resolveActiveSeekersForMovingPlayer).
+	// The seeker still has its movementPath. drawSeekerPaths runs in PH_SEEKER_ACTIVATION too.
+	screen->setPhase(PH_SEEKER_ACTIVATION);
+	wxImage afterSeedPHSeekerAct;
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+		afterSeedPHSeekerAct = bmp.ConvertToImage();
+	}
+
+	// Step 5: set PH_ATTACK_FIRE (does NOT call resolveActiveSeekersForMovingPlayer either).
+	// The seeker still has its movementPath but drawSeekerPaths is NOT called in PH_ATTACK_FIRE.
+	screen->setPhase(PH_ATTACK_FIRE);
+	wxImage afterSeedPHAttackFire;
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+		afterSeedPHAttackFire = bmp.ConvertToImage();
+	}
+
+	// Destroy screen before asserting to ensure cleanup on failure.
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(5);
+
+	// Count pixel diffs between baseline (no seeker) and after-seed draws.
+	struct RegionDiff {
+		static int count(const wxImage & a, const wxImage & b, int x0, int x1, int y0, int y1) {
+			const int mxX = std::min(std::min(a.GetWidth(), b.GetWidth()) - 1, x1);
+			const int mxY = std::min(std::min(a.GetHeight(), b.GetHeight()) - 1, y1);
+			int c = 0;
+			for (int py = std::max(0, y0); py <= mxY; ++py)
+				for (int px = std::max(0, x0); px <= mxX; ++px)
+					if (a.GetRed(px,py) != b.GetRed(px,py)
+					    || a.GetGreen(px,py) != b.GetGreen(px,py)
+					    || a.GetBlue(px,py) != b.GetBlue(px,py))
+						++c;
+			return c;
+		}
+	};
+
+	// Path band: x=[344..356], y=[290..385].
+	// drawSeekerPaths draws at x=350, y=295..381 (within this band).
+	// drawSeekerMoveCountOverlay draws at x=360,y=360 (OUTSIDE this band).
+	// So changes IN the band come only from drawSeekerPaths.
+	const int pathBandDiffPHMove     = RegionDiff::count(baselinePHMove, afterSeedPHMove,     344, 356, 290, 385);
+	const int pathBandDiffPHSeekerAct= RegionDiff::count(baselinePHMove, afterSeedPHSeekerAct,344, 356, 290, 385);
+	const int pathBandDiffPHAttackFire=RegionDiff::count(baselinePHMove, afterSeedPHAttackFire,344, 356, 290, 385);
+
+	// Also check full-image diff to confirm seeder produced overall output.
+	const int fullDiffPHMove = RegionDiff::count(baselinePHMove, afterSeedPHMove, 0, 1999, 0, 1499);
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMFR-05 pre: Seeding a seeker must change the full board draw output.",
+		fullDiffPHMove > 0);
+
+	// AC1: PH_MOVE must have path band diffs (from drawSeekerPaths cyan line).
+	// If drawSeekerPaths is removed or gated out of PH_MOVE, pathBandDiffPHMove == 0.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMFR-05 AC1: FBattleBoard::draw() in PH_MOVE must draw a path line in the band "
+		"x=[344..356], y=[290..385]. drawSeekerPaths() draws a cyan line from hex (5,5) to "
+		"hex (5,7) during PH_MOVE. Zero diffs means path was not drawn (gate or empty path).",
+		pathBandDiffPHMove > 0);
+
+	// AC1: PH_SEEKER_ACTIVATION must also have path band diffs.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMFR-05 AC1: FBattleBoard::draw() in PH_SEEKER_ACTIVATION must also draw the "
+		"seeker path line. drawSeekerPaths() must run in PH_SEEKER_ACTIVATION.",
+		pathBandDiffPHSeekerAct > 0);
+
+	// AC1 gate: PH_ATTACK_FIRE must have ZERO path band diffs.
+	// The count label (at x=360) is outside the band so it does not interfere.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"SMFR-05 AC1 gate: FBattleBoard::draw() in PH_ATTACK_FIRE must NOT draw a path "
+		"line in the path band (drawSeekerPaths not called in PH_ATTACK_FIRE).",
+		0, pathBandDiffPHAttackFire);
+
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
 }

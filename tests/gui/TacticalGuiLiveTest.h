@@ -43,6 +43,7 @@ CPPUNIT_TEST( testMinePlacementDoneButtonLabelReflectsOrdnanceTypes );
 CPPUNIT_TEST( testOffensiveSeekerPendingListRegionVisibilityAndRecall );
 CPPUNIT_TEST( testOrdnancePlacementAndActivationPanelHeightAutoExpands );
 CPPUNIT_TEST( testSeekerMoveCountOverlayRendersInAllBattlePhases );
+CPPUNIT_TEST( testSeekerPathRendersInPHMoveWithMovementPath );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -250,6 +251,26 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 19, 2026
 	 */
 	void testSeekerMoveCountOverlayRendersInAllBattlePhases();
+
+	/**
+	 * @brief Behavioral render test: drawSeekerPaths draws a visible path line in the
+	 * board during PH_MOVE and PH_SEEKER_ACTIVATION when a seeker has movementPath >= 2.
+	 *
+	 * SMFR-05 AC1 render-side coverage: Uses TestableBattleScreen to inject one
+	 * active seeker with a pre-populated movementPath (5,5)->(5,7) AFTER calling
+	 * setPhase(PH_MOVE) so the path is not cleared by resolveActiveSeekersForMovingPlayer.
+	 * Drives FBattleBoard::draw() via offscreen wxMemoryDC in PH_MOVE, PH_SEEKER_ACTIVATION,
+	 * and PH_ATTACK_FIRE. Asserts that:
+	 * - PH_MOVE and PH_SEEKER_ACTIVATION produce pixel differences in the path band
+	 *   x=[344..356], y=[290..385] vs the no-seeker baseline (drawSeekerPaths ran).
+	 * - PH_ATTACK_FIRE produces zero diffs in that band (drawSeekerPaths not called).
+	 * A platform pre-check confirms dc.DrawLine works on wxMemoryDC at those coords.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testSeekerPathRendersInPHMoveWithMovementPath();
 };
 
 }
