@@ -1,0 +1,55 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMFR-05 pass-2 remediation: Added behavioral GUI render test (testSeekerPathRendersInPHMoveWithMovementPath) to TacticalGuiLiveTest covering AC1 render-side seeker path visibility. The Implementer authored the test at commit 6dddd6a (test-only changes, no production code). The Tester validated all 3 AC1 sub-criteria pass via pixel-level differential on a 2000x1500 offscreen wxMemoryDC, with failure-mode analysis confirming the test would fail against broken code.
+
+Acceptance criteria validated:
+- AC1 render PH_MOVE: FBattleBoard::draw() in PH_MOVE produces pixel diffs in path band x=[344..356], y=[290..385] when seeker has movementPath >= 2 — PASS
+- AC1 render PH_SEEKER_ACTIVATION: FBattleBoard::draw() in PH_SEEKER_ACTIVATION also produces path band diffs — PASS
+- AC1 gate PH_ATTACK_FIRE: FBattleBoard::draw() in PH_ATTACK_FIRE produces zero path band diffs (drawSeekerPaths not called in PH_ATTACK_FIRE) — PASS
+
+Implementation branch or worktree context:
+- Branch: sf2, worktree: sf2-SMFR-05-tester-20260619
+- Implementation commit: 6dddd6a (SMFR-05 pass-2: Add behavioral render test for AC1 seeker path visibility)
+- Tester made no additional commits (test changes already in 6dddd6a)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- tests/gui/TacticalGuiLiveTest.cpp (new test testSeekerPathRendersInPHMoveWithMovementPath added)
+- tests/gui/TacticalGuiLiveTest.h (declaration of new test added)
+
+Test commit:
+- 6dddd6a
+
+Commands executed:
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+- make -C tests gui-tests
+- DISPLAY=:0 ./tests/gui/GuiTests
+
+Final test outcomes:
+- Tactical suite: 214/214 PASS
+- GUI suite: 48 total, 39 PASS, 9 FAIL (all 9 pre-existing failures unchanged by this change)
+- testSeekerPathRendersInPHMoveWithMovementPath: PASS
+
+Documentation context:
+- AGENTS.md SMF-07 source contract entries describe drawSeekerPaths behavior (heading-rotated drawCenteredOnHex for active seekers; drawSeekerPaths inside PH_MOVE guard drawing cyan stepped lines for active seekers with movementPath.size() >= 2)
+- SMFR-05 AC1 render-side is now covered by behavioral test (was previously source-contract only)
+- No production source code changed in this pass-2 remediation
+- Documentation should reflect that AC1 render-side coverage now exists in TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath
+- The AGENTS.md tactical tests section SMF-07 entry may warrant an annotation that the render path is now behaviorally verified
+
+Plan and diff context:
+- Plan path: plans/seeker-missile-fixes-round3-plan.md (infer SMFR-05 context from this plan)
+- Comparison base: sf2 branch at commit before 6dddd6a (labeled assumption: use 7605f7c as base since it archives pass-1)
+- Pass-1 history is in artifacts/seeker-missile-fixes-round3/smfr-05/history/
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-05
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
