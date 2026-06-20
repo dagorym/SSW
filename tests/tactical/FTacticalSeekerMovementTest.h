@@ -17,9 +17,9 @@ namespace FrontierTests {
  * Verifies source-level tactical seeker helper contracts remain deterministic,
  * non-wx, and aligned with planner acceptance criteria.
  *
- * @author gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
+ * @author gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: May 25, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 19, 2026
  */
 class FTacticalSeekerMovementTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalSeekerMovementTest );
@@ -36,6 +36,9 @@ CPPUNIT_TEST( testInactiveSeekerIgnoredByPathContactCheck );
 CPPUNIT_TEST( testSeekerRemovedFromModelAfterMovementContact );
 CPPUNIT_TEST( testMovementPathPopulatedByResolveActiveSeekers );
 CPPUNIT_TEST( testSeekerMoveCountLabelFieldsReflectPathAndAllowance );
+CPPUNIT_TEST( testClearNonImpactingSeekerMovementPathsPreservesBookkeeping );
+CPPUNIT_TEST( testNonImpactingSeekerPathClearedAfterDamageApplied );
+CPPUNIT_TEST( testCompleteMovePhaseCallsNonImpactingClearAfterDamageSourceContract );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -164,6 +167,52 @@ void testSeekerRemovedFromModelAfterMovementContact();
  * @date Last Modified: May 30, 2026
  */
 void testMovementPathPopulatedByResolveActiveSeekers();
+/**
+ * @brief Behavioral: SMFR-05 — clearNonImpactingSeekerMovementPaths clears path but preserves bookkeeping.
+ *
+ * Constructs real FTacticalSeekerMissileState records with movementPath populated
+ * and explicit movementAllowance/movementTurn values, seeds them into a real
+ * FTacticalGame, calls clearNonImpactingSeekerMovementPaths(), and asserts
+ * that movementPath is empty while movementAllowance and movementTurn are unchanged.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testClearNonImpactingSeekerMovementPathsPreservesBookkeeping();
+
+/**
+ * @brief Behavioral: SMFR-05 — non-impacting seeker path empty after applyMovementSeekerDamage
+ *        plus clearNonImpactingSeekerMovementPaths while movementAllowance/movementTurn survive.
+ *
+ * Sets up an impacting seeker (on a ship's path) and a non-impacting seeker (elsewhere).
+ * Calls applyMovementSeekerDamage() to remove the impacting seeker, then calls
+ * clearNonImpactingSeekerMovementPaths() on the surviving seeker.  Asserts:
+ * - The impacting seeker is gone from m_seekerMissiles.
+ * - The non-impacting seeker still has its movementAllowance and movementTurn.
+ * - The non-impacting seeker's movementPath is now empty.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testNonImpactingSeekerPathClearedAfterDamageApplied();
+
+/**
+ * @brief Source-contract supplement: completeMovePhase calls clearNonImpactingSeekerMovementPaths
+ *        after applyMovementSeekerDamage in SMFR-05.
+ *
+ * Source-inspection test verifying the call order in completeMovePhase so the
+ * clearNonImpactingSeekerMovementPaths call is guaranteed to run after the impacting
+ * seekers have already been erased.  Supplements (does not replace) the behavioral
+ * assertion in testNonImpactingSeekerPathClearedAfterDamageApplied.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testCompleteMovePhaseCallsNonImpactingClearAfterDamageSourceContract();
+
 /**
  * @brief Behavioral: SMFR-04 — seeker state fields for move-count label are correct.
  *

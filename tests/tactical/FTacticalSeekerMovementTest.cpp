@@ -1,6 +1,10 @@
 /**
  * @file FTacticalSeekerMovementTest.cpp
- * @brief Source-inspection tests for tactical seeker movement helper logic
+ * @brief Seeker movement model-side regression tests — behavioral and source-contract coverage.
+ *
+ * @author gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
+ * @date Created: May 25, 2026
+ * @date Last Modified: Jun 19, 2026
  */
 
 #include "FTacticalSeekerMovementTest.h"
@@ -35,6 +39,7 @@ public:
 	using Frontier::FTacticalGame::resolveActiveSeekersForMovingPlayer;
 	using Frontier::FTacticalGame::checkForActiveSeekersOnPath;
 	using Frontier::FTacticalGame::applyMovementSeekerDamage;
+	using Frontier::FTacticalGame::clearNonImpactingSeekerMovementPaths;
 
 	void configureSides(unsigned int defenderID, unsigned int attackerID, bool movingAttacker) {
 		m_playerID[0] = defenderID;
@@ -882,6 +887,204 @@ void FTacticalSeekerMovementTest::testSeekerMoveCountLabelFieldsReflectPathAndAl
 		2, survivingCount);
 
 	delete targetShip;
+}
+
+void FTacticalSeekerMovementTest::testClearNonImpactingSeekerMovementPathsPreservesBookkeeping() {
+	// SMFR-05 AC3/AC4: clearNonImpactingSeekerMovementPaths() empties movementPath
+	// on every seeker while leaving movementAllowance and movementTurn intact.
+
+	TestableTacticalGame game;
+
+	// Seed two seekers with explicit movementPath entries and bookkeeping values.
+	Frontier::FTacticalSeekerMissileState seekerA;
+	seekerA.seekerID  = 6001u;
+	seekerA.ownerID   = 1u;
+	seekerA.hex       = Frontier::FPoint(10, 10);
+	seekerA.heading   = 2;
+	seekerA.active    = true;
+	seekerA.movementTurn      = 3;
+	seekerA.movementAllowance = 6;
+	seekerA.hasSource = false;
+	seekerA.movementPath.push_back(Frontier::FPoint(10, 10));
+	seekerA.movementPath.push_back(Frontier::FPoint(11, 10));
+	seekerA.movementPath.push_back(Frontier::FPoint(12, 10));
+
+	Frontier::FTacticalSeekerMissileState seekerB;
+	seekerB.seekerID  = 6002u;
+	seekerB.ownerID   = 0u;
+	seekerB.hex       = Frontier::FPoint(25, 25);
+	seekerB.heading   = 5;
+	seekerB.active    = true;
+	seekerB.movementTurn      = 1;
+	seekerB.movementAllowance = 2;
+	seekerB.hasSource = false;
+	seekerB.movementPath.push_back(Frontier::FPoint(24, 25));
+	seekerB.movementPath.push_back(Frontier::FPoint(25, 25));
+
+	game.seedSeeker(seekerA);
+	game.seedSeeker(seekerB);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), game.getSeekerMissiles().size());
+
+	// Exercise the function under test.
+	game.clearNonImpactingSeekerMovementPaths();
+
+	const std::vector<Frontier::FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), seekers.size());
+
+	for (std::vector<Frontier::FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
+		 itr != seekers.end(); ++itr) {
+		CPPUNIT_ASSERT_MESSAGE(
+			"SMFR-05 AC3: movementPath must be empty after clearNonImpactingSeekerMovementPaths",
+			itr->movementPath.empty());
+
+		if (itr->seekerID == 6001u) {
+			CPPUNIT_ASSERT_EQUAL_MESSAGE(
+				"SMFR-05 AC4: seekerA movementTurn must be unchanged after path clear",
+				3, itr->movementTurn);
+			CPPUNIT_ASSERT_EQUAL_MESSAGE(
+				"SMFR-05 AC4: seekerA movementAllowance must be unchanged after path clear",
+				6, itr->movementAllowance);
+		} else if (itr->seekerID == 6002u) {
+			CPPUNIT_ASSERT_EQUAL_MESSAGE(
+				"SMFR-05 AC4: seekerB movementTurn must be unchanged after path clear",
+				1, itr->movementTurn);
+			CPPUNIT_ASSERT_EQUAL_MESSAGE(
+				"SMFR-05 AC4: seekerB movementAllowance must be unchanged after path clear",
+				2, itr->movementAllowance);
+		}
+	}
+}
+
+void FTacticalSeekerMovementTest::testNonImpactingSeekerPathClearedAfterDamageApplied() {
+	// SMFR-05 AC2/AC3/AC4: after applyMovementSeekerDamage removes the impacting seeker,
+	// clearNonImpactingSeekerMovementPaths clears the path on the surviving seeker while
+	// leaving its movementAllowance and movementTurn intact.  This mirrors the sequence
+	// executed by completeMovePhase.
+
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+	FSeekerHarnessShip * movingShip = new FSeekerHarnessShip(1u, "Frigate");
+	attackShips->push_back(movingShip);
+
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+
+	const Frontier::FPoint shipHex(20, 20);
+	game.placeShipAtHex(movingShip, shipHex);
+
+	const Frontier::FPoint seekerHex(21, 20);
+	Frontier::PointList path;
+	path.push_back(shipHex);
+	path.push_back(seekerHex);
+	game.seedTurnDataWithPath(movingShip->getID(), path);
+
+	// Impacting seeker: on the ship's path, with a populated movementPath.
+	Frontier::FTacticalSeekerMissileState impactingSeeker;
+	impactingSeeker.seekerID       = 7100u;
+	impactingSeeker.ownerID        = 0u;   // defender — opposes moving attacker (side 1)
+	impactingSeeker.hex            = seekerHex;
+	impactingSeeker.heading        = 0;
+	impactingSeeker.active         = true;
+	impactingSeeker.movementTurn   = 2;
+	impactingSeeker.movementAllowance = 4;
+	impactingSeeker.hasSource      = false;
+	impactingSeeker.movementPath.push_back(Frontier::FPoint(19, 20));
+	impactingSeeker.movementPath.push_back(seekerHex);
+
+	// Non-impacting seeker: off the path, with populated bookkeeping.
+	Frontier::FTacticalSeekerMissileState survivor;
+	survivor.seekerID       = 7101u;
+	survivor.ownerID        = 0u;
+	survivor.hex            = Frontier::FPoint(50, 50);
+	survivor.heading        = 3;
+	survivor.active         = true;
+	survivor.movementTurn   = 4;
+	survivor.movementAllowance = 8;
+	survivor.hasSource      = false;
+	survivor.movementPath.push_back(Frontier::FPoint(49, 50));
+	survivor.movementPath.push_back(Frontier::FPoint(50, 50));
+
+	game.seedSeeker(impactingSeeker);
+	game.seedSeeker(survivor);
+
+	// Detect path contact (produces contact outcome for impactingSeeker).
+	game.clearPendingOutcomes();
+	game.checkForActiveSeekersOnPath(movingShip);
+
+	const std::vector<Frontier::FTacticalSeekerContactOutcome> & outcomes =
+		game.getPendingSeekerContactOutcomes();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Expected exactly one contact outcome for impacting seeker",
+		static_cast<size_t>(1), outcomes.size());
+	CPPUNIT_ASSERT_EQUAL(7100u, outcomes[0].seekerID);
+
+	// Step 1: remove the impacting seeker (as completeMovePhase does).
+	game.applyMovementSeekerDamage();
+
+	{
+		const std::vector<Frontier::FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+		CPPUNIT_ASSERT_EQUAL_MESSAGE(
+			"SMFR-05 AC2: impacting seeker must be gone after applyMovementSeekerDamage",
+			static_cast<size_t>(1), seekers.size());
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("SMFR-05 AC2: surviving seeker must be 7101",
+			7101u, seekers[0].seekerID);
+		// Before clearNonImpactingSeekerMovementPaths the survivor still has its path.
+		CPPUNIT_ASSERT_MESSAGE(
+			"SMFR-05: survivor movementPath must be non-empty before path-clear step",
+			!seekers[0].movementPath.empty());
+	}
+
+	// Step 2: clear the surviving seeker's path (as completeMovePhase does).
+	game.clearNonImpactingSeekerMovementPaths();
+
+	{
+		const std::vector<Frontier::FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+		CPPUNIT_ASSERT_EQUAL_MESSAGE(
+			"SMFR-05: exactly one seeker must remain after both steps",
+			static_cast<size_t>(1), seekers.size());
+		const Frontier::FTacticalSeekerMissileState & s = seekers[0];
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("SMFR-05: surviving seeker ID must still be 7101",
+			7101u, s.seekerID);
+		CPPUNIT_ASSERT_MESSAGE(
+			"SMFR-05 AC3: survivor movementPath must be empty after clearNonImpactingSeekerMovementPaths",
+			s.movementPath.empty());
+		CPPUNIT_ASSERT_EQUAL_MESSAGE(
+			"SMFR-05 AC4: survivor movementTurn must be preserved",
+			4, s.movementTurn);
+		CPPUNIT_ASSERT_EQUAL_MESSAGE(
+			"SMFR-05 AC4: survivor movementAllowance must be preserved",
+			8, s.movementAllowance);
+	}
+
+	delete movingShip;
+}
+
+void FTacticalSeekerMovementTest::testCompleteMovePhaseCallsNonImpactingClearAfterDamageSourceContract() {
+	// SMFR-05 source-contract supplement: completeMovePhase() must call
+	// clearNonImpactingSeekerMovementPaths() and it must appear AFTER
+	// applyMovementSeekerDamage() in the function body so surviving seekers'
+	// paths are cleared only after impacting seekers are already removed.
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string completeMoveBody = extractFunctionBody(source, "void FTacticalGame::completeMovePhase()");
+
+	// Both calls must be present.
+	const std::string applyDamageToken = "applyMovementSeekerDamage()";
+	const std::string clearPathsToken  = "clearNonImpactingSeekerMovementPaths()";
+
+	const std::string::size_type damagePos = completeMoveBody.find(applyDamageToken);
+	const std::string::size_type clearPos  = completeMoveBody.find(clearPathsToken);
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMFR-05: completeMovePhase must call applyMovementSeekerDamage()",
+		damagePos != std::string::npos);
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMFR-05: completeMovePhase must call clearNonImpactingSeekerMovementPaths()",
+		clearPos != std::string::npos);
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMFR-05: clearNonImpactingSeekerMovementPaths() must follow applyMovementSeekerDamage() "
+		"in completeMovePhase so impacting seekers are already removed before path clearing",
+		clearPos > damagePos);
 }
 
 }
