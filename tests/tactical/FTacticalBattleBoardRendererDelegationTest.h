@@ -34,6 +34,7 @@ CPPUNIT_TEST( testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath 
 CPPUNIT_TEST( testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen );
 CPPUNIT_TEST( testDrawSeekerMissilesPendingOffensiveFireBranch );
 CPPUNIT_TEST( testDrawTriggeredMineHexesCalledInsideBSBattleGuard );
+CPPUNIT_TEST( testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -176,6 +177,23 @@ void testDrawSeekerMissilesPendingOffensiveFireBranch();
  * @date Last Modified: Jun 19, 2026
  */
 void testDrawTriggeredMineHexesCalledInsideBSBattleGuard();
+/**
+ * @brief Source-contract: drawSeekerMoveCountOverlay is called unconditionally inside BS_Battle.
+ *
+ * SMFR-04: supplements the behavioral GUI test by locking the code structure that enables
+ * the speed label to persist across all battle phases (not only PH_MOVE).
+ * Verifies:
+ * - drawSeekerMoveCountOverlay(dc) is called inside the BS_Battle block in draw().
+ * - The call is NOT inside a phase guard (no phase check gates it between
+ *   the BS_Battle guard and the drawSeekerMoveCountOverlay call).
+ * - The overlay function body does NOT filter out seekers whose movementPath.size() < 2;
+ *   it uses movementAllowance as the fallback count when no path is recorded.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle();
 };
 
 }

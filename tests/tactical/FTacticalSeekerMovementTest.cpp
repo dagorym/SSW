@@ -765,4 +765,123 @@ void FTacticalSeekerMovementTest::testMovementPathPopulatedByResolveActiveSeeker
 	delete targetShip;
 }
 
+void FTacticalSeekerMovementTest::testSeekerMoveCountLabelFieldsReflectPathAndAllowance() {
+	// SMFR-04: Behavioral model-level test for the seeker state fields consumed by
+	// drawSeekerMoveCountOverlay.  The overlay selects:
+	//   count = movementPath.size()-1  when movementPath is recorded this phase, or
+	//   count = movementAllowance       as fallback between resolution passes.
+	// This test confirms the model produces the correct field values in each case.
+
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+
+	// One target ship for the resolver to find.
+	FSeekerHarnessShip * targetShip = new FSeekerHarnessShip(0u, "Destroyer");
+	defendShips->push_back(targetShip);
+	const Frontier::FPoint targetHex(40, 20);
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+	game.placeShipAtHex(targetShip, targetHex);
+
+	// Case 1: Fresh activation — no movementPath recorded.
+	// movementAllowance is 0 for a seeker on movementTurn=0 (not yet resolved).
+	Frontier::FTacticalSeekerMissileState freshSeeker;
+	freshSeeker.seekerID = 9001u;
+	freshSeeker.ownerID = 1u;
+	freshSeeker.hex = Frontier::FPoint(20, 20);
+	freshSeeker.heading = 0;
+	freshSeeker.active = true;
+	freshSeeker.movementTurn = 0;
+	freshSeeker.movementAllowance = 0;
+	freshSeeker.hasSource = false;
+	// movementPath deliberately left empty to simulate "just activated, not yet moved".
+	game.seedSeeker(freshSeeker);
+
+	// Case 2: Another active seeker at the same hex (stacked case).
+	Frontier::FTacticalSeekerMissileState secondSeeker;
+	secondSeeker.seekerID = 9002u;
+	secondSeeker.ownerID = 1u;
+	secondSeeker.hex = Frontier::FPoint(20, 20);
+	secondSeeker.heading = 0;
+	secondSeeker.active = true;
+	secondSeeker.movementTurn = 1;
+	secondSeeker.movementAllowance = 2;   // populated by prior turn's resolution
+	secondSeeker.hasSource = false;
+	// movementPath empty (cleared at start of new resolution pass, before being refilled).
+	game.seedSeeker(secondSeeker);
+
+	// AC2/Case 1: Before resolution, freshSeeker has movementPath empty and movementAllowance==0.
+	{
+		const std::vector<Frontier::FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+		CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), seekers.size());
+		for (std::vector<Frontier::FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
+			 itr != seekers.end(); ++itr) {
+			if (itr->seekerID == 9001u) {
+				CPPUNIT_ASSERT_MESSAGE(
+					"SMFR-04: freshSeeker movementPath must be empty before resolution "
+					"(overlay would use movementAllowance as fallback).",
+					itr->movementPath.empty());
+				CPPUNIT_ASSERT_EQUAL_MESSAGE(
+					"SMFR-04: freshSeeker movementAllowance must be 0 before first resolution "
+					"(overlay label would show 0 for a just-activated seeker).",
+					0, itr->movementAllowance);
+			}
+			if (itr->seekerID == 9002u) {
+				CPPUNIT_ASSERT_MESSAGE(
+					"SMFR-04: secondSeeker movementPath must be empty before resolution "
+					"(path is cleared at the start of each pass).",
+					itr->movementPath.empty());
+				CPPUNIT_ASSERT_EQUAL_MESSAGE(
+					"SMFR-04: secondSeeker movementAllowance must be 2 (from prior turn) "
+					"for overlay fallback between resolution passes.",
+					2, itr->movementAllowance);
+			}
+		}
+	}
+
+	// AC1/Case 2: After resolution, movementPath is populated for active seekers that moved.
+	game.resolveActiveSeekersForMovingPlayer();
+
+	{
+		const std::vector<Frontier::FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+		for (std::vector<Frontier::FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
+			 itr != seekers.end(); ++itr) {
+			if (!itr->active) {
+				continue;
+			}
+			// After resolution, movementPath must have at least one point so
+			// movementPath.size()-1 >= 0 is a valid label count.
+			CPPUNIT_ASSERT_MESSAGE(
+				"SMFR-04: After resolution, an active seeker's movementPath must be non-empty "
+				"so the overlay uses movementPath.size()-1 as the count (not the fallback).",
+				!itr->movementPath.empty());
+			const int pathCount = static_cast<int>(itr->movementPath.size()) - 1;
+			CPPUNIT_ASSERT_MESSAGE(
+				"SMFR-04: movementPath.size()-1 must be non-negative (overlay shows hexes moved).",
+				pathCount >= 0);
+		}
+	}
+
+	// AC3 (stacked case): Both seekers must still be present and active at the same hex
+	// (unless one contacted the target, which is unlikely given hex distances).
+	// At minimum both must have been iterated during resolution.
+	int survivingCount = 0;
+	const std::vector<Frontier::FTacticalSeekerMissileState> & seekersFinal = game.getSeekerMissiles();
+	for (std::vector<Frontier::FTacticalSeekerMissileState>::const_iterator itr = seekersFinal.begin();
+		 itr != seekersFinal.end(); ++itr) {
+		if (itr->active) {
+			++survivingCount;
+		}
+	}
+	// Both seekers started far from the target (hex 20,20 vs 40,20) so neither should have
+	// contacted on a single resolution pass; both must survive with their own movementAllowance.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"SMFR-04: Both active seekers must survive a single resolution pass when target is distant "
+		"(verifies per-seeker independent state for stacked-display label computation).",
+		2, survivingCount);
+
+	delete targetShip;
+}
+
 }

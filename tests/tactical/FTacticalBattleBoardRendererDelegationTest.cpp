@@ -258,6 +258,67 @@ const std::string screenHeader = readFile(repoFile("include/tactical/FBattleScre
 assertContains(screenHeader, "std::vector<FPoint> getAllPendingOffensiveFireSeekerHexes() const;");
 }
 
+void FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle() {
+// SMFR-04 source-contract: drawSeekerMoveCountOverlay(dc) must be called inside the BS_Battle
+// block in FBattleBoard::draw() without any intervening phase guard.  This locks the fix that
+// makes the speed label visible in all battle phases (not only PH_MOVE).
+// Also verifies that the overlay function body uses movementAllowance as the fallback when
+// no movement path is recorded, and does NOT skip seekers whose movementPath.size() < 2.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleBoard::draw(wxDC &dc)");
+
+// AC1: the call appears inside the BS_Battle block.
+const std::string::size_type battleGuardPos = drawBody.find("if (m_parent->getState() == BS_Battle) {");
+CPPUNIT_ASSERT_MESSAGE("BS_Battle guard must exist in draw()", battleGuardPos != std::string::npos);
+const std::string::size_type callPos = drawBody.find("drawSeekerMoveCountOverlay(dc);");
+CPPUNIT_ASSERT_MESSAGE("drawSeekerMoveCountOverlay(dc) must exist in draw()", callPos != std::string::npos);
+CPPUNIT_ASSERT_MESSAGE(
+	"drawSeekerMoveCountOverlay(dc) must appear after the BS_Battle guard in draw()",
+	callPos > battleGuardPos);
+
+// AC1: the call must NOT be inside the phase-gated drawSeekerPaths block.
+// The phase guard "if (m_parent->getPhase() == PH_MOVE || m_parent->getPhase() == PH_SEEKER_ACTIVATION)"
+// must NOT appear between the battle-guard start and the drawSeekerMoveCountOverlay call.
+// Strategy: extract the fragment between the BS_Battle guard and the overlay call; it must not
+// contain a phase guard that would prevent the overlay from executing in PH_ATTACK_FIRE, etc.
+const std::string fragmentBetween = drawBody.substr(battleGuardPos, callPos - battleGuardPos);
+// The fragment between BS_Battle guard open and the overlay call may contain the seeker-path
+// phase guard, but the overlay call itself must NOT be nested inside it.  Verify this by
+// checking that drawSeekerMoveCountOverlay(dc) is NOT inside the drawSeekerPaths branch:
+// The simplest structural check: the overlay call must not be preceded by a phase guard
+// whose closing brace is not yet encountered before the call.
+// We verify this negatively: if the overlay call appears after the drawSeekerPaths closing
+// brace then it is outside the phase-gated block.
+// Locate the seeker-paths phase block end.
+std::string::size_type seekerPathBlock = fragmentBetween.find("drawSeekerPaths(dc)");
+if (seekerPathBlock != std::string::npos) {
+	// Confirm the closing brace of the seeker-paths phase guard precedes the overlay call
+	// by checking that a '}' appears after drawSeekerPaths(dc) in the fragment.
+	std::string::size_type closingBraceAfterPaths = fragmentBetween.find('}', seekerPathBlock);
+	CPPUNIT_ASSERT_MESSAGE(
+		"The seeker-paths phase-gated block must close before drawSeekerMoveCountOverlay(dc).",
+		closingBraceAfterPaths != std::string::npos);
+}
+
+// AC2: the overlay function body uses movementAllowance as the fallback count.
+const std::string overlayBody = extractFunctionBody(source, "void FBattleBoard::drawSeekerMoveCountOverlay(wxDC &dc)");
+assertContains(overlayBody, "movementAllowance");
+// AC2: it uses movementPath.size()-1 when a path exists.
+assertContains(overlayBody, "movementPath.size()");
+// AC2: the fallback branch assigns movementAllowance (not just checks it).
+assertContains(overlayBody, "count = itr->movementAllowance");
+
+// AC3: the function does NOT skip seekers with movementPath.size() < 2 — it iterates
+// every active seeker.  The old guard "if (!itr->active || itr->movementPath.size() < 2)"
+// that was in drawSeekerPaths must NOT appear in the overlay function body.
+CPPUNIT_ASSERT_MESSAGE(
+	"drawSeekerMoveCountOverlay must not skip seekers based on movementPath.size() < 2 alone; "
+	"it must include all active seekers regardless of whether they moved this phase.",
+	overlayBody.find("movementPath.size() < 2") == std::string::npos);
+// The only active-seeker filter should be the '!itr->active' skip.
+assertContains(overlayBody, "if (!itr->active)");
+}
+
 void FTacticalBattleBoardRendererDelegationTest::testDrawTriggeredMineHexesCalledInsideBSBattleGuard() {
 // SMFR-03: drawTriggeredMineHexes(dc) must be called from FBattleBoard::draw()
 // inside the BS_Battle state guard so triggered-hex highlights are visible during

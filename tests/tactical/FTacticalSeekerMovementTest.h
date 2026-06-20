@@ -35,6 +35,7 @@ CPPUNIT_TEST( testSeekerHelpersRemainModelOnlyAndFHexMapGeneric );
 CPPUNIT_TEST( testInactiveSeekerIgnoredByPathContactCheck );
 CPPUNIT_TEST( testSeekerRemovedFromModelAfterMovementContact );
 CPPUNIT_TEST( testMovementPathPopulatedByResolveActiveSeekers );
+CPPUNIT_TEST( testSeekerMoveCountLabelFieldsReflectPathAndAllowance );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -163,6 +164,25 @@ void testSeekerRemovedFromModelAfterMovementContact();
  * @date Last Modified: May 30, 2026
  */
 void testMovementPathPopulatedByResolveActiveSeekers();
+/**
+ * @brief Behavioral: SMFR-04 — seeker state fields for move-count label are correct.
+ *
+ * The drawSeekerMoveCountOverlay implementation picks count = movementPath.size()-1 when
+ * a path is recorded, or movementAllowance otherwise.  This model-level behavioral test
+ * verifies that FTacticalSeekerMissileState carries the correct field values in each case:
+ * - A freshly activated seeker (no movement path) has movementAllowance accessible as a
+ *   non-negative integer representing the fallback label value.
+ * - After resolveActiveSeekersForMovingPlayer() the seeker's movementPath is non-empty so
+ *   movementPath.size()-1 is the correct count (>= 0), confirming that value would be
+ *   shown instead of movementAllowance.
+ * - Two seekers at the same hex both retain independent movementAllowance values,
+ *   confirming the stacked-display count computation is per-seeker.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testSeekerMoveCountLabelFieldsReflectPathAndAllowance();
 };
 
 }

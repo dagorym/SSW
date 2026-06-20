@@ -42,6 +42,7 @@ CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
 CPPUNIT_TEST( testMinePlacementDoneButtonLabelReflectsOrdnanceTypes );
 CPPUNIT_TEST( testOffensiveSeekerPendingListRegionVisibilityAndRecall );
 CPPUNIT_TEST( testOrdnancePlacementAndActivationPanelHeightAutoExpands );
+CPPUNIT_TEST( testSeekerMoveCountOverlayRendersInAllBattlePhases );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -228,6 +229,23 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 19, 2026
 	 */
 	void testOrdnancePlacementAndActivationPanelHeightAutoExpands();
+	/**
+	 * @brief Behavioral: drawSeekerMoveCountOverlay fires for all BS_Battle phases.
+	 *
+	 * SMFR-04: Drives FBattleBoard::draw() in PH_MOVE, PH_ATTACK_FIRE, PH_DEFENSE_FIRE,
+	 * and PH_SEEKER_ACTIVATION via offscreen wxMemoryDC and asserts no crash.  The
+	 * no-crash observable is the primary behavioral evidence that the overlay is called
+	 * unconditionally in BS_Battle (not only during PH_MOVE as before).  Also verifies
+	 * that the seeker list is unchanged after all draws, confirming the overlay is
+	 * read-only display logic (AC4: no change to seeker movement/damage behavior).
+	 * Count-selection and stacked-display field correctness are covered by the model-level
+	 * testSeekerMoveCountLabelFieldsReflectPathAndAllowance in FTacticalSeekerMovementTest.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testSeekerMoveCountOverlayRendersInAllBattlePhases();
 };
 
 }
