@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "task_id": "SMFR-04",
+  "task_summary": "SMFR-04: Persist seeker speed label from activation to impact. drawSeekerMoveCountOverlay() moved outside phase guard in BS_Battle; overlay iterates all active seekers using movementAllowance fallback when no path is recorded this phase.",
+  "branch_name": "sf2-SMFR-04-tester-20260619",
+  "test_commit_hash": "f60ecea",
+  "test_files_changed": [
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp",
+    "tests/tactical/FTacticalBattleBoardRendererDelegationTest.h",
+    "tests/tactical/FTacticalSeekerMovementTest.cpp",
+    "tests/tactical/FTacticalSeekerMovementTest.h"
+  ],
+  "commands_run": [
+    "make -C tests tactical-tests && ./tests/tactical/TacticalTests",
+    "make -C tests gui-tests && DISPLAY=:0 ./tests/gui/GuiTests"
+  ],
+  "final_test_outcomes": "Tactical suite: 211 tests pass (0 failures). Includes 1 new behavioral test (testSeekerMoveCountLabelFieldsReflectPathAndAllowance) and 1 new source-contract test (testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle). GUI suite: 47 total, 37 pass (10 pre-existing failures unchanged, 1 new test testSeekerMoveCountOverlayRendersInAllBattlePhases passes). All SMFR-04 acceptance criteria verified.",
+  "unmet_acceptance_criteria": [],
+  "documenter_context": {
+    "implementation_files": [
+      "include/tactical/FBattleBoard.h",
+      "src/tactical/FBattleBoard.cpp"
+    ],
+    "plan_path": "plans/seeker-missile-fixes-round3-plan.md",
+    "comparison_base": "sf2 branch before commit 5b48aef",
+    "shared_artifact_directory": "artifacts/seeker-missile-fixes-round3/smfr-04"
+  }
+}
