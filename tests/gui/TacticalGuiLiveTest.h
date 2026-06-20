@@ -230,16 +230,20 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 */
 	void testOrdnancePlacementAndActivationPanelHeightAutoExpands();
 	/**
-	 * @brief Behavioral: drawSeekerMoveCountOverlay fires for all BS_Battle phases.
+	 * @brief Behavioral: drawSeekerMoveCountOverlay fires for all BS_Battle phases,
+	 * confirmed by a pixel-level observable with an active seeker in PH_ATTACK_FIRE.
 	 *
-	 * SMFR-04: Drives FBattleBoard::draw() in PH_MOVE, PH_ATTACK_FIRE, PH_DEFENSE_FIRE,
-	 * and PH_SEEKER_ACTIVATION via offscreen wxMemoryDC and asserts no crash.  The
-	 * no-crash observable is the primary behavioral evidence that the overlay is called
-	 * unconditionally in BS_Battle (not only during PH_MOVE as before).  Also verifies
-	 * that the seeker list is unchanged after all draws, confirming the overlay is
-	 * read-only display logic (AC4: no change to seeker movement/damage behavior).
-	 * Count-selection and stacked-display field correctness are covered by the model-level
-	 * testSeekerMoveCountLabelFieldsReflectPathAndAllowance in FTacticalSeekerMovementTest.
+	 * SMFR-04 pass-2 strengthening: Uses TestableBattleScreen to inject one active
+	 * seeker (hex 5,5, movementAllowance=3) before rendering.  Drives
+	 * FBattleBoard::draw() in PH_ATTACK_FIRE via offscreen wxMemoryDC and asserts
+	 * that at least one red (#FF0000-like) pixel appears in the upper-right label
+	 * region of that hex — the only pixel-level observable that proves the overlay
+	 * was reached and drew output.  A no-crash assertion alone would pass even if
+	 * the overlay were re-guarded inside PH_MOVE/PH_SEEKER_ACTIVATION because the
+	 * overlay exits early when the seeker list is empty.
+	 *
+	 * Also verifies no-crash for PH_MOVE, PH_DEFENSE_FIRE, and PH_SEEKER_ACTIVATION,
+	 * and AC4 (seeker count unchanged after all draws).
 	 *
 	 * @author claude-sonnet-4-6 (medium)
 	 * @date Created: Jun 19, 2026

@@ -368,6 +368,52 @@ wxString stripMenuMnemonic(const wxString & label) {
 	return stripped;
 }
 
+// SMFR-04: SeederGame subclass exposes a seedSeeker() injection method so GUI
+// tests can plant active seekers directly into the model without driving the
+// full ordnance-placement API flow.  m_seekerMissiles is protected in
+// FTacticalGame so a derived class can access it.
+class SeederGame : public Frontier::FTacticalGame {
+public:
+	void seedSeeker(const Frontier::FTacticalSeekerMissileState & s) {
+		m_seekerMissiles.push_back(s);
+	}
+};
+
+// SMFR-04: TestableBattleScreen exposes seeker-seeding through the protected
+// m_tacticalGame pointer.  After base construction the original FTacticalGame
+// is replaced with a SeederGame so the test can inject active seekers while
+// keeping all other FBattleScreen subsystems intact.
+class TestableBattleScreen : public FBattleScreen {
+public:
+	explicit TestableBattleScreen(const wxString & title = wxT("TestableBattleScreen"))
+		: FBattleScreen(title)
+		, m_seederGame(NULL)
+	{
+		// Base constructor already allocated a FTacticalGame and installed the UI.
+		// Detach the UI from the old game, destroy it, and reinstall on a SeederGame.
+		if (m_tacticalGame) {
+			m_tacticalGame->installUI(NULL);
+			delete m_tacticalGame;
+			m_tacticalGame = NULL;
+		}
+		m_seederGame = new SeederGame();
+		if (m_tacticalUI) {
+			m_seederGame->installUI(m_tacticalUI);
+		}
+		m_tacticalGame = m_seederGame;
+	}
+
+	/// Inject an active seeker directly into the model's seeker list.
+	void seedSeeker(const Frontier::FTacticalSeekerMissileState & s) {
+		if (m_seederGame) {
+			m_seederGame->seedSeeker(s);
+		}
+	}
+
+private:
+	SeederGame * m_seederGame;
+};
+
 void waitForBattleScreenLifecycleSettle(WXGuiTestHarness & harness,
                                         int timeoutMs = 1200,
                                         int pollMs = 10) {
@@ -1861,17 +1907,24 @@ void TacticalGuiLiveTest::testOrdnancePlacementAndActivationPanelHeightAutoExpan
 
 void TacticalGuiLiveTest::testSeekerMoveCountOverlayRendersInAllBattlePhases() {
 	// SMFR-04: Behavioral verification that FBattleBoard::draw() calls
-	// drawSeekerMoveCountOverlay unconditionally for all BS_Battle phases.
+	// drawSeekerMoveCountOverlay unconditionally for all BS_Battle phases, AND
+	// that the overlay actually renders a visible red pixel when an active seeker
+	// exists (AC1 pixel-level assertion in PH_ATTACK_FIRE).
 	//
-	// AC1: draw() in PH_ATTACK_FIRE must complete without crash with zero seekers,
-	//      proving the overlay fires in that phase (not only during PH_MOVE).
-	//      The overlay exits early when the seeker list is empty; the critical
-	//      behavioral observable is that it is called at all in non-movement phases.
-	// AC1: draw() in PH_DEFENSE_FIRE must also complete without crash.
-	// AC1: draw() in PH_MOVE must complete without crash (regression guard).
+	// AC1 pixel test: draw() in PH_ATTACK_FIRE with one active seeker must render
+	//      a red (#FF0000-like) label pixel in the upper-right of the seeker hex.
+	//      This is the only observable that proves the overlay was reached and
+	//      executed — a no-crash assertion alone passes even if the call is re-guarded
+	//      inside the phase check, because the overlay exits early when no seekers exist.
+	// AC1: draw() in PH_DEFENSE_FIRE and PH_SEEKER_ACTIVATION must also complete
+	//      without crash (regression guard that the overlay is not phase-gated).
+	// AC1: draw() in PH_MOVE must complete without crash (pre-SMFR-04 regression guard).
 	// AC4: The getSeekerMissiles() count must not change after board draws in any
-	//      BS_Battle phase, confirming the overlay is display-only (no side effects
-	//      on seeker movement, targeting, or damage behavior).
+	//      BS_Battle phase, confirming the overlay is display-only (no side effects).
+	//
+	// Regression reasoning: if drawSeekerMoveCountOverlay() were moved back inside the
+	// PH_MOVE/PH_SEEKER_ACTIVATION guard, the AC1 pixel assertion in PH_ATTACK_FIRE
+	// would fail because no label is drawn for the seeker in that phase.
 	//
 	// The model-level behavioral tests in FTacticalSeekerMovementTest cover:
 	// - AC1/AC2 count selection logic (movementAllowance vs movementPath.size()-1)
@@ -1889,7 +1942,10 @@ void TacticalGuiLiveTest::testSeekerMoveCountOverlayRendersInAllBattlePhases() {
 	attackFleets.push_back(attackFleet);
 	defendFleets.push_back(defendFleet);
 
-	FBattleScreen * battleScreen = new FBattleScreen("SMFR-04 Board Draw Phases");
+	// Use TestableBattleScreen so seedSeeker() can inject an active seeker directly
+	// into the model without requiring the full ordnance-placement API flow.
+	TestableBattleScreen * battleScreen =
+		new TestableBattleScreen("SMFR-04 Board Draw Phases");
 	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
 	battleScreen->Show();
 	m_harness.pumpEvents(2);
@@ -1899,42 +1955,93 @@ void TacticalGuiLiveTest::testSeekerMoveCountOverlayRendersInAllBattlePhases() {
 	battleScreen->setMoveComplete(true);
 	m_harness.pumpEvents(1);
 
-	// Zero seekers initially — overlay exits early but must be called.
-	const std::vector<FTacticalSeekerMissileState> & seekersAtStart =
-		battleScreen->getSeekerMissiles();
-	const int seekerCountAtStart = static_cast<int>(seekersAtStart.size());
+	// Baseline seeker count.
+	const int seekerCountAtStart =
+		static_cast<int>(battleScreen->getSeekerMissiles().size());
+
+	// --- Inject one active seeker at hex (col=5, row=5). ---
+	// Board defaults: scale=1.0 -> m_size=50, m_trim=50, m_d=25, m_a≈14.43.
+	// Hex (5,5) center: x≈350, y≈295.
+	// Label drawn at (center.x + d*0.4, center.y - a*1.5) ≈ (360, 273).
+	// A 2000×1500 bitmap covers this region fully.
+	FTacticalSeekerMissileState activeSeeker;
+	activeSeeker.seekerID           = 9001;
+	activeSeeker.ownerID            = 1;
+	activeSeeker.hex                = FPoint(5, 5);
+	activeSeeker.heading            = 0;
+	activeSeeker.active             = true;  // MUST be true — only active seekers render
+	activeSeeker.movementTurn       = 1;
+	activeSeeker.movementAllowance  = 3;     // count value shown in the label
+	activeSeeker.hasSource          = false;
+	activeSeeker.activationPhaseIndex = 0;
+	battleScreen->seedSeeker(activeSeeker);
+
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"SMFR-04: seedSeeker must add exactly one seeker to the model.",
+		seekerCountAtStart + 1,
+		static_cast<int>(battleScreen->getSeekerMissiles().size()));
 
 	// Locate the board for offscreen draws.
 	FBattleBoard * board = findFirstBattleBoard(battleScreen);
 	CPPUNIT_ASSERT_MESSAGE("FBattleBoard must exist for offscreen draw.", board != NULL);
 
+	// AC1 pixel-level assertion: draw in PH_ATTACK_FIRE and verify a red pixel
+	// appears near the expected label position.  This assertion FAILS if the overlay
+	// call is re-guarded inside the PH_MOVE/PH_SEEKER_ACTIVATION block, because in
+	// that case no label is drawn and the sampled region remains black/non-red.
+	battleScreen->setPhase(PH_ATTACK_FIRE);
+	bool foundRedPixelInAttackFire = false;
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+
+		// Sample a region around the expected label position (360, 273) with
+		// ±30x, ±20y tolerance to absorb minor font/scroll-offset variation.
+		const wxImage img = bmp.ConvertToImage();
+		const int labelX = 360;
+		const int labelY = 273;
+		const int tolX   = 30;
+		const int tolY   = 20;
+		const int x0 = std::max(0, labelX - tolX);
+		const int y0 = std::max(0, labelY - tolY);
+		const int x1 = std::min(img.GetWidth()  - 1, labelX + tolX);
+		const int y1 = std::min(img.GetHeight() - 1, labelY + tolY);
+		for (int py = y0; py <= y1 && !foundRedPixelInAttackFire; ++py) {
+			for (int px = x0; px <= x1 && !foundRedPixelInAttackFire; ++px) {
+				// Red label text: R high, G and B low.
+				if (img.GetRed(px, py) >= 200
+				    && img.GetGreen(px, py) < 80
+				    && img.GetBlue(px, py) < 80) {
+					foundRedPixelInAttackFire = true;
+				}
+			}
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMFR-04 AC1: No red label pixel found in PH_ATTACK_FIRE for the active seeker at "
+		"hex (5,5). drawSeekerMoveCountOverlay() must produce a visible move-count label "
+		"unconditionally in all BS_Battle phases. "
+		"If this fails, the overlay call was likely re-guarded inside the phase check.",
+		foundRedPixelInAttackFire);
+
 	// AC1: draw() in PH_MOVE (regression guard — overlay was present here before SMFR-04).
 	battleScreen->setPhase(PH_MOVE);
 	{
 		wxMemoryDC dc;
-		wxBitmap bmp(800, 600);
+		wxBitmap bmp(2000, 1500);
 		dc.SelectObject(bmp);
 		board->draw(dc);   // must not crash
 		dc.SelectObject(wxNullBitmap);
 	}
 
-	// AC1: draw() in PH_ATTACK_FIRE — NEW in SMFR-04: overlay now fires here too.
-	// This is the primary behavioral assertion: the draw path reaches the overlay call
-	// in a phase that was previously outside its scope.
-	battleScreen->setPhase(PH_ATTACK_FIRE);
-	{
-		wxMemoryDC dc;
-		wxBitmap bmp(800, 600);
-		dc.SelectObject(bmp);
-		board->draw(dc);   // must not crash (overlay called unconditionally in BS_Battle)
-		dc.SelectObject(wxNullBitmap);
-	}
-
-	// AC1: draw() in PH_DEFENSE_FIRE — another non-movement phase.
+	// AC1: draw() in PH_DEFENSE_FIRE.
 	battleScreen->setPhase(PH_DEFENSE_FIRE);
 	{
 		wxMemoryDC dc;
-		wxBitmap bmp(800, 600);
+		wxBitmap bmp(2000, 1500);
 		dc.SelectObject(bmp);
 		board->draw(dc);   // must not crash
 		dc.SelectObject(wxNullBitmap);
@@ -1944,20 +2051,18 @@ void TacticalGuiLiveTest::testSeekerMoveCountOverlayRendersInAllBattlePhases() {
 	battleScreen->setPhase(PH_SEEKER_ACTIVATION);
 	{
 		wxMemoryDC dc;
-		wxBitmap bmp(800, 600);
+		wxBitmap bmp(2000, 1500);
 		dc.SelectObject(bmp);
 		board->draw(dc);   // must not crash
 		dc.SelectObject(wxNullBitmap);
 	}
 
-	// AC4: Seeker list must be unchanged after all board draws (overlay is read-only display).
-	const std::vector<FTacticalSeekerMissileState> & seekersAfterDraws =
-		battleScreen->getSeekerMissiles();
+	// AC4: Seeker count must be unchanged after all board draws (display-only).
 	CPPUNIT_ASSERT_EQUAL_MESSAGE(
-		"SMFR-04: Seeker list size must be unchanged after board draws in all BS_Battle phases "
-		"(drawSeekerMoveCountOverlay is display-only; no side effects on seeker count).",
-		seekerCountAtStart,
-		static_cast<int>(seekersAfterDraws.size()));
+		"SMFR-04 AC4: Seeker list size must be unchanged after board draws in all BS_Battle "
+		"phases (drawSeekerMoveCountOverlay is display-only; no side effects on seeker count).",
+		seekerCountAtStart + 1,
+		static_cast<int>(battleScreen->getSeekerMissiles().size()));
 
 	battleScreen->Destroy();
 	m_harness.pumpEvents(5);
