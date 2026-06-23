@@ -8,9 +8,11 @@
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
  * mine instruction text onto two lines in the left column.
- * PGS-04: drawPlaceSeekers() now renders a centered placed-seeker undeploy list and
- * routes clicks to checkPreGameSeekerRecallSelection() via onLeftUp() during
- * BS_PlaceSeekers.
+ * SMRIV-02: drawPlaceSeekers() now uses a three-column layout: left column holds
+ * the instruction text (wrapped onto two lines) + Done button, middle column
+ * (lMargin=310) holds the source-selection rows anchored at getActionPromptLineY(0),
+ * and right column (recallMargin=620) holds the placed-seeker recall list anchored
+ * at getActionPromptLineY(0).  Click regions match drawn positions for both columns.
  */
 
 //#include "FBattleDisplay.h"
@@ -1505,12 +1507,19 @@ void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
 	std::ostringstream os;
 	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
 	dc.SetTextForeground(white);
-	dc.DrawText("The defending player may now place seeker missiles before the attacker sets up their ships.",
-		leftOffset, getActionPromptLineY(0));
-	int lMargin = 310;	// left margin for ship display
-	// Start the source list below the instruction+button region so neither area
-	// overlaps the other vertically.
-	int y = getActionButtonRowBottom();
+	// Left column: wrap the instruction text onto two lines using the space left of
+	// the source-row column (lMargin).  drawWrappedActionPrompt draws at leftOffset
+	// using getActionPromptLineY() for each wrapped line.
+	int lMargin = 310;	// left margin for middle (source-row) column
+	const int recallMargin = 620;  // left margin for right (recall) column
+	const int instructionMaxWidth = lMargin - leftOffset - BORDER;
+	int instructionCursor = 0;
+	drawWrappedActionPrompt(dc,
+		"The defending player may now place seeker missiles before the attacker sets up their ships.",
+		instructionMaxWidth, instructionCursor);
+	// Middle column: source-selection rows anchored to the top of the bottom panel,
+	// to the right of the left column (instruction text + Done button).
+	int y = getActionPromptLineY(0);
 	dc.DrawText("Select a source row to place seeker missiles.", lMargin, y);
 	y += (int)(1.6*textSize*1.3);
 	m_shipNameRegions.clear();
@@ -1553,22 +1562,19 @@ void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
 		y += (int)(1.6*textSize);
 	}
 
-	// Draw the centered placed-seeker undeploy list.
-	// Positioned at the horizontal center of the lower panel, below the source-selection rows.
+	// Right column: placed-seeker undeploy/recall list anchored to the top of the
+	// bottom panel at recallMargin, to the right of the middle column.
 	{
-		int panelW = 0, panelH = 0;
-		dc.GetSize(&panelW, &panelH);
-		const int centerMargin = panelW / 2;
-		int cy = getActionButtonRowBottom();
+		int cy = getActionPromptLineY(0);
 		dc.SetFont(bold);
 		dc.SetTextForeground(white);
-		dc.DrawText("Placed seekers (click to recall):", centerMargin, cy);
+		dc.DrawText("Placed seekers (click to recall):", recallMargin, cy);
 		cy += (int)(1.6*textSize);
 		dc.SetFont(normal);
 		const std::vector<FTacticalPreGameSeekerHexGroup> placedGroups = m_parent->getPlacedSeekerHexGroups();
 		if (placedGroups.empty()) {
 			dc.SetTextForeground(white);
-			dc.DrawText("None placed.", centerMargin, cy);
+			dc.DrawText("None placed.", recallMargin, cy);
 			cy += (int)(1.6*textSize);
 		} else {
 			for (unsigned int g = 0; g < placedGroups.size(); ++g) {
@@ -1593,9 +1599,9 @@ void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
 					<< " (" << grp.hex.getX() << "," << grp.hex.getY() << ")"
 					<< " x" << grp.count;
 				dc.SetTextForeground((g % 2 == 0) ? white : green);
-				dc.DrawText(os.str(), centerMargin, cy);
+				dc.DrawText(os.str(), recallMargin, cy);
 				wxSize tSize = dc.GetTextExtent(os.str());
-				m_preGameSeekerRecallRegions.push_back(wxRect(centerMargin, cy, tSize.GetWidth() + 16, tSize.GetHeight()));
+				m_preGameSeekerRecallRegions.push_back(wxRect(recallMargin, cy, tSize.GetWidth() + 16, tSize.GetHeight()));
 				m_preGameSeekerRecallHexes.push_back(wxPoint(grp.hex.getX(), grp.hex.getY()));
 				m_preGameSeekerRecallShipIDs.push_back(grp.source.shipID);
 				m_preGameSeekerRecallWeaponIndices.push_back(grp.source.weaponIndex);

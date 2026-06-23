@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 22, 2026 (PGS-04: add pre-game seeker recall list to drawPlaceSeekers)
+ * @date Last Modified: Jun 23, 2026 (SMRIV-02: three-column layout for drawPlaceSeekers)
  *
  */
 
@@ -548,20 +548,24 @@ protected:
 	/**
 	 * @brief Draws the display for placing seeker missiles (BS_PlaceSeekers phase).
 	 *
-	 * Shows seeker-missile-only deployment source rows with the seeker-specific
-	 * prompt text and the "Seeker Placement Done" button. Mirrors drawPlaceMines
-	 * but filters to SM-type sources only and routes completion through
-	 * FBattleScreen::completeSeekerPlacement().
+	 * Uses a three-column layout. The left column holds the wrapped instruction text
+	 * ("The defending player may now place seeker missiles before the attacker sets
+	 * up their ships." wrapped to two lines) plus the "Seeker Placement Done" button.
+	 * The middle column (at lMargin=310) holds the ship source-selection rows anchored
+	 * at getActionPromptLineY(0) — the top of the lower panel. The right column (at
+	 * recallMargin=620) holds the placed-seeker recall list, also anchored at
+	 * getActionPromptLineY(0), so all three columns are side-by-side and neither
+	 * overlaps the other, the left column, or the ship-status display.
 	 *
 	 * @param dc The device context to draw on.
 	 *
-	 * If the rendered source rows extend below the current `requestedDisplayHeight`,
-	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
-	 * remain fully visible.
+	 * If the rendered source rows or recall rows extend below the current
+	 * `requestedDisplayHeight`, the height is expanded and
+	 * `applyRequestedDisplayHeight()` is called so rows remain fully visible.
 	 *
-	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: Jun 02, 2026
-	 * @date Last Modified: Jun 19, 2026
+	 * @date Last Modified: Jun 23, 2026
 	 */
 	void drawPlaceSeekers(wxDC &dc);
 
