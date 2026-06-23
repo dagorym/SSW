@@ -1,0 +1,24 @@
+{
+  "artifact_file_paths": [
+    "artifacts/pregame-ordnance-placement/PGS-03/tester_report.md",
+    "artifacts/pregame-ordnance-placement/PGS-03/tester_result.json",
+    "artifacts/pregame-ordnance-placement/PGS-03/documenter_prompt.txt"
+  ],
+  "branch_name": "sf2-pgs-03-tester-20260622",
+  "commands_run": [
+    "make -C tests tactical-tests",
+    "./tests/tactical/TacticalTests"
+  ],
+  "pass_fail_totals": {
+    "fail": 0,
+    "pass": 216
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": "PGS-03",
+  "test_commit_hash": "e3aed6e",
+  "test_files_changed": [
+    "tests/tactical/FTacticalGameMechanicsTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}
