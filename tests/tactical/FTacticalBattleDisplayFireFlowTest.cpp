@@ -1118,8 +1118,9 @@ assertContains(ctorBody, "m_buttonSeekerPlacementDone->Hide();");
 
 void FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter() {
 // AC: SMF-02 -- drawPlaceSeekers() uses the seeker-specific prompt text, SM-only filter,
-// getActionButtonRowBottom() y-start, completeSeekerPlacement() delegation, and the
-// standard show/disconnect/hide button lifecycle.
+// completeSeekerPlacement() delegation, and the standard show/disconnect/hide button lifecycle.
+// SMRIV-02: The source-list y-start is now getActionPromptLineY(0) (three-column layout,
+// matching drawPlaceMines()), not getActionButtonRowBottom() as in the pre-SMRIV-02 layout.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string seekersBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceSeekers(wxDC &dc)");
 const std::string onDoneBody = extractFunctionBody(source, "void FBattleDisplay::onSeekerPlacementDone( wxCommandEvent& event )");
@@ -1134,8 +1135,10 @@ assertContains(seekersBody, "Select a source row to place seeker missiles.");
 // SM-only filter: rows whose weaponType is not SM must be skipped.
 assertContains(seekersBody, "if (source.weaponType != FWeapon::SM)");
 
-// Source list y-start uses getActionButtonRowBottom() (same layout contract as mine phase).
-assertContains(seekersBody, "int y = getActionButtonRowBottom();");
+// SMRIV-02: Source list y-start uses getActionPromptLineY(0) (three-column layout,
+// anchored to the top of the lower panel), not getActionButtonRowBottom().
+assertContains(seekersBody, "int y = getActionPromptLineY(0);");
+assertNotContains(seekersBody, "int y = getActionButtonRowBottom();");
 
 // Show m_buttonSeekerPlacementDone on first draw.
 assertContains(seekersBody, "m_buttonSeekerPlacementDone->Show();");
@@ -1250,6 +1253,46 @@ assertContains(activationBody, "if (activationListBottom > m_lowerPanelLayoutSta
 // Must update requestedDisplayHeight and call applyRequestedDisplayHeight() inside the guard.
 assertContains(activationBody, "m_lowerPanelLayoutState.requestedDisplayHeight = activationListBottom;");
 assertContains(activationBody, "applyRequestedDisplayHeight();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern() {
+// AC: SMRIV-02 -- drawPlaceSeekers() uses a three-column layout that mirrors drawPlaceMines():
+//   Left column:   instruction text wrapped by drawWrappedActionPrompt() in the left column.
+//   Middle column: source-selection rows at lMargin=310, anchored at getActionPromptLineY(0).
+//   Right column:  recall list at recallMargin=620, anchored at getActionPromptLineY(0).
+// Both columns are independent; source rows use wxRect(lMargin,y,...); recall rows use
+// wxRect(recallMargin,cy,...) with cy reset to getActionPromptLineY(0) for the right column.
+//
+// NOTE: This is a source-contract (structural) test. It verifies that the code is shaped
+// correctly but does NOT prove the runtime column positions or click-region alignment.
+// The authoritative behavioral coverage is
+// testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions in TacticalGuiLiveTest.cpp.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string seekersBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceSeekers(wxDC &dc)");
+
+// Left column: instruction text wrapped via drawWrappedActionPrompt().
+assertContains(seekersBody, "drawWrappedActionPrompt(dc,");
+
+// Middle column: lMargin=310, y anchored at getActionPromptLineY(0).
+assertContains(seekersBody, "int lMargin = 310;");
+assertContains(seekersBody, "int y = getActionPromptLineY(0);");
+
+// Right column: recallMargin=620, cy anchored at getActionPromptLineY(0).
+assertContains(seekersBody, "const int recallMargin = 620;");
+assertContains(seekersBody, "int cy = getActionPromptLineY(0);");
+
+// Source-row hit regions must use wxRect(lMargin,y,...).
+assertContains(seekersBody, "m_shipNameRegions.push_back(wxRect(lMargin,y,");
+
+// Recall-row hit regions must use wxRect(recallMargin,cy,...).
+assertContains(seekersBody, "m_preGameSeekerRecallRegions.push_back(wxRect(recallMargin, cy,");
+
+// Recall column header text drawn at recallMargin.
+assertContains(seekersBody, "dc.DrawText(\"Placed seekers (click to recall):\", recallMargin,");
+
+// Right column is independent of middle: recallMargin > lMargin ensures no overlap.
+// Verified structurally by confirming both margins are defined in the same function.
+assertBefore(seekersBody, "int lMargin = 310;", "const int recallMargin = 620;");
 }
 
 }

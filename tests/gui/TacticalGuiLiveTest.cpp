@@ -2684,14 +2684,21 @@ void TacticalGuiLiveTest::testPreGameSeekerRecallListAppearsAndClickRemovesSeeke
 		"AC1: m_preGameSeekerRecallRegions must be non-empty after placing one seeker.",
 		recallCountAfterPlacement >= 1);
 
-	// --- AC4: Each recall region must start at or below actionButtonRowBottom() ---
-	const int buttonRowBottom = peer->actionButtonRowBottomPublic();
+	// --- AC4: SMRIV-02 -- Each recall region is in the right column (recallMargin=620),
+	// anchored at getActionPromptLineY(0) at the top of the lower panel. The region's left
+	// edge must be at or near recallMargin=620 (not centered or in the middle column).
+	const int recallMargin = 620;
+	const int promptLineY0 = FBattleDisplayTestPeer::actionPromptLineY(0);
 	for (size_t i = 0; i < recallCountAfterPlacement; ++i) {
 		const wxRect recallRect = peer->preGameSeekerRecallRegion(i);
 		CPPUNIT_ASSERT_MESSAGE(
-			"AC4: Recall row region must start at or below actionButtonRowBottom() "
-			"(must not overlap action-button/prompt block).",
-			recallRect.GetTop() >= buttonRowBottom);
+			"AC4: Recall row region left edge must be at or near recallMargin=620 "
+			"(right column, not centered).",
+			recallRect.GetLeft() >= recallMargin);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC4: Recall row region top must be at or above the action-prompt top margin "
+			"(anchored to top of lower panel, not below button row).",
+			recallRect.GetTop() >= promptLineY0);
 	}
 
 	// --- AC2: Click the first recall region and verify seeker removal + ammo restore ---
@@ -2729,6 +2736,186 @@ void TacticalGuiLiveTest::testPreGameSeekerRecallListAppearsAndClickRemovesSeeke
 		"AC1 post-recall: m_preGameSeekerRecallRegions must be empty after recalling the only seeker.",
 		static_cast<size_t>(0),
 		peer->preGameSeekerRecallRegionCount());
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions() {
+	// SMRIV-02: Behavioral verification that drawPlaceSeekers() three-column layout
+	// anchors the middle (source) and right (recall) columns independently at the top of
+	// the lower panel, and that click regions align with the drawn positions.
+	//
+	// AC1: During BS_PlaceSeekers, source-selection rows (m_shipNameRegions) start at
+	//      x >= lMargin=310 (middle column, right of left column).
+	// AC2: During BS_PlaceSeekers, source-selection rows start at y >= getActionPromptLineY(0)
+	//      (anchored to the top of the lower panel, not below the button row).
+	// AC3: After a seeker is placed, recall rows (m_preGameSeekerRecallRegions) start at
+	//      x >= recallMargin=620 (right column, right of middle column).
+	// AC4: Recall rows start at y >= getActionPromptLineY(0) and recallMargin > lMargin
+	//      ensures horizontal separation (columns do not overlap).
+	// AC5: Selecting a source row via checkShipSelection still updates the active placement
+	//      source (getSelectedPlacementSourceIndex() changes and getWeapon() is SM type).
+	// AC6: Clicking a recall row via checkPreGameSeekerRecallSelection still undeploys one
+	//      seeker and restores ammo (behavior unchanged by layout reposition).
+
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker   = createShip("Destroyer");
+	FVehicle * minelayer1 = createShip("Minelayer");
+	FVehicle * minelayer2 = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Attacker and two Minelayers must be creatable",
+		attacker != NULL && minelayer1 != NULL && minelayer2 != NULL);
+	// Both Minelayers are owned by the defender (player 2) so drawPlaceSeekers produces
+	// multiple SM source rows.
+	minelayer1->setOwner(2);
+	minelayer2->setOwner(2);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(minelayer1);
+	defendFleet->addShip(minelayer2);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("SMRIV-02 Three-Column Seekers");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleDisplay must exist in the battle screen.", displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+	const int panelW = battleScreen->GetSize().GetWidth();
+
+	// Advance to BS_PlaceSeekers: enter ordnance placement (BS_PlaceMines) then draw
+	// offscreen to show the Mine Placement Done button, then click it.
+	const bool ordnanceEntered = battleScreen->beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginOrdnancePlacement() must succeed", ordnanceEntered);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(2);
+
+	// Draw offscreen to trigger Mine Placement Done button show (required before click).
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(panelW > 0 ? panelW : 800, 300);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	wxButton * mineDoneButton = findButtonByLabel(battleScreen, wxT("Mine Placement Done"));
+	CPPUNIT_ASSERT_MESSAGE("Mine Placement Done button must exist and be shown.",
+		mineDoneButton != NULL && mineDoneButton->IsShown());
+	{
+		wxCommandEvent mineClick(wxEVT_COMMAND_BUTTON_CLICKED, mineDoneButton->GetId());
+		mineClick.SetEventObject(mineDoneButton);
+		mineDoneButton->GetEventHandler()->ProcessEvent(mineClick);
+	}
+	m_harness.pumpEvents(2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Must be in BS_PlaceSeekers after Mine Placement Done.",
+		static_cast<int>(BS_PlaceSeekers), battleScreen->getState());
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(panelW > 0 ? panelW : 800, 300);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	const int lMargin = 310;
+	const int recallMargin = 620;
+	const int promptLineY0 = FBattleDisplayTestPeer::actionPromptLineY(0);
+
+	// --- AC1 + AC2: Source rows must be in the middle column ---
+	const size_t sourceRowCount = peer->shipNameRegionCount();
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC1: At least one SM source row must appear during BS_PlaceSeekers.",
+		sourceRowCount >= 1);
+	for (size_t i = 0; i < sourceRowCount; ++i) {
+		const wxRect rowRect = peer->shipNameRegion(i);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC1: Source row left edge must be at or right of lMargin=310 (middle column).",
+			rowRect.GetLeft() >= lMargin);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC2: Source row top must be at or below getActionPromptLineY(0) "
+			"(anchored to the top of the lower panel).",
+			rowRect.GetTop() >= promptLineY0);
+	}
+
+	// --- AC5: Selecting a source row updates the active placement source ---
+	FWeapon * initialWeapon = battleScreen->getWeapon();
+	CPPUNIT_ASSERT_MESSAGE("AC5: getWeapon() must be non-NULL in BS_PlaceSeekers.", initialWeapon != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("AC5: Initial weapon must be SM type.", FWeapon::SM, initialWeapon->getType());
+	if (sourceRowCount >= 2) {
+		const wxRect secondRowRect = peer->shipNameRegion(1);
+		wxMouseEvent clickEvent(wxEVT_LEFT_UP);
+		clickEvent.m_x = secondRowRect.GetLeft() + secondRowRect.GetWidth() / 2;
+		clickEvent.m_y = secondRowRect.GetTop()  + secondRowRect.GetHeight() / 2;
+		peer->checkShipSelectionPublic(clickEvent);
+		CPPUNIT_ASSERT_EQUAL_MESSAGE(
+			"AC5: Clicking source row 1 must set getSelectedPlacementSourceIndex() to 1.",
+			1, battleScreen->getSelectedPlacementSourceIndex());
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC5: getWeapon() must still be SM after switching to row 1.",
+			battleScreen->getWeapon() != NULL
+			&& battleScreen->getWeapon()->getType() == FWeapon::SM);
+	}
+
+	// Place a seeker to populate the recall list.
+	FWeapon * seekerLauncher = battleScreen->getWeapon();
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must be present for placement.", seekerLauncher != NULL);
+	const int ammoBeforePlacement = seekerLauncher->getAmmo();
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must have ammo > 0.", ammoBeforePlacement > 0);
+	const FPoint seekerHex(5, 5);
+	const bool placed = battleScreen->handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("handleHexClick in BS_PlaceSeekers must succeed.", placed);
+
+	// Redraw to populate m_preGameSeekerRecallRegions.
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(panelW > 0 ? panelW : 800, 300);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	// --- AC3 + AC4: Recall rows must be in the right column ---
+	const size_t recallCount = peer->preGameSeekerRecallRegionCount();
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC3: At least one recall row must appear after placing a seeker.",
+		recallCount >= 1);
+	for (size_t i = 0; i < recallCount; ++i) {
+		const wxRect recallRect = peer->preGameSeekerRecallRegion(i);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC3: Recall row left edge must be at or right of recallMargin=620 (right column).",
+			recallRect.GetLeft() >= recallMargin);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC4: Recall row top must be at or below getActionPromptLineY(0).",
+			recallRect.GetTop() >= promptLineY0);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC4: Right column (recallMargin=620) must be right of middle column (lMargin=310) "
+			"to ensure the columns do not overlap.",
+			recallRect.GetLeft() >= lMargin + 1);
+	}
+
+	// --- AC6: Clicking a recall row undeploys the seeker and restores ammo ---
+	const wxRect firstRecallRect = peer->preGameSeekerRecallRegion(0);
+	wxMouseEvent recallClick(wxEVT_LEFT_UP);
+	recallClick.m_x = firstRecallRect.GetLeft() + firstRecallRect.GetWidth() / 2;
+	recallClick.m_y = firstRecallRect.GetTop()  + firstRecallRect.GetHeight() / 2;
+	const bool recalled = peer->checkPreGameSeekerRecallSelectionPublic(recallClick);
+	CPPUNIT_ASSERT_MESSAGE("AC6: checkPreGameSeekerRecallSelection() must return true.", recalled);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC6: getSeekerMissiles().size() must be 0 after recalling the only placed seeker.",
+		static_cast<unsigned int>(0),
+		static_cast<unsigned int>(battleScreen->getSeekerMissiles().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC6: Seeker launcher ammo must be restored by 1 after recall.",
+		ammoBeforePlacement, seekerLauncher->getAmmo());
 
 	battleScreen->Destroy();
 	m_harness.pumpEvents(5);

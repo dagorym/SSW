@@ -20,9 +20,9 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Jun 22, 2026
+ * @date Last Modified: Jun 23, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -47,6 +47,7 @@ CPPUNIT_TEST( testSeekerMoveCountOverlayRendersInAllBattlePhases );
 CPPUNIT_TEST( testSeekerPathRendersInPHMoveWithMovementPath );
 CPPUNIT_TEST( testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources );
 CPPUNIT_TEST( testPreGameSeekerRecallListAppearsAndClickRemovesSeeker );
+CPPUNIT_TEST( testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -314,10 +315,11 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 
 	/**
 	 * @brief Behavioral verification for PGS-04: the pre-game seeker recall list appears
-	 * during BS_PlaceSeekers (centered in the lower panel), is populated with one row per
+	 * during BS_PlaceSeekers (right column at recallMargin=620), is populated with one row per
 	 * placed inactive seeker group, and clicking a recall row removes exactly one seeker and
-	 * restores ammo. The recall list must NOT appear during BS_PlaceMines or overlap the
-	 * source-selection rows.
+	 * restores ammo. The recall list must NOT appear during BS_PlaceMines.
+	 * SMRIV-02: AC4 updated to verify recall regions are in the right column (x >= 620),
+	 * not below the button row.
 	 *
 	 * AC1: During BS_PlaceSeekers, drawPlaceSeekers() populates m_preGameSeekerRecallRegions
 	 *      after a seeker is placed (one region per (hex, source) group).
@@ -326,14 +328,35 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 *      seeker launcher.
 	 * AC3: During BS_PlaceMines, draw() must not populate m_preGameSeekerRecallRegions
 	 *      (recall list absent from mine phase).
-	 * AC4: Each recall region starts at or below the source-row bottom (does not overlap
-	 *      source-selection rows or the action-button/prompt block).
+	 * AC4: Each recall region left edge is at or right of recallMargin=620 (right column).
 	 *
 	 * @author claude-sonnet-4-6 (medium)
 	 * @date Created: Jun 22, 2026
-	 * @date Last Modified: Jun 22, 2026
+	 * @date Last Modified: Jun 23, 2026
 	 */
 	void testPreGameSeekerRecallListAppearsAndClickRemovesSeeker();
+
+	/**
+	 * @brief Behavioral verification for SMRIV-02: the BS_PlaceSeekers three-column layout
+	 * anchors source rows in the middle column (lMargin=310, top of panel) and recall rows
+	 * in the right column (recallMargin=620, top of panel). Click regions align with drawn
+	 * positions for both columns. Selecting a source row and recalling a seeker still work.
+	 *
+	 * AC1: Source-selection rows have left edge >= lMargin=310 (middle column).
+	 * AC2: Source-selection rows have top >= getActionPromptLineY(0) (top-of-panel anchor).
+	 * AC3: Recall rows have left edge >= recallMargin=620 (right column).
+	 * AC4: Recall rows have top >= getActionPromptLineY(0); recallMargin > lMargin
+	 *      ensures horizontal column separation.
+	 * AC5: Selecting a source row via checkShipSelection updates getSelectedPlacementSourceIndex()
+	 *      and getWeapon() returns an SM weapon (behavior unchanged by layout change).
+	 * AC6: Clicking a recall row via checkPreGameSeekerRecallSelection undeploys one seeker
+	 *      and restores ammo (behavior unchanged by layout change).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 23, 2026
+	 * @date Last Modified: Jun 23, 2026
+	 */
+	void testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions();
 };
 
 }
