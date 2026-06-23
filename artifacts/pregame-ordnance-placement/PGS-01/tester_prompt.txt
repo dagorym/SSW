@@ -1,0 +1,48 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- PGS-01: Restore pre-game mine board placement. Fixed FBattleDisplay::onSetSpeed() to not null m_curShip/m_curWeapon when BS_PlaceMines is entered via beginMinePlacement(). Also hardened FTacticalGame::beginOrdnancePlacement() to only enter BS_PlaceMines when selectPlacementSourceByIndex() succeeds.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- When onSetSpeed -> beginMinePlacement succeeds, m_curShip and m_curWeapon reference the selected mine ship and launcher (not null) when the first board click arrives.
+- During pre-game BS_PlaceMines, clicking a valid in-bounds hex decrements the mine launcher ammo by one, inserts the hex into m_minedHexList, and appends a record to m_placedOrdnance.
+- Placed mines are highlighted on the board during the mine phase.
+- beginOrdnancePlacement() only enters BS_PlaceMines when selectPlacementSourceByIndex() returns true.
+- A behavioral (not source-text-match) test reproduces the real entry sequence and asserts that a mine is recorded; fails against unfixed code and passes after the fix.
+
+Create test files in:
+- Model-level behavioral test: tests/tactical/FTacticalGameMechanicsTest.cpp — reproduce beginMinePlacement() entry followed by setShip(NULL) (simulating old bug) and assert placeMineAtHex fails; then reproduce fixed path and assert mine is recorded.
+- GUI-entry behavioral test: tests/gui/TacticalGuiLiveTest.cpp — drive the real onSetSpeed/mine-entry path and assert mine board placement works.
+- Source-inspection assertion update needed: tests/tactical/FTacticalGameMechanicsTest.cpp line 586 — change assertContains for 'selectPlacementSourceByIndex(selectedIndex);' to match the new if-guard form 'if (!selectPlacementSourceByIndex(selectedIndex)) {'.
+
+Implementation context for testing:
+- Root cause: FBattleDisplay::onSetSpeed() (src/tactical/FBattleDisplay.cpp) called m_parent->setShip(NULL) unconditionally after beginMinePlacement(), nulling m_curShip before the first board click. FTacticalGame::placeMineAtHex() returns false when m_curShip == NULL, so every mine click was silently dropped.
+- Fix 1 (FBattleDisplay.cpp): Track enteredMinePlacement flag. If beginMinePlacement() succeeds (returns true), skip the setShip(NULL) call so m_curShip/m_curWeapon remain set for the first board click.
+- Fix 2 (FTacticalGame.cpp): In beginOrdnancePlacement(), the call selectPlacementSourceByIndex(selectedIndex) at the end now checks the return value: if (!selectPlacementSourceByIndex(selectedIndex)) { return false; } before entering BS_PlaceMines.
+- Seeker placement is unaffected: beginSeekerPlacement() has its own path with no setShip(NULL) racing the first click.
+- The mine placement done path (completeMinePlacement) correctly calls setShip(NULL)/setWeapon(NULL) after the phase ends.
+- The Tester must write a behavioral test that exercises the real entry flow and asserts mine placement succeeds.
+
+Suggested test command(s):
+- make -C /home/tstephen/repos/worktrees/sf2-pgs-01-implementer-20260622/tests tactical-tests
+- /home/tstephen/repos/worktrees/sf2-pgs-01-implementer-20260622/tests/tactical/TacticalTests
+- make -C /home/tstephen/repos/worktrees/sf2-pgs-01-implementer-20260622/tests
+- /home/tstephen/repos/worktrees/sf2-pgs-01-implementer-20260622/tests/SSWTests
+
+Existing validations expected to fail only because approved behavior changed:
+- FrontierTests::FTacticalGameMechanicsTest::testOrdnancePlacementSourceTrackingAndCompatibilityFlows (line 586): assertContains for 'selectPlacementSourceByIndex(selectedIndex);' fails because the approved fix wraps this in 'if (!selectPlacementSourceByIndex(selectedIndex)) {'. Tester must update this assertion to match the new guarded form and add the required behavioral regression test.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/pregame-ordnance-placement/PGS-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
