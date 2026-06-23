@@ -1,0 +1,47 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- PGS-03: Make pre-game seeker placement additive (stacking) and remove board-click removal for seekers during BS_PlaceSeekers. placeOrdnanceAtHex() now skips the removePlacedOrdnanceForSelection toggle when state==BS_PlaceSeekers and weapon type==SM, calling placeSeekerFromSelection() directly instead. Mine toggle behavior for BS_PlaceMines and attack-phase seeker deployment for BS_Battle/PH_ATTACK_FIRE are unchanged.
+
+Modified files:
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FTacticalGame.h
+
+Acceptance criteria to validate (from Planner):
+- During pre-game BS_PlaceSeekers, clicking a hex always adds one inactive seeker: ammo decrements, new inactive seeker record created, placed-ordnance record appended on every click including repeated same-hex clicks.
+- Repeated clicks on the same hex accumulate multiple seekers; no toggle/removal occurs from the board during seeker placement.
+- Mine placement retains toggle behavior (clicking a mined hex removes the mine) and attack-phase seeker/mine behavior is unchanged.
+- Seeker placement stops adding when the selected source's launcher ammo is exhausted.
+- Add a behavioral (not source-text-match) model test: enter seeker placement, click the same hex multiple times for one source, assert seeker count and ammo decrement increase per click (no removal). Test must fail against pre-fix toggle behavior and pass after fix.
+
+Create test files in:
+- tests/tactical/FTacticalGameMechanicsTest.h — add test declaration
+- tests/tactical/FTacticalGameMechanicsTest.cpp — add test implementation
+- The test should be named testPreGameSeekerPlacementIsAdditive or similar
+- Register the test in the CPPUNIT_TEST_SUITE macro in FTacticalGameMechanicsTest.h
+
+Implementation context for testing:
+- The fix is in FTacticalGame::placeOrdnanceAtHex() in src/tactical/FTacticalGame.cpp.
+- A new guard was inserted after the BS_Battle/offensive-fire early return and before the removePlacedOrdnanceForSelection block.
+- Guard condition: if (getState() == BS_PlaceSeekers && selectedSource.weaponType == FWeapon::SM) { return placeSeekerFromSelection(hex, selectedSource); }
+- placeSeekerFromSelection() already handles ammo exhaustion (returns false when ammo==0), source tracking, seeker missile record creation, placed-ordnance record, and filtered source list rebuild.
+- BS_PlaceMines toggle path (removePlacedOrdnanceForSelection followed by mine placement) is completely unaffected.
+- Attack-phase seeker deployment (BS_Battle/PH_ATTACK_FIRE) is handled before this guard and is unaffected.
+- To verify: construct FTacticalGame, call beginSeekerPlacement(), call handleHexClick(sameHex) 3 times, assert getSeekerMissiles().size()==3, seeker launcher ammo decremented by 3, getPlacedOrdnance() has 3 SM-type records. These assertions would fail against the old toggle code because the second click would remove the first seeker.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/pregame-ordnance-placement/PGS-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
