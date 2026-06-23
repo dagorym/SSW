@@ -1,0 +1,44 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Reposition the BS_PlaceMines source-selection rows in drawPlaceMines() to anchor to the top of the lower panel (right column at lMargin=310, starting at getActionPromptLineY(0)) rather than below the action-button row. Wrap the mine instruction text onto two lines in the left column using drawWrappedActionPrompt().
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- During BS_PlaceMines, the source-selection rows render anchored to the top of the bottom panel (top aligned with the instruction-text top region, not the bottom of the action-button row) and to the right of the left column.
+- The mine instruction text renders on two lines.
+- Every ship with a deployable mine launcher still appears as a selectable source row; each row's click region aligns with its drawn position; rows are not clipped or rendered behind the Done button, left column, or ship-status display.
+- Clicking a source row still selects that ship+weapon for subsequent board clicks; with exactly one eligible ship it is auto-selected.
+
+Create test files in:
+- Live layout / click-region behavior: tests/gui/TacticalGuiLiveTest.cpp
+- Source-contract coverage: tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+
+Implementation context for testing:
+- drawPlaceMines() in src/tactical/FBattleDisplay.cpp was changed.
+- The instruction text is now rendered via drawWrappedActionPrompt() with maxWidth = lMargin - leftOffset - BORDER (310 - 70 - 5 = 295), which wraps the string onto two lines.
+- Source rows now start at int y = getActionPromptLineY(0) = ACTION_PROMPT_TOP_MARGIN = 5 at x = lMargin = 310.
+- m_shipNameRegions entries still use wxRect(lMargin, y, ...) matching drawn positions.
+- The mineListBottom height-expansion logic and Done button lifecycle are unchanged.
+- Two existing source-contract tests are expected failures (see tester_instructions).
+
+Suggested test command(s):
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- FTacticalBattleDisplayFireFlowTest::testPlaceMinesSourceListStartsAtActionButtonRowBottom (source-contract asserts old 'int y = getActionButtonRowBottom();' which is intentionally replaced by 'int y = getActionPromptLineY(0);')
+- TacticalGuiLiveTest::testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources AC3 (asserts rows start at or below getActionButtonRowBottom(); new layout starts rows at getActionPromptLineY(0) which is above that)
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round4/SMRIV-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

@@ -411,15 +411,16 @@ void testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers();
 void testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing();
 
 /**
- * @brief Verifies that drawPlaceMines() starts the source list at getActionButtonRowBottom()
- * rather than BORDER, ensuring no vertical overlap between the instruction/button region and
- * the placement source list region. Also verifies hit regions and other draw phases are unaffected.
+ * @brief Verifies that drawPlaceMines() anchors the source-selection rows to the top of
+ * the lower panel (right column at lMargin=310, starting at getActionPromptLineY(0)), wraps
+ * the instruction text via drawWrappedActionPrompt() in the left column, keeps hit regions
+ * aligned with drawn positions, and leaves other draw phases unaffected.
  *
- * AC: SMC-04 -- pre-game placement panel layout overlap fix.
+ * AC: SMRIV-01 -- drawPlaceMines() top-of-panel row anchor and wrapped instruction text.
  *
- * @author claude-sonnet-4-6 (standard)
+ * @author claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: May 30, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jun 23, 2026
  */
 void testPlaceMinesSourceListStartsAtActionButtonRowBottom();
 

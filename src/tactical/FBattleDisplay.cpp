@@ -1,10 +1,13 @@
 /**
  * @file FBattleDisplay.cpp
  * @brief Implementation file for BattleDispaly class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 22, 2026
+ * @date Last Modified:  Jun 23, 2026
  *
+ * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
+ * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
+ * mine instruction text onto two lines in the left column.
  * PGS-04: drawPlaceSeekers() now renders a centered placed-seeker undeploy list and
  * routes clicks to checkPreGameSeekerRecallSelection() via onLeftUp() during
  * BS_PlaceSeekers.
@@ -1420,14 +1423,19 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	std::ostringstream os;
 	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
 	dc.SetTextForeground(white);
-	dc.DrawText("The defending player may now place mines before the attacker sets up their ships.",
-		leftOffset, getActionPromptLineY(0));
-	int lMargin = 310;	// left margin for ship display
-	// Start the source list below the instruction+button region so neither area
-	// overlaps the other vertically.  getActionButtonRowBottom() returns the
-	// fallback height when the button is not yet shown (m_first==true) and the
-	// real sizer-measured button bottom on subsequent draws.
-	int y = getActionButtonRowBottom();
+	// Left column: wrap the instruction text onto two lines using the space left of
+	// the source-row column (lMargin).  drawWrappedActionPrompt draws at leftOffset
+	// using getActionPromptLineY() for each wrapped line.
+	int lMargin = 310;	// left margin for source-row column (right of left column)
+	const int instructionMaxWidth = lMargin - leftOffset - BORDER;
+	int instructionCursor = 0;
+	drawWrappedActionPrompt(dc,
+		"The defending player may now place mines before the attacker sets up their ships.",
+		instructionMaxWidth, instructionCursor);
+	// Right column: source-selection rows anchored to the top of the bottom panel,
+	// to the right of the left column (instruction text + Done button).
+	int y = getActionPromptLineY(0);
+	dc.SetTextForeground(white);
 	dc.DrawText("Select a source row to place mines.", lMargin, y);
 	y += (int)(1.6*textSize*1.3);
 	m_shipNameRegions.clear();
