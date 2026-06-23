@@ -20,7 +20,7 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
  * @date Last Modified: Jun 22, 2026
  */
@@ -45,6 +45,7 @@ CPPUNIT_TEST( testOffensiveSeekerPendingListRegionVisibilityAndRecall );
 CPPUNIT_TEST( testOrdnancePlacementAndActivationPanelHeightAutoExpands );
 CPPUNIT_TEST( testSeekerMoveCountOverlayRendersInAllBattlePhases );
 CPPUNIT_TEST( testSeekerPathRendersInPHMoveWithMovementPath );
+CPPUNIT_TEST( testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -292,6 +293,23 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 19, 2026
 	 */
 	void testSeekerPathRendersInPHMoveWithMovementPath();
+
+	/**
+	 * @brief Behavioral verification for PGS-02: source rows are populated after draw, all row
+	 * regions start below the action-button row, clicking a row updates the selected source and
+	 * m_curShip/m_curWeapon, and the next board click places ordnance from the newly selected ship.
+	 *
+	 * AC1: Both Minelayers produce a row in m_shipNameRegions during BS_PlaceMines.
+	 * AC2: Clicking row 1 updates getSelectedPlacementSourceIndex() to 1 and changes getShip().
+	 * AC3: Every row region starts at or below getActionButtonRowBottom() (not clipped).
+	 * AC4: handleHexClick() after source switch records ordnance with the newly selected shipID.
+	 * AC5: Auto-selection on entry (getShip() non-NULL after beginMinePlacement()).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	void testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources();
 };
 
 }

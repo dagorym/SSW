@@ -149,6 +149,22 @@ int shipStatsLeftMarginPublic() const {
 int requestedDisplayHeightPublic() const {
 	return m_lowerPanelLayoutState.requestedDisplayHeight;
 }
+
+/// returns the number of source-row click regions registered after the last draw (AC1/AC3 verification)
+size_t shipNameRegionCount() const {
+	return m_shipNameRegions.size();
+}
+
+/// returns the i-th source-row click region after the last draw (AC3 alignment verification)
+wxRect shipNameRegion(size_t i) const {
+	CPPUNIT_ASSERT(i < m_shipNameRegions.size());
+	return m_shipNameRegions[i];
+}
+
+/// exposes checkShipSelection() so a simulated mouse-release event can verify row-click selection (AC2)
+void checkShipSelectionPublic(wxMouseEvent & event) {
+	checkShipSelection(event);
+}
 };
 
 wxTextCtrl * findFirstTextCtrl(wxWindow * root) {
@@ -1990,14 +2006,18 @@ void TacticalGuiLiveTest::testOrdnancePlacementAndActivationPanelHeightAutoExpan
 	delete defendFleet;
 	m_harness.cleanupOrphanTopLevels(10);
 
-	// NOTE: The drawSeekerActivation() expansion is immediately overwritten by the subsequent
-	// drawCurrentShipStats() call (which calls setLowerPanelState(), clobbering requestedDisplayHeight
-	// with a stats-based height).  This assertion detects that implementation defect:
-	// the activation list height should persist after the draw but currently does not.
+	// PGS-02 FIXED: applyRequestedDisplayHeight() now notifies the parent via SendSizeEvent()
+	// so FBattleScreen::applyLayoutPolicy() runs on the next event-loop iteration and grows
+	// the panel to accommodate the expanded requestedDisplayHeight.  The earlier observation
+	// that drawCurrentShipStats/ensureLowerPanelLayoutState could clobber the expanded height
+	// no longer applies because both compute requestedDisplayHeight from the same bottom-edge
+	// measurement and the SendSizeEvent path is guarded by m_inResizeReflow to prevent loops.
+	// This assertion is now a persistence regression guard: height must not decrease after the
+	// draw, confirming the expansion contract is still honoured across future code changes.
 	CPPUNIT_ASSERT_MESSAGE(
 		"drawSeekerActivation(): requestedDisplayHeight must not decrease after drawing activation rows. "
-		"[DEFECT: drawCurrentShipStats/setLowerPanelState resets requestedDisplayHeight after "
-		"drawSeekerActivation() expands it, causing activation rows to render below the panel minimum.]",
+		"(Regression guard: PGS-02 fixed this by having applyRequestedDisplayHeight() notify the parent "
+		"via SendSizeEvent() so the panel grows to show all activation rows.)",
 		heightAfterActivation >= heightBeforeActivation);
 	CPPUNIT_ASSERT_EQUAL_MESSAGE(
 		"drawSeekerActivation(): GetMinSize().GetHeight() must equal requestedDisplayHeight after draw.",
@@ -2377,6 +2397,151 @@ void TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath() {
 		"line in the path band (drawSeekerPaths not called in PH_ATTACK_FIRE).",
 		0, pathBandDiffPHAttackFire);
 
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources() {
+	// PGS-02: Behavioral verification covering AC1-AC4 for mine placement source rows.
+	//
+	// AC1: During BS_PlaceMines, each ship with a deployable M launcher appears as a
+	//      selectable source row (m_shipNameRegions is non-empty and has one entry per
+	//      ship with an M weapon).
+	// AC2: Clicking a source row (simulated via checkShipSelection) updates the selected-
+	//      source index and m_curShip/m_curWeapon to the matching ship+weapon.
+	// AC3: Each row's click region starts at or below getActionButtonRowBottom(), confirming
+	//      rows are not clipped or rendered behind the action-button/prompt block.
+	// AC4: After switching to a different source, the next board click places ordnance
+	//      from the newly selected ship (verified via placed-ordnance source.shipID).
+	//
+	// Setup: two Minelayers in the defend fleet so BS_PlaceMines produces two deployable
+	// M sources (one per Minelayer), giving a multi-source scenario where source switching
+	// is meaningful.
+
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	FVehicle * minelayer1 = createShip("Minelayer");
+	FVehicle * minelayer2 = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Attacker and two Minelayers must be creatable",
+		attacker != NULL && minelayer1 != NULL && minelayer2 != NULL);
+	// Both minelayers are owned by defender (player 2).
+	minelayer1->setOwner(2);
+	minelayer2->setOwner(2);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(minelayer1);
+	defendFleet->addShip(minelayer2);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("PGS-02 Source Row Click Selection");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+
+	// Enter BS_PlaceMines via the same API path as the game.
+	const bool entered = battleScreen->beginMinePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginMinePlacement() must succeed with Minelayers in fleet", entered);
+
+	// After entry, at least one source must be auto-selected (AC5, single-or-first selection).
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC5: After beginMinePlacement() at least one source must be selected (getShip() non-NULL).",
+		battleScreen->getShip() != NULL);
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC5: After beginMinePlacement() getWeapon() must be non-NULL and of type M.",
+		battleScreen->getWeapon() != NULL && battleScreen->getWeapon()->getType() == FWeapon::M);
+
+	// Record which ship is currently selected (will be source index 0 / minelayer1 or 2).
+	const unsigned int autoSelectedShipID = battleScreen->getShip()->getID();
+
+	// Locate FBattleDisplay and cast to peer.
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleDisplay must exist in the battle screen.", displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	// Draw offscreen to populate m_shipNameRegions.
+	const int panelW = battleScreen->GetSize().GetWidth();
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(panelW, 300);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	// AC1: Both Minelayers must produce a source row (two M sources).
+	const size_t rowCount = peer->shipNameRegionCount();
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC1: Both Minelayers must appear as source rows in BS_PlaceMines (expected >= 2 rows).",
+		rowCount >= 2);
+
+	// AC3: Every row region must start at or below getActionButtonRowBottom() so rows
+	// are not rendered behind the action-prompt / button region.
+	const int buttonRowBottom = peer->actionButtonRowBottomPublic();
+	for (size_t i = 0; i < rowCount; ++i) {
+		const wxRect rowRect = peer->shipNameRegion(i);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC3: Source row region must start at or below getActionButtonRowBottom() "
+			"(row clipped behind action buttons would make it unclickable).",
+			rowRect.GetTop() >= buttonRowBottom);
+	}
+
+	// AC2: Simulate a click in the second row (index 1) to switch sources.
+	// Build a mouse event positioned at the centre of the second row region.
+	const wxRect secondRowRect = peer->shipNameRegion(1);
+	const int clickX = secondRowRect.GetLeft() + secondRowRect.GetWidth() / 2;
+	const int clickY = secondRowRect.GetTop() + secondRowRect.GetHeight() / 2;
+	wxMouseEvent clickEvent(wxEVT_LEFT_UP);
+	clickEvent.m_x = clickX;
+	clickEvent.m_y = clickY;
+	peer->checkShipSelectionPublic(clickEvent);
+
+	// The selected placement source index must now be 1.
+	const int newSourceIndex = battleScreen->getSelectedPlacementSourceIndex();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC2: Clicking the second source row must update getSelectedPlacementSourceIndex() to 1.",
+		1, newSourceIndex);
+
+	// getShip() must point to the newly selected source's ship.
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC2: After clicking row 1, getShip() must be non-NULL.",
+		battleScreen->getShip() != NULL);
+	const unsigned int newlySelectedShipID = battleScreen->getShip()->getID();
+	// The newly selected ship must differ from the auto-selected first ship.
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC2: Clicking a different source row must change which ship is selected.",
+		newlySelectedShipID != autoSelectedShipID);
+
+	// getWeapon() must be an M weapon (only M sources are listed in BS_PlaceMines).
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC2: After clicking row 1, getWeapon() must be non-NULL and of type M.",
+		battleScreen->getWeapon() != NULL && battleScreen->getWeapon()->getType() == FWeapon::M);
+
+	// AC4: After switching sources, the next board click places ordnance from the
+	// newly selected ship/weapon, not the original auto-selected one.
+	const FPoint placeHex(5, 5);
+	const bool placed = battleScreen->handleHexClick(placeHex);
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC4: handleHexClick() in BS_PlaceMines must succeed after switching sources.",
+		placed);
+
+	const std::vector<FTacticalPlacedOrdnance> & ordnance = battleScreen->getPlacedOrdnance();
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC4: getPlacedOrdnance() must contain one record after the hex click.",
+		!ordnance.empty());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC4: Placed ordnance must have weapon type M.",
+		FWeapon::M, ordnance.back().weaponType);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC4: Placed ordnance source.shipID must match the newly selected ship (row 1), "
+		"not the auto-selected first ship — confirming source switch was honoured.",
+		newlySelectedShipID, ordnance.back().source.shipID);
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(3);
 	delete attackFleet;
 	delete defendFleet;
 	m_harness.cleanupOrphanTopLevels(10);
