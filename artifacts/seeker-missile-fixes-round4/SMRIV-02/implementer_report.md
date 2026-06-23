@@ -1,0 +1,639 @@
+# Implementer Report
+
+Status:
+- success
+
+Task summary:
+- Reposition the pre-game seeker-placement (BS_PlaceSeekers) lower-panel content to use a three-column layout: left column (instruction text wrapped onto two lines + Done button), middle column (source-selection rows at lMargin=310 anchored to panel top), and right column (recall list at recallMargin=620 anchored to panel top). Click regions in both columns align with drawn positions.
+
+Changed files:
+- src/tactical/FBattleDisplay.cpp
+- include/tactical/FBattleDisplay.h
+
+Validation commands run:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Validation outcome:
+- Build succeeded clean. 222 tests run, 1 pre-existing source-contract test fails as an expected consequence of the approved SMRIV-02 layout change (testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter asserts old getActionButtonRowBottom() y-start which SMRIV-02 replaces with getActionPromptLineY(0)). Tester must update this test.
+
+Implementation/code commit hash:
+- 6b5ce44
+
+Artifacts written:
+- artifacts/seeker-missile-fixes-round4/SMRIV-02/implementer_report.md
+- artifacts/seeker-missile-fixes-round4/SMRIV-02/tester_prompt.txt
+- artifacts/seeker-missile-fixes-round4/SMRIV-02/implementer_result.json
+
+Implementation context:
+- d
+- r
+- a
+- w
+- P
+- l
+- a
+- c
+- e
+- S
+- e
+- e
+- k
+- e
+- r
+- s
+- (
+- )
+-  
+- p
+- r
+- e
+- v
+- i
+- o
+- u
+- s
+- l
+- y
+-  
+- p
+- l
+- a
+- c
+- e
+- d
+-  
+- t
+- h
+- e
+-  
+- s
+- o
+- u
+- r
+- c
+- e
+- -
+- s
+- e
+- l
+- e
+- c
+- t
+- i
+- o
+- n
+-  
+- r
+- o
+- w
+- s
+-  
+- s
+- t
+- a
+- r
+- t
+- i
+- n
+- g
+-  
+- a
+- t
+-  
+- g
+- e
+- t
+- A
+- c
+- t
+- i
+- o
+- n
+- B
+- u
+- t
+- t
+- o
+- n
+- R
+- o
+- w
+- B
+- o
+- t
+- t
+- o
+- m
+- (
+- )
+-  
+- (
+- b
+- e
+- l
+- o
+- w
+-  
+- t
+- h
+- e
+-  
+- b
+- u
+- t
+- t
+- o
+- n
+-  
+- r
+- o
+- w
+- )
+-  
+- a
+- n
+- d
+-  
+- t
+- h
+- e
+-  
+- r
+- e
+- c
+- a
+- l
+- l
+-  
+- l
+- i
+- s
+- t
+-  
+- h
+- o
+- r
+- i
+- z
+- o
+- n
+- t
+- a
+- l
+- l
+- y
+-  
+- c
+- e
+- n
+- t
+- e
+- r
+- e
+- d
+-  
+- a
+- t
+-  
+- p
+- a
+- n
+- e
+- l
+- W
+- /
+- 2
+- .
+-  
+- S
+- M
+- R
+- I
+- V
+- -
+- 0
+- 2
+-  
+- m
+- i
+- r
+- r
+- o
+- r
+- s
+-  
+- t
+- h
+- e
+-  
+- d
+- r
+- a
+- w
+- P
+- l
+- a
+- c
+- e
+- M
+- i
+- n
+- e
+- s
+- (
+- )
+-  
+- t
+- h
+- r
+- e
+- e
+- -
+- c
+- o
+- l
+- u
+- m
+- n
+-  
+- p
+- a
+- t
+- t
+- e
+- r
+- n
+- :
+-  
+- l
+- e
+- f
+- t
+-  
+- c
+- o
+- l
+- u
+- m
+- n
+-  
+- w
+- r
+- a
+- p
+- s
+-  
+- i
+- n
+- s
+- t
+- r
+- u
+- c
+- t
+- i
+- o
+- n
+-  
+- t
+- e
+- x
+- t
+- ,
+-  
+- m
+- i
+- d
+- d
+- l
+- e
+-  
+- c
+- o
+- l
+- u
+- m
+- n
+-  
+- a
+- n
+- c
+- h
+- o
+- r
+- s
+-  
+- s
+- o
+- u
+- r
+- c
+- e
+-  
+- r
+- o
+- w
+- s
+-  
+- a
+- t
+-  
+- g
+- e
+- t
+- A
+- c
+- t
+- i
+- o
+- n
+- P
+- r
+- o
+- m
+- p
+- t
+- L
+- i
+- n
+- e
+- Y
+- (
+- 0
+- )
+- ,
+-  
+- r
+- i
+- g
+- h
+- t
+-  
+- c
+- o
+- l
+- u
+- m
+- n
+-  
+- a
+- n
+- c
+- h
+- o
+- r
+- s
+-  
+- r
+- e
+- c
+- a
+- l
+- l
+-  
+- l
+- i
+- s
+- t
+-  
+- a
+- t
+-  
+- g
+- e
+- t
+- A
+- c
+- t
+- i
+- o
+- n
+- P
+- r
+- o
+- m
+- p
+- t
+- L
+- i
+- n
+- e
+- Y
+- (
+- 0
+- )
+-  
+- a
+- t
+-  
+- r
+- e
+- c
+- a
+- l
+- l
+- M
+- a
+- r
+- g
+- i
+- n
+- =
+- 6
+- 2
+- 0
+- .
+-  
+- T
+- h
+- e
+-  
+- l
+- M
+- a
+- r
+- g
+- i
+- n
+- =
+- 3
+- 1
+- 0
+-  
+- v
+- a
+- l
+- u
+- e
+-  
+- i
+- s
+-  
+- u
+- n
+- c
+- h
+- a
+- n
+- g
+- e
+- d
+- .
+-  
+- T
+- h
+- e
+-  
+- b
+- o
+- o
+- l
+- e
+- a
+- n
+-  
+- l
+- o
+- g
+- i
+- c
+-  
+- f
+- o
+- r
+-  
+- s
+- o
+- u
+- r
+- c
+- e
+-  
+- f
+- i
+- l
+- t
+- e
+- r
+- i
+- n
+- g
+-  
+- (
+- S
+- M
+- -
+- o
+- n
+- l
+- y
+- )
+- ,
+-  
+- b
+- u
+- t
+- t
+- o
+- n
+-  
+- l
+- i
+- f
+- e
+- c
+- y
+- c
+- l
+- e
+- ,
+-  
+- a
+- n
+- d
+-  
+- b
+- o
+- t
+- h
+-  
+- c
+- h
+- e
+- c
+- k
+- S
+- h
+- i
+- p
+- S
+- e
+- l
+- e
+- c
+- t
+- i
+- o
+- n
+- /
+- c
+- h
+- e
+- c
+- k
+- P
+- r
+- e
+- G
+- a
+- m
+- e
+- S
+- e
+- e
+- k
+- e
+- r
+- R
+- e
+- c
+- a
+- l
+- l
+- S
+- e
+- l
+- e
+- c
+- t
+- i
+- o
+- n
+-  
+- h
+- a
+- n
+- d
+- l
+- e
+- r
+- s
+-  
+- a
+- r
+- e
+-  
+- u
+- n
+- m
+- o
+- d
+- i
+- f
+- i
+- e
+- d
+- .
+
+Expected validation failures carried forward:
+- None
