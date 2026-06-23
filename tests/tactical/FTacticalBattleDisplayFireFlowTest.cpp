@@ -1058,8 +1058,9 @@ assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STA
 }
 
 void FTacticalBattleDisplayFireFlowTest::testPlaceMinesSourceListStartsAtActionButtonRowBottom() {
-// AC: During pre-game ordnance placement, the instructions/"Done"-button region and the
-// placement source list region are visually separated with no overlap.
+// AC: SMRIV-01 -- drawPlaceMines() anchors the source-selection rows to the top of the
+// lower panel (right column at lMargin=310, starting at getActionPromptLineY(0)) and wraps
+// the instruction text via drawWrappedActionPrompt() in the left column.
 // AC: The placement source rows remain clickable (hit regions still align with drawn text).
 // AC: No regression to other lower-panel layouts that share the same spacer logic.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
@@ -1068,15 +1069,20 @@ const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::d
 const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::drawDefensiveFire(wxDC &dc)");
 const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
 
-// AC #1: Source list y-start is getActionButtonRowBottom(), not BORDER, eliminating overlap.
-assertContains(minesBody, "int y = getActionButtonRowBottom();");
+// AC #1: Source list y-start is getActionPromptLineY(0), anchored to the top of the lower
+// panel (right column), not getActionButtonRowBottom() as in the old layout.
+assertContains(minesBody, "int y = getActionPromptLineY(0);");
 assertNotContains(minesBody, "int y = BORDER;");
+assertNotContains(minesBody, "int y = getActionButtonRowBottom();");
 
-// AC #2: Hit regions use the same y variable as the drawn text rows, preserving click alignment.
+// AC #2: Instruction text is wrapped via drawWrappedActionPrompt() in the left column.
+assertContains(minesBody, "drawWrappedActionPrompt(dc,");
+
+// AC #3: Hit regions use the same y variable as the drawn text rows, preserving click alignment.
 // The region push occurs after DrawText at the same y offset in the loop body.
 assertContains(minesBody, "m_shipNameRegions.push_back(wxRect(lMargin,y,");
 
-// AC #3: Other draw phases are not affected by the SMC-04 change.
+// AC #4: Other draw phases are not affected by the SMRIV-01 change.
 // drawMoveShip, drawDefensiveFire, and drawAttackFire must not reference getActionButtonRowBottom()
 // as the y initializer for their own content (they use the action-prompt line helpers instead).
 assertNotContains(moveBody, "int y = getActionButtonRowBottom();");

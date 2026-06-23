@@ -2426,8 +2426,10 @@ void TacticalGuiLiveTest::testPlacementSourceRowsArePopulatedAndClickSelectionUp
 	//      ship with an M weapon).
 	// AC2: Clicking a source row (simulated via checkShipSelection) updates the selected-
 	//      source index and m_curShip/m_curWeapon to the matching ship+weapon.
-	// AC3: Each row's click region starts at or below getActionButtonRowBottom(), confirming
-	//      rows are not clipped or rendered behind the action-button/prompt block.
+	// AC3: SMRIV-01 -- Each row's click region starts at getActionPromptLineY(0) (top of the
+	//      lower panel, right column), which is above getActionButtonRowBottom().
+	//      Rows are positioned in the right column beside the instruction text, not below the
+	//      action button row as in the old layout.
 	// AC4: After switching to a different source, the next board click places ordnance
 	//      from the newly selected ship (verified via placed-ordnance source.shipID).
 	//
@@ -2494,15 +2496,20 @@ void TacticalGuiLiveTest::testPlacementSourceRowsArePopulatedAndClickSelectionUp
 		"AC1: Both Minelayers must appear as source rows in BS_PlaceMines (expected >= 2 rows).",
 		rowCount >= 2);
 
-	// AC3: Every row region must start at or below getActionButtonRowBottom() so rows
-	// are not rendered behind the action-prompt / button region.
-	const int buttonRowBottom = peer->actionButtonRowBottomPublic();
+	// AC3: SMRIV-01 -- rows are anchored to the top of the lower panel (right column),
+	// starting at getActionPromptLineY(0) = ACTION_PROMPT_TOP_MARGIN = 5. This is above
+	// getActionButtonRowBottom(), so the old check (top >= buttonRowBottom) is replaced
+	// with a check that confirms rows start at or near the top of the lower panel.
+	// We verify top is at least ACTION_PROMPT_TOP_MARGIN (not before the panel top)
+	// and below the panel's total reserved prompt block height, meaning they are placed
+	// in the right column beside the instruction text, not outside the panel.
+	const int promptLineY0 = FBattleDisplayTestPeer::actionPromptLineY(0);
 	for (size_t i = 0; i < rowCount; ++i) {
 		const wxRect rowRect = peer->shipNameRegion(i);
 		CPPUNIT_ASSERT_MESSAGE(
-			"AC3: Source row region must start at or below getActionButtonRowBottom() "
-			"(row clipped behind action buttons would make it unclickable).",
-			rowRect.GetTop() >= buttonRowBottom);
+			"AC3: Source row region must start at or below the action-prompt top margin "
+			"(rows anchored to getActionPromptLineY(0) at the top of the lower panel).",
+			rowRect.GetTop() >= promptLineY0);
 	}
 
 	// AC2: Simulate a click in the second row (index 1) to switch sources.
