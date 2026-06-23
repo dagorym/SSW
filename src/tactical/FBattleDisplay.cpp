@@ -597,6 +597,14 @@ void FBattleDisplay::applyRequestedDisplayHeight(){
 	}
 	if (GetMinSize().GetHeight() != requestedHeight){
 		SetMinSize(wxSize(-1, requestedHeight));
+		// Notify the parent frame that the display panel needs more space so
+		// applyLayoutPolicy() runs immediately and re-lays out the sizer rather
+		// than waiting for the next user-triggered resize event.  This is safe to
+		// call from within a paint handler because SendSizeEvent() queues the
+		// event for the next event-loop iteration instead of dispatching it inline.
+		if (GetParent() != NULL && !m_inResizeReflow){
+			GetParent()->SendSizeEvent();
+		}
 	}
 }
 
