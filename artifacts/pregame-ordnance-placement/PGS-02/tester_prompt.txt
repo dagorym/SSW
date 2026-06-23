@@ -1,0 +1,43 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- PGS-02: Fix mine/seeker placement source rows so they are reliably visible and clickable during BS_PlaceMines and BS_PlaceSeekers phases.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- During BS_PlaceMines, every ship with a deployable mine launcher appears as a selectable source row; during BS_PlaceSeekers, every ship with a deployable seeker launcher appears as a selectable source row.
+- Clicking a source row selects that ship+weapon (updates the selected-source index and m_curShip/m_curWeapon) and the selected row is visibly indicated.
+- Each row's click region aligns with its drawn position; rows are not clipped or rendered behind the ship-status display.
+- After selecting a different source, the next board click places ordnance from the newly selected ship/weapon.
+- With exactly one eligible ship for the phase, that source is auto-selected and placement works without a manual row click.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.* for live row visibility/click behavior (offscreen wxMemoryDC plus WXGuiTestHarness helpers)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.* for source-contract layout helper coverage
+
+Implementation context for testing:
+- Root cause: drawPlaceMines() and drawPlaceSeekers() draw source rows starting near y=99-114px on a 120px-tall panel. applyRequestedDisplayHeight() was calling SetMinSize() but FBattleScreen::applyLayoutPolicy() was never notified, so the panel stayed at 120px and all rows were clipped.
+- Fix: applyRequestedDisplayHeight() now calls GetParent()->SendSizeEvent() whenever the min height changes (guarded by m_inResizeReflow to prevent recursive loops). This triggers FBattleScreen::onSize -> applyLayoutPolicy() -> Layout() on the next event-loop iteration, growing the panel to show all rows.
+- Click regions (m_shipNameRegions) and draw positions are both recalculated every paint pass from the same getActionButtonRowBottom() call, so alignment is preserved once the panel is the correct height.
+- Single-source auto-selection is handled in FTacticalGame::beginMinePlacement/beginSeekerPlacement (not changed). The first paint may still show clipped rows briefly, but the panel grows and repaints before user input is possible.
+- Changed file: src/tactical/FBattleDisplay.cpp - applyRequestedDisplayHeight() only (8 lines added).
+
+Suggested test command(s):
+- make -C tests tactical-tests && ./tests/tactical/TacticalTests
+- make -C tests/gui && xvfb-run -a ./tests/gui/GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/pregame-ordnance-placement/PGS-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
