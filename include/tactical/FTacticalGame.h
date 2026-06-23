@@ -3,7 +3,7 @@
  * @brief Header file for FTacticalGame class
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 22, 2026
  *
  * SMFR-03: Added m_lastTriggeredMineHexes, getLastTriggeredMineHexes(),
  * and clearLastTriggeredMineHexes() to expose triggered minefield hexes
@@ -378,13 +378,16 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 *
 	 * Preserves the legacy mine-placement entry point by delegating to
 	 * beginOrdnancePlacement(), which filters the deployable source list to
-	 * FWeapon::M slots only before entering BS_PlaceMines.
+	 * FWeapon::M slots only, selects the first eligible source, and enters
+	 * BS_PlaceMines.  When this returns true, m_curShip and m_curWeapon are
+	 * guaranteed non-NULL so the first board click can place a mine immediately.
 	 *
-	 * @return True when mine placement mode was entered successfully.
+	 * @return True when mine placement mode was entered successfully and
+	 *         m_curShip/m_curWeapon are non-NULL.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 24, 2026
-	 * @date Last Modified: Jun 02, 2026
+	 * @date Last Modified: Jun 22, 2026
 	 */
 	bool beginMinePlacement();
 	/**
@@ -407,14 +410,19 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 *
 	 * Rebuilds the full ship/weapon-slot deployment list, then filters it to
 	 * FWeapon::M sources only so BS_PlaceMines exposes only mine slots to the
-	 * UI. Selects the first mine source with ammo and transitions to BS_PlaceMines.
-	 * Seeker (SM) sources are deferred to the seeker phase via beginSeekerPlacement().
+	 * UI. Selects the first mine source with ammo and, if
+	 * selectPlacementSourceByIndex() succeeds (i.e. m_curShip and m_curWeapon
+	 * are set non-NULL), transitions to BS_PlaceMines.  Returns false without
+	 * changing state when no selectable mine source exists or when source
+	 * selection fails.  Seeker (SM) sources are deferred to the seeker phase via
+	 * beginSeekerPlacement().
 	 *
-	 * @return True when mine placement mode was entered successfully.
+	 * @return True when mine placement mode was entered successfully and
+	 *         m_curShip/m_curWeapon are non-NULL.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 24, 2026
-	 * @date Last Modified: Jun 02, 2026
+	 * @date Last Modified: Jun 22, 2026
 	 */
 	bool beginOrdnancePlacement();
 	/**

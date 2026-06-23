@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 19, 2026 (SMFR-01: auto-expand panel for placement/activation lists)
+ * @date Last Modified: Jun 22, 2026 (PGS-01: document mine placement ship preservation in onSetSpeed)
  *
  */
 
@@ -176,7 +176,7 @@ protected:
 		int height;
 	};
 
-	/// Event handler for setting the ship's speed
+	/// Event handler for setting the ship's speed; skips setShip(NULL) when beginMinePlacement() succeeds so m_curShip remains valid for the first mine board click
 	void onSetSpeed( wxCommandEvent& event );
 
 	/// event handler for movement complete button
