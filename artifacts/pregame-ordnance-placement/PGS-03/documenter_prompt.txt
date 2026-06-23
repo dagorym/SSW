@@ -1,0 +1,54 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- PGS-03: Make pre-game seeker placement additive (stacking) and remove board-click removal for seekers during BS_PlaceSeekers. placeOrdnanceAtHex() now skips the removePlacedOrdnanceForSelection toggle when state==BS_PlaceSeekers and weapon type==SM, calling placeSeekerFromSelection() directly instead. Mine toggle behavior for BS_PlaceMines and attack-phase seeker deployment for BS_Battle/PH_ATTACK_FIRE are unchanged.
+
+Acceptance criteria validated:
+- During pre-game BS_PlaceSeekers, clicking a hex always adds one inactive seeker: ammo decrements, new inactive seeker record created, placed-ordnance record appended on every click including repeated same-hex clicks.
+- Repeated clicks on the same hex accumulate multiple seekers; no toggle/removal occurs from the board during seeker placement.
+- Mine placement retains toggle behavior (clicking a mined hex removes the mine) and attack-phase seeker/mine behavior is unchanged.
+- Seeker placement stops adding when the selected source's launcher ammo is exhausted.
+- Behavioral model test added: testPreGameSeekerPlacementIsAdditive in FTacticalGameMechanicsTest enters seeker placement, clicks same hex 3 times, asserts seeker count and ammo decrement increase per click (no removal). Test would fail against pre-fix toggle behavior and passes after fix.
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/sf2-pgs-03-tester-20260622 (branch sf2-pgs-03-tester-20260622)
+- Implementer base branch: sf2-pgs-03-implementer
+- Comparison base: parent commit before PGS-03 implementer changes
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FTacticalGame.cpp (Implementer: added additive guard in placeOrdnanceAtHex)
+- include/tactical/FTacticalGame.h (Implementer: any header changes)
+- tests/tactical/FTacticalGameMechanicsTest.h (Tester: added testPreGameSeekerPlacementIsAdditive declaration)
+- tests/tactical/FTacticalGameMechanicsTest.cpp (Tester: added testPreGameSeekerPlacementIsAdditive implementation)
+
+Test commit:
+- a982f80b4b812d99e829354ce6d9d250e8b29c81
+
+Commands executed:
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+
+Final test outcomes:
+- 216 tests run, 216 passed, 0 failed. New test testPreGameSeekerPlacementIsAdditive passes. All pre-existing tests continue to pass.
+
+Documentation context:
+- FTacticalGame::placeOrdnanceAtHex() has a new additive guard for BS_PlaceSeekers+SM that bypasses the toggle removal path. Doc review should note this behavioral change to pre-game seeker placement in any relevant design notes.
+- No user-facing tactical_operations_manual.md changes are required since the fix corrects unintended behavior, not rules.
+- doc/DesignNotes.md may benefit from a note that BS_PlaceSeekers clicks are now additive for SM type (stackable seekers per hex).
+- The AGENTS.md contributor notes section for pre-game ordnance placement may warrant a mention of the additive vs. toggle distinction.
+
+Plan and diff context:
+- Plan path: artifacts/pregame-ordnance-placement/PGS-03
+- Base branch: sf2-pgs-03-implementer (assumption: the tester worktree branched from this)
+- Use `git diff sf2-pgs-03-implementer..sf2-pgs-03-tester-20260622` in the worktree to review the full change set
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/pregame-ordnance-placement/PGS-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
