@@ -1,0 +1,65 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMRIV-01: Repositioned BS_PlaceMines source-selection rows to anchor at the top of the lower panel (right column at lMargin=310, starting at getActionPromptLineY(0)) and wrapped mine instruction text onto two lines via drawWrappedActionPrompt() in FBattleDisplay.cpp.
+
+Acceptance criteria validated:
+- AC1: Source-selection rows render anchored to top of lower panel (getActionPromptLineY(0)) in the right column -- verified by testPlaceMinesSourceListStartsAtActionButtonRowBottom source-contract and testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources behavioral GUI
+- AC2: Mine instruction text wraps onto two lines via drawWrappedActionPrompt() -- verified by testPlaceMinesSourceListStartsAtActionButtonRowBottom source-contract
+- AC3: Every ship with deployable mine launcher appears as selectable source row; click regions align with drawn positions; rows not clipped -- verified by testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources (AC1/AC2/AC3/AC4/AC5 behavioral live test)
+- AC4: Clicking a source row selects that ship+weapon; auto-selection works with one eligible ship -- verified by testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources AC2/AC4/AC5 assertions (unchanged)
+
+Implementation branch or worktree context:
+- Implementation branch: sf2-SMRIV-01-tester-20260623
+- Implementer commit: 304d6a2 (SMRIV-01: Reposition BS_PlaceMines source rows to top-right of lower panel)
+- Modified implementation file: src/tactical/FBattleDisplay.cpp
+- drawPlaceMines() now calls drawWrappedActionPrompt() for left-column instruction text
+- Source rows start at int y = getActionPromptLineY(0) at x = lMargin = 310 (right column)
+- m_shipNameRegions entries use wxRect(lMargin, y, ...) matching drawn positions
+- Height expansion and Done button lifecycle unchanged
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleDisplay.cpp (implementation: drawPlaceMines layout change)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (source-contract test updated)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h (header comment updated)
+- tests/gui/TacticalGuiLiveTest.cpp (GUI live test AC3 updated)
+
+Test commit:
+- ce7b01e3c9672159f8fa242d2a2f7cd3659deda5
+
+Commands executed:
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+- make -C tests gui-tests
+- ./tests/gui/GuiTests
+
+Final test outcomes:
+- TacticalTests: 222/222 PASS (all tactical tests pass)
+- GuiTests: 42/51 pass, 9 pre-existing failures unrelated to SMRIV-01
+- testPlaceMinesSourceListStartsAtActionButtonRowBottom: PASS (updated for new getActionPromptLineY(0) anchor)
+- testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources: PASS (AC3 updated for new layout)
+- Pre-existing failures confirmed on baseline branch before any test changes
+
+Documentation context:
+- SMRIV-01 changes drawPlaceMines() layout in FBattleDisplay.cpp
+- Source rows moved from below action-button row to top of lower panel right column
+- Instruction text now uses drawWrappedActionPrompt() instead of single DrawText
+- AGENTS.md SMF-02 section mentions drawPlaceMines() source-row start at getActionButtonRowBottom() -- needs update to reflect getActionPromptLineY(0) for mine phase
+- testPlaceMinesSourceListStartsAtActionButtonRowBottom name retained despite behavior change for backward compatibility
+
+Plan and diff context:
+- Plan: seeker-missile-fixes-round4-plan.md
+- Subtask: SMRIV-01
+- Diff base: commit 529b615 (Add plan for next round of seeker fixes)
+- Key diff: drawPlaceMines() in src/tactical/FBattleDisplay.cpp lines ~1416-1496
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round4/SMRIV-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
