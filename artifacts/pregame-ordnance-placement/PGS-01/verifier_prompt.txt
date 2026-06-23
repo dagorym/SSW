@@ -1,0 +1,58 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- PGS-01: Restore pre-game mine board placement. The implementer fixed FBattleDisplay::onSetSpeed() to use an enteredMinePlacement flag so setShip(NULL) is skipped when beginMinePlacement() succeeds, and fixed FTacticalGame::beginOrdnancePlacement() to guard on the return value of selectPlacementSourceByIndex() before entering BS_PlaceMines.
+
+Acceptance criteria to verify:
+- AC1: beginMinePlacement() preserves m_curShip non-NULL after entry (verified by model test Part 2 and GUI test)
+- AC2: beginMinePlacement() sets m_curWeapon to mine launcher (type M) (verified by model test Part 2 and GUI test)
+- AC3: placeMineAtHex() returns false when m_curShip is NULL (buggy path regression, verified by model test Part 1)
+- AC4: handleHexClick() in BS_PlaceMines records mine, decrements ammo, appends placed-ordnance record (verified by GUI test)
+- AC5: Source assertion updated to match new if-guard on selectPlacementSourceByIndex in beginOrdnancePlacement()
+
+Implementation branch or worktree context:
+- Fix 1: FBattleDisplay::onSetSpeed() uses enteredMinePlacement flag to skip setShip(NULL) when beginMinePlacement() succeeds, preserving m_curShip non-NULL for first mine board click.
+- Fix 2: FTacticalGame::beginOrdnancePlacement() now guards on selectPlacementSourceByIndex() return value, returning false if selection fails before entering BS_PlaceMines.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FBattleDisplay.cpp
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- tests/tactical/FTacticalGameMechanicsTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- include/tactical/FBattleDisplay.h
+- include/tactical/FTacticalGame.h
+
+Commands executed:
+- git diff sf2..sf2-pgs-01-documenter-20260622 -- src/tactical/FBattleDisplay.cpp src/tactical/FTacticalGame.cpp
+- git add include/tactical/FBattleDisplay.h include/tactical/FTacticalGame.h
+- git commit -m 'PGS-01: Update Doxygen comments for mine placement entry points'
+
+Final test outcomes:
+- PASS: TacticalTests - all 215 tests pass (0 failures)
+- PASS: FTacticalGameMechanicsTest::testPreGameMinePlacementPreservesShipAfterBeginMinePlacement
+- PASS: TacticalGuiLiveTest::testOnSetSpeedMinePlacementPreservesShipForFirstBoardClick
+- PRE-EXISTING (unrelated): 9 SSWTests failures - source-path-dependent tests running outside expected root
+- PRE-EXISTING (unrelated): 10 GuiTests failures - source-contract assertions against FBattleDisplay.cpp patterns
+
+Plan or evaluation context guidance:
+- Plan: plans/pregame-ordnance-placement-plan.md. Story PGS-01. Documentation Impact: Update Doxygen comments for onSetSpeed, beginOrdnancePlacement/beginMinePlacement, and any guard added. No rules-document edit.
+
+Convention-file guidance:
+- AGENTS.md requires Doxygen-style file headers in all header files. Function docblocks must include @brief, description, @return, @author, @date Created, @date Last Modified. Last Modified must be updated when editing. Current agent (claude-sonnet-4-6 medium) must be added to @author if not already present.
+
+Updated documentation files:
+- include/tactical/FBattleDisplay.h
+- include/tactical/FTacticalGame.h
+
+Shared artifact directory:
+- artifacts/pregame-ordnance-placement/PGS-01
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
