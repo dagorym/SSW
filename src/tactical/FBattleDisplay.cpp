@@ -616,6 +616,11 @@ void FBattleDisplay::draw(wxDC &dc){
 	m_defenseRegions.clear();
 	m_pendingSeekerRecallRegions.clear();
 	m_pendingSeekerRecallHexes.clear();
+	m_preGameSeekerRecallRegions.clear();
+	m_preGameSeekerRecallHexes.clear();
+	m_preGameSeekerRecallShipIDs.clear();
+	m_preGameSeekerRecallWeaponIndices.clear();
+	m_preGameSeekerRecallWeaponIDs.clear();
 	dc.SetBackground(wxBrush(black));
 	int w,h;
 	dc.GetSize(&w,&h);
@@ -722,6 +727,9 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 		checkShipSelection(event);
 		break;
 	case BS_PlaceSeekers:
+		if (checkPreGameSeekerRecallSelection(event)) {
+			break;
+		}
 		checkShipSelection(event);
 		break;
 	case BS_Battle:
@@ -1534,6 +1542,64 @@ void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
 		y += (int)(1.6*textSize);
 	}
 
+	// Draw the centered placed-seeker undeploy list.
+	// Positioned at the horizontal center of the lower panel, below the source-selection rows.
+	{
+		int panelW = 0, panelH = 0;
+		dc.GetSize(&panelW, &panelH);
+		const int centerMargin = panelW / 2;
+		int cy = getActionButtonRowBottom();
+		dc.SetFont(bold);
+		dc.SetTextForeground(white);
+		dc.DrawText("Placed seekers (click to recall):", centerMargin, cy);
+		cy += (int)(1.6*textSize);
+		dc.SetFont(normal);
+		const std::vector<FTacticalPreGameSeekerHexGroup> placedGroups = m_parent->getPlacedSeekerHexGroups();
+		if (placedGroups.empty()) {
+			dc.SetTextForeground(white);
+			dc.DrawText("None placed.", centerMargin, cy);
+			cy += (int)(1.6*textSize);
+		} else {
+			for (unsigned int g = 0; g < placedGroups.size(); ++g) {
+				const FTacticalPreGameSeekerHexGroup & grp = placedGroups[g];
+				// Find ship name for display
+				std::string shipName = "Unknown";
+				FVehicle * srcShip = NULL;
+				// Search attacker and defender ships
+				{
+					VehicleList allShips;
+					VehicleList atk = m_parent->getShipList(m_parent->getAttackerID());
+					VehicleList def = m_parent->getShipList(m_parent->getDefenderID());
+					allShips.insert(allShips.end(), atk.begin(), atk.end());
+					allShips.insert(allShips.end(), def.begin(), def.end());
+					srcShip = findShipByID(allShips, grp.source.shipID);
+					if (srcShip != NULL) {
+						shipName = srcShip->getName();
+					}
+				}
+				os.str("");
+				os << "Recall: " << shipName
+					<< " (" << grp.hex.getX() << "," << grp.hex.getY() << ")"
+					<< " x" << grp.count;
+				dc.SetTextForeground((g % 2 == 0) ? white : green);
+				dc.DrawText(os.str(), centerMargin, cy);
+				wxSize tSize = dc.GetTextExtent(os.str());
+				m_preGameSeekerRecallRegions.push_back(wxRect(centerMargin, cy, tSize.GetWidth() + 16, tSize.GetHeight()));
+				m_preGameSeekerRecallHexes.push_back(wxPoint(grp.hex.getX(), grp.hex.getY()));
+				m_preGameSeekerRecallShipIDs.push_back(grp.source.shipID);
+				m_preGameSeekerRecallWeaponIndices.push_back(grp.source.weaponIndex);
+				m_preGameSeekerRecallWeaponIDs.push_back(grp.source.weaponID);
+				cy += (int)(1.6*textSize);
+			}
+		}
+		// Expand the panel if the placed-seeker list extends below the current minimum.
+		const int placedListBottom = cy + BORDER;
+		if (placedListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+			m_lowerPanelLayoutState.requestedDisplayHeight = placedListBottom;
+			applyRequestedDisplayHeight();
+		}
+	}
+
 	// Expand the panel height if the source list extends below the current minimum.
 	const int seekerListBottom = y + BORDER;
 	if (seekerListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
@@ -1713,6 +1779,29 @@ bool FBattleDisplay::checkOffensiveSeekerPendingSelection(wxMouseEvent &event){
 		if (i < m_pendingSeekerRecallHexes.size()) {
 			const wxPoint & pendingHex = m_pendingSeekerRecallHexes[i];
 			return m_parent->recallSelectedOffensivePendingSeekerAtHex(FPoint(pendingHex.x, pendingHex.y));
+		}
+		return false;
+	}
+	return false;
+}
+
+bool FBattleDisplay::checkPreGameSeekerRecallSelection(wxMouseEvent &event){
+	const int x = event.GetX();
+	const int y = event.GetY();
+	for (unsigned int i = 0; i < m_preGameSeekerRecallRegions.size(); ++i) {
+		if (!m_preGameSeekerRecallRegions[i].Contains(x,y)) {
+			continue;
+		}
+		if (i < m_preGameSeekerRecallHexes.size()
+			&& i < m_preGameSeekerRecallShipIDs.size()
+			&& i < m_preGameSeekerRecallWeaponIndices.size()
+			&& i < m_preGameSeekerRecallWeaponIDs.size()) {
+			FTacticalOrdnanceSource source;
+			source.shipID = m_preGameSeekerRecallShipIDs[i];
+			source.weaponIndex = m_preGameSeekerRecallWeaponIndices[i];
+			source.weaponID = m_preGameSeekerRecallWeaponIDs[i];
+			const wxPoint & hexPt = m_preGameSeekerRecallHexes[i];
+			return m_parent->recallPlacedSeekerAtHexSource(FPoint(hexPt.x, hexPt.y), source);
 		}
 		return false;
 	}

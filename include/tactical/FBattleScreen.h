@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.h
  * @brief Header file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 22, 2026
  *
  */
 
@@ -466,6 +466,34 @@ public:
 	 * @date Last Modified: May 25, 2026
 	 */
 	bool recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex);
+	/**
+	 * @brief Get placed inactive seekers grouped by (hex, source) for the pre-game undeploy list.
+	 *
+	 * Delegation to FTacticalGame read-only accessor used by FBattleDisplay during
+	 * BS_PlaceSeekers to render the centered placed-seeker recall list.
+	 *
+	 * @return Grouped placed seeker rows for the pre-game placed-seeker list.
+	 *
+	 * @author claude-opus-4-8 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	std::vector<FTacticalPreGameSeekerHexGroup> getPlacedSeekerHexGroups() const;
+	/**
+	 * @brief Recall one placed pre-game seeker at a (hex, source) pair.
+	 *
+	 * Delegation to FTacticalGame recall method.
+	 *
+	 * @param hex Tactical hex to recall from.
+	 * @param source Source ship/weapon-slot to match.
+	 *
+	 * @return True when one seeker was recalled and ammo was restored.
+	 *
+	 * @author claude-opus-4-8 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	bool recallPlacedSeekerAtHexSource(const FPoint & hex, const FTacticalOrdnanceSource & source);
 	/**
 	 * @brief Get all unique hexes that hold any current-phase pending offensive-fire seeker.
 	 *

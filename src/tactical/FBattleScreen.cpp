@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.cpp
  * @brief Implementation file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 02, 2026
+ * @date Last Modified:  Jun 22, 2026
  *
  */
 
@@ -836,6 +836,18 @@ std::vector<FTacticalPendingSeekerHexGroup> FBattleScreen::getSelectedOffensiveP
 
 bool FBattleScreen::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex) {
 	const bool changed = m_tacticalGame->recallSelectedOffensivePendingSeekerAtHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+std::vector<FTacticalPreGameSeekerHexGroup> FBattleScreen::getPlacedSeekerHexGroups() const {
+	return m_tacticalGame->getPlacedSeekerHexGroups();
+}
+
+bool FBattleScreen::recallPlacedSeekerAtHexSource(const FPoint & hex, const FTacticalOrdnanceSource & source) {
+	const bool changed = m_tacticalGame->recallPlacedSeekerAtHexSource(hex, source);
 	if (changed) {
 		reDraw();
 	}

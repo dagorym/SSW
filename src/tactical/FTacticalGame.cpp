@@ -1,10 +1,14 @@
 /**
  * @file FTacticalGame.cpp
  * @brief Implementation file for FTacticalGame class
- * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Mar 29, 2026
  * @date Last Modified: Jun 22, 2026
  *
+ * PGS-04: Added getPlacedSeekerHexGroups() and recallPlacedSeekerAtHexSource()
+ * for the pre-game seeker undeploy list. placeOrdnanceAtHex() now removes any
+ * mine at a mined hex during BS_PlaceMines regardless of selected source and
+ * restores ammo to the placing ship.
  * PGS-03: placeOrdnanceAtHex() now bypasses the toggle/remove path during
  * pre-game BS_PlaceSeekers so that board clicks are always additive.
  * Mine placement toggle behavior (BS_PlaceMines) is unchanged.
@@ -1108,6 +1112,76 @@ bool FTacticalGame::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex
 		return false;
 	}
 	return removeOffensiveFirePendingSeekerAtHex(hex);
+}
+
+std::vector<FTacticalPreGameSeekerHexGroup> FTacticalGame::getPlacedSeekerHexGroups() const {
+	std::vector<FTacticalPreGameSeekerHexGroup> groups;
+	if (getState() != BS_PlaceSeekers) {
+		return groups;
+	}
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = m_seekerMissiles.begin();
+		 itr != m_seekerMissiles.end(); ++itr) {
+		if (itr->active || !itr->hasSource) {
+			continue;
+		}
+		bool found = false;
+		for (unsigned int g = 0; g < groups.size(); ++g) {
+			if (groups[g].hex.getX() == itr->hex.getX()
+				&& groups[g].hex.getY() == itr->hex.getY()
+				&& groups[g].source.shipID == itr->source.shipID
+				&& groups[g].source.weaponIndex == itr->source.weaponIndex
+				&& groups[g].source.weaponID == itr->source.weaponID) {
+				groups[g].count += 1;
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			FTacticalPreGameSeekerHexGroup group;
+			group.hex = itr->hex;
+			group.source = itr->source;
+			group.count = 1;
+			groups.push_back(group);
+		}
+	}
+	return groups;
+}
+
+bool FTacticalGame::recallPlacedSeekerAtHexSource(const FPoint & hex, const FTacticalOrdnanceSource & source) {
+	if (getState() != BS_PlaceSeekers || !isHexInBounds(hex)) {
+		return false;
+	}
+	for (std::vector<FTacticalSeekerMissileState>::iterator itr = m_seekerMissiles.end();
+		 itr != m_seekerMissiles.begin();) {
+		--itr;
+		if (!itr->active
+			&& itr->hex.getX() == hex.getX()
+			&& itr->hex.getY() == hex.getY()
+			&& itr->hasSource
+			&& itr->source.shipID == source.shipID
+			&& itr->source.weaponIndex == source.weaponIndex
+			&& itr->source.weaponID == source.weaponID) {
+			m_seekerMissiles.erase(itr);
+			for (std::vector<FTacticalPlacedOrdnance>::iterator oitr = m_placedOrdnance.end();
+				 oitr != m_placedOrdnance.begin();) {
+				--oitr;
+				if (oitr->weaponType == FWeapon::SM
+					&& oitr->hex.getX() == hex.getX()
+					&& oitr->hex.getY() == hex.getY()
+					&& oitr->source.shipID == source.shipID
+					&& oitr->source.weaponIndex == source.weaponIndex
+					&& oitr->source.weaponID == source.weaponID) {
+					m_placedOrdnance.erase(oitr);
+					break;
+				}
+			}
+			restoreAmmoForSource(source);
+			rebuildDeployablePlacementSourcesFiltered(FWeapon::SM);
+			selectPlacementSource(source.shipID, static_cast<unsigned int>(source.weaponIndex));
+			return true;
+		}
+	}
+	return false;
 }
 
 std::vector<FPoint> FTacticalGame::getAllPendingOffensiveFireSeekerHexes() const {
@@ -3223,6 +3297,29 @@ bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex) {
 	// each mined hex is unique and the toggle path below still applies to mines.
 	if (getState() == BS_PlaceSeekers && selectedSource.weaponType == FWeapon::SM) {
 		return placeSeekerFromSelection(hex, selectedSource);
+	}
+
+	// PGS-04: During pre-game BS_PlaceMines, clicking a mined hex removes the mine
+	// regardless of which source is currently selected, and returns ammo to the placing
+	// ship (recorded in the placed-ordnance source). This allows any-source mine removal
+	// without requiring the user to re-select the placing ship first.
+	if (getState() == BS_PlaceMines && selectedSource.weaponType == FWeapon::M
+		&& m_minedHexList.find(hex) != m_minedHexList.end()) {
+		for (std::vector<FTacticalPlacedOrdnance>::reverse_iterator itr = m_placedOrdnance.rbegin();
+			 itr != m_placedOrdnance.rend(); ++itr) {
+			if (itr->weaponType == FWeapon::M
+				&& itr->hex.getX() == hex.getX()
+				&& itr->hex.getY() == hex.getY()) {
+				FTacticalOrdnanceSource placingSource = itr->source;
+				m_placedOrdnance.erase((itr + 1).base());
+				m_minedHexList.erase(hex);
+				restoreAmmoForSource(placingSource);
+				rebuildDeployablePlacementSourcesFiltered(FWeapon::M);
+				selectPlacementSource(selectedSource.source.shipID,
+					static_cast<unsigned int>(selectedSource.source.weaponIndex));
+				return true;
+			}
+		}
 	}
 
 	FTacticalPlacedOrdnance removed;

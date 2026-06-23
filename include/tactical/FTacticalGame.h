@@ -1,10 +1,12 @@
 /**
  * @file FTacticalGame.h
  * @brief Header file for FTacticalGame class
- * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard)
+ * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium)
  * @date Created:  Mar 29, 2026
  * @date Last Modified: Jun 22, 2026
  *
+ * PGS-04: Added FTacticalPreGameSeekerHexGroup struct, getPlacedSeekerHexGroups(),
+ * and recallPlacedSeekerAtHexSource() for the pre-game seeker undeploy list.
  * SMFR-03: Added m_lastTriggeredMineHexes, getLastTriggeredMineHexes(),
  * and clearLastTriggeredMineHexes() to expose triggered minefield hexes
  * for board highlight while the mine damage summary dialog is shown.
@@ -246,6 +248,22 @@ typedef struct {
 	FPoint hex;
 	unsigned int count;
 } FTacticalPendingSeekerHexGroup;
+
+/**
+ * @brief Grouped pre-game inactive seeker row data for the placed-seeker undeploy list.
+ *
+ * Each record represents one lower-panel recall row, combining all placed inactive
+ * seekers at the same (hex, source) pair.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 22, 2026
+ * @date Last Modified: Jun 22, 2026
+ */
+typedef struct {
+	FPoint hex;
+	FTacticalOrdnanceSource source;
+	unsigned int count;
+} FTacticalPreGameSeekerHexGroup;
 
 /**
  * @brief Pure C++ tactical mechanics state container.
@@ -783,6 +801,37 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * @date Last Modified: May 25, 2026
 	 */
 	bool recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex);
+	/**
+	 * @brief Get placed inactive seekers grouped by (hex, source) for the pre-game undeploy list.
+	 *
+	 * Returns one entry per unique (hex, source ship/weapon slot) pair that has at
+	 * least one placed inactive seeker record during BS_PlaceSeekers. The count field
+	 * gives the total number of inactive seekers sharing that (hex, source) pair.
+	 * Returns an empty vector when not in BS_PlaceSeekers.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	std::vector<FTacticalPreGameSeekerHexGroup> getPlacedSeekerHexGroups() const;
+	/**
+	 * @brief Recall one placed pre-game seeker for a given (hex, source) pair.
+	 *
+	 * Removes exactly one inactive seeker record and its corresponding placed-ordnance
+	 * record at the given hex whose source matches the provided source, then restores
+	 * one round of ammo to that ship's seeker launcher. Rebuilds the deployable source
+	 * list filtered to SM-type weapons only and reselects the same source.
+	 *
+	 * @param hex Tactical hex to recall from.
+	 * @param source Source ship/weapon-slot to match.
+	 *
+	 * @return True when one seeker was recalled and ammo was restored.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	bool recallPlacedSeekerAtHexSource(const FPoint & hex, const FTacticalOrdnanceSource & source);
 	/**
 	 * @brief Get all unique hexes that hold any pending offensive-fire seeker
 	 *        for the current phase, regardless of which launcher deployed them.

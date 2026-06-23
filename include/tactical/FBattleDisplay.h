@@ -1,9 +1,9 @@
 /**
  * @file FBattleDisplay.h
  * @brief Header file for BattleDisplay class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 22, 2026 (PGS-02: document SendSizeEvent notification in applyRequestedDisplayHeight)
+ * @date Last Modified: Jun 22, 2026 (PGS-04: add pre-game seeker recall list to drawPlaceSeekers)
  *
  */
 
@@ -14,6 +14,7 @@
 
 #include "gui/GuiTypes.h"
 #include "Frontier.h"
+#include "tactical/FTacticalGame.h"
 
 namespace Frontier {
 class FBattleScreen;
@@ -133,6 +134,16 @@ protected:
 	std::vector<wxRect> m_pendingSeekerRecallRegions;
 	/// grouped hex entry for each pending offensive-fire recall region
 	std::vector<wxPoint> m_pendingSeekerRecallHexes;
+	/// list of active regions for recalling placed pre-game seekers (BS_PlaceSeekers)
+	std::vector<wxRect> m_preGameSeekerRecallRegions;
+	/// hex coordinate for each pre-game seeker recall region
+	std::vector<wxPoint> m_preGameSeekerRecallHexes;
+	/// source ship ID for each pre-game seeker recall region
+	std::vector<unsigned int> m_preGameSeekerRecallShipIDs;
+	/// source weapon index for each pre-game seeker recall region
+	std::vector<int> m_preGameSeekerRecallWeaponIndices;
+	/// source weapon ID for each pre-game seeker recall region
+	std::vector<unsigned int> m_preGameSeekerRecallWeaponIDs;
 
 	/// top pixel where tactical action prompts begin
 	static const int ACTION_PROMPT_TOP_MARGIN = 5;
@@ -617,6 +628,22 @@ protected:
 	 * @date Last Modified: May 25, 2026
 	 */
 	bool checkOffensiveSeekerPendingSelection(wxMouseEvent &event);
+	/**
+	 * @brief Check whether the user clicked a placed pre-game seeker recall row.
+	 *
+	 * Checks each region in `m_preGameSeekerRecallRegions` against the click
+	 * position and calls `recallPlacedSeekerAtHexSource(...)` for the matching
+	 * entry.
+	 *
+	 * @param event The mouse event with the click position.
+	 *
+	 * @return True when one placed pre-game seeker was recalled.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	bool checkPreGameSeekerRecallSelection(wxMouseEvent &event);
 
 	/// returns y-position for the indexed action prompt line
 	int getActionPromptLineY(int lineIndex) const;
