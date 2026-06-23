@@ -45,6 +45,7 @@ CPPUNIT_TEST( testSeekerActivationPhaseIndexStampingAndFiltering );
 CPPUNIT_TEST( testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate );
 CPPUNIT_TEST( testPreGameOrdnancePlacementRecordingBehavior );
 CPPUNIT_TEST( testPreGameMinePlacementPreservesShipAfterBeginMinePlacement );
+CPPUNIT_TEST( testPreGameSeekerPlacementIsAdditive );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -331,6 +332,28 @@ void testSeekerDeploymentPhaseStateMachineTransitions();
 	 * @date Last Modified: Jun 22, 2026
 	 */
 	void testPreGameMinePlacementPreservesShipAfterBeginMinePlacement();
+
+	/**
+	 * @brief Behavioral test for PGS-03: pre-game seeker placement via BS_PlaceSeekers
+	 *        is additive — repeated clicks on the same hex stack multiple inactive seekers
+	 *        rather than toggling/removing the previously placed one.
+	 *
+	 * Constructs a real FTacticalGame with a Minelayer fleet, advances to BS_PlaceSeekers,
+	 * then clicks the same hex 3 times. Asserts that:
+	 * - getSeekerMissiles().size() == 3 (one inactive seeker per click, none removed)
+	 * - Seeker launcher ammo is decremented by 3
+	 * - getPlacedOrdnance() has the mine-phase record plus 3 SM-type records (total 4)
+	 * - A 4th click when ammo runs out returns false and does not add another seeker
+	 *   (only exercised when initial ammo >= 4; otherwise this check is skipped)
+	 *
+	 * This test MUST fail against the pre-fix toggle behavior (where the second click on
+	 * the same hex would remove the first seeker and restore ammo) and pass after the fix.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	void testPreGameSeekerPlacementIsAdditive();
 };
 
 }

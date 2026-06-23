@@ -1226,4 +1226,173 @@ void FTacticalGameMechanicsTest::testPreGameMinePlacementPreservesShipAfterBegin
 	delete attackFleet;
 }
 
+void FTacticalGameMechanicsTest::testPreGameSeekerPlacementIsAdditive() {
+// AC: PGS-03 — During BS_PlaceSeekers, clicking the same hex multiple times must
+//     accumulate one inactive seeker per click without toggling or removing any
+//     previously placed seeker.  Ammo must decrement by one per click and
+//     getPlacedOrdnance() must grow by one SM record per click.
+//     This behavioral test MUST fail against the pre-fix toggle path (second click
+//     on the same hex would remove the first seeker) and pass after the fix.
+	using namespace Frontier;
+
+	// Build a Minelayer fleet for the defending side.  The Minelayer carries
+	// SM(x4) and M(x20) launchers so both placement phases can be exercised.
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Minelayer ship must be creatable", minelayer != NULL);
+
+	// Locate the mine launcher (M) and seeker launcher (SM) weapon slots.
+	int mineLauncherIndex = -1;
+	int seekerLauncherIndex = -1;
+	for (unsigned int i = 0; i < minelayer->getWeaponCount(); ++i) {
+		FWeapon * w = minelayer->getWeapon(i);
+		if (w != NULL && w->getType() == FWeapon::M && mineLauncherIndex < 0) {
+			mineLauncherIndex = static_cast<int>(i);
+		}
+		if (w != NULL && w->getType() == FWeapon::SM && seekerLauncherIndex < 0) {
+			seekerLauncherIndex = static_cast<int>(i);
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an M launcher", mineLauncherIndex >= 0);
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an SM launcher", seekerLauncherIndex >= 0);
+
+	FWeapon * seekerLauncher = minelayer->getWeapon(static_cast<unsigned int>(seekerLauncherIndex));
+	const int initialSeekerAmmo = seekerLauncher->getAmmo();
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must start with ammo >= 3", initialSeekerAmmo >= 3);
+
+	// Build fleets and initialize the tactical game.
+	FFleet * defendFleet = new FFleet();
+	minelayer->setOwner(0);
+	defendFleet->addShip(minelayer);
+	FleetList defendFleets;
+	defendFleets.push_back(defendFleet);
+
+	FFleet * attackFleet = new FFleet();
+	FVehicle * attacker = createShip("AssaultScout");
+	CPPUNIT_ASSERT_MESSAGE("AssaultScout must be creatable", attacker != NULL);
+	attacker->setOwner(1);
+	attackFleet->addShip(attacker);
+	FleetList attackFleets;
+	attackFleets.push_back(attackFleet);
+
+	FTacticalGame game;
+	game.setupFleets(&attackFleets, &defendFleets, false, NULL);
+
+	// Place ships so they have turn-data and occupancy registered.
+	game.setState(BS_SetupDefendFleet);
+	game.setControlState(true);
+	game.setShip(minelayer);
+	game.placeShip(FPoint(10, 10));
+	game.setShipPlacementHeading(0);
+
+	game.setState(BS_SetupAttackFleet);
+	game.setControlState(true);
+	game.setShip(attacker);
+	game.placeShip(FPoint(30, 10));
+	game.setShipPlacementHeading(3);
+
+	// Enter mine placement phase first (required to advance to BS_PlaceSeekers).
+	game.setActivePlayer(false);  // defender = owner 0
+	const bool enteredMines = game.beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginOrdnancePlacement() must succeed with a Minelayer in fleet", enteredMines);
+
+	// Place one mine to satisfy the mine phase, then advance to seeker placement.
+	const FPoint mineHex(5, 5);
+	const bool mineClicked = game.handleHexClick(mineHex);
+	CPPUNIT_ASSERT_MESSAGE("First mine placement must succeed", mineClicked);
+
+	game.completeMinePlacement();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("completeMinePlacement() must advance to BS_PlaceSeekers",
+		static_cast<int>(BS_PlaceSeekers), game.getState());
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must be selected after entering BS_PlaceSeekers",
+		game.getWeapon() != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Selected weapon must be SM type in BS_PlaceSeekers",
+		FWeapon::SM, game.getWeapon()->getType());
+
+	// The placed-ordnance list already has 1 mine record.  Verify the baseline.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Baseline: exactly 1 placed-ordnance record (the mine) before seeker placement",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Baseline: no seekers in getSeekerMissiles() before seeker placement",
+		static_cast<unsigned int>(0), static_cast<unsigned int>(game.getSeekerMissiles().size()));
+
+	// AC: Click the same hex 3 times; each must add one inactive seeker (additive, not toggle).
+	const FPoint seekerHex(7, 7);
+
+	// Click 1
+	const bool click1 = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("Click 1 on seekerHex must return true", click1);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 1: getSeekerMissiles() must have 1 seeker",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(game.getSeekerMissiles().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 1: seeker ammo must be decremented by 1",
+		initialSeekerAmmo - 1, seekerLauncher->getAmmo());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 1: getPlacedOrdnance() must have 2 records (mine + seeker)",
+		static_cast<unsigned int>(2), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+
+	// Click 2 on the same hex — pre-fix toggle behavior would REMOVE the first seeker here.
+	const bool click2 = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("Click 2 on same seekerHex must return true (additive, not toggle)", click2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 2: getSeekerMissiles() must have 2 seekers (not 0 from toggle)",
+		static_cast<unsigned int>(2), static_cast<unsigned int>(game.getSeekerMissiles().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 2: seeker ammo must be decremented by 2 total",
+		initialSeekerAmmo - 2, seekerLauncher->getAmmo());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 2: getPlacedOrdnance() must have 3 records (mine + 2 seekers)",
+		static_cast<unsigned int>(3), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+
+	// Click 3 on the same hex.
+	const bool click3 = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("Click 3 on same seekerHex must return true (additive)", click3);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 3: getSeekerMissiles() must have 3 seekers",
+		static_cast<unsigned int>(3), static_cast<unsigned int>(game.getSeekerMissiles().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 3: seeker ammo must be decremented by 3 total",
+		initialSeekerAmmo - 3, seekerLauncher->getAmmo());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 3: getPlacedOrdnance() must have 4 records (mine + 3 seekers)",
+		static_cast<unsigned int>(4), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+
+	// Verify all seekers are inactive and placed at the same hex.
+	const std::vector<FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+	for (unsigned int i = 0; i < seekers.size(); ++i) {
+		CPPUNIT_ASSERT_MESSAGE("Every placed seeker must be inactive", !seekers[i].active);
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("Every placed seeker must be at seekerHex X",
+			seekerHex.getX(), seekers[i].hex.getX());
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("Every placed seeker must be at seekerHex Y",
+			seekerHex.getY(), seekers[i].hex.getY());
+	}
+
+	// Verify all SM placed-ordnance records reference the seeker hex.
+	const std::vector<FTacticalPlacedOrdnance> & ordnance = game.getPlacedOrdnance();
+	unsigned int smRecordCount = 0;
+	for (unsigned int i = 0; i < ordnance.size(); ++i) {
+		if (ordnance[i].weaponType == FWeapon::SM) {
+			++smRecordCount;
+			CPPUNIT_ASSERT_EQUAL_MESSAGE("SM placed-ordnance record must reference seekerHex X",
+				seekerHex.getX(), ordnance[i].hex.getX());
+			CPPUNIT_ASSERT_EQUAL_MESSAGE("SM placed-ordnance record must reference seekerHex Y",
+				seekerHex.getY(), ordnance[i].hex.getY());
+		}
+	}
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain exactly 3 SM records",
+		static_cast<unsigned int>(3), smRecordCount);
+
+	// AC: Ammo exhaustion — clicking again when ammo reaches zero must not add another seeker.
+	// Drain remaining ammo by placing additional seekers (at different hexes to avoid any
+	// per-hex limit), then verify that one more click on the same hex is rejected.
+	const int remainingAmmo = seekerLauncher->getAmmo();
+	for (int k = 0; k < remainingAmmo; ++k) {
+		// Use distinct hexes to drain ammo cleanly.
+		const FPoint drainHex(8 + k, 8);
+		game.handleHexClick(drainHex);
+	}
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker ammo must be 0 after draining",
+		0, seekerLauncher->getAmmo());
+
+	const unsigned int seekerCountBeforeExhaustedClick = static_cast<unsigned int>(game.getSeekerMissiles().size());
+	const bool exhaustedClick = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("Click when ammo == 0 must return false", !exhaustedClick);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker count must not increase when ammo is exhausted",
+		seekerCountBeforeExhaustedClick, static_cast<unsigned int>(game.getSeekerMissiles().size()));
+
+	// Clean up heap-allocated objects.
+	delete defendFleet;
+	delete attackFleet;
+}
+
 }
