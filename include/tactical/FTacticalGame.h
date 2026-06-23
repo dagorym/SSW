@@ -274,9 +274,9 @@ typedef struct {
  * behavioral tests, and pending offensive-fire deployment state used by the
  * wx rendering and interaction layers.
  *
- * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created: Mar 29, 2026
- * @date Last Modified: May 28, 2026
+ * @date Last Modified: Jun 23, 2026
  */
 class FTacticalGame {
 public:

@@ -1671,3 +1671,33 @@ cd tests && make tactical-tests && ./tactical/TacticalTests
 ```
 
 Result: `OK (216 tests)`.
+
+PGS-04 adds two related improvements to the pre-game ordnance placement flow.
+
+**Pre-game seeker undeploy list.** During `BS_PlaceSeekers`, `FTacticalGame::getPlacedSeekerHexGroups()` returns a vector of `FTacticalPreGameSeekerHexGroup` records, one per unique (hex, source) pair among the current inactive `m_seekerMissiles`. The new `FTacticalPreGameSeekerHexGroup` struct stores the hex, source provenance (`FTacticalOrdnanceSource`), and a stack count. `FBattleDisplay::drawPlaceSeekers()` renders this list as a centered recall panel below the source-selection rows, one row per group labeled `Recall: <shipName> (<x>,<y>) x<count>`. Each rendered region is stored in five parallel vectors (`m_preGameSeekerRecallRegions`, `m_preGameSeekerRecallHexes`, `m_preGameSeekerRecallShipIDs`, `m_preGameSeekerRecallWeaponIndices`, `m_preGameSeekerRecallWeaponIDs`), all cleared at the start of `draw()` so stale regions never survive a redraw.
+
+When the user clicks a recall row, `FBattleDisplay::checkPreGameSeekerRecallSelection()` reconstructs the `FTacticalOrdnanceSource` from the parallel vectors and calls `FBattleScreen::recallPlacedSeekerAtHexSource(hex, source)`. The screen forwarding method delegates to `FTacticalGame::recallPlacedSeekerAtHexSource()`, which removes exactly one inactive seeker record matching the (hex, source) pair, erases the corresponding `m_placedOrdnance` entry, calls `restoreAmmoForSource()` to increment the launcher's ammo by one, rebuilds the deployable source list filtered to SM-type weapons only, and reselects the same source. `FBattleScreen` calls `reDraw()` after a successful recall so the panel and board stay consistent. `getPlacedSeekerHexGroups()` returns an empty vector outside `BS_PlaceSeekers` so the recall list is always absent during the mine phase and during combat.
+
+`FBattleDisplay::onLeftUp()` calls `checkPreGameSeekerRecallSelection()` first during `BS_PlaceSeekers`; only if no recall row is hit does it fall through to `checkShipSelection()`. This ensures a click on a recall row is not misrouted to ship selection.
+
+**Mine removal source-independence fix.** Before this change, the mine-removal path inside `FTacticalGame::placeOrdnanceAtHex()` restored ammo to whatever source was currently selected, not necessarily the ship that placed the mine. A player who placed a mine with one launcher and then switched the active source before clicking to remove it would incorrectly see ammo restored to the newly selected launcher.
+
+PGS-04 fixes this by searching `m_placedOrdnance` for a record whose `hex` matches and whose `weaponType` is `FWeapon::M`, then reading the `source` from that record before erasing it. Ammo is restored to the **placing** ship and launcher (`restoreAmmoForSource(storedSource)`) rather than the currently selected source. Mine removal therefore works correctly regardless of which source row is highlighted at the time the mined hex is clicked.
+
+New test fixture `FTacticalPreGameOrdnanceTest` (in `tests/tactical/`) provides behavioral coverage for both changes:
+
+- `testRecallPlacedSeekerDecrementsCountAndRestoresAmmo`: asserts that `recallPlacedSeekerAtHexSource()` removes one seeker and restores one ammo unit.
+- `testRecallFromStackedSeekerLeavesRemainingSeekersInPlace`: asserts that recalling from a stack of two leaves one seeker at that (hex, source).
+- `testGetPlacedSeekerHexGroupsReturnsEmptyOutsidePlaceSeekers`: asserts that `getPlacedSeekerHexGroups()` returns empty during `BS_PlaceMines` (and implicitly during other non-seeker-placement states).
+- `testMineRemovalWithNonPlacingSourceSelectedRestoresAmmoToPlacingShip`: asserts that switching the active source after placing a mine does not affect which launcher receives ammo back on mine removal.
+
+GUI coverage in `TacticalGuiLiveTest::testPreGameSeekerRecallListAppearsAndClickRemovesSeeker` verifies that the centered recall list renders during `BS_PlaceSeekers` with at least one row, that its rows appear below the action-button block, and that clicking the first recall row removes one seeker and restores one ammo round.
+
+Validation commands:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+cd tests/gui && make && xvfb-run -a ./GuiTests
+```
+
+Results: `OK (222 tests)` tactical; GUI pre-existing 10 failures unrelated to PGS-04.
