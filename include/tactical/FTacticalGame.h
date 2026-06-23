@@ -11,6 +11,9 @@
  * SMFR-05: Added clearNonImpactingSeekerMovementPaths() called from
  * completeMovePhase() after applyMovementSeekerDamage() so non-impacting
  * seeker displayed paths clear with ship movement routes.
+ * PGS-03: Updated placeOrdnanceAtHex() so that during BS_PlaceSeekers,
+ * board clicks are always additive (no toggle/removal); mine placement
+ * toggle behavior for BS_PlaceMines is unchanged.
  */
 
 #ifndef _FTACTICALGAME_H_
@@ -510,13 +513,19 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * is then reselected so the active source index stays aligned with the current
 	 * ship/weapon pointers.
 	 *
+	 * PGS-03: During pre-game BS_PlaceSeekers, board clicks are always additive
+	 * (stacking). The toggle/remove path is bypassed so that repeated clicks on
+	 * the same hex accumulate inactive seeker records without any removal.
+	 * Mine toggle behavior for BS_PlaceMines is unchanged. Attack-phase seeker
+	 * deployment (BS_Battle / PH_ATTACK_FIRE) is also unchanged.
+	 *
 	 * @param hex Tactical hex to place into or undo from.
 	 *
 	 * @return True when model placement state changed.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: May 24, 2026
-	 * @date Last Modified: Jun 19, 2026
+	 * @date Last Modified: Jun 22, 2026
 	 */
 	bool placeOrdnanceAtHex(const FPoint & hex);
 	/**

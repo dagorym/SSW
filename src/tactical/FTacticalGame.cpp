@@ -5,6 +5,10 @@
  * @date Created:  Mar 29, 2026
  * @date Last Modified: Jun 22, 2026
  *
+ * PGS-03: placeOrdnanceAtHex() now bypasses the toggle/remove path during
+ * pre-game BS_PlaceSeekers so that board clicks are always additive.
+ * Mine placement toggle behavior (BS_PlaceMines) is unchanged.
+ *
  */
 
 #include "tactical/FTacticalGame.h"
@@ -3210,6 +3214,15 @@ bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex) {
 			return false;
 		}
 		return placeOffensiveFirePendingSeekerAtHex(hex);
+	}
+
+	// PGS-03: During pre-game BS_PlaceSeekers, board clicks are always additive —
+	// never toggle/remove.  Skip the removePlacedOrdnanceForSelection step entirely
+	// so that repeated clicks on the same hex stack multiple inactive seekers from
+	// the same source.  Mine toggle behavior (BS_PlaceMines) is unchanged because
+	// each mined hex is unique and the toggle path below still applies to mines.
+	if (getState() == BS_PlaceSeekers && selectedSource.weaponType == FWeapon::SM) {
+		return placeSeekerFromSelection(hex, selectedSource);
 	}
 
 	FTacticalPlacedOrdnance removed;
