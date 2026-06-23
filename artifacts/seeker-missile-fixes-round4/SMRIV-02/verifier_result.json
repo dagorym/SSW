@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round4/SMRIV-02/verifier_report.md",
+    "artifacts/seeker-missile-fixes-round4/SMRIV-02/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "sf2-SMRIV-02-verifier-20260623",
+  "documentation_accuracy_summary": [
+    "ACCURATE. doc/test-contracts.md SMF-02 and new SMRIV-02 entries correctly describe the three-column layout, getActionPromptLineY(0) anchor, and new tests. FBattleDisplay.h docblock matches implementation. No contradictions found."
+  ],
+  "note_finding_count": 1,
+  "pass_label": null,
+  "status": "PASS",
+  "task_id": "SMRIV-02",
+  "test_sufficiency_summary": [
+    "SUFFICIENT. AC1-AC6 are all covered by the new behavioral live test testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions which drives drawPlaceSeekers() via offscreen wxMemoryDC and asserts m_shipNameRegions left >= 310 (AC1), top >= actionPromptLineY(0) (AC2), m_preGameSeekerRecallRegions left >= 620 (AC3), top >= actionPromptLineY(0) (AC4), source click updates getSelectedPlacementSourceIndex() (AC5), and recall click undeploys seeker and restores ammo (AC6). Supplementary source-contract test locks structural constants. Tactical suite: 223/223 (independently verified). GUI suite: 43 pass / 9 fail per Tester (xvfb unavailable; 9 failures confirmed pre-existing)."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
