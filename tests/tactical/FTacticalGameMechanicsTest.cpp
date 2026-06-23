@@ -583,7 +583,7 @@ void FTacticalGameMechanicsTest::testOrdnancePlacementSourceTrackingAndCompatibi
 
 	assertContains(beginOrdnanceBody, "rebuildDeployablePlacementSources();");
 	assertContains(beginOrdnanceBody, "if (weapon != NULL && weapon->getAmmo() > 0) {");
-	assertContains(beginOrdnanceBody, "selectPlacementSourceByIndex(selectedIndex);");
+	assertContains(beginOrdnanceBody, "if (!selectPlacementSourceByIndex(selectedIndex)) {");
 	assertContains(beginOrdnanceBody, "setState(BS_PlaceMines);");
 
 	assertContains(selectByIndexBody, "m_selectedPlacementSource = static_cast<int>(sourceIndex);");
@@ -1106,6 +1106,122 @@ void FTacticalGameMechanicsTest::testPreGameOrdnancePlacementRecordingBehavior()
 		initialSeekerAmmo - 1, seekerLauncher->getAmmo());
 
 	// Clean up heap-allocated objects.
+	delete defendFleet;
+	delete attackFleet;
+}
+
+void FTacticalGameMechanicsTest::testPreGameMinePlacementPreservesShipAfterBeginMinePlacement() {
+// AC: PGS-01 — After beginMinePlacement() succeeds, m_curShip and m_curWeapon must
+//     not be null when the first board click arrives.  This test reproduces the bug
+//     where onSetSpeed() called setShip(NULL) unconditionally, simulates that buggy
+//     path (setShip(NULL) after beginMinePlacement) to confirm placeMineAtHex fails,
+//     then confirms the fixed path (no nulling) records the mine successfully.
+	using namespace Frontier;
+
+	// Build a Minelayer (M + SM weapons) fleet for the defending side (owner 0).
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Minelayer ship must be creatable", minelayer != NULL);
+	int mineLauncherIndex = -1;
+	for (unsigned int i = 0; i < minelayer->getWeaponCount(); ++i) {
+		FWeapon * w = minelayer->getWeapon(i);
+		if (w != NULL && w->getType() == FWeapon::M && mineLauncherIndex < 0) {
+			mineLauncherIndex = static_cast<int>(i);
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an M launcher", mineLauncherIndex >= 0);
+
+	FFleet * defendFleet = new FFleet();
+	minelayer->setOwner(0);
+	defendFleet->addShip(minelayer);
+	FleetList defendFleets;
+	defendFleets.push_back(defendFleet);
+
+	FFleet * attackFleet = new FFleet();
+	FVehicle * attacker = createShip("AssaultScout");
+	CPPUNIT_ASSERT_MESSAGE("AttackScout must be creatable", attacker != NULL);
+	attacker->setOwner(1);
+	attackFleet->addShip(attacker);
+	FleetList attackFleets;
+	attackFleets.push_back(attackFleet);
+
+	FTacticalGame game;
+	game.setupFleets(&attackFleets, &defendFleets, false, NULL);
+
+	// Place ships so they have turn-data and occupancy registered.
+	game.setState(BS_SetupDefendFleet);
+	game.setControlState(true);
+	game.setShip(minelayer);
+	game.placeShip(FPoint(10, 10));
+	game.setShipPlacementHeading(0);
+
+	game.setState(BS_SetupAttackFleet);
+	game.setControlState(true);
+	game.setShip(attacker);
+	game.placeShip(FPoint(30, 10));
+	game.setShipPlacementHeading(3);
+
+	// Reset active player to defender (owner 0) to simulate the pre-game mine
+	// placement entry point.  Do NOT call setState(BS_SetupDefendFleet) here —
+	// with only 1 defender ship, that setState call auto-advances to
+	// BS_SetupAttackFleet and toggles the active player, breaking the test.
+	game.setActivePlayer(false);  // defender = owner 0
+
+	// Part 1: Simulate the buggy path — beginMinePlacement() succeeds but
+	// setShip(NULL) is then called before the first click.
+	const bool entered1 = game.beginMinePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginMinePlacement() must succeed with a Minelayer in fleet (Part 1)", entered1);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Model must be in BS_PlaceMines after beginMinePlacement()",
+		static_cast<int>(BS_PlaceMines), game.getState());
+	// Simulate the old bug: setShip(NULL) nulls m_curShip before the first board click.
+	game.setShip(NULL);
+	CPPUNIT_ASSERT_MESSAGE("Simulated bug: getShip() must be NULL after setShip(NULL)", game.getShip() == NULL);
+
+	// placeMineAtHex must fail when m_curShip is NULL (confirming the bug would have occurred).
+	const FPoint bugHex(5, 5);
+	const bool bugResult = game.placeMineAtHex(bugHex);
+	CPPUNIT_ASSERT_MESSAGE("placeMineAtHex must return false when m_curShip is NULL (simulating pre-fix bug)", !bugResult);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getMinedHexes must be empty after failed buggy placement",
+		static_cast<unsigned int>(0), static_cast<unsigned int>(game.getMinedHexes().size()));
+
+	// Part 2: Fixed path — beginMinePlacement() succeeds and setShip(NULL) is NOT called.
+	// Reset to defender-active state again (same comment: no setState to avoid auto-advance).
+	game.setActivePlayer(false);
+
+	const bool entered2 = game.beginMinePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginMinePlacement() must succeed in fixed path (Part 2)", entered2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Model must be in BS_PlaceMines in fixed path",
+		static_cast<int>(BS_PlaceMines), game.getState());
+
+	// In the fixed path, m_curShip and m_curWeapon must be non-null.
+	CPPUNIT_ASSERT_MESSAGE("Fixed path: getShip() must be non-NULL after beginMinePlacement()", game.getShip() != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Fixed path: getWeapon() must be non-NULL after beginMinePlacement()", game.getWeapon() != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Fixed path: selected weapon type must be M",
+		FWeapon::M, game.getWeapon()->getType());
+
+	FWeapon * mineLauncher = minelayer->getWeapon(static_cast<unsigned int>(mineLauncherIndex));
+	const int initialAmmo = mineLauncher->getAmmo();
+	CPPUNIT_ASSERT_MESSAGE("Mine launcher must have ammo > 0", initialAmmo > 0);
+
+	// AC: clicking a valid hex must succeed and record the mine.
+	const FPoint mineHex(5, 5);
+	const bool placed = game.placeMineAtHex(mineHex);
+	CPPUNIT_ASSERT_MESSAGE("Fixed path: placeMineAtHex must succeed when m_curShip is non-NULL", placed);
+
+	// AC: ammo decremented by 1.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Mine launcher ammo must decrement by 1 after placement",
+		initialAmmo - 1, mineLauncher->getAmmo());
+
+	// AC: hex recorded in getMinedHexes().
+	const PointSet & minedHexes = game.getMinedHexes();
+	CPPUNIT_ASSERT_MESSAGE("Placed mine hex must appear in getMinedHexes()",
+		minedHexes.find(mineHex) != minedHexes.end());
+
+	// AC: placed-ordnance record appended.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain one record after successful placement",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must have weapon type M",
+		FWeapon::M, game.getPlacedOrdnance()[0].weaponType);
+
 	delete defendFleet;
 	delete attackFleet;
 }

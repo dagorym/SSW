@@ -1594,6 +1594,106 @@ delete defendFleet;
 m_harness.cleanupOrphanTopLevels(10);
 }
 
+void TacticalGuiLiveTest::testOnSetSpeedMinePlacementPreservesShipForFirstBoardClick() {
+// PGS-01: Verifies that after beginMinePlacement() succeeds via the FBattleScreen API,
+// m_curShip and m_curWeapon remain non-NULL so the first board click can record a mine.
+//
+// The old bug: onSetSpeed() called setShip(NULL) unconditionally after beginMinePlacement(),
+// nulling m_curShip before the first board click, causing every mine click to silently fail.
+// The fix: the enteredMinePlacement flag in onSetSpeed skips the setShip(NULL) call when
+// beginMinePlacement() succeeds.
+//
+// This test drives the behavioral FBattleScreen API path directly:
+// 1. Set up a real FBattleScreen with a Minelayer fleet.
+// 2. Call beginMinePlacement() through the screen API.
+// 3. Assert getShip() and getWeapon() are non-NULL (fixed path: no nulling after entry).
+// 4. Assert handleHexClick() in BS_PlaceMines records a mine.
+
+FFleet * attackFleet = new FFleet();
+FFleet * defendFleet = new FFleet();
+FVehicle * attacker = createShip("AssaultScout");
+FVehicle * minelayer = createShip("Minelayer");
+CPPUNIT_ASSERT_MESSAGE("AssaultScout and Minelayer must be creatable",
+	attacker != NULL && minelayer != NULL);
+attackFleet->addShip(attacker);
+defendFleet->addShip(minelayer);
+FleetList attackFleets;
+FleetList defendFleets;
+attackFleets.push_back(attackFleet);
+defendFleets.push_back(defendFleet);
+
+// Locate the mine launcher for ammo/record tracking.
+int mineLauncherIndex = -1;
+for (unsigned int i = 0; i < minelayer->getWeaponCount(); ++i) {
+	FWeapon * w = minelayer->getWeapon(i);
+	if (w != NULL && w->getType() == FWeapon::M && mineLauncherIndex < 0) {
+		mineLauncherIndex = static_cast<int>(i);
+	}
+}
+CPPUNIT_ASSERT_MESSAGE("Minelayer must have an M launcher", mineLauncherIndex >= 0);
+FWeapon * mineLauncher = minelayer->getWeapon(static_cast<unsigned int>(mineLauncherIndex));
+const int initialAmmo = mineLauncher->getAmmo();
+CPPUNIT_ASSERT_MESSAGE("Mine launcher must start with ammo > 0", initialAmmo > 0);
+
+FBattleScreen * battleScreen = new FBattleScreen("PGS-01 Mine Placement Preserves Ship");
+battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+battleScreen->Show();
+m_harness.pumpEvents(2);
+
+// After setupFleets() the screen starts in BS_SetupDefendFleet with active player 0.
+// Enter mine placement directly through the FBattleScreen API (this is the same path
+// that onSetSpeed takes via beginMinePlacement()).
+CPPUNIT_ASSERT_EQUAL_MESSAGE("Initial state after setupFleets must be BS_SetupDefendFleet",
+	static_cast<int>(BS_SetupDefendFleet), battleScreen->getState());
+
+const bool entered = battleScreen->beginMinePlacement();
+CPPUNIT_ASSERT_MESSAGE("beginMinePlacement() must succeed with a Minelayer in fleet", entered);
+
+// AC: After beginMinePlacement() succeeds, getShip() must be non-NULL.
+// (The bug: onSetSpeed called setShip(NULL) after this, nulling m_curShip.)
+CPPUNIT_ASSERT_EQUAL_MESSAGE("beginMinePlacement() must transition to BS_PlaceMines",
+	static_cast<int>(BS_PlaceMines), battleScreen->getState());
+CPPUNIT_ASSERT_MESSAGE(
+	"After beginMinePlacement(), getShip() must be non-NULL (regression: old code nulled it via onSetSpeed)",
+	battleScreen->getShip() != NULL);
+CPPUNIT_ASSERT_MESSAGE(
+	"After beginMinePlacement(), getWeapon() must be non-NULL",
+	battleScreen->getWeapon() != NULL);
+CPPUNIT_ASSERT_EQUAL_MESSAGE(
+	"Selected weapon after mine-entry must be of type M",
+	FWeapon::M, battleScreen->getWeapon()->getType());
+
+// AC: handleHexClick() in BS_PlaceMines must record a mine when m_curShip is non-NULL.
+// (When old bug was active: setShip(NULL) → placeMineAtHex returns false → no mine recorded.)
+const FPoint mineHex(5, 5);
+const bool placed = battleScreen->handleHexClick(mineHex);
+CPPUNIT_ASSERT_MESSAGE(
+	"handleHexClick in BS_PlaceMines must succeed when m_curShip is non-NULL (old bug: all clicks silently dropped)",
+	placed);
+
+// AC: Mine launcher ammo decremented by 1.
+CPPUNIT_ASSERT_EQUAL_MESSAGE("Mine launcher ammo must decrement by 1 after successful placement",
+	initialAmmo - 1, mineLauncher->getAmmo());
+
+// AC: Hex recorded in getMinedHexes().
+const PointSet & minedHexes = battleScreen->getMinedHexes();
+CPPUNIT_ASSERT_MESSAGE("Placed mine hex must appear in getMinedHexes()",
+	minedHexes.find(mineHex) != minedHexes.end());
+
+// AC: Placed-ordnance record appended to getPlacedOrdnance().
+CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain one record after mine placement",
+	static_cast<unsigned int>(1), static_cast<unsigned int>(battleScreen->getPlacedOrdnance().size()));
+CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must have weapon type M",
+	FWeapon::M, battleScreen->getPlacedOrdnance()[0].weaponType);
+
+battleScreen->Destroy();
+m_harness.pumpEvents(3);
+delete attackFleet;
+delete defendFleet;
+
+m_harness.cleanupOrphanTopLevels(10);
+}
+
 void TacticalGuiLiveTest::testOffensiveSeekerPendingListRegionVisibilityAndRecall() {
 	// SMF-03: drawOffensiveSeekerPendingRows is called in draw() inside a PH_ATTACK_FIRE guard,
 	// left of the ship-status widget.  This live GUI test confirms:

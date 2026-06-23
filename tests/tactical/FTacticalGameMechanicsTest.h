@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Mar 29, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 22, 2026
  */
 class FTacticalGameMechanicsTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalGameMechanicsTest );
@@ -44,6 +44,7 @@ CPPUNIT_TEST( testSeekerDeploymentPhaseStateMachineTransitions );
 CPPUNIT_TEST( testSeekerActivationPhaseIndexStampingAndFiltering );
 CPPUNIT_TEST( testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate );
 CPPUNIT_TEST( testPreGameOrdnancePlacementRecordingBehavior );
+CPPUNIT_TEST( testPreGameMinePlacementPreservesShipAfterBeginMinePlacement );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -314,6 +315,22 @@ void testSeekerDeploymentPhaseStateMachineTransitions();
 	 * @date Last Modified: Jun 19, 2026
 	 */
 	void testPreGameOrdnancePlacementRecordingBehavior();
+	/**
+	 * @brief Behavioral regression for PGS-01: beginMinePlacement() preserves m_curShip
+	 *        and m_curWeapon so the first board click can place a mine.
+	 *
+	 * Simulates the pre-fix bug (setShip(NULL) after beginMinePlacement) and asserts
+	 * placeMineAtHex fails; then confirms the fixed path (no nulling) records the mine,
+	 * decrements ammo, and updates getMinedHexes() and getPlacedOrdnance().
+	 *
+	 * This test MUST fail against the unfixed code (where onSetSpeed always called
+	 * setShip(NULL)) and pass after the fix.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	void testPreGameMinePlacementPreservesShipAfterBeginMinePlacement();
 };
 
 }

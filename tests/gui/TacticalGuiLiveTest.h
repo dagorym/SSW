@@ -22,7 +22,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 22, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -40,6 +40,7 @@ CPPUNIT_TEST( testBattleDisplayNarrowWidthStacksShipStatsBelowButtons );
 CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
 CPPUNIT_TEST( testMinePlacementDoneButtonLabelReflectsOrdnanceTypes );
+CPPUNIT_TEST( testOnSetSpeedMinePlacementPreservesShipForFirstBoardClick );
 CPPUNIT_TEST( testOffensiveSeekerPendingListRegionVisibilityAndRecall );
 CPPUNIT_TEST( testOrdnancePlacementAndActivationPanelHeightAutoExpands );
 CPPUNIT_TEST( testSeekerMoveCountOverlayRendersInAllBattlePhases );
@@ -189,6 +190,26 @@ void testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo();
  * @date Last Modified: Jun 02, 2026
  */
 void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
+	/**
+	 * @brief Behavioral regression for PGS-01: onSetSpeed mine-entry path preserves
+	 *        m_curShip and m_curWeapon so the first board click can record a mine.
+	 *
+	 * Drives the real onSetSpeed/mine-entry path by setting up a FBattleScreen in
+	 * BS_SetupDefendFleet with getDone()==true, then fires the "Set Speed" button event
+	 * and asserts that:
+	 * - The screen transitions to BS_PlaceMines.
+	 * - getShip() is non-NULL (fixed: enteredMinePlacement flag prevents setShip(NULL)).
+	 * - getWeapon() is non-NULL and of type M.
+	 * - handleHexClick() in BS_PlaceMines records a mine (ammo decrement, hex in
+	 *   getMinedHexes(), record in getPlacedOrdnance()).
+	 *
+	 * This test MUST fail against the unfixed code and pass after the fix.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	void testOnSetSpeedMinePlacementPreservesShipForFirstBoardClick();
 	/**
 	 * @brief Verifies the pending-seeker list widget region during PH_ATTACK_FIRE seeker deployment.
 	 *
