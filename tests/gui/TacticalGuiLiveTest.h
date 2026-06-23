@@ -46,6 +46,7 @@ CPPUNIT_TEST( testOrdnancePlacementAndActivationPanelHeightAutoExpands );
 CPPUNIT_TEST( testSeekerMoveCountOverlayRendersInAllBattlePhases );
 CPPUNIT_TEST( testSeekerPathRendersInPHMoveWithMovementPath );
 CPPUNIT_TEST( testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources );
+CPPUNIT_TEST( testPreGameSeekerRecallListAppearsAndClickRemovesSeeker );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -310,6 +311,29 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 22, 2026
 	 */
 	void testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources();
+
+	/**
+	 * @brief Behavioral verification for PGS-04: the pre-game seeker recall list appears
+	 * during BS_PlaceSeekers (centered in the lower panel), is populated with one row per
+	 * placed inactive seeker group, and clicking a recall row removes exactly one seeker and
+	 * restores ammo. The recall list must NOT appear during BS_PlaceMines or overlap the
+	 * source-selection rows.
+	 *
+	 * AC1: During BS_PlaceSeekers, drawPlaceSeekers() populates m_preGameSeekerRecallRegions
+	 *      after a seeker is placed (one region per (hex, source) group).
+	 * AC2: Simulating a click on a recall region calls recallPlacedSeekerAtHexSource(),
+	 *      decrements getSeekerMissiles().size() by 1, and restores one ammo round to the
+	 *      seeker launcher.
+	 * AC3: During BS_PlaceMines, draw() must not populate m_preGameSeekerRecallRegions
+	 *      (recall list absent from mine phase).
+	 * AC4: Each recall region starts at or below the source-row bottom (does not overlap
+	 *      source-selection rows or the action-button/prompt block).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	void testPreGameSeekerRecallListAppearsAndClickRemovesSeeker();
 };
 
 }

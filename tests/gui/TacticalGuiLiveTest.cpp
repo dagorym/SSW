@@ -165,6 +165,22 @@ wxRect shipNameRegion(size_t i) const {
 void checkShipSelectionPublic(wxMouseEvent & event) {
 	checkShipSelection(event);
 }
+
+/// returns the number of pre-game seeker recall regions registered after the last draw (PGS-04)
+size_t preGameSeekerRecallRegionCount() const {
+	return m_preGameSeekerRecallRegions.size();
+}
+
+/// returns the i-th pre-game seeker recall region after the last draw (PGS-04)
+wxRect preGameSeekerRecallRegion(size_t i) const {
+	CPPUNIT_ASSERT(i < m_preGameSeekerRecallRegions.size());
+	return m_preGameSeekerRecallRegions[i];
+}
+
+/// exposes checkPreGameSeekerRecallSelection() for simulated click testing (PGS-04)
+bool checkPreGameSeekerRecallSelectionPublic(wxMouseEvent & event) {
+	return checkPreGameSeekerRecallSelection(event);
+}
 };
 
 wxTextCtrl * findFirstTextCtrl(wxWindow * root) {
@@ -2542,6 +2558,173 @@ void TacticalGuiLiveTest::testPlacementSourceRowsArePopulatedAndClickSelectionUp
 
 	battleScreen->Destroy();
 	m_harness.pumpEvents(3);
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testPreGameSeekerRecallListAppearsAndClickRemovesSeeker() {
+	// PGS-04: Behavioral verification covering AC1-AC4 for the pre-game seeker recall list.
+	//
+	// AC1: During BS_PlaceSeekers, drawPlaceSeekers() populates m_preGameSeekerRecallRegions
+	//      after a seeker is placed (one region per (hex, source) group).
+	// AC2: Simulating a click on a recall region via checkPreGameSeekerRecallSelectionPublic
+	//      removes one seeker from the model (getSeekerMissiles().size() decrements by 1) and
+	//      restores one ammo round to the seeker launcher.
+	// AC3: During BS_PlaceMines, draw() must not populate m_preGameSeekerRecallRegions
+	//      (recall list must be absent from the mine phase).
+	// AC4: Each recall region starts at or below actionButtonRowBottom() so it does not overlap
+	//      source-selection rows or the action-button/prompt block.
+	//
+	// Setup: one Minelayer on the defending side (owner 2) so both mine and seeker phases
+	// can be exercised within one test.
+
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker  = createShip("Destroyer");
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Attacker and Minelayer must be creatable",
+		attacker != NULL && minelayer != NULL);
+	minelayer->setOwner(2);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(minelayer);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("PGS-04 Seeker Recall List");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleDisplay must exist in the battle screen.", displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	// --- AC3: During BS_PlaceMines, m_preGameSeekerRecallRegions must be empty ---
+	const bool mineEntered = battleScreen->beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginOrdnancePlacement() must succeed with a Minelayer", mineEntered);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(1);
+
+	{
+		const int panelW = battleScreen->GetSize().GetWidth();
+		wxMemoryDC dc;
+		wxBitmap bmp(panelW > 0 ? panelW : 800, 300);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC3: m_preGameSeekerRecallRegions must be empty during BS_PlaceMines.",
+		static_cast<size_t>(0),
+		peer->preGameSeekerRecallRegionCount());
+
+	// --- Advance to BS_PlaceSeekers via Mine Placement Done button ---
+	wxButton * mineDoneButton = findButtonByLabel(battleScreen, wxT("Mine Placement Done"));
+	CPPUNIT_ASSERT_MESSAGE("Mine Placement Done button must exist.", mineDoneButton != NULL);
+	{
+		wxCommandEvent mineClick(wxEVT_COMMAND_BUTTON_CLICKED, mineDoneButton->GetId());
+		mineClick.SetEventObject(mineDoneButton);
+		mineDoneButton->GetEventHandler()->ProcessEvent(mineClick);
+	}
+	m_harness.pumpEvents(2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Must be in BS_PlaceSeekers after Mine Placement Done.",
+		static_cast<int>(BS_PlaceSeekers), battleScreen->getState());
+
+	// Locate the seeker launcher to check ammo.
+	FWeapon * seekerLauncher = battleScreen->getWeapon();
+	CPPUNIT_ASSERT_MESSAGE("SM launcher must be auto-selected in BS_PlaceSeekers", seekerLauncher != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Selected weapon must be SM", FWeapon::SM, seekerLauncher->getType());
+	const int ammoBeforePlacement = seekerLauncher->getAmmo();
+	CPPUNIT_ASSERT_MESSAGE("SM launcher must have ammo > 0 for this test", ammoBeforePlacement > 0);
+
+	// --- AC1 pre-check: before any placement, recall regions must be empty ---
+	{
+		const int panelW = battleScreen->GetSize().GetWidth();
+		wxMemoryDC dc;
+		wxBitmap bmp(panelW > 0 ? panelW : 800, 300);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC1 pre-check: m_preGameSeekerRecallRegions must be empty before any seeker placement.",
+		static_cast<size_t>(0),
+		peer->preGameSeekerRecallRegionCount());
+
+	// Place one seeker via handleHexClick.
+	const FPoint seekerHex(5, 5);
+	const bool placed = battleScreen->handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("handleHexClick in BS_PlaceSeekers must succeed", placed);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker count must be 1 after placement",
+		static_cast<unsigned int>(1),
+		static_cast<unsigned int>(battleScreen->getSeekerMissiles().size()));
+
+	// --- AC1: After placement, draw must populate recall regions ---
+	{
+		const int panelW = battleScreen->GetSize().GetWidth();
+		wxMemoryDC dc;
+		wxBitmap bmp(panelW > 0 ? panelW : 800, 300);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+	const size_t recallCountAfterPlacement = peer->preGameSeekerRecallRegionCount();
+	CPPUNIT_ASSERT_MESSAGE(
+		"AC1: m_preGameSeekerRecallRegions must be non-empty after placing one seeker.",
+		recallCountAfterPlacement >= 1);
+
+	// --- AC4: Each recall region must start at or below actionButtonRowBottom() ---
+	const int buttonRowBottom = peer->actionButtonRowBottomPublic();
+	for (size_t i = 0; i < recallCountAfterPlacement; ++i) {
+		const wxRect recallRect = peer->preGameSeekerRecallRegion(i);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC4: Recall row region must start at or below actionButtonRowBottom() "
+			"(must not overlap action-button/prompt block).",
+			recallRect.GetTop() >= buttonRowBottom);
+	}
+
+	// --- AC2: Click the first recall region and verify seeker removal + ammo restore ---
+	const wxRect firstRecallRect = peer->preGameSeekerRecallRegion(0);
+	const int clickX = firstRecallRect.GetLeft() + firstRecallRect.GetWidth() / 2;
+	const int clickY = firstRecallRect.GetTop()  + firstRecallRect.GetHeight() / 2;
+	wxMouseEvent recallClick(wxEVT_LEFT_UP);
+	recallClick.m_x = clickX;
+	recallClick.m_y = clickY;
+	const bool recalled = peer->checkPreGameSeekerRecallSelectionPublic(recallClick);
+	CPPUNIT_ASSERT_MESSAGE("AC2: checkPreGameSeekerRecallSelection() must return true for the recall row click.",
+		recalled);
+
+	// Seeker count must drop by 1.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC2: getSeekerMissiles().size() must be 0 after recalling the only placed seeker.",
+		static_cast<unsigned int>(0),
+		static_cast<unsigned int>(battleScreen->getSeekerMissiles().size()));
+
+	// Ammo must be restored by 1.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC2: Seeker launcher ammo must be restored by 1 after recall.",
+		ammoBeforePlacement, seekerLauncher->getAmmo());
+
+	// After recall, draw should show no recall rows.
+	{
+		const int panelW = battleScreen->GetSize().GetWidth();
+		wxMemoryDC dc;
+		wxBitmap bmp(panelW > 0 ? panelW : 800, 300);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC1 post-recall: m_preGameSeekerRecallRegions must be empty after recalling the only seeker.",
+		static_cast<size_t>(0),
+		peer->preGameSeekerRecallRegionCount());
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
 	delete attackFleet;
 	delete defendFleet;
 	m_harness.cleanupOrphanTopLevels(10);

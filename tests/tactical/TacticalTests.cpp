@@ -26,6 +26,7 @@
 #include "FTacticalDamageSummaryGUITest.h"
 #include "FTacticalShipPlacementOrientationTest.h"
 #include "FTacticalModelSelectionHexClickSurfaceTest.h"
+#include "FTacticalPreGameOrdnanceTest.h"
 #include "ITacticalUIBoundaryTest.h"
 #include "WXTacticalUIAdapterTest.h"
 
@@ -54,6 +55,7 @@ runner.addTest(FTacticalCombatReportTest::suite());
 runner.addTest(FTacticalDamageSummaryGUITest::suite());
 runner.addTest(FTacticalShipPlacementOrientationTest::suite());
 runner.addTest(FTacticalModelSelectionHexClickSurfaceTest::suite());
+runner.addTest(FTacticalPreGameOrdnanceTest::suite());
 runner.addTest(ITacticalUIBoundaryTest::suite());
 runner.addTest(WXTacticalUIAdapterTest::suite());
 bool wasSuccessful = runner.run("", false);
