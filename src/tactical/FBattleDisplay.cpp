@@ -5,6 +5,9 @@
  * @date Created:  Jul 11, 2008
  * @date Last Modified:  Jun 22, 2026
  *
+ * PGS-04: drawPlaceSeekers() now renders a centered placed-seeker undeploy list and
+ * routes clicks to checkPreGameSeekerRecallSelection() via onLeftUp() during
+ * BS_PlaceSeekers.
  */
 
 //#include "FBattleDisplay.h"
