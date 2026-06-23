@@ -5,7 +5,7 @@
 `plans/seeker-missile-fixes-round4-plan.md`
 
 Coordinator artifact root for this plan: `artifacts/seeker-missile-fixes-round4/`
-with per-subtask subdirectories `SMR4-01` … `SMR4-06`.
+with per-subtask subdirectories `SMRIV-01` … `SMRIV-06`.
 
 ## Feature Restatement
 
@@ -193,24 +193,24 @@ are approximate and may shift as edits land.)
 ## Likely Files To Modify
 
 1. `src/tactical/FBattleDisplay.cpp` / `include/tactical/FBattleDisplay.h`
-   (HUD layout for SMR4-01, SMR4-02, SMR4-03; panel-height lifecycle for
-   SMR4-04).
+   (HUD layout for SMRIV-01, SMRIV-02, SMRIV-03; panel-height lifecycle for
+   SMRIV-04).
 2. `src/tactical/FTacticalGame.cpp` / `include/tactical/FTacticalGame.h`
-   (seeker-removal fix for SMR4-05; cleanup for SMR4-06).
+   (seeker-removal fix for SMRIV-05; cleanup for SMRIV-06).
 
 (Labeled as likely files based on repository evidence; the exact subset per
 subtask is given in each Implementer prompt's allowed-files list.)
 
 ## Subtasks
 
-### SMR4-01 — Mine-Phase HUD Layout: Anchor Source Rows To Panel Top, Wrap Instruction Text
+### SMRIV-01 — Mine-Phase HUD Layout: Anchor Source Rows To Panel Top, Wrap Instruction Text
 
 Reposition the `BS_PlaceMines` ship-source-selection rows so they anchor to the
 top of the bottom panel and render to the right of the left column (instruction
 text + "Done" button), instead of starting at `getActionButtonRowBottom()`. Wrap
 the mine instruction text onto two lines. This subtask establishes the
-"anchor-to-panel-top, right-of-left-column" layout convention reused by SMR4-02
-and SMR4-03.
+"anchor-to-panel-top, right-of-left-column" layout convention reused by SMRIV-02
+and SMRIV-03.
 
 Acceptance Criteria:
 - During `BS_PlaceMines`, the source-selection rows render anchored to the top of
@@ -231,7 +231,7 @@ Documentation Impact:
   render/layout helper(s) (`drawPlaceMines` and any layout helper changed). No
   rules-document edit.
 
-### SMR4-02 — Seeker-Phase HUD Layout: Side-By-Side Columns Anchored To Panel Top, Wrap Instruction Text
+### SMRIV-02 — Seeker-Phase HUD Layout: Side-By-Side Columns Anchored To Panel Top, Wrap Instruction Text
 
 Reposition the `BS_PlaceSeekers` content so the ship-source-selection rows and
 the placed-seeker undeploy/recall list both anchor to the top of the bottom panel
@@ -258,7 +258,7 @@ Documentation Impact:
   render/layout helper(s) (`drawPlaceSeekers` and any layout helper changed). No
   rules-document edit.
 
-### SMR4-03 — Attack-Phase Offensive-Seeker Recall List: Anchor To Panel Top, Right Of Done Button
+### SMRIV-03 — Attack-Phase Offensive-Seeker Recall List: Anchor To Panel Top, Right Of Done Button
 
 Reposition the `PH_ATTACK_FIRE` offensive-seeker recall/unplace list so it
 renders in a column to the right of the "Done" button, anchored to the top of the
@@ -279,7 +279,7 @@ Documentation Impact:
   render helper(s) (`drawOffensiveSeekerPendingRows` and any layout helper
   changed). No rules-document edit.
 
-### SMR4-04 — Lower-Panel Height Shrinks At Phase Change
+### SMRIV-04 — Lower-Panel Height Shrinks At Phase Change
 
 Change the lower-panel height lifecycle so it no longer ratchets up permanently.
 Keep the expanded height within a tactical phase, but recompute the requested
@@ -307,7 +307,7 @@ Documentation Impact:
   (`ensureLowerPanelLayoutState`, `applyRequestedDisplayHeight`, and any
   phase-change hook added). No rules-document edit.
 
-### SMR4-05 — Remove Seekers After Impact In The Activation-Phase Resolution Path
+### SMRIV-05 — Remove Seekers After Impact In The Activation-Phase Resolution Path
 
 Fix the defect where a seeker that impacts a ship during the seeker-activation
 phase is not removed and attacks again. Ensure that after a seeker contacts a
@@ -342,7 +342,7 @@ Documentation Impact:
   `applyMovementSeekerDamage` if it is reused/refactored for this path). No
   rules-document edit.
 
-### SMR4-06 — Reviewer Follow-Up Cleanup (Dead Branch + Defensive Mine-Hex Erase)
+### SMRIV-06 — Reviewer Follow-Up Cleanup (Dead Branch + Defensive Mine-Hex Erase)
 
 Apply the two production-code cleanup/hardening follow-ups from the previous
 plan's Reviewer report: remove the now-unreachable `else if (getState() ==
@@ -375,16 +375,16 @@ The pregame-ordnance-placement Reviewer report
 three non-blocking NOTE follow-ups. They are addressed here as follows:
 
 1. **(Carry-A) Unreachable `BS_PlaceSeekers` branch in `placeOrdnanceAtHex()`** —
-   addressed as production work in **SMR4-06**.
+   addressed as production work in **SMRIV-06**.
 2. **(Carry-B) Defensive `m_minedHexList` erase for the mined-hex-without-record
-   fallthrough** — addressed as production work in **SMR4-06**.
+   fallthrough** — addressed as production work in **SMRIV-06**.
 3. **(Carry-C) Include-guard typo in
    `tests/tactical/FTacticalPreGameOrdnanceTest.h:15`
    (`FTACTICALPREAGAMEORDNANCETEST_H_`, PREAGAME → PREGAME).** This is a
    **test-file** change and is Tester-owned; it is **not** an Implementer subtask
    and the test file is **not** placed in any Implementer allowed-files list. The
    Coordinator should route this cosmetic correction to the Tester stage of any
-   convenient subtask in this plan (for example SMR4-05, whose Tester stage also
+   convenient subtask in this plan (for example SMRIV-05, whose Tester stage also
    touches `tests/tactical/`), preserving the guard's self-consistency
    (define/ifndef/endif all updated together).
 
@@ -392,25 +392,25 @@ three non-blocking NOTE follow-ups. They are addressed here as follows:
 
 Treat this plan as **serial**. Recommended order:
 
-1. **SMR4-01** first — establishes the "anchor-to-panel-top, right-of-left-column"
-   layout convention and wraps the instruction text in the mine phase; SMR4-02
-   and SMR4-03 build on the same `FBattleDisplay` layout surface and convention.
-2. **SMR4-02** after SMR4-01 — applies the convention to the more complex
+1. **SMRIV-01** first — establishes the "anchor-to-panel-top, right-of-left-column"
+   layout convention and wraps the instruction text in the mine phase; SMRIV-02
+   and SMRIV-03 build on the same `FBattleDisplay` layout surface and convention.
+2. **SMRIV-02** after SMRIV-01 — applies the convention to the more complex
    two-column seeker phase; shares the same `FBattleDisplay` draw/layout helpers.
-3. **SMR4-03** after SMR4-02 — applies the convention to the attack-phase recall
+3. **SMRIV-03** after SMRIV-02 — applies the convention to the attack-phase recall
    list; same `FBattleDisplay` surface.
-4. **SMR4-04** after SMR4-03 — the height shrink lifecycle must account for the
-   repositioned content from SMR4-01–03; doing layout first gives a stable
+4. **SMRIV-04** after SMRIV-03 — the height shrink lifecycle must account for the
+   repositioned content from SMRIV-01–03; doing layout first gives a stable
    content model from which to compute (and shrink) the height.
-5. **SMR4-05** after SMR4-04 — independent file (`FTacticalGame`), sequenced after
+5. **SMRIV-05** after SMRIV-04 — independent file (`FTacticalGame`), sequenced after
    the HUD work for conservative serial execution.
-6. **SMR4-06** last — also touches `FTacticalGame.cpp` (a different function,
-   `placeOrdnanceAtHex()`, than SMR4-05's `completeSeekerActivationPhase()`);
-   sequencing after SMR4-05 avoids overlapping edits to the same file.
+6. **SMRIV-06** last — also touches `FTacticalGame.cpp` (a different function,
+   `placeOrdnanceAtHex()`, than SMRIV-05's `completeSeekerActivationPhase()`);
+   sequencing after SMRIV-05 avoids overlapping edits to the same file.
 
-Parallelization note: SMR4-01 through SMR4-04 all edit `FBattleDisplay.cpp/.h`
-and share the same layout/height helpers, so they must run serially. SMR4-05 and
-SMR4-06 both edit `FTacticalGame.cpp` (different functions) and must run serially
+Parallelization note: SMRIV-01 through SMRIV-04 all edit `FBattleDisplay.cpp/.h`
+and share the same layout/height helpers, so they must run serially. SMRIV-05 and
+SMRIV-06 both edit `FTacticalGame.cpp` (different functions) and must run serially
 with respect to each other. The `FBattleDisplay` track (01–04) and the
 `FTacticalGame` track (05–06) touch disjoint files, so a coordinator could run
 them as two parallel lanes; however, this plan conservatively recommends a single
@@ -445,8 +445,8 @@ serial sequence and marks **no** subtask as parallelizable.
    pre-game ordnance behavior.
 8. The `tests/tactical/FTacticalPreGameOrdnanceTest.h` include-guard typo is
    corrected by the Tester stage (Carry-C).
-9. New behavioral coverage exists for the panel shrink-at-phase-change (SMR4-04)
-   and the activation-phase seeker removal (SMR4-05), each failing against the
+9. New behavioral coverage exists for the panel shrink-at-phase-change (SMRIV-04)
+   and the activation-phase seeker removal (SMRIV-05), each failing against the
    current code and passing after the fix.
 10. No change edits `doc/rules/tactical_operations_manual.md`.
 
@@ -464,7 +464,7 @@ modified `FTacticalGame` seeker-resolution / placement methods
 
 ## Implementer Prompts
 
-### SMR4-01 Prompt
+### SMRIV-01 Prompt
 
 Your role is 'implementer'. Your task is as follows:
 
@@ -517,7 +517,7 @@ Tester test-file location guidance:
 
 Artifact guidance:
 Write implementation artifacts under
-`artifacts/seeker-missile-fixes-round4/SMR4-01/` using the active implementer role
+`artifacts/seeker-missile-fixes-round4/SMRIV-01/` using the active implementer role
 conventions.
 
 Startup behavior:
@@ -526,7 +526,7 @@ Continue past preflight when blockers are absent.
 Completion gate:
 Do not report success unless all required artifacts exist and all changes are committed.
 
-### SMR4-02 Prompt
+### SMRIV-02 Prompt
 
 Your role is 'implementer'. Your task is as follows:
 
@@ -580,7 +580,7 @@ Tester test-file location guidance:
 
 Artifact guidance:
 Write implementation artifacts under
-`artifacts/seeker-missile-fixes-round4/SMR4-02/` using the active implementer role
+`artifacts/seeker-missile-fixes-round4/SMRIV-02/` using the active implementer role
 conventions.
 
 Startup behavior:
@@ -589,7 +589,7 @@ Continue past preflight when blockers are absent.
 Completion gate:
 Do not report success unless all required artifacts exist and all changes are committed.
 
-### SMR4-03 Prompt
+### SMRIV-03 Prompt
 
 Your role is 'implementer'. Your task is as follows:
 
@@ -635,7 +635,7 @@ Tester test-file location guidance:
 
 Artifact guidance:
 Write implementation artifacts under
-`artifacts/seeker-missile-fixes-round4/SMR4-03/` using the active implementer role
+`artifacts/seeker-missile-fixes-round4/SMRIV-03/` using the active implementer role
 conventions.
 
 Startup behavior:
@@ -644,7 +644,7 @@ Continue past preflight when blockers are absent.
 Completion gate:
 Do not report success unless all required artifacts exist and all changes are committed.
 
-### SMR4-04 Prompt
+### SMRIV-04 Prompt
 
 Your role is 'implementer'. Your task is as follows:
 
@@ -696,7 +696,7 @@ Tester test-file location guidance:
 
 Artifact guidance:
 Write implementation artifacts under
-`artifacts/seeker-missile-fixes-round4/SMR4-04/` using the active implementer role
+`artifacts/seeker-missile-fixes-round4/SMRIV-04/` using the active implementer role
 conventions.
 
 Startup behavior:
@@ -705,7 +705,7 @@ Continue past preflight when blockers are absent.
 Completion gate:
 Do not report success unless all required artifacts exist and all changes are committed.
 
-### SMR4-05 Prompt
+### SMRIV-05 Prompt
 
 Your role is 'implementer'. Your task is as follows:
 
@@ -765,7 +765,7 @@ Tester test-file location guidance:
 
 Artifact guidance:
 Write implementation artifacts under
-`artifacts/seeker-missile-fixes-round4/SMR4-05/` using the active implementer role
+`artifacts/seeker-missile-fixes-round4/SMRIV-05/` using the active implementer role
 conventions.
 
 Startup behavior:
@@ -774,7 +774,7 @@ Continue past preflight when blockers are absent.
 Completion gate:
 Do not report success unless all required artifacts exist and all changes are committed.
 
-### SMR4-06 Prompt
+### SMRIV-06 Prompt
 
 Your role is 'implementer'. Your task is as follows:
 
@@ -820,7 +820,7 @@ Tester test-file location guidance:
 
 Artifact guidance:
 Write implementation artifacts under
-`artifacts/seeker-missile-fixes-round4/SMR4-06/` using the active implementer role
+`artifacts/seeker-missile-fixes-round4/SMRIV-06/` using the active implementer role
 conventions.
 
 Startup behavior:
