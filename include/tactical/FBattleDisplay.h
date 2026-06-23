@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 22, 2026 (PGS-01: document mine placement ship preservation in onSetSpeed)
+ * @date Last Modified: Jun 22, 2026 (PGS-02: document SendSizeEvent notification in applyRequestedDisplayHeight)
  *
  */
 
@@ -26,7 +26,7 @@ class FBattleScreen;
  *
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 19, 2026 (SMFR-01)
+ * @date Last Modified:  Jun 22, 2026 (PGS-02: applyRequestedDisplayHeight now notifies parent via SendSizeEvent)
  */
 class FBattleDisplay : public wxPanel
 {
@@ -653,7 +653,22 @@ protected:
 	/// returns the current bottom edge for the action-button row in client coordinates
 	int getActionButtonRowBottom() const;
 
-	/// apply the requested display height from the active lower-panel layout state
+	/**
+	 * @brief Apply the minimum height from the active lower-panel layout state and notify the parent.
+	 *
+	 * Reads `m_lowerPanelLayoutState.requestedDisplayHeight`, clamps it to a
+	 * minimum of 120 pixels, and calls `SetMinSize()` when the height changed.
+	 * When the minimum height is updated and a parent window exists and
+	 * `m_inResizeReflow` is false, queues a `SendSizeEvent()` on the parent so
+	 * `FBattleScreen::applyLayoutPolicy()` runs on the next event-loop iteration
+	 * and grows the panel to show all source rows.  Using `SendSizeEvent()` instead
+	 * of a direct call makes this safe to invoke from within a paint handler because
+	 * the event is deferred rather than dispatched inline.
+	 *
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium)
+	 * @date Created: May 16, 2026
+	 * @date Last Modified: Jun 22, 2026 (PGS-02: notify parent via SendSizeEvent when min height changes)
+	 */
 	void applyRequestedDisplayHeight();
 
 	/// returns prompt width after accounting for right-split ship stat placement
