@@ -1632,3 +1632,42 @@ cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
 Results: `OK (196 tests)` tactical; `OK (37/45 tests)` GUI — 8 pre-existing failures unchanged.
+
+PGS-03 corrects the pre-game seeker placement click behavior in `FTacticalGame::placeOrdnanceAtHex()`.
+Before this fix, every board click during `BS_PlaceSeekers` entered the shared ordnance toggle path:
+if a seeker record already existed for the clicked hex and source, it was removed and ammo was restored
+(toggle behavior matching mines). This meant that clicking the same hex twice left zero seekers
+placed, which did not match the intended stackable-seeker rule for pre-game deployment.
+
+The fix adds an early-return guard at the top of the non-attack-phase branch of `placeOrdnanceAtHex()`:
+
+```cpp
+if (getState() == BS_PlaceSeekers && selectedSource.weaponType == FWeapon::SM) {
+    return placeSeekerFromSelection(hex, selectedSource);
+}
+```
+
+When the state is `BS_PlaceSeekers` and the selected weapon is an SM launcher, the toggle/undo path
+is bypassed entirely and `placeSeekerFromSelection()` is called directly. Each call decrements seeker
+launcher ammo by one and appends a new inactive `FTacticalSeekerMissileState` record at the target hex.
+Repeated clicks on the same hex therefore accumulate multiple inactive seekers from the same source.
+Placement returns `false` (and adds nothing) when the selected launcher's ammo reaches zero.
+
+Mine toggle behavior during `BS_PlaceMines` is unchanged: clicking a mined hex still removes the mine
+and restores ammo because each hex can hold at most one mine. Attack-phase seeker deployment
+(`BS_Battle / PH_ATTACK_FIRE`) is also unchanged.
+
+Behavioral regression test `testPreGameSeekerPlacementIsAdditive` in `FTacticalGameMechanicsTest`
+validates the fix end-to-end: it constructs a real `FTacticalGame` with a Minelayer fleet, advances
+through `BS_PlaceMines` to `BS_PlaceSeekers`, then clicks the same hex three times. It asserts that
+`getSeekerMissiles().size()` is 3, seeker launcher ammo is decremented by 3, and `getPlacedOrdnance()`
+contains the mine-phase record plus three SM-type records (total 4). Where initial ammo is at least 4,
+it also verifies that a fourth click after exhaustion returns `false` and leaves the count at 3.
+
+Validation command:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+```
+
+Result: `OK (216 tests)`.

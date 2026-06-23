@@ -523,7 +523,7 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 *
 	 * @return True when model placement state changed.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 24, 2026
 	 * @date Last Modified: Jun 22, 2026
 	 */
