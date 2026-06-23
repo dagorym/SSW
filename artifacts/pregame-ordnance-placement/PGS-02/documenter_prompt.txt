@@ -1,0 +1,57 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- PGS-02: Fix mine/seeker placement source rows so they are reliably visible and clickable during BS_PlaceMines and BS_PlaceSeekers phases. applyRequestedDisplayHeight() now calls GetParent()->SendSizeEvent() when the min height changes (guarded by m_inResizeReflow) to trigger FBattleScreen::applyLayoutPolicy() on the next event-loop iteration, growing the panel to show all rows. Also corrected the Carry-A DEFECT comment in testOrdnancePlacementAndActivationPanelHeightAutoExpands to reflect the now-correct behavior.
+
+Acceptance criteria validated:
+- AC1: During BS_PlaceMines, every ship with a deployable mine launcher appears as a selectable source row - verified by m_shipNameRegions.size() >= 2 with two Minelayers in the fleet
+- AC2: Clicking a source row selects that ship+weapon (updates selected-source index and m_curShip/m_curWeapon) - verified by simulating checkShipSelection and asserting getSelectedPlacementSourceIndex()==1, getShip() changed, getWeapon() type M
+- AC3: Each row's click region aligns with its drawn position; rows are not clipped behind the ship-status display - verified by all m_shipNameRegions starting at/below getActionButtonRowBottom()
+- AC4: After selecting a different source, the next board click places ordnance from the newly selected ship/weapon - verified by placed ordnance source.shipID matching newly selected Minelayer's ID
+- AC5: With exactly one eligible ship, that source is auto-selected and placement works without a manual row click - verified by getShip()/getWeapon() non-NULL after beginMinePlacement() (existing test + new test)
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/sf2-pgs-02-tester-20260622
+- Branch: sf2-pgs-02-tester-20260622
+- Implementer commit: 8627871 (PGS-02: Fix mine/seeker placement source rows clipping and parent resize)
+- Tester commit: d66e1fc (PGS-02: Add behavioral placement source row tests and fix DEFECT comment)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleDisplay.cpp (implementer: applyRequestedDisplayHeight() + SendSizeEvent notification)
+- tests/gui/TacticalGuiLiveTest.cpp (tester: new test + DEFECT comment fix)
+- tests/gui/TacticalGuiLiveTest.h (tester: new test declaration + peer methods)
+
+Test commit:
+- d66e1fc
+
+Commands executed:
+- make -C tests tactical-tests && ./tests/tactical/TacticalTests
+- ./tests/gui/GuiTests (with DISPLAY=:0, xvfb-run unavailable)
+
+Final test outcomes:
+- Tactical tests: 215/215 PASS (all source-contract tests for PGS-02 pass: testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum, testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum, testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum)
+- GUI tests: Run: 50, Failures: 9 (all 9 are pre-existing failures unrelated to PGS-02)
+- New behavioral test testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources: PASS
+- Carry-A DEFECT comment correction in testOrdnancePlacementAndActivationPanelHeightAutoExpands: applied; existing assertion preserved as regression guard
+
+Documentation context:
+- applyRequestedDisplayHeight() in FBattleDisplay now calls GetParent()->SendSizeEvent() when the min height changes, guarded by m_inResizeReflow to prevent recursive loops
+- Doxygen comment for applyRequestedDisplayHeight() should document the SendSizeEvent notification behavior
+- The fix ensures mine/seeker placement source rows are visible and clickable during BS_PlaceMines and BS_PlaceSeekers phases
+- AGENTS.md references to testOrdnancePlacementAndActivationPanelHeightAutoExpands should be updated if the DEFECT comment was mentioned
+
+Plan and diff context:
+- Plan path: plans/pregame-ordnance-placement-plan.md
+- PGS-02 is subtask 2 in the pregame-ordnance-placement plan
+- Comparison base: commit 73a9c50 (PGS-02: Add implementer artifacts and tester handoff) is the pre-implementation state
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/pregame-ordnance-placement/PGS-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
