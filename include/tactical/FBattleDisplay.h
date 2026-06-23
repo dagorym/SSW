@@ -521,16 +521,17 @@ protected:
 	void drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int textSize);
 
 	/**
-	 * @brief Draws the display for placing mines and seekers
+	 * @brief Draws the display for placing mines (BS_PlaceMines phase).
 	 *
-	 * This method draws the setup placement panel for deployable mine and seeker
-	 * weapon slots. It renders one row per ship/weapon source and shows ammo for
-	 * that exact slot.
+	 * This method draws the setup placement panel for deployable mine weapon slots.
+	 * It renders one row per ship/weapon source and shows ammo for that exact slot.
 	 *
-	 * The instruction text (left side) and "Done" button occupy the upper region
-	 * of the panel. The placement source list (right side, at lMargin=310) is
-	 * positioned below getActionButtonRowBottom() so neither region overlaps the
-	 * other vertically.
+	 * Layout uses two columns: the left column holds the wrapped instruction text
+	 * (rendered via drawWrappedActionPrompt() bounded to lMargin-leftOffset-BORDER)
+	 * plus the "Mine Placement Done" button below it; the right column (at
+	 * lMargin=310) holds the ship source-selection rows anchored at
+	 * getActionPromptLineY(0) — the top of the lower panel — so source rows appear
+	 * beside (not below) the instruction block.
 	 *
 	 * @param dc The device context to draw on
 	 *
@@ -540,7 +541,7 @@ protected:
 	 *
 	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  Jun 19, 2026
+	 * @date Last Modified:  Jun 23, 2026
 	 */
 	void drawPlaceMines(wxDC &dc);
 
