@@ -63,9 +63,36 @@ def split_prompt_blocks(text: str) -> list[str]:
     for index, start in enumerate(indices):
         end = indices[index + 1] if index + 1 < len(indices) else len(text)
         block = text[start:end].strip()
-        block = re.split(r"\n## [^\n]+", block, maxsplit=1)[0].strip()
+        # Trim anything from the next ATX heading onward. Each prompt block is
+        # terminated by the following subtask's "### <ID> Prompt" header (level 3)
+        # or by a "## <Section>" header (level 2). The previous pattern only
+        # matched level-2 headers, so the trailing "### <next-ID> Prompt" line was
+        # left in the block and leaked the next subtask's id into this block's id
+        # match (mis-associating prompts and dropping the final subtask). Match
+        # level-2-or-deeper headers so the trailing prompt header is removed.
+        block = re.split(r"\n#{2,6} [^\n]+", block, maxsplit=1)[0].strip()
         blocks.append(block)
     return blocks
+
+
+ARTIFACT_OWNER_PATTERN = re.compile(r"artifacts/[^\s`]+?/([A-Za-z]+-\d+)(?:/|`|\s|$)")
+
+
+def owner_id_for_block(block: str, subtask_ids: list[str]) -> str | None:
+    """Return the subtask id that owns a prompt block.
+
+    A prompt's owning subtask is the one whose shared artifact directory the
+    prompt writes to (``artifacts/<plan>/<ID>/``). Using that path as the
+    association signal — instead of "any subtask id mentioned in the block" —
+    prevents a prompt body that legitimately cross-references another subtask
+    (e.g. a forward dependency note "see SMF-09") from stealing that other
+    subtask's prompt slot.
+    """
+    for match in ARTIFACT_OWNER_PATTERN.finditer(block):
+        candidate = match.group(1)
+        if candidate in subtask_ids:
+            return candidate
+    return None
 
 
 def associate_prompts(subtask_ids: list[str], prompt_blocks: list[str]) -> dict[str, str]:
@@ -73,11 +100,21 @@ def associate_prompts(subtask_ids: list[str], prompt_blocks: list[str]) -> dict[
     remaining_ids = list(subtask_ids)
 
     for block in prompt_blocks:
+        # Prefer the block's artifact-path owner so cross-references in the body
+        # cannot mis-associate the block to a different subtask.
+        owner = owner_id_for_block(block, subtask_ids)
+        if owner is not None and owner not in by_id:
+            by_id[owner] = block
+            if owner in remaining_ids:
+                remaining_ids.remove(owner)
+            continue
+        # Fallback for plans whose prompts do not carry an artifact-path owner:
+        # match any not-yet-assigned id present in the block, else assign the
+        # next remaining id positionally.
         block_ids = [subtask_id for subtask_id in remaining_ids if subtask_id in block]
         if block_ids:
-            for subtask_id in block_ids:
-                by_id[subtask_id] = block
-                remaining_ids.remove(subtask_id)
+            by_id[block_ids[0]] = block
+            remaining_ids.remove(block_ids[0])
             continue
         if remaining_ids:
             by_id[remaining_ids.pop(0)] = block
@@ -85,12 +122,30 @@ def associate_prompts(subtask_ids: list[str], prompt_blocks: list[str]) -> dict[
     return by_id
 
 
+def order_subtask_ids(all_ids: list[str], prompts_by_subtask: dict[str, str]) -> list[str]:
+    """Order subtask ids by their implementer-prompt position in the document.
+
+    ``prompts_by_subtask`` is built in prompt-block order, so its keys already
+    follow the plan's subtask sequence. Ordering by those keys avoids the
+    misordering that arises when an id is first mentioned out of sequence in
+    overview prose (e.g. a "PGS-01 ... PGS-04" summary line that would otherwise
+    place PGS-04 second). Any ids without a prompt block keep their first-seen
+    order, appended after the prompt-backed ids.
+    """
+    ordered = list(prompts_by_subtask.keys())
+    for subtask_id in all_ids:
+        if subtask_id not in ordered:
+            ordered.append(subtask_id)
+    return ordered
+
+
 def build_result(plan_path: Path) -> dict[str, object]:
     text = read_text(plan_path)
-    subtask_ids = extract_subtask_ids(text)
+    all_ids = extract_subtask_ids(text)
     dependency_lines = extract_dependency_lines(text)
     prompt_blocks = split_prompt_blocks(text)
-    prompts_by_subtask = associate_prompts(subtask_ids, prompt_blocks)
+    prompts_by_subtask = associate_prompts(all_ids, prompt_blocks)
+    subtask_ids = order_subtask_ids(all_ids, prompts_by_subtask)
     security_required = [
         subtask_id
         for subtask_id, block in prompts_by_subtask.items()
