@@ -1,0 +1,68 @@
+Your role is 'tester'. Your task is as follows:
+
+## Subtask PGS-03 (Remediation Pass 2) — Additive Pre-Game Seeker Placement
+
+### Modified Files
+
+- `src/tactical/FTacticalGame.cpp` (production fix — no change in this remediation pass)
+- `tests/tactical/FTacticalGameMechanicsTest.h` (CRITICAL: fix duplicate @author entry — see below)
+
+### CRITICAL: Author Dedup Fix Required
+
+In `tests/tactical/FTacticalGameMechanicsTest.h`, the file-level Doxygen class header (around line 19) currently reads:
+
+```
+@author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+```
+
+You MUST reduce this to a single `claude-sonnet-4-6 (medium)` occurrence while preserving ALL distinct authors. The corrected line must be:
+
+```
+@author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
+```
+
+Per AGENTS.md: add your own model name to the end of the list if it is not already present. Update `@date Last Modified` to Jun 22, 2026. Do NOT remove any distinct author. Do NOT alter any other content in the header block.
+
+### Acceptance Criteria to Verify
+
+1. During pre-game `BS_PlaceSeekers`, clicking a hex always adds one inactive seeker for the selected source: seeker launcher ammo decrements by one, a new inactive seeker record is created, and a placed-ordnance record is appended — on every click, including repeated clicks on the same hex.
+2. Repeated clicks on the same hex by the same source accumulate multiple seekers in that hex; no toggle/removal occurs from the board during seeker placement.
+3. Mine placement retains toggle behavior (clicking a mined hex removes the mine) and attack-phase seeker/mine behavior is unchanged.
+4. Seeker placement stops adding when the selected source's launcher ammo is exhausted.
+5. The behavioral test `testPreGameSeekerPlacementIsAdditive` in `tests/tactical/FTacticalGameMechanicsTest.*` still passes after the author dedup fix.
+
+### Implementation Context
+
+The production fix is committed at `db2ec98` on branch `sf2-pgs-03-implementer-20260622`. The change is in `src/tactical/FTacticalGame.cpp`, `placeOrdnanceAtHex()` (around lines 3219-3225): when `getState() == BS_PlaceSeekers` and `selectedSource.weaponType == FWeapon::SM`, call `placeSeekerFromSelection()` directly and return, bypassing the toggle/removal path. Mine toggle behavior (`BS_PlaceMines`) and attack-phase seeker/mine behavior (`BS_Battle`) are unchanged.
+
+This fix was committed in pass-1 at `db2ec98` and is NOT altered in this remediation pass. The only Tester-side change required is fixing the duplicate `@author` entry in the test header.
+
+### Test File Location
+
+- `tests/tactical/FTacticalGameMechanicsTest.h` — fix duplicate `@author` entry here
+- `tests/tactical/FTacticalGameMechanicsTest.cpp` — behavioral test `testPreGameSeekerPlacementIsAdditive` lives here; verify it still passes
+
+### Validation Commands
+
+```bash
+make -C tests tactical-tests
+./tests/tactical/TacticalTests
+```
+
+All 216 tests must pass (0 failures).
+
+### Existing Validations Expected to Fail
+
+None. All existing tests must continue to pass.
+
+### Shared Artifact Directory
+
+`artifacts/pregame-ordnance-placement/PGS-03`
+
+### Startup Behavior
+
+Blocking inputs are present — begin testing work immediately and continue in the same run.
+
+### Completion Gate
+
+Do not report success unless all required artifacts exist and all changes are committed.
