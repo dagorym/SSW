@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 19, 2026
+ * @date Last Modified:  Jun 22, 2026
  *
  */
 
@@ -892,11 +892,14 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 
 	m_first = true;
 	m_parent->setPhase(PH_NONE);
+	bool enteredMinePlacement = false;
 	if(m_parent->getDone()){
 		if(m_parent->getState()==BS_SetupDefendFleet){
 			if(!m_parent->beginMinePlacement()){
 				m_parent->setState(BS_SetupAttackFleet);
 				m_parent->toggleActivePlayer();
+			} else {
+				enteredMinePlacement = true;
 			}
 		} else {
 			m_parent->setState(BS_Battle);
@@ -904,7 +907,9 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 			m_parent->setPhase(PH_MOVE);
 		}
 	}
-	m_parent->setShip(NULL);
+	if (!enteredMinePlacement) {
+		m_parent->setShip(NULL);
+	}
 	event.Skip();
 }
 

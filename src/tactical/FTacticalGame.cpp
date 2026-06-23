@@ -1,9 +1,9 @@
 /**
  * @file FTacticalGame.cpp
  * @brief Implementation file for FTacticalGame class
- * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 22, 2026
  *
  */
 
@@ -2919,7 +2919,9 @@ bool FTacticalGame::beginOrdnancePlacement() {
 	if (!foundSelectable) {
 		return false;
 	}
-	selectPlacementSourceByIndex(selectedIndex);
+	if (!selectPlacementSourceByIndex(selectedIndex)) {
+		return false;
+	}
 	setState(BS_PlaceMines);
 	return true;
 }
