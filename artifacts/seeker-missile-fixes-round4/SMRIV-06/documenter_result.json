@@ -1,0 +1,16 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round4/SMRIV-06/documenter_report.md",
+    "artifacts/seeker-missile-fixes-round4/SMRIV-06/documenter_result.json",
+    "artifacts/seeker-missile-fixes-round4/SMRIV-06/verifier_prompt.txt"
+  ],
+  "branch_name": "sf2-SMRIV-06-documenter-20260629",
+  "documentation_commit_hash": "48c9ec267c9a3e8ee5f2ff15cdcd3207a649934b",
+  "documentation_files_changed": [
+    "include/tactical/FTacticalGame.h \u2014 updated placeOrdnanceAtHex() docblock: removed incorrect 'BS_PlaceSeekers (SM-only filter)' mention from rebuild description (dead branch removed) and added SMRIV-06 defensive-erase note; updated Last Modified to Jun 29, 2026",
+    "doc/test-contracts.md \u2014 added SMRIV-06 entry documenting both cleanup changes and the testStaleMinedHexErasedWhenNoPlacedOrdnanceRecord behavioral regression test"
+  ],
+  "pass_label": null,
+  "status": "success",
+  "task_id": null
+}
