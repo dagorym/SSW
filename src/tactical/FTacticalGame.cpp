@@ -433,11 +433,11 @@ void FTacticalGame::beginSeekerActivationPhase() {
 	const std::vector<FPoint> inactiveHexes = getInactiveSeekerActivationHexes();
 	if (inactiveHexes.empty()) {
 		resolveActiveSeekersForMovingPlayer();
-		if (m_ui != NULL) {
-			// SMF-06: redraw so impacting seeker is visible before ICM/damage dialogs.
-			m_ui->requestRedraw();
-			resolvePendingSeekerDetonationDamage();
-		}
+		// SMF-06: applyMovementSeekerDamage redraws before showing dialogs so the
+		// impacting seeker remains visible at its final hex during ICM/damage
+		// dialogs, then erases detonated seekers from m_seekerMissiles after
+		// resolution returns.
+		applyMovementSeekerDamage();
 		beginMovePhase();
 		return;
 	}
@@ -458,11 +458,11 @@ void FTacticalGame::completeSeekerActivationPhase() {
 		return;
 	}
 	resolveActiveSeekersForMovingPlayer();
-	if (m_ui != NULL) {
-		// SMF-06: redraw so impacting seeker is visible at its final hex before dialogs.
-		m_ui->requestRedraw();
-		resolvePendingSeekerDetonationDamage();
-	}
+	// SMF-06: applyMovementSeekerDamage redraws before showing dialogs so the
+	// impacting seeker remains visible at its final hex during ICM/damage
+	// dialogs, then erases detonated seekers from m_seekerMissiles after
+	// resolution returns.
+	applyMovementSeekerDamage();
 	m_selectedSeekerActivationHex.setPoint(-1, -1);
 	beginMovePhase();
 }

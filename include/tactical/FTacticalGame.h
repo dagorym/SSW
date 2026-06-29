@@ -329,15 +329,17 @@ int getPhase() const { return m_phase; }
  *
  * Resolves only the moving player's active seekers, recording any same-hex or
  * movement-step contacts in the pending seeker-contact seam, removing seekers
- * that contact or expire on their 12-hex movement turn, and, when an
- * `ITacticalUI` is installed, resolves those pending contacts into the
- * immediate seeker-damage summary before destroyed-ship cleanup is handed back
- * to wx callers. The method then clears the selected activation stack and
- * advances into the ordinary movement-phase entry path.
+ * that contact or expire on their 12-hex movement turn, and then delegates to
+ * `applyMovementSeekerDamage()` to resolve pending contacts, erase detonated
+ * seekers from `m_seekerMissiles`, and (when an `ITacticalUI` is installed)
+ * redraw before showing ICM/damage dialogs so the impacting seeker remains
+ * visible at its final hex during the dialog. The method then clears the
+ * selected activation stack and advances into the ordinary movement-phase entry
+ * path.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
  * @date Created: May 25, 2026
- * @date Last Modified: May 27, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 void completeSeekerActivationPhase();
 
@@ -1045,12 +1047,13 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	 *
 	 * Selects the first inactive seeker stack for the moving player when one is
 	 * available, or auto-skips directly into the normal movement entry path after
-	 * resolving the active-seeker seam and pending detonation damage when no
-	 * inactive stacks remain.
+	 * resolving the active-seeker seam via `applyMovementSeekerDamage()` (which
+	 * redraws before dialogs per SMF-06 and erases detonated seekers from
+	 * `m_seekerMissiles` after resolution) when no inactive stacks remain.
 	 *
-	 * @author gpt-5.4 (high)
+	 * @author gpt-5.4 (high), claude-sonnet-4-6 (standard)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 27, 2026
+	 * @date Last Modified: Jun 29, 2026
 	 */
 	void beginSeekerActivationPhase();
 	/**
