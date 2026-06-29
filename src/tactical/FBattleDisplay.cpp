@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 29, 2026 (SMRV-01 round5)
+ * @date Last Modified:  Jun 29, 2026 (SMRV-02 round5)
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -29,6 +29,12 @@
  * left instruction text is unchanged (not wrapped).  Click regions in
  * m_pendingSeekerRecallRegions are computed from the new draw position so
  * checkOffensiveSeekerPendingSelection() continues to work correctly.
+ * SMRV-02 (round5): drawSeekerActivation() now anchors the "Activated seekers:"
+ * list at int y = getActionPromptLineY(0) (top of the lower panel, right column at
+ * lMargin=310), matching the drawPlaceMines/drawPlaceSeekers three-column
+ * convention.  The previous anchor was getActionButtonRowBottom() (SMF-05).  Click
+ * regions in m_seekerActivationRegions automatically track the new anchor because
+ * they use the same y variable.
  */
 
 //#include "FBattleDisplay.h"
