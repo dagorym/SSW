@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round4/SMRIV-06/verifier_report.md",
+    "artifacts/seeker-missile-fixes-round4/SMRIV-06/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "sf2-SMRIV-06-verifier-20260629",
+  "documentation_accuracy_summary": [
+    "include/tactical/FTacticalGame.h placeOrdnanceAtHex() docblock accurately describes the dead-branch removal (BS_PlaceMines M-only filter, no longer mentions BS_PlaceSeekers SM filter) and adds the SMRIV-06 paragraph explaining the defensive erase. Last Modified updated to Jun 29, 2026; author list includes claude-sonnet-4-6 (medium).",
+    "doc/test-contracts.md SMRIV-06 entry accurately summarizes both changes: dead-branch removal reason (PGS-03 early-return makes BS_PlaceSeekers unreachable in the removal block), defensive erase location and trigger, and the new test with its assertions and fail-without-fix rationale.",
+    "Test file docblocks (FTacticalPreGameOrdnanceTest.h and .cpp) updated to add (c) item covering the SMRIV-06 stale-erase path. Last Modified dates correctly updated. Include guard typo PREAGAME corrected to PREGAME (carry-C from pregame-ordnance-placement plan)."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "PASS",
+  "status": "complete",
+  "task_id": "SMRIV-06",
+  "test_sufficiency_summary": [
+    "AC1/AC3 coverage: all 6 pre-game ordnance tests pass (225 total, up from 224). Existing seeker-stacking, seeker-recall, and mine toggle/removal tests confirm no regression from the dead-branch removal.",
+    "AC2 coverage: testStaleMinedHexErasedWhenNoPlacedOrdnanceRecord is a proper behavioral test. It constructs a real FTacticalGameWithStaleInject (subclass accessing protected m_minedHexList), injects a stale entry at (7,7) with no matching placed-ordnance record, calls handleHexClick() in BS_PlaceMines state with a mine launcher selected, and asserts (a) return value is true, (b) hex is in getMinedHexes() backed by exactly one FWeapon::M placed-ordnance record, and (c) mine launcher ammo was decremented by 1. The test exercises the correct production path: handleHexClick -> placeMineAtHex -> placeOrdnanceAtHex -> PGS-04 block -> defensive erase -> placeMineFromSelection. It would fail without the defensive erase because placeMineFromSelection returns false when the hex is already in m_minedHexList. Full 225/225 confirmed by running the test suite independently."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
