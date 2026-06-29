@@ -589,9 +589,16 @@ void FBattleBoard::drawSeekerMoveCountOverlay(wxDC &dc) {
 	// Count = movementPath.size()-1 when a path is recorded this phase, or
 	// movementAllowance as the fallback between resolution passes.
 	std::map<std::pair<int,int>, std::vector<int> > hexCounts;
+	const bool activationPhase = (m_parent->getPhase() == PH_SEEKER_ACTIVATION);
 	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
 		 itr != seekers.end(); ++itr) {
 		if (!itr->active) {
+			continue;
+		}
+		// SMRV-03: during PH_SEEKER_ACTIVATION, suppress speed labels for seekers
+		// not owned by the moving player, matching the sprite suppression in
+		// drawSeekerMissiles() which sources from getActiveSeekersByMovingPlayer().
+		if (activationPhase && itr->ownerID != m_parent->getMovingPlayerID()) {
 			continue;
 		}
 		int count;
