@@ -1,0 +1,53 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMRV-02: Repositioned the PH_SEEKER_ACTIVATION 'Activated seekers:' list anchor in FBattleDisplay::drawSeekerActivation() from getActionButtonRowBottom() to getActionPromptLineY(0), matching the drawPlaceMines/drawPlaceSeekers three-column convention. Click regions automatically track the new anchor because they use the same 'y' variable.
+- SMRV-T2 carry-over: Relaxed testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges within-phase resize-back assertion from exact equality to preservation (>= beforeResizeHeight), consistent with accepted SMRIV-04 design.
+
+Acceptance criteria validated:
+- AC-1: During PH_SEEKER_ACTIVATION, the 'Activated seekers:' list renders anchored to the top of the bottom panel (top aligned with instruction-text top region, getActionPromptLineY(0)), not below the action-button row, and to the right of the left column/button area. PASS.
+- AC-2: Each activation row's click region aligns with its new drawn position; clicking a row still deactivates the intended seeker; rows are not clipped and do not overlap the left column, the 'Seeker Activation Done' button, or the ship-status display. PASS (source-contract verification via m_seekerActivationRegions/m_seekerActivationSeekerIDs assertions).
+- SMRV-T2: testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges within-phase resize-back assertion relaxed. PASS (removed from failing test list; baseline had 9 GUI failures, post-fix has 8).
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/sf2-SMRV-02-tester-20260629
+- Branch: sf2-SMRV-02-tester-20260629
+- Comparison base: sf2 (the main plan branch)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleDisplay.cpp (Implementer: drawSeekerActivation() anchor change)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (Tester: updated source-contract assertion)
+- tests/gui/TacticalGuiLiveTest.cpp (Tester: SMRV-T2 relaxed resize-back assertion)
+
+Test commit:
+- 47b257f
+
+Commands executed:
+- make -C tests/tactical
+- ./tests/tactical/TacticalTests
+- make -C tests/gui
+- ./tests/gui/GuiTests
+
+Final test outcomes:
+- Tactical tests: 225/225 PASS.
+- GUI tests: SMRV-T2 carry-over fixed (removed from failing list). 8 pre-existing GUI failures remain (baseline had 9); all 8 are out-of-scope for SMRV-02 and not introduced by this change.
+
+Documentation context:
+- doc/test-contracts.md may need updating to reflect the SMRV-02 anchor change in testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker (the source-contract catalog entry for that test).
+- AGENTS.md tactical test bullet for FTacticalBattleDisplayFireFlowTest may reference the seeker-activation anchor — check for any reference to getActionButtonRowBottom in that context.
+- No user-facing behavior change: the anchor repositioning is an internal layout correction.
+
+Plan and diff context:
+- Plan: plans/seeker-missile-fixes-round5-plan.md (assumption — infer from repository if exact plan path differs)
+- Comparison base: sf2 branch
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round5/SMRV-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
