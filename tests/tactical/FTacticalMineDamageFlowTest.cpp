@@ -331,23 +331,25 @@ CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "clear
 }
 
 void FTacticalMineDamageFlowTest::testSeekerActivationPhaseResolvesPendingDamageWhenModelHasUI() {
-// AC: seeker activation completion paths call the shared pending-detonation resolver when ITacticalUI is installed.
+// AC: seeker activation completion paths delegate damage resolution to applyMovementSeekerDamage(),
+// which handles the if (m_ui != NULL) guard and seeker removal internally.
+// The inline if (m_ui != NULL) { resolvePendingSeekerDetonationDamage(); } blocks were
+// replaced with a single applyMovementSeekerDamage() call so that seekers are also
+// removed from m_seekerMissiles after the damage-summary dialogs return (SMRIV-05 fix).
 const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
 const std::string beginBody = extractFunctionBody(source, "void FTacticalGame::beginSeekerActivationPhase()");
 const std::string completeBody = extractFunctionBody(source, "void FTacticalGame::completeSeekerActivationPhase()");
 
 assertContains(beginBody, "if (inactiveHexes.empty()) {");
 assertContains(beginBody, "resolveActiveSeekersForMovingPlayer();");
-assertContains(beginBody, "if (m_ui != NULL) {");
-assertContains(beginBody, "resolvePendingSeekerDetonationDamage();");
-assertBefore(beginBody, "resolveActiveSeekersForMovingPlayer();", "resolvePendingSeekerDetonationDamage();");
-assertBefore(beginBody, "resolvePendingSeekerDetonationDamage();", "beginMovePhase();");
+assertContains(beginBody, "applyMovementSeekerDamage();");
+assertBefore(beginBody, "resolveActiveSeekersForMovingPlayer();", "applyMovementSeekerDamage();");
+assertBefore(beginBody, "applyMovementSeekerDamage();", "beginMovePhase();");
 
 assertContains(completeBody, "resolveActiveSeekersForMovingPlayer();");
-assertContains(completeBody, "if (m_ui != NULL) {");
-assertContains(completeBody, "resolvePendingSeekerDetonationDamage();");
-assertBefore(completeBody, "resolveActiveSeekersForMovingPlayer();", "resolvePendingSeekerDetonationDamage();");
-assertBefore(completeBody, "resolvePendingSeekerDetonationDamage();", "beginMovePhase();");
+assertContains(completeBody, "applyMovementSeekerDamage();");
+assertBefore(completeBody, "resolveActiveSeekersForMovingPlayer();", "applyMovementSeekerDamage();");
+assertBefore(completeBody, "applyMovementSeekerDamage();", "beginMovePhase();");
 }
 
 void FTacticalMineDamageFlowTest::testShipPathSeekerContactCheckedInCompleteMovePhase() {

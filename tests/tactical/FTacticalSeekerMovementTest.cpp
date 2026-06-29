@@ -4,7 +4,7 @@
  *
  * @author gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: May 25, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 
 #include "FTacticalSeekerMovementTest.h"
@@ -492,17 +492,16 @@ void FTacticalSeekerMovementTest::testCompleteSeekerActivationResolvesMovementCo
 
 	CPPUNIT_ASSERT_EQUAL(static_cast<int>(PH_MOVE), game.getPhase());
 
+	// SMRIV-05: applyMovementSeekerDamage() is now called from completeSeekerActivationPhase().
+	// With no UI installed it calls clearPendingSeekerContactOutcomes() and still erases
+	// the detonated seeker from m_seekerMissiles, so outcomes are empty and seekers.size()==1.
 	const std::vector<Frontier::FTacticalSeekerContactOutcome> & outcomes = game.getPendingSeekerContactOutcomes();
-	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), outcomes.size());
-	CPPUNIT_ASSERT_EQUAL(9101u, outcomes[0].seekerID);
-	CPPUNIT_ASSERT(!outcomes[0].preMovementContact);
-	CPPUNIT_ASSERT(outcomes[0].movementStep >= 1u);
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), outcomes.size());
 
-	// SMF-06: impacting seeker (9101) stays in m_seekerMissiles alongside survivor (9102).
-	// applyMovementSeekerDamage would remove 9101 after dialogs; here no UI is installed
-	// so resolvePendingSeekerDetonationDamage is skipped and 9101 is not yet removed.
+	// SMRIV-05: impacting seeker (9101) must be removed by applyMovementSeekerDamage()
+	// even with no UI installed. Only the non-impacting survivor (9102) remains.
 	const std::vector<Frontier::FTacticalSeekerMissileState> seekers = game.getSeekerMissiles();
-	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), seekers.size());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), seekers.size());
 	// Find the survivor (9102) and verify its progression.
 	const Frontier::FTacticalSeekerMissileState * survivor = NULL;
 	for (unsigned int i = 0; i < seekers.size(); ++i) {
@@ -1085,6 +1084,103 @@ void FTacticalSeekerMovementTest::testCompleteMovePhaseCallsNonImpactingClearAft
 		"SMFR-05: clearNonImpactingSeekerMovementPaths() must follow applyMovementSeekerDamage() "
 		"in completeMovePhase so impacting seekers are already removed before path clearing",
 		clearPos > damagePos);
+}
+
+void FTacticalSeekerMovementTest::testActivationPhaseImpactingSeekerRemovedAndDoesNotAttackOnNextPhase() {
+	// SMRIV-05 behavioral AC1/AC4.
+	//
+	// Sets up an impacting seeker (ownerID=1, at a defender's hex) so it contacts the
+	// target during completeSeekerActivationPhase(). Before the fix, applyMovementSeekerDamage()
+	// was never called from completeSeekerActivationPhase(), so the seeker stayed in
+	// m_seekerMissiles and produced a new contact outcome on the next resolution pass.
+	// After the fix, applyMovementSeekerDamage() erases the seeker immediately.
+
+	TestableTacticalGame game;
+	Frontier::VehicleList * attackShips = new Frontier::VehicleList();
+	Frontier::VehicleList * defendShips = new Frontier::VehicleList();
+
+	// Defender ship placed at a known hex.
+	FSeekerHarnessShip * defenderShip = new FSeekerHarnessShip(0u, "Destroyer");
+	defenderShip->configureHP(20);
+	defendShips->push_back(defenderShip);
+
+	// Attacker ship (owner of the seeker) placed far from the defender.
+	FSeekerHarnessShip * attackerShip = new FSeekerHarnessShip(1u, "Frigate");
+	attackShips->push_back(attackerShip);
+
+	const Frontier::FPoint defenderHex(30, 20);
+	game.configureSides(0u, 1u, true);
+	game.installShipLists(attackShips, defendShips);
+	game.placeShipAtHex(defenderShip, defenderHex);
+	game.placeShipAtHex(attackerShip, Frontier::FPoint(5, 5));
+
+	// Seed an impacting seeker: owned by the moving player (1u), placed exactly at
+	// the defender's hex so it produces a pre-movement contact on first resolution.
+	const unsigned int impactingSeekerID = 4001u;
+	Frontier::FTacticalSeekerMissileState impacting;
+	impacting.seekerID       = impactingSeekerID;
+	impacting.ownerID        = 1u;
+	impacting.hex            = defenderHex;   // already at target hex -> pre-movement contact
+	impacting.heading        = 0;
+	impacting.active         = true;
+	impacting.movementTurn   = 0;
+	impacting.movementAllowance = 0;
+	impacting.hasSource      = false;
+
+	// Seed a non-impacting survivor at a distant hex.
+	const unsigned int survivorSeekerID = 4002u;
+	Frontier::FTacticalSeekerMissileState survivor;
+	survivor.seekerID       = survivorSeekerID;
+	survivor.ownerID        = 1u;
+	survivor.hex            = Frontier::FPoint(70, 70);
+	survivor.heading        = 0;
+	survivor.active         = true;
+	survivor.movementTurn   = 0;
+	survivor.movementAllowance = 0;
+	survivor.hasSource      = false;
+
+	game.seedSeeker(impacting);
+	game.seedSeeker(survivor);
+
+	// Confirm both seekers are in the model before activation.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), game.getSeekerMissiles().size());
+
+	// Drive the seeker activation phase (no UI installed).
+	game.setPhase(PH_SEEKER_ACTIVATION);
+	game.completeSeekerActivationPhase();
+
+	// AC1: impacting seeker must be absent from m_seekerMissiles after activation.
+	const std::vector<Frontier::FTacticalSeekerMissileState> & seekersAfter = game.getSeekerMissiles();
+	bool impactingStillPresent = false;
+	for (unsigned int i = 0; i < seekersAfter.size(); ++i) {
+		if (seekersAfter[i].seekerID == impactingSeekerID) {
+			impactingStillPresent = true;
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRIV-05 AC1: impacting seeker must be removed from m_seekerMissiles after activation-phase resolution",
+		!impactingStillPresent);
+
+	// Outcomes must be cleared — the impacting seeker cannot carry a pending attack forward.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRIV-05 AC1: getPendingSeekerContactOutcomes() must be empty after activation-phase resolution",
+		game.getPendingSeekerContactOutcomes().empty());
+
+	// AC4: Simulate the next turn's activation pass by calling resolveActiveSeekersForMovingPlayer()
+	// directly. The removed seeker must not appear in any new contact outcomes.
+	game.clearPendingOutcomes();
+	game.resolveActiveSeekersForMovingPlayer();
+
+	const std::vector<Frontier::FTacticalSeekerContactOutcome> & nextOutcomes =
+		game.getPendingSeekerContactOutcomes();
+	for (unsigned int i = 0; i < nextOutcomes.size(); ++i) {
+		CPPUNIT_ASSERT_MESSAGE(
+			"SMRIV-05 AC4: removed impacting seeker must not generate a contact outcome on the following phase",
+			nextOutcomes[i].seekerID != impactingSeekerID);
+	}
+
+	delete attackerShip;
+	delete defenderShip;
 }
 
 }

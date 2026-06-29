@@ -12,8 +12,8 @@
  * @date Last Modified: Jun 22, 2026
  */
 
-#ifndef FTACTICALPREAGAMEORDNANCETEST_H_
-#define FTACTICALPREAGAMEORDNANCETEST_H_
+#ifndef FTACTICALPREGAMEORDNANCETEST_H_
+#define FTACTICALPREGAMEORDNANCETEST_H_
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -135,4 +135,4 @@ public:
 
 }
 
-#endif /* FTACTICALPREAGAMEORDNANCETEST_H_ */
+#endif /* FTACTICALPREGAMEORDNANCETEST_H_ */

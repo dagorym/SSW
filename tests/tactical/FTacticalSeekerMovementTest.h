@@ -19,7 +19,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: May 25, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 class FTacticalSeekerMovementTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalSeekerMovementTest );
@@ -39,6 +39,7 @@ CPPUNIT_TEST( testSeekerMoveCountLabelFieldsReflectPathAndAllowance );
 CPPUNIT_TEST( testClearNonImpactingSeekerMovementPathsPreservesBookkeeping );
 CPPUNIT_TEST( testNonImpactingSeekerPathClearedAfterDamageApplied );
 CPPUNIT_TEST( testCompleteMovePhaseCallsNonImpactingClearAfterDamageSourceContract );
+CPPUNIT_TEST( testActivationPhaseImpactingSeekerRemovedAndDoesNotAttackOnNextPhase );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -232,6 +233,30 @@ void testCompleteMovePhaseCallsNonImpactingClearAfterDamageSourceContract();
  * @date Last Modified: Jun 19, 2026
  */
 void testSeekerMoveCountLabelFieldsReflectPathAndAllowance();
+
+	/**
+	 * @brief Behavioral: SMRIV-05 — activation-phase impacting seeker removed after resolution
+	 *        and does not attack on the following phase.
+	 *
+	 * AC1/AC4 combined behavioral test. Sets up an active seeker owned by the moving
+	 * player directly at a target ship's hex so it contacts during the seeker activation
+	 * phase. Drives the full activation phase via completeSeekerActivationPhase() and
+	 * asserts that after resolution:
+	 *   (a) The impacting seeker is no longer in m_seekerMissiles.
+	 *   (b) getPendingSeekerContactOutcomes() is empty (outcomes cleared, no attack
+	 *       carried forward to the next phase).
+	 * Then simulates the next activation turn by calling
+	 * resolveActiveSeekersForMovingPlayer() again and asserts that no outcome
+	 * references the removed seeker's ID, proving the seeker cannot attack again.
+	 *
+	 * This test fails against pre-fix code (applyMovementSeekerDamage not called from
+	 * completeSeekerActivationPhase) and passes after the fix.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 29, 2026
+	 * @date Last Modified: Jun 29, 2026
+	 */
+	void testActivationPhaseImpactingSeekerRemovedAndDoesNotAttackOnNextPhase();
 };
 
 }

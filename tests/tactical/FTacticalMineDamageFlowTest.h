@@ -18,7 +18,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created: Mar 22, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 class FTacticalMineDamageFlowTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalMineDamageFlowTest );
