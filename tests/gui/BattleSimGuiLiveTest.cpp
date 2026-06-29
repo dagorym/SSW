@@ -491,7 +491,10 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 		m_harness.runVoidFunctionWithAction([&]() {
 			customDialog->clickCreateNew();
 		}, [&]() {
-			wxDialog * launchedDialog = m_harness.waitForModalDialog(200, 5);
+			// waitForModalDialog timeout (150ms) is shorter than the enclosing
+			// runVoidFunctionWithAction fallback (400ms) to avoid the race where
+			// the inner wait's own timeout and the outer fallback fire concurrently.
+			wxDialog * launchedDialog = m_harness.waitForModalDialog(150, 5);
 			ScenarioEditorGUI * scenarioEditorDialog = dynamic_cast<ScenarioEditorGUI *>(launchedDialog);
 			scenarioEditorPresented =
 			        (scenarioEditorDialog != NULL && scenarioEditorDialog->GetParent() == customDialog);
@@ -503,7 +506,7 @@ void BattleSimGuiLiveTest::testLocalGameDialogLaunchesPredefinedAndCustomModalCh
 				CPPUNIT_ASSERT(isChildFullyInClientArea(scenarioEditorDialog, cancelButton));
 				CPPUNIT_ASSERT(isChildFullyInClientArea(scenarioEditorDialog, startButton));
 			}
-		}, 0, 200);
+		}, 0, 400);
 		CPPUNIT_ASSERT(scenarioEditorPresented);
 		if (customDialog->IsShown()) {
 			customDialog->Hide();

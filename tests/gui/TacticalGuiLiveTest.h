@@ -20,7 +20,7 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
  * @date Last Modified: Jun 29, 2026
  */
@@ -50,6 +50,7 @@ CPPUNIT_TEST( testPreGameSeekerRecallListAppearsAndClickRemovesSeeker );
 CPPUNIT_TEST( testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions );
 CPPUNIT_TEST( testLowerPanelHeightShrinksBackAfterPhaseChange );
 CPPUNIT_TEST( testSeekerActivationAnchorIsAtActionPromptLineY );
+CPPUNIT_TEST( testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -417,6 +418,34 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 29, 2026
 	 */
 	void testSeekerActivationAnchorIsAtActionPromptLineY();
+
+	/**
+	 * @brief Behavioral pixel-level test: during PH_SEEKER_ACTIVATION the speed-value
+	 * overlay suppresses opponent labels and shows moving-player labels; in other
+	 * BS_Battle phases both players' labels render normally.
+	 *
+	 * SMRV-03: drawSeekerMoveCountOverlay() now guards on the activation phase and
+	 * skips seekers not owned by the moving player, matching the sprite suppression in
+	 * drawSeekerMissiles().
+	 *
+	 * Two seekers are seeded at distinct hexes:
+	 * - Moving-player seeker (ownerID=1, AttackerID) at hex (5,5) — label MUST appear.
+	 * - Opponent seeker (ownerID=0, DefenderID) at hex (3,3) — label MUST be absent.
+	 *
+	 * Asserts:
+	 * AC1-absent: no red pixel at hex(3,3) label region during PH_SEEKER_ACTIVATION
+	 *   (opponent label suppressed). This assertion FAILS against unguarded pre-change
+	 *   code and PASSES against the shipped guarded code.
+	 * AC1-present: a red pixel IS found at hex(5,5) label region during PH_SEEKER_ACTIVATION
+	 *   (moving player's own seeker still renders).
+	 * AC2: both hexes produce red pixels in PH_ATTACK_FIRE (labels unchanged outside
+	 *   activation phase).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 29, 2026
+	 * @date Last Modified: Jun 29, 2026
+	 */
+	void testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation();
 };
 
 }

@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 01, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 class FTacticalBattleBoardRendererDelegationTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleBoardRendererDelegationTest );
@@ -35,6 +35,7 @@ CPPUNIT_TEST( testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen );
 CPPUNIT_TEST( testDrawSeekerMissilesPendingOffensiveFireBranch );
 CPPUNIT_TEST( testDrawTriggeredMineHexesCalledInsideBSBattleGuard );
 CPPUNIT_TEST( testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle );
+CPPUNIT_TEST( testDrawSeekerMoveCountOverlayOwnershipGuardForActivationPhase );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -194,6 +195,27 @@ void testDrawTriggeredMineHexesCalledInsideBSBattleGuard();
  * @date Last Modified: Jun 19, 2026
  */
 void testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle();
+
+/**
+ * @brief Source-contract supplement: drawSeekerMoveCountOverlay contains the
+ * SMRV-03 ownership guard that skips opponent seekers during PH_SEEKER_ACTIVATION.
+ *
+ * SMRV-03: verifies that the overlay function body contains both the
+ * activation-phase detection and the per-seeker ownership check that suppresses
+ * labels for seekers not owned by the moving player during activation.
+ * The guard mirrors the sprite suppression already present in drawSeekerMissiles()
+ * which sources from getActiveSeekersByMovingPlayer().
+ *
+ * This test supplements the behavioral pixel-level test
+ * testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation in
+ * TacticalGuiLiveTest; the source-contract test locks code shape but cannot
+ * substitute for the behavioral assertion.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 29, 2026
+ * @date Last Modified: Jun 29, 2026
+ */
+void testDrawSeekerMoveCountOverlayOwnershipGuardForActivationPhase();
 };
 
 }

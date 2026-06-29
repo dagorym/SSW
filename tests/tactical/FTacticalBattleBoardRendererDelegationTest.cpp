@@ -319,6 +319,34 @@ CPPUNIT_ASSERT_MESSAGE(
 assertContains(overlayBody, "if (!itr->active)");
 }
 
+void FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMoveCountOverlayOwnershipGuardForActivationPhase() {
+// SMRV-03 source-contract supplement: the overlay body must contain the
+// activation-phase ownership guard that matches the sprite suppression in
+// drawSeekerMissiles().
+//
+// Verifies:
+// - The overlay detects the activation phase: 'getPhase() == PH_SEEKER_ACTIVATION'
+//   or a local bool 'activationPhase'.
+// - The overlay contains the per-seeker guard that skips opponent seekers:
+//   'itr->ownerID != m_parent->getMovingPlayerID()'.
+// - The guard is conditioned on the activation phase (ensuring other phases are unaffected).
+//
+// This source-contract test supplements the behavioral pixel-level test
+// testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation in TacticalGuiLiveTest.
+const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string overlayBody = extractFunctionBody(source, "void FBattleBoard::drawSeekerMoveCountOverlay(wxDC &dc)");
+
+// The activation-phase flag must be set from getPhase().
+assertContains(overlayBody, "PH_SEEKER_ACTIVATION");
+
+// The per-seeker ownership guard must reference getMovingPlayerID() and ownerID.
+assertContains(overlayBody, "getMovingPlayerID()");
+assertContains(overlayBody, "itr->ownerID");
+
+// The ownership skip must use 'continue' so only the opponent's seeker is skipped.
+assertContains(overlayBody, "continue");
+}
+
 void FTacticalBattleBoardRendererDelegationTest::testDrawTriggeredMineHexesCalledInsideBSBattleGuard() {
 // SMFR-03: drawTriggeredMineHexes(dc) must be called from FBattleBoard::draw()
 // inside the BS_Battle state guard so triggered-hex highlights are visible during

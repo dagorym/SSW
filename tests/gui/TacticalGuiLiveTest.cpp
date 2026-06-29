@@ -3314,4 +3314,170 @@ void TacticalGuiLiveTest::testSeekerActivationAnchorIsAtActionPromptLineY() {
 		thisPhaseAfterClick < thisPhaseBeforeClick);
 }
 
+void TacticalGuiLiveTest::testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation() {
+	// SMRV-03: Behavioral pixel-level discrimination test for the activation-phase
+	// ownership guard in drawSeekerMoveCountOverlay().
+	//
+	// Two seekers are seeded at different hexes:
+	//   Moving player (ownerID=1, AttackerID) at hex (5,5) — label MUST render.
+	//   Opponent       (ownerID=0, DefenderID) at hex (3,3) — label MUST be suppressed.
+	//
+	// Board geometry (scale=1.0, m_size=50, m_trim=50, m_d=25, m_a≈14.43):
+	//   hex(col,row): cx = m_trim + m_d + 2*m_d*col + m_d*(row%2)
+	//                 cy = m_trim + 2*m_a + 3*m_a*row
+	//   label offset: (cx + m_d*0.4, cy - m_a*1.5)
+	//
+	//   hex(5,5): cx=350, cy≈295  → label≈(360, 273)
+	//   hex(3,3): cx=250, cy≈209  → label≈(260, 187)
+	//
+	// AC1-absent: during PH_SEEKER_ACTIVATION no red pixel appears near hex(3,3)'s
+	//   label position.  Without the SMRV-03 guard the opponent seeker would draw a
+	//   red label, causing this assertion to FAIL.
+	// AC1-present: during PH_SEEKER_ACTIVATION a red pixel IS found near hex(5,5)'s
+	//   label position.  The guard must NOT suppress the moving player's own seeker.
+	// AC2: during PH_ATTACK_FIRE (a non-activation phase) BOTH hexes produce red
+	//   pixels, confirming the guard is scoped strictly to PH_SEEKER_ACTIVATION.
+
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	FVehicle * defender = createShip("Frigate");
+	CPPUNIT_ASSERT_MESSAGE("Attacker Destroyer must be creatable.", attacker != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Defender Frigate must be creatable.", defender != NULL);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(defender);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	TestableBattleScreen * battleScreen =
+		new TestableBattleScreen("SMRV-03 Speed Label Suppression");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+
+	battleScreen->setState(BS_Battle);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(1);
+
+	// Seed moving-player seeker at hex (5,5).
+	// ownerID=1 = AttackerID = getMovingPlayerID() when m_movingPlayer=true (default).
+	FTacticalSeekerMissileState movingSeeker;
+	movingSeeker.seekerID          = 5001;
+	movingSeeker.ownerID           = 1;          // moving player (attacker)
+	movingSeeker.hex               = FPoint(5, 5);
+	movingSeeker.heading           = 0;
+	movingSeeker.active            = true;
+	movingSeeker.movementTurn      = 1;
+	movingSeeker.movementAllowance = 3;
+	movingSeeker.hasSource         = false;
+	movingSeeker.activationPhaseIndex = 0;
+	battleScreen->seedSeeker(movingSeeker);
+
+	// Seed opponent seeker at hex (3,3).
+	// ownerID=0 = DefenderID = NOT the moving player during activation.
+	FTacticalSeekerMissileState opponentSeeker;
+	opponentSeeker.seekerID          = 5002;
+	opponentSeeker.ownerID           = 0;        // opponent (defender)
+	opponentSeeker.hex               = FPoint(3, 3);
+	opponentSeeker.heading           = 0;
+	opponentSeeker.active            = true;
+	opponentSeeker.movementTurn      = 1;
+	opponentSeeker.movementAllowance = 2;
+	opponentSeeker.hasSource         = false;
+	opponentSeeker.activationPhaseIndex = 0;
+	battleScreen->seedSeeker(opponentSeeker);
+
+	FBattleBoard * board = findFirstBattleBoard(battleScreen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleBoard must exist for offscreen draw.", board != NULL);
+
+	// Pixel sampling helpers — tolerance absorbs font/scroll-offset variation.
+	// hex(5,5) label ≈ (360, 273); hex(3,3) label ≈ (260, 187).
+	const int movingLabelX = 360, movingLabelY = 273;
+	const int opponentLabelX = 260, opponentLabelY = 187;
+	const int tolX = 30, tolY = 20;
+
+	auto hasRedPixel = [&](const wxImage & img, int cx, int cy) -> bool {
+		const int x0 = std::max(0, cx - tolX);
+		const int y0 = std::max(0, cy - tolY);
+		const int x1 = std::min(img.GetWidth()  - 1, cx + tolX);
+		const int y1 = std::min(img.GetHeight() - 1, cy + tolY);
+		for (int py = y0; py <= y1; ++py) {
+			for (int px = x0; px <= x1; ++px) {
+				if (img.GetRed(px, py) >= 200
+				    && img.GetGreen(px, py) < 80
+				    && img.GetBlue(px, py) < 80) {
+					return true;
+				}
+			}
+		}
+		return false;
+	};
+
+	// ---- PH_SEEKER_ACTIVATION draw ----
+	bool activationMovingPresent  = false;
+	bool activationOpponentAbsent = true;
+	battleScreen->setPhase(PH_SEEKER_ACTIVATION);
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+		const wxImage img = bmp.ConvertToImage();
+		activationMovingPresent  = hasRedPixel(img, movingLabelX, movingLabelY);
+		activationOpponentAbsent = !hasRedPixel(img, opponentLabelX, opponentLabelY);
+	}
+
+	// ---- PH_ATTACK_FIRE draw ----
+	bool attackFireMovingPresent   = false;
+	bool attackFireOpponentPresent = false;
+	battleScreen->setPhase(PH_ATTACK_FIRE);
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+		const wxImage img = bmp.ConvertToImage();
+		attackFireMovingPresent   = hasRedPixel(img, movingLabelX, movingLabelY);
+		attackFireOpponentPresent = hasRedPixel(img, opponentLabelX, opponentLabelY);
+	}
+
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+
+	// AC1-present: moving player seeker label visible during PH_SEEKER_ACTIVATION.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRV-03 AC1-present: Moving-player seeker (ownerID=1) at hex(5,5) must render a red "
+		"speed-value label in PH_SEEKER_ACTIVATION. drawSeekerMoveCountOverlay() must NOT "
+		"suppress the moving player's own seeker.",
+		activationMovingPresent);
+
+	// AC1-absent: opponent seeker label suppressed during PH_SEEKER_ACTIVATION.
+	// This assertion FAILS against pre-SMRV-03 code (no ownership guard) and PASSES
+	// against the shipped guarded code.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRV-03 AC1-absent: Opponent seeker (ownerID=0) at hex(3,3) must NOT render a red "
+		"speed-value label in PH_SEEKER_ACTIVATION. The SMRV-03 ownership guard must suppress "
+		"opponent seekers during activation, matching drawSeekerMissiles() sprite suppression. "
+		"If this fails, the 'activationPhase && itr->ownerID != m_parent->getMovingPlayerID()' "
+		"guard is missing or incorrectly applied.",
+		activationOpponentAbsent);
+
+	// AC2: in PH_ATTACK_FIRE (non-activation phase) both labels render.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRV-03 AC2: Moving-player seeker label must render in PH_ATTACK_FIRE "
+		"(guard is scoped strictly to PH_SEEKER_ACTIVATION).",
+		attackFireMovingPresent);
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRV-03 AC2: Opponent seeker label must render in PH_ATTACK_FIRE "
+		"(guard is scoped strictly to PH_SEEKER_ACTIVATION, not other phases).",
+		attackFireOpponentPresent);
+}
+
 }
