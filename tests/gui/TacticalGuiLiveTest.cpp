@@ -2976,4 +2976,156 @@ void TacticalGuiLiveTest::testPlaceSeekersThreeColumnLayoutColumnPositionsAndCli
 	m_harness.cleanupOrphanTopLevels(10);
 }
 
+void TacticalGuiLiveTest::testLowerPanelHeightShrinksBackAfterPhaseChange() {
+	// SMRIV-04: Behavioral verification that the lower-panel requestedDisplayHeight
+	// shrinks back after a phase transition instead of ratcheting up permanently.
+	//
+	// Before SMRIV-04, ensureLowerPanelLayoutState() always applied:
+	//   if (requestedDisplayHeight > requestedHeight)
+	//       requestedHeight = requestedDisplayHeight;
+	// so any height expansion from a prior phase was preserved indefinitely.
+	//
+	// After SMRIV-04, the function compares getState()/getPhase() against stored last-seen
+	// values.  When either changes (phaseChanged == true) it skips the max-preserve so the
+	// panel can shrink back to fit the new phase's content.
+	//
+	// Setup: 6 Minelayers in the defending fleet.  Each Minelayer has exactly 1 M weapon,
+	// so the mine-source list produced by drawPlaceMines() has 6 rows.  With 6 rows the
+	// list bottom (y_header + 6*row_height + BORDER) exceeds the 120-px floor, causing
+	// drawPlaceMines() to expand requestedDisplayHeight beyond 120.  After transitioning to
+	// BS_Battle/PH_MOVE, which has no row lists, the base content height is clamped back to
+	// ~120 (the floor), so the panel can shrink.
+	//
+	// AC1 (SMRIV-04): After the phase transition, requestedDisplayHeight is less than the
+	//      expanded value captured during the mine phase.
+	// AC3 (SMRIV-04): requestedDisplayHeight after the transition is still >= 120.
+	// AC4 (SMRIV-04): This test MUST fail against the pre-fix ratchet-only code (where the
+	//      max-preserve would keep requestedDisplayHeight at the larger mine-phase value)
+	//      and MUST pass after the fix.
+
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+
+	FVehicle * attacker = createShip("Destroyer");
+	CPPUNIT_ASSERT_MESSAGE("Attacker Destroyer must be creatable.", attacker != NULL);
+	attacker->setOwner(1);
+	attackFleet->addShip(attacker);
+
+	// 6 Minelayers as defenders.  Each has 1 M weapon -> 6 mine source rows in
+	// drawPlaceMines().  6 rows push the list bottom above the 120-px floor so
+	// requestedDisplayHeight is genuinely expanded during the mine phase.
+	static const int NUM_MINELAYERS = 6;
+	std::vector<FVehicle *> minelayers;
+	for (int i = 0; i < NUM_MINELAYERS; ++i) {
+		FVehicle * ml = createShip("Minelayer");
+		CPPUNIT_ASSERT_MESSAGE("Minelayer must be creatable.", ml != NULL);
+		ml->setOwner(2);
+		minelayers.push_back(ml);
+		defendFleet->addShip(ml);
+	}
+
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	FBattleScreen * battleScreen = new FBattleScreen("SMRIV-04 Panel Height Shrink");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleDisplay must exist in the battle screen.", displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	// --- Enter BS_PlaceMines ---
+	const bool mineStarted = battleScreen->beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE(
+		"beginOrdnancePlacement() must succeed; Minelayers have M weapons.",
+		mineStarted);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(2);
+
+	// --- Draw offscreen in BS_PlaceMines to let drawPlaceMines() expand the height ---
+	// Two draws are required for reliable height expansion under the SMRIV-04 fix.
+	// applyRequestedDisplayHeight() calls GetParent()->SendSizeEvent() synchronously
+	// (HandleWindowEvent path), which triggers reflowLowerPanelLayout().  On the
+	// FIRST draw in a new state, phaseChanged is true (lastBattleState was -1), so
+	// reflowLowerPanelLayout resets requestedDisplayHeight to the base floor.  The
+	// first draw therefore primes lastBattleState = BS_PlaceMines.  On the SECOND
+	// draw (same state), phaseChanged is false and the same-phase max-preserve keeps
+	// the expanded height set by drawPlaceMines().
+	const int panelW = battleScreen->GetSize().GetWidth();
+	const int bmpWidth = panelW > 0 ? panelW : 1200;
+	// First draw: primes lastBattleState to BS_PlaceMines.
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(bmpWidth, 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+	// Second draw: phaseChanged == false => max-preserve keeps the expanded height.
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(bmpWidth, 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	const int expandedMineHeight = peer->requestedDisplayHeightPublic();
+	// Verify that drawPlaceMines() actually expanded the height beyond the floor so the
+	// shrink assertion below is meaningful.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRIV-04 precondition: requestedDisplayHeight after two draws in BS_PlaceMines "
+		"with 6 Minelayers must exceed 120 (the floor) so there is room to shrink back. "
+		"Check that the 6-Minelayer fixture produces a mine-source list tall enough to "
+		"overflow the panel.",
+		expandedMineHeight > 120);
+
+	// --- Transition to BS_Battle / PH_MOVE ---
+	battleScreen->setState(BS_Battle);
+	battleScreen->setPhase(PH_MOVE);
+	battleScreen->setMoveComplete(true);
+
+	// --- Draw offscreen in BS_Battle/PH_MOVE ---
+	// drawMoveShip() calls refreshMovePromptReservation() -> ensureLowerPanelLayoutState()
+	// which detects the phase change (lastBattleState/lastBattlePhase differ from current)
+	// and skips the max-preserve, allowing requestedDisplayHeight to drop to the base
+	// content height for this phase.
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(bmpWidth, 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	const int movePhaseHeight = peer->requestedDisplayHeightPublic();
+
+	// Clean up before asserting so a failing assertion cannot leak the window.
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+
+	// AC1 (SMRIV-04): requestedDisplayHeight must decrease after the phase transition.
+	// Pre-fix code would keep it at expandedMineHeight (max-preserve always runs).
+	// Post-fix code resets it because phaseChanged == true.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRIV-04 AC1: requestedDisplayHeight must be smaller after transitioning from "
+		"BS_PlaceMines (large mine-source list) to BS_Battle/PH_MOVE (no row list). "
+		"If this fails, ensureLowerPanelLayoutState() is still using the ratchet-only "
+		"max-preserve and the SMRIV-04 phase-change reset is not taking effect.",
+		movePhaseHeight < expandedMineHeight);
+
+	// AC3 (SMRIV-04): The 120-px floor must be preserved after the shrink.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRIV-04 AC3: requestedDisplayHeight after transition must be >= 120 (the floor). "
+		"The panel must never shrink below the minimum.",
+		movePhaseHeight >= 120);
+}
+
 }

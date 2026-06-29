@@ -20,9 +20,9 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Jun 23, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -48,6 +48,7 @@ CPPUNIT_TEST( testSeekerPathRendersInPHMoveWithMovementPath );
 CPPUNIT_TEST( testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources );
 CPPUNIT_TEST( testPreGameSeekerRecallListAppearsAndClickRemovesSeeker );
 CPPUNIT_TEST( testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions );
+CPPUNIT_TEST( testLowerPanelHeightShrinksBackAfterPhaseChange );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -358,6 +359,38 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 23, 2026
 	 */
 	void testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions();
+
+	/**
+	 * @brief Behavioral verification for SMRIV-04: lower-panel requestedDisplayHeight shrinks
+	 * back after a phase transition, rather than ratcheting up permanently.
+	 *
+	 * SMRIV-04: ensureLowerPanelLayoutState() stores the last-seen battle state and phase.
+	 * When either changes (phaseChanged == true) it skips the max-preserve of
+	 * requestedDisplayHeight so the panel can shrink back to fit the new phase's content.
+	 * When the phase is unchanged the max-preserve still applies so overflowing rows remain
+	 * visible and clickable within the phase.
+	 *
+	 * AC1: After a phase that expanded the panel (BS_PlaceMines with many source rows)
+	 *      transitions to BS_Battle/PH_MOVE, requestedDisplayHeight decreases rather than
+	 *      remaining at the previously expanded value.
+	 * AC3: The 120-px floor is preserved; the panel never shrinks below it.
+	 * AC4: This test must fail against the pre-SMRIV-04 ratchet-only code and pass after
+	 *      the fix.
+	 *
+	 * The test drives the behavior offscreen via wxMemoryDC draws in an FBattleScreen rig
+	 * with 6 Minelayers so the BS_PlaceMines mine-source list is tall enough to expand the
+	 * panel beyond the 120-px floor.  Two draws are performed in BS_PlaceMines because
+	 * applyRequestedDisplayHeight() calls GetParent()->SendSizeEvent() synchronously
+	 * (HandleWindowEvent path), which triggers reflowLowerPanelLayout().  On the first draw
+	 * phaseChanged is true (lastBattleState was -1) and the height is reset to the floor;
+	 * the first draw therefore primes lastBattleState.  The second draw runs with
+	 * phaseChanged == false so the same-phase max-preserve keeps the expanded height.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 29, 2026
+	 * @date Last Modified: Jun 29, 2026
+	 */
+	void testLowerPanelHeightShrinksBackAfterPhaseChange();
 };
 
 }
