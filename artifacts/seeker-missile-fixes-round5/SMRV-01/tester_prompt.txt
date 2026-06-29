@@ -1,0 +1,43 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- SMRV-01 (round 5): Repositioned the PH_ATTACK_FIRE offensive-seeker pending-deployment panel by computing pendingLMargin = leftOffset + textExtent('Select legal path hexes to deploy seeker missiles.') + 2*BORDER instead of hardcoding 310. Panel no longer overlaps left-column instruction text. Click regions update automatically. Left text unchanged.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- include/tactical/FBattleDisplay.h
+
+Acceptance criteria to validate (from Planner):
+- During PH_ATTACK_FIRE with offensive-seeker deployment active, the pending panel renders in a column whose left edge is to the right of the widest left-column content, so it no longer overlaps the left instruction text; the panel stays anchored to the top of the bottom panel.
+- The left instruction text is unchanged (not wrapped/clipped); only the panel moved.
+- Each pending recall row's click region aligns with its new drawn position; rows are not clipped or rendered behind the Done button or ship-status display, and recall behavior is preserved.
+
+Create test files in:
+- tests/gui/TacticalGuiLiveTest.* — update testOffensiveSeekerPendingListRegionVisibilityAndRecall: assert region x >= computed pendingLMargin (i.e., > leftOffset + text extent of widest line), not x >= 310
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.* — update testActionPromptSpacingContractAppliedAcrossActionPhases: replace assertion for literal 'drawOffensiveSeekerPendingRows(dc, 310, ...' with assertion for the new pendingLMargin computation pattern
+- Carried-over SMRV-T1: harden GUI source-contract path resolution in tests/gui/Makefile and sourceContainsLineToken()/readFileText() helpers (repo-root compile macro, normalized paths)
+
+Implementation context for testing:
+- In draw() of FBattleDisplay.cpp (~line 713), replaced: drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10) with a computed call: set font to 10pt Swiss, measure 'Select legal path hexes to deploy seeker missiles.', pendingLMargin = leftOffset + attackTextW + 2*BORDER, then call drawOffensiveSeekerPendingRows(dc, pendingLMargin, getActionPromptLineY(0), 10).
+- leftOffset = 2*BORDER + ZOOM_SIZE = 40; BORDER = 5. So pendingLMargin depends on the actual rendered text width at runtime.
+- drawOffensiveSeekerPendingRows() already uses the passed lMargin for both drawing and setting m_pendingSeekerRecallRegions click regions, so recall behavior is automatically correct at the new position.
+- The left instruction text in drawAttackFire() is unchanged: 'Select legal path hexes to deploy seeker missiles.' still draws at leftOffset=40 unwrapped.
+- docblock for drawOffensiveSeekerPendingRows in FBattleDisplay.h updated to describe the new computed-lMargin behavior.
+
+Suggested test command(s):
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractAppliedAcrossActionPhases: asserts literal 'drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10);' which no longer exists. Must be updated to check for the pendingLMargin computation pattern.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round5/SMRV-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
