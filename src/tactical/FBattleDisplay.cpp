@@ -1684,9 +1684,10 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 	wxColour green(wxT("#00FF00"));
 	const int textSize = 10;
 	const int lMargin = 310;
-	// Start "Activated seekers" block below the reserved action-prompt/button region
-	// so neither area overlaps the other vertically (SMF-05).
-	int y = getActionButtonRowBottom();
+	// Anchor "Activated seekers" list at the top of the bottom panel (right column,
+	// starting at getActionPromptLineY(0)), matching the drawPlaceMines/drawPlaceSeekers
+	// convention (SMRV-02).
+	int y = getActionPromptLineY(0);
 	std::ostringstream os;
 
 	m_shipNameRegions.clear();
