@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 23, 2026 (SMRIV-02: three-column layout for drawPlaceSeekers)
+ * @date Last Modified: Jun 29, 2026 (SMRIV-03: drawOffensiveSeekerPendingRows anchored to top of bottom panel right of Done button)
  *
  */
 
@@ -405,9 +405,10 @@ protected:
 	/**
 	 * @brief Draw grouped recall rows for pending offensive-fire seekers.
 	 *
-	 * Renders a standalone bounded region positioned to the left of the ship-status
-	 * widget in the lower panel during `PH_ATTACK_FIRE`. Each row corresponds to one
-	 * legal path hex for the currently selected `SM` launcher and recalls exactly one
+	 * Renders a standalone bounded region anchored to the top of the bottom panel
+	 * (`getActionPromptLineY(0)`) in the column to the right of the "Done" button
+	 * (lMargin=310) during `PH_ATTACK_FIRE`. Each row corresponds to one legal path
+	 * hex for the currently selected `SM` launcher and recalls exactly one
 	 * current-phase pending seeker from that hex when clicked. Same-hex stacks are
 	 * shown through the per-row pending count. If the rendered rows extend below the
 	 * current `requestedDisplayHeight`, the height is expanded and
@@ -418,9 +419,9 @@ protected:
 	 * @param startY The y position to start drawing the pending rows.
 	 * @param textSize The font size to use.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: Jun 02, 2026
+	 * @date Last Modified: Jun 29, 2026 (SMRIV-03: anchor to top of bottom panel, right of Done button)
 	 */
 	void drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize);
 

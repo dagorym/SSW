@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 23, 2026
+ * @date Last Modified:  Jun 29, 2026
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -13,6 +13,10 @@
  * (lMargin=310) holds the source-selection rows anchored at getActionPromptLineY(0),
  * and right column (recallMargin=620) holds the placed-seeker recall list anchored
  * at getActionPromptLineY(0).  Click regions match drawn positions for both columns.
+ * SMRIV-03: draw() now calls drawOffensiveSeekerPendingRows(dc, 310,
+ * getActionPromptLineY(0), 10) during PH_ATTACK_FIRE so the recall list anchors to
+ * the top of the bottom panel in the column to the right of the Done button,
+ * consistent with the pre-game placement treatment used by drawPlaceMines.
  */
 
 //#include "FBattleDisplay.h"
@@ -688,8 +692,10 @@ void FBattleDisplay::draw(wxDC &dc){
 		}
 		drawCurrentShipStats(dc);
 		if (m_parent->getPhase() == PH_ATTACK_FIRE) {
-			const int pendingRegionTop = getActionButtonRowBottom() + BORDER;
-			drawOffensiveSeekerPendingRows(dc, leftOffset, pendingRegionTop, 10);
+			// Anchor the recall list to the top of the bottom panel in the column
+			// to the right of the Done button (lMargin=310, consistent with
+			// drawPlaceMines pre-game placement treatment).
+			drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10);
 		}
 		break;
 	}
