@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 29, 2026 (SMRIV-04)
+ * @date Last Modified:  Jun 29, 2026 (SMRV-01 round5)
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -21,6 +21,14 @@
  * resets requestedDisplayHeight to the base-content height so the panel shrinks back
  * after a phase that needed extra space.  Within a single phase the existing
  * max-preserve behaviour is retained to prevent row-clipping regressions.
+ * SMRV-01 (round5): draw() now computes pendingLMargin from the measured text
+ * extent of the widest PH_ATTACK_FIRE instruction line instead of using the
+ * fixed value 310.  The pending panel's left edge is placed at
+ * leftOffset + textExtent("Select legal path hexes to deploy seeker missiles.")
+ * + 2*BORDER, so it no longer overlaps the left-column instruction text.  The
+ * left instruction text is unchanged (not wrapped).  Click regions in
+ * m_pendingSeekerRecallRegions are computed from the new draw position so
+ * checkOffensiveSeekerPendingSelection() continues to work correctly.
  */
 
 //#include "FBattleDisplay.h"
@@ -711,10 +719,14 @@ void FBattleDisplay::draw(wxDC &dc){
 		}
 		drawCurrentShipStats(dc);
 		if (m_parent->getPhase() == PH_ATTACK_FIRE) {
-			// Anchor the recall list to the top of the bottom panel in the column
-			// to the right of the Done button (lMargin=310, consistent with
-			// drawPlaceMines pre-game placement treatment).
-			drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10);
+			// Compute lMargin so the pending panel's left edge clears the widest
+			// left-column instruction line.  The left instruction text is NOT wrapped
+			// per user preference; instead the panel shifts right to avoid overlap.
+			dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+			const wxString widestAttackLine("Select legal path hexes to deploy seeker missiles.");
+			const int attackTextW = dc.GetTextExtent(widestAttackLine).GetWidth();
+			const int pendingLMargin = leftOffset + attackTextW + 2*BORDER;
+			drawOffensiveSeekerPendingRows(dc, pendingLMargin, getActionPromptLineY(0), 10);
 		}
 		break;
 	}

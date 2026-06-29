@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 29, 2026 (SMRIV-04: phase-change height reset — panel shrinks back on phase transition)
+ * @date Last Modified: Jun 29, 2026 (SMRV-01 round5: pending panel lMargin computed from text extent)
  *
  */
 
@@ -418,8 +418,11 @@ protected:
 	 * @brief Draw grouped recall rows for pending offensive-fire seekers.
 	 *
 	 * Renders a standalone bounded region anchored to the top of the bottom panel
-	 * (`getActionPromptLineY(0)`) in the column to the right of the "Done" button
-	 * (lMargin=310) during `PH_ATTACK_FIRE`. Each row corresponds to one legal path
+	 * (`getActionPromptLineY(0)`) in the column to the right of the widest
+	 * left-column instruction text during `PH_ATTACK_FIRE`. The caller (draw())
+	 * computes `lMargin` as `leftOffset + textExtent(widest instruction line) +
+	 * 2*BORDER` so the panel does not overlap the left-column text; the left
+	 * instruction text is never wrapped. Each row corresponds to one legal path
 	 * hex for the currently selected `SM` launcher and recalls exactly one
 	 * current-phase pending seeker from that hex when clicked. Same-hex stacks are
 	 * shown through the per-row pending count. If the rendered rows extend below the
@@ -427,13 +430,13 @@ protected:
 	 * `applyRequestedDisplayHeight()` is called automatically.
 	 *
 	 * @param dc The device context to draw on.
-	 * @param lMargin The x position to start drawing text.
+	 * @param lMargin The x position to start drawing text (computed by caller to clear left column).
 	 * @param startY The y position to start drawing the pending rows.
 	 * @param textSize The font size to use.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: Jun 29, 2026 (SMRIV-03: anchor to top of bottom panel, right of Done button)
+	 * @date Last Modified: Jun 29, 2026 (SMRV-01 round5: lMargin computed from text extent, not hardcoded)
 	 */
 	void drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize);
 
