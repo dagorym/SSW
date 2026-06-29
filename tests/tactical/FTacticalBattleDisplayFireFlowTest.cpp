@@ -649,10 +649,13 @@ assertContains(statsBody, "largestMarginWithStatsRoom");
 // SMF-03: pending seeker rows moved out of drawCurrentShipStats into draw() left-of-stats region.
 assertNotContains(statsBody, "drawOffensiveSeekerPendingRows(");
 assertContains(drawBody, "PH_ATTACK_FIRE");
-// SMRIV-03: recall list repositioned to anchor at getActionPromptLineY(0) at lMargin=310
-// (right of Done button), matching the pre-game placement pattern used by drawPlaceMines
-// and drawPlaceSeekers. Old call used leftOffset/pendingRegionTop (below action-button row).
-assertContains(drawBody, "drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10);");
+// SMRV-01 round5: recall list lMargin is now computed from text extent of the widest
+// PH_ATTACK_FIRE instruction line so the pending panel no longer overlaps the left column.
+// The old hardcoded 310 is replaced by: leftOffset + textExtent(widest line) + 2*BORDER.
+assertContains(drawBody, "const wxString widestAttackLine(\"Select legal path hexes to deploy seeker missiles.\");");
+assertContains(drawBody, "const int attackTextW = dc.GetTextExtent(widestAttackLine).GetWidth();");
+assertContains(drawBody, "const int pendingLMargin = leftOffset + attackTextW + 2*BORDER;");
+assertContains(drawBody, "drawOffensiveSeekerPendingRows(dc, pendingLMargin, getActionPromptLineY(0), 10);");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {

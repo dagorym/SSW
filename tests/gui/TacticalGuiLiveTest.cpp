@@ -345,6 +345,12 @@ return true;
 return false;
 }
 
+// Returns an absolute path to a repository file using the GUI_TEST_REPO_ROOT compile macro.
+// Use this for source-contract path lookups to avoid cwd-relative fragility.
+std::string guiRepoFile(const std::string & relativePath) {
+return std::string(GUI_TEST_REPO_ROOT) + "/" + relativePath;
+}
+
 void assertDialogCenteredOnParent(wxDialog * dialog, wxWindow * parent, int tolerance = 120) {
 	CPPUNIT_ASSERT(dialog != NULL);
 	CPPUNIT_ASSERT(parent != NULL);
@@ -943,7 +949,7 @@ const int expectedLeftOffset = 40;
 CPPUNIT_ASSERT_MESSAGE(
 	"Movement reminder text must retain the quoted button label.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"Press the 'Movement Done' button when all ships have been assigned their movement instructions."));
 CPPUNIT_ASSERT_MESSAGE(
 	"Movement prompts should use wrapped prompt drawing in constrained widths.",
@@ -1886,19 +1892,31 @@ void TacticalGuiLiveTest::testOffensiveSeekerPendingListRegionVisibilityAndRecal
 		dc.SelectObject(wxNullBitmap);
 	}
 
-	// AC2: SMRIV-03 — Recall region must be in the right column (x >= 310) and anchored at
-	// the top of the lower panel (y >= getActionPromptLineY(0)), not below the action-button row.
+	// AC2: SMRV-01 round5 — Recall region must be to the right of the widest left-column
+	// instruction text (computed pendingLMargin = leftOffset + textExtent + 2*BORDER), and
+	// anchored at the top of the lower panel (y >= getActionPromptLineY(0)).
 	const size_t recallCount = peer->pendingSeekerRecallRegionCount();
 	CPPUNIT_ASSERT_MESSAGE(
 		"AC2: At least one recall region must appear after deploying a pending seeker.",
 		recallCount >= 1u);
-	const int lMargin = 310;
+	// Compute pendingLMargin as draw() does: leftOffset + text extent of widest line + 2*BORDER.
+	// leftOffset = 2*BORDER + ZOOM_SIZE = 2*5 + 30 = 40; BORDER = 5.
+	const int leftOffsetVal = 40;
+	const int borderVal = 5;
+	wxBitmap measBmp(800, 20);
+	wxMemoryDC measDC;
+	measDC.SelectObject(measBmp);
+	measDC.SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+	const int attackTextW = measDC.GetTextExtent("Select legal path hexes to deploy seeker missiles.").GetWidth();
+	measDC.SelectObject(wxNullBitmap);
+	const int computedPendingLMargin = leftOffsetVal + attackTextW + 2 * borderVal;
 	const int promptLineY0 = FBattleDisplayTestPeer::actionPromptLineY(0);
 	for (size_t i = 0; i < recallCount; ++i) {
 		const wxRect recallRect = peer->pendingSeekerRecallRegion(i);
 		CPPUNIT_ASSERT_MESSAGE(
-			"AC2: Recall row left edge must be at or right of lMargin=310 (right of Done button).",
-			recallRect.GetLeft() >= lMargin);
+			"AC2: Recall row left edge must be at or right of computed pendingLMargin "
+			"(leftOffset + text extent of widest instruction line + 2*BORDER).",
+			recallRect.GetLeft() >= computedPendingLMargin);
 		CPPUNIT_ASSERT_MESSAGE(
 			"AC2: Recall row top must be at or below getActionPromptLineY(0) "
 			"(anchored to the top of the lower panel, not below the action-button row).",
