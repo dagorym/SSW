@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "/home/tstephen/repos/worktrees/sf2-SMRV-02-verifier-20260629/artifacts/seeker-missile-fixes-round5/SMRV-02/verifier_report.md",
+    "/home/tstephen/repos/worktrees/sf2-SMRV-02-verifier-20260629/artifacts/seeker-missile-fixes-round5/SMRV-02/verifier_result.json"
+  ],
+  "blocking_finding_count": 1,
+  "branch_name": "sf2-SMRV-02-verifier-20260629",
+  "documentation_accuracy_summary": [
+    "ACCURATE. doc/test-contracts.md SMF-02 entry correctly updated to state the drawSeekerActivation() source-list y now starts from getActionPromptLineY(0), replacing the prior getActionButtonRowBottom() description. The new SMRV-02 round5 entry accurately describes the anchor change, click-region auto-tracking, and the SMRV-T2 resize-back relaxation. FBattleDisplay.cpp file header carries the SMRV-02 round5 narrative and correct Last Modified date."
+  ],
+  "note_finding_count": 2,
+  "pass_label": null,
+  "status": "FAIL",
+  "task_id": "SMRV-02",
+  "test_sufficiency_summary": [
+    "INSUFFICIENT for the primary AC. The anchor change from getActionButtonRowBottom() to getActionPromptLineY(0) in drawSeekerActivation() is verified only by a source-contract test (assertContains on function body text). No behavioral test drives PH_SEEKER_ACTIVATION with an activated seeker and asserts the block top coordinate or click region alignment against a wxMemoryDC render. testOrdnancePlacementAndActivationPanelHeightAutoExpands does reach the drawSeekerActivation() code path via wxMemoryDC but neither populates activated seekers nor asserts the anchor y-coordinate. The SMRV-T2 resize-back relaxation (TacticalGuiLiveTest.cpp:1239) is adequate \u2014 it correctly encodes the SMRIV-04 within-phase preservation semantics and replaces a brittle exact-equality assertion with a correct preservation bound. 225/225 tactical tests pass; 8 pre-existing GUI failures remain (same baseline as SMRV-01), all out-of-scope."
+  ],
+  "verdict": "FAIL",
+  "warning_finding_count": 0
+}
