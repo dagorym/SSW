@@ -186,6 +186,22 @@ bool checkPreGameSeekerRecallSelectionPublic(wxMouseEvent & event) {
 bool checkOffensiveSeekerPendingSelectionPublic(wxMouseEvent & event) {
 	return checkOffensiveSeekerPendingSelection(event);
 }
+
+/// returns the number of seeker activation row regions populated after the last draw (SMRV-02)
+size_t seekerActivationRegionCount() const {
+	return m_seekerActivationRegions.size();
+}
+
+/// returns the i-th seeker activation row region (SMRV-02)
+wxRect seekerActivationRegion(size_t i) const {
+	CPPUNIT_ASSERT(i < m_seekerActivationRegions.size());
+	return m_seekerActivationRegions[i];
+}
+
+/// exposes checkSeekerActivationSelection() for simulated click testing (SMRV-02 AC-2)
+void checkSeekerActivationSelectionPublic(wxMouseEvent & event) {
+	checkSeekerActivationSelection(event);
+}
 };
 
 wxTextCtrl * findFirstTextCtrl(wxWindow * root) {
@@ -3146,6 +3162,156 @@ void TacticalGuiLiveTest::testLowerPanelHeightShrinksBackAfterPhaseChange() {
 		"SMRIV-04 AC3: requestedDisplayHeight after transition must be >= 120 (the floor). "
 		"The panel must never shrink below the minimum.",
 		movePhaseHeight >= 120);
+}
+
+void TacticalGuiLiveTest::testSeekerActivationAnchorIsAtActionPromptLineY() {
+	// SMRV-02: Behavioral anchor discrimination test.
+	//
+	// The change in drawSeekerActivation() moved the "Activated seekers:" list anchor from
+	// getActionButtonRowBottom() (old) to getActionPromptLineY(0) (new), matching the
+	// drawPlaceMines/drawPlaceSeekers convention.
+	//
+	// This test:
+	//   1. Drives PH_SEEKER_ACTIVATION with one ACTIVATED seeker seeded in the model,
+	//   2. Renders the lower panel to an offscreen wxMemoryDC,
+	//   3. Asserts the first activation row region's top y is >= getActionPromptLineY(0)
+	//      (new anchor at the top of the panel),
+	//   4. Asserts the first activation row region's top y is LESS THAN getActionButtonRowBottom()
+	//      (NOT at the old below-button-row position, discriminating old vs new anchor),
+	//   5. Simulates a click on the region and verifies deactivation (AC-2 click alignment).
+	//
+	// Discrimination:
+	//   OLD anchor (getActionButtonRowBottom() ~70): first row top ~= 70 + 16 = 86.
+	//     Assertion 4 (top < actionButtonRowBottom) FAILS => test fails against old code.
+	//   NEW anchor (getActionPromptLineY(0) = 5): first row top ~= 5 + 16 = 21.
+	//     Assertion 3 (top >= 5) PASSES and assertion 4 (21 < ~70) PASSES => test passes.
+
+	// --- Setup ---
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	FVehicle * defender = createShip("Frigate");
+	CPPUNIT_ASSERT_MESSAGE("Attacker Destroyer must be creatable.", attacker != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Defender Frigate must be creatable.", defender != NULL);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(defender);
+
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	// TestableBattleScreen allows seedSeeker() injection into the underlying FTacticalGame.
+	TestableBattleScreen * battleScreen =
+		new TestableBattleScreen("SMRV-02 Seeker Activation Anchor");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleDisplay must exist in the battle screen.", displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	// --- Inject an activated seeker ---
+	// ownerID = 1 = AttackerID (m_movingPlayer = true by default => movingPlayerID = attackerID = 1).
+	// active = true, activationPhaseIndex = 0 matches default m_seekerActivationPhaseIndex.
+	FTacticalSeekerMissileState activatedSeeker;
+	activatedSeeker.seekerID              = 42;
+	activatedSeeker.ownerID               = 1;         // AttackerID = moving player
+	activatedSeeker.hex                   = FPoint(3, 4);
+	activatedSeeker.heading               = 0;
+	activatedSeeker.active                = true;       // already activated this phase
+	activatedSeeker.movementTurn          = 1;
+	activatedSeeker.movementAllowance     = 2;
+	activatedSeeker.hasSource             = false;
+	activatedSeeker.activationPhaseIndex  = 0;          // matches m_seekerActivationPhaseIndex default
+	battleScreen->seedSeeker(activatedSeeker);
+
+	// --- Transition to BS_Battle / PH_SEEKER_ACTIVATION ---
+	battleScreen->setState(BS_Battle);
+	battleScreen->setPhase(PH_SEEKER_ACTIVATION);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(2);
+
+	// --- Offscreen draw ---
+	{
+		wxMemoryDC dc;
+		const int bmpWidth = battleScreen->GetSize().GetWidth() > 0 ? battleScreen->GetSize().GetWidth() : 1200;
+		wxBitmap bmp(bmpWidth, 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	// Capture anchor values for assertions (done before Destroy so buttons are valid).
+	const int actionPromptY0 = FBattleDisplayTestPeer::actionPromptLineY(0);
+	const int actionButtonRowBottom = peer->actionButtonRowBottomPublic();
+	const size_t regionCount = peer->seekerActivationRegionCount();
+	wxRect firstRegion;
+	if (regionCount >= 1) {
+		firstRegion = peer->seekerActivationRegion(0);
+	}
+
+	// --- AC-2: click alignment ---
+	// Simulate a click inside the first activation region and verify deactivation:
+	// getActiveSeekersByMovingPlayerThisPhase() must drop from 1 to 0 after the click
+	// (deactivateActiveSeekerByID sets active=false, not remove, so getSeekerMissiles().size()
+	// stays the same, but the this-phase-active count decrements).
+	size_t thisPhaseBeforeClick = battleScreen->getActiveSeekersByMovingPlayerThisPhase().size();
+	if (regionCount >= 1) {
+		// Click the center of the first region.
+		const wxPoint clickPt(firstRegion.GetX() + firstRegion.GetWidth() / 2,
+		                      firstRegion.GetY() + firstRegion.GetHeight() / 2);
+		wxMouseEvent clickEvt(wxEVT_LEFT_UP);
+		clickEvt.m_x = clickPt.x;
+		clickEvt.m_y = clickPt.y;
+		peer->checkSeekerActivationSelectionPublic(clickEvt);
+	}
+	size_t thisPhaseAfterClick = battleScreen->getActiveSeekersByMovingPlayerThisPhase().size();
+
+	// --- Clean up before asserting ---
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+
+	// --- Assertions ---
+
+	// Precondition: the seeker was injected and is visible in the model before the draw.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRV-02 precondition: At least one seeker must be present in the model for this test "
+		"to exercise the activation list path. Seeder injection may have failed.",
+		regionCount >= 1);
+
+	// AC-1 (new anchor): the first activation row's top y is >= getActionPromptLineY(0).
+	// This confirms the list renders at the top of the panel (right-column position).
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRV-02 AC-1: First seeker activation row top must be >= getActionPromptLineY(0) "
+		"(new anchor at the top of the lower panel). "
+		"drawSeekerActivation() must use 'int y = getActionPromptLineY(0)' as the list anchor.",
+		firstRegion.GetTop() >= actionPromptY0);
+
+	// AC-1 discrimination: the first row's top y must be LESS THAN getActionButtonRowBottom().
+	// With the OLD getActionButtonRowBottom() anchor, the region top would be >= buttonRowBottom,
+	// so this assertion FAILS against the old code and PASSES against the new code.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRV-02 AC-1 (discrimination): First seeker activation row top must be LESS THAN "
+		"getActionButtonRowBottom(). With the old 'int y = getActionButtonRowBottom()' anchor "
+		"the region would start at or after the button row, failing this assertion. "
+		"This confirms the anchor was changed to getActionPromptLineY(0) (top of panel).",
+		firstRegion.GetTop() < actionButtonRowBottom);
+
+	// AC-2 (click alignment): deactivating a seeker through the region removes it from the
+	// this-phase-active list. getActiveSeekersByMovingPlayerThisPhase() must drop from 1 to 0
+	// after the click, confirming the click region aligns with the drawn position and triggers
+	// deactivation. (deactivateActiveSeekerByID sets active=false; getSeekerMissiles().size()
+	// stays the same but the this-phase-active count decrements.)
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRV-02 AC-2: Clicking the seeker activation row region must deactivate the seeker. "
+		"getActiveSeekersByMovingPlayerThisPhase().size() must decrease after a click inside "
+		"the region, confirming click-region/draw-position alignment.",
+		thisPhaseAfterClick < thisPhaseBeforeClick);
 }
 
 }

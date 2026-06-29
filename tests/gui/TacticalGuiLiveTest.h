@@ -20,7 +20,7 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
  * @date Last Modified: Jun 29, 2026
  */
@@ -49,6 +49,7 @@ CPPUNIT_TEST( testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources
 CPPUNIT_TEST( testPreGameSeekerRecallListAppearsAndClickRemovesSeeker );
 CPPUNIT_TEST( testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions );
 CPPUNIT_TEST( testLowerPanelHeightShrinksBackAfterPhaseChange );
+CPPUNIT_TEST( testSeekerActivationAnchorIsAtActionPromptLineY );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -391,6 +392,31 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 29, 2026
 	 */
 	void testLowerPanelHeightShrinksBackAfterPhaseChange();
+
+	/**
+	 * @brief Behavioral anchor discrimination test for SMRV-02: drawSeekerActivation()
+	 * anchors the "Activated seekers:" list at getActionPromptLineY(0), not getActionButtonRowBottom().
+	 *
+	 * SMRV-02: Seeds one activated seeker (active=true, activationPhaseIndex=0, ownerID=1) via
+	 * TestableBattleScreen, renders the lower panel via offscreen wxMemoryDC in
+	 * PH_SEEKER_ACTIVATION, and asserts that:
+	 * - m_seekerActivationRegions is populated with at least one region (the seeder was injected).
+	 * - The first region's top y is >= getActionPromptLineY(0) (new top-of-panel anchor, AC-1).
+	 * - The first region's top y is < getActionButtonRowBottom() — discriminates against the old
+	 *   getActionButtonRowBottom() anchor: with old code the region starts at or after the button
+	 *   row, failing this assertion; with new code it starts at the top of the panel, passing (AC-1).
+	 * - Clicking the region via checkSeekerActivationSelection() reduces
+	 *   getActiveSeekersByMovingPlayerThisPhase().size() by 1, confirming click-region/
+	 *   draw-position alignment (AC-2).
+	 *
+	 * This test MUST fail against the pre-change (getActionButtonRowBottom) code and PASS against
+	 * the shipped (getActionPromptLineY(0)) code.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 29, 2026
+	 * @date Last Modified: Jun 29, 2026
+	 */
+	void testSeekerActivationAnchorIsAtActionPromptLineY();
 };
 
 }
