@@ -1236,7 +1236,9 @@ CPPUNIT_ASSERT(moveDoneButton->IsShown());
 	wideScreen->SendSizeEvent();
 	m_harness.pumpEvents(5);
 	const int restoredHeight = wideDisplay->GetMinSize().GetHeight();
-	CPPUNIT_ASSERT_EQUAL(beforeResizeHeight, restoredHeight);
+	// SMRIV-04 / SMRV-T2: within-phase resize-back is a preservation assertion, not exact equality.
+	// The lower panel may grow but must not shrink below the pre-resize minimum.
+	CPPUNIT_ASSERT(restoredHeight >= beforeResizeHeight);
 
 	wideScreen->Destroy();
 	m_harness.pumpEvents(5);

@@ -720,9 +720,10 @@ const std::string body = extractFunctionBody(source, "void FBattleDisplay::drawS
 assertContains(body, "dc.DrawText(\"Seeker activation phase.\",leftOffset,getActionPromptLineY(0));");
 assertContains(body, "dc.DrawText(\"Click a seeker stack on the board to activate one seeker.\",leftOffset,getActionPromptLineY(1));");
 assertContains(body, "dc.DrawText(\"Click a row below to deactivate an activated seeker.\",leftOffset,getActionPromptLineY(2));");
-// SMF-05: "Activated seekers" block must start below the action-button row, not at BORDER
-assertContains(body, "int y = getActionButtonRowBottom();");
-assertNotContains(body, "int y = BORDER;");
+// SMRV-02: "Activated seekers" block now anchors at the top of the lower panel
+// (getActionPromptLineY(0)), matching drawPlaceMines/drawPlaceSeekers convention.
+assertContains(body, "int y = getActionPromptLineY(0);");
+assertNotContains(body, "int y = getActionButtonRowBottom();");
 // SMF-05: switched to this-phase accessor so only current-phase activations are listed
 assertContains(body, "const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayerThisPhase();");
 assertNotContains(body, "m_parent->getActiveSeekersByMovingPlayer();");
