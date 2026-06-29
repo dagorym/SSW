@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 29, 2026
+ * @date Last Modified:  Jun 29, 2026 (SMRIV-04)
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -17,6 +17,10 @@
  * getActionPromptLineY(0), 10) during PH_ATTACK_FIRE so the recall list anchors to
  * the top of the bottom panel in the column to the right of the Done button,
  * consistent with the pre-game placement treatment used by drawPlaceMines.
+ * SMRIV-04: ensureLowerPanelLayoutState() detects tactical state/phase changes and
+ * resets requestedDisplayHeight to the base-content height so the panel shrinks back
+ * after a phase that needed extra space.  Within a single phase the existing
+ * max-preserve behaviour is retained to prevent row-clipping regressions.
  */
 
 //#include "FBattleDisplay.h"
@@ -70,6 +74,8 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_lowerPanelLayoutState.reservedPromptLines = ACTION_PROMPT_MAX_LINES;
 	m_lowerPanelLayoutState.requestedDisplayHeight = 120;
 	m_lowerPanelLayoutState.initialized = false;
+	m_lowerPanelLayoutState.lastBattleState = -1;
+	m_lowerPanelLayoutState.lastBattlePhase = -1;
 	m_inResizeReflow = false;
 	m_actionButtonExtraSpacerItem = NULL;
 
@@ -591,12 +597,25 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 	if (requestedHeight < 120){
 		requestedHeight = 120;
 	}
-	// Preserve any height expansion already applied by draw helpers such as
-	// drawSeekerActivation(), drawPlaceMines(), or drawPlaceSeekers() that ran
-	// before setLowerPanelState() is called.  Taking the max ensures that a
-	// list-widget expansion is not silently overwritten by the stats-only height.
-	if (m_lowerPanelLayoutState.requestedDisplayHeight > requestedHeight){
-		requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;
+
+	// Detect whether the tactical state or phase has changed since the last call.
+	// When the phase is unchanged, preserve any height expansion already applied by
+	// draw helpers (drawSeekerActivation, drawPlaceMines, drawPlaceSeekers) so that
+	// overflowing rows remain visible and clickable within the phase.
+	// When the phase changes, skip max-preserve so the panel can shrink back to fit
+	// the new phase's content instead of ratcheting permanently upward (SMRIV-04).
+	const int currentState = static_cast<int>(m_parent->getState());
+	const int currentPhase = static_cast<int>(m_parent->getPhase());
+	const bool phaseChanged = (m_lowerPanelLayoutState.lastBattleState != currentState
+		|| m_lowerPanelLayoutState.lastBattlePhase != currentPhase);
+	if (phaseChanged){
+		m_lowerPanelLayoutState.lastBattleState = currentState;
+		m_lowerPanelLayoutState.lastBattlePhase = currentPhase;
+	} else {
+		// Same phase: preserve any draw-helper expansion so rows are not clipped.
+		if (m_lowerPanelLayoutState.requestedDisplayHeight > requestedHeight){
+			requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;
+		}
 	}
 	m_lowerPanelLayoutState.requestedDisplayHeight = requestedHeight;
 }

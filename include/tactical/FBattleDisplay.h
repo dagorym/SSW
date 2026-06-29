@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 29, 2026 (SMRIV-03: drawOffensiveSeekerPendingRows anchored to top of bottom panel right of Done button)
+ * @date Last Modified: Jun 29, 2026 (SMRIV-04: phase-change height reset — panel shrinks back on phase transition)
  *
  */
 
@@ -168,9 +168,17 @@ protected:
 	/**
 	 * @brief Shared lower-panel layout state across tactical phases.
 	 *
-	 * @author Tom Stephens, GPT-5 (high)
+	 * `lastBattleState` and `lastBattlePhase` store the most recently seen
+	 * battle state and phase (as int casts of their respective enums).  They
+	 * are initialised to -1 and updated in `ensureLowerPanelLayoutState()`.
+	 * When either value differs from the current state/phase the layout helper
+	 * skips the max-preserve of `requestedDisplayHeight` so the panel can
+	 * shrink back to fit the new phase's content instead of ratcheting up
+	 * permanently.
+	 *
+	 * @author Tom Stephens, GPT-5 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 16, 2026
-	 * @date Last Modified: May 16, 2026
+	 * @date Last Modified: Jun 29, 2026 (SMRIV-04: add lastBattleState/lastBattlePhase for phase-change reset)
 	 */
 	struct LowerPanelLayoutState {
 		LowerPanelLayoutMode mode;
@@ -179,6 +187,10 @@ protected:
 		int reservedPromptLines;
 		int requestedDisplayHeight;
 		bool initialized;
+		/// last-seen battle state as int; -1 = not yet set
+		int lastBattleState;
+		/// last-seen battle phase as int; -1 = not yet set
+		int lastBattlePhase;
 	};
 
 	/// measured ship-stat block dimensions for lower-panel layout decisions
@@ -676,8 +688,10 @@ protected:
 	void drawWrappedActionPrompt(wxDC &dc, const wxString &promptText, int maxWidth, int &lineCursor);
 
 	/// validates or updates the shared lower-panel layout state for the current geometry;
-	/// preserves any requestedDisplayHeight already expanded by draw helpers (drawPlaceMines,
-	/// drawPlaceSeekers, drawSeekerActivation) so their row expansions are not overwritten
+	/// preserves any requestedDisplayHeight already expanded by draw helpers within the
+	/// current tactical phase (drawPlaceMines, drawPlaceSeekers, drawSeekerActivation);
+	/// resets to base-content height when the tactical state or phase changes so the panel
+	/// shrinks back after a phase that required extra height
 	void ensureLowerPanelLayoutState(int panelWidth, int panelHeight);
 
 	/// measure width/height needed to render current ship stats without clipping
