@@ -528,10 +528,9 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * ship/weapon-slot source's placed item and restores ammo when that same
 	 * source clicks an existing marker it owns. Successful placements and undos
 	 * rebuild the deployable-source list using a type-filtered rebuild when the
-	 * current state is BS_PlaceMines (M-only filter) or BS_PlaceSeekers (SM-only
-	 * filter), and use the unfiltered rebuild for all other states. The source
-	 * is then reselected so the active source index stays aligned with the current
-	 * ship/weapon pointers.
+	 * current state is BS_PlaceMines (M-only filter), and use the unfiltered
+	 * rebuild for all other states. The source is then reselected so the active
+	 * source index stays aligned with the current ship/weapon pointers.
 	 *
 	 * PGS-03: During pre-game BS_PlaceSeekers, board clicks are always additive
 	 * (stacking). The toggle/remove path is bypassed so that repeated clicks on
@@ -539,13 +538,18 @@ bool isMoveComplete() const { return m_moveComplete; }
 	 * Mine toggle behavior for BS_PlaceMines is unchanged. Attack-phase seeker
 	 * deployment (BS_Battle / PH_ATTACK_FIRE) is also unchanged.
 	 *
+	 * SMRIV-06: When in BS_PlaceMines and the mined-hex scan finds no matching
+	 * placed-ordnance M record for a hex that is in m_minedHexList, the stale
+	 * entry is erased defensively before falling through to the standard
+	 * mine-placement path, so no orphaned minefield entry can persist.
+	 *
 	 * @param hex Tactical hex to place into or undo from.
 	 *
 	 * @return True when model placement state changed.
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 24, 2026
-	 * @date Last Modified: Jun 22, 2026
+	 * @date Last Modified: Jun 29, 2026
 	 */
 	bool placeOrdnanceAtHex(const FPoint & hex);
 	/**
