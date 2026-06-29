@@ -214,23 +214,24 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 */
 	void testOnSetSpeedMinePlacementPreservesShipForFirstBoardClick();
 	/**
-	 * @brief Verifies the pending-seeker list widget region during PH_ATTACK_FIRE seeker deployment.
+	 * @brief Verifies the pending-seeker recall list position and click behavior during
+	 * PH_ATTACK_FIRE seeker deployment.
 	 *
-	 * SMF-03: drawOffensiveSeekerPendingRows now runs in draw() inside a PH_ATTACK_FIRE guard,
-	 * placing the pending list in a dedicated region left of the ship-status widget.
-	 * This test confirms that after deploying seekers:
-	 * - m_pendingSeekerRecallRegions is populated with one region per pending group.
-	 * - Each recall region is positioned within the lower-panel left column (x >= leftOffset,
-	 *   x < shipStatsLeftMargin) so the list stays left of ship-status.
-	 * - Each recall region's top is at or below getActionButtonRowBottom()+BORDER, meaning
-	 *   it does not overlap the action-button row.
-	 * - Recall (via recallSelectedOffensivePendingSeekerAtHex) removes one seeker from the
-	 *   model and the next draw rebuilds a shorter pending list.
-	 * - The ship-status region (drawCurrentShipStats) is unaffected by the pending list.
+	 * SMRIV-03: drawOffensiveSeekerPendingRows() is called in draw() inside a PH_ATTACK_FIRE
+	 * guard at lMargin=310 / startY=getActionPromptLineY(0), anchoring the list to the top of
+	 * the lower panel to the right of the Done button (matching the pre-game placement pattern).
+	 * This test confirms:
+	 * - m_pendingSeekerRecallRegions is empty before any deployment (AC1, AC4).
+	 * - After injecting a movement path via TestableBattleScreen::findShipTurnData() and
+	 *   deploying one pending seeker, recall regions are populated with x >= 310 and
+	 *   y >= getActionPromptLineY(0) — anchored at the top of the lower panel, not below
+	 *   the action-button row (AC2).
+	 * - Clicking a recall region via checkOffensiveSeekerPendingSelection() removes the
+	 *   pending seeker and restores ammo (AC3; existing recall behavior preserved).
 	 *
-	 * @author claude-sonnet-4-6 (medium)
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: Jun 02, 2026
-	 * @date Last Modified: Jun 02, 2026
+	 * @date Last Modified: Jun 29, 2026
 	 */
 	void testOffensiveSeekerPendingListRegionVisibilityAndRecall();
 

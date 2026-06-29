@@ -181,6 +181,11 @@ wxRect preGameSeekerRecallRegion(size_t i) const {
 bool checkPreGameSeekerRecallSelectionPublic(wxMouseEvent & event) {
 	return checkPreGameSeekerRecallSelection(event);
 }
+
+/// exposes checkOffensiveSeekerPendingSelection() for simulated click testing (SMRIV-03)
+bool checkOffensiveSeekerPendingSelectionPublic(wxMouseEvent & event) {
+	return checkOffensiveSeekerPendingSelection(event);
+}
 };
 
 wxTextCtrl * findFirstTextCtrl(wxWindow * root) {
@@ -440,6 +445,11 @@ public:
 		if (m_seederGame) {
 			m_seederGame->seedSeeker(s);
 		}
+	}
+
+	/// Expose findTurnData() from the underlying SeederGame for movement-path injection (SMRIV-03).
+	Frontier::FTacticalTurnData * findShipTurnData(unsigned int shipID) {
+		return m_seederGame ? m_seederGame->findTurnData(shipID) : NULL;
 	}
 
 private:
@@ -1727,19 +1737,21 @@ m_harness.cleanupOrphanTopLevels(10);
 }
 
 void TacticalGuiLiveTest::testOffensiveSeekerPendingListRegionVisibilityAndRecall() {
-	// SMF-03: drawOffensiveSeekerPendingRows is called in draw() inside a PH_ATTACK_FIRE guard,
-	// left of the ship-status widget.  This live GUI test confirms:
+	// SMRIV-03: drawOffensiveSeekerPendingRows is called in draw() inside a PH_ATTACK_FIRE
+	// guard.  This test confirms the repositioned layout and preserved recall behavior:
 	//
 	// AC1: draw() in PH_ATTACK_FIRE with SM weapon selected clears then rebuilds
 	//      m_pendingSeekerRecallRegions — no crash and correct empty state before any deployment.
-	// AC2: When pending groups exist (verified via model API), the drawn recall region x >= leftOffset
-	//      and top >= getActionButtonRowBottom()+BORDER so it is left of stats and below the action row.
-	// AC3: recallSelectedOffensivePendingSeekerAtHex() removes one seeker from the model.
-	// AC4: draw() in a non-PH_ATTACK_FIRE phase leaves m_pendingSeekerRecallRegions empty (no leak).
+	// AC2: SMRIV-03 — When a pending group exists, recall regions are anchored at
+	//      x >= 310 (right of Done button) and y >= getActionPromptLineY(0) (top of lower
+	//      panel), NOT below the action-button row as in the previous layout.
+	// AC3: Clicking a recall region via the display's check function removes one seeker from
+	//      the model and restores ammo (existing recall behavior preserved, only repositioned).
+	// AC4: draw() in a non-PH_ATTACK_FIRE phase leaves m_pendingSeekerRecallRegions empty.
 	//
-	// Full deployment+recall cycle via FTacticalGame is covered by
-	// testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit;
-	// this test validates the rendering/recall machinery at the FBattleScreen/FBattleDisplay layer.
+	// AC2/AC3 require a real pending deployment which in turn requires a movement path.
+	// We use TestableBattleScreen to inject the path via findShipTurnData() rather than
+	// driving the full movement phase.
 
 	// -- Setup: Battleship has an SM launcher --
 	FFleet * attackFleet = new FFleet();
@@ -1769,7 +1781,10 @@ void TacticalGuiLiveTest::testOffensiveSeekerPendingListRegionVisibilityAndRecal
 	smLauncher->setMaxAmmo(3);
 	smLauncher->setCurrentAmmo(3);
 
-	FBattleScreen * battleScreen = new FBattleScreen("SMF-03 Pending Seeker Region Test");
+	// Use TestableBattleScreen so findShipTurnData() can inject the movement path required
+	// for PH_ATTACK_FIRE seeker deployment (AC2/AC3).
+	TestableBattleScreen * testableScreen = new TestableBattleScreen("SMRIV-03 Pending Seeker Region Test");
+	FBattleScreen * battleScreen = testableScreen;
 	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
 	battleScreen->Show();
 	m_harness.pumpEvents(3);
@@ -1835,35 +1850,72 @@ void TacticalGuiLiveTest::testOffensiveSeekerPendingListRegionVisibilityAndRecal
 		"draw() in PH_DEFENSE_FIRE must leave m_pendingSeekerRecallRegions empty.",
 		peer->pendingSeekerRecallRegionCount() == 0u);
 
-	// AC2/AC3: Use model API to deploy a seeker and verify pending group, then confirm the
-	// recall mechanism works.  Deployment requires a movement path (populated by the game's
-	// movement phase); since we skip movement here, placeOffensiveSeekerAtHex returns false.
-	// Instead we verify recall API contracts via the model-level deployment scenario that
-	// this test accompanies (testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit).
-	// Here we just confirm that recallSelectedOffensivePendingSeekerAtHex returns false
-	// when no seekers are pending (correct guard behavior).
+	// AC2 + AC3: Deploy a seeker via path injection and verify recall region position and recall
+	// click behavior.  Inject a two-hex movement path for the attacker via findShipTurnData()
+	// so handleHexClick() can place a pending seeker on the path.
 	battleScreen->setPhase(PH_ATTACK_FIRE);
 	battleScreen->setShip(attacker);
 	CPPUNIT_ASSERT(battleScreen->selectWeapon(static_cast<unsigned int>(smWeaponIndex)));
-	const bool recallResult = battleScreen->recallSelectedOffensivePendingSeekerAtHex(attackerHex);
-	CPPUNIT_ASSERT_MESSAGE(
-		"recallSelectedOffensivePendingSeekerAtHex must return false when no seekers are pending.",
-		!recallResult);
-	// After a failed recall, ammo is unchanged.
-	CPPUNIT_ASSERT_EQUAL(3, smLauncher->getAmmo());
 
-	// AC2: Verify the FBattleDisplayTestPeer extension is coherent: the button row bottom
-	// computed through the peer matches expected constants and positions the pending region
-	// below the action buttons (smoke test of the peer accessor itself).
-	const int buttonRowBottom = peer->actionButtonRowBottomPublic();
+	const FPoint firstMoveHex = FHexMap::findNextHex(attackerHex, attacker->getHeading());
+	Frontier::FTacticalTurnData * turnData = testableScreen->findShipTurnData(attacker->getID());
+	CPPUNIT_ASSERT_MESSAGE("findShipTurnData must return non-NULL after ship is placed.", turnData != NULL);
+	turnData->path.clear();
+	turnData->path.addPoint(attackerHex);
+	turnData->path.addPoint(firstMoveHex);
+	turnData->startHeading = attacker->getHeading();
+	turnData->curHeading   = attacker->getHeading();
+	turnData->finalHeading = attacker->getHeading();
+	turnData->nMoved = 1;
+
+	// Deploy one seeker onto the path hex.
 	CPPUNIT_ASSERT_MESSAGE(
-		"getActionButtonRowBottom() must return a positive value.",
-		buttonRowBottom > 0);
-	// The pending region top = getActionButtonRowBottom() + BORDER.
-	// BORDER is 5 (not publicly exposed), so we just verify the contract direction.
+		"handleHexClick on a path hex must succeed in PH_ATTACK_FIRE deployment mode.",
+		battleScreen->handleHexClick(firstMoveHex));
+	const int ammoAfterDeploy = smLauncher->getAmmo();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"Ammo must decrement by 1 after deploying one pending seeker.", 2, ammoAfterDeploy);
+
+	// Redraw to populate m_pendingSeekerRecallRegions from the new pending deployment.
+	{
+		wxMemoryDC dc;
+		const wxSize sz = displayPanel->GetSize();
+		wxBitmap bmp(sz.GetWidth() > 0 ? sz.GetWidth() : 1200, sz.GetHeight() > 0 ? sz.GetHeight() : 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	// AC2: SMRIV-03 — Recall region must be in the right column (x >= 310) and anchored at
+	// the top of the lower panel (y >= getActionPromptLineY(0)), not below the action-button row.
+	const size_t recallCount = peer->pendingSeekerRecallRegionCount();
 	CPPUNIT_ASSERT_MESSAGE(
-		"getActionButtonRowBottom() must be at or below the bottom of the prompt reservation.",
-		buttonRowBottom >= FBattleDisplayTestPeer::actionPromptReservedBottomY());
+		"AC2: At least one recall region must appear after deploying a pending seeker.",
+		recallCount >= 1u);
+	const int lMargin = 310;
+	const int promptLineY0 = FBattleDisplayTestPeer::actionPromptLineY(0);
+	for (size_t i = 0; i < recallCount; ++i) {
+		const wxRect recallRect = peer->pendingSeekerRecallRegion(i);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC2: Recall row left edge must be at or right of lMargin=310 (right of Done button).",
+			recallRect.GetLeft() >= lMargin);
+		CPPUNIT_ASSERT_MESSAGE(
+			"AC2: Recall row top must be at or below getActionPromptLineY(0) "
+			"(anchored to the top of the lower panel, not below the action-button row).",
+			recallRect.GetTop() >= promptLineY0);
+	}
+
+	// AC3: Clicking a recall region via the display check function must remove the pending
+	// seeker and restore ammo — existing recall behavior preserved after repositioning.
+	const wxRect firstRecallRect = peer->pendingSeekerRecallRegion(0);
+	wxMouseEvent recallClick(wxEVT_LEFT_UP);
+	recallClick.m_x = firstRecallRect.GetLeft() + firstRecallRect.GetWidth() / 2;
+	recallClick.m_y = firstRecallRect.GetTop()  + firstRecallRect.GetHeight() / 2;
+	const bool recalled = peer->checkOffensiveSeekerPendingSelectionPublic(recallClick);
+	CPPUNIT_ASSERT_MESSAGE("AC3: checkOffensiveSeekerPendingSelection() must return true.", recalled);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"AC3: Ammo must be restored by 1 after recalling the pending seeker.",
+		3, smLauncher->getAmmo());
 
 	battleScreen->Destroy();
 	m_harness.pumpEvents(5);

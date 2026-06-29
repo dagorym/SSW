@@ -649,7 +649,10 @@ assertContains(statsBody, "largestMarginWithStatsRoom");
 // SMF-03: pending seeker rows moved out of drawCurrentShipStats into draw() left-of-stats region.
 assertNotContains(statsBody, "drawOffensiveSeekerPendingRows(");
 assertContains(drawBody, "PH_ATTACK_FIRE");
-assertContains(drawBody, "drawOffensiveSeekerPendingRows(dc, leftOffset, pendingRegionTop, 10);");
+// SMRIV-03: recall list repositioned to anchor at getActionPromptLineY(0) at lMargin=310
+// (right of Done button), matching the pre-game placement pattern used by drawPlaceMines
+// and drawPlaceSeekers. Old call used leftOffset/pendingRegionTop (below action-button row).
+assertContains(drawBody, "drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10);");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {
