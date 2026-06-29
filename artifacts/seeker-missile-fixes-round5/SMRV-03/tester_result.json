@@ -1,0 +1,26 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round5/SMRV-03/tester_report.md",
+    "artifacts/seeker-missile-fixes-round5/SMRV-03/tester_result.json",
+    "artifacts/seeker-missile-fixes-round5/SMRV-03/documenter_prompt.txt"
+  ],
+  "branch_name": "sf2-SMRV-03-tester-20260629",
+  "commands_run": [
+    "make -C tests gui-tests",
+    "DISPLAY=:0 tests/gui/GuiTests",
+    "make -C tests tactical-tests",
+    "tests/tactical/TacticalTests"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "55 run, 9 failures (all pre-existing)",
+    "TacticalTests": "226 run, 0 failures"
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": "SMRV-03",
+  "test_commit_hash": "78d1c4a",
+  "test_files_changed": [
+    "tests/gui/BattleSimGuiLiveTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
