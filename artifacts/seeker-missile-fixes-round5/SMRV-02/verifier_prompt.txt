@@ -1,0 +1,63 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- SMRV-02 (seeker-missile-fixes-round5): Repositioned the PH_SEEKER_ACTIVATION 'Activated seekers:' list anchor in FBattleDisplay::drawSeekerActivation() from getActionButtonRowBottom() to getActionPromptLineY(0), matching the drawPlaceMines/drawPlaceSeekers convention. Pass-2 (Verifier-driven remediation): Added behavioral anchor discrimination test testSeekerActivationAnchorIsAtActionPromptLineY in tests/gui/TacticalGuiLiveTest, plus FBattleDisplayTestPeer accessors seekerActivationRegionCount(), seekerActivationRegion(i), and checkSeekerActivationSelectionPublic().
+
+Acceptance criteria to verify:
+- AC-1: During PH_SEEKER_ACTIVATION, the 'Activated seekers:' list renders anchored to the top of the bottom panel (getActionPromptLineY(0)), not below the action-button row — VERIFIED BEHAVIORAL via testSeekerActivationAnchorIsAtActionPromptLineY.
+- AC-2: Each activation row's click region aligns with its new drawn position; clicking a row deactivates the intended seeker — VERIFIED BEHAVIORAL (click simulation reduces getActiveSeekersByMovingPlayerThisPhase().size()).
+- Source-contract (pass-1 merged): testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker asserts 'int y = getActionPromptLineY(0)' in src/tactical/FBattleDisplay.cpp.
+
+Implementation branch or worktree context:
+- Worktree branch: sf2-SMRV-02-tester-20260629 (Tester base)
+- Documenter branch: sf2-SMRV-02-documenter-20260629
+- Compare to: sf2 (main integration branch for round5)
+- Plan: plans/seeker-missile-fixes-round5-plan.md
+- Tester commit: 5072f26
+- Documentation commit: 2ed8da8
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FBattleDisplay.cpp (Implementer: anchor change from getActionButtonRowBottom() to getActionPromptLineY(0))
+- tests/gui/TacticalGuiLiveTest.cpp (Tester: new behavioral test + FBattleDisplayTestPeer accessors)
+- tests/gui/TacticalGuiLiveTest.h (Tester: new test declaration + doxygen)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (Tester: source-contract update)
+- doc/test-contracts.md (Tester: SMF-02 entry updated; SMRV-02 entry added; Documenter: SMRV-02 entry extended with behavioral test catalog)
+- include/tactical/FBattleDisplay.h (Documenter: drawSeekerActivation() docblock updated to reflect new anchor)
+
+Commands executed:
+- git diff sf2 -- doc/test-contracts.md
+- git diff sf2 -- tests/gui/TacticalGuiLiveTest.h
+- git -C worktree add include/tactical/FBattleDisplay.h doc/test-contracts.md
+- git -C worktree commit (documentation commit 2ed8da8)
+
+Final test outcomes:
+- GuiTests: 54 run, 46 pass, 8 pre-existing source-contract failures (unrelated to SMRV-02). New test testSeekerActivationAnchorIsAtActionPromptLineY PASSED.
+- TacticalTests: 225/225 pass.
+- SSWTests: 178 run, 9 pre-existing FGameHeaderDependencyTest source-contract failures (unrelated to SMRV-02).
+- All SMRV-02 acceptance criteria verified behaviorally.
+
+Plan or evaluation context guidance:
+- Plan path: plans/seeker-missile-fixes-round5-plan.md
+- Story: SMRV-02 — seeker activation panel anchor change from getActionButtonRowBottom() to getActionPromptLineY(0).
+- Pass-1 history artifacts: artifacts/seeker-missile-fixes-round5/SMRV-02/history/pass-1/
+
+Convention-file guidance:
+- AGENTS.md: Doxygen-style docblocks required in all header files; @author and @date Last Modified must be updated when functions change.
+- AGENTS.md: Behavioral tests are mandatory for all acceptance criteria; source-contract tests may supplement but not substitute.
+- doc/test-contracts.md: Tactical test source-contract catalog — new behavioral tests for tactical GUI must be cataloged here.
+- Module boundary: include/tactical/FBattleDisplay.h is a tactical header; no wx includes should be added.
+
+Updated documentation files:
+- include/tactical/FBattleDisplay.h
+- doc/test-contracts.md
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round5/SMRV-02
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
