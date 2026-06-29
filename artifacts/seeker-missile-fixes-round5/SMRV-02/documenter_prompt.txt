@@ -1,0 +1,58 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMRV-02 (seeker-missile-fixes-round5): Repositioned the PH_SEEKER_ACTIVATION 'Activated seekers:' list anchor in FBattleDisplay::drawSeekerActivation() from getActionButtonRowBottom() to getActionPromptLineY(0), matching the drawPlaceMines/drawPlaceSeekers convention. lMargin remains 310. Click regions in m_seekerActivationRegions automatically track the new anchor because they use the same 'y' variable.
+- Pass-2 (Verifier-driven remediation): Added behavioral anchor discrimination test testSeekerActivationAnchorIsAtActionPromptLineY in tests/gui/TacticalGuiLiveTest. The test seeds an activated seeker, renders FBattleDisplay in PH_SEEKER_ACTIVATION via offscreen wxMemoryDC, asserts the new top-of-panel anchor position, and verifies click-region alignment (AC-2). Also added seekerActivationRegionCount(), seekerActivationRegion(i), and checkSeekerActivationSelectionPublic() accessors to FBattleDisplayTestPeer.
+
+Acceptance criteria validated:
+- AC-1: During PH_SEEKER_ACTIVATION, the 'Activated seekers:' list renders anchored to the top of the bottom panel (top aligned with the instruction-text top region, getActionPromptLineY(0)), not below the action-button row — VERIFIED BEHAVIORAL via testSeekerActivationAnchorIsAtActionPromptLineY.
+- AC-2: Each activation row's click region aligns with its new drawn position; clicking a row deactivates the intended seeker — VERIFIED BEHAVIORAL (click simulation reduces getActiveSeekersByMovingPlayerThisPhase().size()).
+- Source-contract (pass-1 merged): testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker asserts 'int y = getActionPromptLineY(0)' in src/tactical/FBattleDisplay.cpp.
+
+Implementation branch or worktree context:
+- Worktree branch: sf2-SMRV-02-tester-20260629
+- Compare to: sf2 (main integration branch for round5)
+- Plan: plans/seeker-missile-fixes-round5-plan.md
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleDisplay.cpp (drawSeekerActivation: anchor change from getActionButtonRowBottom() to getActionPromptLineY(0))
+- tests/gui/TacticalGuiLiveTest.cpp (new test + FBattleDisplayTestPeer accessors)
+- tests/gui/TacticalGuiLiveTest.h (new test declaration + doxygen)
+
+Test commit:
+- 5072f26
+
+Commands executed:
+- make -C tests/gui
+- DISPLAY=:0 tests/gui/GuiTests
+- make -C tests/tactical
+- tests/tactical/TacticalTests
+- make -C tests
+- tests/SSWTests
+
+Final test outcomes:
+- GuiTests: 54 run, 46 pass, 8 pre-existing source-contract failures (unrelated to SMRV-02). New test testSeekerActivationAnchorIsAtActionPromptLineY PASSED.
+- TacticalTests: 225/225 pass.
+- SSWTests: 178 run, 9 pre-existing FGameHeaderDependencyTest source-contract failures (unrelated to SMRV-02).
+- All SMRV-02 acceptance criteria verified behaviorally.
+
+Documentation context:
+- doc/test-contracts.md: Add a SMRV-02 behavioral test contract entry for testSeekerActivationAnchorIsAtActionPromptLineY documenting its discrimination logic (old getActionButtonRowBottom anchor vs new getActionPromptLineY(0) anchor).
+- include/tactical/FBattleDisplay.h: The drawSeekerActivation() docblock still references rendering 'below getActionButtonRowBottom()' — update the docblock to reflect the new getActionPromptLineY(0) anchor. The @date Last Modified line should also be updated.
+- AGENTS.md / tactical test source-contract catalog (doc/test-contracts.md): Confirm the SMRV-02 behavioral test is cataloged.
+
+Plan and diff context:
+- Plan path: plans/seeker-missile-fixes-round5-plan.md
+- Comparison base: sf2 branch (assumption: this is the standard round5 integration base)
+- Prior pass (pass-1) artifacts are in artifacts/seeker-missile-fixes-round5/SMRV-02/history/pass-1/
+
+Startup behavior:
+- If implementation branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round5/SMRV-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
