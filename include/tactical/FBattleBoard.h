@@ -160,11 +160,18 @@ void drawSeekerMissiles(wxDC &dc);
  * fallback between resolution passes. When multiple seekers share the same
  * hex, their counts are stacked vertically.
  *
+ * During PH_SEEKER_ACTIVATION, only seekers owned by the moving player
+ * (ownerID == getMovingPlayerID()) have their speed label rendered; opponent
+ * seekers are skipped (SMRV-03). This ownership guard matches the sprite
+ * suppression already applied in drawSeekerMissiles(), which sources active
+ * seekers exclusively from getActiveSeekersByMovingPlayer(). Labels for both
+ * players render normally in all other BS_Battle phases.
+ *
  * @param dc Device context used for tactical board drawing.
  *
  * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 02, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 void drawSeekerMoveCountOverlay(wxDC &dc);
 /**
