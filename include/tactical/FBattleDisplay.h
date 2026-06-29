@@ -588,13 +588,17 @@ protected:
 	/**
 	 * @brief Draw seeker activation panel content and deactivate rows.
 	 *
-	 * Renders the activation instructions, an "Activated seekers" list positioned
-	 * below `getActionButtonRowBottom()` (so it never overlaps the action-prompt
-	 * block), and one clickable deactivate row for each seeker activated during
-	 * the current phase (via `getActiveSeekersByMovingPlayerThisPhase()`).
-	 * Board clicks activate additional inactive seekers; panel row clicks deactivate
-	 * individual active seekers via `deactivateActiveSeekerByID(id)`. Each row maps
-	 * to exactly one seeker ID so deactivation is one-way and per-seeker.
+	 * Renders the activation instructions and an "Activated seekers:" list anchored
+	 * at `getActionPromptLineY(0)` (top of the lower panel, right column at
+	 * `lMargin=310`), matching the three-column layout convention used by
+	 * `drawPlaceMines()` and `drawPlaceSeekers()`. One clickable deactivate row is
+	 * rendered for each seeker activated during the current phase (via
+	 * `getActiveSeekersByMovingPlayerThisPhase()`). Board clicks activate additional
+	 * inactive seekers; panel row clicks deactivate individual active seekers via
+	 * `deactivateActiveSeekerByID(id)`. Click regions in `m_seekerActivationRegions`
+	 * are computed from the same `y` variable as the drawn rows so they
+	 * automatically track the anchor position. Each row maps to exactly one seeker
+	 * ID so deactivation is one-way and per-seeker.
 	 *
 	 * @param dc The device context to draw on.
 	 *
@@ -602,9 +606,9 @@ protected:
 	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
 	 * remain fully visible.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: Jun 19, 2026 (SMFR-01: auto-expand panel for activation list)
+	 * @date Last Modified: Jun 29, 2026 (SMRV-02: anchor list at getActionPromptLineY(0) instead of getActionButtonRowBottom())
 	 */
 	void drawSeekerActivation(wxDC &dc);
 
