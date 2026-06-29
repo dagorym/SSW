@@ -3320,6 +3320,9 @@ bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex) {
 				return true;
 			}
 		}
+		// Defensive: hex is in m_minedHexList but no matching placed-ordnance record
+		// exists. Clear the stale entry so no stale minefield can remain.
+		m_minedHexList.erase(hex);
 	}
 
 	FTacticalPlacedOrdnance removed;
@@ -3348,8 +3351,6 @@ bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex) {
 		}
 		if (getState() == BS_PlaceMines) {
 			rebuildDeployablePlacementSourcesFiltered(FWeapon::M);
-		} else if (getState() == BS_PlaceSeekers) {
-			rebuildDeployablePlacementSourcesFiltered(FWeapon::SM);
 		} else {
 			rebuildDeployablePlacementSources();
 		}
