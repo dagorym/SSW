@@ -1,15 +1,17 @@
 /**
  * @file FTacticalPreGameOrdnanceTest.cpp
- * @brief Behavioral tests for PGS-04 pre-game ordnance undeploy and mine-removal fixes.
+ * @brief Behavioral tests for PGS-04 and SMRIV-06 pre-game ordnance fixes.
  *
  * Covers:
  *   (a) Undeploy-one from stacked (hex, source) returns ammo and decrements count.
  *   (b) Mine removal with non-placing source selected still removes mine and
  *       restores ammo to the placing ship.
+ *   (c) Stale m_minedHexList entry (no matching placed-ordnance record) is erased
+ *       by placeOrdnanceAtHex() in BS_PlaceMines state (SMRIV-06 defensive erase).
  *
  * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 22, 2026
- * @date Last Modified: Jun 22, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 
 #include "FTacticalPreGameOrdnanceTest.h"
@@ -517,6 +519,127 @@ void FTacticalPreGameOrdnanceTest::testMineRemovalWithNonPlacingSourceSelectedRe
     CPPUNIT_ASSERT_EQUAL_MESSAGE(
         "Minelayer B ammo must remain unchanged — only the placing ship's ammo is restored",
         ammoBBeforePlacement, mineWeaponB->getAmmo());
+
+    delete defendFleet;
+    delete attackFleet;
+}
+
+// ---------------------------------------------------------------------------
+// Test-only subclass that exposes a protected helper to inject a stale entry
+// into m_minedHexList without a corresponding placed-ordnance record.
+// Used exclusively by testStaleMinedHexErasedWhenNoPlacedOrdnanceRecord().
+// ---------------------------------------------------------------------------
+namespace {
+
+class FTacticalGameWithStaleInject : public Frontier::FTacticalGame {
+public:
+    /**
+     * @brief Insert hex into m_minedHexList with no placed-ordnance record.
+     *
+     * Simulates the anomalous state where a hex is in the mined set but the
+     * corresponding FTacticalPlacedOrdnance record has been lost (e.g. due to
+     * a prior crash or inconsistent state).  The SMRIV-06 defensive erase in
+     * placeOrdnanceAtHex() must clear this stale entry.
+     *
+     * @author claude-sonnet-4-6 (medium)
+     * @date Created: Jun 29, 2026
+     * @date Last Modified: Jun 29, 2026
+     */
+    void injectStaleMinedHex(const Frontier::FPoint & hex) {
+        m_minedHexList.insert(hex);
+    }
+};
+
+}  // anonymous namespace
+
+void FTacticalPreGameOrdnanceTest::testStaleMinedHexErasedWhenNoPlacedOrdnanceRecord() {
+    // AC (c) — SMRIV-06 defensive erase:
+    // A hex that is in m_minedHexList but has no matching FWeapon::M record in
+    // m_placedOrdnance must be erased by placeOrdnanceAtHex() so that the next
+    // placement on that hex succeeds cleanly instead of being silently rejected by
+    // placeMineFromSelection() (which returns false when the hex is already mined).
+    using namespace Frontier;
+
+    FVehicle * minelayer = NULL;
+    FVehicle * attacker  = NULL;
+    FFleet   * defendFleet = NULL;
+    FFleet   * attackFleet = NULL;
+
+    // Use the subclass — buildSingleMinelayerGame takes FTacticalGame & so the
+    // derived object is accepted without slicing.
+    FTacticalGameWithStaleInject game;
+    bool ok = buildSingleMinelayerGame(game, minelayer, attacker, defendFleet, attackFleet);
+    CPPUNIT_ASSERT_MESSAGE("Setup must succeed", ok);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Must be in BS_PlaceMines",
+        static_cast<int>(BS_PlaceMines), game.getState());
+
+    // Identify the mine launcher for the minelayer.
+    int mineIndex = -1;
+    for (unsigned int i = 0; i < minelayer->getWeaponCount(); ++i) {
+        FWeapon * w = minelayer->getWeapon(i);
+        if (w && w->getType() == FWeapon::M) { mineIndex = static_cast<int>(i); break; }
+    }
+    CPPUNIT_ASSERT_MESSAGE("Minelayer must have an M launcher", mineIndex >= 0);
+    FWeapon * mineWeapon = minelayer->getWeapon(static_cast<unsigned int>(mineIndex));
+    CPPUNIT_ASSERT_MESSAGE("Mine weapon must not be null", mineWeapon != NULL);
+
+    // Select the minelayer as the current placement source.
+    const bool selected = game.selectPlacementSource(minelayer->getID(),
+        static_cast<unsigned int>(mineIndex));
+    CPPUNIT_ASSERT_MESSAGE("selectPlacementSource must succeed", selected);
+
+    const int ammoBeforeInject = mineWeapon->getAmmo();
+    CPPUNIT_ASSERT_MESSAGE("Mine launcher must have ammo > 0", ammoBeforeInject > 0);
+
+    // Verify placed-ordnance list starts empty.
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must be empty before inject",
+        static_cast<unsigned int>(0),
+        static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+
+    // Inject a stale entry into m_minedHexList with NO matching placed-ordnance record.
+    const FPoint staleHex(7, 7);
+    game.injectStaleMinedHex(staleHex);
+
+    // Confirm the stale state: hex is mined but no placed-ordnance record exists.
+    CPPUNIT_ASSERT_MESSAGE("Stale hex must be in getMinedHexes() after inject",
+        game.getMinedHexes().find(staleHex) != game.getMinedHexes().end());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must still be empty after inject",
+        static_cast<unsigned int>(0),
+        static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+
+    // Click the stale hex with the mine launcher selected.
+    // Without the defensive erase, placeMineFromSelection() would find the stale
+    // entry in m_minedHexList and return false (hex already mined), causing the
+    // overall call to return false and leaving the stale entry in place.
+    // With the defensive erase, the stale entry is cleared first, enabling clean
+    // re-placement which returns true and records a proper placed-ordnance entry.
+    const bool result = game.handleHexClick(staleHex);
+    CPPUNIT_ASSERT_MESSAGE(
+        "handleHexClick on stale-mined hex must return true after defensive erase enables re-placement",
+        result);
+
+    // Hex must now be in getMinedHexes() backed by a proper placed-ordnance record.
+    CPPUNIT_ASSERT_MESSAGE("Hex must be in getMinedHexes() after clean re-placement",
+        game.getMinedHexes().find(staleHex) != game.getMinedHexes().end());
+
+    // Verify at least one FWeapon::M record exists for the stale hex.
+    unsigned int mRecordsForHex = 0;
+    for (unsigned int i = 0; i < game.getPlacedOrdnance().size(); ++i) {
+        const FTacticalPlacedOrdnance & po = game.getPlacedOrdnance()[i];
+        if (po.weaponType == FWeapon::M
+            && po.hex.getX() == staleHex.getX()
+            && po.hex.getY() == staleHex.getY()) {
+            mRecordsForHex++;
+        }
+    }
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "Exactly 1 FWeapon::M placed-ordnance record must exist for re-placed hex",
+        static_cast<unsigned int>(1), mRecordsForHex);
+
+    // Ammo must have been decremented by exactly 1 (a real mine was placed).
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(
+        "Mine launcher ammo must be decremented by 1 after clean re-placement",
+        ammoBeforeInject - 1, mineWeapon->getAmmo());
 
     delete defendFleet;
     delete attackFleet;

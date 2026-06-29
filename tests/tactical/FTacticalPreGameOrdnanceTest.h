@@ -1,15 +1,17 @@
 /**
  * @file FTacticalPreGameOrdnanceTest.h
- * @brief Header file for PGS-04 pre-game ordnance behavioral tests.
+ * @brief Header file for PGS-04 and SMRIV-06 pre-game ordnance behavioral tests.
  *
  * Covers:
  *   (a) Undeploy-one from stacked (hex, source) returns ammo and decrements count.
  *   (b) Mine removal with non-placing source selected still removes mine and
  *       restores ammo to the placing ship.
+ *   (c) Stale m_minedHexList entry (no matching placed-ordnance record) is erased
+ *       when placeOrdnanceAtHex() is called for that hex in BS_PlaceMines state.
  *
  * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 22, 2026
- * @date Last Modified: Jun 22, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 
 #ifndef FTACTICALPREGAMEORDNANCETEST_H_
@@ -20,7 +22,7 @@
 namespace FrontierTests {
 
 /**
- * @brief CppUnit fixture for PGS-04 pre-game ordnance behavioral regression coverage.
+ * @brief CppUnit fixture for PGS-04 and SMRIV-06 pre-game ordnance behavioral coverage.
  *
  * Tests that:
  *  - getPlacedSeekerHexGroups() groups inactive seekers by (hex, source) and returns
@@ -30,10 +32,12 @@ namespace FrontierTests {
  *    one ammo round to the placing ship, and leaves remaining seekers in place.
  *  - During BS_PlaceMines, clicking a mined hex removes the mine and restores ammo
  *    to the placing ship regardless of which source is currently selected.
+ *  - A stale m_minedHexList entry with no matching placed-ordnance record is erased
+ *    by placeOrdnanceAtHex() in BS_PlaceMines state, enabling clean re-placement.
  *
  * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 22, 2026
- * @date Last Modified: Jun 22, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 class FTacticalPreGameOrdnanceTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalPreGameOrdnanceTest );
@@ -43,6 +47,7 @@ CPPUNIT_TEST( testRecallPlacedSeekerDecrementsCountAndRestoresAmmo );
 CPPUNIT_TEST( testRecallFromStackedSeekerLeavesRemainingSeekersInPlace );
 CPPUNIT_TEST( testRecallReturnsFalseWhenNothingToRecall );
 CPPUNIT_TEST( testMineRemovalWithNonPlacingSourceSelectedRestoresAmmoToPlacingShip );
+CPPUNIT_TEST( testStaleMinedHexErasedWhenNoPlacedOrdnanceRecord );
 CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -131,6 +136,27 @@ public:
      * @date Last Modified: Jun 22, 2026
      */
     void testMineRemovalWithNonPlacingSourceSelectedRestoresAmmoToPlacingShip();
+
+    /**
+     * @brief Stale m_minedHexList entry with no placed-ordnance record is erased by
+     *        placeOrdnanceAtHex().
+     *
+     * AC (c) — SMRIV-06 defensive erase: injects a hex directly into m_minedHexList
+     * without creating a corresponding FWeapon::M placed-ordnance record, then calls
+     * placeOrdnanceAtHex() for that hex in BS_PlaceMines state.  Asserts:
+     *  - the call returns true (stale erase enabled clean placement),
+     *  - the hex is in getMinedHexes() with a valid placed-ordnance record,
+     *  - mine launcher ammo was decremented (a new mine was placed, not stuck).
+     *
+     * Without the defensive erase, placeMineFromSelection() would find the stale
+     * entry in m_minedHexList and return false (hex already mined), causing the
+     * click to silently fail and leaving the stale entry in place.
+     *
+     * @author claude-sonnet-4-6 (medium)
+     * @date Created: Jun 29, 2026
+     * @date Last Modified: Jun 29, 2026
+     */
+    void testStaleMinedHexErasedWhenNoPlacedOrdnanceRecord();
 };
 
 }
