@@ -1,5 +1,8 @@
 # AGENTS.md
 
+This repository is the implementation of a strategic and tactical starship combat
+board game.
+
 ## Required Startup Action
 
 **This is a HARD PRECONDITION. Do it before reading any other file, writing

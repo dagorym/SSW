@@ -18,7 +18,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created: Mar 22, 2026
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jun 23, 2026
  */
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
@@ -65,6 +65,7 @@ CPPUNIT_TEST( testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton );
 CPPUNIT_TEST( testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum );
 CPPUNIT_TEST( testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum );
 CPPUNIT_TEST( testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum );
+CPPUNIT_TEST( testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -441,12 +442,15 @@ void testTwoPhaseSeekerDeploymentDrawAndClickDispatching();
  * @brief Verifies that drawPlaceSeekers() uses the seeker-specific prompt text,
  * "Select a source row to place seeker missiles." selection line, SM-only filter,
  * completeSeekerPlacement() route, and the standard show/hide/disconnect button pattern.
+ * SMRIV-02: asserts getActionPromptLineY(0) y-start (three-column layout) and
+ * asserts absence of getActionButtonRowBottom() in the source list y-init.
  *
  * AC: SMF-02 -- seeker phase content and filter correctness.
+ * AC: SMRIV-02 -- source-list y-start updated to three-column anchor.
  *
  * @author claude-sonnet-4-6 (medium)
  * @date Created: Jun 02, 2026
- * @date Last Modified: Jun 02, 2026
+ * @date Last Modified: Jun 23, 2026
  */
 void testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter();
 
@@ -517,6 +521,24 @@ void testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum();
  * @date Last Modified: Jun 19, 2026
  */
 void testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum();
+
+/**
+ * @brief Source-contract: drawPlaceSeekers() uses a three-column layout mirroring
+ * drawPlaceMines() — left column wraps instruction text via drawWrappedActionPrompt(),
+ * middle column (lMargin=310) anchors source rows at getActionPromptLineY(0), and
+ * right column (recallMargin=620) anchors the recall list at getActionPromptLineY(0).
+ * Both column click regions (wxRect(lMargin,y,...) and wxRect(recallMargin,cy,...))
+ * align with their drawn positions.
+ *
+ * AC: SMRIV-02 -- drawPlaceSeekers() three-column layout structure.
+ * This test verifies code structure only; the authoritative behavioral coverage is
+ * testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions in TacticalGuiLiveTest.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 23, 2026
+ * @date Last Modified: Jun 23, 2026
+ */
+void testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern();
 };
 
 }
