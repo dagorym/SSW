@@ -2544,6 +2544,28 @@ bool FTacticalGame::handleMoveHexSelection(const FPoint & hex) {
 	return true;
 }
 
+/**
+ * @brief Recompute whether the current moving player's move phase can end.
+ *
+ * Iterates every ship owned by the moving player.  For each ship whose
+ * hexes-moved count is still below (speed - ADF), determines the ship's
+ * current board position (from its in-progress path if one has been started,
+ * or from the hex-map via findShipHex otherwise) and checks whether the
+ * ship has at least one valid forward hex to move into.  If any such ship
+ * can still move, the move phase is marked incomplete; otherwise it is
+ * marked complete.
+ *
+ * Using findShipHex as the fallback (rather than m_shipPos) ensures correct
+ * results at move-phase entry before any ship has been selected, because
+ * m_shipPos only reflects the last selected ship and is stale for all other
+ * ships — and for the defending player's first entry it may hold the
+ * previous attacker's hex or the (-1,-1) sentinel, which causes the
+ * out-of-bounds check to spuriously allow move completion.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 30, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
 void FTacticalGame::checkMoveStatus() {
 	VehicleList ships = getShipList(getMovingPlayerID());
 	bool finished = true;
@@ -2554,7 +2576,13 @@ void FTacticalGame::checkMoveStatus() {
 		}
 		const int minMove = (*itr)->getSpeed() - (*itr)->getADF();
 		if (turnData->nMoved < minMove) {
-			FPoint pos = (turnData->path.getPathLength() > 1) ? turnData->path.endPoint() : m_shipPos;
+			FPoint pos;
+			if (turnData->path.getPathLength() > 0) {
+				pos = turnData->path.endPoint();
+			} else if (!findShipHex((*itr)->getID(), pos)) {
+				// Ship not yet placed on the board (setup phase) — skip.
+				continue;
+			}
 			FPoint next = FHexMap::findNextHex(pos, turnData->curHeading);
 			if (next.getX() >= 0 && next.getX() < 55 && next.getY() >= 0 && next.getY() < 39 && next != m_planetPos) {
 				finished = false;

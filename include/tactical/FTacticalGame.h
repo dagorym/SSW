@@ -955,6 +955,7 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	int forceTurn(FVehicle * ship, int curHeading, FPoint current);
 	void checkForPlanetCollision(FPoint & currentHex, int & currentHeading);
 	int getPlanetTurnDirection(FPoint currentHex, int currentHeading) const;
+	/// Recompute m_moveComplete for the current moving player at phase entry or after each hex-click.
 	void checkMoveStatus();
 	void checkForMines(FVehicle * ship);
 	void applyMineDamage();
