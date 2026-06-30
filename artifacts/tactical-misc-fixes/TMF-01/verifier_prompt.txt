@@ -1,0 +1,55 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- TMF-01: Single-sourced the three PH_SEEKER_ACTIVATION instruction strings in drawSeekerActivation() by extracting them into static const wxString constants (SEEKER_ACTIVATION_PHASE_INSTRUCTION, SEEKER_ACTIVATION_CLICK_INSTRUCTION, SEEKER_ACTIVATION_DEACTIVATE_INSTRUCTION) in FBattleDisplay, mirroring the SEEKER_DEPLOY_INSTRUCTION pattern. All six use sites (3 GetTextExtent + 3 DrawText) replaced with the constants. Tests updated: source-contract assertions now check constant-based DrawText forms; constant definitions verified with correct string values; inline literal duplicates confirmed absent; AC-b in GUI live test strengthened to check region.GetX() >= leftOffset + doneButtonRightExtent + 2*BORDER. Documentation updated: doc/test-contracts.md SMRV-02 (round5) and SMRVI-02 (round6) entries updated to reflect TMF-01 test changes.
+
+Acceptance criteria to verify:
+- AC-1: Each instruction string is defined exactly once as a shared constant and used by both the measurement and drawing paths in drawSeekerActivation(). PASS (from tester).
+- AC-2: No duplicated inline copy of any of the three literals remains in production code. PASS (from tester).
+- AC-3: The seeker-activation panel renders identically (wording, layout, dynamic margin unchanged). PASS (from tester).
+
+Implementation branch / worktree context:
+- Implementer branch: tmf-TMF-01-implementer-20260630 (commit ceb75e8)
+- Tester branch: tmf-TMF-01-tester-20260630 (commit 91cb5ec)
+- Documenter branch: tmf-TMF-01-documenter-20260630 (documentation commit 3a47cd9)
+
+All files modified by Implementer, Tester, and Documenter:
+- include/tactical/FBattleDisplay.h (added SEEKER_ACTIVATION_*_INSTRUCTION static const declarations; updated Doxygen Last Modified date)
+- src/tactical/FBattleDisplay.cpp (defined three constants; replaced six inline use sites in drawSeekerActivation(); updated Doxygen)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (updated source-contract assertions to constant-based DrawText forms, constant definition checks, and assertNotContains for inline literals)
+- tests/gui/TacticalGuiLiveTest.cpp (added seekerActivationDoneButtonRightExtentPublic() peer method; strengthened AC-b assertion)
+- doc/test-contracts.md (updated SMRV-02 round5 and SMRVI-02 round6 entries to reflect TMF-01 test changes)
+
+Commands executed (by Tester):
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+- make -C tests gui-tests
+- make -C tests
+- tests/SSWTests
+
+Final test outcomes:
+- TacticalTests: 226/226 PASS
+- SSWTests: 169/178 pass; 9 pre-existing FGameHeaderDependencyTest failures unrelated to TMF-01
+- GuiTests: build clean; xvfb-run unavailable so runtime execution was blocked (environment limitation, not a code defect)
+
+Plan context:
+- Plan path: plans/tactical-misc-fixes-plan.md (section TMF-01)
+- Comparison base: master branch
+
+Convention and guidance files:
+- AGENTS.md: repository-wide contributor guidelines and documentation requirements (Doxygen headers mandatory on all header files; Last Modified and @author fields must be updated on changed functions/classes)
+- doc/test-contracts.md: per-test source-contract catalog for tactical tests
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes/TMF-01
+
+Startup behavior:
+- If the documenter branch, changed files, and test outcomes are present, begin verification immediately in the same run.
+- Inspect the full diff between master and the documenter branch (tmf-TMF-01-documenter-20260630).
+- Verify that doc/test-contracts.md accurately describes the TMF-01 test changes.
+- Verify that in-code documentation in FBattleDisplay.h and FBattleDisplay.cpp is consistent with the implementation.
+- Verify AC-1, AC-2, and AC-3 are satisfied by the diff.
+- Infer missing plan-path, convention-file, or artifact-path details from repository context when repository evidence is sufficient.
+- Do not stop after activation, scope confirmation, or convention discovery when blocking inputs are present.
+
+Do not report success unless all required artifacts exist and all changes are committed.
