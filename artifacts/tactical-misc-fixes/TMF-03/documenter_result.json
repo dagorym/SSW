@@ -1,0 +1,16 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-03/documenter_report.md",
+    "artifacts/tactical-misc-fixes/TMF-03/documenter_result.json",
+    "artifacts/tactical-misc-fixes/TMF-03/verifier_prompt.txt"
+  ],
+  "branch_name": "tmf-TMF-03-documenter-20260630",
+  "documentation_commit_hash": "ef47f27dd63fab9b0467795bab6e2fdfcff1a08f",
+  "documentation_files_changed": [
+    "doc/test-contracts.md \u2014 TMF-03 test-design rationale updated: discloses that posting wxEVT_CLOSE_WINDOW from inside ShowModal was attempted and confirmed infeasible (harness artifact), explains the harness vs production distinction, describes the adopted adapted approach, and adds an explicit 'what is NOT exercised in-harness' note matching the pass-2 test docstring",
+    "AGENTS.md \u2014 GUI-tests close-vector bullet updated: adds harness-artifact clarification and adopted dismiss-API + source-contract supplement description to the existing WXTacticalUI/closeBattleScreen close-vector note"
+  ],
+  "pass_label": "pass-2",
+  "status": "success",
+  "task_id": "TMF-03"
+}

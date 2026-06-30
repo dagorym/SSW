@@ -1,0 +1,73 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- PASS-2 REMEDIATION DOCUMENTER for TMF-03: reconcile the existing test-contracts TMF-03 entry and AGENTS.md close-vector note to honestly reflect the pass-2 outcome. AC3 is covered by an ADAPTED behavioral path (hasPendingDialog/dismissActiveDialog driven directly while ShowModal is live) plus a source-contract supplement locking dismissActiveDialog() before Hide()/EndModal in closeBattleScreen; the ideal full-production reproduction (posting wxEVT_CLOSE_WINDOW while ShowModal is live) was attempted in pass-2 and confirmed infeasible in the non-modal test harness (Destroy()-during-ShowModal heap corruption is a harness artifact absent in production's modal FBattleScreen path).
+
+Acceptance criteria to verify:
+- AC1 — WXTacticalUI hasPendingDialog() returns true while a child ShowModal is live, false otherwise; dismissActiveDialog() calls EndModal(wxID_CANCEL) to clear IsModal() — PASSED (behavioral: hasPendingDialog asserted true inside action lambda, false after dismissActiveDialog())
+- AC2 — FBattleScreen becomes hidden/absent after wxEVT_CLOSE_WINDOW following dismissal of active child dialog — PASSED (waitForTopLevelWindowClosed confirms hidden after post-ShowModal close event)
+- AC3 — No SIGABRT or duplicate EndModal assert when X-closing FBattleScreen while a WXTacticalUI child modal is active — ADAPTED PASS: behavioral path drives dismiss-API directly while ShowModal is live; wxEVT_CLOSE_WINDOW posted after ShowModal exits (not while ShowModal is live) due to harness limitation (Destroy()-during-ShowModal heap corruption in non-modal test setup, absent in production); source-contract supplement locks dismissActiveDialog() in closeBattleScreen; pass-1 verifier recorded a WARNING about this adaptation — this pass-2 reconciles the documentation to honestly disclose what is and is not exercised
+- AC4 — FBattleScreen lifecycle counters: constructedCount >= baseline+1, destroyedCount >= baseline+1, liveInstanceCount == 0 after settle — PASSED
+- Documentation: doc/test-contracts.md TMF-03 entry and AGENTS.md close-vector note accurately reflect the adapted behavioral coverage, harness-vs-production distinction, and source-contract supplement — UPDATED in this pass
+
+Implementation branch or worktree context:
+- Branch: tmf-TMF-03-documenter-20260630
+- Worktree: /home/tstephen/repos/worktrees/tmf-TMF-03-documenter-20260630
+- Comparison base: master
+- Implementer commit: 233c1ad (include/gui/WXTacticalUI.h, src/gui/WXTacticalUI.cpp, include/tactical/FBattleScreen.h, src/tactical/FBattleScreen.cpp)
+- Tester commit: 29e69dc (tests/gui/TacticalGuiLiveTest.h, tests/gui/TacticalGuiLiveTest.cpp) — pass-1
+- Pass-2 tester commit: 3724f87 (tests/gui/TacticalGuiLiveTest.cpp — strengthened AC3 docstring and harness-limitation disclosure)
+- Pass-1 documenter commit: fada222 (AGENTS.md, doc/test-contracts.md — initial TMF-03 entry)
+- Pass-1 verifier: PASS with WARNING (AC3 behavioral coverage is adapted, not a direct reproduction of production scenario)
+- Pass-2 documenter commit: ef47f27 (AGENTS.md, doc/test-contracts.md — reconciled AC3 disclosure)
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/gui/WXTacticalUI.h — hasPendingDialog(), dismissActiveDialog(), m_activeDialog (wxDialog* initialized to NULL)
+- src/gui/WXTacticalUI.cpp — implementations of hasPendingDialog/dismissActiveDialog; m_activeDialog set/cleared around ShowModal in showMessage, showDamageSummary, runICMSelection
+- include/tactical/FBattleScreen.h — documented dismissActiveDialog() call in closeBattleScreen
+- src/tactical/FBattleScreen.cpp — closeBattleScreen calls m_tacticalUI->dismissActiveDialog() before Hide()/Show(false)
+- tests/gui/TacticalGuiLiveTest.h — testBattleScreenXCloseDismissesActiveChildDialog declaration
+- tests/gui/TacticalGuiLiveTest.cpp — testBattleScreenXCloseDismissesActiveChildDialog behavioral test with AccessibleBattleScreen subclass and waitForBattleScreenLifecycleSettle helper; pass-2 strengthened docstring disclosing harness limitation
+- doc/test-contracts.md — TMF-03 entry test-design rationale reconciled for pass-2
+- AGENTS.md — GUI-tests close-vector bullet updated with harness-artifact clarification
+
+Commands executed:
+- git diff --stat (inspected changes on branch)
+- grep to locate TMF-03 entry in doc/test-contracts.md and AGENTS.md
+- Read tests/gui/TacticalGuiLiveTest.cpp lines 3740-3918 (pass-2 test docstring and implementation)
+- Read artifacts/tactical-misc-fixes/TMF-03/history/pass-1/verifier_report.md (verifier WARNING basis)
+- Edit doc/test-contracts.md (targeted rationale update)
+- Edit AGENTS.md (targeted close-vector note update)
+- git add AGENTS.md doc/test-contracts.md
+- git commit (documentation commit ef47f27)
+
+Final test outcomes:
+- No test changes made; documentation-only edits
+- Pass-2 tester report (artifacts/tactical-misc-fixes/TMF-03/tester_report.md) recorded passing tests with the adapted AC3 coverage
+- Pass-1 verifier PASS with one WARNING about AC3 fidelity; pass-2 remediation addresses that WARNING
+
+Plan or evaluation context guidance:
+- plans/tactical-misc-fixes-plan.md — TMF-03 section describes fix for FBattleScreen title-bar X close while a WXTacticalUI child modal dialog is active
+- This is a pass-2 documentation remediation run; the pass-1 verifier issued a WARNING about AC3 fidelity (adapted, not a direct production reproduction); the pass-2 task is to ensure the documentation honestly reflects the adapted path
+- doc/rules/tactical_operations_manual.md MUST NOT change (non-volatile external artifact)
+
+Convention-file guidance:
+- AGENTS.md: doc/test-contracts.md is the canonical location for detailed per-test source-contract catalog; consult only when adding/modifying specific tactical tests
+- AGENTS.md: non-negotiable constraint — doc/rules/tactical_operations_manual.md must not be edited
+- AGENTS.md: behavioral tests are mandatory; source-contract tests may supplement but not substitute
+- AGENTS.md: doxygen-style comments required on all header functions (existing headers reviewed — no in-code doc gaps introduced by this fix)
+
+Updated documentation files:
+- doc/test-contracts.md — TMF-03 test-design rationale updated: discloses that posting wxEVT_CLOSE_WINDOW from inside ShowModal was attempted and confirmed infeasible (harness artifact), explains the harness vs production distinction, describes the adopted adapted approach, and adds an explicit 'what is NOT exercised in-harness' note matching the pass-2 test docstring
+- AGENTS.md — GUI-tests close-vector bullet updated: adds harness-artifact clarification and adopted dismiss-API + source-contract supplement description to the existing WXTacticalUI/closeBattleScreen close-vector note
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes/TMF-03
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
