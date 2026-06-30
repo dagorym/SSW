@@ -12,7 +12,7 @@
   "pass_label": null,
   "status": "success",
   "task_id": null,
-  "test_commit_hash": null,
+  "test_commit_hash": "d347195",
   "test_files_changed": [
     "tests/gui/TacticalGuiLiveTest.cpp",
     "tests/gui/TacticalGuiLiveTest.h"
