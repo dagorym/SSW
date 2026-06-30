@@ -1,0 +1,73 @@
+Your role is 'tester'. Your task is as follows:
+
+## Task Summary
+
+Validate the TMF-04 fix: the Movement Done gating bug in `FTacticalGame::checkMoveStatus()`. The bug allowed the defending player to click "Movement Done" at move-phase entry without any ships having moved, even when ships had `speed > ADF` and were required to move a minimum of `speed - ADF` hexes.
+
+## Modified Files
+
+- `include/tactical/FTacticalGame.h`
+- `src/tactical/FTacticalGame.cpp`
+
+## Acceptance Criteria (from Planner)
+
+1. At move-phase entry, before any hex-click, a ship with current `speed > ADF` keeps `isMoveComplete() == false` for BOTH players (attacker and defender).
+2. A defending ship with speed 10 / ADF 1 cannot complete its move phase until it has moved at least 9 hexes; the button is not clickable beforehand and its speed is not silently zeroed by an empty move.
+3. "Movement Done" enables once every must-move ship has satisfied its minimum move; ships that may legitimately stop (speed <= ADF) do not block completion.
+4. No regression to the attacker's existing correct gating.
+
+## Test File Location
+
+Add the new behavioral test to:
+- `tests/tactical/FTacticalGameMechanicsTest.h`
+- `tests/tactical/FTacticalGameMechanicsTest.cpp`
+
+The test must be a behavioral test (construct real objects, place ships on the board, enter move phase, assert `isMoveComplete() == false` at phase entry before any hex-click).
+
+## Key Test Scenario
+
+**Defender speed 10 / ADF 1 phase-entry gating test:**
+1. Create a `FTacticalGame` with a mock `ITacticalUI`.
+2. Add a UPF Minelayer (speed 10, ADF 1) as the defending ship and any attacker ship as the attacking ship.
+3. Call `setupFleets()`, place both ships on the board at valid hex positions.
+4. Begin the battle: complete placement phases until `PH_MOVE` starts for the attacker.
+5. Satisfy the attacker's move requirement (move the attacker's ship the minimum distance or confirm attacker has speed <= ADF).
+6. Complete the attacker's move phase and fire phases until the defender's move phase begins.
+7. Assert `game.isMoveComplete() == false` at the start of the defender's move phase — before any hex-click.
+8. Assert that after moving the defender ship the minimum 9 hexes, `isMoveComplete()` becomes `true`.
+
+## Implementation Context
+
+**Root cause:** `checkMoveStatus()` used `m_shipPos` as the position fallback when a ship's movement path had not yet been started (`path.getPathLength() == 0`). `m_shipPos` tracks only the last selected ship and is stale or `(-1,-1)` at the start of any player's move phase — especially the defending player, who inherits the attacker's previous `m_shipPos`. `findNextHex((-1,-1), heading)` produces a negative-coordinate hex; the bounds check `(x>=0 && x<55 && y>=0 && y<39)` fails; `finished` is never set `false`; `setMoveComplete(true)` fires immediately — enabling Movement Done before any ship has moved.
+
+**Fix:** In `src/tactical/FTacticalGame.cpp::checkMoveStatus()`, the `m_shipPos` fallback was replaced with `findShipHex()` to look up each ship's actual board position. When `path.getPathLength() > 0`, `path.endPoint()` is used (as before for in-progress paths). When path is empty (phase entry), `findShipHex()` is called; if it returns false (ship not placed — setup phase), that ship is skipped.
+
+**Key entry points:**
+- `FTacticalGame::checkMoveStatus()` in `src/tactical/FTacticalGame.cpp`
+- `FTacticalGame::isMoveComplete()` — returns `m_moveComplete`
+- `FTacticalGame::resetMovementState()` — called at phase entry, calls `checkMoveStatus()`
+- `FTacticalGame::beginMovePhase()` — calls `toggleActivePlayer()` then `resetMovementState()`
+- `FTacticalGame::completeOffensiveFirePhase()` — calls `toggleMovingPlayer()` then `setPhase(PH_MOVE)`
+
+## Validation Commands
+
+```
+make -C tests tactical-tests
+tests/tactical/TacticalTests
+```
+
+## Existing Validations Expected to Fail
+
+None — this fix has no expected regression.
+
+## Shared Artifact Directory
+
+`artifacts/tactical-misc-fixes/TMF-04`
+
+## Startup Behavior
+
+If acceptance criteria and implementation context are present, begin testing work immediately in the same run. Infer missing details from repository conventions when repository evidence is sufficient, labeling those choices as assumptions rather than treating them as blockers.
+
+## Completion Gate
+
+Do not report success unless all required artifacts exist and all changes are committed.
