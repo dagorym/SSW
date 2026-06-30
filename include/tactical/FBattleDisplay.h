@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 30, 2026 (SMRVI-02 round6: drawSeekerActivation uses (X,Y) position and dynamic lMargin)
+ * @date Last Modified: Jun 30, 2026 (TMF-01: add SEEKER_ACTIVATION_*_INSTRUCTION constants to single-source drawSeekerActivation strings)
  *
  */
 
@@ -163,6 +163,13 @@ protected:
 	/// used in both drawAttackFire() (draw) and draw() (pendingLMargin text-extent measurement)
 	/// so the two sites can never diverge.
 	static const wxString SEEKER_DEPLOY_INSTRUCTION;
+
+	/// Seeker-activation panel instruction strings; each is used in both the
+	/// GetTextExtent measurement and the DrawText call in drawSeekerActivation()
+	/// so the two sites can never diverge (TMF-01).
+	static const wxString SEEKER_ACTIVATION_PHASE_INSTRUCTION;
+	static const wxString SEEKER_ACTIVATION_CLICK_INSTRUCTION;
+	static const wxString SEEKER_ACTIVATION_DEACTIVATE_INSTRUCTION;
 
 	/// lower-panel layout modes for tactical prompts and ship stats
 	enum LowerPanelLayoutMode {
@@ -613,7 +620,7 @@ protected:
 	 *
 	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: Jun 29, 2026 (SMRV-02: anchor list at getActionPromptLineY(0) instead of getActionButtonRowBottom())
+	 * @date Last Modified: Jun 30, 2026 (TMF-01: use SEEKER_ACTIVATION_*_INSTRUCTION constants instead of inline literals)
 	 */
 	void drawSeekerActivation(wxDC &dc);
 

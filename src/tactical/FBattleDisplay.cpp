@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 30, 2026 (SMRVI-02 round6: drawSeekerActivation uses (X,Y) position and dynamic lMargin)
+ * @date Last Modified:  Jun 30, 2026 (TMF-01: single-source SEEKER_ACTIVATION_*_INSTRUCTION constants in drawSeekerActivation)
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -59,6 +59,9 @@ const int leftOffset=2*BORDER+ZOOM_SIZE;
 namespace Frontier {
 
 const wxString FBattleDisplay::SEEKER_DEPLOY_INSTRUCTION("Select legal path hexes to deploy seeker missiles.");
+const wxString FBattleDisplay::SEEKER_ACTIVATION_PHASE_INSTRUCTION("Seeker activation phase.");
+const wxString FBattleDisplay::SEEKER_ACTIVATION_CLICK_INSTRUCTION("Click a seeker stack on the board to activate one seeker.");
+const wxString FBattleDisplay::SEEKER_ACTIVATION_DEACTIVATE_INSTRUCTION("Click a row below to deactivate an activated seeker.");
 
 namespace {
 
@@ -1715,9 +1718,9 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 	// SMRV-01 (round5) attack-phase approach in draw().
 	// Each GetTextExtent string must match its corresponding DrawText call below.
 	const int instrW = std::max({
-		dc.GetTextExtent("Seeker activation phase.").GetWidth(),
-		dc.GetTextExtent("Click a seeker stack on the board to activate one seeker.").GetWidth(),
-		dc.GetTextExtent("Click a row below to deactivate an activated seeker.").GetWidth()
+		dc.GetTextExtent(SEEKER_ACTIVATION_PHASE_INSTRUCTION).GetWidth(),
+		dc.GetTextExtent(SEEKER_ACTIVATION_CLICK_INSTRUCTION).GetWidth(),
+		dc.GetTextExtent(SEEKER_ACTIVATION_DEACTIVATE_INSTRUCTION).GetWidth()
 	});
 	const int btnBestW = m_buttonSeekerActivationDone->GetBestSize().GetWidth();
 	const wxPoint btnPos = m_buttonSeekerActivationDone->GetPosition();
@@ -1729,9 +1732,9 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 	const int doneButtonRightExtent = btnAbsRight - leftOffset;
 	const int lMargin = leftOffset + std::max(instrW, doneButtonRightExtent) + 2*BORDER;
 
-	dc.DrawText("Seeker activation phase.",leftOffset,getActionPromptLineY(0));
-	dc.DrawText("Click a seeker stack on the board to activate one seeker.",leftOffset,getActionPromptLineY(1));
-	dc.DrawText("Click a row below to deactivate an activated seeker.",leftOffset,getActionPromptLineY(2));
+	dc.DrawText(SEEKER_ACTIVATION_PHASE_INSTRUCTION,leftOffset,getActionPromptLineY(0));
+	dc.DrawText(SEEKER_ACTIVATION_CLICK_INSTRUCTION,leftOffset,getActionPromptLineY(1));
+	dc.DrawText(SEEKER_ACTIVATION_DEACTIVATE_INSTRUCTION,leftOffset,getActionPromptLineY(2));
 
 	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD));
 	dc.SetTextForeground(white);
