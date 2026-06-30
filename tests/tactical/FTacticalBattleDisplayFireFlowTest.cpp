@@ -726,9 +726,21 @@ void FTacticalBattleDisplayFireFlowTest::testSeekerActivationPanelListsInstructi
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string body = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
 
-assertContains(body, "dc.DrawText(\"Seeker activation phase.\",leftOffset,getActionPromptLineY(0));");
-assertContains(body, "dc.DrawText(\"Click a seeker stack on the board to activate one seeker.\",leftOffset,getActionPromptLineY(1));");
-assertContains(body, "dc.DrawText(\"Click a row below to deactivate an activated seeker.\",leftOffset,getActionPromptLineY(2));");
+// TMF-01: Each instruction string was extracted to a named constant; DrawText calls
+// must use the constant, and each constant must carry the correct string value.
+// Source-contract: constant names in DrawText calls (not inline literals).
+assertContains(body, "dc.DrawText(SEEKER_ACTIVATION_PHASE_INSTRUCTION,leftOffset,getActionPromptLineY(0));");
+assertContains(body, "dc.DrawText(SEEKER_ACTIVATION_CLICK_INSTRUCTION,leftOffset,getActionPromptLineY(1));");
+assertContains(body, "dc.DrawText(SEEKER_ACTIVATION_DEACTIVATE_INSTRUCTION,leftOffset,getActionPromptLineY(2));");
+// Behavioral coverage (AC-1, AC-2): each constant is defined exactly once with the
+// correct value so measurement and drawing paths cannot diverge.
+assertContains(source, "const wxString FBattleDisplay::SEEKER_ACTIVATION_PHASE_INSTRUCTION(\"Seeker activation phase.\");");
+assertContains(source, "const wxString FBattleDisplay::SEEKER_ACTIVATION_CLICK_INSTRUCTION(\"Click a seeker stack on the board to activate one seeker.\");");
+assertContains(source, "const wxString FBattleDisplay::SEEKER_ACTIVATION_DEACTIVATE_INSTRUCTION(\"Click a row below to deactivate an activated seeker.\");");
+// AC-2: No duplicated inline copy of any of the three literals remains in production code.
+assertNotContains(body, "\"Seeker activation phase.\"");
+assertNotContains(body, "\"Click a seeker stack on the board to activate one seeker.\"");
+assertNotContains(body, "\"Click a row below to deactivate an activated seeker.\"");
 // SMRV-02: "Activated seekers" block now anchors at the top of the lower panel
 // (getActionPromptLineY(0)), matching drawPlaceMines/drawPlaceSeekers convention.
 assertContains(body, "int y = getActionPromptLineY(0);");

@@ -202,6 +202,18 @@ wxRect seekerActivationRegion(size_t i) const {
 void checkSeekerActivationSelectionPublic(wxMouseEvent & event) {
 	checkSeekerActivationSelection(event);
 }
+
+/// returns doneButtonRightExtent as computed by drawSeekerActivation() (TMF-01 AC-b verification).
+/// Mirrors the production formula: btnAbsRight - leftOffset, where leftOffset = 2*BORDER+ZOOM_SIZE = 40.
+int seekerActivationDoneButtonRightExtentPublic() const {
+	static const int kLeftOffset = 40; // 2*BORDER + ZOOM_SIZE per FBattleDisplay.cpp
+	const int btnBestW = m_buttonSeekerActivationDone->GetBestSize().GetWidth();
+	const wxPoint btnPos = m_buttonSeekerActivationDone->GetPosition();
+	const int btnAbsRight = (btnPos.x >= kLeftOffset)
+		? btnPos.x + m_buttonSeekerActivationDone->GetSize().GetWidth()
+		: kLeftOffset + btnBestW;
+	return btnAbsRight - kLeftOffset;
+}
 };
 
 wxTextCtrl * findFirstTextCtrl(wxWindow * root) {
@@ -3639,16 +3651,21 @@ void TacticalGuiLiveTest::testSeekerActivationRowTextShowsPositionAndMarginIsDyn
 		"instead of board position (X,Y).",
 		firstRegion.GetWidth() != expectedOldRegionWidth);
 
-	// AC-b: The activation row region's left x-coordinate equals lMargin.  Old code used
-	// a fixed lMargin=310.  New code computes lMargin dynamically; in practice the widest
-	// instruction line extent causes lMargin > 310.  This assertion FAILS against old code
-	// (region.GetX() == 310 exactly) and PASSES against the new dynamic computation.
+	// AC-b: The activation row region's left x-coordinate equals lMargin.
+	// Strengthened (TMF-01): lMargin = leftOffset + max(instrW, doneButtonRightExtent) + 2*BORDER.
+	// region.GetX() must be >= leftOffset + doneButtonRightExtent + 2*BORDER (minimum case when
+	// instrW <= doneButtonRightExtent). Old code used a fixed lMargin=310 which may be less than
+	// this formula; new code computes lMargin dynamically and always satisfies this lower bound.
+	const int kBorderSize = 5; // BORDER per FBattleDisplay.cpp
+	const int kLeftOffset = 40; // 2*BORDER + ZOOM_SIZE per FBattleDisplay.cpp
+	const int doneButtonRightExtent = peer->seekerActivationDoneButtonRightExtentPublic();
 	CPPUNIT_ASSERT_MESSAGE(
-		"SMRVI-02 AC-b: Activation row region left edge (lMargin) must be strictly greater "
-		"than 310. Old code used a fixed lMargin=310, so region.GetX() would equal 310 and "
-		"this assertion would FAIL. New code computes lMargin dynamically from instruction "
-		"text extents and Done-button right edge, producing a margin > 310.",
-		firstRegion.GetX() > 310);
+		"SMRVI-02 AC-b (strengthened TMF-01): Activation row region left edge (lMargin) must be "
+		">= leftOffset + doneButtonRightExtent + 2*BORDER. "
+		"lMargin = leftOffset + max(instrW, doneButtonRightExtent) + 2*BORDER, so the region left "
+		"edge must always clear the Done button's right edge by at least 2*BORDER. "
+		"Old code used a fixed lMargin=310 which may not satisfy this bound; new dynamic code does.",
+		firstRegion.GetX() >= kLeftOffset + doneButtonRightExtent + 2*kBorderSize);
 
 	// AC-c: Clicking inside the activation row region must deactivate the seeker.
 	// getActiveSeekersByMovingPlayerThisPhase().size() must decrease after the click.
