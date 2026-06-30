@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-03/verifier_report.md",
+    "artifacts/tactical-misc-fixes/TMF-03/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "tmf-TMF-03-verifier-20260630",
+  "documentation_accuracy_summary": [
+    "doc/test-contracts.md TMF-03 entry is comprehensive and accurate: describes the API, the closeBattleScreen integration, the behavioral test approach, the source-contract supplement, and the test-design rationale including an explicit 'what is NOT exercised in-harness' note. No overclaiming. AGENTS.md close-vector bullet accurately describes the new dismiss API, the harness artifact limitation, and the source-contract supplement. AGENTS.md tactical-tests bullet updated to include TMF-* in the source-contract catalog reference. doc/rules/tactical_operations_manual.md is confirmed unchanged (empty diff). Documentation accurately reflects the delivered behavior and its test coverage boundaries."
+  ],
+  "note_finding_count": 0,
+  "pass_label": null,
+  "status": "complete",
+  "task_id": "TMF-03",
+  "test_sufficiency_summary": [
+    "AC1 is fully covered behaviorally: hasPendingDialog() asserted true inside ShowModal, dismissActiveDialog() called, hasPendingDialog() asserted false after dismissal \u2014 all while ShowModal is live via the action lambda. AC2 is covered behaviorally: wxEVT_CLOSE_WINDOW posted after ShowModal exits, waitForTopLevelWindowClosed confirms screen hidden/absent. AC3 is covered by the adapted behavioral path (reaching post-close assertions proves no process-aborting assert fired) plus a source-contract supplement that catches removal of dismissActiveDialog from closeBattleScreen; the ideal production-sequence reproduction was attempted in pass-2 and confirmed infeasible in the non-modal harness (Destroy()-during-ShowModal heap corruption specific to test setup). AC4 lifecycle counters are verified behaviorally. The source-contract supplement does not verify ordering of dismissActiveDialog before Hide(), which is a residual limitation disclosed by the pass-2 documentation. Overall test coverage is adequate given the confirmed harness constraint; behavioral intent is verified for the APIs that compose the fix."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 1
+}
