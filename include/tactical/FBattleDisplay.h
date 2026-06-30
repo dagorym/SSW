@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 30, 2026 (SMRVI-01 round6: add SEEKER_DEPLOY_INSTRUCTION constant)
+ * @date Last Modified: Jun 30, 2026 (SMRVI-02 round6: drawSeekerActivation uses (X,Y) position and dynamic lMargin)
  *
  */
 

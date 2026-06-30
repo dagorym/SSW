@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 30, 2026 (SMRVI-01 round6: extract SEEKER_DEPLOY_INSTRUCTION constant)
+ * @date Last Modified:  Jun 30, 2026 (SMRVI-02 round6: drawSeekerActivation uses (X,Y) position and dynamic lMargin)
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -35,6 +35,11 @@
  * convention.  The previous anchor was getActionButtonRowBottom() (SMF-05).  Click
  * regions in m_seekerActivationRegions automatically track the new anchor because
  * they use the same y variable.
+ * SMRVI-02 (round6): drawSeekerActivation() per-row text now shows the seeker's
+ * board position as "(X,Y)" instead of "(heading H, allowance A)".  The fixed
+ * lMargin=310 is replaced by a dynamically computed margin that clears the widest
+ * left-column instruction line and the "Seeker Activation Done" button's right edge,
+ * mirroring the SMRV-01 (round5) attack-phase approach.
  */
 
 //#include "FBattleDisplay.h"
@@ -43,6 +48,7 @@
 #include "core/FGameConfig.h"
 #include "core/FHexMap.h"
 #include "gui/WXIconCache.h"
+#include <algorithm>
 #include <sstream>
 
 #define ICON_SIZE 50
@@ -1690,7 +1696,6 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	wxColour green(wxT("#00FF00"));
 	const int textSize = 10;
-	const int lMargin = 310;
 	// Anchor "Activated seekers" list at the top of the bottom panel (right column,
 	// starting at getActionPromptLineY(0)), matching the drawPlaceMines/drawPlaceSeekers
 	// convention (SMRV-02).
@@ -1705,6 +1710,25 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 
 	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	dc.SetTextForeground(white);
+	// Compute lMargin dynamically: right column must clear the widest instruction
+	// line and the "Seeker Activation Done" button's right edge, mirroring the
+	// SMRV-01 (round5) attack-phase approach in draw().
+	// Each GetTextExtent string must match its corresponding DrawText call below.
+	const int instrW = std::max({
+		dc.GetTextExtent("Seeker activation phase.").GetWidth(),
+		dc.GetTextExtent("Click a seeker stack on the board to activate one seeker.").GetWidth(),
+		dc.GetTextExtent("Click a row below to deactivate an activated seeker.").GetWidth()
+	});
+	const int btnBestW = m_buttonSeekerActivationDone->GetBestSize().GetWidth();
+	const wxPoint btnPos = m_buttonSeekerActivationDone->GetPosition();
+	// Use the button's actual right edge when it has been laid out (pos.x >= leftOffset);
+	// otherwise fall back to leftOffset + best width.
+	const int btnAbsRight = (btnPos.x >= leftOffset)
+		? btnPos.x + m_buttonSeekerActivationDone->GetSize().GetWidth()
+		: leftOffset + btnBestW;
+	const int doneButtonRightExtent = btnAbsRight - leftOffset;
+	const int lMargin = leftOffset + std::max(instrW, doneButtonRightExtent) + 2*BORDER;
+
 	dc.DrawText("Seeker activation phase.",leftOffset,getActionPromptLineY(0));
 	dc.DrawText("Click a seeker stack on the board to activate one seeker.",leftOffset,getActionPromptLineY(1));
 	dc.DrawText("Click a row below to deactivate an activated seeker.",leftOffset,getActionPromptLineY(2));
@@ -1726,7 +1750,7 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 			const FTacticalSeekerMissileState & seeker = activated[i];
 			os.str("");
 			os << "Deactivate seeker #" << seeker.seekerID
-				<< " (heading " << seeker.heading << ", allowance " << seeker.movementAllowance << ")";
+				<< " (" << seeker.hex.getX() << "," << seeker.hex.getY() << ")";
 			dc.SetTextForeground((i % 2 == 0) ? white : green);
 			dc.DrawText(os.str(),lMargin,y);
 			wxSize tSize = dc.GetTextExtent(os.str());
