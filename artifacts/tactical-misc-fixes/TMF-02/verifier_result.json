@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-02/verifier_report.md",
+    "artifacts/tactical-misc-fixes/TMF-02/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "tmf-TMF-02-verifier-20260630",
+  "documentation_accuracy_summary": [
+    "doc/UsersGuide.md addition accurately states 'The window also supports minimize and maximize using the standard title bar buttons.' doc/test-contracts.md TMF-02 bullet correctly describes the constructor change, the gtk_window_set_modal retention, and the three new tests with accurate coverage descriptions. SMRV-02 and SMRVI-02 entries updated for TMF-01 carry-changes. doc/rules/tactical_operations_manual.md confirmed unchanged. No contradictions or duplications found."
+  ],
+  "note_finding_count": 1,
+  "pass_label": null,
+  "status": "complete",
+  "task_id": null,
+  "test_sufficiency_summary": [
+    "AC1 (extra-style bit absent): covered behaviorally by testBattleScreenExtraStyleExcludesTopLevelExDialog \u2014 constructs real FBattleScreen, reads GetExtraStyle(), destroys it, asserts (GetExtraStyle() & wxTOPLEVEL_EX_DIALOG) == 0; FAILS against old code, PASSES after fix. AC1 (minimize box): covered behaviorally by testBattleScreenDefaultStyleIncludesMinimizeBox \u2014 asserts (GetWindowStyleFlag() & wxMINIMIZE_BOX) != 0. AC2 (modal grab preserved): covered by source-contract test testBattleScreenShowModalContainsGtkWindowSetModal only; behavioral ShowModal invocation would block the xvfb test runner \u2014 this is the best practically available coverage and is now honestly documented in both the test comment and doc/test-contracts.md. AC3: 9 pre-existing failures unrelated to TMF-02; all 3 new TMF-02 tests pass; build PASS. AC4: Doxygen verified correct in changed files. Sufficient for scope."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
