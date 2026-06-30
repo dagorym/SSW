@@ -975,6 +975,17 @@ void FBattleScreen::closeBattleScreen(int returnCode) {
 		return;
 	}
 
+	// Dismiss any active WXTacticalUI child modal dialog before hiding this
+	// frame.  When a child wxDialog still has a live modal loop and
+	// Show(false) is called on the parent frame, wxGTK's dialog.cpp
+	// Show(false) handler calls EndModal(wxID_CANCEL) on the child as a
+	// side-effect.  If the child's EndModal was already called here first,
+	// IsModal() returns false and the duplicate call is suppressed, avoiding
+	// the "wxDialog::EndModal called twice" assert.
+	if (m_tacticalUI != NULL) {
+		m_tacticalUI->dismissActiveDialog();
+	}
+
 	m_closeInProgress = true;
 	SetReturnCode(returnCode);
 

@@ -1,6 +1,9 @@
 /**
  * @file WXTacticalUI.cpp
  * @brief Concrete bridge from tactical game logic to wxWidgets dialogs.
+ * @author Tom Stephens, gpt-5.3-codex (medium), claude-sonnet-4-6 (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Jun 30, 2026
  */
 
 #include "gui/WXTacticalUI.h"
@@ -8,6 +11,7 @@
 #include "gui/ICMSelectionGUI.h"
 #include "gui/TacticalDamageSummaryGUI.h"
 
+#include <wx/dialog.h>
 #include <wx/generic/msgdlgg.h>
 #include <wx/msgdlg.h>
 #include <wx/timer.h>
@@ -17,7 +21,7 @@ namespace Frontier {
 
 int WXTacticalUI::s_modalAutoDismissMs = 0;
 
-WXTacticalUI::WXTacticalUI(wxWindow* parent) : m_parent(parent) {}
+WXTacticalUI::WXTacticalUI(wxWindow* parent) : m_parent(parent), m_activeDialog(NULL) {}
 
 WXTacticalUI::~WXTacticalUI() {}
 
@@ -50,7 +54,9 @@ void WXTacticalUI::showMessage(const std::string& title,
       autoDismiss = new ModalAutoDismissTimer(&dialog);
       autoDismiss->Start(s_modalAutoDismissMs, true);
     }
+    m_activeDialog = &dialog;
     dialog.ShowModal();
+    m_activeDialog = NULL;
     if (autoDismiss != NULL) {
       delete autoDismiss;
     }
@@ -66,7 +72,10 @@ int WXTacticalUI::showDamageSummary(const FTacticalCombatReportSummary& summary)
   } else {
     dialog.CentreOnScreen(wxBOTH);
   }
-  return dialog.ShowModal();
+  m_activeDialog = &dialog;
+  int result = dialog.ShowModal();
+  m_activeDialog = NULL;
+  return result;
 }
 
 int WXTacticalUI::runICMSelection(std::vector<ICMData*>& icmData,
@@ -81,7 +90,10 @@ int WXTacticalUI::runICMSelection(std::vector<ICMData*>& icmData,
   } else {
     dialog.CentreOnScreen(wxBOTH);
   }
-  return dialog.ShowModal();
+  m_activeDialog = &dialog;
+  int result = dialog.ShowModal();
+  m_activeDialog = NULL;
+  return result;
 }
 
 void WXTacticalUI::notifyWinner(bool attackerWins) {
@@ -92,6 +104,16 @@ void WXTacticalUI::notifyWinner(bool attackerWins) {
 
 void WXTacticalUI::setModalAutoDismissMs(int timeoutMs) {
   s_modalAutoDismissMs = timeoutMs;
+}
+
+bool WXTacticalUI::hasPendingDialog() const {
+  return m_activeDialog != NULL && m_activeDialog->IsModal();
+}
+
+void WXTacticalUI::dismissActiveDialog() {
+  if (m_activeDialog != NULL && m_activeDialog->IsModal()) {
+    m_activeDialog->EndModal(wxID_CANCEL);
+  }
 }
 
 }  // namespace Frontier

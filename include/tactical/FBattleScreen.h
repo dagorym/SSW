@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.h
  * @brief Header file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 22, 2026
+ * @date Last Modified: Jun 30, 2026
  *
  */
 
@@ -38,9 +38,9 @@ class WXTacticalUI;
  * destruction and modal callers unwind back to their launch sites without
  * allowing default frame destruction to touch stack-owned instances.
  *
- * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard)
+ * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 27, 2026
+ * @date Last Modified:  Jun 30, 2026
  */
 class FBattleScreen : public wxFrame
 {
@@ -672,11 +672,17 @@ protected:
 	 * destruction is not scheduled so the first valid close request cannot leave
 	 * the tactical top-level stuck open.
 	 *
+	 * Before hiding or ending the modal loop, any active WXTacticalUI child
+	 * modal dialog is dismissed via dismissActiveDialog() so that wxGTK's
+	 * automatic EndModal side-effect (triggered by hiding the parent frame
+	 * while a child dialog is still modal) does not produce a duplicate
+	 * wxDialog::EndModal call and the accompanying assert.
+	 *
 	 * @param returnCode Return code propagated back to modal compatibility callers.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created:  May 22, 2026
-	 * @date Last Modified:  May 23, 2026
+	 * @date Last Modified:  Jun 30, 2026
 	 */
 	void closeBattleScreen(int returnCode = 0);
 	/**
@@ -685,13 +691,14 @@ protected:
 	 * The native close event reuses closeBattleScreen(GetReturnCode()) so menu and
 	 * title-bar shutdown stay centralized in FBattleScreen. Accepted close events
 	 * are fully handled in this method and do not continue into wx default close
-	 * handling afterward.
+	 * handling afterward. Any active WXTacticalUI child modal dialog is dismissed
+	 * inside closeBattleScreen before the frame hides itself.
 	 *
 	 * @param event wxWidgets top-level close event for the tactical frame.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created:  May 22, 2026
-	 * @date Last Modified:  May 23, 2026
+	 * @date Last Modified:  Jun 30, 2026
 	 */
 	void onClose(wxCloseEvent & event);
 	/**
