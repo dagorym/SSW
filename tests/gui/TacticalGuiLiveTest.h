@@ -22,7 +22,7 @@ namespace FrontierTests {
  *
  * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Jun 29, 2026
+ * @date Last Modified: Jun 30, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -51,6 +51,7 @@ CPPUNIT_TEST( testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions );
 CPPUNIT_TEST( testLowerPanelHeightShrinksBackAfterPhaseChange );
 CPPUNIT_TEST( testSeekerActivationAnchorIsAtActionPromptLineY );
 CPPUNIT_TEST( testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation );
+CPPUNIT_TEST( testSeekerActivationRowTextShowsPositionAndMarginIsDynamic );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -446,6 +447,38 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 29, 2026
 	 */
 	void testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation();
+
+	/**
+	 * @brief Behavioral discrimination tests for SMRVI-02: drawSeekerActivation() shows
+	 * seeker board position as (X,Y) instead of heading/allowance, and uses a dynamic
+	 * lMargin computed from instruction text width and Done-button right edge.
+	 *
+	 * Three acceptance criteria are covered in one render-and-click rig:
+	 *
+	 * AC-a (text content): Seeds one activated seeker at hex (3,4), renders
+	 * PH_SEEKER_ACTIVATION to an offscreen wxMemoryDC, and asserts the activation
+	 * row region width matches the text extent of "Deactivate seeker #42 (3,4)"
+	 * (new code) and does NOT match the extent of the old heading/allowance text
+	 * "Deactivate seeker #42 (heading 0, allowance 2)".  The widths differ at runtime
+	 * so this assertion fails against the pre-change code and passes after.
+	 *
+	 * AC-b (dynamic margin): Asserts the activation row region's left x-coordinate
+	 * is strictly greater than 310 (the old fixed lMargin), confirming the margin is
+	 * computed dynamically from instruction text and button extents.
+	 *
+	 * AC-c (click deactivates): Simulates a left-up click inside the activation row
+	 * region via checkSeekerActivationSelection() and asserts
+	 * getActiveSeekersByMovingPlayerThisPhase().size() decreases, confirming the
+	 * click region aligns with the drawn position and triggers deactivation.
+	 *
+	 * All three assertions must fail against the pre-SMRVI-02 code and pass after
+	 * the change.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testSeekerActivationRowTextShowsPositionAndMarginIsDynamic();
 };
 
 }

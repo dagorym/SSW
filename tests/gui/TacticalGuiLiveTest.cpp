@@ -3480,4 +3480,185 @@ void TacticalGuiLiveTest::testSeekerMoveCountOverlaySupressesOpponentLabelsDurin
 		attackFireOpponentPresent);
 }
 
+void TacticalGuiLiveTest::testSeekerActivationRowTextShowsPositionAndMarginIsDynamic() {
+	// SMRVI-02: Behavioral discrimination tests for position-based row text and
+	// dynamic lMargin in drawSeekerActivation().
+	//
+	// AC-a (text content): The region width encodes the text drawn.  Old code:
+	//   "Deactivate seeker #42 (heading 0, allowance 2)"
+	// New code:
+	//   "Deactivate seeker #42 (3,4)"
+	// These produce different text extents, so region.GetWidth() discriminates.
+	//
+	// AC-b (dynamic margin): Old code: lMargin=310 (fixed constant).
+	//   New code: lMargin = leftOffset + max(instrW, doneButtonRightExtent) + 2*BORDER.
+	//   In any realistic render the instruction text extent exceeds 310-leftOffset so
+	//   the resulting lMargin is strictly > 310. region.GetX() == lMargin.
+	//
+	// AC-c (click deactivates): Simulating a click inside the drawn row region via
+	//   checkSeekerActivationSelection() must reduce the this-phase active count.
+
+	// --- Setup ---
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	FVehicle * defender = createShip("Frigate");
+	CPPUNIT_ASSERT_MESSAGE("Attacker Destroyer must be creatable.", attacker != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Defender Frigate must be creatable.", defender != NULL);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(defender);
+
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	TestableBattleScreen * battleScreen =
+		new TestableBattleScreen("SMRVI-02 Position Text and Dynamic Margin");
+	battleScreen->setupFleets(&attackFleets, &defendFleets, false, NULL);
+	battleScreen->Show();
+	m_harness.pumpEvents(2);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(battleScreen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleDisplay must exist in the battle screen.", displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	// --- Inject an activated seeker at a known hex (3,4) ---
+	// ownerID = 1 = AttackerID (m_movingPlayer = true by default => movingPlayerID = 1).
+	// active = true, activationPhaseIndex = 0.
+	// heading = 0, movementAllowance = 2 (matches the old "(heading 0, allowance 2)" string
+	// so the region-width comparison is discriminating: old width != new width).
+	FTacticalSeekerMissileState activatedSeeker;
+	activatedSeeker.seekerID             = 42;
+	activatedSeeker.ownerID              = 1;
+	activatedSeeker.hex                  = FPoint(3, 4);
+	activatedSeeker.heading              = 0;
+	activatedSeeker.active               = true;
+	activatedSeeker.movementTurn         = 1;
+	activatedSeeker.movementAllowance    = 2;
+	activatedSeeker.hasSource            = false;
+	activatedSeeker.activationPhaseIndex = 0;
+	battleScreen->seedSeeker(activatedSeeker);
+
+	// --- Transition to BS_Battle / PH_SEEKER_ACTIVATION ---
+	battleScreen->setState(BS_Battle);
+	battleScreen->setPhase(PH_SEEKER_ACTIVATION);
+	battleScreen->setMoveComplete(true);
+	m_harness.pumpEvents(2);
+
+	// --- Offscreen draw ---
+	{
+		wxMemoryDC dc;
+		const int bmpWidth = battleScreen->GetSize().GetWidth() > 0
+			? battleScreen->GetSize().GetWidth() : 1200;
+		wxBitmap bmp(bmpWidth, 240);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	// Capture region info for assertions (do this before Destroy so buttons are valid).
+	const size_t regionCount = peer->seekerActivationRegionCount();
+	wxRect firstRegion;
+	if (regionCount >= 1) {
+		firstRegion = peer->seekerActivationRegion(0);
+	}
+
+	// --- AC-b helper: compute expected text extents in an offscreen DC ---
+	// Use the same font and point size as drawSeekerActivation() to get matching widths.
+	int expectedNewTextWidth  = 0;
+	int expectedOldTextWidth  = 0;
+	{
+		wxMemoryDC measureDC;
+		wxBitmap bmp(10, 10);
+		measureDC.SelectObject(bmp);
+		measureDC.SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+		// New text: seeker position as (X,Y).
+		expectedNewTextWidth = measureDC.GetTextExtent("Deactivate seeker #42 (3,4)").GetWidth();
+		// Old text: heading + allowance (pre-SMRVI-02 format).
+		expectedOldTextWidth = measureDC.GetTextExtent(
+			"Deactivate seeker #42 (heading 0, allowance 2)").GetWidth();
+		measureDC.SelectObject(wxNullBitmap);
+	}
+	// The region width stored by drawSeekerActivation() = tSize.GetWidth() + 16.
+	const int expectedNewRegionWidth = expectedNewTextWidth + 16;
+	const int expectedOldRegionWidth = expectedOldTextWidth + 16;
+
+	// --- AC-c: click alignment ---
+	size_t thisPhaseBeforeClick = battleScreen->getActiveSeekersByMovingPlayerThisPhase().size();
+	if (regionCount >= 1) {
+		const wxPoint clickPt(firstRegion.GetX() + firstRegion.GetWidth() / 2,
+		                      firstRegion.GetY() + firstRegion.GetHeight() / 2);
+		wxMouseEvent clickEvt(wxEVT_LEFT_UP);
+		clickEvt.m_x = clickPt.x;
+		clickEvt.m_y = clickPt.y;
+		peer->checkSeekerActivationSelectionPublic(clickEvt);
+	}
+	size_t thisPhaseAfterClick = battleScreen->getActiveSeekersByMovingPlayerThisPhase().size();
+
+	// --- Clean up before asserting ---
+	battleScreen->Destroy();
+	m_harness.pumpEvents(5);
+	delete attackFleet;
+	delete defendFleet;
+	m_harness.cleanupOrphanTopLevels(10);
+
+	// --- Assertions ---
+
+	// Precondition: at least one activation row was drawn.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRVI-02 precondition: At least one seeker activation region must be populated "
+		"after draw in PH_SEEKER_ACTIVATION. Seeder injection may have failed.",
+		regionCount >= 1);
+
+	// Sanity: old and new text widths must differ so the discriminating assertions below
+	// are meaningful.  The position text "(3,4)" is shorter than "(heading 0, allowance 2)".
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRVI-02 precondition: Expected new and old region widths must differ so the "
+		"text-content discrimination is meaningful. Font rendering or seeker parameters "
+		"may be inconsistent.",
+		expectedNewRegionWidth != expectedOldRegionWidth);
+
+	// AC-a: Row region width must match the new (X,Y) text, not the old heading/allowance text.
+	// With pre-SMRVI-02 code the region width encodes the old text and this assertion FAILS.
+	// With the shipped code the region width encodes the new position text and PASSES.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRVI-02 AC-a: Activation row region width must match the position text "
+		"\"Deactivate seeker #42 (3,4)\" (width+16). "
+		"With old code the row text was \"Deactivate seeker #42 (heading 0, allowance 2)\" "
+		"which produces a different region width, causing this assertion to FAIL. "
+		"drawSeekerActivation() must use seeker.hex.getX()/getY() for the row text.",
+		firstRegion.GetWidth() == expectedNewRegionWidth);
+
+	// AC-a (negative): region width must NOT match the old heading/allowance text width.
+	// This fails if someone inadvertently reverts the text format.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRVI-02 AC-a (negative): Activation row region width must NOT match the old "
+		"\"Deactivate seeker #42 (heading 0, allowance 2)\" text width+16. "
+		"If this fails, drawSeekerActivation() is still generating heading/allowance text "
+		"instead of board position (X,Y).",
+		firstRegion.GetWidth() != expectedOldRegionWidth);
+
+	// AC-b: The activation row region's left x-coordinate equals lMargin.  Old code used
+	// a fixed lMargin=310.  New code computes lMargin dynamically; in practice the widest
+	// instruction line extent causes lMargin > 310.  This assertion FAILS against old code
+	// (region.GetX() == 310 exactly) and PASSES against the new dynamic computation.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRVI-02 AC-b: Activation row region left edge (lMargin) must be strictly greater "
+		"than 310. Old code used a fixed lMargin=310, so region.GetX() would equal 310 and "
+		"this assertion would FAIL. New code computes lMargin dynamically from instruction "
+		"text extents and Done-button right edge, producing a margin > 310.",
+		firstRegion.GetX() > 310);
+
+	// AC-c: Clicking inside the activation row region must deactivate the seeker.
+	// getActiveSeekersByMovingPlayerThisPhase().size() must decrease after the click.
+	CPPUNIT_ASSERT_MESSAGE(
+		"SMRVI-02 AC-c: Clicking the activation row region must deactivate the seeker. "
+		"getActiveSeekersByMovingPlayerThisPhase().size() must decrease after a click "
+		"inside the region, confirming click-region/draw-position alignment. "
+		"If this fails, the dynamic lMargin or region-width change moved the click region "
+		"out of alignment with checkSeekerActivationSelection().",
+		thisPhaseAfterClick < thisPhaseBeforeClick);
+}
+
 }
