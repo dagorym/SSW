@@ -641,7 +641,17 @@ assertContains(defenseBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);"
 assertContains(attackBody, "getActionPromptLineY(0)");
 assertContains(attackBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
 assertContains(attackBody, "if (m_parent->isOffensiveSeekerDeploymentMode()) {");
-assertContains(attackBody, "Select legal path hexes to deploy seeker missiles.");
+// SMRVI-01 round6: the literal was extracted to SEEKER_DEPLOY_INSTRUCTION; drawAttackFire()
+// now routes through the constant rather than repeating the inline string.
+assertContains(attackBody, "os.str(SEEKER_DEPLOY_INSTRUCTION.ToStdString())");
+// Supplementary: the literal appears exactly once in the full source file (as the constant
+// definition) and NOT as an inline string inside drawAttackFire() or draw().
+// The constant definition must exist in the source file.
+assertContains(source, "const wxString FBattleDisplay::SEEKER_DEPLOY_INSTRUCTION(\"Select legal path hexes to deploy seeker missiles.\");");
+// The literal must NOT appear as an inline code string inside drawAttackFire() or draw();
+// it is only permitted as the constant's definition (and any comment references).
+assertNotContains(attackBody, "\"Select legal path hexes to deploy seeker missiles.\"");
+assertNotContains(drawBody, "\"Select legal path hexes to deploy seeker missiles.\"");
 
 assertContains(minesBody, "getActionPromptLineY(0)");
 assertContains(minesBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
@@ -649,11 +659,10 @@ assertContains(statsBody, "largestMarginWithStatsRoom");
 // SMF-03: pending seeker rows moved out of drawCurrentShipStats into draw() left-of-stats region.
 assertNotContains(statsBody, "drawOffensiveSeekerPendingRows(");
 assertContains(drawBody, "PH_ATTACK_FIRE");
-// SMRV-01 round5: recall list lMargin is now computed from text extent of the widest
-// PH_ATTACK_FIRE instruction line so the pending panel no longer overlaps the left column.
-// The old hardcoded 310 is replaced by: leftOffset + textExtent(widest line) + 2*BORDER.
-assertContains(drawBody, "const wxString widestAttackLine(\"Select legal path hexes to deploy seeker missiles.\");");
-assertContains(drawBody, "const int attackTextW = dc.GetTextExtent(widestAttackLine).GetWidth();");
+// SMRVI-01 round6: widestAttackLine local variable removed; text extent now measured
+// directly from the shared SEEKER_DEPLOY_INSTRUCTION constant.
+assertNotContains(drawBody, "widestAttackLine");
+assertContains(drawBody, "const int attackTextW = dc.GetTextExtent(SEEKER_DEPLOY_INSTRUCTION).GetWidth();");
 assertContains(drawBody, "const int pendingLMargin = leftOffset + attackTextW + 2*BORDER;");
 assertContains(drawBody, "drawOffensiveSeekerPendingRows(dc, pendingLMargin, getActionPromptLineY(0), 10);");
 }

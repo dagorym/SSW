@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Mar 22, 2026
- * @date Last Modified: Jun 29, 2026
+ * @date Last Modified: Jun 30, 2026
  */
 class FTacticalBattleDisplayFireFlowTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleDisplayFireFlowTest );
@@ -264,10 +264,12 @@ void testActionPromptSpacingContractConstantsAndHelpersDefined();
  * @brief Verifies action Prompt Spacing Contract Applied Across Action Phases.
  *
  * Exercises the tactical regression behavior covered by this fixture case.
+ * Updated for SMRVI-01 round6: assertions updated to match SEEKER_DEPLOY_INSTRUCTION
+ * constant extraction (widestAttackLine removed; literal must appear exactly once).
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 08, 2026
- * @date Last Modified: Apr 08, 2026
+ * @date Last Modified: Jun 30, 2026
  */
 void testActionPromptSpacingContractAppliedAcrossActionPhases();
 /**
