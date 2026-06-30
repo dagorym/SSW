@@ -1,0 +1,66 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- TMF-03: FBattleScreen title-bar X close while a WXTacticalUI child modal dialog (damage summary, ICM selection, or winner/info message) is active now calls dismissActiveDialog() before Hide()/Show(false), preventing a duplicate wxDialog::EndModal assert in wxGTK (src/gtk/dialog.cpp:193). WXTacticalUI gained hasPendingDialog() and dismissActiveDialog() APIs and tracks m_activeDialog during ShowModal calls. New test testBattleScreenXCloseDismissesActiveChildDialog validates the new dismiss API and the FBattleScreen close lifecycle.
+
+Acceptance criteria validated:
+- AC1: hasPendingDialog() returns true while a WXTacticalUI child modal dialog's ShowModal is live
+- AC1: hasPendingDialog() returns false immediately after dismissActiveDialog() clears IsModal
+- AC2: FBattleScreen closes cleanly (hidden/absent) after child dialog dismissed via dismissActiveDialog()
+- AC3: No SIGABRT or crash during the close lifecycle (implicit — process survived all assertions)
+- AC3 source-contract: FBattleScreen::closeBattleScreen() calls dismissActiveDialog() before Hide()/Show(false)
+- AC4: FBattleScreen lifecycle counters settle (constructed>=+1, destroyed>=+1, getLiveInstanceCount()==0)
+
+Implementation branch or worktree context:
+- Branch: tmf-TMF-03-tester-20260630
+- Worktree: /home/tstephen/repos/worktrees/tmf-TMF-03-tester-20260630
+- Implementer commit: 233c1ad (TMF-03: dismiss active WXTacticalUI child dialog before FBattleScreen close)
+- Tester commit: 29e69dc (TMF-03: add testBattleScreenXCloseDismissesActiveChildDialog behavioral test)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/gui/WXTacticalUI.h — new hasPendingDialog(), dismissActiveDialog(), m_activeDialog member
+- src/gui/WXTacticalUI.cpp — m_activeDialog tracking in showMessage/showDamageSummary/runICMSelection
+- src/tactical/FBattleScreen.cpp — closeBattleScreen() calls dismissActiveDialog() before Hide()
+- tests/gui/TacticalGuiLiveTest.h — testBattleScreenXCloseDismissesActiveChildDialog declaration
+- tests/gui/TacticalGuiLiveTest.cpp — testBattleScreenXCloseDismissesActiveChildDialog implementation, AccessibleBattleScreen helper class
+
+Test commit:
+- 29e69dc
+
+Commands executed:
+- make -C /home/tstephen/repos/worktrees/tmf-TMF-03-tester-20260630/tests/gui
+- DISPLAY=:0 /home/tstephen/repos/worktrees/tmf-TMF-03-tester-20260630/tests/gui/GuiTests
+
+Final test outcomes:
+- PASS: testBattleScreenXCloseDismissesActiveChildDialog — new TMF-03 test passes cleanly
+- AC1 PASS: hasPendingDialog() returns true while ShowModal is live (dialog tracked in m_activeDialog)
+- AC1 PASS: hasPendingDialog() returns false immediately after dismissActiveDialog() (IsModal cleared)
+- AC2 PASS: FBattleScreen becomes hidden/absent after close following child dialog dismissal
+- AC3 PASS: No crash or SIGABRT — process survived all assertions (implicit behavioral verification)
+- AC3 source-contract PASS: closeBattleScreen contains dismissActiveDialog() call (integration point locked)
+- AC4 PASS: FBattleScreen lifecycle counters settle (constructed>=+1, destroyed>=+1, liveCount==0)
+- 8 pre-existing failures in unrelated tests (source-contract checks for FBattleDisplay.cpp / ICMSelectionGUI.cpp) — none introduced by TMF-03
+- Design note: wxEVT_CLOSE_WINDOW is fired after runVoidFunctionWithAction returns (not from within ShowModal action), avoiding a Destroy()-during-ShowModal double-free in the test harness. Source-contract supplement locks the closeBattleScreen integration point.
+
+Documentation context:
+- doc/test-contracts.md likely needs a new TMF-03 entry documenting the test contracts for testBattleScreenXCloseDismissesActiveChildDialog
+- New behavioral APIs hasPendingDialog() and dismissActiveDialog() on WXTacticalUI may warrant a brief note in AGENTS.md or design docs if the tactical section is updated
+- The test uses AccessibleBattleScreen (anonymous-namespace FBattleScreen subclass exposing getTacticalUI()) — new test helper pattern worth noting
+- Test design note: direct behavioural test of wxEVT_CLOSE_WINDOW during ShowModal is infeasible due to Destroy()-during-ShowModal double-free race; the source-contract supplement in the test documents this design decision
+
+Plan and diff context:
+- Plan: artifacts/tactical-misc-fixes/TMF-03/ (shared artifact directory)
+- Task: TMF-03 within the tactical-misc-fixes plan
+- Comparison base: branch 233c1ad (implementer commit) vs 29e69dc (tester commit)
+- The fixes branch is the base; both implementer and tester commits are on tmf-TMF-03-tester-20260630
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes/TMF-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

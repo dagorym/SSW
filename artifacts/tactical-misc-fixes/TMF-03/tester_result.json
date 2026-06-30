@@ -1,0 +1,28 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-03/tester_report.md",
+    "artifacts/tactical-misc-fixes/TMF-03/tester_result.json",
+    "artifacts/tactical-misc-fixes/TMF-03/documenter_prompt.txt"
+  ],
+  "branch_name": "tmf-TMF-03-tester-20260630",
+  "commands_run": [
+    "make -C /home/tstephen/repos/worktrees/tmf-TMF-03-tester-20260630/tests/gui",
+    "DISPLAY=:0 /home/tstephen/repos/worktrees/tmf-TMF-03-tester-20260630/tests/gui/GuiTests"
+  ],
+  "pass_fail_totals": {
+    "failed": 8,
+    "new_tests_passed": 1,
+    "passed": 52,
+    "pre_existing_failures": 8,
+    "total": 60
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": null,
+  "test_commit_hash": "29e69dc",
+  "test_files_changed": [
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/gui/TacticalGuiLiveTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
