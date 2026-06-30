@@ -1,0 +1,65 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+Single-source the three PH_SEEKER_ACTIVATION instruction strings in drawSeekerActivation() by
+extracting them into static const wxString constants in FBattleDisplay, mirroring the SMRVI
+SEEKER_DEPLOY_INSTRUCTION pattern.
+
+Modified files:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+1. Each of the three instruction strings is defined exactly once as a shared constant and used by
+   both the measurement and drawing paths in drawSeekerActivation().
+2. No duplicated inline copy of any of the three literals remains in production code.
+3. The seeker-activation panel renders identically (wording, layout, dynamic margin unchanged).
+
+Test file locations:
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+
+Implementation context:
+Declared SEEKER_ACTIVATION_PHASE_INSTRUCTION, SEEKER_ACTIVATION_CLICK_INSTRUCTION, and
+SEEKER_ACTIVATION_DEACTIVATE_INSTRUCTION as static const wxString members in FBattleDisplay.h
+alongside the existing SEEKER_DEPLOY_INSTRUCTION. Defined all three in FBattleDisplay.cpp.
+Replaced all six use sites (3 GetTextExtent + 3 DrawText) in drawSeekerActivation() with the
+constants. Updated Doxygen Last Modified dates on both files and the drawSeekerActivation()
+doxygen block.
+
+Implementation/code commit hash: ceb75e8
+Branch: tmf-TMF-01-implementer-20260630
+
+Existing validation state:
+- Build: PASS
+- Tactical tests: 225/226 PASS. 1 expected source-contract failure:
+    FTacticalBattleDisplayFireFlowTest::testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker
+    at FTacticalBattleDisplayFireFlowTest.cpp:243
+    The assertion checks for the old inline literal:
+      dc.DrawText("Seeker activation phase.",leftOffset,getActionPromptLineY(0));
+    This literal no longer exists; it was replaced with the SEEKER_ACTIVATION_PHASE_INSTRUCTION
+    constant as approved. The Tester must update the source-contract assertions in this test to
+    check for the constant names rather than the old inline strings, and add/verify behavioral
+    coverage that the constants contain the correct string values and that drawSeekerActivation()
+    renders with them.
+- GUI tests: could not run (xvfb-run not available in environment). Tester should run headless:
+    cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Suggested validation commands:
+  make                              # from repo root
+  cd tests && make tactical-tests && ./tactical/TacticalTests
+  cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Shared artifact directory: artifacts/tactical-misc-fixes/TMF-01
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately
+  and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository
+  evidence is sufficient, and label those choices as assumptions instead of treating them as
+  blockers.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
