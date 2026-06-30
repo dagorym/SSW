@@ -1,7 +1,7 @@
 {
   "status": "PASS",
   "subtask": "TMF-01",
-  "branch": "tmf-TMF-01-tester-20260630",
+  "branch_name": "tmf-TMF-01-tester-20260630",
   "test_commit_hash": "91cb5ec",
   "test_files_modified": [
     "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
