@@ -1,0 +1,15 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-02/documenter_report.md",
+    "artifacts/tactical-misc-fixes/TMF-02/documenter_result.json",
+    "artifacts/tactical-misc-fixes/TMF-02/verifier_prompt.txt"
+  ],
+  "branch_name": "tmf-TMF-02-documenter-20260630",
+  "documentation_commit_hash": "f6da252",
+  "documentation_files_changed": [
+    "doc/test-contracts.md"
+  ],
+  "pass_label": "pass-2",
+  "status": "success",
+  "task_id": "TMF-02"
+}
