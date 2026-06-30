@@ -516,8 +516,10 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 *
 	 * TMF-02 AC2: Confirms that removing wxTOPLEVEL_EX_DIALOG did not inadvertently remove the
 	 * gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) call that preserves modal grab behavior.
-	 * This is a source-contract supplement; behavioral modal-grab coverage is provided by the
-	 * existing live tactical test path.
+	 * This is a source-contract-only assertion. Exercising FBattleScreen::ShowModal() behaviorally
+	 * would block the test event loop under xvfb because FBattleScreen runs a custom modal event
+	 * loop that never returns during a headless test run; therefore this source-contract check is
+	 * the sole verification of this specific GTK call's presence.
 	 *
 	 * @author claude-sonnet-4-6 (medium)
 	 * @date Created: Jun 30, 2026

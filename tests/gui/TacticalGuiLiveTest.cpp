@@ -3726,7 +3726,11 @@ void TacticalGuiLiveTest::testBattleScreenDefaultStyleIncludesMinimizeBox() {
 // TMF-02 source-contract supplement: ShowModal() must still contain the
 // gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) call that preserves modal
 // grab behavior after the wxTOPLEVEL_EX_DIALOG removal.
-// Behavioral modal-grab coverage is provided by the existing live tactical test path.
+// AC2's gtk_window_set_modal grab is locked only by this source-contract assertion.
+// Exercising FBattleScreen::ShowModal() behaviorally would block the test event loop
+// under xvfb because FBattleScreen runs its own custom modal event loop that never
+// returns during a headless test run. The source-contract check is therefore the
+// sole verification of this specific GTK call's presence.
 void TacticalGuiLiveTest::testBattleScreenShowModalContainsGtkWindowSetModal() {
 	std::cerr << "TMF02-gtk-modal-contract:start" << std::endl;
 	std::vector<std::string> battleScreenSrc;
