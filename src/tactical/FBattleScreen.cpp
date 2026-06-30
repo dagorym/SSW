@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.cpp
  * @brief Implementation file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 22, 2026
+ * @date Last Modified:  Jun 30, 2026
  *
  */
 
@@ -116,7 +116,6 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	g_battleScreenConstructedCount++;
 	g_battleScreenLiveCount++;
 //	m_wd = new wxWindowDisabler(this);
-	SetExtraStyle(GetExtraStyle() | wxTOPLEVEL_EX_DIALOG);
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 //	this->MakeModal(true);
 	wxColour black(wxT("#000000"));// black

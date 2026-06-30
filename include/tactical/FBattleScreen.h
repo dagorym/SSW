@@ -59,9 +59,9 @@ public:
 	 * @param size Initial top-level window size.
 	 * @param style wxWidgets top-level style flags for the frame-backed surface.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
 	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  May 23, 2026
+	 * @date Last Modified:  Jun 30, 2026
 	 */
 	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1200,900 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxRESIZE_BORDER );
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
