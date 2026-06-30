@@ -1,0 +1,61 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- SMRVI-01 round6: Eliminated the duplicated attack-phase instruction string literal 'Select legal path hexes to deploy seeker missiles.' by extracting it into FBattleDisplay::SEEKER_DEPLOY_INSTRUCTION. Both drawAttackFire() and draw() now reference the constant; the old widestAttackLine local variable was removed. Tester updated testActionPromptSpacingContractAppliedAcrossActionPhases to match the refactored code structure, added supplementary assertNotContains checks, and confirmed all 226 tactical tests pass. Documenter updated doc/test-contracts.md SMRV-01 (round5) entry to replace widestAttackLine references with SEEKER_DEPLOY_INSTRUCTION constant.
+
+Acceptance criteria to verify:
+- AC1: SEEKER_DEPLOY_INSTRUCTION constant defined once; drawAttackFire() uses os.str(SEEKER_DEPLOY_INSTRUCTION.ToStdString()) and draw() uses dc.GetTextExtent(SEEKER_DEPLOY_INSTRUCTION).GetWidth(); inline literal absent from both function bodies. PASS.
+- AC2: Pending seeker panel renders right of instruction text (pendingLMargin = leftOffset + attackTextW + 2*BORDER pattern preserved); click-regions unchanged. PASS.
+- AC3: Instruction wording and draw location unchanged (same string value, same getActionPromptLineY(0) usage). PASS.
+
+Implementation branch or worktree context:
+- Implementation branch: sf2-SMRVI-01-tester-20260630 (worktree at /home/tstephen/repos/worktrees/sf2-SMRVI-01-tester-20260630)
+- Base branch: sf2
+- Implementer commits: ee21756 (constant extraction), 0671fb1 (implementer artifacts)
+- Tester commit: 0bfe797
+- Documenter commit: 6b7d745
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/tactical/FBattleDisplay.h (Implementer: added SEEKER_DEPLOY_INSTRUCTION declaration with docblock; file header updated)
+- src/tactical/FBattleDisplay.cpp (Implementer: added constant definition, replaced inline literals in draw() and drawAttackFire())
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (Tester: updated testActionPromptSpacingContractAppliedAcrossActionPhases assertions)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h (Tester: updated test method docblock)
+- doc/test-contracts.md (Documenter: updated SMRV-01 round5 entry to reference SEEKER_DEPLOY_INSTRUCTION)
+
+Commands executed:
+- git diff sf2...HEAD -- include/tactical/FBattleDisplay.h
+- git diff sf2...HEAD -- src/tactical/FBattleDisplay.cpp
+- git diff sf2...HEAD -- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- git diff sf2...HEAD -- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- grep -n widestAttackLine doc/test-contracts.md
+- grep -n widestAttackLine AGENTS.md
+
+Final test outcomes:
+- 226 tests passed, 0 failed (from tester stage).
+- testActionPromptSpacingContractAppliedAcrossActionPhases: PASS.
+- No test regressions from documentation-only changes.
+
+Plan or evaluation context guidance:
+- Plan: plans/seeker-missile-fixes-round6-plan.md
+- Pure refactor with no behavioral change; the constant's docblock in FBattleDisplay.h explains its dual-use purpose.
+- Compare branch sf2-SMRVI-01-documenter-20260630 against sf2 to see the full diff.
+
+Convention-file guidance:
+- AGENTS.md requires Doxygen-style file headers in all header files with @author, @date Created, @date Last Modified fields.
+- AGENTS.md requires updating Last Modified date and adding current agent model to @author list on update.
+- doc/test-contracts.md is the canonical per-test source-contract catalog for tactical tests (extracted from AGENTS.md).
+- Both implementer (FBattleDisplay.h, FBattleDisplay.cpp) and tester (FTacticalBattleDisplayFireFlowTest.h) already updated their in-code docblocks per repository convention.
+
+Updated documentation files:
+- doc/test-contracts.md
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round6/SMRVI-01
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
