@@ -1,9 +1,9 @@
 /**
  * @file FBattleDisplay.h
  * @brief Header file for BattleDisplay class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 29, 2026 (SMRV-01 round5: pending panel lMargin computed from text extent)
+ * @date Last Modified: Jun 30, 2026 (SMRVI-01 round6: add SEEKER_DEPLOY_INSTRUCTION constant)
  *
  */
 
@@ -158,6 +158,11 @@ protected:
 	static const int SHIP_STATS_MIN_WIDTH = 320;
 	/// minimum width to preserve for prompt text while ship stats are right-aligned
 	static const int ACTION_PROMPT_MIN_WIDTH = 280;
+
+	/// instruction text for seeker-missile path deployment in the offensive fire phase;
+	/// used in both drawAttackFire() (draw) and draw() (pendingLMargin text-extent measurement)
+	/// so the two sites can never diverge.
+	static const wxString SEEKER_DEPLOY_INSTRUCTION;
 
 	/// lower-panel layout modes for tactical prompts and ship stats
 	enum LowerPanelLayoutMode {

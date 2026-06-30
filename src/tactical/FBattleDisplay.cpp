@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 29, 2026 (SMRV-02 round5)
+ * @date Last Modified:  Jun 30, 2026 (SMRVI-01 round6: extract SEEKER_DEPLOY_INSTRUCTION constant)
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -51,6 +51,8 @@
 const int leftOffset=2*BORDER+ZOOM_SIZE;
 
 namespace Frontier {
+
+const wxString FBattleDisplay::SEEKER_DEPLOY_INSTRUCTION("Select legal path hexes to deploy seeker missiles.");
 
 namespace {
 
@@ -729,8 +731,7 @@ void FBattleDisplay::draw(wxDC &dc){
 			// left-column instruction line.  The left instruction text is NOT wrapped
 			// per user preference; instead the panel shifts right to avoid overlap.
 			dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-			const wxString widestAttackLine("Select legal path hexes to deploy seeker missiles.");
-			const int attackTextW = dc.GetTextExtent(widestAttackLine).GetWidth();
+			const int attackTextW = dc.GetTextExtent(SEEKER_DEPLOY_INSTRUCTION).GetWidth();
 			const int pendingLMargin = leftOffset + attackTextW + 2*BORDER;
 			drawOffensiveSeekerPendingRows(dc, pendingLMargin, getActionPromptLineY(0), 10);
 		}
@@ -1245,7 +1246,7 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
 	dc.DrawText("declare offensive fire.",leftOffset,getActionPromptLineY(1));
 	if (m_parent->isOffensiveSeekerDeploymentMode()) {
-		os.str("Select legal path hexes to deploy seeker missiles.");
+		os.str(SEEKER_DEPLOY_INSTRUCTION.ToStdString());
 	} else {
 		os.str("Please select a ship to fire weapons.");
 	}
