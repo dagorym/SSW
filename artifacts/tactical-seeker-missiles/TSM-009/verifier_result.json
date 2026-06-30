@@ -1,0 +1,79 @@
+{
+  "status": "passed",
+  "task": "tactical-seeker-missiles/TSM-009",
+  "subtask_id": "TSM-009",
+  "branch": "seekers-tsm-009-verifier-20260527",
+  "reviewed_head": "890010e",
+  "baseline": "d26276d",
+  "verdict": "PASS",
+  "blocking_finding_count": 0,
+  "warning_finding_count": 0,
+  "note_finding_count": 0,
+  "findings": [],
+  "acceptance_criteria_reference": [
+    "plans/tactical-seeker-missiles-plan.md",
+    "artifacts/tactical-seeker-missiles/TSM-009/verifier_prompt.txt"
+  ],
+  "convention_files_considered": [
+    "AGENTS.md",
+    "myteam get role verifier"
+  ],
+  "review_scope": {
+    "implementation_files": [
+      "include/tactical/FTacticalCombatReport.h",
+      "include/tactical/FTacticalGame.h",
+      "src/tactical/FTacticalGame.cpp",
+      "include/tactical/FBattleScreen.h",
+      "src/tactical/FBattleScreen.cpp",
+      "src/weapons/FSeekerMissileLauncher.cpp"
+    ],
+    "test_files": [
+      "tests/tactical/FTacticalSeekerMovementTest.h",
+      "tests/tactical/FTacticalSeekerMovementTest.cpp",
+      "tests/tactical/FTacticalMineDamageFlowTest.h",
+      "tests/tactical/FTacticalMineDamageFlowTest.cpp",
+      "tests/tactical/FTacticalCombatReportTest.h",
+      "tests/tactical/FTacticalCombatReportTest.cpp",
+      "tests/tactical/FTacticalBattleScreenDelegationTest.cpp"
+    ],
+    "documentation_files": [
+      "doc/DesignNotes.md",
+      "doc/UsersGuide.md"
+    ]
+  },
+  "upstream_commits_reviewed": {
+    "implementer": "70c2223",
+    "tester": "e857a6d",
+    "documenter": "8112bc0",
+    "documenter_artifacts": "8112bc0"
+  },
+  "test_sufficiency_summary": "The rerun tactical and GUI suites now cover the corrected same-hex mixed-size seeker selection path and the seeker detonation/report machinery, so the prior tie-break gap is closed.",
+  "documentation_accuracy_summary": "Accurate: DesignNotes and UsersGuide describe the seeker detonation flow, highest-max-HP same-hex target selection, normal ICM interception, seeker-specific damage summary labeling, and summary-before-cleanup ordering.",
+  "validation_commands_run": [
+    {
+      "command": "cd tests && make tactical-tests && ./tactical/TacticalTests",
+      "status": "passed",
+      "result": "OK (181 tests)"
+    },
+    {
+      "command": "cd tests/gui && make && ./GuiTests",
+      "status": "passed",
+      "result": "OK (43 tests)"
+    },
+    {
+      "command": "git diff --check master...HEAD -- include/tactical/FTacticalCombatReport.h include/tactical/FTacticalGame.h src/tactical/FTacticalGame.cpp include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp src/weapons/FSeekerMissileLauncher.cpp tests/tactical/FTacticalSeekerMovementTest.* tests/tactical/FTacticalMineDamageFlowTest.* tests/tactical/FTacticalCombatReportTest.* tests/tactical/FTacticalBattleScreenDelegationTest.cpp doc/DesignNotes.md doc/UsersGuide.md doc/rules/tactical_operations_manual.md",
+      "status": "passed",
+      "result": "clean"
+    },
+    {
+      "command": "git diff --name-status master...HEAD -- doc/rules/tactical_operations_manual.md",
+      "status": "passed",
+      "result": "no changes"
+    }
+  ],
+  "artifact_file_paths_written": [
+    "artifacts/tactical-seeker-missiles/TSM-009/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-009/verifier_result.json"
+  ],
+  "protected_file_unchanged": true
+}

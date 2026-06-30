@@ -1,0 +1,54 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- Validate that SMRIV-03 repositioned the PH_ATTACK_FIRE offensive-seeker recall list in FBattleDisplay::draw() to anchor at getActionPromptLineY(0) in the column to the right of the Done button (lMargin=310), instead of below the action-button row at leftOffset/getActionButtonRowBottom()+BORDER. Consistent with the pre-game placement treatment used by drawPlaceMines and drawPlaceSeekers. Updated docblock in FBattleDisplay.h.
+
+Acceptance criteria to verify:
+- AC1: draw() in PH_ATTACK_FIRE with no pending seekers leaves m_pendingSeekerRecallRegions empty (no crash). PASS.
+- AC2: After deploying a pending seeker with an injected movement path, recall regions have x >= 310 (right of Done button) and y >= getActionPromptLineY(0) (top of lower panel, not below action-button row). PASS.
+- AC3: Clicking a recall region via checkOffensiveSeekerPendingSelection removes the pending seeker and restores ammo (existing recall behavior preserved). PASS.
+- AC4: draw() in a non-PH_ATTACK_FIRE phase leaves m_pendingSeekerRecallRegions empty. PASS.
+
+Implementation branch or worktree context:
+- Documenter worktree: /home/tstephen/repos/worktrees/sf2-SMRIV-03-documenter-20260629
+- Branch: sf2-SMRIV-03-documenter-20260629 (branched from sf2-SMRIV-03-tester-20260629)
+- Implementation commit: 10e9b82
+- Tester commit: 326ee1e
+- Documentation commit: 738f644
+
+Files modified by Implementer:
+- src/tactical/FBattleDisplay.cpp — draw() PH_ATTACK_FIRE block: drawOffensiveSeekerPendingRows call changed from (leftOffset, getActionButtonRowBottom()+BORDER) to (310, getActionPromptLineY(0)); SMRIV-03 change note added to file header block
+- include/tactical/FBattleDisplay.h — drawOffensiveSeekerPendingRows() docblock updated to describe the new anchor (getActionPromptLineY(0), lMargin=310, right of Done button); file Last Modified date updated
+
+Files modified by Tester:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp — testActionPromptSpacingContractAppliedAcrossActionPhases updated: assertContains changed from "drawOffensiveSeekerPendingRows(dc, leftOffset, pendingRegionTop, 10);" to "drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10);"
+- tests/gui/TacticalGuiLiveTest.cpp — testOffensiveSeekerPendingListRegionVisibilityAndRecall extended with AC2/AC3 path-injection coverage; TestableBattleScreen extended with findShipTurnData() and checkOffensiveSeekerPendingSelectionPublic()
+- tests/gui/TacticalGuiLiveTest.h — testOffensiveSeekerPendingListRegionVisibilityAndRecall docblock updated to describe SMRIV-03 anchor and AC2/AC3 coverage
+
+Files modified by Documenter:
+- doc/test-contracts.md — SMF-03 entry updated to note SMRIV-03 changed anchor to (310, getActionPromptLineY(0)); SMRIV-03 entry added documenting the repositioning, updated source-contract assertion, and extended live test with path-injection approach
+
+Final test outcomes:
+- Tactical: 223/223 pass.
+- GUI: 43/52 pass, 9 pre-existing failures (unrelated to SMRIV-03).
+- testOffensiveSeekerPendingListRegionVisibilityAndRecall PASSED — AC2 position assertions verify recall regions at x >= 310 / y >= getActionPromptLineY(0); AC3 click-recall via checkOffensiveSeekerPendingSelectionPublic confirmed ammo restored.
+- testActionPromptSpacingContractAppliedAcrossActionPhases PASSED — updated source-contract assertion checks drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10).
+
+Plan and diff context:
+- Plan: plans/seeker-missile-fixes-round4-plan.md (seeker missile fixes round 4)
+- Subtask SMRIV-03: reposition PH_ATTACK_FIRE recall list anchor to top of bottom panel
+- All implementation changes confined to the draw() method in src/tactical/FBattleDisplay.cpp and the docblock in include/tactical/FBattleDisplay.h
+- Compare branch sf2-SMRIV-03-documenter-20260629 against sf2 to see the full diff
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round4/SMRIV-03
+
+Convention-file guidance:
+- AGENTS.md and doc/test-contracts.md are the repository-level policy files; consult them for documentation requirements, test coverage rules, and workflow conventions.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient; label those choices as assumptions.
+
+Startup behavior:
+- If implementation branch or worktree context and enough story and diff context are present, begin verification work immediately and continue in the same run. Do not stop after activation, scope confirmation, convention discovery, or diff inspection when blocking inputs are present.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

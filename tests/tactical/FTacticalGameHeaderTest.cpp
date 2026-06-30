@@ -54,6 +54,11 @@ CPPUNIT_ASSERT_EQUAL(true, contains(header, "std::vector<ICMData *> m_ICMData;")
 CPPUNIT_ASSERT_EQUAL(true, contains(header, "FTacticalCombatReport m_tacticalReport;"));
 CPPUNIT_ASSERT_EQUAL(true, contains(header, "FTacticalHexData m_hexData[100][100];"));
 CPPUNIT_ASSERT_EQUAL(true, contains(header, "std::map<unsigned int, FTacticalTurnData> m_turnInfo;"));
+CPPUNIT_ASSERT_EQUAL(true, contains(header, "} FTacticalOrdnanceSource;"));
+CPPUNIT_ASSERT_EQUAL(true, contains(header, "} FTacticalPlacedOrdnance;"));
+CPPUNIT_ASSERT_EQUAL(true, contains(header, "} FTacticalSeekerMissileState;"));
+CPPUNIT_ASSERT_EQUAL(true, contains(header, "std::vector<FTacticalPlacedOrdnance> m_placedOrdnance;"));
+CPPUNIT_ASSERT_EQUAL(true, contains(header, "std::vector<FTacticalSeekerMissileState> m_seekerMissiles;"));
 }
 
 void FTacticalGameHeaderTest::testHeaderProvidesHexAndTurnOwnershipTypes() {
@@ -79,7 +84,7 @@ CPPUNIT_ASSERT_EQUAL(false, contains(header, "wxWindow"));
 const std::string includePath = std::string(TACTICAL_TEST_REPO_ROOT) + "/include";
 const std::string cmd =
 "printf '#include \"tactical/FTacticalGame.h\"\\n"
-"int main(){Frontier::FTacticalHexData h; Frontier::FTacticalTurnData t; Frontier::FTacticalGame *g = 0; (void)h; (void)t; (void)g; return 0;}\\n'"
+"int main(){Frontier::FTacticalHexData h; Frontier::FTacticalTurnData t; Frontier::FTacticalOrdnanceSource src; Frontier::FTacticalPlacedOrdnance ord; Frontier::FTacticalSeekerMissileState seeker; Frontier::FTacticalGame *g = 0; (void)h; (void)t; (void)src; (void)ord; (void)seeker; (void)g; return 0;}\\n'"
 " | g++ -x c++ - -I" + includePath + " -c -o /dev/null";
 const int rc = std::system(cmd.c_str());
 CPPUNIT_ASSERT_EQUAL(0, rc);

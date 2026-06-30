@@ -9,6 +9,10 @@
 #include <fstream>
 #include <iterator>
 
+#include "ships/FVehicle.h"
+#include "strategic/FFleet.h"
+#include "tactical/FTacticalGame.h"
+
 namespace FrontierTests {
 
 namespace {
@@ -77,6 +81,24 @@ void FTacticalGameMechanicsTest::testHeaderExposesAdditiveMechanicsApiSurface() 
 // AC: additive mechanics methods exist for setup/state, movement, report lifecycle, fire, and winner helpers.
 const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
 
+assertContains(header, "} FTacticalOrdnanceSource;");
+assertContains(header, "unsigned int shipID;");
+assertContains(header, "int weaponIndex;");
+assertContains(header, "unsigned int weaponID;");
+assertContains(header, "} FTacticalPlacedOrdnance;");
+assertContains(header, "FWeapon::Weapon weaponType;");
+assertContains(header, "unsigned int ownerID;");
+assertContains(header, "FTacticalOrdnanceSource source;");
+assertContains(header, "FPoint hex;");
+assertContains(header, "int displayColorIndex;");
+assertContains(header, "int displayMarkerIndex;");
+assertContains(header, "} FTacticalSeekerMissileState;");
+assertContains(header, "unsigned int seekerID;");
+assertContains(header, "int heading;");
+assertContains(header, "bool active;");
+assertContains(header, "int movementTurn;");
+assertContains(header, "int movementAllowance;");
+assertContains(header, "bool hasSource;");
 assertContains(header, "int setupFleets(FleetList * aList, FleetList * dList, bool planet = false, FVehicle * station = NULL);");
 assertContains(header, "void setState(int s);");
 assertContains(header, "void setPhase(int p);");
@@ -97,6 +119,13 @@ assertContains(header, "bool isCombatOver() const;");
 assertContains(header, "bool hasWinner() const { return m_hasWinner; }");
 assertContains(header, "unsigned int getWinnerID() const { return m_winnerID; }");
 assertContains(header, "void clearWinner();");
+assertContains(header, "const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const { return m_placedOrdnance; }");
+assertContains(header, "const std::vector<FTacticalSeekerMissileState> & getSeekerMissiles() const { return m_seekerMissiles; }");
+assertContains(header, "std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;");
+assertContains(header, "std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;");
+assertContains(header, "std::vector<FTacticalSeekerMissileState> getSeekerMissilesForOwner(unsigned int ownerID, bool activeOnly = false) const;");
+assertContains(header, "std::vector<FTacticalPlacedOrdnance> m_placedOrdnance;");
+assertContains(header, "std::vector<FTacticalSeekerMissileState> m_seekerMissiles;");
 }
 
 void FTacticalGameMechanicsTest::testResetInitializesSafeLegacyCompatibleDefaults() {
@@ -124,6 +153,42 @@ assertContains(body, "clearICMVector(m_ICMData);");
 assertContains(body, "m_tacticalReport.clear();");
 assertContains(body, "m_turnInfo.clear();");
 assertContains(body, "m_mineOwner = 99;");
+assertContains(body, "m_placedOrdnance.clear();");
+assertContains(body, "m_seekerMissiles.clear();");
+}
+
+void FTacticalGameMechanicsTest::testSeekerActivationPhaseEntryAndAutoSkipFlow() {
+// AC: movement phase entry routes through seeker activation and auto-skip still resolves active seekers.
+	const std::string frontierHeader = readFile(repoFile("include/Frontier.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string setPhaseBody = extractFunctionBody(source, "void FTacticalGame::setPhase(int p)");
+	const std::string beginSeekerBody = extractFunctionBody(source, "void FTacticalGame::beginSeekerActivationPhase()");
+	const std::string beginMoveBody = extractFunctionBody(source, "void FTacticalGame::beginMovePhase()");
+	const std::string resolveActiveBody = extractFunctionBody(source, "void FTacticalGame::resolveActiveSeekersForMovingPlayer()");
+
+	assertContains(frontierHeader, "PH_SET_SPEED,");
+	assertContains(frontierHeader, "PH_SEEKER_ACTIVATION,");
+	assertContains(frontierHeader, "PH_MOVE,");
+	CPPUNIT_ASSERT(frontierHeader.find("PH_SEEKER_ACTIVATION,") < frontierHeader.find("PH_MOVE,"));
+
+	assertContains(setPhaseBody, "if (p == PH_MOVE) {");
+	assertContains(setPhaseBody, "beginSeekerActivationPhase();");
+	assertContains(setPhaseBody, "if (p == PH_SEEKER_ACTIVATION) {");
+	assertContains(setPhaseBody, "m_selectedSeekerActivationHex.setPoint(-1, -1);");
+
+	assertContains(beginSeekerBody, "const std::vector<FPoint> inactiveHexes = getInactiveSeekerActivationHexes();");
+	assertContains(beginSeekerBody, "if (inactiveHexes.empty()) {");
+	assertContains(beginSeekerBody, "resolveActiveSeekersForMovingPlayer();");
+	assertContains(beginSeekerBody, "beginMovePhase();");
+	assertContains(beginSeekerBody, "m_phase = PH_SEEKER_ACTIVATION;");
+	assertContains(beginSeekerBody, "m_selectedSeekerActivationHex = inactiveHexes[0];");
+
+	assertContains(beginMoveBody, "m_phase = PH_MOVE;");
+	assertContains(beginMoveBody, "applyFireDamage();");
+	assertContains(beginMoveBody, "toggleActivePlayer();");
+	assertContains(beginMoveBody, "resetMovementState();");
+
+	assertContains(resolveActiveBody, "TSM-004 placeholder seam:");
 }
 
 void FTacticalGameMechanicsTest::testTacticalReportLifecycleUsesSharedReportTypes() {
@@ -308,6 +373,9 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 		extractFunctionBody(source, "void buildPathHeadings(const FTacticalTurnData & turnData, PointList & path, std::vector<int> & headings)");
 	const std::string computeRangeBody = extractFunctionBody(source, "void FTacticalGame::computeWeaponRange()");
 	const std::string setIfValidTargetBody = extractFunctionBody(source, "bool FTacticalGame::setIfValidTarget(FVehicle * target, const FPoint & targetHex)");
+	const std::string ordnanceAtHexBody = extractFunctionBody(source, "std::vector<FTacticalPlacedOrdnance> FTacticalGame::getPlacedOrdnanceAtHex(const FPoint & hex) const");
+	const std::string seekersAtHexBody = extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesAtHex(");
+	const std::string seekersForOwnerBody = extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesForOwner(");
 
 	assertContains(header, "bool selectWeapon(unsigned int weaponIndex);");
 	assertContains(header, "bool selectDefense(unsigned int defenseIndex);");
@@ -319,6 +387,11 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(header, "bool setShipPlacementHeading(int heading);");
 	assertContains(header, "bool setShipPlacementHeadingByHex(const FPoint & hex);");
 	assertContains(header, "bool beginMinePlacement();");
+	assertContains(header, "bool beginOrdnancePlacement();");
+	assertContains(header, "bool selectPlacementSource(unsigned int shipID, unsigned int weaponIndex);");
+	assertContains(header, "bool selectPlacementSourceByIndex(unsigned int sourceIndex);");
+	assertContains(header, "int getSelectedPlacementSourceIndex() const");
+	assertContains(header, "const std::vector<FTacticalDeploymentSource> & getDeployablePlacementSources() const");
 	assertContains(header, "void completeMinePlacement();");
 	assertContains(header, "void completeMovePhase();");
 	assertContains(header, "FTacticalCombatReportSummary resolveCurrentFirePhase();");
@@ -327,6 +400,8 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(header, "void computeWeaponRange();");
 	assertContains(header, "bool assignTargetFromHex(const FPoint & hex);");
 	assertContains(header, "bool placeMineAtHex(const FPoint & hex);");
+	assertContains(header, "bool placeOrdnanceAtHex(const FPoint & hex);");
+	assertContains(header, "bool isHexDeployable(const FPoint & hex);");
 	assertContains(header, "bool isHexMinable(const FPoint & hex);");
 
 	assertContains(header, "const VehicleList & getHexOccupants(const FPoint & hex) const;");
@@ -344,15 +419,34 @@ void FTacticalGameMechanicsTest::testInteractionApisAndRendererAccessorsAreExpos
 	assertContains(header, "bool hasShipPlacementPendingRotation() const");
 	assertContains(header, "const FPoint & getSelectedShipHex() const");
 	assertContains(header, "const VehicleList & getShipsWithMines() const");
+	assertContains(header, "const std::vector<FTacticalPlacedOrdnance> & getPlacedOrdnance() const");
+	assertContains(header, "const std::vector<FTacticalSeekerMissileState> & getSeekerMissiles() const");
+	assertContains(header, "std::vector<FTacticalPlacedOrdnance> getPlacedOrdnanceAtHex(const FPoint & hex) const;");
+	assertContains(header, "std::vector<FTacticalSeekerMissileState> getSeekerMissilesAtHex(const FPoint & hex, bool activeOnly = false) const;");
+	assertContains(header, "std::vector<FTacticalSeekerMissileState> getSeekerMissilesForOwner(unsigned int ownerID, bool activeOnly = false) const;");
 	assertContains(header, "bool isHexInBounds(const FPoint & hex) const;");
 	assertContains(header, "bool isHexOccupied(const FPoint & hex) const;");
 
 	assertContains(source, "bool FTacticalGame::selectWeapon(unsigned int weaponIndex)");
 	assertContains(source, "bool FTacticalGame::selectDefense(unsigned int defenseIndex)");
+	assertContains(source, "bool FTacticalGame::beginOrdnancePlacement()");
+	assertContains(source, "bool FTacticalGame::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex)");
+	assertContains(source, "bool FTacticalGame::selectPlacementSourceByIndex(unsigned int sourceIndex)");
 	assertContains(source, "bool FTacticalGame::handleHexClick(const FPoint & hex)");
+	assertContains(source, "bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex)");
+	assertContains(source, "bool FTacticalGame::isHexDeployable(const FPoint & hex)");
 	assertContains(source, "const VehicleList & FTacticalGame::getHexOccupants(const FPoint & hex) const");
+	assertContains(source, "std::vector<FTacticalPlacedOrdnance> FTacticalGame::getPlacedOrdnanceAtHex(const FPoint & hex) const");
+	assertContains(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesAtHex(");
+	assertContains(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSeekerMissilesForOwner(");
 	assertContains(source, "const std::vector<int> & FTacticalGame::getStoppedShipPreviewHeadingsForHex(const FPoint & hex) const");
 	assertContains(source, "return EMPTY_PREVIEW_HEADING_LIST;");
+	assertContains(ordnanceAtHexBody, "if (itr->hex.getX() == hex.getX() && itr->hex.getY() == hex.getY()) {");
+	assertContains(ordnanceAtHexBody, "ordnance.push_back(*itr);");
+	assertContains(seekersAtHexBody, "if (itr->hex.getX() == hex.getX() && itr->hex.getY() == hex.getY() && (!activeOnly || itr->active)) {");
+	assertContains(seekersAtHexBody, "seekers.push_back(*itr);");
+	assertContains(seekersForOwnerBody, "if (itr->ownerID == ownerID && (!activeOnly || itr->active)) {");
+	assertContains(seekersForOwnerBody, "seekers.push_back(*itr);");
 	assertContains(buildPathHeadingsBody, "headings.push_back(lastPoint ? turnData.finalHeading : heading);");
 	assertContains(buildPathHeadingsBody, "heading = FHexMap::computeHeading(path[i], path[i + 1]);");
 	assertContains(buildPathHeadingsBody, "heading = turnData.finalHeading;");
@@ -453,6 +547,140 @@ void FTacticalGameMechanicsTest::testMinePlacementAndMoveFireProgressionUpdateMo
 	assertContains(offensiveBody, "setPhase(PH_MOVE);");
 }
 
+void FTacticalGameMechanicsTest::testOrdnancePlacementSourceTrackingAndCompatibilityFlows() {
+// AC: generalized placement supports mine/seeker sources, source-slot ammo accounting, and compatibility wrappers.
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string rebuildSourcesBody = extractFunctionBody(source, "void FTacticalGame::rebuildDeployablePlacementSources()");
+	const std::string beginOrdnanceBody = extractFunctionBody(source, "bool FTacticalGame::beginOrdnancePlacement()");
+	const std::string selectByIndexBody = extractFunctionBody(source, "bool FTacticalGame::selectPlacementSourceByIndex(unsigned int sourceIndex)");
+	const std::string selectBySlotBody = extractFunctionBody(source, "bool FTacticalGame::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex)");
+	const std::string placeMineFromSelectionBody = extractFunctionBody(source, "bool FTacticalGame::placeMineFromSelection(");
+	const std::string placeSeekerFromSelectionBody = extractFunctionBody(source, "bool FTacticalGame::placeSeekerFromSelection(");
+	const std::string placeOrdnanceBody = extractFunctionBody(source, "bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex)");
+	const std::string removePlacedBody = extractFunctionBody(source, "bool FTacticalGame::removePlacedOrdnanceForSelection(");
+	const std::string restoreAmmoBody = extractFunctionBody(source, "bool FTacticalGame::restoreAmmoForSource(const FTacticalOrdnanceSource & source)");
+	const std::string sourceMatchesSelectionBody = extractFunctionBody(source, "bool FTacticalGame::sourceMatchesSelection(const FTacticalOrdnanceSource & source) const");
+	const std::string deployableBody = extractFunctionBody(source, "bool FTacticalGame::isHexDeployable(const FPoint & hex)");
+	const std::string beginMineBody = extractFunctionBody(source, "bool FTacticalGame::beginMinePlacement()");
+	const std::string placeMineBody = extractFunctionBody(source, "bool FTacticalGame::placeMineAtHex(const FPoint & hex)");
+	const std::string checkForMinesBody = extractFunctionBody(source, "void FTacticalGame::checkForMines(FVehicle * ship)");
+	const std::string applyMineDamageBody = extractFunctionBody(source, "void FTacticalGame::applyMineDamage()");
+
+	assertContains(header, "} FTacticalDeploymentSource;");
+	assertContains(header, "FWeapon::Weapon weaponType;");
+	assertContains(header, "std::vector<FTacticalDeploymentSource> m_deployablePlacementSources;");
+	assertContains(header, "int m_selectedPlacementSource;");
+
+	assertContains(rebuildSourcesBody, "if (!isDeployableWeapon(weapon)) {");
+	assertContains(rebuildSourcesBody, "source.weaponType = weapon->getType();");
+	assertContains(rebuildSourcesBody, "source.source.shipID = (*shipItr)->getID();");
+	assertContains(rebuildSourcesBody, "source.source.weaponIndex = static_cast<int>(i);");
+	assertContains(rebuildSourcesBody, "source.source.weaponID = weapon->getID();");
+	assertContains(rebuildSourcesBody, "m_deployablePlacementSources.push_back(source);");
+	assertContains(rebuildSourcesBody, "if (weapon->getType() == FWeapon::M) {");
+	assertContains(rebuildSourcesBody, "m_shipsWithMines.push_back(*shipItr);");
+
+	assertContains(beginOrdnanceBody, "rebuildDeployablePlacementSources();");
+	assertContains(beginOrdnanceBody, "if (weapon != NULL && weapon->getAmmo() > 0) {");
+	assertContains(beginOrdnanceBody, "if (!selectPlacementSourceByIndex(selectedIndex)) {");
+	assertContains(beginOrdnanceBody, "setState(BS_PlaceMines);");
+
+	assertContains(selectByIndexBody, "m_selectedPlacementSource = static_cast<int>(sourceIndex);");
+	assertContains(selectByIndexBody, "setShip(ship);");
+	assertContains(selectByIndexBody, "setWeapon(weapon);");
+	assertContains(selectBySlotBody, "if (source.source.shipID == shipID");
+	assertContains(selectBySlotBody, "&& source.source.weaponIndex == static_cast<int>(weaponIndex)) {");
+	assertContains(selectBySlotBody, "return selectPlacementSourceByIndex(i);");
+
+	assertContains(placeMineFromSelectionBody, "if (m_minedHexList.find(hex) == m_minedHexList.end()) {");
+	assertContains(placeMineFromSelectionBody, "weapon->setCurrentAmmo(weapon->getAmmo() - 1);");
+	assertContains(placeMineFromSelectionBody, "appendPlacedOrdnanceRecord(FWeapon::M, hex, selectedSource.source);");
+	assertContains(placeMineFromSelectionBody, "rebuildDeployablePlacementSourcesFiltered(FWeapon::M);");
+	assertContains(placeMineFromSelectionBody, "selectPlacementSource(selectedSource.source.shipID,");
+	assertContains(placeMineFromSelectionBody, "static_cast<unsigned int>(selectedSource.source.weaponIndex));");
+	assertContains(placeSeekerFromSelectionBody, "weapon->setCurrentAmmo(weapon->getAmmo() - 1);");
+	assertContains(placeSeekerFromSelectionBody, "seeker.active = false;");
+	assertContains(placeSeekerFromSelectionBody, "seeker.source = selectedSource.source;");
+	assertContains(placeSeekerFromSelectionBody, "m_seekerMissiles.push_back(seeker);");
+	assertContains(placeSeekerFromSelectionBody, "appendPlacedOrdnanceRecord(FWeapon::SM, hex, selectedSource.source);");
+	assertContains(placeSeekerFromSelectionBody, "selectPlacementSource(selectedSource.source.shipID,");
+	assertContains(placeSeekerFromSelectionBody, "static_cast<unsigned int>(selectedSource.source.weaponIndex));");
+
+	assertContains(removePlacedBody, "if (!sourceMatchesSelection(itr->source)) {");
+	assertContains(sourceMatchesSelectionBody, "if (weapon == m_curWeapon) {");
+	assertContains(sourceMatchesSelectionBody, "if (weapon != NULL && weapon->getID() == m_curWeapon->getID()) {");
+	assertContains(sourceMatchesSelectionBody, "return sourceMatchesWeapon(source, m_curShip, m_curWeapon, selectedWeaponIndex);");
+	assertContains(restoreAmmoBody, "FWeapon * weapon = findWeaponBySource(source, NULL);");
+	assertContains(restoreAmmoBody, "weapon->setCurrentAmmo(ammo + 1);");
+	assertContains(placeOrdnanceBody, "if (removePlacedOrdnanceForSelection(hex, removed)) {");
+	assertContains(placeOrdnanceBody, "if (!restoreAmmoForSource(removed.source)) {");
+	assertContains(placeOrdnanceBody, "if (removed.weaponType == FWeapon::M) {");
+	assertContains(placeOrdnanceBody, "m_minedHexList.erase(hex);");
+	assertContains(placeOrdnanceBody, "} else if (removed.weaponType == FWeapon::SM) {");
+	assertContains(placeOrdnanceBody, "&& !itr->active");
+	assertContains(placeOrdnanceBody, "&& itr->source.weaponIndex == removed.source.weaponIndex");
+	assertContains(placeOrdnanceBody, "m_seekerMissiles.erase(itr);");
+	assertContains(placeOrdnanceBody, "rebuildDeployablePlacementSources();");
+	assertContains(placeOrdnanceBody, "selectPlacementSource(selectedSource.source.shipID, selectedSource.source.weaponIndex);");
+	assertContains(placeOrdnanceBody, "if (selectedSource.weaponType == FWeapon::M) {");
+	assertContains(placeOrdnanceBody, "if (selectedSource.weaponType == FWeapon::SM) {");
+
+	assertContains(deployableBody, "if (selectedSource.weaponType == FWeapon::M) {");
+	assertContains(deployableBody, "return isHexMinable(hex);");
+	assertContains(deployableBody, "return true;");
+
+	assertContains(beginMineBody, "return beginOrdnancePlacement();");
+	assertContains(placeMineBody, "return placeOrdnanceAtHex(hex);");
+
+	assertContains(checkForMinesBody, "for (PointSet::iterator itr = m_minedHexList.begin(); itr != m_minedHexList.end(); ++itr) {");
+	assertContains(applyMineDamageBody, "removePlacedMineRecordsAtHex(*itr);");
+}
+
+void FTacticalGameMechanicsTest::testSeekerActivationApisExposeSelectionAndOneWayActivation() {
+// AC: model-owned seeker activation APIs expose stack selection and enforce one-way activation behavior.
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string inactiveHexesBody = extractFunctionBody(source, "std::vector<FPoint> FTacticalGame::getInactiveSeekerActivationHexes() const");
+	const std::string selectHexBody = extractFunctionBody(source, "bool FTacticalGame::selectSeekerActivationHex(const FPoint & hex)");
+	const std::string selectedStackBody =
+		extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getSelectedInactiveSeekerActivationStack() const");
+	const std::string activateBody = extractFunctionBody(source, "bool FTacticalGame::activateSelectedInactiveSeeker(unsigned int seekerID)");
+	const std::string completeActivationBody = extractFunctionBody(source, "void FTacticalGame::completeSeekerActivationPhase()");
+
+	assertContains(header, "std::vector<FPoint> getInactiveSeekerActivationHexes() const;");
+	assertContains(header, "bool selectSeekerActivationHex(const FPoint & hex);");
+	assertContains(header, "const FPoint & getSelectedSeekerActivationHex() const { return m_selectedSeekerActivationHex; }");
+	assertContains(header, "std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;");
+	assertContains(header, "bool activateSelectedInactiveSeeker(unsigned int seekerID);");
+	assertContains(header, "void completeSeekerActivationPhase();");
+	assertContains(header, "FPoint m_selectedSeekerActivationHex;");
+
+	assertContains(inactiveHexesBody, "if (itr->ownerID != getMovingPlayerID() || itr->active) {");
+	assertContains(inactiveHexesBody, "if (uniqueHexes.insert(itr->hex).second) {");
+	assertContains(inactiveHexesBody, "hexes.push_back(itr->hex);");
+
+	assertContains(selectHexBody, "if (!isHexInBounds(hex)) {");
+	assertContains(selectHexBody, "if (itr->ownerID == getMovingPlayerID()");
+	assertContains(selectHexBody, "&& !itr->active");
+	assertContains(selectHexBody, "m_selectedSeekerActivationHex = hex;");
+
+	assertContains(selectedStackBody, "if (!isHexInBounds(m_selectedSeekerActivationHex)) {");
+	assertContains(selectedStackBody, "if (itr->ownerID == getMovingPlayerID()");
+	assertContains(selectedStackBody, "&& !itr->active");
+	assertContains(selectedStackBody, "seekers.push_back(*itr);");
+
+	assertContains(activateBody, "if (!isHexInBounds(m_selectedSeekerActivationHex)) {");
+	assertContains(activateBody, "|| itr->active");
+	assertContains(activateBody, "itr->active = true;");
+	CPPUNIT_ASSERT(activateBody.find("itr->active = false;") == std::string::npos);
+
+	assertContains(completeActivationBody, "if (m_phase != PH_SEEKER_ACTIVATION) {");
+	assertContains(completeActivationBody, "resolveActiveSeekersForMovingPlayer();");
+	assertContains(completeActivationBody, "m_selectedSeekerActivationHex.setPoint(-1, -1);");
+	assertContains(completeActivationBody, "beginMovePhase();");
+}
+
 void FTacticalGameMechanicsTest::testStoppedShipFreeRotationGuardsAndFacingSelectionFlow() {
 // AC: stopped-ship free rotation is gated to speed==0, nMoved==0, path length 1, and MR>0.
 	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
@@ -527,6 +755,644 @@ CPPUNIT_ASSERT(source.find("#include \"tactical/FBattleDisplay.h\"") == std::str
 CPPUNIT_ASSERT(source.find("FBattleScreen::") == std::string::npos);
 CPPUNIT_ASSERT(source.find("FBattleBoard::") == std::string::npos);
 CPPUNIT_ASSERT(source.find("FBattleDisplay::") == std::string::npos);
+	CPPUNIT_ASSERT(header.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(header.find("#include \"wx/") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("#include \"wx/") == std::string::npos);
+}
+
+void FTacticalGameMechanicsTest::testSeekerDeploymentPhaseStateMachineTransitions() {
+// AC: SMF-01 seeker deployment state machine - BS_PlaceSeekers state and transition contracts.
+	const std::string frontier = readFile(repoFile("include/Frontier.h"));
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+	const std::string battleScreenHeader = readFile(repoFile("include/tactical/FBattleScreen.h"));
+	const std::string battleScreenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+
+	// AC-1: BS_PlaceSeekers is declared in Frontier.h after BS_PlaceMines.
+	const std::string::size_type placeMinesPos = frontier.find("BS_PlaceMines");
+	const std::string::size_type placeSeekersPos = frontier.find("BS_PlaceSeekers");
+	CPPUNIT_ASSERT_MESSAGE("BS_PlaceMines must be declared in Frontier.h", placeMinesPos != std::string::npos);
+	CPPUNIT_ASSERT_MESSAGE("BS_PlaceSeekers must be declared in Frontier.h", placeSeekersPos != std::string::npos);
+	CPPUNIT_ASSERT_MESSAGE("BS_PlaceSeekers must appear after BS_PlaceMines in Frontier.h", placeSeekersPos > placeMinesPos);
+
+	// AC-2: beginOrdnancePlacement() erases SM sources before the ammo-check loop (mine-only filter).
+	const std::string beginOrdnanceBody = extractFunctionBody(source, "bool FTacticalGame::beginOrdnancePlacement()");
+	assertContains(beginOrdnanceBody, "rebuildDeployablePlacementSources();");
+	// Filter removes non-M sources before the ammo-check loop.
+	assertContains(beginOrdnanceBody, "weaponType != FWeapon::M");
+	assertContains(beginOrdnanceBody, "setState(BS_PlaceMines);");
+	// beginOrdnancePlacement returns false when source list is empty after filtering.
+	assertContains(beginOrdnanceBody, "if (m_deployablePlacementSources.empty()) {");
+	assertContains(beginOrdnanceBody, "return false;");
+
+	// AC-3: beginSeekerPlacement() filters to SM only via rebuildDeployablePlacementSourcesFiltered.
+	assertContains(source, "bool FTacticalGame::beginSeekerPlacement()");
+	const std::string beginSeekerBody = extractFunctionBody(source, "bool FTacticalGame::beginSeekerPlacement()");
+	assertContains(beginSeekerBody, "rebuildDeployablePlacementSourcesFiltered(FWeapon::SM);");
+	assertContains(beginSeekerBody, "setState(BS_PlaceSeekers);");
+	// beginSeekerPlacement returns false when no SM sources exist.
+	assertContains(beginSeekerBody, "if (m_deployablePlacementSources.empty()) {");
+	assertContains(beginSeekerBody, "return false;");
+
+	// AC-4 & AC-5: completeMinePlacement() chains to BS_PlaceSeekers or skips to BS_SetupAttackFleet.
+	assertContains(source, "void FTacticalGame::completeMinePlacement()");
+	const std::string completeMinePlacementBody = extractFunctionBody(source, "void FTacticalGame::completeMinePlacement()");
+	// Resets ship/weapon before attempting seeker placement.
+	assertContains(completeMinePlacementBody, "setShip(NULL);");
+	assertContains(completeMinePlacementBody, "setWeapon(NULL);");
+	// Tries seeker placement; on failure, advances directly to BS_SetupAttackFleet.
+	assertContains(completeMinePlacementBody, "beginSeekerPlacement()");
+	assertContains(completeMinePlacementBody, "setState(BS_SetupAttackFleet);");
+	assertContains(completeMinePlacementBody, "toggleActivePlayer();");
+	// toggleActivePlayer is only called on BS_SetupAttackFleet branch (not on seeker-phase chain).
+	// The implementation uses: if (!beginSeekerPlacement()) { setState(BS_SetupAttackFleet); toggleActivePlayer(); }
+	// so both setState and toggleActivePlayer appear inside the false branch.
+
+	// AC-6: completeSeekerPlacement() transitions to BS_SetupAttackFleet with toggleActivePlayer.
+	assertContains(source, "void FTacticalGame::completeSeekerPlacement()");
+	const std::string completeSeekerPlacementBody = extractFunctionBody(source, "void FTacticalGame::completeSeekerPlacement()");
+	assertContains(completeSeekerPlacementBody, "setState(BS_SetupAttackFleet);");
+	assertContains(completeSeekerPlacementBody, "toggleActivePlayer();");
+	assertContains(completeSeekerPlacementBody, "setShip(NULL);");
+	assertContains(completeSeekerPlacementBody, "setWeapon(NULL);");
+
+	// AC-7: rebuildDeployablePlacementSourcesFiltered exists as protected helper.
+	assertContains(header, "void rebuildDeployablePlacementSourcesFiltered(FWeapon::Weapon filter);");
+	assertContains(source, "void FTacticalGame::rebuildDeployablePlacementSourcesFiltered(FWeapon::Weapon filter)");
+	const std::string rebuildFilteredBody = extractFunctionBody(source, "void FTacticalGame::rebuildDeployablePlacementSourcesFiltered(FWeapon::Weapon filter)");
+	// Only sources whose weaponType matches filter are kept.
+	assertContains(rebuildFilteredBody, "if (weapon->getType() != filter) {");
+	assertContains(rebuildFilteredBody, "continue;");
+
+	// AC-8: FBattleScreen public API exposes beginSeekerPlacement and completeSeekerPlacement.
+	assertContains(battleScreenHeader, "bool beginSeekerPlacement();");
+	assertContains(battleScreenHeader, "void completeSeekerPlacement();");
+
+	// AC-8 (delegation): FBattleScreen::beginSeekerPlacement delegates to model and calls reDraw.
+	assertContains(battleScreenSource, "bool FBattleScreen::beginSeekerPlacement()");
+	const std::string bsBeginSeekerBody = extractFunctionBody(battleScreenSource, "bool FBattleScreen::beginSeekerPlacement()");
+	assertContains(bsBeginSeekerBody, "m_tacticalGame->beginSeekerPlacement()");
+	assertContains(bsBeginSeekerBody, "reDraw()");
+
+	// AC-8 (delegation): FBattleScreen::completeSeekerPlacement delegates to model and calls reDraw.
+	assertContains(battleScreenSource, "void FBattleScreen::completeSeekerPlacement()");
+	const std::string bsCompleteSeekerBody = extractFunctionBody(battleScreenSource, "void FBattleScreen::completeSeekerPlacement()");
+	assertContains(bsCompleteSeekerBody, "m_tacticalGame->completeSeekerPlacement()");
+	assertContains(bsCompleteSeekerBody, "reDraw()");
+
+	// AC-9: No wx headers in FTacticalGame model files (reinforces testImplementationRemainsSelfContainedWithoutLegacyWxRewire).
+	CPPUNIT_ASSERT(header.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(header.find("#include \"wx/") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(source.find("#include \"wx/") == std::string::npos);
+}
+
+void FTacticalGameMechanicsTest::testSeekerActivationPhaseIndexStampingAndFiltering() {
+// AC: SMF-04 per-activation-phase seeker tracking — field declaration, counter lifecycle,
+//     activation stamping, and phase-filtered accessor.
+	const std::string header = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+
+	// AC-1: activationPhaseIndex field is declared inside FTacticalSeekerMissileState
+	// (non-persisted, lives before the closing typedef tag).
+	assertContains(header, "int activationPhaseIndex;");
+	// The field must appear before the struct closing tag.
+	const std::string::size_type fieldPos = header.find("int activationPhaseIndex;");
+	const std::string::size_type structEndPos = header.find("} FTacticalSeekerMissileState;");
+	CPPUNIT_ASSERT_MESSAGE(
+		"activationPhaseIndex must appear before } FTacticalSeekerMissileState;",
+		fieldPos < structEndPos);
+
+	// AC-2: m_seekerActivationPhaseIndex private member is declared in the class.
+	assertContains(header, "int m_seekerActivationPhaseIndex;");
+
+	// AC-3: getActiveSeekersByMovingPlayerThisPhase() is declared as a public const method
+	//        returning by value (not by reference) in FTacticalGame.
+	assertContains(header, "std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayerThisPhase() const;");
+
+	// AC-4: reset() initializes m_seekerActivationPhaseIndex to 0.
+	const std::string resetBody = extractFunctionBody(source, "void FTacticalGame::reset()");
+	assertContains(resetBody, "m_seekerActivationPhaseIndex = 0;");
+
+	// AC-5: beginSeekerActivationPhase() increments the counter before the rest of the phase setup.
+	const std::string beginActivationBody =
+		extractFunctionBody(source, "void FTacticalGame::beginSeekerActivationPhase()");
+	assertContains(beginActivationBody, "++m_seekerActivationPhaseIndex;");
+
+	// AC-6: activateSelectedInactiveSeeker() stamps activationPhaseIndex on the seeker.
+	const std::string activateSelectedBody =
+		extractFunctionBody(source, "bool FTacticalGame::activateSelectedInactiveSeeker(unsigned int seekerID)");
+	assertContains(activateSelectedBody, "itr->activationPhaseIndex = m_seekerActivationPhaseIndex;");
+
+	// AC-7: activateInactiveSeekerAtHex() stamps activationPhaseIndex on the seeker.
+	// Note: this function uses targetItr (the lowest-seekerID candidate) rather than itr.
+	const std::string activateAtHexBody =
+		extractFunctionBody(source, "bool FTacticalGame::activateInactiveSeekerAtHex(const FPoint & hex)");
+	assertContains(activateAtHexBody, "activationPhaseIndex = m_seekerActivationPhaseIndex;");
+	// Also verify the existing one-way activation contract remains intact.
+	assertContains(activateAtHexBody, "targetItr->active = true;");
+
+	// AC-8: getActiveSeekersByMovingPlayerThisPhase() filters on activationPhaseIndex == m_seekerActivationPhaseIndex.
+	const std::string thisPhaseBody =
+		extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getActiveSeekersByMovingPlayerThisPhase() const");
+	assertContains(thisPhaseBody, "itr->ownerID == getMovingPlayerID()");
+	assertContains(thisPhaseBody, "itr->active");
+	assertContains(thisPhaseBody, "itr->activationPhaseIndex == m_seekerActivationPhaseIndex");
+	assertContains(thisPhaseBody, "result.push_back(*itr);");
+
+	// AC-9: getActiveSeekersByMovingPlayer() (unfiltered) remains unchanged — no phase filter.
+	const std::string allActiveBody =
+		extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FTacticalGame::getActiveSeekersByMovingPlayer() const");
+	CPPUNIT_ASSERT_MESSAGE(
+		"getActiveSeekersByMovingPlayer() must not filter by activationPhaseIndex",
+		allActiveBody.find("activationPhaseIndex") == std::string::npos);
+
+	// AC-10: activationPhaseIndex is not written in any save() call (persistence compatible).
+	// The field carries "not persisted" by design — check that the word does not appear in
+	// any of the persistence-entry-point bodies present in the source.
+	// We confirm by checking all occurrences of "activationPhaseIndex" in FTacticalGame.cpp
+	// are limited to reset, beginSeekerActivationPhase, the two activate helpers, and the
+	// filtering accessor — none of which are save/load methods.
+	// Rather than reconstructing a save body (there may be none for this struct), we verify
+	// that any "save" function bodies visible in the source do not reference the field.
+	// Source-text search: find every line that mentions "save" and verify none of those
+	// lines also reference "activationPhaseIndex" by checking the source-level constraint.
+	const std::string::size_type savePos = source.find("void FTacticalGame::save(");
+	if (savePos != std::string::npos) {
+		const std::string saveBody = extractFunctionBody(source, "void FTacticalGame::save(");
+		CPPUNIT_ASSERT_MESSAGE(
+			"activationPhaseIndex must not be persisted in save()",
+			saveBody.find("activationPhaseIndex") == std::string::npos);
+	}
+	// Regardless, confirm the struct comment marks it non-persisted.
+	assertContains(header, "not persisted");
+}
+
+void FTacticalGameMechanicsTest::testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate() {
+// AC: SMF-04 FBattleScreen read-only delegation for per-phase accessor.
+	const std::string bsHeader = readFile(repoFile("include/tactical/FBattleScreen.h"));
+	const std::string bsSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+
+	// AC-1: Declaration is a const method returning by value (not by reference).
+	assertContains(bsHeader,
+		"std::vector<FTacticalSeekerMissileState> getActiveSeekersByMovingPlayerThisPhase() const;");
+
+	// AC-2: Implementation delegates straight to the model method, no local logic.
+	const std::string delegateBody =
+		extractFunctionBody(bsSource,
+			"std::vector<FTacticalSeekerMissileState> FBattleScreen::getActiveSeekersByMovingPlayerThisPhase() const");
+	assertContains(delegateBody, "m_tacticalGame->getActiveSeekersByMovingPlayerThisPhase()");
+	// The body should be a direct return with no filtering logic of its own.
+	assertContains(delegateBody, "return");
+
+	// AC-3: wx-free — FTacticalGame header and source carry no wx includes
+	//        (FBattleScreen inherits from wx but the delegation path itself must not
+	//         introduce wx into the model header; verify the model header is clean).
+	const std::string tgHeader = readFile(repoFile("include/tactical/FTacticalGame.h"));
+	CPPUNIT_ASSERT(tgHeader.find("#include <wx") == std::string::npos);
+	CPPUNIT_ASSERT(tgHeader.find("#include \"wx/") == std::string::npos);
+}
+
+void FTacticalGameMechanicsTest::testPreGameOrdnancePlacementRecordingBehavior() {
+// AC: SMFR-02 — clicking a valid hex during BS_PlaceMines and BS_PlaceSeekers
+//     records placement, decrements ammo, and updates model state.
+//     This behavioral test must fail against the regression (missing BS_PlaceSeekers
+//     case in handleHexClick) and pass after the fix.
+	using namespace Frontier;
+
+	// Build a Minelayer fleet for the defending side.  The Minelayer carries
+	// SM(x4) and M(x20) launchers so both placement phases can be exercised.
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Minelayer ship must be creatable", minelayer != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Minelayer must have 4 weapons", static_cast<unsigned int>(4), minelayer->getWeaponCount());
+
+	// Locate the mine launcher (M) and seeker launcher (SM) weapon slots.
+	int mineLauncherIndex = -1;
+	int seekerLauncherIndex = -1;
+	for (unsigned int i = 0; i < minelayer->getWeaponCount(); ++i) {
+		FWeapon * w = minelayer->getWeapon(i);
+		if (w != NULL && w->getType() == FWeapon::M && mineLauncherIndex < 0) {
+			mineLauncherIndex = static_cast<int>(i);
+		}
+		if (w != NULL && w->getType() == FWeapon::SM && seekerLauncherIndex < 0) {
+			seekerLauncherIndex = static_cast<int>(i);
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an M launcher", mineLauncherIndex >= 0);
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an SM launcher", seekerLauncherIndex >= 0);
+
+	FWeapon * mineLauncher = minelayer->getWeapon(static_cast<unsigned int>(mineLauncherIndex));
+	FWeapon * seekerLauncher = minelayer->getWeapon(static_cast<unsigned int>(seekerLauncherIndex));
+	const int initialMineAmmo = mineLauncher->getAmmo();
+	const int initialSeekerAmmo = seekerLauncher->getAmmo();
+	CPPUNIT_ASSERT_MESSAGE("Mine launcher must start with ammo > 0", initialMineAmmo > 0);
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must start with ammo > 0", initialSeekerAmmo > 0);
+
+	// Build fleets and initialize the tactical game.
+	FFleet * defendFleet = new FFleet();
+	minelayer->setOwner(0);
+	defendFleet->addShip(minelayer);
+	FleetList defendFleets;
+	defendFleets.push_back(defendFleet);
+
+	FFleet * attackFleet = new FFleet();
+	FVehicle * attacker = createShip("AssaultScout");
+	CPPUNIT_ASSERT_MESSAGE("AttackScout must be creatable", attacker != NULL);
+	attacker->setOwner(1);
+	attackFleet->addShip(attacker);
+	FleetList attackFleets;
+	attackFleets.push_back(attackFleet);
+
+	FTacticalGame game;
+	game.setupFleets(&attackFleets, &defendFleets, false, NULL);
+
+	// Place ships so they have turn-data and occupancy registered.
+	// The minelayer is on the defending side (owner 0 = defender).
+	game.setState(BS_SetupDefendFleet);
+	game.setControlState(true);
+	game.setShip(minelayer);
+	game.placeShip(FPoint(10, 10));
+	game.setShipPlacementHeading(0);
+
+	game.setState(BS_SetupAttackFleet);
+	game.setControlState(true);
+	game.setShip(attacker);
+	game.placeShip(FPoint(30, 10));
+	game.setShipPlacementHeading(3);
+
+	// Enter mine placement phase.  The defender is the active player (owner 0).
+	// Reset active player to defender (owner 0) before entering placement.
+	game.setActivePlayer(false);  // false = defender = owner 0
+
+	const bool enteredMines = game.beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginOrdnancePlacement() must succeed with a Minelayer in fleet", enteredMines);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Model must be in BS_PlaceMines after beginOrdnancePlacement()",
+		static_cast<int>(BS_PlaceMines), game.getState());
+	CPPUNIT_ASSERT_MESSAGE("Mine launcher must be selected as current weapon after entry",
+		game.getWeapon() != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Selected weapon type must be M",
+		FWeapon::M, game.getWeapon()->getType());
+
+	// AC: Click a valid hex — handleHexClick must route to placeMineAtHex/placeOrdnanceAtHex.
+	// Use a hex not occupied by any ship; (5, 5) is clear.
+	const FPoint mineHex(5, 5);
+	const bool mineClicked = game.handleHexClick(mineHex);
+	CPPUNIT_ASSERT_MESSAGE("handleHexClick during BS_PlaceMines must return true for a valid hex", mineClicked);
+
+	// AC: Mine launcher ammo must be decremented by one.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Mine launcher ammo must decrement by 1 after placement",
+		initialMineAmmo - 1, mineLauncher->getAmmo());
+
+	// AC: The hex must appear in getMinedHexes().
+	const PointSet & minedHexes = game.getMinedHexes();
+	CPPUNIT_ASSERT_MESSAGE("Placed mine hex must appear in getMinedHexes()",
+		minedHexes.find(mineHex) != minedHexes.end());
+
+	// AC: A placed-ordnance record must be created.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain exactly one record after one mine placement",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must have weapon type M",
+		FWeapon::M, game.getPlacedOrdnance()[0].weaponType);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must reference the mine hex",
+		mineHex.getX(), game.getPlacedOrdnance()[0].hex.getX());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must reference the mine hex Y",
+		mineHex.getY(), game.getPlacedOrdnance()[0].hex.getY());
+
+	// Advance to seeker placement via completeMinePlacement().
+	game.completeMinePlacement();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("completeMinePlacement() must advance model to BS_PlaceSeekers",
+		static_cast<int>(BS_PlaceSeekers), game.getState());
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must be selected as current weapon in BS_PlaceSeekers",
+		game.getWeapon() != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Selected weapon type in BS_PlaceSeekers must be SM",
+		FWeapon::SM, game.getWeapon()->getType());
+
+	// AC: Click a valid hex during BS_PlaceSeekers.
+	// Use a different hex from the mine so placement is unambiguous.
+	const FPoint seekerHex(7, 7);
+	const bool seekerClicked = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("handleHexClick during BS_PlaceSeekers must return true (regression: missing case)", seekerClicked);
+
+	// AC: Seeker launcher ammo must be decremented by one.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker launcher ammo must decrement by 1 after placement",
+		initialSeekerAmmo - 1, seekerLauncher->getAmmo());
+
+	// AC: An inactive seeker record must be created in getSeekerMissiles().
+	const std::vector<FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getSeekerMissiles() must contain exactly one record after seeker placement",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(seekers.size()));
+	CPPUNIT_ASSERT_MESSAGE("Placed seeker must be inactive",
+		!seekers[0].active);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed seeker must be at the clicked hex X",
+		seekerHex.getX(), seekers[0].hex.getX());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed seeker must be at the clicked hex Y",
+		seekerHex.getY(), seekers[0].hex.getY());
+
+	// AC: A second placed-ordnance record (SM type) must be appended.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain two records after mine + seeker placement",
+		static_cast<unsigned int>(2), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+	const FTacticalPlacedOrdnance & seekerOrdnance = game.getPlacedOrdnance()[1];
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Second placed-ordnance record must have weapon type SM",
+		FWeapon::SM, seekerOrdnance.weaponType);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Second placed-ordnance record must reference the seeker hex X",
+		seekerHex.getX(), seekerOrdnance.hex.getX());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Second placed-ordnance record must reference the seeker hex Y",
+		seekerHex.getY(), seekerOrdnance.hex.getY());
+
+	// AC: Launcher ammo consistency — seeker ammo is now initialSeekerAmmo - 1,
+	//     not re-incremented (the placed seeker is consumed from available ammo).
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker launcher ammo must stay decremented (consistent between placement and battle)",
+		initialSeekerAmmo - 1, seekerLauncher->getAmmo());
+
+	// Clean up heap-allocated objects.
+	delete defendFleet;
+	delete attackFleet;
+}
+
+void FTacticalGameMechanicsTest::testPreGameMinePlacementPreservesShipAfterBeginMinePlacement() {
+// AC: PGS-01 — After beginMinePlacement() succeeds, m_curShip and m_curWeapon must
+//     not be null when the first board click arrives.  This test reproduces the bug
+//     where onSetSpeed() called setShip(NULL) unconditionally, simulates that buggy
+//     path (setShip(NULL) after beginMinePlacement) to confirm placeMineAtHex fails,
+//     then confirms the fixed path (no nulling) records the mine successfully.
+	using namespace Frontier;
+
+	// Build a Minelayer (M + SM weapons) fleet for the defending side (owner 0).
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Minelayer ship must be creatable", minelayer != NULL);
+	int mineLauncherIndex = -1;
+	for (unsigned int i = 0; i < minelayer->getWeaponCount(); ++i) {
+		FWeapon * w = minelayer->getWeapon(i);
+		if (w != NULL && w->getType() == FWeapon::M && mineLauncherIndex < 0) {
+			mineLauncherIndex = static_cast<int>(i);
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an M launcher", mineLauncherIndex >= 0);
+
+	FFleet * defendFleet = new FFleet();
+	minelayer->setOwner(0);
+	defendFleet->addShip(minelayer);
+	FleetList defendFleets;
+	defendFleets.push_back(defendFleet);
+
+	FFleet * attackFleet = new FFleet();
+	FVehicle * attacker = createShip("AssaultScout");
+	CPPUNIT_ASSERT_MESSAGE("AttackScout must be creatable", attacker != NULL);
+	attacker->setOwner(1);
+	attackFleet->addShip(attacker);
+	FleetList attackFleets;
+	attackFleets.push_back(attackFleet);
+
+	FTacticalGame game;
+	game.setupFleets(&attackFleets, &defendFleets, false, NULL);
+
+	// Place ships so they have turn-data and occupancy registered.
+	game.setState(BS_SetupDefendFleet);
+	game.setControlState(true);
+	game.setShip(minelayer);
+	game.placeShip(FPoint(10, 10));
+	game.setShipPlacementHeading(0);
+
+	game.setState(BS_SetupAttackFleet);
+	game.setControlState(true);
+	game.setShip(attacker);
+	game.placeShip(FPoint(30, 10));
+	game.setShipPlacementHeading(3);
+
+	// Reset active player to defender (owner 0) to simulate the pre-game mine
+	// placement entry point.  Do NOT call setState(BS_SetupDefendFleet) here —
+	// with only 1 defender ship, that setState call auto-advances to
+	// BS_SetupAttackFleet and toggles the active player, breaking the test.
+	game.setActivePlayer(false);  // defender = owner 0
+
+	// Part 1: Simulate the buggy path — beginMinePlacement() succeeds but
+	// setShip(NULL) is then called before the first click.
+	const bool entered1 = game.beginMinePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginMinePlacement() must succeed with a Minelayer in fleet (Part 1)", entered1);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Model must be in BS_PlaceMines after beginMinePlacement()",
+		static_cast<int>(BS_PlaceMines), game.getState());
+	// Simulate the old bug: setShip(NULL) nulls m_curShip before the first board click.
+	game.setShip(NULL);
+	CPPUNIT_ASSERT_MESSAGE("Simulated bug: getShip() must be NULL after setShip(NULL)", game.getShip() == NULL);
+
+	// placeMineAtHex must fail when m_curShip is NULL (confirming the bug would have occurred).
+	const FPoint bugHex(5, 5);
+	const bool bugResult = game.placeMineAtHex(bugHex);
+	CPPUNIT_ASSERT_MESSAGE("placeMineAtHex must return false when m_curShip is NULL (simulating pre-fix bug)", !bugResult);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getMinedHexes must be empty after failed buggy placement",
+		static_cast<unsigned int>(0), static_cast<unsigned int>(game.getMinedHexes().size()));
+
+	// Part 2: Fixed path — beginMinePlacement() succeeds and setShip(NULL) is NOT called.
+	// Reset to defender-active state again (same comment: no setState to avoid auto-advance).
+	game.setActivePlayer(false);
+
+	const bool entered2 = game.beginMinePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginMinePlacement() must succeed in fixed path (Part 2)", entered2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Model must be in BS_PlaceMines in fixed path",
+		static_cast<int>(BS_PlaceMines), game.getState());
+
+	// In the fixed path, m_curShip and m_curWeapon must be non-null.
+	CPPUNIT_ASSERT_MESSAGE("Fixed path: getShip() must be non-NULL after beginMinePlacement()", game.getShip() != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Fixed path: getWeapon() must be non-NULL after beginMinePlacement()", game.getWeapon() != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Fixed path: selected weapon type must be M",
+		FWeapon::M, game.getWeapon()->getType());
+
+	FWeapon * mineLauncher = minelayer->getWeapon(static_cast<unsigned int>(mineLauncherIndex));
+	const int initialAmmo = mineLauncher->getAmmo();
+	CPPUNIT_ASSERT_MESSAGE("Mine launcher must have ammo > 0", initialAmmo > 0);
+
+	// AC: clicking a valid hex must succeed and record the mine.
+	const FPoint mineHex(5, 5);
+	const bool placed = game.placeMineAtHex(mineHex);
+	CPPUNIT_ASSERT_MESSAGE("Fixed path: placeMineAtHex must succeed when m_curShip is non-NULL", placed);
+
+	// AC: ammo decremented by 1.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Mine launcher ammo must decrement by 1 after placement",
+		initialAmmo - 1, mineLauncher->getAmmo());
+
+	// AC: hex recorded in getMinedHexes().
+	const PointSet & minedHexes = game.getMinedHexes();
+	CPPUNIT_ASSERT_MESSAGE("Placed mine hex must appear in getMinedHexes()",
+		minedHexes.find(mineHex) != minedHexes.end());
+
+	// AC: placed-ordnance record appended.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain one record after successful placement",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Placed ordnance record must have weapon type M",
+		FWeapon::M, game.getPlacedOrdnance()[0].weaponType);
+
+	delete defendFleet;
+	delete attackFleet;
+}
+
+void FTacticalGameMechanicsTest::testPreGameSeekerPlacementIsAdditive() {
+// AC: PGS-03 — During BS_PlaceSeekers, clicking the same hex multiple times must
+//     accumulate one inactive seeker per click without toggling or removing any
+//     previously placed seeker.  Ammo must decrement by one per click and
+//     getPlacedOrdnance() must grow by one SM record per click.
+//     This behavioral test MUST fail against the pre-fix toggle path (second click
+//     on the same hex would remove the first seeker) and pass after the fix.
+	using namespace Frontier;
+
+	// Build a Minelayer fleet for the defending side.  The Minelayer carries
+	// SM(x4) and M(x20) launchers so both placement phases can be exercised.
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Minelayer ship must be creatable", minelayer != NULL);
+
+	// Locate the mine launcher (M) and seeker launcher (SM) weapon slots.
+	int mineLauncherIndex = -1;
+	int seekerLauncherIndex = -1;
+	for (unsigned int i = 0; i < minelayer->getWeaponCount(); ++i) {
+		FWeapon * w = minelayer->getWeapon(i);
+		if (w != NULL && w->getType() == FWeapon::M && mineLauncherIndex < 0) {
+			mineLauncherIndex = static_cast<int>(i);
+		}
+		if (w != NULL && w->getType() == FWeapon::SM && seekerLauncherIndex < 0) {
+			seekerLauncherIndex = static_cast<int>(i);
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an M launcher", mineLauncherIndex >= 0);
+	CPPUNIT_ASSERT_MESSAGE("Minelayer must have an SM launcher", seekerLauncherIndex >= 0);
+
+	FWeapon * seekerLauncher = minelayer->getWeapon(static_cast<unsigned int>(seekerLauncherIndex));
+	const int initialSeekerAmmo = seekerLauncher->getAmmo();
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must start with ammo >= 3", initialSeekerAmmo >= 3);
+
+	// Build fleets and initialize the tactical game.
+	FFleet * defendFleet = new FFleet();
+	minelayer->setOwner(0);
+	defendFleet->addShip(minelayer);
+	FleetList defendFleets;
+	defendFleets.push_back(defendFleet);
+
+	FFleet * attackFleet = new FFleet();
+	FVehicle * attacker = createShip("AssaultScout");
+	CPPUNIT_ASSERT_MESSAGE("AssaultScout must be creatable", attacker != NULL);
+	attacker->setOwner(1);
+	attackFleet->addShip(attacker);
+	FleetList attackFleets;
+	attackFleets.push_back(attackFleet);
+
+	FTacticalGame game;
+	game.setupFleets(&attackFleets, &defendFleets, false, NULL);
+
+	// Place ships so they have turn-data and occupancy registered.
+	game.setState(BS_SetupDefendFleet);
+	game.setControlState(true);
+	game.setShip(minelayer);
+	game.placeShip(FPoint(10, 10));
+	game.setShipPlacementHeading(0);
+
+	game.setState(BS_SetupAttackFleet);
+	game.setControlState(true);
+	game.setShip(attacker);
+	game.placeShip(FPoint(30, 10));
+	game.setShipPlacementHeading(3);
+
+	// Enter mine placement phase first (required to advance to BS_PlaceSeekers).
+	game.setActivePlayer(false);  // defender = owner 0
+	const bool enteredMines = game.beginOrdnancePlacement();
+	CPPUNIT_ASSERT_MESSAGE("beginOrdnancePlacement() must succeed with a Minelayer in fleet", enteredMines);
+
+	// Place one mine to satisfy the mine phase, then advance to seeker placement.
+	const FPoint mineHex(5, 5);
+	const bool mineClicked = game.handleHexClick(mineHex);
+	CPPUNIT_ASSERT_MESSAGE("First mine placement must succeed", mineClicked);
+
+	game.completeMinePlacement();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("completeMinePlacement() must advance to BS_PlaceSeekers",
+		static_cast<int>(BS_PlaceSeekers), game.getState());
+	CPPUNIT_ASSERT_MESSAGE("Seeker launcher must be selected after entering BS_PlaceSeekers",
+		game.getWeapon() != NULL);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Selected weapon must be SM type in BS_PlaceSeekers",
+		FWeapon::SM, game.getWeapon()->getType());
+
+	// The placed-ordnance list already has 1 mine record.  Verify the baseline.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Baseline: exactly 1 placed-ordnance record (the mine) before seeker placement",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Baseline: no seekers in getSeekerMissiles() before seeker placement",
+		static_cast<unsigned int>(0), static_cast<unsigned int>(game.getSeekerMissiles().size()));
+
+	// AC: Click the same hex 3 times; each must add one inactive seeker (additive, not toggle).
+	const FPoint seekerHex(7, 7);
+
+	// Click 1
+	const bool click1 = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("Click 1 on seekerHex must return true", click1);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 1: getSeekerMissiles() must have 1 seeker",
+		static_cast<unsigned int>(1), static_cast<unsigned int>(game.getSeekerMissiles().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 1: seeker ammo must be decremented by 1",
+		initialSeekerAmmo - 1, seekerLauncher->getAmmo());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 1: getPlacedOrdnance() must have 2 records (mine + seeker)",
+		static_cast<unsigned int>(2), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+
+	// Click 2 on the same hex — pre-fix toggle behavior would REMOVE the first seeker here.
+	const bool click2 = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("Click 2 on same seekerHex must return true (additive, not toggle)", click2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 2: getSeekerMissiles() must have 2 seekers (not 0 from toggle)",
+		static_cast<unsigned int>(2), static_cast<unsigned int>(game.getSeekerMissiles().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 2: seeker ammo must be decremented by 2 total",
+		initialSeekerAmmo - 2, seekerLauncher->getAmmo());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 2: getPlacedOrdnance() must have 3 records (mine + 2 seekers)",
+		static_cast<unsigned int>(3), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+
+	// Click 3 on the same hex.
+	const bool click3 = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("Click 3 on same seekerHex must return true (additive)", click3);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 3: getSeekerMissiles() must have 3 seekers",
+		static_cast<unsigned int>(3), static_cast<unsigned int>(game.getSeekerMissiles().size()));
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 3: seeker ammo must be decremented by 3 total",
+		initialSeekerAmmo - 3, seekerLauncher->getAmmo());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("After click 3: getPlacedOrdnance() must have 4 records (mine + 3 seekers)",
+		static_cast<unsigned int>(4), static_cast<unsigned int>(game.getPlacedOrdnance().size()));
+
+	// Verify all seekers are inactive and placed at the same hex.
+	const std::vector<FTacticalSeekerMissileState> & seekers = game.getSeekerMissiles();
+	for (unsigned int i = 0; i < seekers.size(); ++i) {
+		CPPUNIT_ASSERT_MESSAGE("Every placed seeker must be inactive", !seekers[i].active);
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("Every placed seeker must be at seekerHex X",
+			seekerHex.getX(), seekers[i].hex.getX());
+		CPPUNIT_ASSERT_EQUAL_MESSAGE("Every placed seeker must be at seekerHex Y",
+			seekerHex.getY(), seekers[i].hex.getY());
+	}
+
+	// Verify all SM placed-ordnance records reference the seeker hex.
+	const std::vector<FTacticalPlacedOrdnance> & ordnance = game.getPlacedOrdnance();
+	unsigned int smRecordCount = 0;
+	for (unsigned int i = 0; i < ordnance.size(); ++i) {
+		if (ordnance[i].weaponType == FWeapon::SM) {
+			++smRecordCount;
+			CPPUNIT_ASSERT_EQUAL_MESSAGE("SM placed-ordnance record must reference seekerHex X",
+				seekerHex.getX(), ordnance[i].hex.getX());
+			CPPUNIT_ASSERT_EQUAL_MESSAGE("SM placed-ordnance record must reference seekerHex Y",
+				seekerHex.getY(), ordnance[i].hex.getY());
+		}
+	}
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("getPlacedOrdnance() must contain exactly 3 SM records",
+		static_cast<unsigned int>(3), smRecordCount);
+
+	// AC: Ammo exhaustion — clicking again when ammo reaches zero must not add another seeker.
+	// Drain remaining ammo by placing additional seekers (at different hexes to avoid any
+	// per-hex limit), then verify that one more click on the same hex is rejected.
+	const int remainingAmmo = seekerLauncher->getAmmo();
+	for (int k = 0; k < remainingAmmo; ++k) {
+		// Use distinct hexes to drain ammo cleanly.
+		const FPoint drainHex(8 + k, 8);
+		game.handleHexClick(drainHex);
+	}
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker ammo must be 0 after draining",
+		0, seekerLauncher->getAmmo());
+
+	const unsigned int seekerCountBeforeExhaustedClick = static_cast<unsigned int>(game.getSeekerMissiles().size());
+	const bool exhaustedClick = game.handleHexClick(seekerHex);
+	CPPUNIT_ASSERT_MESSAGE("Click when ammo == 0 must return false", !exhaustedClick);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Seeker count must not increase when ammo is exhausted",
+		seekerCountBeforeExhaustedClick, static_cast<unsigned int>(game.getSeekerMissiles().size()));
+
+	// Clean up heap-allocated objects.
+	delete defendFleet;
+	delete attackFleet;
 }
 
 }

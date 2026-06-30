@@ -1,0 +1,65 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Finalize documentation for TSM-009 seeker detonation behavior after remediation and tester validation refresh.
+
+Acceptance criteria validated:
+- Seeker detonations create temporary FWeapon::SM attacks with parent NULL.
+- Same-hex target selection chooses highest getMaxHP() and uses RNG for same-max-HP ties.
+- ICM allocation uses the existing ITacticalUI::runICMSelection(...) path.
+- The seeker -8/ICM modifier is applied through existing weapon/defense mechanics.
+- Seeker damage reports have seeker-specific report labels and are not mislabeled as mine damage.
+- Multiple seeker detonations from one seeker step are batched into one immediate report where practical.
+- Destroyed-ship cleanup happens after the immediate summary path.
+- Detonated seekers are removed exactly once.
+
+Implementation branch or worktree context:
+- Upstream implementation branch/worktree: seekers-tsm-009-implementer-20260527 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-009-implementer-20260527.
+- Tester validation branch/worktree: seekers-tsm-009-tester-20260527 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-009-tester-20260527.
+- Remediation implementation commit under test: 70c2223.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalCombatReport.h
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- tests/tactical/FTacticalBattleScreenDelegationTest.cpp
+- tests/tactical/FTacticalCombatReportTest.cpp
+- tests/tactical/FTacticalCombatReportTest.h
+- tests/tactical/FTacticalMineDamageFlowTest.cpp
+- tests/tactical/FTacticalMineDamageFlowTest.h
+- tests/tactical/FTacticalSeekerMovementTest.cpp
+- tests/tactical/FTacticalSeekerMovementTest.h
+
+Tester commit:
+- e857a6d
+
+Commands executed:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make && ./GuiTests
+
+Final test outcomes:
+- Tactical suite passed: OK (181 tests).
+- GUI suite passed directly: OK (43 tests).
+- Added runtime mixed-size same-hex seeker target regression to verify lower-max-HP ships are excluded from selection while preserving tie behavior among highest-max-HP candidates.
+
+Documentation context:
+- Seeker contact target selection now has explicit regression evidence for mixed-size same-hex occupant scenarios.
+- Tactical reporting flow remains seeker-specific (TRT_SeekerDamage) and immediate summary/cleanup order remains validated.
+- No tactical operations manual changes are required; do not edit doc/rules/tactical_operations_manual.md.
+
+Plan and diff context:
+- Coordination plan path: plans/tactical-seeker-missiles-plan.md.
+- Compare tester branch against upstream implementer branch seekers-tsm-009-implementer-20260527 for tester-only updates and against mainline subtask context for end-state docs.
+
+Startup behavior:
+- If blocking inputs are present, begin documentation updates immediately and continue in the same run.
+- Infer missing documentation-convention details from repository evidence when safe, and label assumptions.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-009
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

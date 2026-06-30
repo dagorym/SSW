@@ -5,12 +5,15 @@
 
 #include "FTacticalMineDamageFlowTest.h"
 
+#include <cstdlib>
 #include <fstream>
 #include <vector>
 
 #include "ships/FVehicle.h"
+#include "ships/FMinelayer.h"
 #include "strategic/FFleet.h"
 #include "tactical/FTacticalGame.h"
+#include "tactical/ITacticalUI.h"
 
 namespace FrontierTests {
 
@@ -68,6 +71,65 @@ FMoveDoneShipHarness * defender;
 };
 
 void destroyFixture(MoveDoneRuntimeFixture & fixture) {
+for (FleetList::iterator itr = fixture.attackFleets.begin(); itr != fixture.attackFleets.end(); ++itr) {
+delete *itr;
+}
+for (FleetList::iterator itr = fixture.defendFleets.begin(); itr != fixture.defendFleets.end(); ++itr) {
+delete *itr;
+}
+fixture.attackFleets.clear();
+fixture.defendFleets.clear();
+}
+
+/**
+ * @brief Capturing mock ITacticalUI for behavioral SMFR-03 lifecycle tests.
+ *
+ * Holds a const pointer to the FTacticalGame being tested so that the
+ * showDamageSummary callback can inspect getLastTriggeredMineHexes() while the
+ * dialog is open and capture whether the set is non-empty at that moment.
+ * The test then verifies the set is empty after applyMineDamage() returns.
+ */
+class FCapturingMineMockUI : public ITacticalUI {
+public:
+explicit FCapturingMineMockUI(const FTacticalGame * game)
+: m_game(game),
+  m_showDamageSummaryCount(0),
+  m_hexesNonEmptyDuringCallback(false) {
+}
+
+void requestRedraw() {}
+void showMessage(const std::string &, const std::string &) {}
+
+int showDamageSummary(const FTacticalCombatReportSummary &) {
+++m_showDamageSummaryCount;
+m_hexesDuringCallback = m_game->getLastTriggeredMineHexes();
+m_hexesNonEmptyDuringCallback = !m_hexesDuringCallback.empty();
+return 0;
+}
+
+int runICMSelection(std::vector<ICMData *> &, VehicleList *) {
+return 0;
+}
+
+void notifyWinner(bool) {}
+
+const FTacticalGame * m_game;
+int m_showDamageSummaryCount;
+bool m_hexesNonEmptyDuringCallback;
+PointSet m_hexesDuringCallback;
+};
+
+struct MineEncounterFixture {
+FTacticalGame game;
+FleetList attackFleets;
+FleetList defendFleets;
+FFleet * attackFleet;
+FFleet * defendFleet;
+FMoveDoneShipHarness * attacker;
+FMinelayer * minelayer;
+};
+
+void destroyMineEncounterFixture(MineEncounterFixture & fixture) {
 for (FleetList::iterator itr = fixture.attackFleets.begin(); itr != fixture.attackFleets.end(); ++itr) {
 delete *itr;
 }
@@ -236,6 +298,377 @@ CPPUNIT_ASSERT(fixture.game.isHexOccupied(FPoint(10, 10)));
 CPPUNIT_ASSERT(fixture.game.getLastDestroyedShipIDs().empty());
 
 destroyFixture(fixture);
+}
+
+void FTacticalMineDamageFlowTest::testSeekerDetonationDamageResolutionUsesSMWeaponsICMAndImmediateReporting() {
+// AC: seeker contacts resolve through SM weapon fire, existing ICM UI seam, immediate seeker report, and single cleanup pass.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::resolvePendingSeekerDetonationDamage()");
+
+assertContains(body, "const std::vector<FTacticalSeekerContactOutcome> outcomes = m_pendingSeekerContactOutcomes;");
+assertContains(body, "FWeapon * seeker = createWeapon(FWeapon::SM);");
+assertContains(body, "seeker->setTarget(target, 0, false);");
+assertContains(body, "seeker->setParent(NULL);");
+assertContains(body, "context.reportType = TRT_SeekerDamage;");
+assertContains(body, "context.immediate = true;");
+assertContains(body, "beginTacticalReport(context);");
+assertContains(body, "m_ui->runICMSelection(icmData, defenders);");
+assertContains(body, "appendTacticalAttackReport(buildTacticalAttackReport(result));");
+assertContains(body, "m_ui->showDamageSummary(summary);");
+assertContains(body, "clearTacticalReport();");
+assertContains(body, "clearDestroyedShips();");
+assertContains(body, "delete (*itr)->weapon;");
+assertContains(body, "delete *itr;");
+assertContains(body, "delete *itr;");
+assertContains(body, "if (m_pendingSeekerContactOutcomes.empty()) {");
+
+assertBefore(body, "m_ui->runICMSelection(icmData, defenders);", "FTacticalAttackResult result = (*itr)->fire();");
+assertBefore(body, "appendTacticalAttackReport(buildTacticalAttackReport(result));", "FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();");
+assertBefore(body, "FTacticalCombatReportSummary summary = buildCurrentTacticalReportSummary();", "m_ui->showDamageSummary(summary);");
+assertBefore(body, "m_ui->showDamageSummary(summary);", "clearTacticalReport();");
+assertBefore(body, "clearTacticalReport();", "clearDestroyedShips();");
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "clearDestroyedShips();"));
+}
+
+void FTacticalMineDamageFlowTest::testSeekerActivationPhaseResolvesPendingDamageWhenModelHasUI() {
+// AC: seeker activation completion paths delegate damage resolution to applyMovementSeekerDamage(),
+// which handles the if (m_ui != NULL) guard and seeker removal internally.
+// The inline if (m_ui != NULL) { resolvePendingSeekerDetonationDamage(); } blocks were
+// replaced with a single applyMovementSeekerDamage() call so that seekers are also
+// removed from m_seekerMissiles after the damage-summary dialogs return (SMRIV-05 fix).
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string beginBody = extractFunctionBody(source, "void FTacticalGame::beginSeekerActivationPhase()");
+const std::string completeBody = extractFunctionBody(source, "void FTacticalGame::completeSeekerActivationPhase()");
+
+assertContains(beginBody, "if (inactiveHexes.empty()) {");
+assertContains(beginBody, "resolveActiveSeekersForMovingPlayer();");
+assertContains(beginBody, "applyMovementSeekerDamage();");
+assertBefore(beginBody, "resolveActiveSeekersForMovingPlayer();", "applyMovementSeekerDamage();");
+assertBefore(beginBody, "applyMovementSeekerDamage();", "beginMovePhase();");
+
+assertContains(completeBody, "resolveActiveSeekersForMovingPlayer();");
+assertContains(completeBody, "applyMovementSeekerDamage();");
+assertBefore(completeBody, "resolveActiveSeekersForMovingPlayer();", "applyMovementSeekerDamage();");
+assertBefore(completeBody, "applyMovementSeekerDamage();", "beginMovePhase();");
+}
+
+void FTacticalMineDamageFlowTest::testShipPathSeekerContactCheckedInCompleteMovePhase() {
+// AC: ship movement paths are checked for active seeker hex contact during movement finalization.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::completeMovePhase()");
+
+// Pending outcomes must be cleared at the start of move completion so activation-phase leftovers
+// do not double-count with movement-phase contact outcomes.
+assertContains(body, "clearPendingSeekerContactOutcomes();");
+
+// Each moving ship must have its path checked for active seeker contacts.
+assertContains(body, "checkForActiveSeekersOnPath(*itr);");
+
+// The path check and mine check should both occur during the per-ship loop.
+assertContains(body, "checkForMines(*itr);");
+
+// The clear must occur before the ship loop so pre-existing outcomes are gone before appending new ones.
+assertBefore(body, "clearPendingSeekerContactOutcomes();", "checkForActiveSeekersOnPath(*itr);");
+}
+
+void FTacticalMineDamageFlowTest::testInactiveSeekerNotTriggeredByPathContact() {
+// AC: inactive seeker hexes do not trigger contact or damage.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::checkForActiveSeekersOnPath(FVehicle * ship)");
+
+// The function must skip inactive seekers explicitly before any contact check.
+assertContains(body, "if (!seekerItr->active) {");
+assertContains(body, "continue;");
+
+// Same-side seekers owned by the moving ship must also be skipped.
+assertContains(body, "if (seekerItr->ownerID == ship->getOwner()) {");
+
+// Only seekers whose hex matches a path hex should trigger contact.
+assertContains(body, "seekerItr->hex.getX() != hexItr->getX() || seekerItr->hex.getY() != hexItr->getY()");
+}
+
+void FTacticalMineDamageFlowTest::testApplyMovementSeekerDamageDetonatesSeekersExactlyOnce() {
+// AC: detonated seekers are removed exactly once.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::applyMovementSeekerDamage()");
+
+// Early-exit when no contacts are pending so we do not call into the resolver unnecessarily.
+assertContains(body, "if (m_pendingSeekerContactOutcomes.empty()) {");
+
+// Seeker IDs must be collected before resolution so they can still be removed after the
+// pending-contact list is cleared inside resolvePendingSeekerDetonationDamage.
+assertContains(body, "detonatedSeekerIDs");
+assertBefore(body, "detonatedSeekerIDs", "resolvePendingSeekerDetonationDamage();");
+
+// Resolution is delegated to the shared seam when the UI is installed.
+assertContains(body, "if (m_ui != NULL) {");
+assertContains(body, "resolvePendingSeekerDetonationDamage();");
+
+// Without a UI the outcomes are still cleared so they do not carry forward.
+assertContains(body, "clearPendingSeekerContactOutcomes();");
+
+// Each detonated seeker must be removed from m_seekerMissiles exactly once.
+assertContains(body, "m_seekerMissiles.erase(seekerItr);");
+assertContains(body, "break;");
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "m_seekerMissiles.erase(seekerItr);"));
+}
+
+void FTacticalMineDamageFlowTest::testTriggeredMineHexesInitiallyEmptyOnFreshGame() {
+// SMFR-03 behavioral: getLastTriggeredMineHexes() returns an empty set on construction.
+// This verifies the accessor exists, works on a real FTacticalGame, and starts cleared.
+FTacticalGame game;
+CPPUNIT_ASSERT_MESSAGE(
+"getLastTriggeredMineHexes() must return an empty set on a freshly constructed FTacticalGame",
+game.getLastTriggeredMineHexes().empty());
+}
+
+void FTacticalMineDamageFlowTest::testTriggeredMineHexesEmptyAfterCompleteMovePhaseWithNoMines() {
+// SMFR-03 behavioral: getLastTriggeredMineHexes() stays empty when completeMovePhase()
+// runs with no mined hexes. This verifies the SMFR-03 state is orthogonal to mine-free
+// movement and that the highlighted-hex set does not accumulate stale data.
+MoveDoneRuntimeFixture fixture;
+setupMoveDoneRuntimeScenario(fixture);
+
+const FPoint startHex(54, 20);
+CPPUNIT_ASSERT(fixture.game.handleHexClick(startHex));
+CPPUNIT_ASSERT(fixture.game.isMoveComplete());
+
+fixture.game.completeMovePhase();
+
+CPPUNIT_ASSERT_MESSAGE(
+"getLastTriggeredMineHexes() must be empty after completeMovePhase() with no mined hexes",
+fixture.game.getLastTriggeredMineHexes().empty());
+
+destroyFixture(fixture);
+}
+
+void FTacticalMineDamageFlowTest::testApplyMineDamageSummaryCalledUnconditionallyWhenMinesFire() {
+// SMFR-03 AC1 source-contract supplement: showDamageSummary is called for every mine
+// encounter, including zero-damage outcomes.  The prior guard
+//   if (summary.ships.size() > 0) { m_ui->showDamageSummary(summary); }
+// must NOT appear; the call must be gated only on m_ui != NULL.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::applyMineDamage()");
+
+// The unconditional call must be present.
+assertContains(body, "m_ui->showDamageSummary(summary);");
+
+// No ships-size guard may exist immediately before the call.
+// We verify no pattern of "if (summary.ships.size() > 0)" or equivalent appears
+// in the function that would suppress the dialog on zero-damage outcomes.
+CPPUNIT_ASSERT_MESSAGE(
+"applyMineDamage() must not guard showDamageSummary on summary.ships.size()",
+body.find("summary.ships.size() > 0") == std::string::npos);
+CPPUNIT_ASSERT_MESSAGE(
+"applyMineDamage() must not guard showDamageSummary on !summary.ships.empty()",
+body.find("!summary.ships.empty()") == std::string::npos);
+
+// The call must be gated only on m_ui != NULL.
+assertContains(body, "if (m_ui != NULL) {");
+}
+
+void FTacticalMineDamageFlowTest::testTriggeredMineHexesClearedAfterSummaryDialog() {
+// SMFR-03 AC2/AC3 source-contract supplement: m_lastTriggeredMineHexes is populated
+// before the requestRedraw call and cleared only after showDamageSummary returns,
+// enforcing the highlight lifecycle.
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::applyMineDamage()");
+
+// Hexes are inserted into m_lastTriggeredMineHexes (from mineTargetList) at the top
+// of the function, before any UI interaction.
+assertContains(body, "m_lastTriggeredMineHexes.insert(*itr);");
+
+// requestRedraw triggers a board repaint while the hexes are highlighted.
+assertContains(body, "m_ui->requestRedraw();");
+
+// showDamageSummary is the blocking modal that displays while the board is highlighted.
+assertContains(body, "m_ui->showDamageSummary(summary);");
+
+// m_lastTriggeredMineHexes is cleared AFTER showDamageSummary to remove the highlight.
+// The function has two clear() calls: one at the start to reset stale state, and one
+// after showDamageSummary inside the if (m_ui != NULL) block to remove the highlight.
+// We verify both ordering relationships:
+//   insert → requestRedraw (hexes exist when the board redraws)
+//   requestRedraw → showDamageSummary (dialog opens with highlighted board)
+assertBefore(body, "m_lastTriggeredMineHexes.insert(*itr);", "m_ui->requestRedraw();");
+assertBefore(body, "m_ui->requestRedraw();", "m_ui->showDamageSummary(summary);");
+
+// The clear-after-dialog appears after showDamageSummary in the same UI block.
+// Find the position of showDamageSummary and confirm a clear() follows it.
+const std::string::size_type summaryPos = body.find("m_ui->showDamageSummary(summary);");
+CPPUNIT_ASSERT_MESSAGE("showDamageSummary must appear in applyMineDamage()", summaryPos != std::string::npos);
+const std::string::size_type clearAfterSummaryPos = body.find("m_lastTriggeredMineHexes.clear();", summaryPos);
+CPPUNIT_ASSERT_MESSAGE(
+"m_lastTriggeredMineHexes.clear() must appear after showDamageSummary in applyMineDamage()",
+clearAfterSummaryPos != std::string::npos);
+}
+
+void FTacticalMineDamageFlowTest::testLastTriggeredMineHexesDelegationInFBattleScreenHeader() {
+// SMFR-03 source-contract: FBattleScreen exposes getLastTriggeredMineHexes as a thin
+// delegation to FTacticalGame so FBattleBoard::drawTriggeredMineHexes can read model state.
+const std::string screenHeader = readFile(repoFile("include/tactical/FBattleScreen.h"));
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string gameHeader = readFile(repoFile("include/tactical/FTacticalGame.h"));
+
+// FBattleScreen.h declares getLastTriggeredMineHexes.
+assertContains(screenHeader, "getLastTriggeredMineHexes()");
+
+// FBattleScreen.cpp delegates to m_tacticalGame.
+assertContains(screenSource, "FBattleScreen::getLastTriggeredMineHexes()");
+assertContains(screenSource, "m_tacticalGame->getLastTriggeredMineHexes()");
+
+// FTacticalGame.h declares both the getter and the clearer.
+assertContains(gameHeader, "getLastTriggeredMineHexes()");
+assertContains(gameHeader, "clearLastTriggeredMineHexes()");
+
+// No wx headers pollute the model.
+CPPUNIT_ASSERT(gameHeader.find("#include <wx") == std::string::npos);
+CPPUNIT_ASSERT(gameHeader.find("#include \"wx/") == std::string::npos);
+}
+
+void FTacticalMineDamageFlowTest::testSeekerDamageAppliedBeforeMineDamageInCompleteMovePhase() {
+// AC: ship-triggered seeker damage resolves before mine damage in completeMovePhase().
+const std::string source = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
+const std::string body = extractFunctionBody(source, "void FTacticalGame::completeMovePhase()");
+
+// applyMovementSeekerDamage must appear exactly once.
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "applyMovementSeekerDamage();"));
+
+// applyMineDamage must still appear exactly once for AC: mine damage once per completion.
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(body, "applyMineDamage();"));
+
+// Seeker damage must precede mine damage.
+assertBefore(body, "applyMovementSeekerDamage();", "applyMineDamage();");
+
+// Mine damage must still precede phase progression to defensive fire.
+assertBefore(body, "applyMineDamage();", "setPhase(PH_DEFENSE_FIRE);");
+
+// Seeker damage must also precede the final phase change.
+assertBefore(body, "applyMovementSeekerDamage();", "setPhase(PH_DEFENSE_FIRE);");
+}
+
+void FTacticalMineDamageFlowTest::testMineEncounterHighlightHexesNonEmptyDuringShowDamageSummaryCallback() {
+// SMFR-03 behavioral: AC1/AC2/AC3.
+//
+// Construct a real FTacticalGame with:
+//   - Defender: FMinelayer placed at hex (10,10) — owns the mine (ownerID=0)
+//   - Attacker: FMoveDoneShipHarness placed at hex (54,20) — the moving player (ownerID=1)
+//
+// Place a mine at the attacker's starting hex (54,20) via placeMineFromSelection.
+// checkForMines() is called inside completeMovePhase() and detects the mined hex
+// when it appears in the attacker's movement path.
+//
+// Install a FCapturingMineMockUI that captures getLastTriggeredMineHexes() inside
+// the showDamageSummary callback.
+//
+// After completeMovePhase():
+//   AC2: triggered-hex set was NON-EMPTY inside the showDamageSummary callback
+//   AC3: triggered-hex set is EMPTY after completeMovePhase() returns
+//   AC1: showDamageSummary was called at least once for this mine encounter
+
+// --- Fixture setup ---
+MineEncounterFixture fixture;
+fixture.attackFleet = new FFleet();
+fixture.defendFleet = new FFleet();
+fixture.attackFleets.push_back(fixture.attackFleet);
+fixture.defendFleets.push_back(fixture.defendFleet);
+
+fixture.attacker = new FMoveDoneShipHarness();
+fixture.attacker->setName("AttackerMineTrigger");
+fixture.attacker->configureMove(6, 0, 3);
+
+fixture.minelayer = new FMinelayer();
+fixture.minelayer->setName("DefenderMinelayer");
+
+fixture.attackFleet->addShip(fixture.attacker);
+fixture.defendFleet->addShip(fixture.minelayer);
+
+fixture.game.setupFleets(&fixture.attackFleets, &fixture.defendFleets, false, NULL);
+
+// Place the defender's ships on the board.
+fixture.game.setState(BS_SetupDefendFleet);
+fixture.game.setControlState(true);
+fixture.game.setShip(fixture.minelayer);
+fixture.game.placeShip(FPoint(10, 10));
+fixture.game.setShipPlacementHeading(3);
+
+// Place the attacker on the board.
+fixture.game.setState(BS_SetupAttackFleet);
+fixture.game.setControlState(true);
+fixture.game.setShip(fixture.attacker);
+const FPoint attackerStartHex(54, 20);
+fixture.game.placeShip(attackerStartHex);
+fixture.game.setShipPlacementHeading(3);
+
+// --- Mine placement via the pre-game placement state ---
+// Use the public BS_PlaceMines + handleHexClick() flow so we can place the mine
+// without needing access to the protected placeMineFromSelection() method directly.
+// FMinelayer sets up weapons: [0]=LB, [1]=LB, [2]=SM, [3]=M.
+const unsigned int mineWeaponIndex = 3;
+FWeapon * mineWeapon = fixture.minelayer->getWeapon(mineWeaponIndex);
+CPPUNIT_ASSERT_MESSAGE("FMinelayer must have a mine launcher at index 3", mineWeapon != NULL);
+CPPUNIT_ASSERT_MESSAGE("Mine launcher must be type FWeapon::M",
+mineWeapon->getType() == FWeapon::M);
+
+// Transition to mine-placement state and select the minelayer's mine launcher.
+fixture.game.setState(BS_PlaceMines);
+fixture.game.setShip(fixture.minelayer);
+fixture.game.setWeapon(mineWeapon);
+
+// Place the mine at the attacker's starting hex so the attacker's movement path
+// (which includes the starting hex after setInitialRoute()) triggers the mine.
+const bool minePlaced = fixture.game.handleHexClick(attackerStartHex);
+CPPUNIT_ASSERT_MESSAGE(
+"handleHexClick in BS_PlaceMines must place the mine at the attacker's starting hex",
+minePlaced);
+
+// Verify the mine is recorded in the model's mined-hex set.
+CPPUNIT_ASSERT_MESSAGE("Mine must appear in getMinedHexes() after placement",
+fixture.game.getMinedHexes().find(attackerStartHex) != fixture.game.getMinedHexes().end());
+
+// --- Install capturing mock UI and enter the movement phase ---
+// Clear the current weapon selection left over from mine-placement state so that
+// selectShipFromHex() in the battle phase treats the hex click as ship selection,
+// not weapon targeting.
+fixture.game.setWeapon(NULL);
+
+FCapturingMineMockUI mockUI(&fixture.game);
+fixture.game.installUI(&mockUI);
+
+fixture.game.setState(BS_Battle);
+fixture.game.setPhase(PH_MOVE);
+
+// Select the attacker ship to build the initial route (adds attackerStartHex to the path).
+// After setInitialRoute(), the path is [attackerStartHex].
+// checkForMines() in completeMovePhase() will then detect the mine at attackerStartHex.
+fixture.game.handleHexClick(attackerStartHex);
+
+// --- Trigger mine encounter via completeMovePhase() ---
+fixture.game.completeMovePhase();
+
+// AC1: showDamageSummary must have been called at least once for the mine encounter.
+CPPUNIT_ASSERT_MESSAGE(
+"showDamageSummary must be called at least once when a mine is triggered",
+mockUI.m_showDamageSummaryCount >= 1);
+
+// AC2: triggered-hex set must be NON-EMPTY inside the showDamageSummary callback,
+// proving the highlight is live while the dialog is displayed.
+CPPUNIT_ASSERT_MESSAGE(
+"getLastTriggeredMineHexes() must be NON-EMPTY inside showDamageSummary callback (AC2: highlight visible during dialog)",
+mockUI.m_hexesNonEmptyDuringCallback);
+
+// AC3: triggered-hex set must be EMPTY after completeMovePhase() returns,
+// proving the highlight is cleared after the dialog closes.
+CPPUNIT_ASSERT_MESSAGE(
+"getLastTriggeredMineHexes() must be EMPTY after completeMovePhase() returns (AC3: highlight cleared after dialog)",
+fixture.game.getLastTriggeredMineHexes().empty());
+
+fixture.game.installUI(NULL);
+destroyMineEncounterFixture(fixture);
+
+// Reseed rand() so mine-fire dice rolls in this test do not disturb the
+// random sequence seen by subsequent tests that rely on specific outcomes.
+srand(1);
 }
 
 }

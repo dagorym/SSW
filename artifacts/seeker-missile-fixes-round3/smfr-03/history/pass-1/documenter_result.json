@@ -1,0 +1,15 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round3/smfr-03/documenter_report.md",
+    "artifacts/seeker-missile-fixes-round3/smfr-03/documenter_result.json",
+    "artifacts/seeker-missile-fixes-round3/smfr-03/verifier_prompt.txt"
+  ],
+  "branch_name": "sf2-SMFR-03-documenter-20260619",
+  "documentation_commit_hash": "c670600db372c11b925aafaef9bd60c51fa26fee",
+  "documentation_files_changed": [
+    "AGENTS.md"
+  ],
+  "pass_label": null,
+  "status": "success",
+  "task_id": "SMFR-03"
+}

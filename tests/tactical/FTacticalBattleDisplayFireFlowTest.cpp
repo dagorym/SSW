@@ -9,8 +9,10 @@
 #include <iterator>
 #include <vector>
 
+#include "core/FHexMap.h"
 #include "strategic/FFleet.h"
 #include "tactical/FTacticalGame.h"
+#include "weapons/FSeekerMissileLauncher.h"
 
 namespace FrontierTests {
 
@@ -112,6 +114,91 @@ fixture.game.setPhase(firePhase);
 fixture.game.setActivePlayer(true);
 }
 
+class FSeekerFlowShipHarness : public FVehicle {
+public:
+FSeekerFlowShipHarness(const std::string & name) {
+	m_name = name;
+	m_type = "SeekerFlowHarness";
+}
+
+void configureForMovement(int speed, int adf, int heading) {
+	m_maxHP = 10;
+	m_currentHP = 10;
+	m_maxADF = adf;
+	m_currentADF = adf;
+	m_maxMR = 1;
+	m_currentMR = 1;
+	m_maxDCR = 1;
+	m_currentDCR = 1;
+	m_speed = speed;
+	m_heading = heading;
+}
+
+void addWeapon(FWeapon * weapon) {
+	m_weapons.push_back(weapon);
+	weapon->setParent(this);
+}
+};
+
+struct SeekerFlowRuntimeFixture {
+FTacticalGame game;
+FleetList attackFleets;
+FleetList defendFleets;
+FFleet * attackFleet;
+FFleet * defendFleet;
+FSeekerFlowShipHarness * attacker;
+FSeekerFlowShipHarness * defender;
+FSeekerMissileLauncher * launcher;
+FPoint attackerHex;
+FPoint defenderHex;
+};
+
+void destroySeekerFixture(SeekerFlowRuntimeFixture & fixture) {
+for (FleetList::iterator itr = fixture.attackFleets.begin(); itr != fixture.attackFleets.end(); ++itr) {
+	delete *itr;
+}
+for (FleetList::iterator itr = fixture.defendFleets.begin(); itr != fixture.defendFleets.end(); ++itr) {
+	delete *itr;
+}
+fixture.attackFleets.clear();
+fixture.defendFleets.clear();
+}
+
+void placeShip(FTacticalGame & game, FVehicle * ship, const FPoint & hex, int heading, int state) {
+game.setState(state);
+game.setControlState(true);
+game.setShip(ship);
+CPPUNIT_ASSERT(game.placeShip(hex));
+CPPUNIT_ASSERT(game.setShipPlacementHeading(heading));
+}
+
+void setupSeekerFlowRuntimeScenario(SeekerFlowRuntimeFixture & fixture) {
+fixture.attackFleet = new FFleet();
+fixture.defendFleet = new FFleet();
+fixture.attackFleets.push_back(fixture.attackFleet);
+fixture.defendFleets.push_back(fixture.defendFleet);
+
+fixture.attacker = new FSeekerFlowShipHarness("SeekerAttacker");
+fixture.defender = new FSeekerFlowShipHarness("SeekerDefender");
+fixture.attacker->configureForMovement(2, 0, 0);
+fixture.defender->configureForMovement(0, 0, 3);
+
+fixture.launcher = new FSeekerMissileLauncher();
+fixture.launcher->setMaxAmmo(3);
+fixture.launcher->setCurrentAmmo(3);
+fixture.attacker->addWeapon(fixture.launcher);
+
+fixture.attackFleet->addShip(fixture.attacker);
+fixture.defendFleet->addShip(fixture.defender);
+
+fixture.game.setupFleets(&fixture.attackFleets, &fixture.defendFleets, false, NULL);
+fixture.attackerHex = FPoint(20, 20);
+fixture.defenderHex = FPoint(10, 10);
+placeShip(fixture.game, fixture.defender, fixture.defenderHex, 3, BS_SetupDefendFleet);
+placeShip(fixture.game, fixture.attacker, fixture.attackerHex, 0, BS_SetupAttackFleet);
+fixture.game.setState(BS_Battle);
+}
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( FTacticalBattleDisplayFireFlowTest );
@@ -182,6 +269,43 @@ pos += needle.size();
 return count;
 }
 
+std::string stripCppComments(const std::string & source) {
+	std::string result;
+	result.reserve(source.size());
+	bool inLineComment = false;
+	bool inBlockComment = false;
+
+	for (std::string::size_type i = 0; i < source.size(); ++i) {
+		if (inLineComment) {
+			if (source[i] == '\n') {
+				inLineComment = false;
+				result.push_back('\n');
+			}
+			continue;
+		}
+		if (inBlockComment) {
+			if (source[i] == '*' && (i + 1) < source.size() && source[i + 1] == '/') {
+				inBlockComment = false;
+				++i;
+			}
+			continue;
+		}
+		if (source[i] == '/' && (i + 1) < source.size() && source[i + 1] == '/') {
+			inLineComment = true;
+			++i;
+			continue;
+		}
+		if (source[i] == '/' && (i + 1) < source.size() && source[i + 1] == '*') {
+			inBlockComment = true;
+			++i;
+			continue;
+		}
+		result.push_back(source[i]);
+	}
+
+	return result;
+}
+
 void FTacticalBattleDisplayFireFlowTest::testDrawAndOnPaintUseBattleScreenStateAccessors() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
@@ -219,6 +343,7 @@ const std::string boardSource = readFile(repoFile("src/tactical/FBattleBoard.cpp
 const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 
 assertContains(boardSource, "m_maskingScreenIcon = new wxImage(gc.resolveAssetPath(\"icons/MaskingScreen.png\"));");
+assertContains(boardSource, "m_seekerMissileIcon = new wxImage(gc.resolveAssetPath(\"icons/SeekerMissile.png\"));");
 assertNotContains(boardSource, "gc.getBasePath() + \"icons/");
 assertNotContains(boardSource, "../icons/");
 assertNotContains(boardSource, "/home/");
@@ -333,25 +458,86 @@ assertContains(doneBody, "m_parent->completeMinePlacement();");
 
 void FTacticalBattleDisplayFireFlowTest::testMinePlacementDisplayUsesModelShipList() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string gameSource = readFile(repoFile("src/tactical/FTacticalGame.cpp"));
 const std::string placeMinesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
 const std::string shipSelectionBody = extractFunctionBody(source, "void FBattleDisplay::checkShipSelection(wxMouseEvent &event)");
+const std::string placeOrdnanceBody = extractFunctionBody(gameSource, "bool FTacticalGame::placeOrdnanceAtHex(const FPoint & hex)");
+const std::string rebuildSourcesBody = extractFunctionBody(gameSource, "void FTacticalGame::rebuildDeployablePlacementSources()");
+const std::string beginPlacementBody = extractFunctionBody(gameSource, "bool FTacticalGame::beginOrdnancePlacement()");
 
-assertContains(placeMinesBody, "const VehicleList & shipsWithMines = m_parent->getShipsWithMines();");
-assertContains(shipSelectionBody, "const VehicleList & shipsWithMines = m_parent->getShipsWithMines();");
-assertContains(shipSelectionBody, "m_parent->setShip(shipsWithMines[i]);");
+assertContains(placeMinesBody, "const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();");
+assertContains(placeMinesBody, "const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();");
+assertContains(placeMinesBody, "getDeploymentWeaponLabel(source.weaponType)");
+assertContains(placeMinesBody, "os << \"Ammo: \" << weapon->getAmmo();");
+assertContains(placeMinesBody, "m_shipSelectionSourceIndices.push_back(static_cast<int>(i));");
+assertContains(shipSelectionBody, "m_parent->selectPlacementSourceByIndex(static_cast<unsigned int>(m_shipSelectionSourceIndices[i]));");
+assertNotContains(shipSelectionBody, "m_parent->setWeapon(");
+
+assertContains(placeOrdnanceBody, "if (removePlacedOrdnanceForSelection(hex, removed)) {");
+assertContains(placeOrdnanceBody, "if (!restoreAmmoForSource(removed.source)) {");
+assertContains(placeOrdnanceBody, "if (selectedSource.weaponType == FWeapon::M) {");
+assertContains(placeOrdnanceBody, "if (selectedSource.weaponType == FWeapon::SM) {");
+assertContains(rebuildSourcesBody, "if (weapon->getType() == FWeapon::M) {");
+assertContains(rebuildSourcesBody, "m_shipsWithMines.push_back(*shipItr);");
+assertContains(beginPlacementBody, "setState(BS_PlaceMines);");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testSetupPlacementBoardUsesSourceSpecificOrdnanceRendering() {
+const std::string boardSource = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string drawBody = extractFunctionBody(boardSource, "void FBattleBoard::draw(wxDC &dc)");
+const std::string drawOrdnanceBody = extractFunctionBody(boardSource, "void FBattleBoard::drawPlacementOrdnanceHexes(wxDC &dc)");
+const std::string colorBody = extractFunctionBody(boardSource, "wxColour FBattleBoard::getPlacementSourceColor(unsigned int shipID, int weaponIndex) const");
+const std::string drawOrdnanceBodyWithoutComments = stripCppComments(drawOrdnanceBody);
+const std::string colorBodyWithoutComments = stripCppComments(colorBody);
+
+assertContains(drawBody, "if (m_parent->getState() == BS_PlaceMines || m_parent->getState() == BS_PlaceSeekers) {");
+assertContains(drawBody, "drawPlacementOrdnanceHexes(dc);");
+assertContains(drawOrdnanceBody, "const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();");
+assertContains(drawOrdnanceBody, "const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();");
+assertContains(drawOrdnanceBody, "std::map<FPlacementSourceKey, unsigned int> sourceOrdinals;");
+assertContains(drawOrdnanceBody, "m_placementSourceOrdinals.clear();");
+assertContains(drawOrdnanceBody, "sourceOrdinals[key] = static_cast<unsigned int>(sourceOrdinals.size());");
+assertContains(drawOrdnanceBody, "m_placementSourceOrdinals[sourceItr->first] = sourceItr->second;");
+assertContains(drawOrdnanceBody, "getPlacementSourceColor(itr->source.shipID, itr->source.weaponIndex)");
+assertContains(colorBody, "const unsigned int seedColorCount = sizeof(kPlacementColorHexes) / sizeof(kPlacementColorHexes[0]);");
+assertContains(colorBody, "if (sourceOrdinal < seedColorCount) {");
+assertContains(colorBody, "const unsigned int expandedOrdinal = sourceOrdinal - seedColorCount;");
+assertContains(colorBody, "permutePlacementColorByte");
+assertNotContains(colorBodyWithoutComments, "index %= colorCount;");
+assertNotContains(colorBodyWithoutComments, "unsigned int index = shipID;");
+assertNotContains(drawOrdnanceBodyWithoutComments, "index %= colorCount;");
+
+assertContains(screenSource, "const std::vector<FTacticalPlacedOrdnance> & FBattleScreen::getPlacedOrdnance() const {");
+assertContains(screenSource, "return m_tacticalGame->getPlacedOrdnance();");
+assertContains(screenSource, "std::vector<FTacticalPlacedOrdnance> FBattleScreen::getPlacedOrdnanceAtHex(const FPoint & hex) const {");
+assertContains(screenSource, "return m_tacticalGame->getPlacedOrdnanceAtHex(hex);");
+assertContains(screenSource, "std::vector<FTacticalSeekerMissileState> FBattleScreen::getSeekerMissilesAtHex(");
+assertContains(screenSource, "return m_tacticalGame->getSeekerMissilesAtHex(hex, activeOnly);");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testDisplayClickFlowUsesModelForwardingApis() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 const std::string onLeftUpBody = extractFunctionBody(source, "void FBattleDisplay::onLeftUp(wxMouseEvent & event)");
+const std::string pendingSelectionBody = extractFunctionBody(source, "bool FBattleDisplay::checkOffensiveSeekerPendingSelection(wxMouseEvent &event)");
+const std::string handleHexClickBody = extractFunctionBody(screenSource, "bool FBattleScreen::handleHexClick(const FPoint & hex)");
 
 assertContains(onLeftUpBody, "checkWeaponSelection(event);");
 assertContains(onLeftUpBody, "checkDefenseSelection(event);");
 assertContains(onLeftUpBody, "checkShipSelection(event);");
+assertContains(onLeftUpBody, "if (m_parent->getPhase() == PH_ATTACK_FIRE && checkOffensiveSeekerPendingSelection(event)) {");
 assertNotContains(onLeftUpBody, "m_parent->setWeapon(");
 assertNotContains(onLeftUpBody, "m_parent->setDefense(");
 assertNotContains(onLeftUpBody, "m_parent->assignTargetFromHex(");
 assertNotContains(onLeftUpBody, "m_parent->placeMineAtHex(");
+assertContains(pendingSelectionBody, "for (unsigned int i = 0; i < m_pendingSeekerRecallRegions.size(); ++i) {");
+assertContains(pendingSelectionBody, "const wxPoint & pendingHex = m_pendingSeekerRecallHexes[i];");
+assertContains(pendingSelectionBody, "return m_parent->recallSelectedOffensivePendingSeekerAtHex(FPoint(pendingHex.x, pendingHex.y));");
+assertContains(handleHexClickBody, "const bool changed = m_tacticalGame->handleHexClick(hex);");
+assertContains(handleHexClickBody, "if (changed) {");
+assertContains(handleHexClickBody, "reDraw();");
+assertContains(handleHexClickBody, "return changed;");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testMoveDoneDelegatesToBattleScreenCompleteMovePhase() {
@@ -428,6 +614,7 @@ assertBefore(ctorBody, "rootSizer->AddSpacer(getActionButtonTopSpacerHeight());"
 
 void FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractAppliedAcrossActionPhases() {
 // AC: all action prompts route y positioning through helper and keep action row right of zoom column.
+// SMF-03: pending seeker list is now a dedicated region left of ship-status, not inside drawCurrentShipStats.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string ctorBody = extractFunctionBody(
 source,
@@ -437,6 +624,7 @@ const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay
 const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
 const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
 const std::string statsBody = extractFunctionBody(source, "void FBattleDisplay::drawCurrentShipStats(wxDC & dc)");
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
 
 assertContains(ctorBody, "actionSizer->AddSpacer(leftOffset);");
 assertBefore(ctorBody, "actionSizer->AddSpacer(leftOffset);", "actionSizer->Add(m_buttonMoveDone, 0, wxALIGN_CENTER_VERTICAL);");
@@ -452,10 +640,31 @@ assertContains(defenseBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);"
 
 assertContains(attackBody, "getActionPromptLineY(0)");
 assertContains(attackBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
+assertContains(attackBody, "if (m_parent->isOffensiveSeekerDeploymentMode()) {");
+// SMRVI-01 round6: the literal was extracted to SEEKER_DEPLOY_INSTRUCTION; drawAttackFire()
+// now routes through the constant rather than repeating the inline string.
+assertContains(attackBody, "os.str(SEEKER_DEPLOY_INSTRUCTION.ToStdString())");
+// Supplementary: the literal appears exactly once in the full source file (as the constant
+// definition) and NOT as an inline string inside drawAttackFire() or draw().
+// The constant definition must exist in the source file.
+assertContains(source, "const wxString FBattleDisplay::SEEKER_DEPLOY_INSTRUCTION(\"Select legal path hexes to deploy seeker missiles.\");");
+// The literal must NOT appear as an inline code string inside drawAttackFire() or draw();
+// it is only permitted as the constant's definition (and any comment references).
+assertNotContains(attackBody, "\"Select legal path hexes to deploy seeker missiles.\"");
+assertNotContains(drawBody, "\"Select legal path hexes to deploy seeker missiles.\"");
 
 assertContains(minesBody, "getActionPromptLineY(0)");
 assertContains(minesBody, "reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);");
 assertContains(statsBody, "largestMarginWithStatsRoom");
+// SMF-03: pending seeker rows moved out of drawCurrentShipStats into draw() left-of-stats region.
+assertNotContains(statsBody, "drawOffensiveSeekerPendingRows(");
+assertContains(drawBody, "PH_ATTACK_FIRE");
+// SMRVI-01 round6: widestAttackLine local variable removed; text extent now measured
+// directly from the shared SEEKER_DEPLOY_INSTRUCTION constant.
+assertNotContains(drawBody, "widestAttackLine");
+assertContains(drawBody, "const int attackTextW = dc.GetTextExtent(SEEKER_DEPLOY_INSTRUCTION).GetWidth();");
+assertContains(drawBody, "const int pendingLMargin = leftOffset + attackTextW + 2*BORDER;");
+assertContains(drawBody, "drawOffensiveSeekerPendingRows(dc, pendingLMargin, getActionPromptLineY(0), 10);");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {
@@ -490,6 +699,153 @@ assertContains(attackBody, "m_buttonOffensiveFireDone->Hide();");
 assertBefore(attackBody, "m_buttonOffensiveFireDone->Hide();", "Layout();");
 assertContains(minesBody, "m_buttonMinePlacementDone->Hide();");
 assertBefore(minesBody, "m_buttonMinePlacementDone->Hide();", "Layout();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testSeekerActivationDrawAndClickFlowUseActivationPhaseRouting() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string screenSource = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
+const std::string onLeftUpBody = extractFunctionBody(source, "void FBattleDisplay::onLeftUp(wxMouseEvent & event)");
+const std::string selectionBody = extractFunctionBody(source, "void FBattleDisplay::checkSeekerActivationSelection(wxMouseEvent &event)");
+const std::string activateBody = extractFunctionBody(screenSource, "bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID)");
+
+assertContains(drawBody, "case PH_SEEKER_ACTIVATION:");
+assertContains(drawBody, "drawSeekerActivation(dc);");
+assertContains(onLeftUpBody, "if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {");
+assertContains(onLeftUpBody, "checkSeekerActivationSelection(event);");
+assertBefore(onLeftUpBody, "checkSeekerActivationSelection(event);", "checkWeaponSelection(event);");
+assertContains(selectionBody, "for (unsigned int i = 0; i < m_seekerActivationRegions.size(); ++i) {");
+assertContains(selectionBody, "if (!m_seekerActivationRegions[i].Contains(x,y)) {");
+assertContains(selectionBody, "m_parent->deactivateActiveSeekerByID(m_seekerActivationSeekerIDs[i]);");
+assertContains(selectionBody, "m_parent->reDraw();");
+assertContains(activateBody, "if (changed) {");
+assertContains(activateBody, "reDraw();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
+
+assertContains(body, "dc.DrawText(\"Seeker activation phase.\",leftOffset,getActionPromptLineY(0));");
+assertContains(body, "dc.DrawText(\"Click a seeker stack on the board to activate one seeker.\",leftOffset,getActionPromptLineY(1));");
+assertContains(body, "dc.DrawText(\"Click a row below to deactivate an activated seeker.\",leftOffset,getActionPromptLineY(2));");
+// SMRV-02: "Activated seekers" block now anchors at the top of the lower panel
+// (getActionPromptLineY(0)), matching drawPlaceMines/drawPlaceSeekers convention.
+assertContains(body, "int y = getActionPromptLineY(0);");
+assertNotContains(body, "int y = getActionButtonRowBottom();");
+// SMF-05: switched to this-phase accessor so only current-phase activations are listed
+assertContains(body, "const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayerThisPhase();");
+assertNotContains(body, "m_parent->getActiveSeekersByMovingPlayer();");
+assertContains(body, "if (activated.empty()) {");
+assertContains(body, "dc.DrawText(\"No seekers activated yet.\",lMargin,y);");
+assertContains(body, "for (unsigned int i = 0; i < activated.size(); ++i) {");
+assertContains(body, "os << \"Deactivate seeker #\" << seeker.seekerID");
+assertContains(body, "m_seekerActivationRegions.push_back(wxRect(");
+assertContains(body, "m_seekerActivationSeekerIDs.push_back(seeker.seekerID);");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern() {
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string ctorBody = extractFunctionBody(
+source,
+"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
+const std::string doneBody = extractFunctionBody(source, "void FBattleDisplay::onSeekerActivationDone( wxCommandEvent& event )");
+
+assertContains(ctorBody, "m_buttonSeekerActivationDone = new wxButton( this, wxID_ANY, wxT(\"Seeker Activation Done\"), wxDefaultPosition, wxDefaultSize, 0 );");
+assertContains(ctorBody, "actionSizer->Add(m_buttonSeekerActivationDone, 0, wxALIGN_CENTER_VERTICAL);");
+assertContains(ctorBody, "m_buttonSeekerActivationDone->Hide();");
+assertContains(drawBody, "m_buttonSeekerActivationDone->Connect(");
+assertContains(drawBody, "wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),");
+assertContains(drawBody, "m_buttonSeekerActivationDone->Show();");
+assertBefore(drawBody, "m_buttonSeekerActivationDone->Show();", "Layout();");
+assertContains(doneBody, "m_buttonSeekerActivationDone->Disconnect(");
+assertContains(doneBody, "m_buttonSeekerActivationDone->Hide();");
+assertBefore(doneBody, "m_buttonSeekerActivationDone->Hide();", "Layout();");
+assertContains(doneBody, "m_parent->completeSeekerActivationPhase();");
+assertContains(doneBody, "m_first = true;");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit() {
+	SeekerFlowRuntimeFixture fixture;
+	setupSeekerFlowRuntimeScenario(fixture);
+
+	const bool attackerSide = (fixture.attacker->getOwner() == fixture.game.getAttackerID());
+	fixture.game.setPhase(PH_DEFENSE_FIRE);
+	fixture.game.setMovingPlayer(!attackerSide);
+	fixture.game.setActivePlayer(attackerSide);
+	CPPUNIT_ASSERT(fixture.game.selectShipFromHex(fixture.attackerHex));
+	CPPUNIT_ASSERT(!fixture.game.selectWeapon(0));
+
+	fixture.game.setPhase(PH_ATTACK_FIRE);
+	fixture.game.setMovingPlayer(attackerSide);
+	fixture.game.setActivePlayer(attackerSide);
+	CPPUNIT_ASSERT(fixture.game.selectShipFromHex(fixture.attackerHex));
+
+	FTacticalTurnData * turnData = fixture.game.findTurnData(fixture.attacker->getID());
+	CPPUNIT_ASSERT(turnData != NULL);
+	const FPoint firstMoveHex = FHexMap::findNextHex(fixture.attackerHex, fixture.attacker->getHeading());
+	const FPoint secondMoveHex = FHexMap::findNextHex(firstMoveHex, fixture.attacker->getHeading());
+	turnData->path.clear();
+	turnData->path.addPoint(fixture.attackerHex);
+	turnData->path.addPoint(firstMoveHex);
+	turnData->path.addPoint(secondMoveHex);
+	turnData->startHeading = fixture.attacker->getHeading();
+	turnData->curHeading = fixture.attacker->getHeading();
+	turnData->finalHeading = fixture.attacker->getHeading();
+	turnData->nMoved = 2;
+
+	CPPUNIT_ASSERT(fixture.game.selectWeapon(0));
+	CPPUNIT_ASSERT(fixture.game.isOffensiveSeekerDeploymentMode());
+	CPPUNIT_ASSERT(fixture.game.getTargetHexes().find(fixture.attackerHex) != fixture.game.getTargetHexes().end());
+	CPPUNIT_ASSERT(fixture.game.getTargetHexes().find(firstMoveHex) != fixture.game.getTargetHexes().end());
+	CPPUNIT_ASSERT(fixture.game.getTargetHexes().find(secondMoveHex) != fixture.game.getTargetHexes().end());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), fixture.game.getTargetHexes().size());
+	CPPUNIT_ASSERT(!fixture.game.assignTargetFromHex(fixture.defenderHex));
+	CPPUNIT_ASSERT(!fixture.game.isHexDeployable(fixture.defenderHex));
+	CPPUNIT_ASSERT(fixture.game.isHexDeployable(firstMoveHex));
+
+	const size_t seekersAtHexBefore = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false).size();
+	CPPUNIT_ASSERT(fixture.game.handleHexClick(firstMoveHex));
+	CPPUNIT_ASSERT_EQUAL(2, fixture.launcher->getAmmo());
+	std::vector<FTacticalSeekerMissileState> seekersAtHex = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false);
+	CPPUNIT_ASSERT_EQUAL(seekersAtHexBefore + 1u, seekersAtHex.size());
+	CPPUNIT_ASSERT(!seekersAtHex.back().active);
+	std::vector<FTacticalPendingSeekerHexGroup> pendingGroups = fixture.game.getSelectedOffensivePendingSeekerHexGroups();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pendingGroups.size());
+	CPPUNIT_ASSERT_EQUAL(1u, pendingGroups[0].count);
+
+	CPPUNIT_ASSERT(fixture.game.handleHexClick(firstMoveHex));
+	CPPUNIT_ASSERT_EQUAL(1, fixture.launcher->getAmmo());
+	seekersAtHex = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false);
+	CPPUNIT_ASSERT_EQUAL(seekersAtHexBefore + 2u, seekersAtHex.size());
+	pendingGroups = fixture.game.getSelectedOffensivePendingSeekerHexGroups();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pendingGroups.size());
+	CPPUNIT_ASSERT_EQUAL(2u, pendingGroups[0].count);
+
+	CPPUNIT_ASSERT(fixture.game.recallSelectedOffensivePendingSeekerAtHex(firstMoveHex));
+	CPPUNIT_ASSERT_EQUAL(2, fixture.launcher->getAmmo());
+	seekersAtHex = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false);
+	CPPUNIT_ASSERT_EQUAL(seekersAtHexBefore + 1u, seekersAtHex.size());
+	pendingGroups = fixture.game.getSelectedOffensivePendingSeekerHexGroups();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pendingGroups.size());
+	CPPUNIT_ASSERT_EQUAL(1u, pendingGroups[0].count);
+
+	fixture.game.setWeapon(NULL);
+	CPPUNIT_ASSERT(fixture.game.selectWeapon(0));
+	pendingGroups = fixture.game.getSelectedOffensivePendingSeekerHexGroups();
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pendingGroups.size());
+	CPPUNIT_ASSERT_EQUAL(1u, pendingGroups[0].count);
+
+	fixture.game.completeOffensiveFirePhase();
+	CPPUNIT_ASSERT(!fixture.game.isOffensiveSeekerDeploymentMode());
+	CPPUNIT_ASSERT(fixture.game.getSelectedOffensivePendingSeekerHexGroups().empty());
+	CPPUNIT_ASSERT(!fixture.game.recallSelectedOffensivePendingSeekerAtHex(firstMoveHex));
+	seekersAtHex = fixture.game.getSeekerMissilesAtHex(firstMoveHex, false);
+	CPPUNIT_ASSERT_EQUAL(seekersAtHexBefore + 1u, seekersAtHex.size());
+	CPPUNIT_ASSERT(!seekersAtHex.back().active);
+
+	destroySeekerFixture(fixture);
 }
 
 void FTacticalBattleDisplayFireFlowTest::testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields() {
@@ -715,6 +1071,244 @@ assertContains(stateBody, "const int statsBottom = m_lowerPanelLayoutState.shipS
 assertContains(stateBody, "if (splitCanFit){");
 assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;");
 assertContains(stateBody, "m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_STACKED;");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testPlaceMinesSourceListStartsAtActionButtonRowBottom() {
+// AC: SMRIV-01 -- drawPlaceMines() anchors the source-selection rows to the top of the
+// lower panel (right column at lMargin=310, starting at getActionPromptLineY(0)) and wraps
+// the instruction text via drawWrappedActionPrompt() in the left column.
+// AC: The placement source rows remain clickable (hit regions still align with drawn text).
+// AC: No regression to other lower-panel layouts that share the same spacer logic.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
+const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::drawDefensiveFire(wxDC &dc)");
+const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
+
+// AC #1: Source list y-start is getActionPromptLineY(0), anchored to the top of the lower
+// panel (right column), not getActionButtonRowBottom() as in the old layout.
+assertContains(minesBody, "int y = getActionPromptLineY(0);");
+assertNotContains(minesBody, "int y = BORDER;");
+assertNotContains(minesBody, "int y = getActionButtonRowBottom();");
+
+// AC #2: Instruction text is wrapped via drawWrappedActionPrompt() in the left column.
+assertContains(minesBody, "drawWrappedActionPrompt(dc,");
+
+// AC #3: Hit regions use the same y variable as the drawn text rows, preserving click alignment.
+// The region push occurs after DrawText at the same y offset in the loop body.
+assertContains(minesBody, "m_shipNameRegions.push_back(wxRect(lMargin,y,");
+
+// AC #4: Other draw phases are not affected by the SMRIV-01 change.
+// drawMoveShip, drawDefensiveFire, and drawAttackFire must not reference getActionButtonRowBottom()
+// as the y initializer for their own content (they use the action-prompt line helpers instead).
+assertNotContains(moveBody, "int y = getActionButtonRowBottom();");
+assertNotContains(defenseBody, "int y = getActionButtonRowBottom();");
+assertNotContains(attackBody, "int y = getActionButtonRowBottom();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testTwoPhaseSeekerDeploymentDrawAndClickDispatching() {
+// AC: SMF-02 -- draw() dispatches BS_PlaceSeekers to drawPlaceSeekers(); onLeftUp()
+// dispatches BS_PlaceSeekers to checkShipSelection(); constructor creates, adds to
+// actionSizer, and hides m_buttonSeekerPlacementDone at startup.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::draw(wxDC &dc)");
+const std::string onLeftUpBody = extractFunctionBody(source, "void FBattleDisplay::onLeftUp(wxMouseEvent & event)");
+const std::string ctorBody = extractFunctionBody(
+	source,
+	"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
+
+// draw() must dispatch BS_PlaceSeekers to drawPlaceSeekers(dc).
+assertContains(drawBody, "case BS_PlaceSeekers:");
+assertContains(drawBody, "drawPlaceSeekers(dc);");
+
+// onLeftUp() must dispatch BS_PlaceSeekers to checkShipSelection().
+assertContains(onLeftUpBody, "case BS_PlaceSeekers:");
+assertContains(onLeftUpBody, "checkShipSelection(event);");
+
+// Constructor must create m_buttonSeekerPlacementDone with the fixed label,
+// add it to the actionSizer, and hide it at startup.
+assertContains(ctorBody, "m_buttonSeekerPlacementDone = new wxButton( this, wxID_ANY, wxT(\"Seeker Placement Done\")");
+assertContains(ctorBody, "actionSizer->Add(m_buttonSeekerPlacementDone,");
+assertContains(ctorBody, "m_buttonSeekerPlacementDone->Hide();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter() {
+// AC: SMF-02 -- drawPlaceSeekers() uses the seeker-specific prompt text, SM-only filter,
+// completeSeekerPlacement() delegation, and the standard show/disconnect/hide button lifecycle.
+// SMRIV-02: The source-list y-start is now getActionPromptLineY(0) (three-column layout,
+// matching drawPlaceMines()), not getActionButtonRowBottom() as in the pre-SMRIV-02 layout.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string seekersBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceSeekers(wxDC &dc)");
+const std::string onDoneBody = extractFunctionBody(source, "void FBattleDisplay::onSeekerPlacementDone( wxCommandEvent& event )");
+
+// Seeker-specific prompt text (exact string from AC).
+assertContains(seekersBody,
+	"The defending player may now place seeker missiles before the attacker sets up their ships.");
+
+// Seeker-specific selection line (exact string from AC).
+assertContains(seekersBody, "Select a source row to place seeker missiles.");
+
+// SM-only filter: rows whose weaponType is not SM must be skipped.
+assertContains(seekersBody, "if (source.weaponType != FWeapon::SM)");
+
+// SMRIV-02: Source list y-start uses getActionPromptLineY(0) (three-column layout,
+// anchored to the top of the lower panel), not getActionButtonRowBottom().
+assertContains(seekersBody, "int y = getActionPromptLineY(0);");
+assertNotContains(seekersBody, "int y = getActionButtonRowBottom();");
+
+// Show m_buttonSeekerPlacementDone on first draw.
+assertContains(seekersBody, "m_buttonSeekerPlacementDone->Show();");
+
+// onSeekerPlacementDone must disconnect, hide, call completeSeekerPlacement(), and reset m_first.
+assertContains(onDoneBody, "m_buttonSeekerPlacementDone->Disconnect(");
+assertContains(onDoneBody, "m_buttonSeekerPlacementDone->Hide();");
+assertContains(onDoneBody, "m_parent->completeSeekerPlacement();");
+assertContains(onDoneBody, "m_first = true;");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testMinePhaseUsesExactPromptTextAndMFilter() {
+// AC: SMF-02 -- drawPlaceMines() uses the mine-specific prompt text, M-only filter,
+// and no combined "Weapon Placement Done" label path remains anywhere in the file.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+
+// Mine-specific prompt text (exact string from AC).
+assertContains(minesBody,
+	"The defending player may now place mines before the attacker sets up their ships.");
+
+// Mine-specific selection line (exact string from AC).
+assertContains(minesBody, "Select a source row to place mines.");
+
+// M-only filter: rows whose weaponType is not M must be skipped.
+assertContains(minesBody, "if (source.weaponType != FWeapon::M)");
+
+// No combined "Weapon Placement Done" label must exist anywhere in the source.
+assertNotContains(source, "Weapon Placement Done");
+
+// Mine done button uses fixed label "Mine Placement Done" set in constructor,
+// confirmed via constructor; the drawPlaceMines path shows m_buttonMinePlacementDone.
+assertContains(minesBody, "m_buttonMinePlacementDone->Show();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton() {
+// AC: SMF-02 -- getActionButtonRowBottom() scans m_buttonSeekerPlacementDone
+// in its shown-button array so the seeker placement button bottom contributes
+// to the source-list y-start just as the mine placement button does.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string rowBottomBody = extractFunctionBody(source, "int FBattleDisplay::getActionButtonRowBottom() const");
+
+// m_buttonSeekerPlacementDone must appear in the scan array inside getActionButtonRowBottom().
+assertContains(rowBottomBody, "m_buttonSeekerPlacementDone,");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum() {
+// AC: SMFR-01 -- Source contract: drawPlaceMines() uses the variable name mineListBottom = y + BORDER,
+// compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
+// This mirrors the pattern used by drawOffensiveSeekerPendingRows().
+//
+// NOTE: This is a source-contract (structural) test only. It verifies that the code is shaped
+// correctly but does NOT prove the runtime behavior works. The authoritative behavioral coverage
+// for this criterion is testOrdnancePlacementAndActivationPanelHeightAutoExpands in
+// tests/gui/TacticalGuiLiveTest.cpp. Removing that behavioral test would leave only this
+// source-inspection check, which violates AGENTS.md policy (behavioral tests are mandatory).
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
+
+// Variable name and computation must match the spec exactly.
+assertContains(minesBody, "const int mineListBottom = y + BORDER;");
+
+// Expansion guard: must compare against requestedDisplayHeight.
+assertContains(minesBody, "if (mineListBottom > m_lowerPanelLayoutState.requestedDisplayHeight)");
+
+// Must update requestedDisplayHeight and call applyRequestedDisplayHeight() inside the guard.
+assertContains(minesBody, "m_lowerPanelLayoutState.requestedDisplayHeight = mineListBottom;");
+assertContains(minesBody, "applyRequestedDisplayHeight();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum() {
+// AC: SMFR-01 -- Source contract: drawPlaceSeekers() uses the variable name seekerListBottom = y + BORDER,
+// compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
+//
+// NOTE: This is a source-contract (structural) test only. It verifies that the code is shaped
+// correctly but does NOT prove the runtime behavior works. The authoritative behavioral coverage
+// for this criterion is testOrdnancePlacementAndActivationPanelHeightAutoExpands in
+// tests/gui/TacticalGuiLiveTest.cpp. Removing that behavioral test would leave only this
+// source-inspection check, which violates AGENTS.md policy (behavioral tests are mandatory).
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string seekersBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceSeekers(wxDC &dc)");
+
+// Variable name and computation must match the spec exactly.
+assertContains(seekersBody, "const int seekerListBottom = y + BORDER;");
+
+// Expansion guard: must compare against requestedDisplayHeight.
+assertContains(seekersBody, "if (seekerListBottom > m_lowerPanelLayoutState.requestedDisplayHeight)");
+
+// Must update requestedDisplayHeight and call applyRequestedDisplayHeight() inside the guard.
+assertContains(seekersBody, "m_lowerPanelLayoutState.requestedDisplayHeight = seekerListBottom;");
+assertContains(seekersBody, "applyRequestedDisplayHeight();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum() {
+// AC: SMFR-01 -- Source contract: drawSeekerActivation() uses the variable name activationListBottom = y + BORDER,
+// compares it against requestedDisplayHeight, and calls applyRequestedDisplayHeight() when it exceeds.
+//
+// NOTE: This is a source-contract (structural) test only. It verifies that the code is shaped
+// correctly but does NOT prove the runtime behavior works. The authoritative behavioral coverage
+// for this criterion is testOrdnancePlacementAndActivationPanelHeightAutoExpands in
+// tests/gui/TacticalGuiLiveTest.cpp. Removing that behavioral test would leave only this
+// source-inspection check, which violates AGENTS.md policy (behavioral tests are mandatory).
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string activationBody = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
+
+// Variable name and computation must match the spec exactly.
+assertContains(activationBody, "const int activationListBottom = y + BORDER;");
+
+// Expansion guard: must compare against requestedDisplayHeight.
+assertContains(activationBody, "if (activationListBottom > m_lowerPanelLayoutState.requestedDisplayHeight)");
+
+// Must update requestedDisplayHeight and call applyRequestedDisplayHeight() inside the guard.
+assertContains(activationBody, "m_lowerPanelLayoutState.requestedDisplayHeight = activationListBottom;");
+assertContains(activationBody, "applyRequestedDisplayHeight();");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern() {
+// AC: SMRIV-02 -- drawPlaceSeekers() uses a three-column layout that mirrors drawPlaceMines():
+//   Left column:   instruction text wrapped by drawWrappedActionPrompt() in the left column.
+//   Middle column: source-selection rows at lMargin=310, anchored at getActionPromptLineY(0).
+//   Right column:  recall list at recallMargin=620, anchored at getActionPromptLineY(0).
+// Both columns are independent; source rows use wxRect(lMargin,y,...); recall rows use
+// wxRect(recallMargin,cy,...) with cy reset to getActionPromptLineY(0) for the right column.
+//
+// NOTE: This is a source-contract (structural) test. It verifies that the code is shaped
+// correctly but does NOT prove the runtime column positions or click-region alignment.
+// The authoritative behavioral coverage is
+// testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions in TacticalGuiLiveTest.cpp.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string seekersBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceSeekers(wxDC &dc)");
+
+// Left column: instruction text wrapped via drawWrappedActionPrompt().
+assertContains(seekersBody, "drawWrappedActionPrompt(dc,");
+
+// Middle column: lMargin=310, y anchored at getActionPromptLineY(0).
+assertContains(seekersBody, "int lMargin = 310;");
+assertContains(seekersBody, "int y = getActionPromptLineY(0);");
+
+// Right column: recallMargin=620, cy anchored at getActionPromptLineY(0).
+assertContains(seekersBody, "const int recallMargin = 620;");
+assertContains(seekersBody, "int cy = getActionPromptLineY(0);");
+
+// Source-row hit regions must use wxRect(lMargin,y,...).
+assertContains(seekersBody, "m_shipNameRegions.push_back(wxRect(lMargin,y,");
+
+// Recall-row hit regions must use wxRect(recallMargin,cy,...).
+assertContains(seekersBody, "m_preGameSeekerRecallRegions.push_back(wxRect(recallMargin, cy,");
+
+// Recall column header text drawn at recallMargin.
+assertContains(seekersBody, "dc.DrawText(\"Placed seekers (click to recall):\", recallMargin,");
+
+// Right column is independent of middle: recallMargin > lMargin ensures no overlap.
+// Verified structurally by confirming both margins are defined in the same function.
+assertBefore(seekersBody, "int lMargin = 310;", "const int recallMargin = 620;");
 }
 
 }

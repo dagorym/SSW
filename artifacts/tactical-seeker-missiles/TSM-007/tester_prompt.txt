@@ -1,0 +1,46 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Remediated verifier warnings for seeker movement helpers by correcting stale comments and adding deterministic wx-free helper seams for behavioral targeting/movement tests.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- Closest target selection considers non-station ships from both sides.
+- Planets, stations, and non-ship objects are ignored by seeker targeting.
+- Equal-distance target ties use automatic RNG through a narrow helper.
+- Initial facing can adjust up to three hexsides toward the selected target.
+- Per-hex movement turns at most one hexside and greedily reduces distance where possible.
+- Movement allowances progress as 2, 4, 6, 8, 10, and 12.
+- Helpers can be tested without wx runtime.
+- Any new FHexMap helper remains generic and non-wx.
+
+Create test files in:
+- tests/tactical/FTacticalSeekerMovementTest.*
+- tests/tactical/FTacticalGameMechanicsTest.*
+
+Implementation context for testing:
+- Updated the stale TSM-004 seam comment in resolveActiveSeekersForMovingPlayer() so it no longer claims seeker resolution is deferred.
+- Added FTacticalSeekerTargetSnapshot plus collectClosestSeekerTargetIDs(...) so tests can exercise closest-target filtering/tie candidate output without wx runtime or full board occupancy setup.
+- Added computeSeekerGreedyNextStep(...) to expose one-step greedy heading/hex movement outputs for deterministic behavioral assertions.
+- Kept existing seeker targeting/movement helper behavior and movement-allowance progression unchanged while preserving current tactical test coverage expectations.
+- No damage or UI wiring changes were introduced in this remediation.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-007
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

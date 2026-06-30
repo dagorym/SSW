@@ -1,0 +1,65 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- PGS-03 (Remediation Pass 2): Fixed duplicate @author entry in FTacticalGameMechanicsTest.h. Production fix (additive pre-game seeker placement via placeSeekerFromSelection() bypass in placeOrdnanceAtHex()) was committed at db2ec98 by the implementer and is unchanged. Prior-pass documentation (AGENTS.md bullet, doc/DesignNotes.md PGS-03 section, FTacticalGame.h docblock) carried forward via remediation merge-back and verified intact. No new documentation edits required for pass-2.
+
+Acceptance criteria to verify:
+- AC1: During pre-game BS_PlaceSeekers, clicking a hex always adds one inactive seeker: ammo decrements, new inactive seeker record created, placed-ordnance record appended on every click including repeated clicks on same hex. PASS.
+- AC2: Repeated clicks on same hex accumulate multiple seekers; no toggle/removal occurs during seeker placement. PASS.
+- AC3: Mine placement retains toggle behavior and attack-phase ordnance behavior is unchanged. PASS.
+- AC4: Seeker placement stops adding when launcher ammo is exhausted. PASS.
+- AC5: testPreGameSeekerPlacementIsAdditive passes after the author dedup fix. PASS.
+
+Implementation branch or worktree context:
+- Implementer branch: sf2-pgs-03-implementer-20260622
+- Tester branch: sf2-pgs-03-tester-20260622
+- Documenter branch: sf2-pgs-03-documenter-20260622 (verify on this branch)
+- Production fix commit: db2ec98 (src/tactical/FTacticalGame.cpp, placeOrdnanceAtHex() additive guard)
+- Tester pass-2 commit: e3aed6e (tests/tactical/FTacticalGameMechanicsTest.h @author dedup, 4→3 entries)
+- Documentation commit: 4aad4f776aee4e349ce9d64278c74a9e06d45b5b (pass-1, carried forward)
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FTacticalGame.cpp (Implementer: additive guard in placeOrdnanceAtHex; file header updated with PGS-03 note)
+- include/tactical/FTacticalGame.h (Implementer: placeOrdnanceAtHex docblock updated; Documenter pass-1: deduplicated repeated author entry)
+- tests/tactical/FTacticalGameMechanicsTest.h (Tester pass-1: added testPreGameSeekerPlacementIsAdditive declaration; Tester pass-2: deduplicated @author from 4 to 3 entries)
+- tests/tactical/FTacticalGameMechanicsTest.cpp (Tester pass-1: added testPreGameSeekerPlacementIsAdditive implementation)
+- AGENTS.md (Documenter pass-1: added PGS-03 bullet after PGS-02 in tactical-tests list)
+- doc/DesignNotes.md (Documenter pass-1: added PGS-03 section at end of file)
+
+Commands executed:
+- git log --oneline -10  (confirmed branch state)
+- git show e3aed6e  (tester author dedup commit: FTacticalGameMechanicsTest.h @author 4→3 entries)
+- git diff sf2-pgs-03-tester-20260622 --name-only  (no additional changes vs tester branch)
+- grep -n PGS-03 AGENTS.md  (verified pass-1 AGENTS.md bullet intact)
+- grep -n PGS-03 doc/DesignNotes.md  (verified pass-1 DesignNotes section intact)
+- grep -n placeOrdnanceAtHex include/tactical/FTacticalGame.h  (verified pass-1 docblock intact)
+
+Final test outcomes:
+- 216 tests passed, 0 failures.
+- testPreGameSeekerPlacementIsAdditive: PASS — additive seeker placement confirmed, no toggle/removal on repeat clicks.
+- All mine-placement and attack-phase tests remain passing.
+
+Plan or evaluation context guidance:
+- plans/pregame-ordnance-placement-plan.md (plan document for the epic, PGS-03 story)
+- artifacts/pregame-ordnance-placement/PGS-03/history/pass-1/ (all pass-1 stage artifacts archived here)
+
+Convention-file guidance:
+- AGENTS.md: repository-wide contributor notes, documentation requirements, and story history
+- doc/DesignNotes.md: design notes including the PGS-03 section written in pass-1
+- doc/rules/tactical_operations_manual.md must NOT be edited under any circumstances
+
+Updated documentation files:
+- AGENTS.md (pass-1, carried forward: PGS-03 bullet after PGS-02 in tactical-tests list)
+- doc/DesignNotes.md (pass-1, carried forward: PGS-03 section at end of file)
+- include/tactical/FTacticalGame.h (pass-1, carried forward: placeOrdnanceAtHex docblock author dedup)
+
+Shared artifact directory:
+- artifacts/pregame-ordnance-placement/PGS-03
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

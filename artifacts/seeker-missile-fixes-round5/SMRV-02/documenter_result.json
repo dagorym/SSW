@@ -1,0 +1,16 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round5/SMRV-02/documenter_report.md",
+    "artifacts/seeker-missile-fixes-round5/SMRV-02/documenter_result.json",
+    "artifacts/seeker-missile-fixes-round5/SMRV-02/verifier_prompt.txt"
+  ],
+  "branch_name": "sf2-SMRV-02-documenter-20260629",
+  "documentation_commit_hash": "2ed8da8",
+  "documentation_files_changed": [
+    "include/tactical/FBattleDisplay.h",
+    "doc/test-contracts.md"
+  ],
+  "pass_label": null,
+  "status": "success",
+  "task_id": null
+}

@@ -16,18 +16,26 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 01, 2026
- * @date Last Modified: May 09, 2026
+ * @date Last Modified: Jun 29, 2026
  */
 class FTacticalBattleBoardRendererDelegationTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalBattleBoardRendererDelegationTest );
 CPPUNIT_TEST( testDrawUsesBattleScreenModelAccessors );
 CPPUNIT_TEST( testOverlayDrawingUsesModelStateAccessors );
 CPPUNIT_TEST( testDrawShipsUsesTemporaryFacingForStoppedSelectedMover );
+CPPUNIT_TEST( testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules );
 CPPUNIT_TEST( testOnLeftUpOnlyHitTestsAndForwardsHexClick );
+CPPUNIT_TEST( testOnLeftUpRoutesActivationPhaseThroughSeekerSelection );
 CPPUNIT_TEST( testHeaderRemovesDuplicatedMechanicsState );
 CPPUNIT_TEST( testOnMotionUsesPlacementForwardersOnly );
+CPPUNIT_TEST( testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath );
+CPPUNIT_TEST( testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen );
+CPPUNIT_TEST( testDrawSeekerMissilesPendingOffensiveFireBranch );
+CPPUNIT_TEST( testDrawTriggeredMineHexesCalledInsideBSBattleGuard );
+CPPUNIT_TEST( testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle );
+CPPUNIT_TEST( testDrawSeekerMoveCountOverlayOwnershipGuardForActivationPhase );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -70,6 +78,18 @@ void testOverlayDrawingUsesModelStateAccessors();
  */
 void testDrawShipsUsesTemporaryFacingForStoppedSelectedMover();
 /**
+ * @brief Verifies draw Seeker Missiles Uses Activation And Battle Visibility Rules.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ * SMC-02: updated to also assert that active seekers for the moving player
+ * are rendered during PH_SEEKER_ACTIVATION so activations are visible on the board.
+ *
+ * @author gpt-5.4 (high), claude-sonnet-4-6 (standard)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules();
+/**
  * @brief Verifies on Left Up Only Hit Tests And Forwards Hex Click.
  *
  * Exercises the tactical regression behavior covered by this fixture case.
@@ -79,6 +99,16 @@ void testDrawShipsUsesTemporaryFacingForStoppedSelectedMover();
  * @date Last Modified: Apr 01, 2026
  */
 void testOnLeftUpOnlyHitTestsAndForwardsHexClick();
+/**
+ * @brief Verifies activation-phase board clicks route to seeker-activation selection.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testOnLeftUpRoutesActivationPhaseThroughSeekerSelection();
 /**
  * @brief Verifies header Removes Duplicated Mechanics State.
  *
@@ -99,6 +129,93 @@ void testHeaderRemovesDuplicatedMechanicsState();
  * @date Last Modified: Apr 01, 2026
  */
 void testOnMotionUsesPlacementForwardersOnly();
+/**
+ * @brief Verifies board constructor loads seeker icon via shared asset resolution.
+ *
+ * Exercises the tactical regression behavior covered by this fixture case.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testBoardConstructorLoadsSeekerMissileIconThroughResolveAssetPath();
+/**
+ * @brief Verifies drawSeekerPaths is gated to PH_MOVE and uses a cyan pen with width 2.
+ *
+ * SMC-07: seeker movement paths are drawn in cyan (pen width 2) and only during the
+ * movement phase, consistent with ship-path behavior but using a distinct color.
+ *
+ * @author claude-sonnet-4-6 (standard)
+ * @date Created: May 30, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void testDrawSeekerPathsIsCalledInMovePhaseWithCyanPen();
+
+/**
+ * @brief Verifies drawSeekerMissiles handles PH_ATTACK_FIRE by drawing pending offensive-fire seeker hexes.
+ *
+ * SMC-05: during PH_ATTACK_FIRE the renderer draws the seeker icon on each in-bounds
+ * hex returned by getAllPendingOffensiveFireSeekerHexes() (no rotation), then also
+ * draws committed active seekers with heading rotation, then returns early so the
+ * normal battle-phase path is skipped.
+ *
+ * @author claude-sonnet-4-6 (standard)
+ * @date Created: May 30, 2026
+ * @date Last Modified: May 30, 2026
+ */
+void testDrawSeekerMissilesPendingOffensiveFireBranch();
+
+/**
+ * @brief Source-contract: drawTriggeredMineHexes is called from draw() inside the BS_Battle guard.
+ *
+ * SMFR-03: verifies that drawTriggeredMineHexes(dc) appears inside the BS_Battle state guard
+ * in FBattleBoard::draw() so the highlight is rendered during battle-phase redraws while the
+ * mine damage summary dialog is shown.  Also verifies the function body reads
+ * getLastTriggeredMineHexes() from the parent (FBattleScreen) and applies green shading.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testDrawTriggeredMineHexesCalledInsideBSBattleGuard();
+/**
+ * @brief Source-contract: drawSeekerMoveCountOverlay is called unconditionally inside BS_Battle.
+ *
+ * SMFR-04: supplements the behavioral GUI test by locking the code structure that enables
+ * the speed label to persist across all battle phases (not only PH_MOVE).
+ * Verifies:
+ * - drawSeekerMoveCountOverlay(dc) is called inside the BS_Battle block in draw().
+ * - The call is NOT inside a phase guard (no phase check gates it between
+ *   the BS_Battle guard and the drawSeekerMoveCountOverlay call).
+ * - The overlay function body does NOT filter out seekers whose movementPath.size() < 2;
+ *   it uses movementAllowance as the fallback count when no path is recorded.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 19, 2026
+ * @date Last Modified: Jun 19, 2026
+ */
+void testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle();
+
+/**
+ * @brief Source-contract supplement: drawSeekerMoveCountOverlay contains the
+ * SMRV-03 ownership guard that skips opponent seekers during PH_SEEKER_ACTIVATION.
+ *
+ * SMRV-03: verifies that the overlay function body contains both the
+ * activation-phase detection and the per-seeker ownership check that suppresses
+ * labels for seekers not owned by the moving player during activation.
+ * The guard mirrors the sprite suppression already present in drawSeekerMissiles()
+ * which sources from getActiveSeekersByMovingPlayer().
+ *
+ * This test supplements the behavioral pixel-level test
+ * testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation in
+ * TacticalGuiLiveTest; the source-contract test locks code shape but cannot
+ * substitute for the behavioral assertion.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 29, 2026
+ * @date Last Modified: Jun 29, 2026
+ */
+void testDrawSeekerMoveCountOverlayOwnershipGuardForActivationPhase();
 };
 
 }

@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round5/SMRV-03/verifier_report.md",
+    "artifacts/seeker-missile-fixes-round5/SMRV-03/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "sf2-SMRV-03-verifier-20260629",
+  "documentation_accuracy_summary": [
+    "ACCURATE. FBattleBoard.h drawSeekerMoveCountOverlay docblock correctly describes the PH_SEEKER_ACTIVATION ownership guard, its relationship to drawSeekerMissiles() sprite suppression, and the all-other-phases unchanged behavior. @date Last Modified updated to Jun 29, 2026.",
+    "test-contracts.md SMRV-03 entry accurately catalogues the behavioral test, its three-AC structure, the discrimination claim, the pixel coordinates and tolerances, and the source-contract supplement role.",
+    "No rules-document edits \u2014 doc/rules/tactical_operations_manual.md correctly left unchanged."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "SMRV-03",
+  "test_sufficiency_summary": [
+    "SUFFICIENT. All three acceptance criteria (AC1-absent, AC1-present, AC2) are covered by the behavioral pixel-level test testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation.",
+    "Discrimination confirmed: without the guard, the opponent seeker (ownerID=0) at hex(3,3) renders a red (#FF0000) label, causing hasRedPixel(img, 260, 187)=true, activationOpponentAbsent=false, and the AC1-absent CPPUNIT_ASSERT to FAIL. With the guard, label is suppressed, assertion PASSES.",
+    "Geometry verified: hex(5,5) label (360,273) and hex(3,3) label (260,187) are correct per computeCenters() formula (m_trim=50, m_d=25, m_a\u224814.43). computeCenters() is called in FBattleBoard constructor, so hex centers are ready for the offscreen draw.",
+    "setPhase(PH_SEEKER_ACTIVATION) does NOT call resolveActiveSeekersForMovingPlayer(), so seeded seekers survive the phase transition.",
+    "Source-contract supplement testDrawSeekerMoveCountOverlayOwnershipGuardForActivationPhase correctly supplements behavioral coverage without substituting for it.",
+    "TacticalTests: 226 run, 0 failures. GuiTests: 55 run, 9 failures (8 match SMRV-02 pre-existing baseline; 1 new BattleSimGuiLiveTest centering failure unmasked by SMRV-T3, not caused by SMRV-03 production change)."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 1
+}

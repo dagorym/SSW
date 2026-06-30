@@ -1,0 +1,54 @@
+Your role is 'tester'. Your task is as follows:
+
+## Task Summary
+
+Verify and add behavioral test coverage for two cleanup changes made to `FTacticalGame::placeOrdnanceAtHex()` in `src/tactical/FTacticalGame.cpp` as part of SMRIV-06.
+
+## Changed Files
+
+- `src/tactical/FTacticalGame.cpp`
+
+## Acceptance Criteria
+
+1. The unreachable `else if (getState() == BS_PlaceSeekers)` branch in `placeOrdnanceAtHex()` is removed and no observable placement/removal/undeploy behavior changes in any state.
+2. For the normal flow, pre-game mine removal still removes the minefield and restores ammo to the placing ship; additionally, when a hex is in `m_minedHexList` with no matching placed-ordnance record, the hex is still erased from `m_minedHexList` (no stale minefield remains).
+3. The existing pre-game ordnance behavioral tests (mine toggle/removal, additive seeker stacking, seeker undeploy-by-list) continue to pass, confirming no regression.
+
+## Implementation Context
+
+Two minimal changes were made to `placeOrdnanceAtHex()`:
+
+1. **Dead branch removed**: The `else if (getState() == BS_PlaceSeekers) { rebuildDeployablePlacementSourcesFiltered(FWeapon::SM); }` branch inside the `removePlacedOrdnanceForSelection` block was removed. It was unreachable because the PGS-03 early-return at the top of the function takes all `BS_PlaceSeekers && SM` placements before the removal block is reached. The BS_PlaceMines rebuild path and the else-default path are unchanged.
+
+2. **Defensive erase added**: After the PGS-04 for-loop (which searches `m_placedOrdnance` for a matching mine record), a `m_minedHexList.erase(hex)` was added for the case where no matching record was found. This prevents a stale entry in `m_minedHexList` when the hex was in the list but had no corresponding placed-ordnance record.
+
+## Test File Location Guidance
+
+New behavioral tests should be added to:
+- `tests/tactical/FTacticalPreGameOrdnanceTest.*` (preferred — directly covers pre-game ordnance placement scenarios)
+- OR `tests/tactical/FTacticalGameMechanicsTest.*`
+
+## Validation Commands
+
+```
+make -C tests tactical-tests
+./tests/tactical/TacticalTests
+```
+
+All 224 tactical tests pass on the implementation branch.
+
+## Existing Validations Expected to Fail
+
+None. All existing tests continue to pass.
+
+## Shared Artifact Directory
+
+`artifacts/seeker-missile-fixes-round4/SMRIV-06`
+
+## Startup Behavior
+
+Continue past preflight when blockers are absent.
+
+## Completion Gate
+
+Do not report success unless all required artifacts exist and all changes are committed.

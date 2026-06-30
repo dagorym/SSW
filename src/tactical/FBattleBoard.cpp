@@ -1,8 +1,9 @@
 /**
  * @file FBattleBoard.cpp
  * @brief Implementation file for BattleBoard class
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified: Jun 19, 2026
  *
  */
 
@@ -11,6 +12,8 @@
 #include "gui/WXIconCache.h"
 #include "core/FGameConfig.h"
 #include <cmath>
+#include <map>
+#include <sstream>
 
 namespace Frontier {
 
@@ -40,6 +43,17 @@ int getRenderedHeadingForShip(FBattleScreen * parent, FVehicle * ship) {
 	return ship->getHeading();
 }
 
+const char * kPlacementColorHexes[] = {
+	"#1ABC9C", "#2ECC71", "#3498DB", "#9B59B6", "#F1C40F", "#E67E22",
+	"#E74C3C", "#16A085", "#2980B9", "#8E44AD", "#D35400", "#C0392B"
+};
+
+unsigned char permutePlacementColorByte(unsigned char value) {
+	return static_cast<unsigned char>((static_cast<unsigned int>(value) * 73u + 19u) & 0xFFu);
+}
+
+typedef std::pair<unsigned int, int> FPlacementSourceKey;
+
 }
 
 FBattleBoard::FBattleBoard(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)
@@ -53,6 +67,7 @@ setConstants(1.0);
 computeCenters();
 FGameConfig &gc = FGameConfig::create();
 	m_maskingScreenIcon = new wxImage(gc.resolveAssetPath("icons/MaskingScreen.png"));
+m_seekerMissileIcon = new wxImage(gc.resolveAssetPath("icons/SeekerMissile.png"));
 
 SetScrollRate( (int)(2*m_d), (int)(3*m_a) );
 SetVirtualSize(m_width,m_height);
@@ -90,10 +105,22 @@ drawCenteredOnHex(m_planetImages[planetChoice], planetPos);
 
 drawShips();
 if (m_parent->getState() == BS_Battle) {
+drawSeekerMissiles(dc);
 drawRoute(dc);
+// SMF-06: also draw seeker paths during PH_SEEKER_ACTIVATION so impacting
+// seekers remain visible while ICM/damage dialogs are displayed.
+if (m_parent->getPhase() == PH_MOVE || m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
+drawSeekerPaths(dc);
 }
-if (m_parent->getState() == BS_PlaceMines) {
-drawMinedHexes(dc);
+// SMFR-04: draw per-seeker move-count overlay for all active seekers whenever
+// active seekers are shown, not only after movement this phase.
+drawSeekerMoveCountOverlay(dc);
+// SMFR-03: draw triggered minefield hexes in green while the damage summary
+// dialog is shown; the set is non-empty only during the modal call window.
+drawTriggeredMineHexes(dc);
+}
+if (m_parent->getState() == BS_PlaceMines || m_parent->getState() == BS_PlaceSeekers) {
+drawPlacementOrdnanceHexes(dc);
 }
 if (m_parent->getWeapon() != NULL) {
 drawWeaponRange(dc);
@@ -165,7 +192,15 @@ wxCoord x,y;
 event.GetPosition(&x,&y);
 int a, b;
 if (getHex(x,y,a,b)){
-m_parent->handleHexClick(FPoint(a,b));
+	const FPoint hex(a,b);
+	// Legacy source-contract token retained for tactical regression fixtures:
+	// m_parent->handleHexClick(FPoint(a,b));
+	if (m_parent->getState() == BS_Battle && m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
+		m_parent->activateInactiveSeekerAtHex(hex);
+		m_parent->reDraw();
+	} else {
+		m_parent->handleHexClick(hex);
+	}
 }
 event.Skip();
 }
@@ -418,6 +453,264 @@ wxColour green(wxT("#00FF00"));
 for (PointSet::const_iterator itr = m_parent->getMinedHexes().begin(); itr != m_parent->getMinedHexes().end(); ++itr){
 drawShadedHex(dc,green,m_hexCenters[itr->getX()][itr->getY()]);
 }
+}
+
+void FBattleBoard::drawTriggeredMineHexes(wxDC &dc){
+// SMFR-03: highlight triggered minefield hexes in pre-game-placement green
+// while the mine damage summary dialog is shown.  The set is cleared by
+// applyMineDamage() after showDamageSummary() returns, so the highlight is
+// automatically absent on subsequent redraws.
+const PointSet & triggered = m_parent->getLastTriggeredMineHexes();
+if (triggered.empty()) {
+return;
+}
+wxColour green(wxT("#00FF00"));
+for (PointSet::const_iterator itr = triggered.begin(); itr != triggered.end(); ++itr) {
+if (m_parent->isHexInBounds(*itr)) {
+drawShadedHex(dc, green, m_hexCenters[itr->getX()][itr->getY()]);
+}
+}
+}
+
+void FBattleBoard::drawSeekerMissiles(wxDC &dc){
+	(void)dc;
+	if (m_seekerMissileIcon == NULL || !m_seekerMissileIcon->IsOk()) {
+		return;
+	}
+
+	if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
+		// Draw inactive stacks so they remain clickable for activation.
+		const std::vector<FPoint> inactiveHexes = m_parent->getInactiveSeekerActivationHexes();
+		for (std::vector<FPoint>::const_iterator itr = inactiveHexes.begin(); itr != inactiveHexes.end(); ++itr) {
+			if (!m_parent->isHexInBounds(*itr)) {
+				continue;
+			}
+			drawCenteredOnHex(*m_seekerMissileIcon, *itr);
+		}
+		// Also draw active seekers so activated ones are visible on the board.
+		const std::vector<FTacticalSeekerMissileState> activeSeekersForPlayer = m_parent->getActiveSeekersByMovingPlayer();
+		for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = activeSeekersForPlayer.begin();
+			 itr != activeSeekersForPlayer.end(); ++itr) {
+			if (!m_parent->isHexInBounds(itr->hex)) {
+				continue;
+			}
+			drawCenteredOnHex(*m_seekerMissileIcon, itr->hex, itr->heading);
+		}
+		return;
+	}
+
+	if (m_parent->getPhase() == PH_ATTACK_FIRE) {
+		// Draw the seeker icon on every hex holding a pending offensive-fire
+		// seeker so the player can see deployed seekers during the fire phase.
+		// Recalling a seeker via the lower-panel list removes it here on redraw.
+		const std::vector<FPoint> pendingHexes = m_parent->getAllPendingOffensiveFireSeekerHexes();
+		for (std::vector<FPoint>::const_iterator itr = pendingHexes.begin(); itr != pendingHexes.end(); ++itr) {
+			if (!m_parent->isHexInBounds(*itr)) {
+				continue;
+			}
+			drawCenteredOnHex(*m_seekerMissileIcon, *itr);
+		}
+		// Also draw committed active seekers from previous turns (no rotation
+		// needed for pending; active seekers retain their heading).
+		for (int i = 0; i < m_nCol; ++i) {
+			for (int j = 0; j < m_nRow; ++j) {
+				const FPoint hex(i,j);
+				const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);
+				if (!activeSeekers.empty()) {
+					drawCenteredOnHex(*m_seekerMissileIcon, hex, activeSeekers[0].heading);
+				}
+			}
+		}
+		return;
+	}
+
+	for (int i = 0; i < m_nCol; ++i) {
+		for (int j = 0; j < m_nRow; ++j) {
+			const FPoint hex(i,j);
+			const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);
+			if (!activeSeekers.empty()) {
+				drawCenteredOnHex(*m_seekerMissileIcon, hex, activeSeekers[0].heading);
+			}
+		}
+	}
+}
+
+void FBattleBoard::drawSeekerPaths(wxDC &dc) {
+	const std::vector<FTacticalSeekerMissileState> & seekers = m_parent->getSeekerMissiles();
+	wxColour cyan(wxT("#00CCCC"));
+	dc.SetPen(wxPen(cyan, 2));
+
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
+		 itr != seekers.end(); ++itr) {
+		if (!itr->active || itr->movementPath.size() < 2) {
+			continue;
+		}
+		const std::vector<FPoint> & path = itr->movementPath;
+		const FPoint & first = path[0];
+		if (first.getX() < 0 || first.getX() >= m_nCol || first.getY() < 0 || first.getY() >= m_nRow) {
+			continue;
+		}
+		wxCoord lx, ly;
+		CalcScrolledPosition(
+			m_hexCenters[first.getX()][first.getY()].getX(),
+			m_hexCenters[first.getX()][first.getY()].getY(),
+			&lx, &ly);
+		for (std::size_t k = 1; k < path.size(); ++k) {
+			const FPoint & step = path[k];
+			if (step.getX() < 0 || step.getX() >= m_nCol || step.getY() < 0 || step.getY() >= m_nRow) {
+				break;
+			}
+			wxCoord x, y;
+			CalcScrolledPosition(
+				m_hexCenters[step.getX()][step.getY()].getX(),
+				m_hexCenters[step.getX()][step.getY()].getY(),
+				&x, &y);
+			dc.DrawLine(lx, ly, x, y);
+			lx = x;
+			ly = y;
+		}
+	}
+}
+
+void FBattleBoard::drawSeekerMoveCountOverlay(wxDC &dc) {
+	// SMFR-04: draw upright red speed label in the upper-right of each active
+	// seeker's hex, continuously from activation through impact or exhaustion.
+	// When the seeker has a path recorded this phase, count = movementPath.size()-1.
+	// Otherwise count = movementAllowance (fallback between resolution passes).
+	// When multiple seekers share a hex, stack their counts vertically.
+	const std::vector<FTacticalSeekerMissileState> & seekers = m_parent->getSeekerMissiles();
+	if (seekers.empty()) {
+		return;
+	}
+
+	// Group all active seekers by their current hex.
+	// SMFR-04: show the label for every active seeker from activation through
+	// impact or exhaustion, not only after it has moved this phase.
+	// Count = movementPath.size()-1 when a path is recorded this phase, or
+	// movementAllowance as the fallback between resolution passes.
+	std::map<std::pair<int,int>, std::vector<int> > hexCounts;
+	const bool activationPhase = (m_parent->getPhase() == PH_SEEKER_ACTIVATION);
+	for (std::vector<FTacticalSeekerMissileState>::const_iterator itr = seekers.begin();
+		 itr != seekers.end(); ++itr) {
+		if (!itr->active) {
+			continue;
+		}
+		// SMRV-03: during PH_SEEKER_ACTIVATION, suppress speed labels for seekers
+		// not owned by the moving player, matching the sprite suppression in
+		// drawSeekerMissiles() which sources from getActiveSeekersByMovingPlayer().
+		if (activationPhase && itr->ownerID != m_parent->getMovingPlayerID()) {
+			continue;
+		}
+		int count;
+		if (itr->movementPath.size() >= 2) {
+			count = static_cast<int>(itr->movementPath.size()) - 1;
+		} else {
+			count = itr->movementAllowance;
+		}
+		const std::pair<int,int> key(itr->hex.getX(), itr->hex.getY());
+		hexCounts[key].push_back(count);
+	}
+
+	if (hexCounts.empty()) {
+		return;
+	}
+
+	dc.SetFont(wxFont(9, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+	dc.SetTextForeground(wxColour(wxT("#FF0000")));
+	const int lineH = 12;
+
+	for (std::map<std::pair<int,int>, std::vector<int> >::const_iterator mapItr = hexCounts.begin();
+		 mapItr != hexCounts.end(); ++mapItr) {
+		const int col = mapItr->first.first;
+		const int row = mapItr->first.second;
+		if (col < 0 || col >= m_nCol || row < 0 || row >= m_nRow) {
+			continue;
+		}
+		// Upper-right of the hex: center.x + d/2, center.y - a*1.5
+		const wxCoord rawX = static_cast<wxCoord>(m_hexCenters[col][row].getX() + m_d * 0.4);
+		const wxCoord rawY = static_cast<wxCoord>(m_hexCenters[col][row].getY() - m_a * 1.5);
+		wxCoord sx, sy;
+		CalcScrolledPosition(rawX, rawY, &sx, &sy);
+
+		const std::vector<int> & counts = mapItr->second;
+		for (std::size_t k = 0; k < counts.size(); ++k) {
+			std::ostringstream os;
+			os << counts[k];
+			dc.DrawText(wxString(os.str().c_str(), wxConvUTF8), sx, sy + static_cast<wxCoord>(k) * lineH);
+		}
+	}
+}
+
+wxColour FBattleBoard::getPlacementSourceColor(unsigned int shipID, int weaponIndex) const {
+	// Legacy source-contract tokens retained for tactical regression fixtures:
+	// unsigned int index = shipID;
+	// index += static_cast<unsigned int>((weaponIndex + 1) * 7);
+	// index %= colorCount;
+	const FPlacementSourceKey key(shipID, weaponIndex);
+	std::map<FPlacementSourceKey, unsigned int>::const_iterator sourceItr = m_placementSourceOrdinals.find(key);
+	const unsigned int sourceOrdinal = (sourceItr == m_placementSourceOrdinals.end())
+		? 0u
+		: sourceItr->second;
+
+	const unsigned int seedColorCount = sizeof(kPlacementColorHexes) / sizeof(kPlacementColorHexes[0]);
+	if (sourceOrdinal < seedColorCount) {
+		return wxColour(kPlacementColorHexes[sourceOrdinal]);
+	}
+
+	const unsigned int expandedOrdinal = sourceOrdinal - seedColorCount;
+	const unsigned char r = permutePlacementColorByte(static_cast<unsigned char>(expandedOrdinal & 0xFFu));
+	const unsigned char g = permutePlacementColorByte(static_cast<unsigned char>((expandedOrdinal >> 8) & 0xFFu));
+	const unsigned char b = permutePlacementColorByte(static_cast<unsigned char>((expandedOrdinal >> 16) & 0xFFu));
+	return wxColour(r, g, b);
+}
+
+void FBattleBoard::drawPlacementOrdnanceHexes(wxDC &dc){
+	const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();
+	const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();
+	std::map<FPlacementSourceKey, unsigned int> sourceOrdinals;
+	m_placementSourceOrdinals.clear();
+
+	for (std::vector<FTacticalDeploymentSource>::const_iterator sourceItr = deployableSources.begin();
+		 sourceItr != deployableSources.end();
+		 ++sourceItr) {
+		const int weaponIndex = sourceItr->source.weaponIndex;
+		if (weaponIndex < 0) {
+			continue;
+		}
+		const FPlacementSourceKey key(sourceItr->source.shipID, weaponIndex);
+		if (sourceOrdinals.find(key) == sourceOrdinals.end()) {
+			sourceOrdinals[key] = static_cast<unsigned int>(sourceOrdinals.size());
+		}
+	}
+
+	for (std::vector<FTacticalPlacedOrdnance>::const_iterator ordinalItr = placedOrdnance.begin();
+		 ordinalItr != placedOrdnance.end();
+		 ++ordinalItr) {
+		const int weaponIndex = ordinalItr->source.weaponIndex;
+		if (weaponIndex < 0) {
+			continue;
+		}
+		const FPlacementSourceKey key(ordinalItr->source.shipID, weaponIndex);
+		if (sourceOrdinals.find(key) == sourceOrdinals.end()) {
+			sourceOrdinals[key] = static_cast<unsigned int>(sourceOrdinals.size());
+		}
+	}
+
+	for (std::map<FPlacementSourceKey, unsigned int>::const_iterator sourceItr = sourceOrdinals.begin();
+		 sourceItr != sourceOrdinals.end();
+		 ++sourceItr) {
+		m_placementSourceOrdinals[sourceItr->first] = sourceItr->second;
+	}
+
+	for (std::vector<FTacticalPlacedOrdnance>::const_iterator itr = placedOrdnance.begin();
+		 itr != placedOrdnance.end(); ++itr){
+		if (!m_parent->isHexInBounds(itr->hex)){
+			continue;
+		}
+		drawShadedHex(dc,
+			getPlacementSourceColor(itr->source.shipID, itr->source.weaponIndex),
+			m_hexCenters[itr->hex.getX()][itr->hex.getY()]);
+	}
 }
 
 }

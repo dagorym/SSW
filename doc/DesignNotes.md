@@ -266,12 +266,43 @@ All three combat phases and their supporting mechanics are fully implemented:
   model-owned `m_movementHexes`, `m_leftHexes`, `m_rightHexes` on
   `FTacticalGame` and rendered by `FBattleBoard` through `FBattleScreen`
   accessors.
+- **Seeker activation pre-phase** (`PH_SEEKER_ACTIVATION`): `FTacticalGame`
+  now intercepts `setPhase(PH_MOVE)` and routes movement entry through
+  `beginSeekerActivationPhase()` first. The model exposes one selected
+  inactive-seeker stack hex plus filtered stack records and one-way activation
+  helpers so later wx surfaces can activate individual seekers before movement.
+  If the moving player has no inactive seekers, the model still calls
+  `resolveActiveSeekersForMovingPlayer()` and then auto-enters `PH_MOVE`, so
+  the active-seeker seam runs even when no visible activation stop is needed.
+  The shipped TSM-005 wx follow-up makes that stop user-visible. The SMC-02
+  rework then refined the UX: the board renders the moving player's inactive
+  seeker stacks plus any already-active seekers during `PH_SEEKER_ACTIVATION`
+  so the user can see both clickable targets and their activation progress.
+  Board clicks directly activate one inactive seeker at the clicked hex via
+  `activateInactiveSeekerAtHex`. The lower panel lists all seekers already
+  activated by the moving player and provides one clickable deactivate row per
+  active seeker together with a `Seeker Activation Done` action button. Once
+  tactical play leaves that phase, normal battle rendering hides inactive
+  seekers again and shows only active seekers on the map. TSM-008
+  extends activation completion so `completeSeekerActivationPhase()` resolves
+  the moving player's active seekers before `PH_MOVE`: same-hex contacts are
+  captured first, movement-step contacts append pending
+  `FTacticalSeekerContactOutcome` records for downstream damage work, seekers
+  that contact are removed, and seekers that reach their 12-hex allowance
+  without contact expire.
 - **Defensive fire phase** (`PH_DEFENSE_FIRE`): closest-approach range
   checking in `setIfValidTarget()`; FF weapon arc validation in
   `computeFFRange()`.
 - **Offensive fire phase** (`PH_ATTACK_FIRE`): moving ship fires from the
   optimal point along its path via `computeMovedWeaponRange()`; iterates
   every hex in the ship's path and checks weapon range/arc at each position.
+  Selecting an `SM` launcher during the moving player's offensive fire phase
+  now enters seeker deployment mode instead of normal target assignment:
+  legal board clicks are limited to the selected ship's current path, each
+  click adds one inactive pending seeker for that launcher, same-hex clicks
+  keep stacking more pending seekers if ammo remains, and the lower panel
+  exposes explicit grouped recall rows until `Offensive Fire Done` commits the
+  surviving pending deployments as ordinary inactive seekers.
 - **ICM interception**: `fireICM()` in `FBattleScreen.cpp` presents
   `ICMSelectionGUI` before weapon damage is resolved.
 - **End-of-phase cleanup**: `toggleActivePlayer()` and `toggleMovingPlayer()`
@@ -380,9 +411,11 @@ surface now includes:
 - **Setup and placement APIs:** planet placement, station placement, ship
   placement, pending-rotation heading confirmation, and setup-oriented
   state access needed during scenario initialization.
-- **Movement and fire progression APIs:** hex-click dispatch, mine placement
-  start/completion helpers, move completion, defensive/offensive fire phase
-  completion, and model-owned weapon-range computation.
+- **Movement and fire progression APIs:** hex-click dispatch, generalized
+  ordnance-placement start/source-selection/placement helpers (with legacy
+  mine-placement compatibility entry points), move completion,
+  defensive/offensive fire phase completion, and model-owned weapon-range
+  computation.
 - **Renderer-facing state accessors:** read access to hex occupancy, current
   selected ship hex, route and turn highlight lists, target and head-on range
   sets, mined hexes, mine targets/ownership, mine-capable ship lists, turn
@@ -409,10 +442,27 @@ remaining non-view interactions through the existing forwarding seam:
   still had a blocking runtime cleanup-order bug in this seam; the explicit
   single-clear lifecycle contract was added later by Milestone 8 remediation
   Subtasks 1/2/4.
-- **Mine placement/setup:** setup-speed completion now calls
-  `beginMinePlacement()`, mine placement completion calls
-  `completeMinePlacement()`, and the mine-placement UI reads the selectable
-  ship list from `getShipsWithMines()` rather than caching a local copy.
+- **Mine/ordnance placement setup:** setup-speed completion still reaches the
+  legacy `beginMinePlacement()` seam, but that compatibility entry point now
+  delegates to generalized source-tracked setup placement through
+  `beginOrdnancePlacement()`. The display can also forward exact source
+  selection through `selectPlacementSource(...)` or
+  `selectPlacementSourceByIndex(...)`, and map clicks now have a generalized
+  `placeOrdnanceAtHex()` path behind the legacy `placeMineAtHex()` wrapper.
+  Setup placement undo is keyed to the exact selected ship/weapon slot rather
+  than only ship ownership, and successful mine/seeker placement rebuilds the
+  deployable-source list while reselecting that same source slot so wx-side row
+  indices and model-side ship/weapon pointers stay aligned after ammo changes.
+  The shipped TSM-003 wx follow-up now renders one lower-panel row per
+  deployable ship/weapon slot, labels each row with the exact mine or seeker
+  source plus its live ammo count, switches the active source through row
+  clicks, and keeps the visible row state synchronized with map placement/undo
+  rather than relying on the legacy `getShipsWithMines()` list alone.
+  `FBattleBoard` also reads `getPlacedOrdnance()` during setup placement and
+  shades placed mines and inactive seekers with deterministic source-specific
+  colors derived from per-source ordinals rather than the old 12-color modulo
+  wrap, so same-hex markers remain visually attributable to their launching
+  slot even when many deployable rows are present.
 
 Milestone 8 Subtask 3 then applies that forwarding surface to
 `FBattleBoard`. The board now keeps only wx-side geometry, scaling,
@@ -424,6 +474,120 @@ ranges, and mined hex overlays are read from `FTacticalGame` through
 handled by computing the clicked board hex in `FBattleBoard::onLeftUp()` and
 forwarding that `FPoint` to `FBattleScreen::handleHexClick()`, which delegates
 the behavior to `FTacticalGame::handleHexClick()`.
+
+The shipped TSM-004 follow-up extends that forwarding seam again for the new
+pre-movement seeker-activation model state. `FBattleScreen` now forwards
+inactive-stack discovery, activation-hex selection, selected-stack inspection,
+one-way individual seeker activation, and activation completion so the later
+board/display subtasks can render and drive the activation UI without
+reintroducing wx state ownership into `FTacticalGame`.
+
+TSM-008 keeps that boundary intact while making activation completion
+behaviorful: `FBattleScreen::completeSeekerActivationPhase()` still remains a
+thin forwarding seam, but the delegated `FTacticalGame` path now performs the
+moving-side active seeker resolution pass, records pending contact outcomes for
+later damage handling, expires 12-hex seekers, and only then enters ordinary
+movement and redraw.
+
+TSM-009 completes that detonation handoff. Pending
+`FTacticalSeekerContactOutcome` records now resolve through
+`FTacticalGame::resolvePendingSeekerDetonationDamage()`, which creates
+temporary parentless `FWeapon::SM` attacks, reuses
+`ITacticalUI::runICMSelection(...)`, batches the resulting attacks into one
+immediate `TRT_SeekerDamage` summary, and captures destroyed-ship IDs only
+after the summary dialog path finishes. `FBattleScreen` then consumes that
+destroyed-ship bookkeeping before its final redraw, preserving the same
+summary-before-cleanup ordering used by the existing immediate mine-damage
+flow.
+
+TSM-010 integrates active seeker path contact into normal ship movement
+finalization. `FTacticalGame::completeMovePhase()` now clears any leftover
+`m_pendingSeekerContactOutcomes` at the start of finalization, then calls the
+new `checkForActiveSeekersOnPath(FVehicle*)` for each moving ship alongside
+the existing `checkForMines()` check. `checkForActiveSeekersOnPath` scans the
+ship's finalized turn path and appends a `FTacticalSeekerContactOutcome` for
+the first active opposing seeker encountered in each path hex; inactive seekers
+are skipped via an explicit `active` flag guard so they never trigger movement
+contact. After all ships are scanned, `completeMovePhase()` calls the new
+`applyMovementSeekerDamage()` to resolve the collected contacts through the
+same `resolvePendingSeekerDetonationDamage()` seam established by TSM-009,
+removing each detonated seeker from `m_seekerMissiles` exactly once. Seeker
+contact damage is therefore resolved before `applyMineDamage()` and before the
+phase advances to `PH_DEFENSE_FIRE`.
+
+The shipped TSM-005 wx follow-up consumes that forwarding seam. `FBattleBoard`
+loads `icons/SeekerMissile.png` through `FGameConfig::resolveAssetPath(...)`
+and applies phase-specific seeker visibility rules: only inactive stacks owned
+by the moving player render during `PH_SEEKER_ACTIVATION`, while normal battle
+phases render only active seekers. `FBattleBoard::onLeftUp()` also routes
+activation-phase hex clicks to `FBattleScreen::selectSeekerActivationHex(...)`
+instead of the generic tactical click handler. `FBattleDisplay` now adds the
+activation instructions, selected-stack readout, per-seeker clickable rows, and
+`Seeker Activation Done` button so board and lower-panel refresh stay aligned
+after both activation-hex changes and one-way seeker activation clicks.
+
+The SMC-02 rework revises the activation UX so board and lower-panel roles are
+split cleanly. `FBattleBoard::onLeftUp()` now calls
+`FBattleScreen::activateInactiveSeekerAtHex(hex)` directly for
+`PH_SEEKER_ACTIVATION` clicks instead of routing through
+`selectSeekerActivationHex`. The lower panel (`FBattleDisplay::drawSeekerActivation`)
+no longer shows a selected-stack readout of inactive seekers; it instead lists
+all seekers already activated by the moving player via
+`getActiveSeekersByMovingPlayer()` and provides one clickable deactivate row per
+active seeker, delegating to `deactivateActiveSeekerByID(id)` on click. Both
+board and lower-panel changes call `reDraw()` after state changes so the board
+(showing both inactive stacks and active seekers during the activation phase) and
+the panel (showing the running list of activated seekers) stay consistent.
+
+SMF-04 adds per-activation-phase scoping to the seeker-activation list. A
+player may activate seekers across multiple activation phases in a turn, but the
+lower-panel changeable list should show only the seekers activated in the
+**current** phase so the player can still deactivate them. The model tracks this
+with `m_seekerActivationPhaseIndex` on `FTacticalGame`, an integer counter
+initialized to 0 by `reset()` and incremented by `beginSeekerActivationPhase()`
+each time a new activation phase begins. Both activation entry points
+(`activateSelectedInactiveSeeker()` and `activateInactiveSeekerAtHex()`) stamp
+`activationPhaseIndex` on the newly activated `FTacticalSeekerMissileState`
+record with the current counter value. The new
+`getActiveSeekersByMovingPlayerThisPhase()` accessor on `FTacticalGame` (and its
+`FBattleScreen` delegation shim) filters the complete active-seeker list to
+entries whose `activationPhaseIndex` matches the current counter, returning only
+seekers the player can still deactivate this phase. The existing
+`getActiveSeekersByMovingPlayer()` is unchanged and continues to return all
+active seekers for movement driving. The `activationPhaseIndex` field is not
+persisted; `save()` omits it and there are no changes to the serialization
+contract.
+
+The shipped TSM-006 follow-up extends the same runtime delegation seam for
+offensive-fire seeker deployment. `FTacticalGame` now tracks
+`m_pendingOffensiveSeekerDeployments` keyed by `m_offensiveFirePhaseID`, exposes
+`isOffensiveSeekerDeploymentMode()`,
+`getSelectedOffensivePendingSeekerHexGroups()`, and
+`recallSelectedOffensivePendingSeekerAtHex(...)`, and treats legal path-hex
+clicks as additive pending seeker placement for the selected `SM` launcher.
+`FBattleScreen` forwards those model APIs and `FBattleDisplay` renders grouped
+per-hex recall rows, so same-hex repeat clicks keep adding pending seekers
+while undo remains an explicit lower-panel action instead of a board-click
+toggle.
+
+SMC-06 extends `FTacticalSeekerMissileState` with a render-supporting
+`movementPath` field (a `std::vector<FPoint>`) populated by
+`resolveActiveSeekersForMovingPlayer()` as each greedy step is taken. Active
+seekers for the moving player have their path cleared and then rebuilt from the
+starting hex through every movement step; inactive or non-moving seekers have
+their path cleared so no stale paths persist across turns. The field is not
+persisted and carries no wx types. `FBattleScreen::getSeekerMissiles()` delegates
+the complete seeker record collection (including `movementPath`) to the board
+layer without copying.
+
+SMC-07 builds on that path data to draw seeker movement on the board. During
+`PH_MOVE`, `FBattleBoard::drawSeekerPaths()` iterates all seeker records with an
+active flag and `movementPath.size() >= 2`, sets a cyan pen (color `#00CCCC`,
+width 2, distinct from the ship-path red/gray tones), and draws stepped
+`dc.DrawLine()` segments through each recorded hex center. Seeker icons rendered
+by `drawSeekerMissiles()` during normal battle phases are now also rotated to
+reflect the seeker's current heading (`heading * pi/3` radians), consistent with
+the six-direction ship icon rotation used elsewhere on the board.
 
 This leaves the originally shipped Milestone 8 runtime tactical wx path only
 partially rewired: `FBattleDisplay` behaved as a wx renderer/input translator
@@ -593,11 +757,13 @@ earlier Milestone 8 rewiring steps. The updated tactical tests now verify that:
   the click-flow forwarding APIs that remain authoritative on the wx side.
 - `FTacticalBattleScreenDelegationTest` explicitly covers the selection and
   hex-interaction mutators (`selectShipFromHex()`, `assignTargetFromHex()`,
-  and `placeMineAtHex()`) as redraw-gated forwarders into `FTacticalGame`.
+  `placeOrdnanceAtHex()`, and the legacy `placeMineAtHex()` wrapper) as
+  redraw-gated forwarders into `FTacticalGame`.
 - `FTacticalModelSelectionHexClickSurfaceTest` validates the canonical
   `FTacticalGame` header/implementation API for weapon selection, defense
-  selection, ship selection, target assignment, mine placement, occupancy
-  queries, in-bounds checks, and `handleHexClick()` routing.
+  selection, ship selection, target assignment, generalized ordnance
+  placement/source selection, occupancy queries, in-bounds checks, and
+  `handleHexClick()` routing.
 - Tactical test registration now includes that new suite in both
   `tests/tactical/TacticalTests.cpp` and `tests/tactical/Makefile`, matching
   repository test-runner conventions.
@@ -1386,3 +1552,152 @@ cd tests && ./tactical/TacticalTests
 ```
 
 Result: `OK (33 tests)` GUI, `OK (125 tests)` tactical.
+
+SMF-01 splits the combined pre-game ordnance deployment into two sequential
+model-level setup phases. Before this change, `BS_PlaceMines` combined both
+mine and seeker sources in one phase, and `beginOrdnancePlacement()` rebuilt
+the full mixed source list before entering that state. The new flow is:
+
+1. **Mine phase** (`BS_PlaceMines`): `beginOrdnancePlacement()` now rebuilds
+   the full source list then filters it down to `FWeapon::M` slots only, so
+   the deployable-source set exposed to the UI contains only mine launchers.
+   If no mine sources exist, `beginOrdnancePlacement()` returns `false` and
+   the phase is skipped.
+
+2. **Seeker phase** (`BS_PlaceSeekers`): `beginSeekerPlacement()` calls the
+   new `rebuildDeployablePlacementSourcesFiltered(FWeapon::SM)` helper directly
+   so the deployable-source set contains only seeker-missile launchers.
+   If no SM sources exist, `beginSeekerPlacement()` returns `false` and the
+   phase is skipped.
+
+3. **Transition**: `completeMinePlacement()` attempts `beginSeekerPlacement()`;
+   when that succeeds the model enters `BS_PlaceSeekers`. When it fails (no SM
+   sources), the model advances directly to `BS_SetupAttackFleet` and toggles
+   the active player. `completeSeekerPlacement()` always advances to
+   `BS_SetupAttackFleet` and toggles the active player.
+
+`FBattleScreen` exposes pass-through delegations for `beginSeekerPlacement()`
+and `completeSeekerPlacement()`, each calling `reDraw()` on a state change. The
+tactical model remains wx-free throughout.
+
+Validation command:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+```
+
+Result: `OK (192 tests)`.
+
+SMF-02 adds the matching UI rendering in `FBattleDisplay`. `draw()` now dispatches
+`BS_PlaceSeekers` to a new `drawPlaceSeekers()` method that mirrors `drawPlaceMines()`
+but filters the deployable-source list to `FWeapon::SM` rows only and shows a dedicated
+"Seeker Placement Done" button (`m_buttonSeekerPlacementDone`). `drawPlaceMines()` was
+refactored to filter to `FWeapon::M` rows only so neither draw method shows the other
+type's sources. Both methods start their source-row list at `getActionButtonRowBottom()`
+so the instruction text and Done button never overlap the source rows. The `onSeekerPlacementDone()`
+handler disconnects and hides the seeker button then delegates to
+`FBattleScreen::completeSeekerPlacement()`.
+
+Validation command:
+
+```bash
+cd tests/gui && make && xvfb-run -a ./GuiTests
+```
+
+Result: `OK (36/44 tests)` — 8 pre-existing failures unrelated to `FBattleDisplay`.
+
+SMF-03 relocates the offensive-fire pending-seeker recall list out of `drawCurrentShipStats()`
+into `draw()`, giving it a dedicated bounded region in the lower panel left of the ship-status
+widget during `PH_ATTACK_FIRE`. Before this change, `drawOffensiveSeekerPendingRows()` was called
+at the end of `drawCurrentShipStats()`, meaning the recall rows appended below the ship-status
+block and could be obscured or clipped when the stats section was tall.
+
+The new layout places the recall list at `(leftOffset, getActionButtonRowBottom() + BORDER)`,
+which is the same left column used by the deployment-phase source rows (SMF-02), but now active
+only during the attack-fire phase rather than during setup. The ship-status widget continues to
+render unchanged via `drawCurrentShipStats()`. If the rendered recall rows extend below the
+panel's current `requestedDisplayHeight`, `drawOffensiveSeekerPendingRows()` expands the height
+and calls `applyRequestedDisplayHeight()` automatically so rows are never clipped.
+
+Clicking a recall row still invokes `checkOffensiveSeekerPendingSelection()` → `recallSelectedOffensivePendingSeekerAtHex()`,
+which removes one pending seeker from the model and triggers a redraw that rebuilds the shorter
+recall list. `m_pendingSeekerRecallRegions` and `m_pendingSeekerRecallHexes` are cleared and
+repopulated on every call to `drawOffensiveSeekerPendingRows()`.
+
+Validation commands:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+cd tests/gui && make && xvfb-run -a ./GuiTests
+```
+
+Results: `OK (196 tests)` tactical; `OK (37/45 tests)` GUI — 8 pre-existing failures unchanged.
+
+PGS-03 corrects the pre-game seeker placement click behavior in `FTacticalGame::placeOrdnanceAtHex()`.
+Before this fix, every board click during `BS_PlaceSeekers` entered the shared ordnance toggle path:
+if a seeker record already existed for the clicked hex and source, it was removed and ammo was restored
+(toggle behavior matching mines). This meant that clicking the same hex twice left zero seekers
+placed, which did not match the intended stackable-seeker rule for pre-game deployment.
+
+The fix adds an early-return guard at the top of the non-attack-phase branch of `placeOrdnanceAtHex()`:
+
+```cpp
+if (getState() == BS_PlaceSeekers && selectedSource.weaponType == FWeapon::SM) {
+    return placeSeekerFromSelection(hex, selectedSource);
+}
+```
+
+When the state is `BS_PlaceSeekers` and the selected weapon is an SM launcher, the toggle/undo path
+is bypassed entirely and `placeSeekerFromSelection()` is called directly. Each call decrements seeker
+launcher ammo by one and appends a new inactive `FTacticalSeekerMissileState` record at the target hex.
+Repeated clicks on the same hex therefore accumulate multiple inactive seekers from the same source.
+Placement returns `false` (and adds nothing) when the selected launcher's ammo reaches zero.
+
+Mine toggle behavior during `BS_PlaceMines` is unchanged: clicking a mined hex still removes the mine
+and restores ammo because each hex can hold at most one mine. Attack-phase seeker deployment
+(`BS_Battle / PH_ATTACK_FIRE`) is also unchanged.
+
+Behavioral regression test `testPreGameSeekerPlacementIsAdditive` in `FTacticalGameMechanicsTest`
+validates the fix end-to-end: it constructs a real `FTacticalGame` with a Minelayer fleet, advances
+through `BS_PlaceMines` to `BS_PlaceSeekers`, then clicks the same hex three times. It asserts that
+`getSeekerMissiles().size()` is 3, seeker launcher ammo is decremented by 3, and `getPlacedOrdnance()`
+contains the mine-phase record plus three SM-type records (total 4). Where initial ammo is at least 4,
+it also verifies that a fourth click after exhaustion returns `false` and leaves the count at 3.
+
+Validation command:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+```
+
+Result: `OK (216 tests)`.
+
+PGS-04 adds two related improvements to the pre-game ordnance placement flow.
+
+**Pre-game seeker undeploy list.** During `BS_PlaceSeekers`, `FTacticalGame::getPlacedSeekerHexGroups()` returns a vector of `FTacticalPreGameSeekerHexGroup` records, one per unique (hex, source) pair among the current inactive `m_seekerMissiles`. The new `FTacticalPreGameSeekerHexGroup` struct stores the hex, source provenance (`FTacticalOrdnanceSource`), and a stack count. `FBattleDisplay::drawPlaceSeekers()` renders this list as a centered recall panel below the source-selection rows, one row per group labeled `Recall: <shipName> (<x>,<y>) x<count>`. Each rendered region is stored in five parallel vectors (`m_preGameSeekerRecallRegions`, `m_preGameSeekerRecallHexes`, `m_preGameSeekerRecallShipIDs`, `m_preGameSeekerRecallWeaponIndices`, `m_preGameSeekerRecallWeaponIDs`), all cleared at the start of `draw()` so stale regions never survive a redraw.
+
+When the user clicks a recall row, `FBattleDisplay::checkPreGameSeekerRecallSelection()` reconstructs the `FTacticalOrdnanceSource` from the parallel vectors and calls `FBattleScreen::recallPlacedSeekerAtHexSource(hex, source)`. The screen forwarding method delegates to `FTacticalGame::recallPlacedSeekerAtHexSource()`, which removes exactly one inactive seeker record matching the (hex, source) pair, erases the corresponding `m_placedOrdnance` entry, calls `restoreAmmoForSource()` to increment the launcher's ammo by one, rebuilds the deployable source list filtered to SM-type weapons only, and reselects the same source. `FBattleScreen` calls `reDraw()` after a successful recall so the panel and board stay consistent. `getPlacedSeekerHexGroups()` returns an empty vector outside `BS_PlaceSeekers` so the recall list is always absent during the mine phase and during combat.
+
+`FBattleDisplay::onLeftUp()` calls `checkPreGameSeekerRecallSelection()` first during `BS_PlaceSeekers`; only if no recall row is hit does it fall through to `checkShipSelection()`. This ensures a click on a recall row is not misrouted to ship selection.
+
+**Mine removal source-independence fix.** Before this change, the mine-removal path inside `FTacticalGame::placeOrdnanceAtHex()` restored ammo to whatever source was currently selected, not necessarily the ship that placed the mine. A player who placed a mine with one launcher and then switched the active source before clicking to remove it would incorrectly see ammo restored to the newly selected launcher.
+
+PGS-04 fixes this by searching `m_placedOrdnance` for a record whose `hex` matches and whose `weaponType` is `FWeapon::M`, then reading the `source` from that record before erasing it. Ammo is restored to the **placing** ship and launcher (`restoreAmmoForSource(storedSource)`) rather than the currently selected source. Mine removal therefore works correctly regardless of which source row is highlighted at the time the mined hex is clicked.
+
+New test fixture `FTacticalPreGameOrdnanceTest` (in `tests/tactical/`) provides behavioral coverage for both changes:
+
+- `testRecallPlacedSeekerDecrementsCountAndRestoresAmmo`: asserts that `recallPlacedSeekerAtHexSource()` removes one seeker and restores one ammo unit.
+- `testRecallFromStackedSeekerLeavesRemainingSeekersInPlace`: asserts that recalling from a stack of two leaves one seeker at that (hex, source).
+- `testGetPlacedSeekerHexGroupsReturnsEmptyOutsidePlaceSeekers`: asserts that `getPlacedSeekerHexGroups()` returns empty during `BS_PlaceMines` (and implicitly during other non-seeker-placement states).
+- `testMineRemovalWithNonPlacingSourceSelectedRestoresAmmoToPlacingShip`: asserts that switching the active source after placing a mine does not affect which launcher receives ammo back on mine removal.
+
+GUI coverage in `TacticalGuiLiveTest::testPreGameSeekerRecallListAppearsAndClickRemovesSeeker` verifies that the centered recall list renders during `BS_PlaceSeekers` with at least one row, that its rows appear below the action-button block, and that clicking the first recall row removes one seeker and restores one ammo round.
+
+Validation commands:
+
+```bash
+cd tests && make tactical-tests && ./tactical/TacticalTests
+cd tests/gui && make && xvfb-run -a ./GuiTests
+```
+
+Results: `OK (222 tests)` tactical; GUI pre-existing 10 failures unrelated to PGS-04.

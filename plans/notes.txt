@@ -6,8 +6,8 @@ Items to Add
     * during strategic game
 
 Items to fix
-* Starting window of each applications (SSW and Battlesim) should open centered on the user's screen under the splash screen image
-* spinners are horizontal, we want them vertical This seems to be a wxWidgits issue.
+* Starting window of each applications (SSW and Battlesim) should open centered on the user's screen under the splash screen image (This is only on WSL linux, it is correct on native windows)
+* spinners are horizontal, we want them vertical This seems to be a wxWidgits issue. (This is only on WSL linux, it is correct on native windows)
 
 ---
 Prompt to launch on copilot (typically uses 1 premium request unless there are issues)
@@ -29,3 +29,30 @@ Running on codex
 data:
  - plan with 3 subtasks used 13% of weekly context
  - generating a plan typically uses 1-3% of weekly context
+
+ 352887a47d51792af5c608cdfbfdb01bd9feecf5
+
+   ## 🛑 MANDATORY FIRST STEP: Load Your Role Instructions
+
+  **Before proceeding with ANY task, plan, or feature work, you MUST:**
+
+  1. Identify your assigned role (stated at session start)
+  2. Run: `myteam get role <role-name>`
+  3. Read the full role instructions that are returned
+  4. Follow that role's required workflow
+
+  This is not optional. The myteam role system is the operative repository policy and overrides all other instructions.
+  Do not begin implementation, planning, or coordination work until you have loaded and understood your role's workflow.
+
+  ---
+
+Seeker missiles
+* 
+
+General UI issues
+* no minimize button in the Battlebard titlebar
+* error when clicking the x button in the title bar mid game
+    ../src/gtk/dialog.cpp(193): assert "Assert failure" failed in EndModal(): either wxDialog:EndModal called twice or ShowModal wasn't called
+
+General Gameplay
+* If a ship still has MR left at the end of its turn, it should be able to make a single facing change without moving.

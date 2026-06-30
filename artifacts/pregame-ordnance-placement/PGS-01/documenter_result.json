@@ -1,0 +1,16 @@
+{
+  "artifact_file_paths": [
+    "artifacts/pregame-ordnance-placement/PGS-01/documenter_report.md",
+    "artifacts/pregame-ordnance-placement/PGS-01/documenter_result.json",
+    "artifacts/pregame-ordnance-placement/PGS-01/verifier_prompt.txt"
+  ],
+  "branch_name": "sf2-pgs-01-documenter-20260622",
+  "documentation_commit_hash": "0b7f24dfd783d0aaad4f5c5355dbb1aa8d4189c4",
+  "documentation_files_changed": [
+    "include/tactical/FBattleDisplay.h",
+    "include/tactical/FTacticalGame.h"
+  ],
+  "pass_label": null,
+  "status": "success",
+  "task_id": "PGS-01"
+}

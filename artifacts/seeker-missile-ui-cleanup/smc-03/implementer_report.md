@@ -1,0 +1,388 @@
+# Implementer Report
+
+Status:
+- success
+
+Task summary:
+- Make the placement Done button label reflect the ordnance types being placed. Compute the set of weapon types in getDeployablePlacementSources() and set m_buttonMinePlacementDone label: seekers only → 'Seeker Placement Done', mines only → 'Mine Placement Done', both → 'Weapon Placement Done', empty/unknown → 'Mine Placement Done'.
+
+Changed files:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Validation commands run:
+- make -C tests gui-tests
+- DISPLAY=:0 tests/gui/GuiTests
+
+Validation outcome:
+- 43 tests run, 8 pre-existing failures identical to baseline, 0 new regressions introduced.
+
+Implementation/code commit hash:
+- dd6a9b5
+
+Artifacts written:
+- artifacts/seeker-missile-ui-cleanup/smc-03/implementer_report.md
+- artifacts/seeker-missile-ui-cleanup/smc-03/tester_prompt.txt
+- artifacts/seeker-missile-ui-cleanup/smc-03/implementer_result.json
+
+Implementation context:
+- L
+- a
+- b
+- e
+- l
+-  
+- i
+- s
+-  
+- s
+- e
+- t
+-  
+- i
+- n
+-  
+- d
+- r
+- a
+- w
+- P
+- l
+- a
+- c
+- e
+- M
+- i
+- n
+- e
+- s
+- (
+- )
+-  
+- i
+- n
+-  
+- s
+- r
+- c
+- /
+- t
+- a
+- c
+- t
+- i
+- c
+- a
+- l
+- /
+- F
+- B
+- a
+- t
+- t
+- l
+- e
+- D
+- i
+- s
+- p
+- l
+- a
+- y
+- .
+- c
+- p
+- p
+-  
+- j
+- u
+- s
+- t
+-  
+- b
+- e
+- f
+- o
+- r
+- e
+-  
+- t
+- h
+- e
+-  
+- E
+- n
+- a
+- b
+- l
+- e
+- (
+- t
+- r
+- u
+- e
+- )
+-  
+- c
+- a
+- l
+- l
+- .
+-  
+- T
+- h
+- e
+-  
+- c
+- o
+- d
+- e
+-  
+- s
+- c
+- a
+- n
+- s
+-  
+- d
+- e
+- p
+- l
+- o
+- y
+- a
+- b
+- l
+- e
+- S
+- o
+- u
+- r
+- c
+- e
+- s
+-  
+- c
+- h
+- e
+- c
+- k
+- i
+- n
+- g
+-  
+- w
+- e
+- a
+- p
+- o
+- n
+- T
+- y
+- p
+- e
+-  
+- =
+- =
+-  
+- F
+- W
+- e
+- a
+- p
+- o
+- n
+- :
+- :
+- S
+- M
+-  
+- a
+- n
+- d
+-  
+- w
+- e
+- a
+- p
+- o
+- n
+- T
+- y
+- p
+- e
+-  
+- =
+- =
+-  
+- F
+- W
+- e
+- a
+- p
+- o
+- n
+- :
+- :
+- M
+- ,
+-  
+- t
+- h
+- e
+- n
+-  
+- d
+- e
+- r
+- i
+- v
+- e
+- s
+-  
+- t
+- h
+- e
+-  
+- l
+- a
+- b
+- e
+- l
+-  
+- f
+- r
+- o
+- m
+-  
+- t
+- h
+- e
+-  
+- b
+- o
+- o
+- l
+- e
+- a
+- n
+-  
+- p
+- a
+- i
+- r
+-  
+- a
+- n
+- d
+-  
+- c
+- a
+- l
+- l
+- s
+-  
+- S
+- e
+- t
+- L
+- a
+- b
+- e
+- l
+-  
+- e
+- v
+- e
+- r
+- y
+-  
+- p
+- a
+- i
+- n
+- t
+-  
+- c
+- y
+- c
+- l
+- e
+- .
+-  
+- T
+- h
+- e
+-  
+- c
+- o
+- n
+- n
+- e
+- c
+- t
+- /
+- s
+- h
+- o
+- w
+- /
+- h
+- i
+- d
+- e
+-  
+- f
+- l
+- o
+- w
+-  
+- a
+- n
+- d
+-  
+- o
+- n
+- M
+- i
+- n
+- e
+- P
+- l
+- a
+- c
+- e
+- m
+- e
+- n
+- t
+- D
+- o
+- n
+- e
+-  
+- h
+- a
+- n
+- d
+- l
+- e
+- r
+-  
+- a
+- r
+- e
+-  
+- u
+- n
+- t
+- o
+- u
+- c
+- h
+- e
+- d
+- .
+
+Expected validation failures carried forward:
+- None

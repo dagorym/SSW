@@ -1,0 +1,51 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- SMFR-03: Show mine damage summary for all minefield passages (including zero-damage outcomes) and highlight triggered minefield hexes in pre-game-placement green while the dialog is shown; clear highlight after dialog closes.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+
+Acceptance criteria to validate (from Planner):
+- After a ship's movement resolves through a minefield, the damage summary dialog is shown through the existing tactical damage-summary UI seam, including when no damage was dealt.
+- Triggered minefield hex(es) are highlighted on the board using the existing shaded-hex pattern in the pre-game-placement green (#00FF00).
+- The highlight is visible while the dialog is shown and is cleared after the dialog closes.
+- Existing mine damage application (ICM allocation, destroyed-ship cleanup ordering) still runs exactly once per movement completion.
+- Seeker detonation damage reporting is unchanged.
+
+Create test files in:
+- Mine damage report/summary model coverage: tests/tactical/FTacticalMineDamageReportSummaryTest.* or tests/tactical/FTacticalMineDamageFlowTest.*
+- Triggered-hex highlight render-dispatch coverage: tests/tactical/FTacticalBattleBoardRendererDelegationTest.*
+
+Implementation context for testing:
+- FTacticalGame now maintains m_lastTriggeredMineHexes (PointSet) populated in applyMineDamage() before mine records are erased, accessible via getLastTriggeredMineHexes(); cleared by clearLastTriggeredMineHexes() after showDamageSummary() returns.
+- applyMineDamage() calls m_ui->requestRedraw() before showDamageSummary() so triggered hexes are highlighted during the modal dialog, then clears and redraws after the dialog to remove the highlight.
+- showDamageSummary is now called whenever mines fire (m_ui != NULL), unconditionally on summary.ships.size(); the prior guard (summary.ships.size() > 0) is removed so zero-damage encounters also show the dialog.
+- FBattleBoard::drawTriggeredMineHexes(wxDC&) is called from draw() inside the BS_Battle guard; it reads m_parent->getLastTriggeredMineHexes() and shades each in-bounds hex with wxColour(#00FF00) via the existing drawShadedHex cross-diagonal hatch pattern.
+- FBattleScreen::getLastTriggeredMineHexes() delegates to FTacticalGame::getLastTriggeredMineHexes().
+- ICM allocation, clearDestroyedShips(), and seeker detonation damage paths are unchanged; the new highlight state is orthogonal to all of them.
+- Tests should use mock ITacticalUI to verify showDamageSummary is called even when no ships appear in the summary, and that getLastTriggeredMineHexes() is non-empty between requestRedraw and clearLastTriggeredMineHexes calls.
+
+Suggested test command(s):
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+- make -C tests gui-tests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

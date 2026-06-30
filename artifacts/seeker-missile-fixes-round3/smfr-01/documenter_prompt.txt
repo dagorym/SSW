@@ -1,0 +1,56 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMFR-01 pass-3 remediation (Tester): Added cross-reference comments to three source-contract tests (testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum, testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum, testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum) in FTacticalBattleDisplayFireFlowTest.cpp pointing explicitly to testOrdnancePlacementAndActivationPanelHeightAutoExpands as the authoritative behavioral coverage per AGENTS.md policy. Strengthened the drawPlaceSeekers() phase of testOrdnancePlacementAndActivationPanelHeightAutoExpands in TacticalGuiLiveTest.cpp to assert genuine height expansion (heightAfterSeekers >= seekerButtonRowBottom via actionButtonRowBottomPublic()), mirroring the mine phase assertion pattern. Production code was not modified.
+
+Acceptance criteria validated:
+- drawPlaceMines(), drawPlaceSeekers(), and drawSeekerActivation() reserve vertical space so their rendered rows are fully visible, mirroring the auto-expansion in drawOffensiveSeekerPendingRows().
+- The placed-ordnance removal list is visible (right of the phase-ending button widget, left of the ship-status display) and its rows remain clickable during mine and seeker placement.
+- The seeker activation/deactivation list is visible in the same region and its rows remain clickable during the seeker activation phase.
+- The lists no longer render below or behind the ship-status display.
+- Existing phase-ending buttons, ship-status display, and offensive-fire pending list keep their current positions and behavior.
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/sf2-SMFR-01-tester-20260619
+- Branch: sf2-SMFR-01-tester-20260619
+- Production implementation is unchanged from commit d3ee240 (max-preservation guard in ensureLowerPanelLayoutState() and height auto-expansion in drawPlaceMines(), drawPlaceSeekers(), drawSeekerActivation()).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleDisplay.cpp (Implementer, d3ee240 — not changed this pass)
+- include/tactical/FBattleDisplay.h (Implementer, d3ee240 — not changed this pass)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (Tester — added cross-reference comments)
+- tests/gui/TacticalGuiLiveTest.cpp (Tester — strengthened seeker height assertion)
+
+Test commit:
+- 4e5515b
+
+Commands executed:
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests (201/201 pass)
+- make -C tests gui-tests
+- ./tests/gui/GuiTests (36/46 pass, 10 pre-existing failures out of scope)
+
+Final test outcomes:
+- Tactical tests: 201/201 pass. All three new source-contract tests passed.
+- GUI tests: 36/46 pass. The strengthened testOrdnancePlacementAndActivationPanelHeightAutoExpands passed (including the new seeker phase expansion assertion). 10 failures are the same pre-existing out-of-scope failures documented in the pass-2 tester handoff and are unrelated to SMFR-01.
+
+Documentation context:
+- AGENTS.md section on Testing / Behavioral Verification may be worth referencing since the cross-reference comments were added specifically to enforce the policy articulated there.
+- The seeker-missile-fixes-round3-plan.md in plans/ describes the SMFR-01 subtask and its acceptance criteria.
+- No public-facing user documentation (UsersGuide.md, tactical_operations_manual.md) is affected by test-only changes.
+- CHANGELOG or DesignNotes may warrant a brief note about the SMFR-01 height auto-expansion fix if documentation of the behavioral change from d3ee240 was not captured in a previous pass.
+
+Plan and diff context:
+- Plan: plans/seeker-missile-fixes-round3-plan.md, subtask SMFR-01
+- Comparison base: branch sf2 (the plan coordination branch); diff against sf2 to see all SMFR-01 changes
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

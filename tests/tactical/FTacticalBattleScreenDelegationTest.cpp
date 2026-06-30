@@ -131,6 +131,8 @@ assertContains(resolveFireBody, "reDraw();");
 
 assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexMinable(const FPoint & hex)"),
 "return m_tacticalGame->isHexMinable(hex);");
+assertContains(extractFunctionBody(source, "bool FBattleScreen::isHexDeployable(const FPoint & hex)"),
+"return m_tacticalGame->isHexDeployable(hex);");
 assertContains(extractFunctionBody(source, "const VehicleList & FBattleScreen::getHexOccupants(const FPoint & hex) const"),
 "return m_tacticalGame->getHexOccupants(hex);");
 assertContains(extractFunctionBody(source, "const std::vector<FPoint> & FBattleScreen::getMovementHexes() const"),
@@ -193,10 +195,78 @@ const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
 	assertContains(assignTargetBody, "if (changed) {");
 	assertContains(assignTargetBody, "reDraw();");
 
+const std::string beginMineBody = extractFunctionBody(source, "bool FBattleScreen::beginMinePlacement()");
+assertContains(beginMineBody, "const bool changed = m_tacticalGame->beginMinePlacement();");
+assertContains(beginMineBody, "if (changed) {");
+assertContains(beginMineBody, "reDraw();");
+
+const std::string beginOrdnanceBody = extractFunctionBody(source, "bool FBattleScreen::beginOrdnancePlacement()");
+assertContains(beginOrdnanceBody, "const bool changed = m_tacticalGame->beginOrdnancePlacement();");
+assertContains(beginOrdnanceBody, "if (changed) {");
+assertContains(beginOrdnanceBody, "reDraw();");
+
+const std::string selectSourceBody = extractFunctionBody(source, "bool FBattleScreen::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex)");
+assertContains(selectSourceBody, "const bool changed = m_tacticalGame->selectPlacementSource(shipID, weaponIndex);");
+assertContains(selectSourceBody, "if (changed) {");
+assertContains(selectSourceBody, "reDraw();");
+
+const std::string selectSourceIndexBody = extractFunctionBody(source, "bool FBattleScreen::selectPlacementSourceByIndex(unsigned int sourceIndex)");
+assertContains(selectSourceIndexBody, "const bool changed = m_tacticalGame->selectPlacementSourceByIndex(sourceIndex);");
+assertContains(selectSourceIndexBody, "if (changed) {");
+assertContains(selectSourceIndexBody, "reDraw();");
+
+assertContains(extractFunctionBody(source, "int FBattleScreen::getSelectedPlacementSourceIndex() const"),
+"return m_tacticalGame->getSelectedPlacementSourceIndex();");
+assertContains(extractFunctionBody(source, "const std::vector<FTacticalDeploymentSource> & FBattleScreen::getDeployablePlacementSources() const"),
+"return m_tacticalGame->getDeployablePlacementSources();");
+
+const std::string placeOrdnanceBody = extractFunctionBody(source, "bool FBattleScreen::placeOrdnanceAtHex(const FPoint & hex)");
+assertContains(placeOrdnanceBody, "const bool changed = m_tacticalGame->placeOrdnanceAtHex(hex);");
+assertContains(placeOrdnanceBody, "if (changed) {");
+assertContains(placeOrdnanceBody, "reDraw();");
+
 const std::string placeMineBody = extractFunctionBody(source, "bool FBattleScreen::placeMineAtHex(const FPoint & hex)");
 assertContains(placeMineBody, "const bool changed = m_tacticalGame->placeMineAtHex(hex);");
 assertContains(placeMineBody, "if (changed) {");
 assertContains(placeMineBody, "reDraw();");
+}
+
+void FTacticalBattleScreenDelegationTest::testBattleScreenForwardsSeekerActivationApisToModel() {
+// AC: seeker activation phase APIs are forwarded for display/board usage with redraw on state changes.
+const std::string header = readFile(repoFile("include/tactical/FBattleScreen.h"));
+const std::string source = readFile(repoFile("src/tactical/FBattleScreen.cpp"));
+
+assertContains(header, "std::vector<FPoint> getInactiveSeekerActivationHexes() const;");
+assertContains(header, "bool selectSeekerActivationHex(const FPoint & hex);");
+assertContains(header, "const FPoint & getSelectedSeekerActivationHex() const;");
+assertContains(header, "std::vector<FTacticalSeekerMissileState> getSelectedInactiveSeekerActivationStack() const;");
+assertContains(header, "bool activateSelectedInactiveSeeker(unsigned int seekerID);");
+assertContains(header, "void completeSeekerActivationPhase();");
+
+assertContains(extractFunctionBody(source, "std::vector<FPoint> FBattleScreen::getInactiveSeekerActivationHexes() const"),
+"return m_tacticalGame->getInactiveSeekerActivationHexes();");
+const std::string selectActivationBody = extractFunctionBody(source, "bool FBattleScreen::selectSeekerActivationHex(const FPoint & hex)");
+assertContains(selectActivationBody, "const bool changed = m_tacticalGame->selectSeekerActivationHex(hex);");
+assertContains(selectActivationBody, "reDraw();");
+assertContains(extractFunctionBody(source, "const FPoint & FBattleScreen::getSelectedSeekerActivationHex() const"),
+"return m_tacticalGame->getSelectedSeekerActivationHex();");
+assertContains(extractFunctionBody(source, "std::vector<FTacticalSeekerMissileState> FBattleScreen::getSelectedInactiveSeekerActivationStack() const"),
+"return m_tacticalGame->getSelectedInactiveSeekerActivationStack();");
+const std::string activateSeekerBody = extractFunctionBody(source, "bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID)");
+assertContains(activateSeekerBody, "const bool changed = m_tacticalGame->activateSelectedInactiveSeeker(seekerID);");
+assertContains(activateSeekerBody, "reDraw();");
+const std::string completeActivationBody = extractFunctionBody(source, "void FBattleScreen::completeSeekerActivationPhase()");
+assertContains(completeActivationBody, "m_tacticalGame->completeSeekerActivationPhase();");
+assertContains(completeActivationBody, "if (!m_tacticalGame->getLastDestroyedShipIDs().empty()) {");
+assertContains(completeActivationBody, "clearDestroyedShips();");
+assertContains(completeActivationBody, "if (m_tacticalGame->hasWinner()) {");
+assertContains(completeActivationBody, "return;");
+assertContains(completeActivationBody, "reDraw();");
+const std::string::size_type clearDestroyedPos = completeActivationBody.find("clearDestroyedShips();");
+const std::string::size_type redrawPos = completeActivationBody.find("reDraw();");
+CPPUNIT_ASSERT(clearDestroyedPos != std::string::npos);
+CPPUNIT_ASSERT(redrawPos != std::string::npos);
+CPPUNIT_ASSERT(clearDestroyedPos < redrawPos);
 }
 
 void FTacticalBattleScreenDelegationTest::testBattleScreenDamageSummaryDialogDelegatesThroughInstalledUI() {

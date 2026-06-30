@@ -1,0 +1,52 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- SMFR-01 pass-3 full pipeline (Implementer + Tester + Documenter): The production implementation (max-preservation guard in ensureLowerPanelLayoutState() and height auto-expansion in drawPlaceMines(), drawPlaceSeekers(), drawSeekerActivation()) was completed in pass-2 at commit d3ee240. Pass-3 (Tester) added cross-reference comments to three source-contract tests pointing to the authoritative behavioral test and strengthened the drawPlaceSeekers() phase assertion in testOrdnancePlacementAndActivationPanelHeightAutoExpands to assert height >= actionButtonRowBottom() (proving genuine expansion, not just non-decrease). Pass-3 (Documenter) corrected AGENTS.md SMF-02 to accurately describe the three tests as source-contract (structural) tests, not behavioral tests, and updated Doxygen headers in both test header files.
+
+Acceptance criteria to verify:
+- drawPlaceMines(), drawPlaceSeekers(), and drawSeekerActivation() reserve vertical space so their rendered rows are fully visible, mirroring the auto-expansion in drawOffensiveSeekerPendingRows().
+- The placed-ordnance removal list is visible and its rows remain clickable during mine and seeker placement.
+- The seeker activation/deactivation list is visible in the same region and its rows remain clickable during the seeker activation phase.
+- The lists no longer render below or behind the ship-status display.
+- Existing phase-ending buttons, ship-status display, and offensive-fire pending list keep their current positions and behavior.
+
+Branch and worktree context:
+- Documenter branch: sf2-SMFR-01-documenter-20260619
+- Documentation commit hash: 1968371896be6c849c3942676bccab53cd10b20c
+- Tester branch: sf2-SMFR-01-tester-20260619 (test commit: 4e5515b)
+- Production implementation unchanged from commit d3ee240
+- Comparison base: sf2
+
+Files modified across the full pipeline (Implementer + Tester + Documenter):
+- src/tactical/FBattleDisplay.cpp (Implementer, d3ee240 — production implementation)
+- include/tactical/FBattleDisplay.h (Implementer, d3ee240 — production implementation)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (Tester — cross-reference comments added to three source-contract tests)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h (Documenter — source-contract notes added to Doxygen headers; class @date and @author updated)
+- tests/gui/TacticalGuiLiveTest.cpp (Tester — strengthened seeker height assertion: height >= actionButtonRowBottom())
+- tests/gui/TacticalGuiLiveTest.h (Documenter — Doxygen updated for strengthened assertion and authoritative-test role; class @date updated)
+- AGENTS.md (Documenter — SMF-02 bullet corrected: three structural tests described as source-contract, not behavioral; authoritative behavioral test identified)
+
+Final test outcomes:
+- Tactical tests: 201/201 pass
+- GUI tests: 36/46 pass (10 pre-existing failures out of scope, unrelated to SMFR-01)
+
+Verification scope:
+- Verify production implementation correctness in FBattleDisplay.cpp/h (height auto-expansion in drawPlaceMines(), drawPlaceSeekers(), drawSeekerActivation(); max-preservation in ensureLowerPanelLayoutState())
+- Verify test coverage adequacy: testOrdnancePlacementAndActivationPanelHeightAutoExpands is the authoritative behavioral test; the three source-contract tests supplement it by locking code structure
+- Verify the strengthened seeker assertion in TacticalGuiLiveTest.cpp is correct and sufficient
+- Verify AGENTS.md SMF-02 bullet accurately and completely describes the behavioral vs source-contract test split
+- Verify Doxygen headers in both test header files are accurate, complete, and consistent with AGENTS.md policy
+- Infer any missing plan details from plans/seeker-missile-fixes-round3-plan.md and repository context
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-01
+
+Plan path:
+- plans/seeker-missile-fixes-round3-plan.md
+
+Startup behavior:
+- If branch/worktree context, diff, and test outcomes are present, begin verification immediately in the same run.
+- Infer missing plan-path, convention-file, or artifact-path details from repository context when repository evidence is sufficient.
+- Do not stop after activation, scope confirmation, or diff inspection when verification work can proceed.
+
+Do not report success unless all required artifacts exist and all changes are committed.

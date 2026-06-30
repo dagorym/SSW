@@ -1,0 +1,21 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-004/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-004/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "seekers-tsm-004-verifier-20260524",
+  "documentation_accuracy_summary": [
+    "include/Frontier.h, include/tactical/FTacticalGame.h, include/tactical/FBattleScreen.h, and doc/DesignNotes.md consistently describe the shipped pre-movement PH_SEEKER_ACTIVATION routing, auto-skip active-seeker seam call, one-way activation APIs, and non-wx forwarding seam.",
+    "The immutable rules source doc/rules/tactical_operations_manual.md was not changed, so the refreshed docs do not contradict repository constraints."
+  ],
+  "note_finding_count": 0,
+  "status": "success",
+  "task_id": "TSM-004",
+  "test_sufficiency_summary": [
+    "The added tactical regression coverage in tests/tactical/FTacticalGameMechanicsTest.cpp and tests/tactical/FTacticalBattleScreenDelegationTest.cpp matches the delivered risk: it checks PH_SEEKER_ACTIVATION ordering, PH_MOVE entry routing, auto-skip invocation of resolveActiveSeekersForMovingPlayer(), inactive-stack filtering, one-way activation, completion flow, and FBattleScreen forwarding behavior.",
+    "Independent verifier rerun passed OK (162 tests). For this additive model/forwarding/documentation slice, coverage appears sufficient."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

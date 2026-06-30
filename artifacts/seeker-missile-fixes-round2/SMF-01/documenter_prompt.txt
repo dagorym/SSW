@@ -1,0 +1,65 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMF-01: Split the SSW tactical pre-game ordnance deployment into two sequential model-level phases (mine then seeker) by adding BS_PlaceSeekers state, mine-only filtering in beginOrdnancePlacement(), new beginSeekerPlacement()/completeSeekerPlacement() methods, chained completeMinePlacement() transition, and FBattleScreen pass-through delegations. No wx types introduced into the model.
+
+Acceptance criteria validated:
+- BS_PlaceSeekers state added to Frontier.h after BS_PlaceMines
+- beginOrdnancePlacement() filters deployable source list to FWeapon::M only during BS_PlaceMines entry
+- beginSeekerPlacement() filters to FWeapon::SM only and sets BS_PlaceSeekers
+- completeMinePlacement() advances to BS_PlaceSeekers when seeker sources exist, or skips to BS_SetupAttackFleet when none exist
+- completeSeekerPlacement() transitions to BS_SetupAttackFleet with toggleActivePlayer()
+- Empty mine phase skipped: beginOrdnancePlacement() returns false when no M sources exist
+- Empty seeker phase skipped: beginSeekerPlacement() returns false when no SM sources exist
+- FBattleScreen::beginSeekerPlacement() and completeSeekerPlacement() delegate to model with reDraw()
+- No wx headers or types in FTacticalGame model files
+- All 191 existing tactical tests pass (192 total with new test)
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/sf2-smf-01-tester-20260602
+- Branch: sf2-smf-01-tester-20260602
+- Implementer commit: aa7591d (SMF-01: Split pre-game ordnance deployment into mine then seeker phases)
+- Tester commit: 30aa1d0 (SMF-01 tester: add BS_PlaceSeekers state machine transition coverage)
+- Comparison base: sf2 branch at commit 8dae9a0 (pre-implementer state)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/Frontier.h (new BS_PlaceSeekers enum constant)
+- include/tactical/FTacticalGame.h (new beginSeekerPlacement, completeSeekerPlacement, rebuildDeployablePlacementSourcesFiltered declarations and doxygen)
+- src/tactical/FTacticalGame.cpp (implementations of all new methods)
+- include/tactical/FBattleScreen.h (new beginSeekerPlacement, completeSeekerPlacement declarations and doxygen)
+- src/tactical/FBattleScreen.cpp (delegation implementations)
+- tests/tactical/FTacticalGameMechanicsTest.cpp (new testSeekerDeploymentPhaseStateMachineTransitions test)
+- tests/tactical/FTacticalGameMechanicsTest.h (new test declaration)
+
+Test commit:
+- 30aa1d0
+
+Commands executed:
+- make -C /home/tstephen/repos/worktrees/sf2-smf-01-tester-20260602/tests tactical-tests
+- /home/tstephen/repos/worktrees/sf2-smf-01-tester-20260602/tests/tactical/TacticalTests
+
+Final test outcomes:
+- 192 tactical tests pass (191 pre-existing + 1 new). No failures.
+- New test testSeekerDeploymentPhaseStateMachineTransitions validates all 9 SMF-01 acceptance criteria via source inspection and contract assertions.
+
+Documentation context:
+- AGENTS.md section "Testing" references FTacticalGameMechanicsTest and lists locked source contracts; the new BS_PlaceSeekers seeker-deployment state contract is a candidate for addition to the locked contract list.
+- plans/seeker-missile-fixes-round2-plan.md describes the two-phase ordnance deployment design intent.
+- include/tactical/FTacticalGame.h and include/tactical/FBattleScreen.h doxygen headers were updated by the implementer for all new/changed methods; verify completeness.
+- doc/DesignNotes.md may need a note about the new two-phase pre-battle ordnance deployment state machine (BS_PlaceMines -> BS_PlaceSeekers -> BS_SetupAttackFleet).
+- doc/UsersGuide.md may need an update if it describes the pre-battle setup flow that now includes a distinct seeker placement step.
+
+Plan and diff context:
+- Plan path: plans/seeker-missile-fixes-round2-plan.md (SMF-01 subtask)
+- Comparison base: sf2 branch at commit 8dae9a0 (assumption: this is the pre-implementer baseline; verify with git log)
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round2/SMF-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

@@ -1,0 +1,42 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+Repositioned the PH_ATTACK_FIRE offensive-seeker recall list in FBattleDisplay::draw() to anchor at getActionPromptLineY(0) in the column to the right of the Done button (lMargin=310), instead of below the action-button row at leftOffset/getActionButtonRowBottom()+BORDER. Consistent with pre-game placement treatment used by drawPlaceMines and drawPlaceSeekers. Updated docblock in FBattleDisplay.h.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- include/tactical/FBattleDisplay.h
+
+Acceptance criteria to validate (from Planner):
+- During PH_ATTACK_FIRE, the offensive-seeker recall list renders anchored to the top of the bottom panel and to the right of the Done button (not below the action-button row).
+- Each recall row click region aligns with its drawn position; rows are not clipped or rendered behind the Done button or ship-status display.
+- Clicking a recall row still recalls the corresponding pending offensive seeker (existing recall behavior preserved, only repositioned).
+
+Test file location guidance:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp — source-contract coverage: update the existing assertion in testActionPromptSpacingContractAppliedAcrossActionPhases to expect the new call pattern: drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10) instead of the old pattern drawOffensiveSeekerPendingRows(dc, leftOffset, pendingRegionTop, 10).
+- tests/gui/TacticalGuiLiveTest.cpp — live layout and click-region coverage for PH_ATTACK_FIRE recall list position using offscreen wxMemoryDC assertions.
+
+Implementation context for testing:
+Single call site change in draw() at the BS_Battle/PH_ATTACK_FIRE block:
+  Old: drawOffensiveSeekerPendingRows(dc, leftOffset, getActionButtonRowBottom() + BORDER, 10)
+  New: drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10)
+
+lMargin=310 is the same right-column margin used by drawPlaceMines (SMRIV-01) and drawPlaceSeekers (SMRIV-02). The drawOffensiveSeekerPendingRows function itself is unchanged; click regions (m_pendingSeekerRecallRegions/m_pendingSeekerRecallHexes) are rebuilt each draw call from the new startY=getActionPromptLineY(0) and lMargin=310, so checkOffensiveSeekerPendingSelection() automatically uses the new positions.
+
+Existing validations expected to fail only because approved behavior changed:
+- FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractAppliedAcrossActionPhases: source-contract assertion checked old call string 'drawOffensiveSeekerPendingRows(dc, leftOffset, pendingRegionTop, 10)' which was specifically what the task replaced. Tester must update this assertion to check for 'drawOffensiveSeekerPendingRows(dc, 310, getActionPromptLineY(0), 10)'.
+
+Suggested test commands:
+- make -C tests tactical-tests && ./tests/tactical/TacticalTests
+- make -C tests/gui && xvfb-run -a ./tests/gui/GuiTests
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round4/SMRIV-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

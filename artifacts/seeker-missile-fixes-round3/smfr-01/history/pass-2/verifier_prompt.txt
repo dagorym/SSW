@@ -1,0 +1,67 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- SMFR-01 pass-2 remediation: Fix drawSeekerActivation() height expansion being silently overwritten by ensureLowerPanelLayoutState() in the BS_Battle draw() pass. Added a max-preservation guard so any previously-expanded requestedDisplayHeight survives the stats-based layout pass. Also adds height auto-expansion to drawPlaceMines(), drawPlaceSeekers(), and drawSeekerActivation(). All five acceptance criteria pass.
+
+Acceptance criteria to verify:
+- drawPlaceMines(), drawPlaceSeekers(), and drawSeekerActivation() reserve vertical space so their rendered rows are fully visible — PASS
+- The placed-ordnance removal list is visible (right of the phase-ending button widget, left of the ship-status display) and its rows remain clickable during mine and seeker placement — PASS (source-contract verified)
+- The seeker activation/deactivation list is visible in the same region and its rows remain clickable during the seeker activation phase — PASS (behavioral: testOrdnancePlacementAndActivationPanelHeightAutoExpands)
+- The lists no longer render below or behind the ship-status display — PASS (max-preservation guard in ensureLowerPanelLayoutState verified behaviorally)
+- Existing phase-ending buttons, ship-status display, and offensive-fire pending list keep their current positions and behavior — PASS (201 tactical tests pass)
+
+Implementation branch or worktree context:
+- Branch: sf2-SMFR-01-tester-20260619
+- Implementation commit: d3ee240 (SMFR-01 pass-2: Preserve expanded requestedDisplayHeight in ensureLowerPanelLayoutState)
+- Test commit: 74938b9
+- Documentation commit: d757815a957222c2088b1aa1d7b3c2d94e235c17
+- Documenter branch: sf2-SMFR-01-documenter-20260619
+- Fix location: src/tactical/FBattleDisplay.cpp lines 582-588 — max-preservation guard at end of ensureLowerPanelLayoutState()
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FBattleDisplay.cpp
+- include/tactical/FBattleDisplay.h
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- AGENTS.md
+
+Commands executed:
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+- make -C tests gui-tests
+- DISPLAY=:0 tests/gui/GuiTests
+
+Final test outcomes:
+- Tactical tests: 201 PASS, 0 FAIL
+- GUI tests: 36 PASS, 10 FAIL (all 10 pre-existing)
+- testOrdnancePlacementAndActivationPanelHeightAutoExpands: PASS (previously failing — now fixed)
+- testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum: PASS
+- testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum: PASS
+- testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum: PASS
+
+Plan or evaluation context guidance:
+- Plan: plans/seeker-missile-fixes-round3-plan.md, subtask SMFR-01
+- Shared artifact directory: artifacts/seeker-missile-fixes-round3/smfr-01
+- Documentation Impact (from plan): Update Doxygen comments for the modified FBattleDisplay rendering/layout helpers. No rules-document edit.
+
+Convention-file guidance:
+- AGENTS.md: Doxygen-style file headers are mandatory in all header files; update @date Last Modified and @author when editing functions
+- AGENTS.md: For simple one-line functions use a brief triple-slash comment; for major functions use a full Doxygen block
+- AGENTS.md: doc/rules/tactical_operations_manual.md must not be edited
+
+Updated documentation files:
+- AGENTS.md
+- include/tactical/FBattleDisplay.h
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-01
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

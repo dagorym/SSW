@@ -1,0 +1,55 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- Validate that SMRIV-02 repositioned drawPlaceSeekers() lower-panel content to a three-column layout: left column (wrapped instruction text + Done button), middle column (source-selection rows at lMargin=310 anchored to getActionPromptLineY(0)), and right column (recall list at recallMargin=620 anchored to getActionPromptLineY(0)).
+
+Acceptance criteria to verify:
+- AC1: Source-row hit regions (m_shipNameRegions) left edge >= lMargin=310 in drawPlaceSeekers()
+- AC2: Source-row hit regions top >= getActionPromptLineY(0) (panel-top anchor, not below button row)
+- AC3: Recall-row hit regions (m_preGameSeekerRecallRegions) left edge >= recallMargin=620
+- AC4: Recall-row hit regions top >= getActionPromptLineY(0)
+- AC5: Clicking a source row sets getSelectedPlacementSourceIndex() correctly
+- AC6: Clicking a recall row removes the placed seeker and restores ammo
+
+Implementation branch or worktree context:
+- Documenter worktree: /home/tstephen/repos/worktrees/sf2-SMRIV-02-documenter-20260623
+- Branch: sf2-SMRIV-02-documenter-20260623 (branched from sf2-SMRIV-02-tester-20260623)
+- Documentation commit: 574c001
+- Test commit: 02b3720
+
+Files modified by Implementer:
+- src/tactical/FBattleDisplay.cpp — drawPlaceSeekers() three-column layout (lMargin=310, recallMargin=620, getActionPromptLineY(0) anchors for both y and cy)
+- include/tactical/FBattleDisplay.h — drawPlaceSeekers() docblock updated to describe three-column layout
+
+Files modified by Tester:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h — added testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern declaration; updated testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter docblock
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp — testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern added; testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter updated
+- tests/gui/TacticalGuiLiveTest.h — added testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions declaration; updated testPreGameSeekerRecallListAppearsAndClickRemovesSeeker AC4 docblock
+- tests/gui/TacticalGuiLiveTest.cpp — testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions added; testPreGameSeekerRecallListAppearsAndClickRemovesSeeker AC4 updated
+
+Files modified by Documenter:
+- doc/test-contracts.md — SMF-02 entry updated (drawPlaceSeekers() now uses getActionPromptLineY(0), not getActionButtonRowBottom()); SMRIV-02 entry added (three-column layout, new tests, updated AC4)
+
+Final test outcomes:
+- PASS: testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter — updated to assert getActionPromptLineY(0) anchor (not getActionButtonRowBottom())
+- PASS: testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern — new test; verifies lMargin=310, recallMargin=620, cy=getActionPromptLineY(0), wxRect push_back patterns
+- PASS: testPreGameSeekerRecallListAppearsAndClickRemovesSeeker — AC4 updated to check recallRect.GetLeft() >= 620 (three-column layout, not below button row)
+- PASS: testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions — new behavioral live test; exercises BS_PlaceSeekers state, asserts column x/y positions via peer accessors and verifies click regions
+
+Plan and diff context:
+- Plan: plans/seeker-missile-fixes-round4-plan.md (seeker missile fixes round 4)
+- Subtask SMRIV-02: reposition BS_PlaceSeekers lower-panel layout to three-column pattern
+- All implementation changes confined to src/tactical/FBattleDisplay.cpp drawPlaceSeekers() function body
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round4/SMRIV-02
+
+Convention-file guidance:
+- AGENTS.md and doc/test-contracts.md are the repository-level policy files; consult them for documentation requirements, test coverage rules, and workflow conventions.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient; label those choices as assumptions.
+
+Startup behavior:
+- If implementation branch or worktree context and enough story and diff context are present, begin verification work immediately and continue in the same run. Do not stop after activation, scope confirmation, convention discovery, or diff inspection when blocking inputs are present.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

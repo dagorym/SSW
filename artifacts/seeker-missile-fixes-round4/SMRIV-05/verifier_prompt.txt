@@ -1,0 +1,65 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+- SMRIV-05: Fix activation-phase seeker missiles not removed from m_seekerMissiles after impact. The fix replaces inline if (m_ui != NULL) { requestRedraw(); resolvePendingSeekerDetonationDamage(); } blocks in beginSeekerActivationPhase() and completeSeekerActivationPhase() with a single call to applyMovementSeekerDamage(), which handles redraw, resolution, and seeker erasure in one step. Tests updated to reflect the post-fix behavior: outcomes are cleared and impacting seekers erased even with no UI installed.
+
+Acceptance criteria to verify:
+- AC1: After seeker impacts during activation phase, removed from m_seekerMissiles; does not attack on next phase/turn. PASS.
+- AC2: SMF-06 preserved — applyMovementSeekerDamage redraws before dialogs so impacting seeker visible during ICM/damage summary, erased after resolution. PASS (implementation carries forward this contract; no behavioral change to SMF-06 path).
+- AC3: Move-phase seeker removal regression — existing testSeekerRemovedFromModelAfterMovementContact and testNonImpactingSeekerPathClearedAfterDamageApplied pass unchanged. PASS.
+- AC4: New behavioral test testActivationPhaseImpactingSeekerRemovedAndDoesNotAttackOnNextPhase fails against pre-fix code (applyMovementSeekerDamage not called from completeSeekerActivationPhase) and passes after fix. PASS.
+
+Implementation branch and worktree context:
+- Tester branch: sf2-SMRIV-05-tester-20260629 (worktree at /home/tstephen/repos/worktrees/sf2-SMRIV-05-tester-20260629)
+- Documenter branch: sf2-SMRIV-05-documenter-20260629 (worktree at /home/tstephen/repos/worktrees/sf2-SMRIV-05-documenter-20260629)
+- Implementer commit: 0e6bfe3
+- Tester commit: 7f1f6a4
+- Documenter commit: 92e1eb0
+
+All files modified by Implementer, Tester, and Documenter that may affect verification scope:
+- src/tactical/FTacticalGame.cpp (implementer: replaced inline resolution blocks with applyMovementSeekerDamage() in beginSeekerActivationPhase() and completeSeekerActivationPhase())
+- include/tactical/FTacticalGame.h (implementer: updated docblocks for both activation-phase methods to document applyMovementSeekerDamage() delegation)
+- tests/tactical/FTacticalMineDamageFlowTest.cpp (tester: updated testSeekerActivationPhaseResolvesPendingDamageWhenModelHasUI assertions)
+- tests/tactical/FTacticalMineDamageFlowTest.h (tester: updated Last Modified date)
+- tests/tactical/FTacticalPreGameOrdnanceTest.h (tester: fixed include-guard typo PREAGAME -> PREGAME)
+- tests/tactical/FTacticalSeekerMovementTest.cpp (tester: updated testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRuntime expected values; added testActivationPhaseImpactingSeekerRemovedAndDoesNotAttackOnNextPhase)
+- tests/tactical/FTacticalSeekerMovementTest.h (tester: added testActivationPhaseImpactingSeekerRemovedAndDoesNotAttackOnNextPhase declaration)
+- doc/test-contracts.md (documenter: added SMRIV-05 entry)
+
+Commands executed:
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+- make -C tests
+- tests/SSWTests
+
+Final test outcomes:
+- TacticalTests: 224/224 pass (223 prior + 1 new test: testActivationPhaseImpactingSeekerRemovedAndDoesNotAttackOnNextPhase).
+- testSeekerActivationPhaseResolvesPendingDamageWhenModelHasUI UPDATED: verifies applyMovementSeekerDamage() in both activation-phase functions.
+- testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRuntime UPDATED: outcomes.size()==0, seekers.size()==1.
+- SSWTests: 9 pre-existing failures in FGameHeaderDependencyTest, unrelated to SMRIV-05.
+
+Plan and diff context:
+- Plan: plans/seeker-missile-fixes-round4-plan.md (SMRIV-05 subtask)
+- Compare documenter branch sf2-SMRIV-05-documenter-20260629 against sf2 (main branch)
+- Prior SMRIV-01 through SMRIV-04 artifacts at artifacts/seeker-missile-fixes-round4/ provide precedent for verification style
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round4/SMRIV-05
+
+Convention files:
+- AGENTS.md (repository-wide conventions, documentation requirements, test rules)
+- doc/test-contracts.md (detailed tactical test source-contract catalog, SMRIV-05 entry just added)
+
+Startup behavior:
+- If the documenter branch, worktree, and diff context are all present, begin verification work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, or convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, or diff review when verification work can proceed.
+
+Verification scope:
+- Verify that both activation-phase functions call applyMovementSeekerDamage() and not inline if (m_ui != NULL) blocks.
+- Verify that the new behavioral test testActivationPhaseImpactingSeekerRemovedAndDoesNotAttackOnNextPhase is registered and exercises the intended AC1/AC4 behavior.
+- Verify that the SMRIV-05 entry in doc/test-contracts.md accurately describes the fix, the updated tests, and the new test.
+- Verify that in-code docblocks in FTacticalGame.h accurately describe the applyMovementSeekerDamage() delegation for both methods.
+- Verify that all 224 TacticalTests pass.
+
+Do not report success unless all required artifacts exist and all changes are committed.

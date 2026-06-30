@@ -1,0 +1,42 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Verifier remediation for TSM-003 WARNING: eliminate setup placement marker color collisions caused by the old 12-color modulo mapping so different ship/weapon source combos stay distinct.
+
+Remediation changes to validate:
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+
+Acceptance criteria to validate (from Planner/verifier warning):
+- The placement panel still lists mine and seeker missile rows per ship/weapon slot.
+- Each row still shows current ammo for that exact weapon slot.
+- Clicking a row still changes active placement source.
+- Board placement markers now remain distinct per source ship/weapon combo during setup placement rendering (no 12-color modulo collisions).
+- Map-click placement and undo still update visible ammo counts.
+- Existing mine-only setup flows still work when no seeker launchers are present.
+- Placement controls still relayout after visibility changes following the existing action-button pattern.
+
+Suggested test-file focus:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.*
+- tests/gui/TacticalGuiLiveTest.*
+
+Suggested validation commands:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && xvfb-run -a ./GuiTests (xvfb-run unavailable in current environment)
+
+Implementation validation context:
+- Tactical tests pass after remediation (`OK (159 tests)`).
+- GUI test build succeeds.
+- GUI runtime execution remains pending only because xvfb-run is unavailable here.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-003
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or command details from repository conventions when evidence is sufficient, and label those choices as assumptions instead of blockers.
+- Do not stop after activation, directory discovery, or artifact confirmation when testing can proceed.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

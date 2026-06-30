@@ -1,0 +1,274 @@
+#!/usr/bin/env python3
+"""
+Usage:
+  python merge_to_implementer.py BRANCH_PREFIX
+
+BRANCH_PREFIX is the subtask's implementer branch name without its
+-implementer-<date> suffix, i.e. <base>-<subtask> under the
+<base>-<subtask>-<stage>-<date> naming convention.
+
+Finds local branches named <branch-prefix>-<stage>-<YYYYMMDD> where <stage>
+is one of: implementer, tester, documenter, security, verifier. Branches with
+any other trailing segment are ignored, including plan-level reviewer branches.
+All matched branches must share the same date (later stages inherit the
+Implementer's start date); mixed dates indicate stale branches from an
+earlier pass and abort the merge.
+
+Merge order (the security stage is optional; when absent its link is skipped):
+  1. verifier -> security (when present, otherwise documenter)
+  2. security -> documenter (when present)
+  3. documenter -> tester
+  4. tester -> implementer
+
+After all merges succeed, the script removes the worktrees for the
+downstream agent branches and deletes those branches; the implementer
+branch and worktree are preserved so remediation can continue there.
+Removal and deletion are never forced: each downstream branch must be
+fully merged into the implementer branch, and a worktree containing
+uncommitted or untracked files aborts cleanup so nothing unmerged is lost.
+"""
+
+import re
+import subprocess
+import sys
+
+
+def fail(message):
+    print(f"Error: {message}", file=sys.stderr)
+    print(
+        "Do not fall back to manual git worktree/merge/cleanup commands; "
+        "fix the cause above and re-run this script.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
+def note(message):
+    print(message)
+
+
+def require_clean_prefix(value):
+    if not value:
+        fail("branch prefix cannot be empty")
+    if "/" in value:
+        fail("branch prefix cannot contain '/'")
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", value):
+        fail("branch prefix may only contain letters, numbers, dot, underscore, and hyphen")
+
+
+CHAIN_ORDER = ["implementer", "tester", "documenter", "security", "verifier"]
+CHAIN_STAGES = set(CHAIN_ORDER)
+OPTIONAL_STAGES = {"security"}
+
+
+def parse_agent_branch(branch, prefix):
+    """Returns (stage_name, date) or None.
+
+    Matches only <prefix>-<stage>-<YYYYMMDD> where <stage> is a known chain
+    stage; anything else (including plan-level reviewer branches) is ignored.
+    """
+    if not branch.startswith(f"{prefix}-"):
+        return None
+    rest = branch[len(prefix) + 1:]
+    m = re.fullmatch(r"([A-Za-z0-9_.]+)-([0-9]{8})", rest)
+    if not m or m.group(1) not in CHAIN_STAGES:
+        return None
+    return m.group(1), m.group(2)
+
+
+def git(*args, check=True):
+    result = subprocess.run(["git"] + list(args), capture_output=True, text=True)
+    if check and result.returncode != 0:
+        fail(result.stderr.strip() or f"git {' '.join(args)} failed")
+    return result.stdout.strip()
+
+
+def git_at(path, *args, check=True):
+    result = subprocess.run(["git", "-C", path] + list(args), capture_output=True, text=True)
+    if check and result.returncode != 0:
+        fail(result.stderr.strip() or f"git -C {path} {' '.join(args)} failed")
+    return result.stdout.strip()
+
+
+def ensure_clean_worktree(path, label):
+    r1 = subprocess.run(["git", "-C", path, "diff", "--quiet"], capture_output=True)
+    if r1.returncode != 0:
+        fail(f"{label} worktree has unstaged changes: {path}")
+    r2 = subprocess.run(["git", "-C", path, "diff", "--cached", "--quiet"], capture_output=True)
+    if r2.returncode != 0:
+        fail(f"{label} worktree has staged changes: {path}")
+
+
+def ensure_checked_out_branch(path, expected):
+    actual = git_at(path, "branch", "--show-current")
+    if actual != expected:
+        fail(f"expected '{expected}' to be checked out in {path}, found '{actual}'")
+
+
+def merge_into_branch(source, target, target_path):
+    if not source:
+        return
+    ensure_checked_out_branch(target_path, target)
+    ensure_clean_worktree(target_path, target)
+    note(f"Merging {source} into {target}")
+    result = subprocess.run(
+        ["git", "-C", target_path, "merge", "--no-edit", source],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        # Leave no half-merged state behind; a re-run starts untouched.
+        subprocess.run(["git", "-C", target_path, "merge", "--abort"], capture_output=True)
+        fail(
+            f"merge of {source} into {target} failed and was aborted:\n"
+            f"{(result.stdout + result.stderr).strip()}\n"
+            "Surface this failure to the user; do not resolve conflicts or merge manually."
+        )
+
+
+def parse_worktrees():
+    output = git("worktree", "list", "--porcelain")
+    worktree_by_branch = {}
+    current_worktree = None
+    for line in output.splitlines():
+        if line.startswith("worktree "):
+            current_worktree = line[len("worktree "):]
+        elif line.startswith("branch refs/heads/"):
+            branch = line[len("branch refs/heads/"):]
+            worktree_by_branch[branch] = current_worktree
+    return worktree_by_branch
+
+
+def main():
+    if len(sys.argv) != 2 or sys.argv[1] in ("-h", "--help"):
+        print(__doc__)
+        sys.exit(0 if (len(sys.argv) == 2 and sys.argv[1] in ("-h", "--help")) else 1)
+
+    branch_prefix = sys.argv[1]
+    require_clean_prefix(branch_prefix)
+
+    git("rev-parse", "--show-toplevel")  # verify inside a git repo
+    current_branch = git("branch", "--show-current")
+
+    if not current_branch:
+        fail("detached HEAD is not supported")
+
+    all_branches = git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines()
+    matching_branches = []
+    branch_by_agent = {}
+    branch_dates = set()
+
+    for branch in all_branches:
+        parsed = parse_agent_branch(branch, branch_prefix)
+        if parsed is None:
+            continue
+        agent_name, branch_date = parsed
+        if agent_name in branch_by_agent:
+            fail(f"multiple branches found for agent '{agent_name}': {branch_by_agent[agent_name]} and {branch}")
+        branch_by_agent[agent_name] = branch
+        branch_dates.add(branch_date)
+        matching_branches.append(branch)
+
+    if not matching_branches:
+        fail(f"no local branches found for prefix '{branch_prefix}'")
+
+    if len(branch_dates) > 1:
+        fail(
+            f"matched branches have mixed dates ({', '.join(sorted(branch_dates))}); all stages of a "
+            f"subtask must share the Implementer's start date — remove stale branches and retry: "
+            f"{', '.join(sorted(matching_branches))}"
+        )
+
+    worktree_by_branch = parse_worktrees()
+
+    present_stages = [stage for stage in CHAIN_ORDER if stage in branch_by_agent]
+    implementer_branch = branch_by_agent.get("implementer")
+
+    if not implementer_branch:
+        fail(f"no implementer branch found for prefix '{branch_prefix}'")
+    downstream_stages = [stage for stage in present_stages if stage != "implementer"]
+    if not downstream_stages:
+        fail(f"no downstream stage branches found for prefix '{branch_prefix}'")
+
+    # Every present stage must have all earlier required stages present;
+    # only optional stages (security) may be absent mid-chain.
+    for stage in present_stages:
+        for earlier in CHAIN_ORDER[: CHAIN_ORDER.index(stage)]:
+            if earlier in OPTIONAL_STAGES:
+                continue
+            if earlier not in branch_by_agent:
+                fail(f"found a {stage} branch but no {earlier} branch to merge through")
+
+    for stage in present_stages:
+        branch = branch_by_agent[stage]
+        if branch not in worktree_by_branch:
+            fail(f"{stage} branch does not have an attached worktree: {branch}")
+
+    removable_branches = [branch_by_agent[stage] for stage in reversed(downstream_stages)]
+
+    for branch in removable_branches:
+        if current_branch == branch:
+            fail(f"current branch is '{branch}'; run this script from the implementer worktree, the base checkout, or another non-removal branch")
+
+    implementer_worktree = worktree_by_branch[implementer_branch]
+
+    # Pre-check every removable worktree is clean (including untracked files)
+    # before merging or removing anything, so an abort never leaves the merge
+    # or cleanup half-done and a re-run starts from an untouched state. The
+    # implementer worktree is exempt: it is preserved, never removed.
+    for branch in removable_branches:
+        worktree_path = worktree_by_branch.get(branch)
+        if not worktree_path:
+            continue
+        status = git_at(worktree_path, "status", "--porcelain")
+        if status:
+            fail(
+                f"worktree {worktree_path} contains uncommitted or untracked files:\n{status}\n"
+                "Inspect it, commit or clean anything that matters, then re-run this script."
+            )
+
+    for index in range(len(present_stages) - 1, 0, -1):
+        source = branch_by_agent[present_stages[index]]
+        target = branch_by_agent[present_stages[index - 1]]
+        merge_into_branch(source, target, worktree_by_branch[target])
+
+    # Verify every downstream branch is fully merged into the implementer branch
+    # before any cleanup. `git branch -d` can't be used here because it checks
+    # merged-ness against HEAD, not against the implementer branch.
+    for branch in removable_branches:
+        check = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", branch, implementer_branch],
+            capture_output=True,
+        )
+        if check.returncode != 0:
+            fail(
+                f"branch {branch} is not fully merged into {implementer_branch}; "
+                "complete the downstream merge chain before cleanup"
+            )
+
+    for branch in removable_branches:
+        worktree_path = worktree_by_branch.get(branch)
+        if worktree_path:
+            note(f"Removing worktree {worktree_path}")
+            result = subprocess.run(
+                ["git", "worktree", "remove", worktree_path],
+                capture_output=True, text=True,
+            )
+            if result.returncode != 0:
+                fail(
+                    f"could not remove worktree {worktree_path}: {result.stderr.strip()}\n"
+                    "The worktree likely contains uncommitted or untracked files. Inspect it, commit or "
+                    "clean anything that matters, then re-run this script to finish the merge and cleanup."
+                )
+
+    for branch in removable_branches:
+        note(f"Deleting branch {branch}")
+        # Safe: ancestry into the implementer branch was verified above.
+        result = subprocess.run(["git", "branch", "-D", branch], capture_output=True, text=True)
+        if result.returncode != 0:
+            fail(f"could not delete branch {branch}: {result.stderr.strip()}")
+
+    note(f"Merged downstream agent branches into {implementer_branch} and preserved implementer worktree {implementer_worktree}")
+
+
+if __name__ == "__main__":
+    main()

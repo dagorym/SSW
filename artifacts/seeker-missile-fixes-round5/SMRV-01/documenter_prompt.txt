@@ -1,0 +1,61 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMRV-01 (round 5): Repositioned the PH_ATTACK_FIRE offensive-seeker pending-deployment panel by computing pendingLMargin = leftOffset + textExtent('Select legal path hexes to deploy seeker missiles.') + 2*BORDER instead of hardcoding 310. Panel no longer overlaps left-column instruction text. Click regions update automatically. Left text unchanged.
+
+Acceptance criteria validated:
+- During PH_ATTACK_FIRE with offensive-seeker deployment active, the pending panel renders in a column whose left edge is to the right of the widest left-column content, so it no longer overlaps the left instruction text; the panel stays anchored to the top of the bottom panel.
+- The left instruction text is unchanged (not wrapped/clipped); only the panel moved.
+- Each pending recall row's click region aligns with its new drawn position; rows are not clipped or rendered behind the Done button or ship-status display, and recall behavior is preserved.
+
+Implementation branch or worktree context:
+- Worktree: sf2-SMRV-01-tester-20260629
+- Implementer commit: 955a320
+- Changed: src/tactical/FBattleDisplay.cpp — draw() PH_ATTACK_FIRE block uses computed pendingLMargin
+- Changed: include/tactical/FBattleDisplay.h — updated drawOffensiveSeekerPendingRows docblock
+- Compare against sf2 parent branch for full diff
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FBattleDisplay.cpp (Implementer: computed pendingLMargin replaces hardcoded 310 in draw())
+- include/tactical/FBattleDisplay.h (Implementer: updated drawOffensiveSeekerPendingRows docblock)
+- tests/gui/Makefile (Tester: added GUI_TEST_REPO_ROOT compile macro for SMRV-T1 hardening)
+- tests/gui/TacticalGuiLiveTest.cpp (Tester: updated AC2 assertion to use computed lMargin; added guiRepoFile() helper)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (Tester: updated testActionPromptSpacingContractAppliedAcrossActionPhases)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h (Tester: updated class docblock dates)
+
+Test commit:
+- a79563c
+
+Commands executed:
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+- make -C tests gui-tests
+- bash -c 'cd tests/gui && ./GuiTests'
+
+Final test outcomes:
+- Tactical tests: 225/225 pass.
+- GUI tests: 52/53 pass (1 pre-existing layout geometry failure confirmed present before implementer's round-5 commit).
+- testActionPromptSpacingContractAppliedAcrossActionPhases: PASS — new pendingLMargin computation pattern assertions verified.
+- testOffensiveSeekerPendingListRegionVisibilityAndRecall (AC2): PASS — recall region x >= computed pendingLMargin via wxMemoryDC text measurement.
+- All acceptance criteria validated. No new failures introduced.
+
+Documentation context:
+- include/tactical/FBattleDisplay.h docblock for drawOffensiveSeekerPendingRows updated to describe computed lMargin behavior.
+- doc/test-contracts.md may need an entry or update for the PH_ATTACK_FIRE pendingLMargin computation pattern now asserted in testActionPromptSpacingContractAppliedAcrossActionPhases.
+- AGENTS.md testing section references FTacticalBattleDisplayFireFlowTest — may need a note about the SMRV-01 round5 pattern update.
+- The FBattleDisplay.cpp file-header comment already mentions the SMRV-01 round5 change.
+
+Plan and diff context:
+- Plan: plans/seeker-missile-fixes-round5-plan.md, subtask SMRV-01
+- Base branch: sf2 (assumption — the worktree branches from sf2)
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round5/SMRV-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

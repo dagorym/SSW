@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.cpp
  * @brief Implementation file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  May 23, 2026
+ * @date Last Modified:  Jun 22, 2026
  *
  */
 
@@ -488,7 +488,9 @@ const unsigned int & FBattleScreen::getActivePlayerID() const {
 void FBattleScreen::setPhase(int p){
 	m_tacticalGame->setPhase(p);
 	if (p==PH_MOVE) { // we just ended a turn
-		m_tacticalGame->resetMovementState();
+		if (m_tacticalGame->getPhase() == PH_MOVE) {
+			m_tacticalGame->resetMovementState();
+		}
 	}
 	m_map->Refresh();
 	m_display->Refresh();
@@ -638,8 +640,53 @@ bool FBattleScreen::beginMinePlacement() {
 	return changed;
 }
 
+bool FBattleScreen::beginSeekerPlacement() {
+	const bool changed = m_tacticalGame->beginSeekerPlacement();
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::beginOrdnancePlacement() {
+	const bool changed = m_tacticalGame->beginOrdnancePlacement();
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::selectPlacementSource(unsigned int shipID, unsigned int weaponIndex) {
+	const bool changed = m_tacticalGame->selectPlacementSource(shipID, weaponIndex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::selectPlacementSourceByIndex(unsigned int sourceIndex) {
+	const bool changed = m_tacticalGame->selectPlacementSourceByIndex(sourceIndex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+int FBattleScreen::getSelectedPlacementSourceIndex() const {
+	return m_tacticalGame->getSelectedPlacementSourceIndex();
+}
+
+const std::vector<FTacticalDeploymentSource> & FBattleScreen::getDeployablePlacementSources() const {
+	return m_tacticalGame->getDeployablePlacementSources();
+}
+
 void FBattleScreen::completeMinePlacement() {
 	m_tacticalGame->completeMinePlacement();
+	reDraw();
+}
+
+void FBattleScreen::completeSeekerPlacement() {
+	m_tacticalGame->completeSeekerPlacement();
 	reDraw();
 }
 
@@ -676,12 +723,24 @@ bool FBattleScreen::assignTargetFromHex(const FPoint & hex) {
 	return changed;
 }
 
+bool FBattleScreen::placeOrdnanceAtHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->placeOrdnanceAtHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
 bool FBattleScreen::placeMineAtHex(const FPoint & hex) {
 	const bool changed = m_tacticalGame->placeMineAtHex(hex);
 	if (changed) {
 		reDraw();
 	}
 	return changed;
+}
+
+bool FBattleScreen::isHexDeployable(const FPoint & hex) {
+	return m_tacticalGame->isHexDeployable(hex);
 }
 
 bool FBattleScreen::isHexMinable(const FPoint & hex) {
@@ -722,6 +781,124 @@ const PointSet & FBattleScreen::getHeadOnHexes() const {
 
 const PointSet & FBattleScreen::getMinedHexes() const {
 	return m_tacticalGame->getMinedHexes();
+}
+
+const PointSet & FBattleScreen::getLastTriggeredMineHexes() const {
+	return m_tacticalGame->getLastTriggeredMineHexes();
+}
+
+const std::vector<FTacticalPlacedOrdnance> & FBattleScreen::getPlacedOrdnance() const {
+	return m_tacticalGame->getPlacedOrdnance();
+}
+
+std::vector<FTacticalPlacedOrdnance> FBattleScreen::getPlacedOrdnanceAtHex(const FPoint & hex) const {
+	return m_tacticalGame->getPlacedOrdnanceAtHex(hex);
+}
+
+const std::vector<FTacticalSeekerMissileState> & FBattleScreen::getSeekerMissiles() const {
+	return m_tacticalGame->getSeekerMissiles();
+}
+
+std::vector<FTacticalSeekerMissileState> FBattleScreen::getSeekerMissilesAtHex(
+	const FPoint & hex,
+	bool activeOnly) const
+{
+	return m_tacticalGame->getSeekerMissilesAtHex(hex, activeOnly);
+}
+
+std::vector<FPoint> FBattleScreen::getInactiveSeekerActivationHexes() const {
+	return m_tacticalGame->getInactiveSeekerActivationHexes();
+}
+
+bool FBattleScreen::selectSeekerActivationHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->selectSeekerActivationHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+const FPoint & FBattleScreen::getSelectedSeekerActivationHex() const {
+	return m_tacticalGame->getSelectedSeekerActivationHex();
+}
+
+std::vector<FTacticalSeekerMissileState> FBattleScreen::getSelectedInactiveSeekerActivationStack() const {
+	return m_tacticalGame->getSelectedInactiveSeekerActivationStack();
+}
+
+bool FBattleScreen::isOffensiveSeekerDeploymentMode() const {
+	return m_tacticalGame->isOffensiveSeekerDeploymentMode();
+}
+
+std::vector<FTacticalPendingSeekerHexGroup> FBattleScreen::getSelectedOffensivePendingSeekerHexGroups() const {
+	return m_tacticalGame->getSelectedOffensivePendingSeekerHexGroups();
+}
+
+bool FBattleScreen::recallSelectedOffensivePendingSeekerAtHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->recallSelectedOffensivePendingSeekerAtHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+std::vector<FTacticalPreGameSeekerHexGroup> FBattleScreen::getPlacedSeekerHexGroups() const {
+	return m_tacticalGame->getPlacedSeekerHexGroups();
+}
+
+bool FBattleScreen::recallPlacedSeekerAtHexSource(const FPoint & hex, const FTacticalOrdnanceSource & source) {
+	const bool changed = m_tacticalGame->recallPlacedSeekerAtHexSource(hex, source);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+std::vector<FPoint> FBattleScreen::getAllPendingOffensiveFireSeekerHexes() const {
+	return m_tacticalGame->getAllPendingOffensiveFireSeekerHexes();
+}
+
+bool FBattleScreen::activateSelectedInactiveSeeker(unsigned int seekerID) {
+	const bool changed = m_tacticalGame->activateSelectedInactiveSeeker(seekerID);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::deactivateActiveSeekerByID(unsigned int seekerID) {
+	const bool changed = m_tacticalGame->deactivateActiveSeekerByID(seekerID);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::activateInactiveSeekerAtHex(const FPoint & hex) {
+	const bool changed = m_tacticalGame->activateInactiveSeekerAtHex(hex);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+std::vector<FTacticalSeekerMissileState> FBattleScreen::getActiveSeekersByMovingPlayer() const {
+	return m_tacticalGame->getActiveSeekersByMovingPlayer();
+}
+
+std::vector<FTacticalSeekerMissileState> FBattleScreen::getActiveSeekersByMovingPlayerThisPhase() const {
+	return m_tacticalGame->getActiveSeekersByMovingPlayerThisPhase();
+}
+
+void FBattleScreen::completeSeekerActivationPhase() {
+	m_tacticalGame->completeSeekerActivationPhase();
+	if (!m_tacticalGame->getLastDestroyedShipIDs().empty()) {
+		clearDestroyedShips();
+		if (m_tacticalGame->hasWinner()) {
+			return;
+		}
+	}
+	reDraw();
 }
 
 const FHexMap & FBattleScreen::getMineTargets() const {

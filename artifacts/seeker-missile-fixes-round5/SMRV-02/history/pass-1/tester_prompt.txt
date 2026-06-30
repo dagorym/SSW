@@ -1,0 +1,42 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Reposition the seeker-activation phase (PH_SEEKER_ACTIVATION) 'Activated seekers:' list in FBattleDisplay. Changed the anchor in drawSeekerActivation() from getActionButtonRowBottom() to getActionPromptLineY(0) at lMargin=310, matching the drawPlaceMines/drawPlaceSeekers convention. Click regions are automatically recomputed from the new draw position since they use the same 'y' variable.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- During PH_SEEKER_ACTIVATION, the 'Activated seekers:' list renders anchored to the top of the bottom panel (top aligned with the instruction-text top region, not below the action-button row) and to the right of the left column / button area.
+- Each activation row's click region aligns with its new drawn position; clicking a row still deactivates the intended seeker; rows are not clipped and do not overlap the left column, the 'Seeker Activation Done' button, or the ship-status display.
+
+Test file location guidance:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.* — source-contract coverage for the layout helper anchor. The existing test testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker currently checks for 'int y = getActionButtonRowBottom();'; this must be updated to check for 'int y = getActionPromptLineY(0);'.
+- tests/gui/TacticalGuiLiveTest.* — live layout / anchor / click-region behavior using offscreen wxMemoryDC and WXGuiTestHarness helpers.
+- Carried-over item SMRV-T2: reconcile the pre-existing failing test testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges at ~line 1233 of TacticalGuiLiveTest.cpp by relaxing the within-phase resize-back assertion to a within-phase preservation assertion, consistent with the accepted SMRIV-04 design. Keep the across-phase-change shrink assertions unchanged.
+
+Implementation context for testing:
+- The only change is in drawSeekerActivation() in src/tactical/FBattleDisplay.cpp: replaced 'int y = getActionButtonRowBottom();' with 'int y = getActionPromptLineY(0);' and updated the preceding comment.
+- lMargin remains 310 (same right-column position as drawPlaceMines/drawPlaceSeekers).
+- The click-region coordinates (m_seekerActivationRegions) already use 'y' so they automatically track the new anchor — no additional change was needed.
+- The 'Activated seekers:' header and list rows now render at the top of the bottom panel, co-aligned with the instruction text and matching the pattern used by drawPlaceMines and drawPlaceSeekers.
+
+Suggested test commands:
+- make -C tests/tactical (rebuild tactical library and tests)
+- ./tests/tactical/TacticalTests (run tactical tests; expect 1 pre-existing source-contract failure to be fixed by Tester)
+- make -C tests/gui (build GUI tests)
+- cd tests/gui && xvfb-run -a ./GuiTests (run GUI tests if display available)
+
+Existing validations expected to fail because the Tester must fix them:
+- FTacticalBattleDisplayFireFlowTest::testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker — source-contract assertion checks for 'int y = getActionButtonRowBottom();' which was deliberately changed to 'int y = getActionPromptLineY(0);'. Tester must update this source-contract check to verify the new anchor string.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round5/SMRV-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

@@ -1,8 +1,9 @@
 /**
  * @file FBattleDisplay.h
  * @brief Header file for BattleDisplay class
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified: Jun 30, 2026 (SMRVI-02 round6: drawSeekerActivation uses (X,Y) position and dynamic lMargin)
  *
  */
 
@@ -13,6 +14,7 @@
 
 #include "gui/GuiTypes.h"
 #include "Frontier.h"
+#include "tactical/FTacticalGame.h"
 
 namespace Frontier {
 class FBattleScreen;
@@ -20,12 +22,12 @@ class FBattleScreen;
 /**
  * @brief Class for the Main tactical combat board
  *
- * This class implements the code for the FBattleDisplay, the main
- * board used for the tactical combat game..
+ * This class implements the lower tactical display panel used for combat
+ * prompts, ship status, setup placement controls, and seeker-activation UI.
  *
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Feb 22, 2011
+ * @date Last Modified:  Jun 22, 2026 (PGS-02: applyRequestedDisplayHeight now notifies parent via SendSizeEvent)
  */
 class FBattleDisplay : public wxPanel
 {
@@ -41,8 +43,34 @@ public:
 	/// Default destructor
 	~FBattleDisplay();
 
+	/**
+	 * @brief Draw the current lower-panel surface for the active tactical state.
+	 *
+	 * This includes the existing movement/fire/setup prompts plus the seeker
+	 * activation instructions, per-seeker activation rows, and completion button
+	 * during `PH_SEEKER_ACTIVATION`.
+	 *
+	 * @param dc Device context used for lower-panel drawing.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void draw(wxDC &dc);
 	void onPaint(wxPaintEvent & event);
+	/**
+	 * @brief Handle lower-panel clicks for the current tactical phase.
+	 *
+	 * Setup placement clicks still select deployment-source rows, while seeker
+	 * activation clicks now prioritize per-seeker activation rows so the panel
+	 * can refresh after each one-way activation.
+	 *
+	 * @param event Mouse-release event carrying the click position.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
 	void onLeftUp(wxMouseEvent & event);
 
 	/**
@@ -90,8 +118,32 @@ protected:
 	std::vector<wxRect> m_defenseRegions;
 	/// button for signaling completion of placing mines phase
 	wxButton* m_buttonMinePlacementDone;
-	/// list of active regions for selection of a ship's name
+	/// button for signaling completion of placing seeker missiles phase
+	wxButton* m_buttonSeekerPlacementDone;
+	/// button for signaling completion of seeker activation phase
+	wxButton* m_buttonSeekerActivationDone;
+	/// list of active regions for selection of a placement-source row
 	std::vector<wxRect> m_shipNameRegions;
+	/// placement-source index for each selectable row region
+	std::vector<int> m_shipSelectionSourceIndices;
+	/// list of active regions for selecting inactive seekers in activation stack
+	std::vector<wxRect> m_seekerActivationRegions;
+	/// seeker ID for each activation row region
+	std::vector<unsigned int> m_seekerActivationSeekerIDs;
+	/// list of active regions for recalling pending offensive-fire seekers
+	std::vector<wxRect> m_pendingSeekerRecallRegions;
+	/// grouped hex entry for each pending offensive-fire recall region
+	std::vector<wxPoint> m_pendingSeekerRecallHexes;
+	/// list of active regions for recalling placed pre-game seekers (BS_PlaceSeekers)
+	std::vector<wxRect> m_preGameSeekerRecallRegions;
+	/// hex coordinate for each pre-game seeker recall region
+	std::vector<wxPoint> m_preGameSeekerRecallHexes;
+	/// source ship ID for each pre-game seeker recall region
+	std::vector<unsigned int> m_preGameSeekerRecallShipIDs;
+	/// source weapon index for each pre-game seeker recall region
+	std::vector<int> m_preGameSeekerRecallWeaponIndices;
+	/// source weapon ID for each pre-game seeker recall region
+	std::vector<unsigned int> m_preGameSeekerRecallWeaponIDs;
 
 	/// top pixel where tactical action prompts begin
 	static const int ACTION_PROMPT_TOP_MARGIN = 5;
@@ -107,6 +159,11 @@ protected:
 	/// minimum width to preserve for prompt text while ship stats are right-aligned
 	static const int ACTION_PROMPT_MIN_WIDTH = 280;
 
+	/// instruction text for seeker-missile path deployment in the offensive fire phase;
+	/// used in both drawAttackFire() (draw) and draw() (pendingLMargin text-extent measurement)
+	/// so the two sites can never diverge.
+	static const wxString SEEKER_DEPLOY_INSTRUCTION;
+
 	/// lower-panel layout modes for tactical prompts and ship stats
 	enum LowerPanelLayoutMode {
 		LOWER_PANEL_LAYOUT_RIGHT_SPLIT,
@@ -116,9 +173,17 @@ protected:
 	/**
 	 * @brief Shared lower-panel layout state across tactical phases.
 	 *
-	 * @author Tom Stephens, GPT-5 (high)
+	 * `lastBattleState` and `lastBattlePhase` store the most recently seen
+	 * battle state and phase (as int casts of their respective enums).  They
+	 * are initialised to -1 and updated in `ensureLowerPanelLayoutState()`.
+	 * When either value differs from the current state/phase the layout helper
+	 * skips the max-preserve of `requestedDisplayHeight` so the panel can
+	 * shrink back to fit the new phase's content instead of ratcheting up
+	 * permanently.
+	 *
+	 * @author Tom Stephens, GPT-5 (high), claude-sonnet-4-6 (medium)
 	 * @date Created: May 16, 2026
-	 * @date Last Modified: May 16, 2026
+	 * @date Last Modified: Jun 29, 2026 (SMRIV-04: add lastBattleState/lastBattlePhase for phase-change reset)
 	 */
 	struct LowerPanelLayoutState {
 		LowerPanelLayoutMode mode;
@@ -127,6 +192,10 @@ protected:
 		int reservedPromptLines;
 		int requestedDisplayHeight;
 		bool initialized;
+		/// last-seen battle state as int; -1 = not yet set
+		int lastBattleState;
+		/// last-seen battle phase as int; -1 = not yet set
+		int lastBattlePhase;
 	};
 
 	/// measured ship-stat block dimensions for lower-panel layout decisions
@@ -135,7 +204,7 @@ protected:
 		int height;
 	};
 
-	/// Event handler for setting the ship's speed
+	/// Event handler for setting the ship's speed; skips setShip(NULL) when beginMinePlacement() succeeds so m_curShip remains valid for the first mine board click
 	void onSetSpeed( wxCommandEvent& event );
 
 	/// event handler for movement complete button
@@ -146,6 +215,33 @@ protected:
 
 	/// event handler for mine placement complete button
 	void onMinePlacementDone( wxCommandEvent& event );
+
+	/**
+	 * @brief Finish the seeker-missile placement phase and advance to attacker setup.
+	 *
+	 * Hides and disconnects the seeker placement done button, then delegates
+	 * completion to `FBattleScreen::completeSeekerPlacement()`.
+	 *
+	 * @param event Button-click event from the seeker placement completion control.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 02, 2026
+	 */
+	void onSeekerPlacementDone( wxCommandEvent& event );
+	/**
+	 * @brief Finish the visible seeker-activation stop and return to movement flow.
+	 *
+	 * Hides and disconnects the button using the existing tactical action-button
+	 * lifecycle, then delegates completion to `FBattleScreen`.
+	 *
+	 * @param event Button-click event from the activation completion control.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
+	void onSeekerActivationDone( wxCommandEvent& event );
 
 	/**
 	 * @brief Draws choice of planet icons on display
@@ -308,8 +404,46 @@ protected:
 	/// Draws prompt to select ship to fire defensive shots
 	void drawDefensiveFire(wxDC &dc);
 
-	/// Draws prompt to select ship to fire defensive shots
+	/**
+	 * @brief Draw the offensive-fire lower-panel prompt and seeker deployment status.
+	 *
+	 * Normal offensive fire still prompts for ship and weapon targeting, but when
+	 * an `SM` launcher is selected this prompt switches to seeker deployment
+	 * instructions and the lower panel adds grouped pending recall rows for that
+	 * launcher.
+	 *
+	 * @param dc The device context to draw on.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: Apr 15, 2009
+	 * @date Last Modified: May 25, 2026
+	 */
 	void drawAttackFire(wxDC &dc);
+	/**
+	 * @brief Draw grouped recall rows for pending offensive-fire seekers.
+	 *
+	 * Renders a standalone bounded region anchored to the top of the bottom panel
+	 * (`getActionPromptLineY(0)`) in the column to the right of the widest
+	 * left-column instruction text during `PH_ATTACK_FIRE`. The caller (draw())
+	 * computes `lMargin` as `leftOffset + textExtent(widest instruction line) +
+	 * 2*BORDER` so the panel does not overlap the left-column text; the left
+	 * instruction text is never wrapped. Each row corresponds to one legal path
+	 * hex for the currently selected `SM` launcher and recalls exactly one
+	 * current-phase pending seeker from that hex when clicked. Same-hex stacks are
+	 * shown through the per-row pending count. If the rendered rows extend below the
+	 * current `requestedDisplayHeight`, the height is expanded and
+	 * `applyRequestedDisplayHeight()` is called automatically.
+	 *
+	 * @param dc The device context to draw on.
+	 * @param lMargin The x position to start drawing text (computed by caller to clear left column).
+	 * @param startY The y position to start drawing the pending rows.
+	 * @param textSize The font size to use.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: Jun 29, 2026 (SMRV-01 round5: lMargin computed from text extent, not hardcoded)
+	 */
+	void drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize);
 
 	/**
 	 * @brief Draws the ships weapons in the tactical display
@@ -408,33 +542,138 @@ protected:
 	void drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int textSize);
 
 	/**
-	 * @brief Draws the display for placing mines
+	 * @brief Draws the display for placing mines (BS_PlaceMines phase).
 	 *
-	 * This method draws the display for placing mines on the field during setup.
-	 * It shows each ship that has mines and the number available for deployment.
+	 * This method draws the setup placement panel for deployable mine weapon slots.
+	 * It renders one row per ship/weapon source and shows ammo for that exact slot.
+	 *
+	 * Layout uses two columns: the left column holds the wrapped instruction text
+	 * (rendered via drawWrappedActionPrompt() bounded to lMargin-leftOffset-BORDER)
+	 * plus the "Mine Placement Done" button below it; the right column (at
+	 * lMargin=310) holds the ship source-selection rows anchored at
+	 * getActionPromptLineY(0) — the top of the lower panel — so source rows appear
+	 * beside (not below) the instruction block.
 	 *
 	 * @param dc The device context to draw on
 	 *
-	 * @author Tom Stephens
+	 * If the rendered source rows extend below the current `requestedDisplayHeight`,
+	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
+	 * remain fully visible.
+	 *
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  Feb 22, 2011
+	 * @date Last Modified:  Jun 23, 2026
 	 */
 	void drawPlaceMines(wxDC &dc);
 
 	/**
-	 * @brief runs through current list of ship names to find if the user selected one
+	 * @brief Draws the display for placing seeker missiles (BS_PlaceSeekers phase).
 	 *
-	 * This method runs through the current ship list to see if the user
-	 * selected one of the ships.  If so it sets the current ship pointer to the
-	 * selected ship.
+	 * Uses a three-column layout. The left column holds the wrapped instruction text
+	 * ("The defending player may now place seeker missiles before the attacker sets
+	 * up their ships." wrapped to two lines) plus the "Seeker Placement Done" button.
+	 * The middle column (at lMargin=310) holds the ship source-selection rows anchored
+	 * at getActionPromptLineY(0) — the top of the lower panel. The right column (at
+	 * recallMargin=620) holds the placed-seeker recall list, also anchored at
+	 * getActionPromptLineY(0), so all three columns are side-by-side and neither
+	 * overlaps the other, the left column, or the ship-status display.
+	 *
+	 * @param dc The device context to draw on.
+	 *
+	 * If the rendered source rows or recall rows extend below the current
+	 * `requestedDisplayHeight`, the height is expanded and
+	 * `applyRequestedDisplayHeight()` is called so rows remain fully visible.
+	 *
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 23, 2026
+	 */
+	void drawPlaceSeekers(wxDC &dc);
+
+	/**
+	 * @brief Draw seeker activation panel content and deactivate rows.
+	 *
+	 * Renders the activation instructions and an "Activated seekers:" list anchored
+	 * at `getActionPromptLineY(0)` (top of the lower panel, right column at
+	 * `lMargin=310`), matching the three-column layout convention used by
+	 * `drawPlaceMines()` and `drawPlaceSeekers()`. One clickable deactivate row is
+	 * rendered for each seeker activated during the current phase (via
+	 * `getActiveSeekersByMovingPlayerThisPhase()`). Board clicks activate additional
+	 * inactive seekers; panel row clicks deactivate individual active seekers via
+	 * `deactivateActiveSeekerByID(id)`. Click regions in `m_seekerActivationRegions`
+	 * are computed from the same `y` variable as the drawn rows so they
+	 * automatically track the anchor position. Each row maps to exactly one seeker
+	 * ID so deactivation is one-way and per-seeker.
+	 *
+	 * @param dc The device context to draw on.
+	 *
+	 * If the activation rows extend below the current `requestedDisplayHeight`,
+	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
+	 * remain fully visible.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: Jun 29, 2026 (SMRV-02: anchor list at getActionPromptLineY(0) instead of getActionButtonRowBottom())
+	 */
+	void drawSeekerActivation(wxDC &dc);
+
+	/**
+	 * @brief runs through placement source rows to find if the user selected one
+	 *
+	 * This method checks the current placement-source rows and updates the
+	 * selected source when the user clicks a row.
 	 *
 	 * @param event The mouse event with the click position.
 	 *
 	 * @author Tom Stephens
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  Feb 22, 2011
+	 * @date Last Modified:  May 24, 2026
 	 */
 	void checkShipSelection(wxMouseEvent &event);
+
+	/**
+	 * @brief Deactivate one active seeker when the user clicks a panel deactivate row.
+	 *
+	 * Checks each region in `m_seekerActivationRegions` against the click
+	 * position and calls `deactivateActiveSeekerByID(id)` for the matching
+	 * seeker, then triggers a redraw. Board clicks activate seekers;
+	 * this method handles the inverse deactivation action from the lower panel.
+	 *
+	 * @param event Mouse click event from the lower panel.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 30, 2026
+	 */
+	void checkSeekerActivationSelection(wxMouseEvent &event);
+	/**
+	 * @brief Check whether the user clicked a grouped pending-seeker recall row.
+	 *
+	 * @param event The mouse event with the click position.
+	 *
+	 * @return True when one pending seeker was recalled for the selected launcher.
+	 *
+	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @date Created: May 25, 2026
+	 * @date Last Modified: May 25, 2026
+	 */
+	bool checkOffensiveSeekerPendingSelection(wxMouseEvent &event);
+	/**
+	 * @brief Check whether the user clicked a placed pre-game seeker recall row.
+	 *
+	 * Checks each region in `m_preGameSeekerRecallRegions` against the click
+	 * position and calls `recallPlacedSeekerAtHexSource(...)` for the matching
+	 * entry.
+	 *
+	 * @param event The mouse event with the click position.
+	 *
+	 * @return True when one placed pre-game seeker was recalled.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	bool checkPreGameSeekerRecallSelection(wxMouseEvent &event);
 
 	/// returns y-position for the indexed action prompt line
 	int getActionPromptLineY(int lineIndex) const;
@@ -460,7 +699,11 @@ protected:
 	/// draws wrapped prompt text into action-prompt lines and returns consumed lines by reference
 	void drawWrappedActionPrompt(wxDC &dc, const wxString &promptText, int maxWidth, int &lineCursor);
 
-	/// validates or updates the shared lower-panel layout state for the current geometry
+	/// validates or updates the shared lower-panel layout state for the current geometry;
+	/// preserves any requestedDisplayHeight already expanded by draw helpers within the
+	/// current tactical phase (drawPlaceMines, drawPlaceSeekers, drawSeekerActivation);
+	/// resets to base-content height when the tactical state or phase changes so the panel
+	/// shrinks back after a phase that required extra height
 	void ensureLowerPanelLayoutState(int panelWidth, int panelHeight);
 
 	/// measure width/height needed to render current ship stats without clipping
@@ -469,7 +712,22 @@ protected:
 	/// returns the current bottom edge for the action-button row in client coordinates
 	int getActionButtonRowBottom() const;
 
-	/// apply the requested display height from the active lower-panel layout state
+	/**
+	 * @brief Apply the minimum height from the active lower-panel layout state and notify the parent.
+	 *
+	 * Reads `m_lowerPanelLayoutState.requestedDisplayHeight`, clamps it to a
+	 * minimum of 120 pixels, and calls `SetMinSize()` when the height changed.
+	 * When the minimum height is updated and a parent window exists and
+	 * `m_inResizeReflow` is false, queues a `SendSizeEvent()` on the parent so
+	 * `FBattleScreen::applyLayoutPolicy()` runs on the next event-loop iteration
+	 * and grows the panel to show all source rows.  Using `SendSizeEvent()` instead
+	 * of a direct call makes this safe to invoke from within a paint handler because
+	 * the event is deferred rather than dispatched inline.
+	 *
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium)
+	 * @date Created: May 16, 2026
+	 * @date Last Modified: Jun 22, 2026 (PGS-02: notify parent via SendSizeEvent when min height changes)
+	 */
 	void applyRequestedDisplayHeight();
 
 	/// returns prompt width after accounting for right-split ship stat placement

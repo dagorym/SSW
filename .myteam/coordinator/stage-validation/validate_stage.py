@@ -11,8 +11,17 @@ REQUIRED_FILES = {
     "implementer": ["implementer_report.md", "implementer_result.json", "tester_prompt.txt"],
     "tester": ["tester_report.md", "tester_result.json"],
     "documenter": ["documenter_report.md", "documenter_result.json", "verifier_prompt.txt"],
+    "security": ["security_report.md", "security_result.json"],
     "verifier": ["verifier_report.md", "verifier_result.json"],
     "reviewer": ["reviewer_report.md", "reviewer_result.json"],
+}
+
+RESULT_FILES = {
+    "implementer": "implementer_result.json",
+    "tester": "tester_result.json",
+    "documenter": "documenter_result.json",
+    "security": "security_result.json",
+    "verifier": "verifier_result.json",
 }
 
 OPTIONAL_HANDOFF_FILES = {
@@ -45,6 +54,8 @@ def main() -> int:
     parser.add_argument("stage", choices=sorted(REQUIRED_FILES), help="Workflow stage to validate.")
     parser.add_argument("artifact_dir", help="Artifact directory path.")
     parser.add_argument("--repo-root", default=".", help="Repository root or worktree root.")
+    parser.add_argument("--expected-branch", help="Expected branch recorded in the stage result artifact.")
+    parser.add_argument("--expected-pass-label", help="Expected pass label recorded in the stage result artifact.")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -68,7 +79,17 @@ def main() -> int:
         "optional_handoff_file": optional,
         "optional_handoff_exists": optional_exists,
         "next_prompt_path": None,
+        "result_branch_matches": None,
+        "result_pass_label_matches": None,
     }
+
+    result_file = RESULT_FILES.get(args.stage)
+    if result_file and (artifact_dir / result_file).exists():
+        payload = json.loads((artifact_dir / result_file).read_text(encoding="utf-8"))
+        if args.expected_branch:
+            result["result_branch_matches"] = payload.get("branch_name") == args.expected_branch
+        if args.expected_pass_label:
+            result["result_pass_label_matches"] = payload.get("pass_label") == args.expected_pass_label
 
     next_prompt = NEXT_PROMPT_FILES.get(args.stage)
     if next_prompt and (artifact_dir / next_prompt).exists():
@@ -79,7 +100,12 @@ def main() -> int:
         )
 
     print(json.dumps(result, indent=2, sort_keys=True))
-    return 0 if not result["missing_required_files"] else 1
+    checks = [not result["missing_required_files"]]
+    if args.expected_branch:
+        checks.append(result["result_branch_matches"] is True)
+    if args.expected_pass_label:
+        checks.append(result["result_pass_label_matches"] is True)
+    return 0 if all(checks) else 1
 
 
 if __name__ == "__main__":

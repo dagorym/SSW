@@ -1,0 +1,21 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-003/verifier_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-003/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "seekers-tsm-003-verifier-20260523",
+  "documentation_accuracy_summary": [
+    "`doc/UsersGuide.md:370-371`, `doc/DesignNotes.md:425-434`, and `include/tactical/FBattleBoard.h:23-35,79-114` now match the shipped setup-placement behavior: one row per mine/seeker launcher slot, exact-slot ammo display, row-index source selection, undo restoring ammo to the same launcher, and source-specific board colors that no longer collapse through the legacy modulo mapping.",
+    "`doc/rules/tactical_operations_manual.md` was verified unchanged, so the repository's immutable-rules constraint remains satisfied."
+  ],
+  "note_finding_count": 0,
+  "status": "success",
+  "task_id": "TSM-003",
+  "test_sufficiency_summary": [
+    "Coverage is sufficient for the accepted behavior: `tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp:371-429` asserts deployable source rows, exact-slot ammo display, row-index selection, undo restoration through `placeOrdnanceAtHex(...)`, mine-only source rebuild behavior, and the collision-free source-color rendering path, and the verifier rerun passed with `OK (159 tests)`.",
+    "`tests/gui/TacticalGuiLiveTest.cpp:921-957` plus the successful `make gui-tests` build keep the wx-side source-row/color contracts under regression coverage. A live GUI runtime pass was still unavailable here because `xvfb-run` is not installed, but no remaining acceptance-criteria gap was found in the reviewed implementation or test surface."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

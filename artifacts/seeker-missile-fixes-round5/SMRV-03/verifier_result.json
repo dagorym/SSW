@@ -1,0 +1,24 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round5/SMRV-03/verifier_report.md",
+    "artifacts/seeker-missile-fixes-round5/SMRV-03/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "sf2-SMRV-03-documenter-20260629",
+  "documentation_accuracy_summary": [
+    "Accurate. The FBattleBoard.h docblock for drawSeekerMoveCountOverlay (lines 163-168) correctly documents the SMRV-03 ownership guard: detects PH_SEEKER_ACTIVATION, skips seekers with ownerID != getMovingPlayerID(), matches the sprite suppression in drawSeekerMissiles(), and notes that labels for both players render normally in all other BS_Battle phases.",
+    "The doc/test-contracts.md SMRV-03 entry (line 38) accurately describes the behavioral test structure, pixel sampling geometry, AC1-absent/AC1-present/AC2 assertions, and the source-contract supplement role.",
+    "The documenter's determination that the pass-2 de-flake does not warrant a catalog entry is correct: it is an assertion reliability fix with no change to the tested behavioral contract, and the test is not cataloged in test-contracts.md."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "pass-2",
+  "status": "complete",
+  "task_id": "SMRV-03 pass-2",
+  "test_sufficiency_summary": [
+    "Sufficient. The behavioral pixel-level test testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation (TacticalGuiLiveTest) covers all three acceptance criteria via offscreen wxMemoryDC render: AC1-absent (no red pixel near hex(3,3) in PH_SEEKER_ACTIVATION \u2014 fails against pre-SMRV-03 code, passes after fix), AC1-present (red pixel visible near hex(5,5) in PH_SEEKER_ACTIVATION), and AC2 (both hexes produce red pixels in PH_ATTACK_FIRE). The source-contract supplement correctly supplements without substituting for the behavioral assertion.",
+    "The pass-2 de-flake (retry 10x5ms + screen-rect fallback) restores meaningful assertion coverage for ScenarioEditorGUI button geometry: the screen-rect fallback still verifies buttons are geometrically contained within the dialog area, matching the 'owning top-level for parent-backed dialogs' convention in AGENTS.md. This is not a no-op weakening.",
+    "TacticalTests: 226/226 PASS. GuiTests: 55 run, 9 failures \u2014 all pre-existing and unchanged from pass-1. testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation PASSED."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

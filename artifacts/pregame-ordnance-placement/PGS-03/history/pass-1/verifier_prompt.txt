@@ -1,0 +1,45 @@
+Your role is 'verifier'. Your task is as follows:
+
+Task summary:
+PGS-03: Make pre-game seeker placement additive (stacking) and remove board-click removal for seekers during BS_PlaceSeekers. placeOrdnanceAtHex() now skips the removePlacedOrdnanceForSelection toggle when state==BS_PlaceSeekers and weapon type==SM, calling placeSeekerFromSelection() directly instead. Mine toggle behavior for BS_PlaceMines and attack-phase seeker deployment for BS_Battle/PH_ATTACK_FIRE are unchanged.
+
+Acceptance criteria to verify:
+1. During pre-game BS_PlaceSeekers, clicking a hex always adds one inactive seeker: ammo decrements, new inactive seeker record created, placed-ordnance record appended on every click including repeated same-hex clicks.
+2. Repeated clicks on the same hex accumulate multiple seekers; no toggle/removal occurs from the board during seeker placement.
+3. Mine placement retains toggle behavior (clicking a mined hex removes the mine) and attack-phase seeker/mine behavior is unchanged.
+4. Seeker placement stops adding when the selected source's launcher ammo is exhausted.
+5. Behavioral model test added: testPreGameSeekerPlacementIsAdditive in FTacticalGameMechanicsTest enters seeker placement, clicks same hex 3 times, asserts seeker count and ammo decrement increase per click (no removal). Test would fail against pre-fix toggle behavior and passes after fix.
+
+Implementation and test context:
+- Implementer branch: sf2-pgs-03-implementer-20260622
+- Tester branch: sf2-pgs-03-tester-20260622
+- Documenter branch: sf2-pgs-03-documenter-20260622 (verify on this branch)
+- Comparison base for diff: sf2-pgs-03-implementer-20260622
+- Test commit: a982f80b4b812d99e829354ce6d9d250e8b29c81
+- Documentation commit: 4aad4f776aee4e349ce9d64278c74a9e06d45b5b
+
+Files modified by Implementer, Tester, and Documenter:
+- src/tactical/FTacticalGame.cpp (Implementer: additive guard in placeOrdnanceAtHex; file header updated with PGS-03 note)
+- include/tactical/FTacticalGame.h (Implementer: placeOrdnanceAtHex docblock updated with PGS-03 behavior; Documenter: deduplicated repeated author entry)
+- tests/tactical/FTacticalGameMechanicsTest.h (Tester: added testPreGameSeekerPlacementIsAdditive declaration and docblock)
+- tests/tactical/FTacticalGameMechanicsTest.cpp (Tester: added testPreGameSeekerPlacementIsAdditive implementation)
+- AGENTS.md (Documenter: added PGS-03 bullet after PGS-02 in tactical-tests story list)
+- doc/DesignNotes.md (Documenter: added PGS-03 section at end of file)
+
+Final test outcomes:
+216 tests run, 216 passed, 0 failed. New test testPreGameSeekerPlacementIsAdditive passes. All pre-existing tests continue to pass.
+
+Shared artifact directory:
+artifacts/pregame-ordnance-placement/PGS-03
+
+Convention and plan files to consult:
+- plans/pregame-ordnance-placement-plan.md (plan document for the epic)
+- AGENTS.md (repository-wide contributor notes, documentation requirements, and story history)
+- doc/DesignNotes.md (design notes including the new PGS-03 section)
+
+Startup behavior:
+- Begin verification work immediately in the same run when the documenter branch and enough diff context are available.
+- Infer missing plan-path, comparison-base, or convention details from repository context when repository evidence is sufficient.
+- Do not stop after role activation, scope confirmation, or diff inspection when verification work can proceed.
+
+Do not report success unless all required artifacts exist and all changes are committed.

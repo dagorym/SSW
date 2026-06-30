@@ -1,0 +1,41 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Reposition the pre-game seeker-placement (BS_PlaceSeekers) lower-panel content to use a three-column layout: left column (instruction text wrapped onto two lines + Done button), middle column (source-selection rows at lMargin=310 anchored to panel top), and right column (recall list at recallMargin=620 anchored to panel top). Click regions in both columns align with drawn positions.
+
+Modified files:
+- src/tactical/FBattleDisplay.cpp
+- include/tactical/FBattleDisplay.h
+
+Acceptance criteria to validate (from Planner):
+- During BS_PlaceSeekers, source-selection rows render in a middle column (lMargin=310) anchored to the top of the bottom panel (getActionPromptLineY(0))
+- Placed-seeker recall list renders in a right column (recallMargin=620) anchored to the top of the bottom panel (getActionPromptLineY(0))
+- Both columns are to the right of the left column and do not overlap each other
+- Instruction text is wrapped onto two lines via drawWrappedActionPrompt()
+- Source-selection row click regions use wxRect(lMargin,y,...) matching drawn positions
+- Recall row click regions use wxRect(recallMargin,cy,...) matching drawn positions
+- Selecting a source row still updates active placement source (checkShipSelection unchanged)
+- Clicking a recall row still undeploys one seeker and returns ammo (checkPreGameSeekerRecallSelection unchanged)
+
+Create test files in:
+- Source-contract tests: tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp. Live layout/click-region behavioral tests: tests/gui/TacticalGuiLiveTest.cpp (offscreen wxMemoryDC with WXGuiTestHarness helpers).
+
+Implementation context for testing:
+- drawPlaceSeekers() previously placed the source-selection rows starting at getActionButtonRowBottom() (below the button row) and the recall list horizontally centered at panelW/2. SMRIV-02 mirrors the drawPlaceMines() three-column pattern: left column wraps instruction text, middle column anchors source rows at getActionPromptLineY(0), right column anchors recall list at getActionPromptLineY(0) at recallMargin=620. The lMargin=310 value is unchanged. The boolean logic for source filtering (SM-only), button lifecycle, and both checkShipSelection/checkPreGameSeekerRecallSelection handlers are unmodified.
+
+Suggested test command(s):
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round4/SMRIV-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

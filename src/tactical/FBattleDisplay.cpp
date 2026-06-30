@@ -1,9 +1,45 @@
 /**
  * @file FBattleDisplay.cpp
  * @brief Implementation file for BattleDispaly class
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
+ * @date Last Modified:  Jun 30, 2026 (SMRVI-02 round6: drawSeekerActivation uses (X,Y) position and dynamic lMargin)
  *
+ * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
+ * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
+ * mine instruction text onto two lines in the left column.
+ * SMRIV-02: drawPlaceSeekers() now uses a three-column layout: left column holds
+ * the instruction text (wrapped onto two lines) + Done button, middle column
+ * (lMargin=310) holds the source-selection rows anchored at getActionPromptLineY(0),
+ * and right column (recallMargin=620) holds the placed-seeker recall list anchored
+ * at getActionPromptLineY(0).  Click regions match drawn positions for both columns.
+ * SMRIV-03: draw() now calls drawOffensiveSeekerPendingRows(dc, 310,
+ * getActionPromptLineY(0), 10) during PH_ATTACK_FIRE so the recall list anchors to
+ * the top of the bottom panel in the column to the right of the Done button,
+ * consistent with the pre-game placement treatment used by drawPlaceMines.
+ * SMRIV-04: ensureLowerPanelLayoutState() detects tactical state/phase changes and
+ * resets requestedDisplayHeight to the base-content height so the panel shrinks back
+ * after a phase that needed extra space.  Within a single phase the existing
+ * max-preserve behaviour is retained to prevent row-clipping regressions.
+ * SMRV-01 (round5): draw() now computes pendingLMargin from the measured text
+ * extent of the widest PH_ATTACK_FIRE instruction line instead of using the
+ * fixed value 310.  The pending panel's left edge is placed at
+ * leftOffset + textExtent("Select legal path hexes to deploy seeker missiles.")
+ * + 2*BORDER, so it no longer overlaps the left-column instruction text.  The
+ * left instruction text is unchanged (not wrapped).  Click regions in
+ * m_pendingSeekerRecallRegions are computed from the new draw position so
+ * checkOffensiveSeekerPendingSelection() continues to work correctly.
+ * SMRV-02 (round5): drawSeekerActivation() now anchors the "Activated seekers:"
+ * list at int y = getActionPromptLineY(0) (top of the lower panel, right column at
+ * lMargin=310), matching the drawPlaceMines/drawPlaceSeekers three-column
+ * convention.  The previous anchor was getActionButtonRowBottom() (SMF-05).  Click
+ * regions in m_seekerActivationRegions automatically track the new anchor because
+ * they use the same y variable.
+ * SMRVI-02 (round6): drawSeekerActivation() per-row text now shows the seeker's
+ * board position as "(X,Y)" instead of "(heading H, allowance A)".  The fixed
+ * lMargin=310 is replaced by a dynamically computed margin that clears the widest
+ * left-column instruction line and the "Seeker Activation Done" button's right edge,
+ * mirroring the SMRV-01 (round5) attack-phase approach.
  */
 
 //#include "FBattleDisplay.h"
@@ -12,6 +48,7 @@
 #include "core/FGameConfig.h"
 #include "core/FHexMap.h"
 #include "gui/WXIconCache.h"
+#include <algorithm>
 #include <sstream>
 
 #define ICON_SIZE 50
@@ -20,6 +57,32 @@
 const int leftOffset=2*BORDER+ZOOM_SIZE;
 
 namespace Frontier {
+
+const wxString FBattleDisplay::SEEKER_DEPLOY_INSTRUCTION("Select legal path hexes to deploy seeker missiles.");
+
+namespace {
+
+FVehicle * findShipByID(const VehicleList & ships, unsigned int shipID) {
+	for (VehicleList::const_iterator itr = ships.begin(); itr != ships.end(); ++itr) {
+		if ((*itr)->getID() == shipID) {
+			return *itr;
+		}
+	}
+	return NULL;
+}
+
+const char * getDeploymentWeaponLabel(FWeapon::Weapon weaponType) {
+	switch (weaponType) {
+	case FWeapon::M:
+		return "Mine";
+	case FWeapon::SM:
+		return "Seeker";
+	default:
+		return "Ordnance";
+	}
+}
+
+}
 
 FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)
 		: wxPanel( parent, id, pos, size, style, name ) {
@@ -33,6 +96,8 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_lowerPanelLayoutState.reservedPromptLines = ACTION_PROMPT_MAX_LINES;
 	m_lowerPanelLayoutState.requestedDisplayHeight = 120;
 	m_lowerPanelLayoutState.initialized = false;
+	m_lowerPanelLayoutState.lastBattleState = -1;
+	m_lowerPanelLayoutState.lastBattlePhase = -1;
 	m_inResizeReflow = false;
 	m_actionButtonExtraSpacerItem = NULL;
 
@@ -52,6 +117,8 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonDefensiveFireDone = new wxButton( this, wxID_ANY, wxT("Defensive Fire Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonOffensiveFireDone = new wxButton( this, wxID_ANY, wxT("Offensive Fire Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonMinePlacementDone = new wxButton( this, wxID_ANY, wxT("Mine Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonSeekerPlacementDone = new wxButton( this, wxID_ANY, wxT("Seeker Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonSeekerActivationDone = new wxButton( this, wxID_ANY, wxT("Seeker Activation Done"), wxDefaultPosition, wxDefaultSize, 0 );
 
 	wxBoxSizer * rootSizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer * speedSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -66,6 +133,8 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	actionSizer->Add(m_buttonDefensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonOffensiveFireDone, 0, wxALIGN_CENTER_VERTICAL);
 	actionSizer->Add(m_buttonMinePlacementDone, 0, wxALIGN_CENTER_VERTICAL);
+	actionSizer->Add(m_buttonSeekerPlacementDone, 0, wxALIGN_CENTER_VERTICAL);
+	actionSizer->Add(m_buttonSeekerActivationDone, 0, wxALIGN_CENTER_VERTICAL);
 	rootSizer->AddSpacer(getActionButtonTopSpacerHeight());
 	m_actionButtonExtraSpacerItem = rootSizer->AddSpacer(getActionButtonExtraSpacerHeight());
 	rootSizer->Add(actionSizer, 0, wxTOP, BORDER);
@@ -77,6 +146,8 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonDefensiveFireDone->Hide();
 	m_buttonOffensiveFireDone->Hide();
 	m_buttonMinePlacementDone->Hide();
+	m_buttonSeekerPlacementDone->Hide();
+	m_buttonSeekerActivationDone->Hide();
 	Layout();
 	this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleDisplay::onPaint));
 	this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleDisplay::onLeftUp ),NULL,this);
@@ -459,7 +530,9 @@ int FBattleDisplay::getActionButtonRowBottom() const{
 		m_buttonMoveDone,
 		m_buttonDefensiveFireDone,
 		m_buttonOffensiveFireDone,
-		m_buttonMinePlacementDone
+		m_buttonMinePlacementDone,
+		m_buttonSeekerPlacementDone,
+		m_buttonSeekerActivationDone
 	};
 	for (size_t i = 0; i < sizeof(buttons) / sizeof(buttons[0]); i++){
 		if (buttons[i] != NULL && buttons[i]->IsShown()){
@@ -546,6 +619,26 @@ void FBattleDisplay::ensureLowerPanelLayoutState(int panelWidth, int panelHeight
 	if (requestedHeight < 120){
 		requestedHeight = 120;
 	}
+
+	// Detect whether the tactical state or phase has changed since the last call.
+	// When the phase is unchanged, preserve any height expansion already applied by
+	// draw helpers (drawSeekerActivation, drawPlaceMines, drawPlaceSeekers) so that
+	// overflowing rows remain visible and clickable within the phase.
+	// When the phase changes, skip max-preserve so the panel can shrink back to fit
+	// the new phase's content instead of ratcheting permanently upward (SMRIV-04).
+	const int currentState = static_cast<int>(m_parent->getState());
+	const int currentPhase = static_cast<int>(m_parent->getPhase());
+	const bool phaseChanged = (m_lowerPanelLayoutState.lastBattleState != currentState
+		|| m_lowerPanelLayoutState.lastBattlePhase != currentPhase);
+	if (phaseChanged){
+		m_lowerPanelLayoutState.lastBattleState = currentState;
+		m_lowerPanelLayoutState.lastBattlePhase = currentPhase;
+	} else {
+		// Same phase: preserve any draw-helper expansion so rows are not clipped.
+		if (m_lowerPanelLayoutState.requestedDisplayHeight > requestedHeight){
+			requestedHeight = m_lowerPanelLayoutState.requestedDisplayHeight;
+		}
+	}
 	m_lowerPanelLayoutState.requestedDisplayHeight = requestedHeight;
 }
 
@@ -557,6 +650,14 @@ void FBattleDisplay::applyRequestedDisplayHeight(){
 	}
 	if (GetMinSize().GetHeight() != requestedHeight){
 		SetMinSize(wxSize(-1, requestedHeight));
+		// Notify the parent frame that the display panel needs more space so
+		// applyLayoutPolicy() runs immediately and re-lays out the sizer rather
+		// than waiting for the next user-triggered resize event.  This is safe to
+		// call from within a paint handler because SendSizeEvent() queues the
+		// event for the next event-loop iteration instead of dispatching it inline.
+		if (GetParent() != NULL && !m_inResizeReflow){
+			GetParent()->SendSizeEvent();
+		}
 	}
 }
 
@@ -566,6 +667,13 @@ void FBattleDisplay::draw(wxDC &dc){
 	wxColour black(wxT("#000000"));// black
 	m_weaponRegions.clear();
 	m_defenseRegions.clear();
+	m_pendingSeekerRecallRegions.clear();
+	m_pendingSeekerRecallHexes.clear();
+	m_preGameSeekerRecallRegions.clear();
+	m_preGameSeekerRecallHexes.clear();
+	m_preGameSeekerRecallShipIDs.clear();
+	m_preGameSeekerRecallWeaponIndices.clear();
+	m_preGameSeekerRecallWeaponIDs.clear();
 	dc.SetBackground(wxBrush(black));
 	int w,h;
 	dc.GetSize(&w,&h);
@@ -603,8 +711,14 @@ void FBattleDisplay::draw(wxDC &dc){
 	case BS_PlaceMines:
 		drawPlaceMines(dc);
 		break;
+	case BS_PlaceSeekers:
+		drawPlaceSeekers(dc);
+		break;
 	case BS_Battle: {
 		switch (m_parent->getPhase()){
+		case PH_SEEKER_ACTIVATION:
+			drawSeekerActivation(dc);
+			break;
 		case PH_MOVE:
 			drawMoveShip(dc);
 			break;
@@ -618,6 +732,15 @@ void FBattleDisplay::draw(wxDC &dc){
 			break;
 		}
 		drawCurrentShipStats(dc);
+		if (m_parent->getPhase() == PH_ATTACK_FIRE) {
+			// Compute lMargin so the pending panel's left edge clears the widest
+			// left-column instruction line.  The left instruction text is NOT wrapped
+			// per user preference; instead the panel shifts right to avoid overlap.
+			dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+			const int attackTextW = dc.GetTextExtent(SEEKER_DEPLOY_INSTRUCTION).GetWidth();
+			const int pendingLMargin = leftOffset + attackTextW + 2*BORDER;
+			drawOffensiveSeekerPendingRows(dc, pendingLMargin, getActionPromptLineY(0), 10);
+		}
 		break;
 	}
 	default:
@@ -661,7 +784,20 @@ void FBattleDisplay::onLeftUp(wxMouseEvent & event) {
 	case BS_PlaceMines:
 		checkShipSelection(event);
 		break;
+	case BS_PlaceSeekers:
+		if (checkPreGameSeekerRecallSelection(event)) {
+			break;
+		}
+		checkShipSelection(event);
+		break;
 	case BS_Battle:
+		if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {
+			checkSeekerActivationSelection(event);
+			break;
+		}
+		if (m_parent->getPhase() == PH_ATTACK_FIRE && checkOffensiveSeekerPendingSelection(event)) {
+			break;
+		}
 		if (m_parent->getShip()!=NULL
 				&& m_weaponRegions.size()>0
 				&& m_parent->getShip()->getOwner()==m_parent->getActivePlayerID()){
@@ -830,11 +966,14 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 
 	m_first = true;
 	m_parent->setPhase(PH_NONE);
+	bool enteredMinePlacement = false;
 	if(m_parent->getDone()){
 		if(m_parent->getState()==BS_SetupDefendFleet){
 			if(!m_parent->beginMinePlacement()){
 				m_parent->setState(BS_SetupAttackFleet);
 				m_parent->toggleActivePlayer();
+			} else {
+				enteredMinePlacement = true;
 			}
 		} else {
 			m_parent->setState(BS_Battle);
@@ -842,7 +981,9 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 			m_parent->setPhase(PH_MOVE);
 		}
 	}
-	m_parent->setShip(NULL);
+	if (!enteredMinePlacement) {
+		m_parent->setShip(NULL);
+	}
 	event.Skip();
 }
 
@@ -1110,7 +1251,11 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 	dc.SetTextForeground(white);
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
 	dc.DrawText("declare offensive fire.",leftOffset,getActionPromptLineY(1));
-	os.str("Please select a ship to fire weapons.");
+	if (m_parent->isOffensiveSeekerDeploymentMode()) {
+		os.str(SEEKER_DEPLOY_INSTRUCTION.ToStdString());
+	} else {
+		os.str("Please select a ship to fire weapons.");
+	}
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
 	m_buttonOffensiveFireDone->Enable(m_parent->isMoveComplete());
 	if (m_first){
@@ -1177,6 +1322,11 @@ void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int text
 				dc.SetTextForeground(yellow);
 			}
 			if (w->isMPO() && m_parent->getPhase()==PH_DEFENSE_FIRE){
+				dc.SetTextForeground(white);
+			}
+			if (w->getType() == FWeapon::SM
+				&& (m_parent->getPhase() != PH_ATTACK_FIRE
+					|| m_parent->getActivePlayerID() != m_parent->getMovingPlayerID())){
 				dc.SetTextForeground(white);
 			}
 			if (w->getMaxAmmo() && w->getAmmo()==0){ // all the ammo is used up.
@@ -1303,6 +1453,18 @@ void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event ){
 	m_first=true;
 }
 
+void FBattleDisplay::onSeekerActivationDone( wxCommandEvent& event ){
+	m_buttonSeekerActivationDone->Disconnect(
+		wxEVT_COMMAND_BUTTON_CLICKED,
+		wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),
+		NULL,
+		this);
+	m_buttonSeekerActivationDone->Hide();
+	Layout();
+	m_parent->completeSeekerActivationPhase();
+	m_first = true;
+}
+
 void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
 	wxColour green(wxT("#00FF00"));
@@ -1312,63 +1474,424 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 	dc.SetFont(normal);
 	std::ostringstream os;
 	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
-	os << "The defensive player may now place";
 	dc.SetTextForeground(white);
-	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(0));
-	os.str("  mines before the attacker");
-	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(1));
-	os.str("  sets up their ships.");
-	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
-	int lMargin = 310;	// left margin for ship display
-	os.str("");
-	os << "Select a ship from the list below to dispense mines";
-	int y = BORDER;
-	dc.DrawText(os.str(),lMargin,y);
-	y+= (int)(1.6*textSize*1.3);
+	// Left column: wrap the instruction text onto two lines using the space left of
+	// the source-row column (lMargin).  drawWrappedActionPrompt draws at leftOffset
+	// using getActionPromptLineY() for each wrapped line.
+	int lMargin = 310;	// left margin for source-row column (right of left column)
+	const int instructionMaxWidth = lMargin - leftOffset - BORDER;
+	int instructionCursor = 0;
+	drawWrappedActionPrompt(dc,
+		"The defending player may now place mines before the attacker sets up their ships.",
+		instructionMaxWidth, instructionCursor);
+	// Right column: source-selection rows anchored to the top of the bottom panel,
+	// to the right of the left column (instruction text + Done button).
+	int y = getActionPromptLineY(0);
+	dc.SetTextForeground(white);
+	dc.DrawText("Select a source row to place mines.", lMargin, y);
+	y += (int)(1.6*textSize*1.3);
 	m_shipNameRegions.clear();
-	const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
-	for (VehicleList::const_iterator itr = shipsWithMines.begin(); itr < shipsWithMines.end(); itr++){
-		if (m_parent->getShip()!=NULL && (*itr)->getID()==m_parent->getShip()->getID()){
+	m_shipSelectionSourceIndices.clear();
+	const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();
+	const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();
+	for (unsigned int i = 0; i < deployableSources.size(); ++i){
+		const FTacticalDeploymentSource & source = deployableSources[i];
+		// Mine phase: show only mine (M-type) sources
+		if (source.weaponType != FWeapon::M){
+			continue;
+		}
+		const VehicleList ownerShips = m_parent->getShipList(source.ownerID);
+		FVehicle * ship = findShipByID(ownerShips, source.source.shipID);
+		if (ship == NULL || source.source.weaponIndex < 0
+				|| static_cast<unsigned int>(source.source.weaponIndex) >= ship->getWeaponCount()){
+			continue;
+		}
+		FWeapon * weapon = ship->getWeapon(static_cast<unsigned int>(source.source.weaponIndex));
+		if (weapon == NULL || weapon->getID() != source.source.weaponID){
+			continue;
+		}
+		if (static_cast<int>(i) == selectedSourceIndex){
 			dc.SetFont(bold);
 			dc.SetTextForeground(green);
 		} else {
 			dc.SetFont(normal);
 			dc.SetTextForeground(white);
 		}
-		dc.DrawText((*itr)->getName(),lMargin,y);
-		wxSize tSize= dc.GetTextExtent((*itr)->getName());
-		m_shipNameRegions.push_back(wxRect(lMargin,y,tSize.GetWidth(),tSize.GetHeight()));
 		os.str("");
-		os << "Mines: " << (*itr)->getWeapon((*itr)->hasWeapon(FWeapon::M))->getAmmo();
+		os << ship->getName() << " - " << getDeploymentWeaponLabel(source.weaponType)
+			<< " #" << (source.source.weaponIndex + 1);
+		dc.DrawText(os.str(),lMargin,y);
+		wxSize tSize = dc.GetTextExtent(os.str());
+		m_shipNameRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 260,tSize.GetHeight()));
+		m_shipSelectionSourceIndices.push_back(static_cast<int>(i));
+		os.str("");
+		os << "Ammo: " << weapon->getAmmo();
 		dc.DrawText(os.str(),lMargin+200,y);
-		y+= (int)(1.6*textSize);
-
+		y += (int)(1.6*textSize);
 	}
 
-	// turn on the button
+	// Expand the panel height if the source list extends below the current minimum.
+	const int mineListBottom = y + BORDER;
+	if (mineListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+		m_lowerPanelLayoutState.requestedDisplayHeight = mineListBottom;
+		applyRequestedDisplayHeight();
+	}
+
+	// Show the mine placement done button with its fixed label.
 	m_buttonMinePlacementDone->Enable(true);
 	if (m_first){
 		m_buttonMinePlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
 		m_buttonMinePlacementDone->Show();
 		Layout();
+		m_first = false;
+	}
+}
+
+void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour green(wxT("#00FF00"));
+	int textSize = 10;		// text height
+	wxFont normal(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+	wxFont bold(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD);
+	dc.SetFont(normal);
+	std::ostringstream os;
+	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
+	dc.SetTextForeground(white);
+	// Left column: wrap the instruction text onto two lines using the space left of
+	// the source-row column (lMargin).  drawWrappedActionPrompt draws at leftOffset
+	// using getActionPromptLineY() for each wrapped line.
+	int lMargin = 310;	// left margin for middle (source-row) column
+	const int recallMargin = 620;  // left margin for right (recall) column
+	const int instructionMaxWidth = lMargin - leftOffset - BORDER;
+	int instructionCursor = 0;
+	drawWrappedActionPrompt(dc,
+		"The defending player may now place seeker missiles before the attacker sets up their ships.",
+		instructionMaxWidth, instructionCursor);
+	// Middle column: source-selection rows anchored to the top of the bottom panel,
+	// to the right of the left column (instruction text + Done button).
+	int y = getActionPromptLineY(0);
+	dc.DrawText("Select a source row to place seeker missiles.", lMargin, y);
+	y += (int)(1.6*textSize*1.3);
+	m_shipNameRegions.clear();
+	m_shipSelectionSourceIndices.clear();
+	const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();
+	const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();
+	for (unsigned int i = 0; i < deployableSources.size(); ++i){
+		const FTacticalDeploymentSource & source = deployableSources[i];
+		// Seeker phase: show only seeker missile (SM-type) sources
+		if (source.weaponType != FWeapon::SM){
+			continue;
+		}
+		const VehicleList ownerShips = m_parent->getShipList(source.ownerID);
+		FVehicle * ship = findShipByID(ownerShips, source.source.shipID);
+		if (ship == NULL || source.source.weaponIndex < 0
+				|| static_cast<unsigned int>(source.source.weaponIndex) >= ship->getWeaponCount()){
+			continue;
+		}
+		FWeapon * weapon = ship->getWeapon(static_cast<unsigned int>(source.source.weaponIndex));
+		if (weapon == NULL || weapon->getID() != source.source.weaponID){
+			continue;
+		}
+		if (static_cast<int>(i) == selectedSourceIndex){
+			dc.SetFont(bold);
+			dc.SetTextForeground(green);
+		} else {
+			dc.SetFont(normal);
+			dc.SetTextForeground(white);
+		}
+		os.str("");
+		os << ship->getName() << " - " << getDeploymentWeaponLabel(source.weaponType)
+			<< " #" << (source.source.weaponIndex + 1);
+		dc.DrawText(os.str(),lMargin,y);
+		wxSize tSize = dc.GetTextExtent(os.str());
+		m_shipNameRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 260,tSize.GetHeight()));
+		m_shipSelectionSourceIndices.push_back(static_cast<int>(i));
+		os.str("");
+		os << "Ammo: " << weapon->getAmmo();
+		dc.DrawText(os.str(),lMargin+200,y);
+		y += (int)(1.6*textSize);
+	}
+
+	// Right column: placed-seeker undeploy/recall list anchored to the top of the
+	// bottom panel at recallMargin, to the right of the middle column.
+	{
+		int cy = getActionPromptLineY(0);
+		dc.SetFont(bold);
+		dc.SetTextForeground(white);
+		dc.DrawText("Placed seekers (click to recall):", recallMargin, cy);
+		cy += (int)(1.6*textSize);
+		dc.SetFont(normal);
+		const std::vector<FTacticalPreGameSeekerHexGroup> placedGroups = m_parent->getPlacedSeekerHexGroups();
+		if (placedGroups.empty()) {
+			dc.SetTextForeground(white);
+			dc.DrawText("None placed.", recallMargin, cy);
+			cy += (int)(1.6*textSize);
+		} else {
+			for (unsigned int g = 0; g < placedGroups.size(); ++g) {
+				const FTacticalPreGameSeekerHexGroup & grp = placedGroups[g];
+				// Find ship name for display
+				std::string shipName = "Unknown";
+				FVehicle * srcShip = NULL;
+				// Search attacker and defender ships
+				{
+					VehicleList allShips;
+					VehicleList atk = m_parent->getShipList(m_parent->getAttackerID());
+					VehicleList def = m_parent->getShipList(m_parent->getDefenderID());
+					allShips.insert(allShips.end(), atk.begin(), atk.end());
+					allShips.insert(allShips.end(), def.begin(), def.end());
+					srcShip = findShipByID(allShips, grp.source.shipID);
+					if (srcShip != NULL) {
+						shipName = srcShip->getName();
+					}
+				}
+				os.str("");
+				os << "Recall: " << shipName
+					<< " (" << grp.hex.getX() << "," << grp.hex.getY() << ")"
+					<< " x" << grp.count;
+				dc.SetTextForeground((g % 2 == 0) ? white : green);
+				dc.DrawText(os.str(), recallMargin, cy);
+				wxSize tSize = dc.GetTextExtent(os.str());
+				m_preGameSeekerRecallRegions.push_back(wxRect(recallMargin, cy, tSize.GetWidth() + 16, tSize.GetHeight()));
+				m_preGameSeekerRecallHexes.push_back(wxPoint(grp.hex.getX(), grp.hex.getY()));
+				m_preGameSeekerRecallShipIDs.push_back(grp.source.shipID);
+				m_preGameSeekerRecallWeaponIndices.push_back(grp.source.weaponIndex);
+				m_preGameSeekerRecallWeaponIDs.push_back(grp.source.weaponID);
+				cy += (int)(1.6*textSize);
+			}
+		}
+		// Expand the panel if the placed-seeker list extends below the current minimum.
+		const int placedListBottom = cy + BORDER;
+		if (placedListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+			m_lowerPanelLayoutState.requestedDisplayHeight = placedListBottom;
+			applyRequestedDisplayHeight();
+		}
+	}
+
+	// Expand the panel height if the source list extends below the current minimum.
+	const int seekerListBottom = y + BORDER;
+	if (seekerListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+		m_lowerPanelLayoutState.requestedDisplayHeight = seekerListBottom;
+		applyRequestedDisplayHeight();
+	}
+
+	// Show the seeker placement done button with its fixed label.
+	m_buttonSeekerPlacementDone->Enable(true);
+	if (m_first){
+		m_buttonSeekerPlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerPlacementDone ), NULL, this );
+		m_buttonSeekerPlacementDone->Show();
+		Layout();
+		m_first = false;
+	}
+}
+
+void FBattleDisplay::onSeekerPlacementDone( wxCommandEvent& event ){
+	m_buttonSeekerPlacementDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerPlacementDone ), NULL, this );
+	m_buttonSeekerPlacementDone->Hide();
+	Layout();
+	m_parent->completeSeekerPlacement();
+	m_first = true;
+}
+
+void FBattleDisplay::drawSeekerActivation(wxDC &dc){
+	wxColour white(wxT("#FFFFFF"));
+	wxColour green(wxT("#00FF00"));
+	const int textSize = 10;
+	// Anchor "Activated seekers" list at the top of the bottom panel (right column,
+	// starting at getActionPromptLineY(0)), matching the drawPlaceMines/drawPlaceSeekers
+	// convention (SMRV-02).
+	int y = getActionPromptLineY(0);
+	std::ostringstream os;
+
+	m_shipNameRegions.clear();
+	m_shipSelectionSourceIndices.clear();
+	m_seekerActivationRegions.clear();
+	m_seekerActivationSeekerIDs.clear();
+	reserveActionPromptLines(ACTION_PROMPT_MAX_LINES);
+
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	dc.SetTextForeground(white);
+	// Compute lMargin dynamically: right column must clear the widest instruction
+	// line and the "Seeker Activation Done" button's right edge, mirroring the
+	// SMRV-01 (round5) attack-phase approach in draw().
+	// Each GetTextExtent string must match its corresponding DrawText call below.
+	const int instrW = std::max({
+		dc.GetTextExtent("Seeker activation phase.").GetWidth(),
+		dc.GetTextExtent("Click a seeker stack on the board to activate one seeker.").GetWidth(),
+		dc.GetTextExtent("Click a row below to deactivate an activated seeker.").GetWidth()
+	});
+	const int btnBestW = m_buttonSeekerActivationDone->GetBestSize().GetWidth();
+	const wxPoint btnPos = m_buttonSeekerActivationDone->GetPosition();
+	// Use the button's actual right edge when it has been laid out (pos.x >= leftOffset);
+	// otherwise fall back to leftOffset + best width.
+	const int btnAbsRight = (btnPos.x >= leftOffset)
+		? btnPos.x + m_buttonSeekerActivationDone->GetSize().GetWidth()
+		: leftOffset + btnBestW;
+	const int doneButtonRightExtent = btnAbsRight - leftOffset;
+	const int lMargin = leftOffset + std::max(instrW, doneButtonRightExtent) + 2*BORDER;
+
+	dc.DrawText("Seeker activation phase.",leftOffset,getActionPromptLineY(0));
+	dc.DrawText("Click a seeker stack on the board to activate one seeker.",leftOffset,getActionPromptLineY(1));
+	dc.DrawText("Click a row below to deactivate an activated seeker.",leftOffset,getActionPromptLineY(2));
+
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD));
+	dc.SetTextForeground(white);
+	dc.DrawText("Activated seekers:",lMargin,y);
+	y += (int)(1.6*textSize);
+
+	// Show only seekers activated during this phase (SMF-05: use this-phase accessor
+	// from SMF-04 so prior-phase activations are not listed here).
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	const std::vector<FTacticalSeekerMissileState> activated = m_parent->getActiveSeekersByMovingPlayerThisPhase();
+	if (activated.empty()) {
+		dc.SetTextForeground(white);
+		dc.DrawText("No seekers activated yet.",lMargin,y);
+	} else {
+		for (unsigned int i = 0; i < activated.size(); ++i) {
+			const FTacticalSeekerMissileState & seeker = activated[i];
+			os.str("");
+			os << "Deactivate seeker #" << seeker.seekerID
+				<< " (" << seeker.hex.getX() << "," << seeker.hex.getY() << ")";
+			dc.SetTextForeground((i % 2 == 0) ? white : green);
+			dc.DrawText(os.str(),lMargin,y);
+			wxSize tSize = dc.GetTextExtent(os.str());
+			m_seekerActivationRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 16,tSize.GetHeight()));
+			m_seekerActivationSeekerIDs.push_back(seeker.seekerID);
+			y += (int)(1.6*textSize);
+		}
+	}
+
+	// Expand the panel height if the activation list extends below the current minimum.
+	const int activationListBottom = y + BORDER;
+	if (activationListBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+		m_lowerPanelLayoutState.requestedDisplayHeight = activationListBottom;
+		applyRequestedDisplayHeight();
+	}
+
+	m_buttonSeekerActivationDone->Enable(true);
+	if (m_first){
+		m_buttonSeekerActivationDone->Connect(
+			wxEVT_COMMAND_BUTTON_CLICKED,
+			wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),
+			NULL,
+			this);
+		m_buttonSeekerActivationDone->Show();
+		Layout();
 		m_first=false;
+	}
+}
+
+void FBattleDisplay::drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize){
+	m_pendingSeekerRecallRegions.clear();
+	m_pendingSeekerRecallHexes.clear();
+
+	if (!m_parent->isOffensiveSeekerDeploymentMode()){
+		return;
+	}
+
+	const std::vector<FTacticalPendingSeekerHexGroup> pending = m_parent->getSelectedOffensivePendingSeekerHexGroups();
+	wxColour white(wxT("#FFFFFF"));
+	wxColour green(wxT("#00FF00"));
+	std::ostringstream os;
+	int y = startY;
+
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD));
+	dc.SetTextForeground(white);
+	dc.DrawText("Pending seeker deployments:",lMargin,y);
+	y += (int)(1.6*textSize);
+
+	dc.SetFont(wxFont(textSize,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+	if (pending.empty()){
+		dc.DrawText("None",lMargin,y);
+		return;
+	}
+
+	for (unsigned int i = 0; i < pending.size(); ++i){
+		os.str("");
+		os << "Recall 1 at (" << pending[i].hex.getX() << ", " << pending[i].hex.getY()
+			<< ") [pending: " << pending[i].count << "]";
+		dc.SetTextForeground((i % 2 == 0) ? white : green);
+		dc.DrawText(os.str(),lMargin,y);
+		wxSize tSize = dc.GetTextExtent(os.str());
+		m_pendingSeekerRecallRegions.push_back(wxRect(lMargin,y,tSize.GetWidth() + 16,tSize.GetHeight()));
+		m_pendingSeekerRecallHexes.push_back(wxPoint(pending[i].hex.getX(), pending[i].hex.getY()));
+		y += (int)(1.6*textSize);
+	}
+	const int pendingRegionBottom = y + BORDER;
+	if (pendingRegionBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+		m_lowerPanelLayoutState.requestedDisplayHeight = pendingRegionBottom;
+		applyRequestedDisplayHeight();
 	}
 }
 
 void FBattleDisplay::checkShipSelection(wxMouseEvent &event){
 	int x = event.GetX();
 	int y = event.GetY();
-	const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
+	// Legacy source-contract tokens retained for tactical regression fixtures:
+	// const VehicleList & shipsWithMines = m_parent->getShipsWithMines();
+	// m_parent->setShip(shipsWithMines[i]);
 	for (unsigned int i = 0; i< m_shipNameRegions.size(); i++){
 		if (m_shipNameRegions[i].Contains(x,y)){
-			if (i < shipsWithMines.size()) {
-				m_parent->setShip(shipsWithMines[i]);
-				m_parent->setWeapon(shipsWithMines[i]->getWeapon(shipsWithMines[i]->hasWeapon(FWeapon::M)));
+			if (i < m_shipSelectionSourceIndices.size() && m_shipSelectionSourceIndices[i] >= 0) {
+				m_parent->selectPlacementSourceByIndex(static_cast<unsigned int>(m_shipSelectionSourceIndices[i]));
 			}
 			break;
 		}
 	}
 	m_parent->reDraw();
+}
+
+void FBattleDisplay::checkSeekerActivationSelection(wxMouseEvent &event){
+	const int x = event.GetX();
+	const int y = event.GetY();
+	for (unsigned int i = 0; i < m_seekerActivationRegions.size(); ++i) {
+		if (!m_seekerActivationRegions[i].Contains(x,y)) {
+			continue;
+		}
+		if (i < m_seekerActivationSeekerIDs.size()) {
+			m_parent->deactivateActiveSeekerByID(m_seekerActivationSeekerIDs[i]);
+		}
+		break;
+	}
+	m_parent->reDraw();
+}
+
+bool FBattleDisplay::checkOffensiveSeekerPendingSelection(wxMouseEvent &event){
+	const int x = event.GetX();
+	const int y = event.GetY();
+	for (unsigned int i = 0; i < m_pendingSeekerRecallRegions.size(); ++i) {
+		if (!m_pendingSeekerRecallRegions[i].Contains(x,y)) {
+			continue;
+		}
+		if (i < m_pendingSeekerRecallHexes.size()) {
+			const wxPoint & pendingHex = m_pendingSeekerRecallHexes[i];
+			return m_parent->recallSelectedOffensivePendingSeekerAtHex(FPoint(pendingHex.x, pendingHex.y));
+		}
+		return false;
+	}
+	return false;
+}
+
+bool FBattleDisplay::checkPreGameSeekerRecallSelection(wxMouseEvent &event){
+	const int x = event.GetX();
+	const int y = event.GetY();
+	for (unsigned int i = 0; i < m_preGameSeekerRecallRegions.size(); ++i) {
+		if (!m_preGameSeekerRecallRegions[i].Contains(x,y)) {
+			continue;
+		}
+		if (i < m_preGameSeekerRecallHexes.size()
+			&& i < m_preGameSeekerRecallShipIDs.size()
+			&& i < m_preGameSeekerRecallWeaponIndices.size()
+			&& i < m_preGameSeekerRecallWeaponIDs.size()) {
+			FTacticalOrdnanceSource source;
+			source.shipID = m_preGameSeekerRecallShipIDs[i];
+			source.weaponIndex = m_preGameSeekerRecallWeaponIndices[i];
+			source.weaponID = m_preGameSeekerRecallWeaponIDs[i];
+			const wxPoint & hexPt = m_preGameSeekerRecallHexes[i];
+			return m_parent->recallPlacedSeekerAtHexSource(FPoint(hexPt.x, hexPt.y), source);
+		}
+		return false;
+	}
+	return false;
 }
 
 

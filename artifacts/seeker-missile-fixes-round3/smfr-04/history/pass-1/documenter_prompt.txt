@@ -1,0 +1,62 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMFR-04: Persist the seeker speed (move-count) label from activation until impact or movement exhaustion. drawSeekerMoveCountOverlay() is now called unconditionally inside the BS_Battle block in FBattleBoard::draw() (previously it was only called during PH_MOVE/PH_SEEKER_ACTIVATION). The overlay now iterates all active seekers and uses movementAllowance as the fallback count when no movementPath is recorded this phase.
+
+Acceptance criteria validated:
+- AC1: The speed/move-count label renders for every active seeker whenever active seekers are shown on the board, not only after movement this phase. Verified by source-contract (overlay call position in draw()) and behavioral GUI test (draw completes without crash in PH_ATTACK_FIRE, PH_DEFENSE_FIRE, PH_SEEKER_ACTIVATION, and PH_MOVE).
+- AC2: The label remains visible from activation through subsequent turns until the seeker detonates or is removed at movement exhaustion. Verified by behavioral model test (movementAllowance and movementPath field values correct before/after resolution) and source-contract (movementAllowance fallback present; no movementPath.size() < 2 filter on the seeker loop).
+- AC3: The label still renders correctly for multiple co-located seekers (stacked display preserved). Verified by behavioral model test (two seekers at same hex maintain independent movementAllowance values; both survive single resolution pass).
+- AC4: No change to seeker movement, targeting, or damage behavior. Verified by behavioral GUI test (getSeekerMissiles() count unchanged after all board draws; overlay is read-only display logic).
+
+Implementation branch or worktree context:
+- Branch: sf2-SMFR-04-tester-20260619
+- Worktree: /home/tstephen/repos/worktrees/sf2-SMFR-04-tester-20260619
+- Implementer commits: 5b48aef (SMFR-04: Show seeker speed label for all active seekers from activation to impact)
+- Comparison base: sf2 branch before commit 5b48aef
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleBoard.h (Implementer: updated Doxygen for drawSeekerMoveCountOverlay to describe SMFR-04 behavior)
+- src/tactical/FBattleBoard.cpp (Implementer: moved overlay call outside phase guard; removed movementPath.size() < 2 filter from overlay; updated Doxygen)
+- tests/gui/TacticalGuiLiveTest.cpp (Tester: added testSeekerMoveCountOverlayRendersInAllBattlePhases)
+- tests/gui/TacticalGuiLiveTest.h (Tester: declared testSeekerMoveCountOverlayRendersInAllBattlePhases)
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp (Tester: added testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle)
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.h (Tester: declared testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle)
+- tests/tactical/FTacticalSeekerMovementTest.cpp (Tester: added testSeekerMoveCountLabelFieldsReflectPathAndAllowance)
+- tests/tactical/FTacticalSeekerMovementTest.h (Tester: declared testSeekerMoveCountLabelFieldsReflectPathAndAllowance)
+
+Test commit:
+- f60ecea
+
+Commands executed:
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests  (211 pass, 0 fail)
+- make -C tests gui-tests
+- DISPLAY=:0 ./tests/gui/GuiTests  (37 pass including new test, 10 pre-existing failures unchanged)
+
+Final test outcomes:
+- Tactical suite: 211 tests pass, 0 failures. Includes 2 new tests for SMFR-04 (1 behavioral model-level, 1 source-contract).
+- GUI suite: 37 of 47 pass. 1 new SMFR-04 behavioral test passes. 10 pre-existing failures are unrelated to SMFR-04 and unchanged from before this task.
+- All SMFR-04 acceptance criteria verified.
+
+Documentation context:
+- Primary doc impact: AGENTS.md tactical test key source contracts section may need a new entry for the SMFR-04 behavioral/source-contract tests (testDrawSeekerMoveCountOverlayCalledUnconditionallyInBSBattle, testSeekerMoveCountLabelFieldsReflectPathAndAllowance).
+- The drawSeekerMoveCountOverlay Doxygen in FBattleBoard.h already describes the SMFR-04 behavior; Documenter should confirm no further header or API documentation changes are needed.
+- CHANGELOG or release notes: seeker speed label now persists continuously from activation in all battle phases.
+- Non-volatile external rules doc (doc/rules/tactical_operations_manual.md) must NOT be modified under any circumstances.
+
+Plan and diff context:
+- Plan path: plans/seeker-missile-fixes-round3-plan.md
+- Comparison base: sf2 branch before commit 5b48aef (or equivalently, git diff 5b48aef~1..HEAD on the implementation files)
+- Infer missing plan section or documentation conventions from repository context when safe.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-04
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

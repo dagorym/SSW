@@ -11,12 +11,24 @@
 
 namespace Frontier {
 
+/**
+ * @brief Categorize the shared tactical damage-summary contexts.
+ *
+ * The immediate-report flows reuse the same reporting surface for normal fire,
+ * mine detonations, and seeker detonations, so the caller can select distinct
+ * user-facing labels such as `TRT_MineDamage` and `TRT_SeekerDamage`.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 27, 2026
+ * @date Last Modified: May 27, 2026
+ */
 enum TacticalReportType {
 	TRT_None = 0,
 	TRT_DefensiveFire,
 	TRT_OffensiveFire,
 	TRT_ElectricalFire,
-	TRT_MineDamage
+	TRT_MineDamage,
+	TRT_SeekerDamage
 };
 
 enum TacticalReportEventType {
@@ -169,6 +181,7 @@ struct FTacticalCombatReportContext {
 		: reportType(TRT_None), phase(0), actingPlayerID(0), immediate(false), title("") {}
 };
 
+/// Return the user-facing summary label for the selected tactical report type.
 inline std::string tacticalCombatReportTypeLabel(TacticalReportType reportType) {
 	switch (reportType) {
 	case TRT_DefensiveFire:
@@ -179,6 +192,8 @@ inline std::string tacticalCombatReportTypeLabel(TacticalReportType reportType) 
 		return "Electrical Fire Damage";
 	case TRT_MineDamage:
 		return "Mine Damage";
+	case TRT_SeekerDamage:
+		return "Seeker Damage";
 	default:
 		return "Tactical Damage Summary";
 	}

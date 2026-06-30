@@ -20,9 +20,9 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: May 23, 2026
+ * @date Last Modified: Jun 30, 2026
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -32,11 +32,26 @@ CPPUNIT_TEST( testBattleScreenMenuQuitClosesViaSharedClosePath );
 CPPUNIT_TEST( testBattleScreenTitleBarCloseClosesViaSharedClosePath );
 CPPUNIT_TEST( testTacticalActionButtonsRemainSizerPositionedWhenShown );
 CPPUNIT_TEST( testTacticalActionButtonsStayBelowPromptReservationAcrossPhases );
+CPPUNIT_TEST( testSeekerActivationPanelSourceContracts );
+CPPUNIT_TEST( testSetupPlacementSourceRowsAndOrdnanceColorContracts );
 CPPUNIT_TEST( testBattleScreenDefaultSizeAndLayoutPolicyRuntime );
 CPPUNIT_TEST( testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges );
 CPPUNIT_TEST( testBattleDisplayNarrowWidthStacksShipStatsBelowButtons );
 CPPUNIT_TEST( testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior );
 CPPUNIT_TEST( testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo );
+CPPUNIT_TEST( testMinePlacementDoneButtonLabelReflectsOrdnanceTypes );
+CPPUNIT_TEST( testOnSetSpeedMinePlacementPreservesShipForFirstBoardClick );
+CPPUNIT_TEST( testOffensiveSeekerPendingListRegionVisibilityAndRecall );
+CPPUNIT_TEST( testOrdnancePlacementAndActivationPanelHeightAutoExpands );
+CPPUNIT_TEST( testSeekerMoveCountOverlayRendersInAllBattlePhases );
+CPPUNIT_TEST( testSeekerPathRendersInPHMoveWithMovementPath );
+CPPUNIT_TEST( testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources );
+CPPUNIT_TEST( testPreGameSeekerRecallListAppearsAndClickRemovesSeeker );
+CPPUNIT_TEST( testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions );
+CPPUNIT_TEST( testLowerPanelHeightShrinksBackAfterPhaseChange );
+CPPUNIT_TEST( testSeekerActivationAnchorIsAtActionPromptLineY );
+CPPUNIT_TEST( testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation );
+CPPUNIT_TEST( testSeekerActivationRowTextShowsPositionAndMarginIsDynamic );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -115,6 +130,22 @@ void testTacticalActionButtonsRemainSizerPositionedWhenShown();
  */
 void testTacticalActionButtonsStayBelowPromptReservationAcrossPhases();
 /**
+ * @brief Verifies seeker activation panel and board source contracts for activation UI and rendering.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 25, 2026
+ * @date Last Modified: May 25, 2026
+ */
+void testSeekerActivationPanelSourceContracts();
+/**
+ * @brief Verifies setup placement source-row and source-color source-contract tokens.
+ *
+ * @author gpt-5.4 (high)
+ * @date Created: May 24, 2026
+ * @date Last Modified: May 24, 2026
+ */
+void testSetupPlacementSourceRowsAndOrdnanceColorContracts();
+/**
  * @brief Verifies FBattleScreen default sizing and parent layout policy behavior at runtime.
  *
  * @author gpt-5.4 (high)
@@ -154,6 +185,300 @@ void testTacticalDamageSummaryDialogDisplaysContextAndCloseBehavior();
  * @date Last Modified: Apr 04, 2026
  */
 void testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo();
+/**
+ * @brief Verifies two-phase deployment produces correct Done buttons per phase.
+ *
+ * Runtime checks confirm that a Minelayer (both M and SM weapons) in BS_PlaceMines
+ * shows only the "Mine Placement Done" button, and after transitioning to BS_PlaceSeekers
+ * via completeMinePlacement() shows only the "Seeker Placement Done" button.
+ *
+ * @author claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium)
+ * @date Created: May 30, 2026
+ * @date Last Modified: Jun 02, 2026
+ */
+void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
+	/**
+	 * @brief Behavioral regression for PGS-01: onSetSpeed mine-entry path preserves
+	 *        m_curShip and m_curWeapon so the first board click can record a mine.
+	 *
+	 * Drives the real onSetSpeed/mine-entry path by setting up a FBattleScreen in
+	 * BS_SetupDefendFleet with getDone()==true, then fires the "Set Speed" button event
+	 * and asserts that:
+	 * - The screen transitions to BS_PlaceMines.
+	 * - getShip() is non-NULL (fixed: enteredMinePlacement flag prevents setShip(NULL)).
+	 * - getWeapon() is non-NULL and of type M.
+	 * - handleHexClick() in BS_PlaceMines records a mine (ammo decrement, hex in
+	 *   getMinedHexes(), record in getPlacedOrdnance()).
+	 *
+	 * This test MUST fail against the unfixed code and pass after the fix.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	void testOnSetSpeedMinePlacementPreservesShipForFirstBoardClick();
+	/**
+	 * @brief Verifies the pending-seeker recall list position and click behavior during
+	 * PH_ATTACK_FIRE seeker deployment.
+	 *
+	 * SMRIV-03: drawOffensiveSeekerPendingRows() is called in draw() inside a PH_ATTACK_FIRE
+	 * guard at lMargin=310 / startY=getActionPromptLineY(0), anchoring the list to the top of
+	 * the lower panel to the right of the Done button (matching the pre-game placement pattern).
+	 * This test confirms:
+	 * - m_pendingSeekerRecallRegions is empty before any deployment (AC1, AC4).
+	 * - After injecting a movement path via TestableBattleScreen::findShipTurnData() and
+	 *   deploying one pending seeker, recall regions are populated with x >= 310 and
+	 *   y >= getActionPromptLineY(0) — anchored at the top of the lower panel, not below
+	 *   the action-button row (AC2).
+	 * - Clicking a recall region via checkOffensiveSeekerPendingSelection() removes the
+	 *   pending seeker and restores ammo (AC3; existing recall behavior preserved).
+	 *
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 02, 2026
+	 * @date Last Modified: Jun 29, 2026
+	 */
+	void testOffensiveSeekerPendingListRegionVisibilityAndRecall();
+
+	/**
+	 * @brief Behavioral verification that drawPlaceMines(), drawPlaceSeekers(), and
+	 * drawSeekerActivation() each expand the lower-panel height when rendered rows
+	 * extend below the initial 120-px minimum.
+	 *
+	 * SMFR-01: Drives each placement/activation draw phase via offscreen wxMemoryDC
+	 * and asserts that requestedDisplayHeight (via peer accessor) and GetMinSize().GetHeight()
+	 * do not decrease after drawing a Minelayer's source list, confirming end-to-end wiring
+	 * of the auto-expansion path. The seeker phase additionally asserts that
+	 * requestedDisplayHeight is at least as large as actionButtonRowBottom(), proving genuine
+	 * expansion occurred rather than merely a non-decrease from the pre-draw baseline.
+	 * This is the authoritative behavioral test for the SMFR-01 height-expansion acceptance
+	 * criterion; the three structural source-contract tests in FTacticalBattleDisplayFireFlowTest
+	 * supplement this test by locking code shape but do not substitute for it.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testOrdnancePlacementAndActivationPanelHeightAutoExpands();
+	/**
+	 * @brief Behavioral: drawSeekerMoveCountOverlay fires for all BS_Battle phases,
+	 * confirmed by a pixel-level observable with an active seeker in PH_ATTACK_FIRE.
+	 *
+	 * SMFR-04 pass-2 strengthening: Uses TestableBattleScreen to inject one active
+	 * seeker (hex 5,5, movementAllowance=3) before rendering.  Drives
+	 * FBattleBoard::draw() in PH_ATTACK_FIRE via offscreen wxMemoryDC and asserts
+	 * that at least one red (#FF0000-like) pixel appears in the upper-right label
+	 * region of that hex — the only pixel-level observable that proves the overlay
+	 * was reached and drew output.  A no-crash assertion alone would pass even if
+	 * the overlay were re-guarded inside PH_MOVE/PH_SEEKER_ACTIVATION because the
+	 * overlay exits early when the seeker list is empty.
+	 *
+	 * Also verifies no-crash for PH_MOVE, PH_DEFENSE_FIRE, and PH_SEEKER_ACTIVATION,
+	 * and AC4 (seeker count unchanged after all draws).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testSeekerMoveCountOverlayRendersInAllBattlePhases();
+
+	/**
+	 * @brief Behavioral render test: drawSeekerPaths draws a visible path line in the
+	 * board during PH_MOVE and PH_SEEKER_ACTIVATION when a seeker has movementPath >= 2.
+	 *
+	 * SMFR-05 AC1 render-side coverage: Uses TestableBattleScreen to inject one
+	 * active seeker with a pre-populated movementPath (5,5)->(5,7) AFTER calling
+	 * setPhase(PH_MOVE) so the path is not cleared by resolveActiveSeekersForMovingPlayer.
+	 * Drives FBattleBoard::draw() via offscreen wxMemoryDC in PH_MOVE, PH_SEEKER_ACTIVATION,
+	 * and PH_ATTACK_FIRE. Asserts that:
+	 * - PH_MOVE and PH_SEEKER_ACTIVATION produce pixel differences in the path band
+	 *   x=[344..356], y=[290..385] vs the no-seeker baseline (drawSeekerPaths ran).
+	 * - PH_ATTACK_FIRE produces zero diffs in that band (drawSeekerPaths not called).
+	 * A platform pre-check confirms dc.DrawLine works on wxMemoryDC at those coords.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 19, 2026
+	 * @date Last Modified: Jun 19, 2026
+	 */
+	void testSeekerPathRendersInPHMoveWithMovementPath();
+
+	/**
+	 * @brief Behavioral verification for PGS-02: source rows are populated after draw, all row
+	 * regions start below the action-button row, clicking a row updates the selected source and
+	 * m_curShip/m_curWeapon, and the next board click places ordnance from the newly selected ship.
+	 *
+	 * AC1: Both Minelayers produce a row in m_shipNameRegions during BS_PlaceMines.
+	 * AC2: Clicking row 1 updates getSelectedPlacementSourceIndex() to 1 and changes getShip().
+	 * AC3: Every row region starts at or below getActionButtonRowBottom() (not clipped).
+	 * AC4: handleHexClick() after source switch records ordnance with the newly selected shipID.
+	 * AC5: Auto-selection on entry (getShip() non-NULL after beginMinePlacement()).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 22, 2026
+	 */
+	void testPlacementSourceRowsArePopulatedAndClickSelectionUpdatesSources();
+
+	/**
+	 * @brief Behavioral verification for PGS-04: the pre-game seeker recall list appears
+	 * during BS_PlaceSeekers (right column at recallMargin=620), is populated with one row per
+	 * placed inactive seeker group, and clicking a recall row removes exactly one seeker and
+	 * restores ammo. The recall list must NOT appear during BS_PlaceMines.
+	 * SMRIV-02: AC4 updated to verify recall regions are in the right column (x >= 620),
+	 * not below the button row.
+	 *
+	 * AC1: During BS_PlaceSeekers, drawPlaceSeekers() populates m_preGameSeekerRecallRegions
+	 *      after a seeker is placed (one region per (hex, source) group).
+	 * AC2: Simulating a click on a recall region calls recallPlacedSeekerAtHexSource(),
+	 *      decrements getSeekerMissiles().size() by 1, and restores one ammo round to the
+	 *      seeker launcher.
+	 * AC3: During BS_PlaceMines, draw() must not populate m_preGameSeekerRecallRegions
+	 *      (recall list absent from mine phase).
+	 * AC4: Each recall region left edge is at or right of recallMargin=620 (right column).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 22, 2026
+	 * @date Last Modified: Jun 23, 2026
+	 */
+	void testPreGameSeekerRecallListAppearsAndClickRemovesSeeker();
+
+	/**
+	 * @brief Behavioral verification for SMRIV-02: the BS_PlaceSeekers three-column layout
+	 * anchors source rows in the middle column (lMargin=310, top of panel) and recall rows
+	 * in the right column (recallMargin=620, top of panel). Click regions align with drawn
+	 * positions for both columns. Selecting a source row and recalling a seeker still work.
+	 *
+	 * AC1: Source-selection rows have left edge >= lMargin=310 (middle column).
+	 * AC2: Source-selection rows have top >= getActionPromptLineY(0) (top-of-panel anchor).
+	 * AC3: Recall rows have left edge >= recallMargin=620 (right column).
+	 * AC4: Recall rows have top >= getActionPromptLineY(0); recallMargin > lMargin
+	 *      ensures horizontal column separation.
+	 * AC5: Selecting a source row via checkShipSelection updates getSelectedPlacementSourceIndex()
+	 *      and getWeapon() returns an SM weapon (behavior unchanged by layout change).
+	 * AC6: Clicking a recall row via checkPreGameSeekerRecallSelection undeploys one seeker
+	 *      and restores ammo (behavior unchanged by layout change).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 23, 2026
+	 * @date Last Modified: Jun 23, 2026
+	 */
+	void testPlaceSeekersThreeColumnLayoutColumnPositionsAndClickRegions();
+
+	/**
+	 * @brief Behavioral verification for SMRIV-04: lower-panel requestedDisplayHeight shrinks
+	 * back after a phase transition, rather than ratcheting up permanently.
+	 *
+	 * SMRIV-04: ensureLowerPanelLayoutState() stores the last-seen battle state and phase.
+	 * When either changes (phaseChanged == true) it skips the max-preserve of
+	 * requestedDisplayHeight so the panel can shrink back to fit the new phase's content.
+	 * When the phase is unchanged the max-preserve still applies so overflowing rows remain
+	 * visible and clickable within the phase.
+	 *
+	 * AC1: After a phase that expanded the panel (BS_PlaceMines with many source rows)
+	 *      transitions to BS_Battle/PH_MOVE, requestedDisplayHeight decreases rather than
+	 *      remaining at the previously expanded value.
+	 * AC3: The 120-px floor is preserved; the panel never shrinks below it.
+	 * AC4: This test must fail against the pre-SMRIV-04 ratchet-only code and pass after
+	 *      the fix.
+	 *
+	 * The test drives the behavior offscreen via wxMemoryDC draws in an FBattleScreen rig
+	 * with 6 Minelayers so the BS_PlaceMines mine-source list is tall enough to expand the
+	 * panel beyond the 120-px floor.  Two draws are performed in BS_PlaceMines because
+	 * applyRequestedDisplayHeight() calls GetParent()->SendSizeEvent() synchronously
+	 * (HandleWindowEvent path), which triggers reflowLowerPanelLayout().  On the first draw
+	 * phaseChanged is true (lastBattleState was -1) and the height is reset to the floor;
+	 * the first draw therefore primes lastBattleState.  The second draw runs with
+	 * phaseChanged == false so the same-phase max-preserve keeps the expanded height.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 29, 2026
+	 * @date Last Modified: Jun 29, 2026
+	 */
+	void testLowerPanelHeightShrinksBackAfterPhaseChange();
+
+	/**
+	 * @brief Behavioral anchor discrimination test for SMRV-02: drawSeekerActivation()
+	 * anchors the "Activated seekers:" list at getActionPromptLineY(0), not getActionButtonRowBottom().
+	 *
+	 * SMRV-02: Seeds one activated seeker (active=true, activationPhaseIndex=0, ownerID=1) via
+	 * TestableBattleScreen, renders the lower panel via offscreen wxMemoryDC in
+	 * PH_SEEKER_ACTIVATION, and asserts that:
+	 * - m_seekerActivationRegions is populated with at least one region (the seeder was injected).
+	 * - The first region's top y is >= getActionPromptLineY(0) (new top-of-panel anchor, AC-1).
+	 * - The first region's top y is < getActionButtonRowBottom() — discriminates against the old
+	 *   getActionButtonRowBottom() anchor: with old code the region starts at or after the button
+	 *   row, failing this assertion; with new code it starts at the top of the panel, passing (AC-1).
+	 * - Clicking the region via checkSeekerActivationSelection() reduces
+	 *   getActiveSeekersByMovingPlayerThisPhase().size() by 1, confirming click-region/
+	 *   draw-position alignment (AC-2).
+	 *
+	 * This test MUST fail against the pre-change (getActionButtonRowBottom) code and PASS against
+	 * the shipped (getActionPromptLineY(0)) code.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 29, 2026
+	 * @date Last Modified: Jun 29, 2026
+	 */
+	void testSeekerActivationAnchorIsAtActionPromptLineY();
+
+	/**
+	 * @brief Behavioral pixel-level test: during PH_SEEKER_ACTIVATION the speed-value
+	 * overlay suppresses opponent labels and shows moving-player labels; in other
+	 * BS_Battle phases both players' labels render normally.
+	 *
+	 * SMRV-03: drawSeekerMoveCountOverlay() now guards on the activation phase and
+	 * skips seekers not owned by the moving player, matching the sprite suppression in
+	 * drawSeekerMissiles().
+	 *
+	 * Two seekers are seeded at distinct hexes:
+	 * - Moving-player seeker (ownerID=1, AttackerID) at hex (5,5) — label MUST appear.
+	 * - Opponent seeker (ownerID=0, DefenderID) at hex (3,3) — label MUST be absent.
+	 *
+	 * Asserts:
+	 * AC1-absent: no red pixel at hex(3,3) label region during PH_SEEKER_ACTIVATION
+	 *   (opponent label suppressed). This assertion FAILS against unguarded pre-change
+	 *   code and PASSES against the shipped guarded code.
+	 * AC1-present: a red pixel IS found at hex(5,5) label region during PH_SEEKER_ACTIVATION
+	 *   (moving player's own seeker still renders).
+	 * AC2: both hexes produce red pixels in PH_ATTACK_FIRE (labels unchanged outside
+	 *   activation phase).
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 29, 2026
+	 * @date Last Modified: Jun 29, 2026
+	 */
+	void testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation();
+
+	/**
+	 * @brief Behavioral discrimination tests for SMRVI-02: drawSeekerActivation() shows
+	 * seeker board position as (X,Y) instead of heading/allowance, and uses a dynamic
+	 * lMargin computed from instruction text width and Done-button right edge.
+	 *
+	 * Three acceptance criteria are covered in one render-and-click rig:
+	 *
+	 * AC-a (text content): Seeds one activated seeker at hex (3,4), renders
+	 * PH_SEEKER_ACTIVATION to an offscreen wxMemoryDC, and asserts the activation
+	 * row region width matches the text extent of "Deactivate seeker #42 (3,4)"
+	 * (new code) and does NOT match the extent of the old heading/allowance text
+	 * "Deactivate seeker #42 (heading 0, allowance 2)".  The widths differ at runtime
+	 * so this assertion fails against the pre-change code and passes after.
+	 *
+	 * AC-b (dynamic margin): Asserts the activation row region's left x-coordinate
+	 * is strictly greater than 310 (the old fixed lMargin), confirming the margin is
+	 * computed dynamically from instruction text and button extents.
+	 *
+	 * AC-c (click deactivates): Simulates a left-up click inside the activation row
+	 * region via checkSeekerActivationSelection() and asserts
+	 * getActiveSeekersByMovingPlayerThisPhase().size() decreases, confirming the
+	 * click region aligns with the drawn position and triggers deactivation.
+	 *
+	 * All three assertions must fail against the pre-SMRVI-02 code and pass after
+	 * the change.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testSeekerActivationRowTextShowsPositionAndMarginIsDynamic();
 };
 
 }

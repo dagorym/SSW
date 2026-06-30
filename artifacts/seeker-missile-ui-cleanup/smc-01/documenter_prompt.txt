@@ -1,0 +1,157 @@
+Documenter Handoff for SMC-01: Seeker Missile API Documentation
+
+## Summary
+
+Three new seeker missile APIs have been implemented and tested in FTacticalGame. This prompt provides the information needed to document these APIs.
+
+## Implementation Details
+
+### API 1: deactivateActiveSeekerByID()
+
+**Location:**
+- Header: `include/tactical/FTacticalGame.h` (around line 280)
+- Implementation: `src/tactical/FTacticalGame.cpp`
+
+**Signature:**
+```cpp
+void deactivateActiveSeekerByID(int seekerId);
+```
+
+**Purpose:**
+Deactivates an active seeker missile by its ID. Removes the seeker from the active seekers tracking container and returns it to inactive state. This API allows the tactical UI to deactivate seekers that have reached their destination, been destroyed, or need to be removed from play for game-rule reasons.
+
+**Parameters:**
+- `seekerId` (int): The unique identifier of the active seeker to deactivate.
+
+**Behavior:**
+- If the seeker ID exists in active seekers, it is removed from active tracking
+- If the seeker ID does not exist, the call is a graceful no-op with no side effects
+- No exceptions are thrown for non-existent IDs
+
+**Integration Points:**
+- Works with movement phase seeker detection in `checkForActiveSeekersOnPath()`
+- Compatible with seeker damage application via `applyMovementSeekerDamage()`
+- Used to manage active seeker state between tactical phases
+
+### API 2: activateInactiveSeekerAtHex()
+
+**Location:**
+- Header: `include/tactical/FTacticalGame.h` (around line 282)
+- Implementation: `src/tactical/FTacticalGame.cpp`
+
+**Signature:**
+```cpp
+void activateInactiveSeekerAtHex(int seekerId, const FPoint& hexPos);
+```
+
+**Purpose:**
+Activates an inactive seeker missile and positions it at a specific hex on the tactical board. This API allows the tactical UI to bring seekers into active play by specifying their starting position. Activated seekers will be detected during subsequent movement collision checks.
+
+**Parameters:**
+- `seekerId` (int): The unique identifier of the inactive seeker to activate.
+- `hexPos` (const FPoint&): The hex position where the seeker should be placed. Uses FPoint coordinates consistent with the FTacticalGame hex map.
+
+**Behavior:**
+- If the seeker ID exists in inactive seekers, it is moved to active tracking at the specified position
+- The seeker's hex position is updated to the provided coordinates
+- If the seeker ID does not exist or is already active, the call is a graceful no-op with no side effects
+- No exceptions are thrown for edge cases
+
+**Integration Points:**
+- Positions seekers in the tactical hex map coordinate system
+- Integrated with hex occupancy and collision detection
+- Works with movement phase seeker detection via `checkForActiveSeekersOnPath()`
+- Compatible with mine and occupancy tracking
+
+### API 3: getActiveSeekersByMovingPlayer()
+
+**Location:**
+- Header: `include/tactical/FTacticalGame.h` (around line 284)
+- Implementation: `src/tactical/FTacticalGame.cpp`
+
+**Signature:**
+```cpp
+std::vector<int> getActiveSeekersByMovingPlayer(int playerId) const;
+```
+
+**Purpose:**
+Returns a vector of all active seeker IDs currently owned by a specific player. This API allows the tactical UI to query which seekers a particular player has in active play, enabling UI rendering, seeker control panels, and game-rule enforcement.
+
+**Parameters:**
+- `playerId` (int): The unique identifier of the player whose active seekers should be retrieved.
+
+**Return Value:**
+- `std::vector<int>`: A vector of seeker IDs owned by the specified player and currently in active state. Returns an empty vector if the player has no active seekers.
+
+**Behavior:**
+- Scans active seekers container and filters by player ownership
+- Returns only seekers with matching player ID
+- Returns empty vector if no active seekers exist for the player (not null, not error)
+- Provides a snapshot of seeker state; subsequent modifications do not affect the returned vector
+- Const method; does not modify model state
+
+**Integration Points:**
+- Enables UI iteration and control of player-owned seekers
+- Used to query seeker state for rendering and UI feedback
+- Compatible with deactivateActiveSeekerByID() for controlling seekers from the returned list
+
+## Documentation Tasks
+
+### Task 1: Inline Doxygen Documentation
+Verify that each of the three new public methods in `FTacticalGame` has complete Doxygen documentation including:
+- Brief description of purpose
+- Full description of behavior and edge cases
+- @param documentation for each parameter (except for const getter return values)
+- @return documentation describing the return value and meaning
+- @author field with agent name and reasoning level
+- @date Created and Last Modified dates (current date: 2026-05-30)
+
+**Files to Review:**
+- `include/tactical/FTacticalGame.h` - method declarations and their Doxygen blocks
+- `src/tactical/FTacticalGame.cpp` - method implementations (ensure comments in header are sufficient)
+
+### Task 2: AGENTS.md Documentation (if applicable)
+Review whether these APIs warrant mention in `AGENTS.md` as part of the FTacticalGame public surface. If the APIs are significant additions to the tactical model API surface (which they are), consider adding a bullet point under the FTacticalGame section describing these three seeker control methods.
+
+**Location:** `AGENTS.md` - FTacticalGame documentation section
+
+**Content to Consider:**
+- Brief mention that FTacticalGame now exposes seeker control APIs for tactical UI integration
+- Reference to the three methods by name
+- Note that these methods support the movement-phase seeker collision detection contract defined in TSM-010
+
+### Task 3: Code Comments Review
+Ensure that any implementation details in `src/tactical/FTacticalGame.cpp` have adequate inline comments explaining:
+- How seeker state is tracked (active vs inactive containers)
+- How deactivation removes seekers from collision detection
+- How activation positions seekers for subsequent movement collision checks
+- How getActiveSeekersByMovingPlayer() filters by owner
+
+## Test Coverage Documentation
+
+The following test classes validate these APIs:
+- `FTacticalSeekerMovementTest` - Unit tests for seeker activation/deactivation and movement collision
+- Integration tests within `FTacticalMineDamageFlowTest` - Validates seeker interactions with movement phase
+
+All 187 tactical tests pass, confirming no regressions.
+
+## Code Quality Notes for Documentation
+
+- APIs follow established FTacticalGame naming conventions (verb-starting public methods)
+- Parameter types are consistent with existing codebase (int for IDs, const FPoint& for positions)
+- Error handling strategy (graceful no-op) is consistent with other tactical state management
+- Integration with existing mechanics is sound and non-disruptive
+- No breaking changes to existing public API
+
+## Next Steps
+
+1. Verify/add Doxygen comments in header file declarations
+2. Update AGENTS.md FTacticalGame section with mention of these new seeker control methods
+3. Ensure inline comments in implementation explain state management details
+4. Validate that documentation matches the tested behavior (all edge cases handled gracefully)
+
+---
+
+**From:** Tester (Claude Haiku 4.5)
+**Date:** 2026-05-30
+**Status:** SMC-01 Tester stage complete - ready for Documenter review

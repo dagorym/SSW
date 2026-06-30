@@ -19,9 +19,9 @@ using namespace Frontier;
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high)
  * @date Created: Mar 20, 2026
- * @date Last Modified: Apr 08, 2026
+ * @date Last Modified: May 27, 2026
  */
 class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalCombatReportTest );
@@ -30,6 +30,7 @@ class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testReportModelDefinesSeparateShipSummaryRollupTypes );
 	CPPUNIT_TEST( testTacticalCombatReportSummaryHitDetailToggleDefaultsEnabled );
 	CPPUNIT_TEST( testReportModelSupportsAllPlannedReportingModes );
+	CPPUNIT_TEST( testReportTypeLabelsDistinguishSeekerAndMineDamage );
 	CPPUNIT_TEST( testBattleScreenExposesTacticalReportLifecycleApi );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryBuildsHitDetailsForHitAttacksOnly );
 	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryHitDetailsCapturePlayerReadableOutcome );
@@ -110,6 +111,16 @@ public:
 	 * @date Last Modified: Mar 20, 2026
 	 */
 	void testReportModelSupportsAllPlannedReportingModes();
+	/**
+	 * @brief Verifies report Type Labels Distinguish Seeker And Mine Damage.
+	 *
+	 * Exercises the tactical regression behavior covered by this fixture case.
+	 *
+	 * @author gpt-5.4 (high)
+	 * @date Created: May 27, 2026
+	 * @date Last Modified: May 27, 2026
+	 */
+	void testReportTypeLabelsDistinguishSeekerAndMineDamage();
 	/**
 	 * @brief Verifies battle Screen Exposes Tactical Report Lifecycle Api.
 	 *

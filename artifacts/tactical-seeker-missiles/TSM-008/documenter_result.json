@@ -1,0 +1,17 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-008/documenter_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-008/documenter_result.json",
+    "artifacts/tactical-seeker-missiles/TSM-008/verifier_prompt.txt"
+  ],
+  "branch_name": "seekers-tsm-008-documenter-20260527",
+  "documentation_commit_hash": "89cc8aabe07054a0c9984f8f74d1b786c64c701e",
+  "documentation_files_changed": [
+    "doc/DesignNotes.md",
+    "doc/UsersGuide.md",
+    "include/tactical/FBattleScreen.h",
+    "include/tactical/FTacticalGame.h"
+  ],
+  "status": "success",
+  "task_id": "TSM-008"
+}

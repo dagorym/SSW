@@ -1,0 +1,17 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-005/documenter_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-005/documenter_result.json",
+    "artifacts/tactical-seeker-missiles/TSM-005/verifier_prompt.txt"
+  ],
+  "branch_name": "seekers-tsm-005-documenter-20260524",
+  "documentation_commit_hash": "0ad7d93a8a06e14a1c7b0230faaf85cc31371cd9",
+  "documentation_files_changed": [
+    "include/tactical/FBattleDisplay.h",
+    "include/tactical/FBattleBoard.h",
+    "doc/UsersGuide.md",
+    "doc/DesignNotes.md"
+  ],
+  "status": "success",
+  "task_id": "TSM-005"
+}

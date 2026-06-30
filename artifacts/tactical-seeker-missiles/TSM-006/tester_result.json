@@ -1,0 +1,32 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-seeker-missiles/TSM-006/tester_report.md",
+    "artifacts/tactical-seeker-missiles/TSM-006/tester_result.json",
+    "artifacts/tactical-seeker-missiles/TSM-006/documenter_prompt.txt"
+  ],
+  "branch_name": "seekers-tsm-006-tester-20260524",
+  "commands_run": [
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make && ./GuiTests"
+  ],
+  "pass_fail_totals": {
+    "gui": {
+      "failed": 0,
+      "passed": 43,
+      "total": 43
+    },
+    "tactical": {
+      "failed": 0,
+      "passed": 169,
+      "total": 169
+    }
+  },
+  "status": "success",
+  "task_id": "TSM-006",
+  "test_commit_hash": "No Changes Made",
+  "test_files_changed": [
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}

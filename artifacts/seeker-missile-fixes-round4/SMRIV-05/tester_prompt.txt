@@ -1,0 +1,53 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+SMRIV-05: Fix activation-phase seeker missiles not removed from m_seekerMissiles after impact, causing them to attack again on later phases/turns.
+
+Modified files:
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FTacticalGame.h
+
+Acceptance criteria to validate (from Planner):
+1. After a seeker impacts a ship during the seeker-activation phase and its attack is resolved (whether or not damage is applied), that seeker is removed from m_seekerMissiles and does not contact or attack any ship on the next phase/turn.
+2. The impacting seeker still remains present for rendering through the ICM/damage-summary display and is removed only after the resolution completes (SMF-06 preserved).
+3. Move-phase seeker impacts continue to be removed exactly once (no regression), and non-impacting seekers survive with their movement bookkeeping intact.
+4. Add a behavioral (not source-text-match) model test that drives an activation-phase seeker impact and asserts that m_seekerMissiles no longer contains the impacting seeker after resolution and that it does not attack on the following phase; this test must fail against the pre-fix code and pass after the fix.
+
+Test file location:
+- tests/tactical/FTacticalSeekerMovementTest.cpp and/or tests/tactical/FTacticalGameMechanicsTest.cpp
+- Carry-C item: may also correct the include-guard typo in tests/tactical/FTacticalPreGameOrdnanceTest.h:15 (PREAGAME to PREGAME)
+
+Implementation context:
+In both completeSeekerActivationPhase() and the no-inactive-hexes early path in beginSeekerActivationPhase(), the fix replaced the inline if (m_ui != NULL) { requestRedraw(); resolvePendingSeekerDetonationDamage(); } block with a single call to applyMovementSeekerDamage().
+
+applyMovementSeekerDamage() already implements the full sequence:
+1. Collect detonated seeker IDs from m_pendingSeekerContactOutcomes
+2. If UI installed: requestRedraw() + resolvePendingSeekerDetonationDamage(); otherwise: clearPendingSeekerContactOutcomes()
+3. Erase each detonated seeker from m_seekerMissiles by ID
+
+The activation-phase paths were missing step 3 entirely. SMF-06 is preserved: applyMovementSeekerDamage() redraws before showing dialogs so the impacting seeker remains visible during ICM/damage dialogs, and erases it only after resolution returns. Non-impacting seekers are unaffected.
+
+Existing validations expected to fail due to approved behavior change:
+1. FTacticalMineDamageFlowTest::testSeekerActivationPhaseResolvesPendingDamageWhenModelHasUI
+   - Source-contract test checking for if (m_ui != NULL) { and resolvePendingSeekerDetonationDamage(); directly in beginSeekerActivationPhase() and completeSeekerActivationPhase().
+   - After fix these calls are inside applyMovementSeekerDamage(), not at the call sites.
+   - Tester must update assertions to check for applyMovementSeekerDamage(); in both function bodies.
+
+2. FTacticalSeekerMovementTest::testCompleteSeekerActivationResolvesMovementContactAndSurvivorProgressionRuntime
+   - Behavioral test whose expected values document old buggy behavior: outcomes.size()==1 and seekers.size()==2 after no-UI activation.
+   - After fix: outcomes.size()==0 (cleared by applyMovementSeekerDamage) and seekers.size()==1 (impacting seeker 9101 erased, survivor 9102 remains with correct progression).
+   - Tester must update expected values and verify survivor seeker 9102 progression still holds.
+
+Suggested test commands:
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make
+- cd tests/gui && xvfb-run -a ./GuiTests
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round4/SMRIV-05
+
+Startup behavior:
+Continue past preflight when blockers are absent. Begin testing work immediately and continue in the same run.
+
+Completion gate:
+Do not report success unless all required artifacts exist and all changes are committed.

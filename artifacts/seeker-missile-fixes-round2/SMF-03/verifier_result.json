@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round2/SMF-03/verifier_report.md",
+    "artifacts/seeker-missile-fixes-round2/SMF-03/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "sf2-smf-03-verifier-20260602",
+  "documentation_accuracy_summary": [
+    "ACCURATE. AGENTS.md SMF-03 contract entry correctly describes call site, height behavior, and test contracts. DesignNotes.md design note accurately describes relocation rationale, layout, height expansion, recall mechanics, and validation results. FBattleDisplay.h Doxygen updated correctly."
+  ],
+  "note_finding_count": 3,
+  "pass_label": null,
+  "status": "complete",
+  "task_id": "SMF-03",
+  "test_sufficiency_summary": [
+    "SUFFICIENT. 196/196 tactical tests pass; 0 new GUI failures. Source-contract test verifies drawCurrentShipStats does not call drawOffensiveSeekerPendingRows and draw() contains the relocated call. Model-level recall is covered by testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit. GUI live test covers empty-pending draw, non-PH_ATTACK_FIRE guard, and failed-recall guard. Click-deletable recall path verified at source-contract level."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 2
+}

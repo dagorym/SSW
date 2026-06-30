@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "task_id": "SMC-03",
+  "branch_name": "seeker-fix-tester-smc-03-20260530",
+  "test_commit_hash": "23b4a3a",
+  "test_files_changed": [
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.h"
+  ],
+  "commands_run": [
+    "make -C tests gui-tests",
+    "DISPLAY=:0 tests/gui/GuiTests",
+    "make -C tests tactical-tests",
+    "DISPLAY=:0 tests/tactical/TacticalTests"
+  ],
+  "pass_fail_totals": {
+    "gui_tests": {"run": 44, "failures": 8, "errors": 0, "pre_existing_failures": 8, "new_failures": 0},
+    "tactical_tests": {"run": 189, "failures": 0, "errors": 0}
+  },
+  "unmet_acceptance_criteria": [],
+  "acceptance_criteria_validated": [
+    "seekers only (FWeapon::SM) -> 'Seeker Placement Done' (runtime: Battleship with SM only)",
+    "mines only (FWeapon::M) -> 'Mine Placement Done' (fallback: existing tests with no deployable ordnance)",
+    "both SM and M -> 'Weapon Placement Done' (runtime: Minelayer with SM and M)",
+    "empty/unknown -> 'Mine Placement Done' fallback (existing action-button tests at lines 763, 856)",
+    "connect/show/hide flow unchanged (no regressions in existing tests)",
+    "No new test failures introduced"
+  ],
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-ui-cleanup/smc-03/tester_report.md",
+    "artifacts/seeker-missile-ui-cleanup/smc-03/tester_result.json",
+    "artifacts/seeker-missile-ui-cleanup/smc-03/documenter_prompt.txt"
+  ]
+}

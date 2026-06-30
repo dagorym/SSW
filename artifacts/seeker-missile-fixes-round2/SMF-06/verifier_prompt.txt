@@ -1,0 +1,24 @@
+Your role is 'verifier'. Your task is as follows:
+
+## Task summary
+SMF-06: Keep impacting seeker visible until after damage report.
+
+## Branch
+sf2
+
+## Commit
+bdae93c
+
+## Acceptance criteria
+- Impacting seekers pushed to nextStates in resolveActiveSeekersForMovingPlayer
+- requestRedraw() before dialogs in all 3 seeker detonation call sites
+- drawSeekerPaths gate is PH_MOVE || PH_SEEKER_ACTIVATION
+- 198/198 tactical tests pass
+- No new GUI regressions
+
+## Validation commands
+- make -C tests tactical-tests && ./tests/tactical/TacticalTests
+- DISPLAY=:99 ./tests/gui/GuiTests
+
+## Shared artifact directory
+artifacts/seeker-missile-fixes-round2/SMF-06

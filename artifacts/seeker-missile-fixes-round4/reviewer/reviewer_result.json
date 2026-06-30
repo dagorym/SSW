@@ -1,0 +1,18 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round4/reviewer/reviewer_report.md",
+    "artifacts/seeker-missile-fixes-round4/reviewer/reviewer_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "sf2",
+  "final_outcome": "PASS",
+  "follow_up_feature_requests": [
+    "Reconcile the pre-existing failing GUI test tests/gui/TacticalGuiLiveTest.cpp::testBattleDisplayLowerPanelLayoutStatePersistsAcrossPhaseAndGeometryChanges with the SMRIV-04 panel-height lifecycle: either update the test's within-phase geometry resize-back assertion to match the accepted 'keep expanded height within a phase, recompute only at phase change' design (AC5), or, if within-phase geometry-driven shrink-back is actually desired, extend the height lifecycle to distinguish content-overflow expansion from geometry-driven stacking expansion. Scope: tests/gui/TacticalGuiLiveTest.cpp and possibly src/tactical/FBattleDisplay.cpp ensureLowerPanelLayoutState().",
+    "Harden the GUI test verification procedure so it is run from the canonical tests/gui CWD (per AGENTS.md), and make the source-contract helper resolve source paths from a fixed repo root instead of a CWD-relative ../../src/... path, so source-contract tests do not false-fail when the runner is launched from elsewhere. This prevents real failures from being masked inside a path-artifact failure count.",
+    "Stabilize the flaky live modal-chain test tests/gui/BattleSimGuiLiveTest.cpp::testLocalGameDialogLaunchesPredefinedAndCustomModalChains (deterministic harness scheduling / bounded waits) so the GUI suite is reliably green."
+  ],
+  "note_finding_count": 1,
+  "status": "complete",
+  "task_id": "seeker-missile-fixes-round4",
+  "warning_finding_count": 2
+}

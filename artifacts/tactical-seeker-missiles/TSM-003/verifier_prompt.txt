@@ -1,0 +1,65 @@
+Task summary:
+- Verify TSM-003 remediation retry end-to-end after implementer, tester, and documenter follow-up for setup ordnance placement source rows and collision-free source-specific board marker rendering.
+- Confirm the documentation now matches the implemented/tested behavior for per-weapon mine/seeker setup rows, exact slot-ammo display, row-index selection, undo restoration, and source colors that no longer collapse through the legacy 12-color modulo mapping.
+
+Acceptance criteria to verify:
+- The placement panel lists mine and seeker missile rows per ship/weapon slot.
+- Each row shows the current ammo for that exact weapon slot.
+- Clicking a row changes the active placement source.
+- Board placement markers keep distinct colors per source ship/weapon combo without the legacy 12-color modulo collisions.
+- Map-click placement and undo update the visible ammo counts.
+- Existing mine-only cases still work when no seeker launchers are present.
+- Updated documentation accurately describes the shipped setup-placement behavior without contradicting the implementation or immutable rules document.
+
+Implementation, test, and documentation context:
+- Implementer branch/worktree: seekers-tsm-003-implementer-20260523 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-003-implementer-20260523
+- Implementer code commit: c62a1daa0557e0e74500fbce59d6880e9f5b6e35
+- Tester branch/worktree: seekers-tsm-003-tester-20260523 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-003-tester-20260523
+- Tester test-change commit: c971583fa655e8a308bbda2c506646f8b748ac94
+- Documenter branch/worktree: seekers-tsm-003-documenter-20260523 at /home/tstephen/repos/SSW-worktrees/seekers-tsm-003-documenter-20260523
+- Documentation commit: 877108202820d80f6dfe5d9389bc37f9b06040b9
+- Comparison-base assumption: use branch `seekers` at merge-base commit `84279b0b60caaed047619089f674324b3122897e` because no `origin/main` ref exists in this worktree and that merge-base cleanly isolates the TSM-003 remediation history.
+
+Files modified by Implementer, Tester, and Documenter that may affect verification scope:
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- doc/DesignNotes.md
+- doc/UsersGuide.md
+- artifacts/tactical-seeker-missiles/TSM-003/implementer_report.md
+- artifacts/tactical-seeker-missiles/TSM-003/implementer_result.json
+- artifacts/tactical-seeker-missiles/TSM-003/tester_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-003/tester_report.md
+- artifacts/tactical-seeker-missiles/TSM-003/tester_result.json
+- artifacts/tactical-seeker-missiles/TSM-003/documenter_prompt.txt
+- artifacts/tactical-seeker-missiles/TSM-003/documenter_report.md
+- artifacts/tactical-seeker-missiles/TSM-003/documenter_result.json
+- artifacts/tactical-seeker-missiles/TSM-003/verifier_prompt.txt
+
+Commands executed:
+- git merge-base HEAD seekers
+- git --no-pager diff seekers..HEAD -- include/tactical/FBattleBoard.h src/tactical/FBattleBoard.cpp tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp doc/DesignNotes.md doc/UsersGuide.md
+- git --no-pager diff -- include/tactical/FBattleBoard.h doc/DesignNotes.md doc/UsersGuide.md
+- cd tests && make tactical-tests && ./tactical/TacticalTests && make gui-tests
+
+Final test outcomes:
+- Tactical validation passed: `OK (159 tests)`.
+- GUI test build passed.
+- GUI runtime suite was not run in this environment because `xvfb-run` is unavailable.
+
+Plan and documentation context:
+- Plan path: plans/tactical-seeker-missiles-plan.md
+- Documentation impact guidance in the plan for TSM-003 called for `FBattleBoard`/placement-surface Doxygen updates and no rules-document edit.
+- Documenter updated `doc/UsersGuide.md`, `doc/DesignNotes.md`, and `include/tactical/FBattleBoard.h` to reflect the shipped collision-free source-ordinal marker coloring.
+- `doc/rules/tactical_operations_manual.md` is immutable and must remain unchanged.
+
+Verification scope:
+- Review implementation behavior, tester coverage, and the updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe, and label those choices as assumptions instead of blockers.
+- Continue in the same run when blocking inputs are present; do not stop after review-scope establishment, convention discovery, or diff inspection.
+
+Shared artifact directory:
+- artifacts/tactical-seeker-missiles/TSM-003
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

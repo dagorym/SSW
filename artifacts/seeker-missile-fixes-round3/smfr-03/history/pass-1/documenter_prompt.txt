@@ -1,0 +1,60 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMFR-03: Show mine damage summary for all minefield passages (including zero-damage outcomes) and highlight triggered minefield hexes in pre-game-placement green (#00FF00) while the dialog is shown; clear highlight after dialog closes.
+
+Acceptance criteria validated:
+- After a ship's movement resolves through a minefield, the damage summary dialog is shown through the existing tactical damage-summary UI seam, including when no damage was dealt.
+- Triggered minefield hex(es) are highlighted on the board using the existing shaded-hex pattern in the pre-game-placement green (#00FF00).
+- The highlight is visible while the dialog is shown and is cleared after the dialog closes.
+- Existing mine damage application (ICM allocation, destroyed-ship cleanup ordering) still runs exactly once per movement completion.
+- Seeker detonation damage reporting is unchanged.
+
+Implementation branch or worktree context:
+- Branch: sf2-SMFR-03-tester-20260619
+- Comparison base: sf2 (assumption from plan context)
+- Plan: plans/seeker-missile-fixes-round3-plan.md
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalGame.h (SMFR-03: added m_lastTriggeredMineHexes, getLastTriggeredMineHexes(), clearLastTriggeredMineHexes())
+- src/tactical/FTacticalGame.cpp (SMFR-03: applyMineDamage now shows dialog unconditionally and manages triggered-hex highlight lifecycle)
+- include/tactical/FBattleScreen.h (added getLastTriggeredMineHexes() delegation declaration)
+- src/tactical/FBattleScreen.cpp (added getLastTriggeredMineHexes() delegation implementation)
+- include/tactical/FBattleBoard.h (added drawTriggeredMineHexes declaration)
+- src/tactical/FBattleBoard.cpp (added drawTriggeredMineHexes rendering method; draw() calls it inside BS_Battle guard)
+- tests/tactical/FTacticalMineDamageFlowTest.h (new test declarations for SMFR-03 coverage)
+- tests/tactical/FTacticalMineDamageFlowTest.cpp (new behavioral and source-contract test implementations)
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.h (new test declaration for drawTriggeredMineHexes)
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp (new source-contract test for draw() dispatch)
+
+Test commit:
+- 7287a48
+
+Commands executed:
+- make -C tests tactical-tests
+- ./tests/tactical/TacticalTests
+
+Final test outcomes:
+- 208 tests run, 0 failures, 0 errors. All tactical tests pass.
+- 5 new tests added: 2 behavioral (getLastTriggeredMineHexes empty on fresh game; empty after mine-free completeMovePhase), 3 source-contract supplements (showDamageSummary unconditional; triggered hexes cleared after dialog; FBattleScreen delegation). 1 source-contract renderer delegation test (drawTriggeredMineHexes in BS_Battle guard).
+
+Documentation context:
+- AGENTS.md tactical tests bullet may need to be updated to lock the new SMFR-03 source contracts: drawTriggeredMineHexes called from draw() inside BS_Battle guard; showDamageSummary called unconditionally for mine encounters; m_lastTriggeredMineHexes cleared after dialog.
+- FTacticalGame.h header already includes SMFR-03 comment block for the new fields/methods.
+- FBattleBoard::drawTriggeredMineHexes is a new rendering method that reads getLastTriggeredMineHexes from FBattleScreen and applies drawShadedHex with #00FF00.
+- The showDamageSummary call in applyMineDamage() is now unconditional (not guarded on summary.ships.size()), reflecting the zero-damage encounter requirement.
+
+Plan and diff context:
+- Plan path: plans/seeker-missile-fixes-round3-plan.md
+- Comparison base: sf2 branch (assumption — verify if needed from plan or git log)
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-03
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

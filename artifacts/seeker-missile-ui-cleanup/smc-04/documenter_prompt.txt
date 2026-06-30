@@ -1,0 +1,54 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- SMC-04: Fixed a visual overlap in the pre-game ordnance placement panel. drawPlaceMines() previously started the source list at y=BORDER, the same vertical position as the instruction text and Done button. The one-line fix changes `int y = BORDER` to `int y = getActionButtonRowBottom()` in src/tactical/FBattleDisplay.cpp, moving the source rows below the instruction/button region. Hit regions (m_shipNameRegions) use the same y variable so click alignment is preserved. A new source-inspection test testPlaceMinesSourceListStartsAtActionButtonRowBottom validates all three acceptance criteria.
+
+Acceptance criteria validated:
+- AC #1: During pre-game ordnance placement, the instructions/Done-button region and the placement source list region are visually separated with no overlap. VERIFIED: drawPlaceMines() now initializes y=getActionButtonRowBottom() instead of y=BORDER.
+- AC #2: The placement source rows remain clickable (hit regions still align with drawn text). VERIFIED: m_shipNameRegions.push_back uses the same y variable as DrawText calls.
+- AC #3: No regression to other lower-panel layouts (move/fire prompts) that share the same spacer logic. VERIFIED: drawMoveShip, drawDefensiveFire, and drawAttackFire do not use getActionButtonRowBottom() as their y initializer.
+
+Implementation branch or worktree context:
+- Implementer branch: seeker-fix-smc-04-implementer-20260530 (code commit 08fd8d9).
+- Tester branch: seeker-fix-smc-04-tester-20260530, which merges the implementer branch before testing.
+- The fix is a one-line change in src/tactical/FBattleDisplay.cpp inside drawPlaceMines().
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleDisplay.h (Implementer: updated doxygen comment for drawPlaceMines)
+- src/tactical/FBattleDisplay.cpp (Implementer: changed y initializer in drawPlaceMines from BORDER to getActionButtonRowBottom())
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h (Tester: added testPlaceMinesSourceListStartsAtActionButtonRowBottom declaration)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (Tester: added testPlaceMinesSourceListStartsAtActionButtonRowBottom implementation)
+
+Test commit:
+- 808d086
+
+Commands executed:
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+
+Final test outcomes:
+- 190/190 tests pass in TacticalTests runner.
+- New test testPlaceMinesSourceListStartsAtActionButtonRowBottom passes.
+- No regressions detected in existing tests.
+
+Documentation context:
+- The fix resolves a visual layout overlap in the BS_PlaceMines phase lower panel.
+- AGENTS.md tactical notes describe the drawPlaceMines placement source list and action-prompt spacing contract.
+- doc/rules/tactical_operations_manual.md must not be changed per repository rules.
+- No user-visible game-rule behavior changed; this is a pure UI layout fix.
+
+Plan and diff context:
+- Plan path: plans/seeker-missile-ui-cleanup-plan.md
+- Comparison base: master branch or seeker-fix parent branch (assumption from repository context).
+- SMC-04 is the fourth task in the seeker-missile-ui-cleanup plan.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-ui-cleanup/smc-04
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

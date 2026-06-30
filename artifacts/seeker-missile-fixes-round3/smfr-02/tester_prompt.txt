@@ -1,0 +1,55 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Root-caused and fixed the pre-game BS_PlaceSeekers placement regression (SMFR-02). Board clicks during BS_PlaceSeekers were silently dropped because FTacticalGame::handleHexClick had no case for that state. Added the missing case routing SM weapon clicks to placeOrdnanceAtHex. Extended FBattleBoard::draw to render placed ordnance during BS_PlaceSeekers alongside BS_PlaceMines. Also fixed placeMineFromSelection and placeSeekerFromSelection to use type-filtered source-list rebuilds so the placement source list stays clean for the active phase. Added a behavioral regression test that fails against the pre-fix code and passes after the fix.
+
+Modified files:
+- src/tactical/FBattleBoard.cpp
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- tests/tactical/FTacticalGameMechanicsTest.cpp
+- tests/tactical/FTacticalGameMechanicsTest.h
+
+Acceptance criteria to validate (from Planner):
+- AC-1: During BS_PlaceMines, clicking a valid hex decrements mine launcher ammo by one, inserts the hex into m_minedHexList, and appends a record to m_placedOrdnance. [SATISFIED]
+- AC-2: During BS_PlaceSeekers, clicking a valid hex decrements seeker launcher ammo by one and creates an inactive seeker record plus a placed-ordnance record. [SATISFIED — fixed by adding case BS_PlaceSeekers to handleHexClick]
+- AC-3: Board renders placed ordnance during BS_PlaceSeekers as well as BS_PlaceMines. [SATISFIED — fixed FBattleBoard::draw condition]
+- AC-4: After placement, enemy ship moving through a mined hex triggers mine damage resolution. [SATISFIED — mine recording was already correct; only hex-click routing was broken]
+- AC-5: Launcher ammo consistent between placement and battle. [SATISFIED — filtered rebuild ensures correct source list]
+- AC-6: Behavioral model test added to FTacticalGameMechanicsTest that must fail against regression and pass after fix. [SATISFIED — testPreGameOrdnancePlacementRecordingBehavior passes in 202-test suite]
+
+Create test files in:
+- Behavioral placement model coverage: tests/tactical/FTacticalGameMechanicsTest.cpp (testPreGameOrdnancePlacementRecordingBehavior added)
+- Board render-dispatch source-contract coverage: tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp (updated assertion to match new condition)
+- Display fire-flow source-contract: tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (updated assertion to match new condition)
+
+Implementation context for testing:
+- Root cause: handleHexClick in FTacticalGame.cpp had case BS_PlaceMines but no case BS_PlaceSeekers; all board clicks during seeker placement returned false immediately
+- Secondary root cause: FBattleBoard::draw only called drawPlacementOrdnanceHexes when state == BS_PlaceMines, not BS_PlaceSeekers
+- Fix 1 (FTacticalGame.cpp line ~3261): Added case BS_PlaceSeekers: dispatching placeOrdnanceAtHex for SM weapons
+- Fix 2 (FBattleBoard.cpp line ~118): Changed condition to BS_PlaceMines || BS_PlaceSeekers
+- Fix 3 (FTacticalGame.cpp placeMineFromSelection): Changed rebuildDeployablePlacementSources() to rebuildDeployablePlacementSourcesFiltered(FWeapon::M)
+- Fix 4 (FTacticalGame.cpp placeSeekerFromSelection): Changed rebuildDeployablePlacementSources() to rebuildDeployablePlacementSourcesFiltered(FWeapon::SM)
+- Fix 5 (FTacticalGame.cpp placeOrdnanceAtHex undo path): State-aware filtered rebuild: M-filtered for BS_PlaceMines, SM-filtered for BS_PlaceSeekers, unfiltered otherwise
+- Source-inspection tests updated: FTacticalBattleBoardRendererDelegationTest and FTacticalBattleDisplayFireFlowTest had assertContains checks for the old BS_PlaceMines-only condition; updated to reflect new combined condition
+- Source-inspection test updated: FTacticalGameMechanicsTest checked for rebuildDeployablePlacementSources() in placeMineFromSelectionBody; updated to rebuildDeployablePlacementSourcesFiltered(FWeapon::M)
+
+Suggested test command(s):
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+- make -C tests gui-tests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/seeker-missile-fixes-round3/smfr-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

@@ -1,9 +1,9 @@
 /**
  * @file Frontier.h
  * @brief Header for the Frontier game
- * @author Tom Stephens
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Feb 19, 2008
+ * @date Last Modified:  Jun 02, 2026
  *
  */
 #ifndef _FRONTIER_H_
@@ -21,13 +21,22 @@ enum {
 	BS_SetupStation,
 	BS_SetupDefendFleet,
 	BS_PlaceMines,
+	BS_PlaceSeekers,
 	BS_SetupAttackFleet,
 	BS_Battle
 };
 
+/**
+ * @brief Tactical battle phase ordering.
+ *
+ * `PH_SEEKER_ACTIVATION` is an additive pre-movement phase that allows the
+ * tactical model to expose inactive seeker stacks, activate individual seekers,
+ * and resolve the active-seeker seam before normal ship movement begins.
+ */
 enum {
 	PH_NONE = 0,
 	PH_SET_SPEED,
+	PH_SEEKER_ACTIVATION,
 	PH_MOVE,
 	PH_SELECT_SHIP,
 	PH_FINALIZE_MOVE,

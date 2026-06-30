@@ -1,0 +1,16 @@
+{
+  "artifact_file_paths": [
+    "artifacts/seeker-missile-fixes-round6/SMRVI-02/documenter_report.md",
+    "artifacts/seeker-missile-fixes-round6/SMRVI-02/documenter_result.json",
+    "artifacts/seeker-missile-fixes-round6/SMRVI-02/verifier_prompt.txt"
+  ],
+  "branch_name": "sf2-SMRVI-02-documenter-20260630",
+  "documentation_commit_hash": "c328ef2",
+  "documentation_files_changed": [
+    "AGENTS.md",
+    "doc/test-contracts.md"
+  ],
+  "pass_label": null,
+  "status": "success",
+  "task_id": "SMRVI-02"
+}
