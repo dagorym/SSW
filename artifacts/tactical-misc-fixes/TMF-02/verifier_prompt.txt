@@ -1,0 +1,49 @@
+You are the Verifier agent for story TMF-02.
+
+## Story
+Remove `SetExtraStyle(GetExtraStyle() | wxTOPLEVEL_EX_DIALOG)` from the
+`FBattleScreen` constructor to restore the minimize button on GTK, while
+preserving the custom modal event loop and `gtk_window_set_modal` grab.
+
+## Branch and Worktree
+Branch: tmf-TMF-02-documenter-20260630
+Commits to inspect (oldest first):
+- b938d8f — TMF-02: implementer — remove wxTOPLEVEL_EX_DIALOG
+- 411653a — TMF-02: tester — three new behavioral/source-contract tests
+- a20237b — TMF-02: documenter — test-contracts and UsersGuide updates
+
+## Required first actions
+Run `myteam get role verifier` before doing anything else and follow its
+instructions. If myteam is unavailable, stop and alert the user.
+
+## Acceptance Criteria
+- AC1: `FBattleScreen` constructor does NOT call `SetExtraStyle(...|wxTOPLEVEL_EX_DIALOG)`.
+  Behavioral: `GetExtraStyle() & wxTOPLEVEL_EX_DIALOG == 0` after construction.
+- AC1 (style): Default constructor style includes `wxMINIMIZE_BOX`.
+- AC2: `ShowModal()` still contains `gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE)`.
+- AC3: No regressions in existing tests.
+- AC4: Doxygen headers on `FBattleScreen.h` constructor and `FBattleScreen.cpp`
+  file header updated (author list extended, Last Modified Jun 30, 2026).
+
+## Files Changed
+- `src/tactical/FBattleScreen.cpp` — one line removed from constructor; file header updated
+- `include/tactical/FBattleScreen.h` — constructor doxygen updated
+- `tests/gui/TacticalGuiLiveTest.cpp` — three new test methods added
+- `tests/gui/TacticalGuiLiveTest.h` — three new method declarations + CPPUNIT_TEST registrations
+- `doc/test-contracts.md` — TMF-02 bullet added
+- `doc/UsersGuide.md` — minimize/maximize sentence added to tactical window section
+
+## Test Results (from Tester)
+GUI suite: Run 59, Failures 9, Errors 0.
+The 3 new TMF-02 tests PASS.
+9 pre-existing failures are unrelated to TMF-02
+(StrategicGuiLiveTest x3, TacticalGuiLiveTest source-contract x4
+in FBattleDisplay.cpp/ICMSelectionGUI.cpp, BattleSimGuiLiveTest x1).
+
+## Artifact Directory
+artifacts/tactical-misc-fixes/TMF-02/
+
+## Completion Gate
+Do not report success unless all required artifacts exist and all changes are
+committed. Continue past scope confirmation, convention discovery, and diff
+inspection when blocking inputs are present — do not stop after activation.

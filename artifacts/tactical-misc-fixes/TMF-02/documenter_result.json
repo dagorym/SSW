@@ -1,0 +1,15 @@
+{
+  "story": "TMF-02",
+  "role": "documenter",
+  "result": "PASS",
+  "documentation_commit": "a20237b",
+  "branch_name": "tmf-TMF-02-documenter-20260630",
+  "docs_changed": [
+    "doc/test-contracts.md",
+    "doc/UsersGuide.md"
+  ],
+  "docs_unchanged": [
+    "AGENTS.md"
+  ],
+  "notes": "AGENTS.md has no existing FBattleScreen extra-style note to update; no new guidance required for a single-line bug-fix removal. In-code doxygen already updated by Implementer and Tester in FBattleScreen.h and FBattleScreen.cpp."
+}
