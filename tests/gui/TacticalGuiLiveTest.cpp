@@ -3678,4 +3678,67 @@ void TacticalGuiLiveTest::testSeekerActivationRowTextShowsPositionAndMarginIsDyn
 		thisPhaseAfterClick < thisPhaseBeforeClick);
 }
 
+// TMF-02: Verifies that FBattleScreen constructor does NOT set wxTOPLEVEL_EX_DIALOG
+// in the extra style.  On GTK, that bit triggers gtk_window_set_type_hint(DIALOG)
+// which suppresses the minimize button in most window managers.
+void TacticalGuiLiveTest::testBattleScreenExtraStyleExcludesTopLevelExDialog() {
+	std::cerr << "TMF02-extra-style:start" << std::endl;
+	FBattleScreen::resetLifecycleCounters();
+
+	FBattleScreen * screen = new FBattleScreen(wxT("TMF02 ExtraStyle Test"));
+	const long extraStyle = screen->GetExtraStyle();
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(5);
+
+	// AC1/AC2 behavioral: after construction the wxTOPLEVEL_EX_DIALOG bit must be absent.
+	// With the old code (SetExtraStyle(GetExtraStyle() | wxTOPLEVEL_EX_DIALOG) present)
+	// this assertion FAILS.  With the line removed it PASSES.
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-02 AC1/AC2: FBattleScreen constructor must NOT set wxTOPLEVEL_EX_DIALOG "
+		"in GetExtraStyle(). The bit suppresses the minimize button on GTK by requesting "
+		"gtk_window_set_type_hint(HINT_DIALOG). It must be absent so the frame renders as "
+		"GTK_WINDOW_TYPE_HINT_NORMAL with standard title-bar decorations including Minimize.",
+		(extraStyle & wxTOPLEVEL_EX_DIALOG) == 0);
+}
+
+// TMF-02: Verifies that the FBattleScreen constructor default style includes wxMINIMIZE_BOX.
+void TacticalGuiLiveTest::testBattleScreenDefaultStyleIncludesMinimizeBox() {
+	std::cerr << "TMF02-minimize-box:start" << std::endl;
+	FBattleScreen::resetLifecycleCounters();
+
+	FBattleScreen * screen = new FBattleScreen(wxT("TMF02 MinimizeBox Test"));
+	const long styleFlag = screen->GetWindowStyleFlag();
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(5);
+
+	// AC1 behavioral: the default constructor style must include wxMINIMIZE_BOX.
+	// If wxMINIMIZE_BOX is absent the window manager will not show a minimize button
+	// even after removing wxTOPLEVEL_EX_DIALOG.
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-02 AC1: FBattleScreen default constructor style must include wxMINIMIZE_BOX "
+		"so that the window manager presents a functional minimize button on GTK. "
+		"GetWindowStyleFlag() & wxMINIMIZE_BOX must be non-zero.",
+		(styleFlag & wxMINIMIZE_BOX) != 0);
+}
+
+// TMF-02 source-contract supplement: ShowModal() must still contain the
+// gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) call that preserves modal
+// grab behavior after the wxTOPLEVEL_EX_DIALOG removal.
+// Behavioral modal-grab coverage is provided by the existing live tactical test path.
+void TacticalGuiLiveTest::testBattleScreenShowModalContainsGtkWindowSetModal() {
+	std::cerr << "TMF02-gtk-modal-contract:start" << std::endl;
+	std::vector<std::string> battleScreenSrc;
+	battleScreenSrc.push_back(guiRepoFile("src/tactical/FBattleScreen.cpp"));
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-02 AC2 source-contract: FBattleScreen::ShowModal() must contain "
+		"gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) so the GTK input grab "
+		"is established when the battle screen is launched modally. "
+		"This call mirrors wxDialog::ShowModal() on GTK and must not be removed "
+		"along with the wxTOPLEVEL_EX_DIALOG extra-style line.",
+		sourceContainsLineToken(battleScreenSrc, "gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE)"));
+}
+
 }

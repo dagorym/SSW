@@ -20,7 +20,7 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
  * @date Last Modified: Jun 30, 2026
  */
@@ -52,6 +52,9 @@ CPPUNIT_TEST( testLowerPanelHeightShrinksBackAfterPhaseChange );
 CPPUNIT_TEST( testSeekerActivationAnchorIsAtActionPromptLineY );
 CPPUNIT_TEST( testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation );
 CPPUNIT_TEST( testSeekerActivationRowTextShowsPositionAndMarginIsDynamic );
+CPPUNIT_TEST( testBattleScreenExtraStyleExcludesTopLevelExDialog );
+CPPUNIT_TEST( testBattleScreenDefaultStyleIncludesMinimizeBox );
+CPPUNIT_TEST( testBattleScreenShowModalContainsGtkWindowSetModal );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -479,6 +482,48 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 30, 2026
 	 */
 	void testSeekerActivationRowTextShowsPositionAndMarginIsDynamic();
+
+	/**
+	 * @brief Behavioral: constructing FBattleScreen must not set wxTOPLEVEL_EX_DIALOG in GetExtraStyle().
+	 *
+	 * TMF-02 AC1/AC2: Verifies that the constructor no longer calls
+	 * SetExtraStyle(GetExtraStyle() | wxTOPLEVEL_EX_DIALOG).  On GTK,
+	 * wxTOPLEVEL_EX_DIALOG triggers gtk_window_set_type_hint(DIALOG) which
+	 * suppresses the minimize button in most window managers.  After the removal
+	 * the bit must be absent from the extra style so the frame renders as
+	 * GTK_WINDOW_TYPE_HINT_NORMAL with standard decorations.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testBattleScreenExtraStyleExcludesTopLevelExDialog();
+
+	/**
+	 * @brief Behavioral: constructing FBattleScreen must include wxMINIMIZE_BOX in GetWindowStyleFlag().
+	 *
+	 * TMF-02 AC1: Confirms the default constructor style flag contains wxMINIMIZE_BOX
+	 * so the platform window manager presents a functional minimize button.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testBattleScreenDefaultStyleIncludesMinimizeBox();
+
+	/**
+	 * @brief Source-contract supplement: ShowModal() still contains the gtk_window_set_modal call.
+	 *
+	 * TMF-02 AC2: Confirms that removing wxTOPLEVEL_EX_DIALOG did not inadvertently remove the
+	 * gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) call that preserves modal grab behavior.
+	 * This is a source-contract supplement; behavioral modal-grab coverage is provided by the
+	 * existing live tactical test path.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testBattleScreenShowModalContainsGtkWindowSetModal();
 };
 
 }
