@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-02/verifier_report.md",
+    "artifacts/tactical-misc-fixes/TMF-02/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "tmf-TMF-02-verifier-20260630",
+  "documentation_accuracy_summary": [
+    "UsersGuide.md addition accurately states 'The window also supports minimize and maximize using the standard title bar buttons.' test-contracts.md TMF-02 bullet correctly describes the constructor change, the gtk_window_set_modal retention, and the three new tests. SMRVI-02 entry updated to reflect TMF-01 AC-b strengthening of the dynamic-margin assertion. No contradictions or duplications found."
+  ],
+  "note_finding_count": 1,
+  "pass_label": null,
+  "status": "complete",
+  "task_id": "TMF-02",
+  "test_sufficiency_summary": [
+    "AC1 (extra-style bit absent) is covered behaviorally by testBattleScreenExtraStyleExcludesTopLevelExDialog which constructs a real FBattleScreen, reads GetExtraStyle(), and asserts the wxTOPLEVEL_EX_DIALOG bit is absent \u2014 FAILS against old code, PASSES after fix. AC1 (style includes minimize box) is covered behaviorally by testBattleScreenDefaultStyleIncludesMinimizeBox. AC2 (modal grab preserved) is covered only by source-contract test testBattleScreenShowModalContainsGtkWindowSetModal; no behavioral test calls ShowModal() on FBattleScreen because that would block the test event loop \u2014 this is the best available coverage for this GTK-conditional invariant. AC3 (no regressions): tester reports 9 pre-existing failures unrelated to TMF-02; all 3 new TMF-02 tests pass. AC4 (Doxygen): verified in file text \u2014 both changed files have updated author lists and Last Modified Jun 30, 2026. Overall sufficient for the scope of change."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 1
+}
