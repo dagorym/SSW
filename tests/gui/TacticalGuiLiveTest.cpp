@@ -490,6 +490,16 @@ private:
 	SeederGame * m_seederGame;
 };
 
+// TMF-03: Minimal FBattleScreen subclass that exposes the protected m_tacticalUI
+// pointer for child-dialog dismiss testing.  No game logic is replaced.
+class AccessibleBattleScreen : public FBattleScreen {
+public:
+	explicit AccessibleBattleScreen(const wxString & title = wxT("AccessibleBattleScreen"))
+		: FBattleScreen(title) {}
+	/// Expose the owned WXTacticalUI for TMF-03 dismiss-path testing.
+	WXTacticalUI * getTacticalUI() { return m_tacticalUI; }
+};
+
 void waitForBattleScreenLifecycleSettle(WXGuiTestHarness & harness,
                                         int timeoutMs = 1200,
                                         int pollMs = 10) {
@@ -3743,6 +3753,141 @@ void TacticalGuiLiveTest::testBattleScreenShowModalContainsGtkWindowSetModal() {
 		"This call mirrors wxDialog::ShowModal() on GTK and must not be removed "
 		"along with the wxTOPLEVEL_EX_DIALOG extra-style line.",
 		sourceContainsLineToken(battleScreenSrc, "gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE)"));
+}
+
+// TMF-03: Behavioral test — WXTacticalUI dismiss API correctness and
+// FBattleScreen close lifecycle when a child modal dialog is active.
+//
+// The fix: WXTacticalUI tracks m_activeDialog in showMessage, showDamageSummary,
+// and runICMSelection; FBattleScreen::closeBattleScreen calls
+// m_tacticalUI->dismissActiveDialog() before Show(false)/Hide() so the child
+// dialog's IsModal() is false before the parent is hidden.  Without the fix,
+// wxGTK's Show(false) handler fires a second EndModal, triggering the assert.
+//
+// Test approach:
+//   1. Open a WXTacticalUI showMessage dialog via the FBattleScreen-owned adapter.
+//   2. From the action (inside ShowModal's event loop) verify hasPendingDialog()
+//      is true (AC1) and call dismissActiveDialog() directly — the same call
+//      closeBattleScreen makes first.  EndModal is called; ShowModal exits after
+//      the action, showMessage returns cleanly, and pumpEvents runs safely.
+//      Note: posting wxEVT_CLOSE_WINDOW from inside the action is NOT done here
+//      because that event is processed by ShowModal's inner GTK loop, which can
+//      trigger Destroy() on FBattleScreen (and delete m_tacticalUI) before
+//      showMessage returns, causing a double-free in the stack-allocated dialog.
+//   3. After runVoidFunctionWithAction returns post wxEVT_CLOSE_WINDOW directly
+//      — at that point no ShowModal is on the stack and Destroy() is safe.
+//   4. Assert AC2 (screen hidden), AC3 (implicit — crash kills process), AC4.
+//
+// Source-contract supplement: verifies closeBattleScreen contains
+// "dismissActiveDialog" to lock the integration point.
+void TacticalGuiLiveTest::testBattleScreenXCloseDismissesActiveChildDialog() {
+	m_harness.pumpEvents(10);
+	m_harness.cleanupOrphanTopLevels(10);
+
+	FBattleScreen::resetLifecycleCounters();
+	const int baselineConstructed = FBattleScreen::getConstructedCount();
+	const int baselineDestroyed = FBattleScreen::getDestroyedCount();
+
+	// AccessibleBattleScreen (defined in the anonymous namespace above) exposes
+	// m_tacticalUI via getTacticalUI() so the test can reach the new dismiss API.
+	AccessibleBattleScreen * screen = new AccessibleBattleScreen(wxT("TMF-03 X-Close Child Dismiss"));
+	screen->Show();
+	m_harness.pumpEvents(5);
+	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * w) {
+		return w == screen;
+	}) != NULL);
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= baselineConstructed + 1);
+
+	WXTacticalUI * tacticalUI = screen->getTacticalUI();
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-03: FBattleScreen must own a non-null WXTacticalUI",
+		tacticalUI != NULL);
+
+	// Track dialog state observed during the ShowModal event loop.
+	bool hadPendingDialogDuringAction = false;
+	bool hadNoPendingDialogAfterDismiss = false;
+
+	// AC1/AC3 behavioral: drive hasPendingDialog + dismissActiveDialog from within
+	// ShowModal's event loop.  dismissActiveDialog() calls dialog->EndModal(), which
+	// causes ShowModal to exit after the action lambda returns (not during it), so
+	// showMessage unwinds cleanly without any Destroy() race.
+	m_harness.runVoidFunctionWithAction([&]() {
+		tacticalUI->showMessage("TMF-03 Test", "Dismiss test");
+	}, [&]() {
+		// Action runs inside ShowModal's event loop via CallAfter.
+
+		// AC1: dialog must be tracked and live (IsModal true).
+		hadPendingDialogDuringAction = tacticalUI->hasPendingDialog();
+
+		// Mirror what closeBattleScreen does first (the fix): call dismissActiveDialog.
+		// This clears IsModal() before any Show(false) can trigger a second EndModal.
+		tacticalUI->dismissActiveDialog();
+
+		// After dismissal the dialog is no longer modal.
+		hadNoPendingDialogAfterDismiss = !tacticalUI->hasPendingDialog();
+		// Do NOT post wxEVT_CLOSE_WINDOW here: that event would be processed by
+		// ShowModal's inner GTK loop and trigger Destroy() while showMessage is live.
+	}, wxID_CANCEL, 300);
+	// showMessage has returned; tacticalUI remains valid.
+
+	// AC1: hasPendingDialog was true while ShowModal was live.
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-03 AC1: hasPendingDialog() must return true while ShowModal is live. "
+		"The fix requires WXTacticalUI to track m_activeDialog so that "
+		"closeBattleScreen can detect and dismiss the dialog before hiding.",
+		hadPendingDialogDuringAction);
+
+	// AC1: dismissActiveDialog cleared the modal state immediately.
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-03 AC1: hasPendingDialog() must return false after dismissActiveDialog(). "
+		"Once IsModal() is false, wxGTK's Show(false) cannot fire a second EndModal.",
+		hadNoPendingDialogAfterDismiss);
+
+	// AC2: close the screen now that no child modal is running (safe Destroy path).
+	m_harness.pumpEvents(3);
+	wxCloseEvent closeEvent(wxEVT_CLOSE_WINDOW);
+	closeEvent.SetEventObject(screen);
+	wxPostEvent(screen, closeEvent);
+
+	// AC2/AC3: screen must become hidden or absent.
+	// If any duplicate EndModal assert had crashed the process, we would not reach here.
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-03 AC2/AC3: FBattleScreen must become hidden after X-close following "
+		"dismissal of an active child dialog. Reaching this point confirms the "
+		"close lifecycle completed without a process-aborting assert.",
+		m_harness.waitForTopLevelWindowClosed([&](wxTopLevelWindow * w) {
+			return w == screen;
+		}, 1500, 10, true));
+
+	waitForBattleScreenLifecycleSettle(m_harness);
+
+	wxTopLevelWindow * found = m_harness.findTopLevelWindow([&](wxTopLevelWindow * w) {
+		return w == screen;
+	}, true);
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-03 AC2: FBattleScreen must be hidden or absent after close",
+		found == NULL || !found->IsShown());
+
+	// AC4: lifecycle counters settle.
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= baselineConstructed + 1);
+	CPPUNIT_ASSERT(FBattleScreen::getDestroyedCount() >= baselineDestroyed + 1);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"TMF-03 AC4: no live FBattleScreen instances should remain",
+		0, FBattleScreen::getLiveInstanceCount());
+
+	// Source-contract supplement: closeBattleScreen must call dismissActiveDialog()
+	// before Hide()/Show(false).  This locks the integration point where the new
+	// WXTacticalUI dismiss API is wired into the close path.
+	std::vector<std::string> battleScreenSrc;
+	battleScreenSrc.push_back(guiRepoFile("src/tactical/FBattleScreen.cpp"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-03 source-contract: FBattleScreen::closeBattleScreen must call "
+		"dismissActiveDialog() before Hide()/Show(false) to clear IsModal() on "
+		"any active child dialog and prevent the duplicate EndModal assert on GTK.",
+		sourceContainsLineToken(battleScreenSrc, "dismissActiveDialog"));
+
+	WXTacticalUI::setModalAutoDismissMs(0);
+	m_harness.cleanupOrphanTopLevels(10);
 }
 
 }

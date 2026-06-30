@@ -20,7 +20,7 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
  * @date Last Modified: Jun 30, 2026
  */
@@ -55,6 +55,7 @@ CPPUNIT_TEST( testSeekerActivationRowTextShowsPositionAndMarginIsDynamic );
 CPPUNIT_TEST( testBattleScreenExtraStyleExcludesTopLevelExDialog );
 CPPUNIT_TEST( testBattleScreenDefaultStyleIncludesMinimizeBox );
 CPPUNIT_TEST( testBattleScreenShowModalContainsGtkWindowSetModal );
+CPPUNIT_TEST( testBattleScreenXCloseDismissesActiveChildDialog );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -526,6 +527,33 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 30, 2026
 	 */
 	void testBattleScreenShowModalContainsGtkWindowSetModal();
+
+	/**
+	 * @brief Behavioral: WXTacticalUI dismiss API and FBattleScreen X-close lifecycle
+	 * when a child modal dialog is active.
+	 *
+	 * TMF-03: The fix adds hasPendingDialog()/dismissActiveDialog() to WXTacticalUI and
+	 * has FBattleScreen::closeBattleScreen() call dismissActiveDialog() before Hide()/
+	 * Show(false), clearing IsModal() so wxGTK never fires a second EndModal on the child.
+	 *
+	 * Behavioral assertions:
+	 *   AC1: hasPendingDialog() returns true while ShowModal is live (dialog is tracked).
+	 *   AC1: hasPendingDialog() returns false immediately after dismissActiveDialog().
+	 *   AC2: FBattleScreen becomes hidden/destroyed after the subsequent close event.
+	 *   AC3: No SIGABRT/crash during the full lifecycle (implicit — crash kills the test).
+	 *   AC4: FBattleScreen lifecycle counters settle (constructed>=+1, destroyed>=+1, live==0).
+	 *
+	 * Source-contract supplement:
+	 *   Verifies closeBattleScreen contains "dismissActiveDialog" — the integration point
+	 *   that links the new WXTacticalUI API to the close path. This complements the
+	 *   behavioral assertions because exercising closeBattleScreen while ShowModal is on
+	 *   the test's call stack triggers a double-destroy race in the GTK widget tree.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testBattleScreenXCloseDismissesActiveChildDialog();
 };
 
 }
