@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "branch_name": "tmf-TMF-06-tester-20260630",
+  "test_commit_hash": "f9a4e51",
+  "pass": 57,
+  "fail": 8,
+  "total": 65,
+  "test_suite": "GuiTests",
+  "tactical_tests_pass": 249,
+  "tactical_tests_fail": 0,
+  "pre_existing_failures": 8,
+  "new_regressions": 0,
+  "test_files_modified": [
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/gui/TacticalGuiLiveTest.cpp"
+  ],
+  "artifacts_written": [
+    "artifacts/tactical-misc-fixes/TMF-06/tester_report.md",
+    "artifacts/tactical-misc-fixes/TMF-06/tester_result.json",
+    "artifacts/tactical-misc-fixes/TMF-06/documenter_prompt.txt"
+  ],
+  "unmet_acceptance_criteria": []
+}
