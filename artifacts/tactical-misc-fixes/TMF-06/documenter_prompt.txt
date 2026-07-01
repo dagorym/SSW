@@ -1,0 +1,65 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Skip post-fire damage-summary dialog when no weapon actually fired. Added weaponsFired count to FTacticalCombatReportSummary, populated from report.attacks.size() in buildTacticalCombatReportSummary. Guarded showTacticalDamageSummaryDialog in both onDefensiveFireDone and onOffensiveFireDone to only show when weaponsFired > 0.
+
+Acceptance criteria validated:
+- AC1 PASS: FTacticalCombatReportSummary.weaponsFired carries count from buildTacticalCombatReportSummary — behavioral tests: testBuildTacticalCombatReportSummaryWeaponsFiredZeroForEmptyReport (0 for empty) and testBuildTacticalCombatReportSummaryWeaponsFiredCountsAttackEntries (2 for 2 attacks)
+- AC2 PASS: Zero-weapons fired phase skips dialog — behavioral: weaponsFired==0 for empty report; source-contract supplements: testDefensiveFireDoneGuardsDialogOnWeaponsFiredPositive and testOffensiveFireDoneGuardsDialogOnWeaponsFiredPositive confirm guard in both handlers
+- AC3 PASS: All-miss/intercepted phase still shows dialog — behavioral: testBuildTacticalCombatReportSummaryWeaponsFiredNonZeroForMissWithNoDamageRows confirms weaponsFired==1 and ships.empty()==true for a miss attack
+- AC4 PASS: No regression — all 249 TacticalTests pass including FTacticalMineDamageFlowTest and FTacticalMineDamageReportSummaryTest; no existing tests modified
+
+Implementation branch or worktree context:
+- weaponsFired set in buildTacticalCombatReportSummary (include/tactical/FTacticalCombatReport.h ~line 719) as (int)report.attacks.size()
+- Guard 'if (summary.weaponsFired > 0)' in onDefensiveFireDone (src/tactical/FBattleDisplay.cpp ~line 1383) and onOffensiveFireDone (~line 1402)
+- Mine-damage path in applyFireDamage uses ITacticalUI::showDamageSummary directly and is unaffected by weaponsFired guard
+- FTacticalGame.h and src/tactical/FTacticalGame.cpp were not modified
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FTacticalCombatReport.h — FTacticalCombatReportSummary struct: added weaponsFired field with doxygen; buildTacticalCombatReportSummary: updated doxygen explaining weaponsFired semantics
+- include/tactical/FBattleDisplay.h — no behavioral API changes; inspect for any header comment updates
+- src/tactical/FBattleDisplay.cpp — onDefensiveFireDone and onOffensiveFireDone: added guard comments and if (summary.weaponsFired > 0) check
+- tests/tactical/FTacticalCombatReportTest.h — added 3 new test declarations with doxygen
+- tests/tactical/FTacticalCombatReportTest.cpp — added 3 behavioral test implementations
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h — added 2 new test declarations with doxygen
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp — added 2 source-contract test implementations
+
+Test commit:
+- c53f076
+
+Commands executed:
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+- make -C tests
+- tests/SSWTests
+- make -C tests gui-tests
+- tests/gui/GuiTests
+
+Final test outcomes:
+- TacticalTests: 249 passed, 0 failed — PASS
+- SSWTests: 186 passed, 9 failed (all pre-existing FGameHeaderDependencyTest path-lookup failures; baseline had 10 failures before test changes)
+- GuiTests: 55 passed, 8 failed (all pre-existing source-contract failures unrelated to this change; identical at baseline)
+
+Documentation context:
+- New field weaponsFired on FTacticalCombatReportSummary is already documented in its struct doxygen in FTacticalCombatReport.h
+- buildTacticalCombatReportSummary doxygen was updated by implementer to explain weaponsFired semantics
+- No new public API surface; behavior change is internal to fire-done handlers
+- doc/test-contracts.md may need updating if the TMF-06 tests should be catalogued there (currently only SMC-*/SMF-*/SMFR-*/PGS-*/TSM-*/SMRIV-*/SMRV-*/SMRVI-* contracts are listed)
+
+Plan and diff context:
+- Plan: tactical-misc-fixes, subtask TMF-06
+- Plan file: plans/tactical-misc-fixes-plan.md
+- Implementation commit: 61b09be (TMF-06: skip post-fire damage-summary dialog when no weapon fired)
+- Test commit: c53f076 (TMF-06: tester — weaponsFired field and dialog-skip guard coverage)
+- Worktree: /home/tstephen/repos/worktrees/tmf-TMF-06-tester-20260630
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes/TMF-06
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
