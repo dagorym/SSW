@@ -35,6 +35,7 @@
 #include "tactical/FBattleScreen.h"
 #include "tactical/FTacticalCombatReport.h"
 #include "tactical/FTacticalGame.h"
+#include "tactical/ITacticalUI.h"
 #include "weapons/FWeapon.h"
 #include "weapons/FSeekerMissileLauncher.h"
 #include "wxWidgets.h"
@@ -469,6 +470,68 @@ wxString stripMenuMnemonic(const wxString & label) {
 	stripped.Replace("&", "");
 	return stripped;
 }
+
+// TMF-06: CountingMockTacticalUI records showDamageSummary invocations so the
+// behavioral test can assert that the guard in onDefensiveFireDone and
+// onOffensiveFireDone suppresses the dialog call when weaponsFired == 0.
+class CountingMockTacticalUI : public ITacticalUI {
+public:
+CountingMockTacticalUI()
+: m_showDamageSummaryCallCount(0)
+, m_notifyWinnerCallCount(0)
+{}
+
+int showDamageSummaryCallCount() const { return m_showDamageSummaryCallCount; }
+int notifyWinnerCallCount() const { return m_notifyWinnerCallCount; }
+
+virtual void requestRedraw() wxOVERRIDE {}
+virtual void showMessage(const std::string &, const std::string &) wxOVERRIDE {}
+
+virtual int showDamageSummary(const FTacticalCombatReportSummary &) wxOVERRIDE {
+	++m_showDamageSummaryCallCount;
+	return 0;
+}
+
+virtual int runICMSelection(std::vector<ICMData*> &, VehicleList *) wxOVERRIDE {
+	return 0;
+}
+
+virtual void notifyWinner(bool) wxOVERRIDE {
+	++m_notifyWinnerCallCount;
+}
+
+private:
+int m_showDamageSummaryCallCount;
+int m_notifyWinnerCallCount;
+};
+
+// TMF-06: FBattleScreen subclass that replaces the game-installed ITacticalUI
+// with a CountingMockTacticalUI so fire-done handler dialog suppression is
+// directly observable at runtime.  Also sets BS_Battle state so
+// drawDefensiveFire / drawAttackFire is reachable during draw().
+class FireDoneObserverBattleScreen : public FBattleScreen {
+public:
+explicit FireDoneObserverBattleScreen(
+	const wxString & title = wxT("FireDoneObserverBattleScreen"))
+	: FBattleScreen(title)
+{
+	// Replace the WXTacticalUI installed by base class with our counting mock.
+	// FBattleScreen::~FBattleScreen calls m_tacticalGame->installUI(NULL) before
+	// deleting the game, so the mock pointer is safely detached on destruction.
+	m_tacticalGame->installUI(&m_countingMock);
+	// Put game in BS_Battle so draw() dispatches to the fire-phase draw methods.
+	m_tacticalGame->setState(BS_Battle);
+}
+
+/// Returns the counting mock installed on the game's ITacticalUI seam.
+CountingMockTacticalUI * getCountingMock() { return &m_countingMock; }
+
+/// Sets the game phase for defensive (PH_DEFENSE_FIRE) or offensive (PH_ATTACK_FIRE) fire.
+void setFirePhase(int phase) { m_tacticalGame->setPhase(phase); }
+
+private:
+CountingMockTacticalUI m_countingMock;
+};
 
 // SMFR-04: SeederGame subclass exposes a seedSeeker() injection method so GUI
 // tests can plant active seekers directly into the model without driving the
@@ -4230,6 +4293,123 @@ void TacticalGuiLiveTest::testTurnButtonClickAppliesEndOfMoveTurnToModel() {
 	screen->Destroy();
 	m_harness.pumpEvents(5);
 	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testDefensiveFireDoneSkipsDialogWhenNoWeaponsFired() {
+	// TMF-06 AC2 behavioral: onDefensiveFireDone must NOT invoke showDamageSummary
+	// when weaponsFired == 0 (empty game — no ships, no weapons).
+	//
+	// Coverage scope: this test drives the actual onDefensiveFireDone wx event
+	// handler in a live wx environment.  A CountingMockTacticalUI is installed on
+	// the game so that showTacticalDamageSummaryDialog, which routes through
+	// m_tacticalGame->getUI()->showDamageSummary(), is intercepted and counted
+	// rather than showing a real modal dialog.  The empty game guarantees
+	// fireAllWeapons() returns weaponsFired == 0, so the guard must suppress the
+	// dialog call entirely and the counter must not increase.
+	std::cerr << "TMFAC2:defensive-skip:start" << std::endl;
+
+	FireDoneObserverBattleScreen * screen = new FireDoneObserverBattleScreen(
+		wxT("TMF-06 Defensive Fire Dialog Guard"));
+	screen->setFirePhase(PH_DEFENSE_FIRE);
+	screen->Show();
+	m_harness.pumpEvents(5);
+
+	// Draw directly with a MemoryDC to trigger drawDefensiveFire(), which
+	// connects m_buttonDefensiveFireDone on its first-call path (m_first flag).
+	FBattleDisplay * display = findFirstBattleDisplay(screen);
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-06: FBattleDisplay must exist in FireDoneObserverBattleScreen",
+		display != NULL);
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(1200, 240);
+		dc.SelectObject(bmp);
+		display->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+	m_harness.pumpEvents(2);
+
+	// Find the button by label and force-enable it so the handler fires regardless
+	// of whether isMoveComplete() is true in the empty game state.
+	wxButton * btn = findButtonByLabel(screen, wxT("Defensive Fire Done"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-06: Defensive Fire Done button must be present after draw",
+		btn != NULL);
+	btn->Enable(true);
+
+	const int countBefore = screen->getCountingMock()->showDamageSummaryCallCount();
+
+	// Trigger the handler.  Empty game → weaponsFired == 0 → guard must suppress dialog.
+	wxCommandEvent evt(wxEVT_COMMAND_BUTTON_CLICKED, btn->GetId());
+	evt.SetEventObject(btn);
+	btn->GetEventHandler()->ProcessEvent(evt);
+	m_harness.pumpEvents(2);
+
+	const int countAfter = screen->getCountingMock()->showDamageSummaryCallCount();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"TMF-06 AC2: showDamageSummary must NOT be called when no weapons fired (weaponsFired==0)",
+		countBefore, countAfter);
+
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+	std::cerr << "TMFAC2:defensive-skip:done" << std::endl;
+}
+
+void TacticalGuiLiveTest::testOffensiveFireDoneSkipsDialogWhenNoWeaponsFired() {
+	// TMF-06 AC2 behavioral: onOffensiveFireDone must NOT invoke showDamageSummary
+	// when weaponsFired == 0 (empty game — no ships, no weapons).
+	//
+	// Coverage scope: mirrors the defensive test but exercises onOffensiveFireDone
+	// and PH_ATTACK_FIRE.  The same CountingMockTacticalUI / FireDoneObserverBattleScreen
+	// pattern intercepts the showTacticalDamageSummaryDialog seam without showing
+	// any real modal dialog.
+	std::cerr << "TMFAC2:offensive-skip:start" << std::endl;
+
+	FireDoneObserverBattleScreen * screen = new FireDoneObserverBattleScreen(
+		wxT("TMF-06 Offensive Fire Dialog Guard"));
+	screen->setFirePhase(PH_ATTACK_FIRE);
+	screen->Show();
+	m_harness.pumpEvents(5);
+
+	// Draw directly with a MemoryDC to trigger drawAttackFire(), which
+	// connects m_buttonOffensiveFireDone on its first-call path (m_first flag).
+	FBattleDisplay * display = findFirstBattleDisplay(screen);
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-06: FBattleDisplay must exist in FireDoneObserverBattleScreen",
+		display != NULL);
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(1200, 240);
+		dc.SelectObject(bmp);
+		display->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+	m_harness.pumpEvents(2);
+
+	wxButton * btn = findButtonByLabel(screen, wxT("Offensive Fire Done"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-06: Offensive Fire Done button must be present after draw",
+		btn != NULL);
+	btn->Enable(true);
+
+	const int countBefore = screen->getCountingMock()->showDamageSummaryCallCount();
+
+	// Trigger the handler.  Empty game → weaponsFired == 0 → guard must suppress dialog.
+	wxCommandEvent evt(wxEVT_COMMAND_BUTTON_CLICKED, btn->GetId());
+	evt.SetEventObject(btn);
+	btn->GetEventHandler()->ProcessEvent(evt);
+	m_harness.pumpEvents(2);
+
+	const int countAfter = screen->getCountingMock()->showDamageSummaryCallCount();
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"TMF-06 AC2: showDamageSummary must NOT be called when no weapons fired (weaponsFired==0)",
+		countBefore, countAfter);
+
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+	std::cerr << "TMFAC2:offensive-skip:done" << std::endl;
 }
 
 }

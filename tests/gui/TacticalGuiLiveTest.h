@@ -20,7 +20,7 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Apr 04, 2026
  * @date Last Modified: Jun 30, 2026
  */
@@ -59,6 +59,8 @@ CPPUNIT_TEST( testBattleScreenXCloseDismissesActiveChildDialog );
 CPPUNIT_TEST( testTurnButtonPanelHiddenInNonMovePhase );
 CPPUNIT_TEST( testTurnButtonPanelShownAndEnableStateReflectsModelInMovePhase );
 CPPUNIT_TEST( testTurnButtonClickAppliesEndOfMoveTurnToModel );
+CPPUNIT_TEST( testDefensiveFireDoneSkipsDialogWhenNoWeaponsFired );
+CPPUNIT_TEST( testOffensiveFireDoneSkipsDialogWhenNoWeaponsFired );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -600,6 +602,36 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 30, 2026
 	 */
 	void testTurnButtonClickAppliesEndOfMoveTurnToModel();
+
+	/**
+	 * @brief Behavioral: onDefensiveFireDone does NOT invoke showDamageSummary when no weapons fired.
+	 *
+	 * TMF-06 AC2: installs a CountingMockTacticalUI on a FireDoneObserverBattleScreen, sets the
+	 * game to BS_Battle / PH_DEFENSE_FIRE, triggers a draw to connect the button, then fires
+	 * the button click event programmatically.  With an empty game (no ships loaded) the model
+	 * returns weaponsFired == 0, and the guard in onDefensiveFireDone must suppress the call
+	 * to showTacticalDamageSummaryDialog.  The mock's invocation counter must not increase.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testDefensiveFireDoneSkipsDialogWhenNoWeaponsFired();
+
+	/**
+	 * @brief Behavioral: onOffensiveFireDone does NOT invoke showDamageSummary when no weapons fired.
+	 *
+	 * TMF-06 AC2: installs a CountingMockTacticalUI on a FireDoneObserverBattleScreen, sets the
+	 * game to BS_Battle / PH_ATTACK_FIRE, triggers a draw to connect the button, then fires
+	 * the button click event programmatically.  With an empty game (no ships loaded) the model
+	 * returns weaponsFired == 0, and the guard in onOffensiveFireDone must suppress the call
+	 * to showTacticalDamageSummaryDialog.  The mock's invocation counter must not increase.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testOffensiveFireDoneSkipsDialogWhenNoWeaponsFired();
 };
 
 }
