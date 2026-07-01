@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-06/verifier_report.md",
+    "artifacts/tactical-misc-fixes/TMF-06/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "tmf-TMF-06-verifier-20260630",
+  "documentation_accuracy_summary": [
+    "AGENTS.md fire-phase ownership note correctly documents the weaponsFired guard, buildTacticalCombatReportSummary population, and mine-damage path exception. doc/test-contracts.md TMF-06 entry accurately describes the three behavioral tests and two source-contract supplements. FTacticalCombatReport.h Doxygen blocks are present and accurate. Minor comment typo in FBattleDisplay.h noted as NOTE finding."
+  ],
+  "note_finding_count": 1,
+  "pass_label": null,
+  "status": "complete",
+  "task_id": "TMF-06",
+  "test_sufficiency_summary": [
+    "Three behavioral tests in FTacticalCombatReportTest directly exercise buildTacticalCombatReportSummary and prove weaponsFired is set correctly for zero, N, and miss-only cases. Two source-contract supplements in FTacticalBattleDisplayFireFlowTest lock the guard condition and ordering in both fire-done handlers. The dialog show/skip behavior at the wx event-handler level is not directly observed by any behavioral test \u2014 WARNING gap; direct end-to-end observation requires wx GUI infrastructure. No direct behavioral test of showDamageSummary call suppression exists, but source-contract+behavioral combination provides reasonable confidence for this simple conditional guard."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 1
+}
