@@ -1,0 +1,72 @@
+You are the **documenter** role in a multi-agent workflow.
+
+## Task
+
+Document the TMF-05 implementation: "Add end-of-move single facing change — Turn Left and Turn Right action buttons in the tactical move phase."
+
+## Working directory
+
+`/home/tstephen/repos/worktrees/tmf-TMF-05-tester-20260630`
+Branch: `tmf-TMF-05-tester-20260630`
+
+## What was implemented (Implementer summary)
+
+The implementer added an end-of-move single facing change to the tactical move phase.
+Players may rotate their ship one hex-facing (left or right) at the end of their movement,
+consuming 1 MR, provided they have moved the required minimum distance. Key model changes:
+
+- `FTacticalTurnData` gained two new fields: `pendingEndOfMoveFacing` (int, -1=none) and
+  `endOfMoveOriginFacing` (int, -1=not set).
+- New public API on `FTacticalGame`: `canApplyEndOfMoveTurnLeft()`, `canApplyEndOfMoveTurnRight()`,
+  `applyEndOfMoveTurn(int direction)`.
+- `finalizeMovementState()` commits `pendingEndOfMoveFacing` to `curHeading`/`finalHeading`.
+- `handleMoveHexSelection()` clears pending state (restores heading) when a hex is clicked.
+- `FBattleDisplay` gained `m_turnButtonPanel` (wxPanel*), `m_buttonTurnLeft`, `m_buttonTurnRight`;
+  the panel is shown in `drawMoveShip()` when in PH_MOVE with a ship selected.
+- `FBattleScreen` gained delegation methods `applyEndOfMoveTurn(int)`,
+  `canApplyEndOfMoveTurnLeft()`, `canApplyEndOfMoveTurnRight()`.
+
+## What was tested (Tester summary)
+
+- 17 model-side behavioral tests in `tests/tactical/FTacticalEndOfMoveTurnTest`.
+- 3 GUI behavioral tests added to `tests/gui/TacticalGuiLiveTest`:
+  `testTurnButtonPanelHiddenInNonMovePhase`, `testTurnButtonPanelShownAndEnableStateReflectsModelInMovePhase`,
+  `testTurnButtonClickAppliesEndOfMoveTurnToModel`.
+- All tests pass; no regressions.
+
+## Your responsibilities
+
+1. Run `myteam get role documenter` and follow all documenter role instructions.
+2. Update all relevant Doxygen headers in the implementation files that were added or modified.
+3. Update `doc/test-contracts.md` to record the new TMF-05 test contracts (following the existing
+   format used for other tactical tests: SMC-*, SMF-*, SMFR-*, etc.; use TMF-05 prefix).
+4. Do NOT edit `doc/rules/tactical_operations_manual.md` (non-volatile external artifact).
+5. Write `documenter_report.md` and `documenter_result.json` to
+   `artifacts/tactical-misc-fixes/TMF-05/`.
+6. Write `verifier_prompt.txt` to `artifacts/tactical-misc-fixes/TMF-05/` for the next role.
+7. Commit all documentation changes.
+
+## Key files to document
+
+- `include/tactical/FTacticalGame.h` — new public methods and new `FTacticalTurnData` fields
+- `src/tactical/FTacticalGame.cpp` — `canUseEndOfMoveTurn`, `canApplyEndOfMoveTurnLeft/Right`,
+  `applyEndOfMoveTurn`, `finalizeMovementState` (pending-commit logic), `handleMoveHexSelection`
+  (pending-clear logic)
+- `include/tactical/FBattleScreen.h` — new delegation methods
+- `src/tactical/FBattleScreen.cpp` — delegation method implementations
+- `include/tactical/FBattleDisplay.h` — new protected members `m_turnButtonPanel`,
+  `m_buttonTurnLeft`, `m_buttonTurnRight`
+- `src/tactical/FBattleDisplay.cpp` — `drawMoveShip` TMF-05 panel logic
+- `tests/tactical/FTacticalEndOfMoveTurnTest.h` and `.cpp` — new test file
+- `tests/gui/TacticalGuiLiveTest.h` and `.cpp` — new GUI test methods
+
+## Artifact directory
+
+`artifacts/tactical-misc-fixes/TMF-05/`
+
+## Previous artifacts
+
+- `implementer_report.md` — implementer's description of changes made
+- `implementer_result.json` — implementer result: PASS
+- `tester_report.md` — tester's coverage report
+- `tester_result.json` — tester result: PASS
