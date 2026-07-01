@@ -1,9 +1,9 @@
 /**
  * @file FBattleDisplay.h
  * @brief Header file for BattleDisplay class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 30, 2026 (TMF-01: add SEEKER_ACTIVATION_*_INSTRUCTION constants to single-source drawSeekerActivation strings)
+ * @date Last Modified: Jun 30, 2026 (TMF-05: add Turn Left / Turn Right buttons and panel for end-of-move facing change)
  *
  */
 
@@ -122,6 +122,12 @@ protected:
 	wxButton* m_buttonSeekerPlacementDone;
 	/// button for signaling completion of seeker activation phase
 	wxButton* m_buttonSeekerActivationDone;
+	/// dedicated panel holding the Turn Left / Turn Right end-of-move buttons (TMF-05)
+	wxPanel* m_turnButtonPanel;
+	/// button for applying an end-of-move left facing change (TMF-05)
+	wxButton* m_buttonTurnLeft;
+	/// button for applying an end-of-move right facing change (TMF-05)
+	wxButton* m_buttonTurnRight;
 	/// list of active regions for selection of a placement-source row
 	std::vector<wxRect> m_shipNameRegions;
 	/// placement-source index for each selectable row region
@@ -216,6 +222,33 @@ protected:
 
 	/// event handler for movement complete button
 	void onMoveDone( wxCommandEvent& event );
+
+	/**
+	 * @brief Handle Turn Left button click for end-of-move facing change (TMF-05).
+	 *
+	 * Calls applyEndOfMoveTurn(+1) on the parent battle screen, which applies a
+	 * one-hexside left rotation to the active ship as a pending uncommitted change.
+	 *
+	 * @param event Button-click event.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void onTurnLeft( wxCommandEvent& event );
+
+	/**
+	 * @brief Handle Turn Right button click for end-of-move facing change (TMF-05).
+	 *
+	 * Calls applyEndOfMoveTurn(-1) on the parent battle screen.
+	 *
+	 * @param event Button-click event.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void onTurnRight( wxCommandEvent& event );
 
 	/// event handler for defensive fire complete button
 	void onDefensiveFireDone( wxCommandEvent& event );

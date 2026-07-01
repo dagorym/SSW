@@ -3,7 +3,7 @@
  * @brief Header file for FTacticalGame class
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium)
  * @date Created:  Mar 29, 2026
- * @date Last Modified: Jun 22, 2026
+ * @date Last Modified: Jun 30, 2026
  *
  * PGS-04: Added FTacticalPreGameSeekerHexGroup struct, getPlacedSeekerHexGroups(),
  * and recallPlacedSeekerAtHexSource() for the pre-game seeker undeploy list.
@@ -16,6 +16,9 @@
  * PGS-03: Updated placeOrdnanceAtHex() so that during BS_PlaceSeekers,
  * board clicks are always additive (no toggle/removal); mine placement
  * toggle behavior for BS_PlaceMines is unchanged.
+ * TMF-05: Added pendingEndOfMoveFacing and endOfMoveOriginFacing fields to
+ * FTacticalTurnData; added canApplyEndOfMoveTurnLeft(), canApplyEndOfMoveTurnRight(),
+ * and applyEndOfMoveTurn() for end-of-move single facing change via Turn buttons.
  */
 
 #ifndef _FTACTICALGAME_H_
@@ -70,6 +73,10 @@ int curHeading;
 int nMoved;
 std::map<FPoint, int> gravityTurns;
 FHexPath path;
+/// pending end-of-move facing heading (-1 = no pending change)
+int pendingEndOfMoveFacing;
+/// heading before any pending end-of-move turn (-1 = not set)
+int endOfMoveOriginFacing;
 } FTacticalTurnData;
 
 /**
@@ -933,6 +940,58 @@ void clearMovementHighlights();
 void resetTurnInfoForCurrentMover();
 FTacticalTurnData * findTurnData(unsigned int shipID);
 const FTacticalTurnData * findTurnData(unsigned int shipID) const;
+
+/**
+ * @brief Check whether the active ship may apply a left end-of-move facing change.
+ *
+ * Returns true when the currently selected ship has met its minimum required
+ * move (nMoved >= speed - ADF), has MR budget for a turn in its final occupied
+ * hex, and a left turn yields a valid facing within one hexside of the ship's
+ * pre-turn heading. Specifically: both directions are available from the original
+ * heading; only the reverse direction (Turn Right) is available once a left turn
+ * has been applied, so this returns false from an already-left-turned state.
+ *
+ * @return True when the Turn Left action is currently valid.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 30, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
+bool canApplyEndOfMoveTurnLeft();
+
+/**
+ * @brief Check whether the active ship may apply a right end-of-move facing change.
+ *
+ * Mirror of canApplyEndOfMoveTurnLeft() for the right direction.
+ *
+ * @return True when the Turn Right action is currently valid.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 30, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
+bool canApplyEndOfMoveTurnRight();
+
+/**
+ * @brief Apply a pending end-of-move single facing change for the active ship.
+ *
+ * Rotates the active ship one hexside in the requested direction as a pending
+ * uncommitted change: updates m_curShip->setHeading() for immediate visual
+ * feedback, records the new heading in turnData->pendingEndOfMoveFacing, and
+ * stores the pre-turn heading in turnData->endOfMoveOriginFacing so the reverse
+ * direction can undo the turn. The change is committed to the model only when
+ * finalizeMovementState() runs (Movement Done). Pressing the opposite direction
+ * while a pending turn is active reverses it back to the origin heading.
+ *
+ * @param direction +1 for Turn Left, -1 for Turn Right.
+ *
+ * @return True when the turn was applied or reversed successfully.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 30, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
+bool applyEndOfMoveTurn(int direction);
 
 protected:
 /// Placeholder for future UI abstraction (Milestone 6)

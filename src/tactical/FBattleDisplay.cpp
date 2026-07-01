@@ -40,6 +40,12 @@
  * lMargin=310 is replaced by a dynamically computed margin that clears the widest
  * left-column instruction line and the "Seeker Activation Done" button's right edge,
  * mirroring the SMRV-01 (round5) attack-phase approach.
+ * TMF-05: Added Turn Left / Turn Right wxButton controls in a dedicated child panel
+ * (m_turnButtonPanel) positioned in the middle column at the top of the lower panel,
+ * to the right of Movement Done and left of the ship-stats column. drawMoveShip()
+ * shows/hides the panel and enables each button based on canApplyEndOfMoveTurnLeft()
+ * and canApplyEndOfMoveTurnRight(). onTurnLeft()/onTurnRight() forward to
+ * FBattleScreen::applyEndOfMoveTurn(+1/-1).
  */
 
 //#include "FBattleDisplay.h"
@@ -122,6 +128,20 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonMinePlacementDone = new wxButton( this, wxID_ANY, wxT("Mine Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonSeekerPlacementDone = new wxButton( this, wxID_ANY, wxT("Seeker Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonSeekerActivationDone = new wxButton( this, wxID_ANY, wxT("Seeker Activation Done"), wxDefaultPosition, wxDefaultSize, 0 );
+
+	// TMF-05: Turn Left / Turn Right panel positioned to the right of Movement Done.
+	// The panel is created as a free-floating child (not in the root sizer) and
+	// positioned absolutely in drawMoveShip() each time the phase is drawn.
+	m_turnButtonPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	m_turnButtonPanel->SetBackgroundColour(wxColour(wxT("#000000")));
+	m_buttonTurnLeft = new wxButton( m_turnButtonPanel, wxID_ANY, wxT("Turn Left"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonTurnRight = new wxButton( m_turnButtonPanel, wxID_ANY, wxT("Turn Right"), wxDefaultPosition, wxDefaultSize, 0 );
+	wxBoxSizer * turnSizer = new wxBoxSizer(wxHORIZONTAL);
+	turnSizer->Add(m_buttonTurnLeft, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, BORDER);
+	turnSizer->Add(m_buttonTurnRight, 0, wxALIGN_CENTER_VERTICAL);
+	m_turnButtonPanel->SetSizerAndFit(turnSizer);
+	m_turnButtonPanel->SetMinSize(m_turnButtonPanel->GetBestSize());
+	m_turnButtonPanel->Hide();
 
 	wxBoxSizer * rootSizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer * speedSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -668,6 +688,14 @@ void FBattleDisplay::draw(wxDC &dc){
 //	wxBitmap b("icons/ufo.png");
 //	dc.DrawBitmap(b, 5, 5);
 	wxColour black(wxT("#000000"));// black
+	// TMF-05: non-battle states never need the turn panel; hide it here if shown.
+	if (m_parent->getState() != BS_Battle && m_turnButtonPanel->IsShown()) {
+		m_buttonTurnLeft->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+			wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
+		m_buttonTurnRight->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+			wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
+		m_turnButtonPanel->Hide();
+	}
 	m_weaponRegions.clear();
 	m_defenseRegions.clear();
 	m_pendingSeekerRecallRegions.clear();
@@ -718,6 +746,14 @@ void FBattleDisplay::draw(wxDC &dc){
 		drawPlaceSeekers(dc);
 		break;
 	case BS_Battle: {
+		// TMF-05: hide the Turn panel whenever we leave the move phase.
+		if (m_parent->getPhase() != PH_MOVE && m_turnButtonPanel->IsShown()) {
+			m_buttonTurnLeft->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+				wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
+			m_buttonTurnRight->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+				wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
+			m_turnButtonPanel->Hide();
+		}
 		switch (m_parent->getPhase()){
 		case PH_SEEKER_ACTIVATION:
 			drawSeekerActivation(dc);
@@ -1107,6 +1143,51 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 		m_first=false;
 	}
 
+	// TMF-05: Position and show the Turn Left / Turn Right panel.
+	// The panel is placed in the middle column: to the right of Movement Done and
+	// the left instruction text, and to the left of the ship-stats column.
+	// Mirror the lMargin math from drawSeekerActivation() (:1717-1730).
+	{
+		// Compute left-column instruction width: measure the widest line drawn above.
+		dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
+		const int instrW = std::max(
+			dc.GetTextExtent(detailPromptOne).GetWidth(),
+			std::max(dc.GetTextExtent(turnPrompt).GetWidth(),
+				dc.GetTextExtent(detailPromptTwo).GetWidth()));
+		// Compute Movement Done button's right extent relative to leftOffset.
+		const int moveBtnBestW = m_buttonMoveDone->GetBestSize().GetWidth();
+		const wxPoint moveBtnPos = m_buttonMoveDone->GetPosition();
+		const int moveBtnAbsRight = (moveBtnPos.x >= leftOffset)
+			? moveBtnPos.x + m_buttonMoveDone->GetSize().GetWidth()
+			: leftOffset + moveBtnBestW;
+		const int moveDoneRightExtent = moveBtnAbsRight - leftOffset;
+		const int lMargin = leftOffset + std::max(instrW, moveDoneRightExtent) + 2*BORDER;
+		// Clamp to left of ship-stats column when initialized.
+		const int statsLeft = m_lowerPanelLayoutState.initialized
+			? m_lowerPanelLayoutState.shipStatsLeftMargin
+			: lMargin + m_turnButtonPanel->GetBestSize().GetWidth() + 2*BORDER;
+		const int panelX = lMargin;
+		const int panelY = getActionPromptLineY(0);
+		// Only show when panel fits left of ship-stats column.
+		if (panelX + m_turnButtonPanel->GetBestSize().GetWidth() + 2*BORDER <= statsLeft) {
+			m_turnButtonPanel->SetPosition(wxPoint(panelX, panelY));
+			m_turnButtonPanel->SetSize(m_turnButtonPanel->GetBestSize());
+			const bool canLeft = m_parent->canApplyEndOfMoveTurnLeft();
+			const bool canRight = m_parent->canApplyEndOfMoveTurnRight();
+			m_buttonTurnLeft->Enable(canLeft);
+			m_buttonTurnRight->Enable(canRight);
+			if (!m_turnButtonPanel->IsShown()) {
+				m_buttonTurnLeft->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+					wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
+				m_buttonTurnRight->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+					wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
+				m_turnButtonPanel->Show();
+			}
+		} else {
+			m_turnButtonPanel->Hide();
+		}
+	}
+
 }
 
 void FBattleDisplay::drawCurrentShipStats(wxDC & dc){
@@ -1220,8 +1301,25 @@ void FBattleDisplay::onMoveDone( wxCommandEvent& event ){
 //	std::cerr << "Movement Completed" << std::endl;
 	m_parent->completeMovePhase();
 	m_buttonMoveDone->Hide();
+	// TMF-05: hide the turn button panel with Movement Done
+	if (m_turnButtonPanel->IsShown()) {
+		m_buttonTurnLeft->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+			wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
+		m_buttonTurnRight->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
+			wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
+		m_turnButtonPanel->Hide();
+	}
 	Layout();
 	m_first=true;
+}
+
+void FBattleDisplay::onTurnLeft( wxCommandEvent& event ){
+	m_parent->applyEndOfMoveTurn(1);
+	// Update button enable states after the turn; redraw triggered by applyEndOfMoveTurn.
+}
+
+void FBattleDisplay::onTurnRight( wxCommandEvent& event ){
+	m_parent->applyEndOfMoveTurn(-1);
 }
 
 void FBattleDisplay::drawDefensiveFire(wxDC &dc){

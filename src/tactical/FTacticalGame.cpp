@@ -12,6 +12,11 @@
  * PGS-03: placeOrdnanceAtHex() now bypasses the toggle/remove path during
  * pre-game BS_PlaceSeekers so that board clicks are always additive.
  * Mine placement toggle behavior (BS_PlaceMines) is unchanged.
+ * TMF-05: Added canApplyEndOfMoveTurnLeft(), canApplyEndOfMoveTurnRight(),
+ * and applyEndOfMoveTurn() for end-of-move single facing change. Initialized
+ * pendingEndOfMoveFacing and endOfMoveOriginFacing in resetTurnInfoForCurrentMover().
+ * handleMoveHexSelection() clears pending turn state on any hex selection.
+ * finalizeMovementState() commits pendingEndOfMoveFacing to curHeading before writing.
  *
  */
 
@@ -802,6 +807,11 @@ void FTacticalGame::finalizeMovementState() {
 			|| (*itr)->getType() == "FortifiedStation"
 			|| (*itr)->getType() == "Fortress");
 		if (!isStation) {
+			// Commit any pending end-of-move facing change before finalizing.
+			if (tItr->second.pendingEndOfMoveFacing != -1) {
+				tItr->second.curHeading = tItr->second.pendingEndOfMoveFacing;
+				tItr->second.finalHeading = tItr->second.pendingEndOfMoveFacing;
+			}
 			(*itr)->setSpeed(tItr->second.nMoved);
 			(*itr)->setHeading(tItr->second.curHeading);
 		} else {
@@ -811,6 +821,95 @@ void FTacticalGame::finalizeMovementState() {
 	}
 	m_drawRoute = false;
 	setMoveComplete(true);
+}
+
+/**
+ * @brief Internal helper: check if the active ship may use an end-of-move facing change.
+ *
+ * The ship must have met its minimum required move, have remaining MR budget for a
+ * turn in the final occupied hex, and must not have already used a turn in that hex
+ * via normal movement. A pending end-of-move turn counts as the MR consumed, so this
+ * helper returns false when no additional budget is available.
+ *
+ * @param ship  Active ship pointer (must be non-NULL).
+ * @param turnData  Turn data for the active ship (must be non-NULL).
+ *
+ * @return True when the ship has budget for exactly one end-of-move facing change.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 30, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
+static bool canUseEndOfMoveTurn(FVehicle * ship, FTacticalTurnData * turnData) {
+	if (ship == NULL || turnData == NULL) { return false; }
+	if (ship->getMR() == 0) { return false; }
+	// Minimum move check: nMoved >= speed - ADF (result may be <= 0, so also accept nMoved == 0)
+	const int minMove = turnData->speed - ship->getADF();
+	if (turnData->nMoved < minMove) { return false; }
+	// One-turn-per-hex limit at the final occupied hex.
+	// If path has moved hexes (length > 1), check if the end hex already has an MR_TURN flag.
+	if (turnData->path.getPathLength() > 1) {
+		if (turnData->path.getFlag(turnData->path.endPoint()) & MR_TURN) {
+			return false;
+		}
+	}
+	// If a pending end-of-move turn already exists, no additional MR budget is available.
+	if (turnData->pendingEndOfMoveFacing != -1) { return false; }
+	return true;
+}
+
+bool FTacticalGame::canApplyEndOfMoveTurnLeft() {
+	if (m_curShip == NULL) { return false; }
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL) { return false; }
+	// If a right turn is pending, the reverse (left) is allowed.
+	if (turnData->pendingEndOfMoveFacing != -1) {
+		const int rightTurnHeading = turnShip(turnData->endOfMoveOriginFacing, -1);
+		return (turnData->pendingEndOfMoveFacing == rightTurnHeading);
+	}
+	return canUseEndOfMoveTurn(m_curShip, turnData);
+}
+
+bool FTacticalGame::canApplyEndOfMoveTurnRight() {
+	if (m_curShip == NULL) { return false; }
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL) { return false; }
+	// If a left turn is pending, the reverse (right) is allowed.
+	if (turnData->pendingEndOfMoveFacing != -1) {
+		const int leftTurnHeading = turnShip(turnData->endOfMoveOriginFacing, 1);
+		return (turnData->pendingEndOfMoveFacing == leftTurnHeading);
+	}
+	return canUseEndOfMoveTurn(m_curShip, turnData);
+}
+
+bool FTacticalGame::applyEndOfMoveTurn(int direction) {
+	if (m_curShip == NULL) { return false; }
+	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
+	if (turnData == NULL) { return false; }
+
+	if (turnData->pendingEndOfMoveFacing != -1) {
+		// A turn is already pending; allow only the reverse direction.
+		if (direction == 1) {
+			if (!canApplyEndOfMoveTurnLeft()) { return false; }
+		} else {
+			if (!canApplyEndOfMoveTurnRight()) { return false; }
+		}
+		// Reverse: restore to the origin heading and clear pending state.
+		m_curShip->setHeading(turnData->endOfMoveOriginFacing);
+		turnData->pendingEndOfMoveFacing = -1;
+		turnData->endOfMoveOriginFacing = -1;
+		return true;
+	}
+
+	// No pending turn yet; check full budget.
+	if (!canUseEndOfMoveTurn(m_curShip, turnData)) { return false; }
+
+	// Record origin and apply the one-hexside turn.
+	turnData->endOfMoveOriginFacing = m_curShip->getHeading();
+	const int newHeading = turnShip(turnData->endOfMoveOriginFacing, direction);
+	turnData->pendingEndOfMoveFacing = newHeading;
+	m_curShip->setHeading(newHeading);
+	return true;
 }
 
 void FTacticalGame::clearMovementHighlights() {
@@ -839,6 +938,8 @@ void FTacticalGame::resetTurnInfoForCurrentMover() {
 		d.nMoved = 0;
 		d.gravityTurns.clear();
 		d.path.clear();
+		d.pendingEndOfMoveFacing = -1;
+		d.endOfMoveOriginFacing = -1;
 		if (m_station != NULL && (*itr)->getID() == m_station->getID()) {
 			d.path.addPoint(m_stationPos);
 			FPoint nextHex = FHexMap::findNextHex(m_stationPos, d.curHeading);
@@ -2415,6 +2516,13 @@ bool FTacticalGame::handleMoveHexSelection(const FPoint & hex) {
 	FTacticalTurnData * turnData = findTurnData(m_curShip->getID());
 	if (turnData == NULL) {
 		return false;
+	}
+	// TMF-05: clear any pending end-of-move facing change when a hex is selected
+	// for movement, since the ship is now moving again and the pending turn is superseded.
+	if (turnData->pendingEndOfMoveFacing != -1) {
+		m_curShip->setHeading(turnData->endOfMoveOriginFacing);
+		turnData->pendingEndOfMoveFacing = -1;
+		turnData->endOfMoveOriginFacing = -1;
 	}
 	if (canUseStoppedShipFreeRotation(m_curShip, turnData)) {
 		int selectedHeading = -1;

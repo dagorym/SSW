@@ -1,7 +1,7 @@
 /**
  * @file FBattleScreen.h
  * @brief Header file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
  * @date Last Modified: Jun 30, 2026
  *
@@ -323,6 +323,43 @@ public:
 	 */
 	void completeSeekerPlacement();
 	void completeMovePhase();
+	/**
+	 * @brief Apply a pending end-of-move single facing change for the active ship.
+	 *
+	 * Forwards to FTacticalGame::applyEndOfMoveTurn(direction). Rotates the active
+	 * ship one hexside in the requested direction as a reversible pending change
+	 * committed only at Movement Done. Pass +1 for Turn Left, -1 for Turn Right.
+	 *
+	 * @param direction +1 for left, -1 for right.
+	 *
+	 * @return True when the turn was applied or reversed.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	bool applyEndOfMoveTurn(int direction);
+	/**
+	 * @brief Return true when the active ship may apply a left end-of-move facing change.
+	 *
+	 * Delegation to FTacticalGame::canApplyEndOfMoveTurnLeft(). Used by FBattleDisplay
+	 * to enable or disable the Turn Left button during PH_MOVE.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	bool canApplyEndOfMoveTurnLeft();
+	/**
+	 * @brief Return true when the active ship may apply a right end-of-move facing change.
+	 *
+	 * Delegation to FTacticalGame::canApplyEndOfMoveTurnRight().
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	bool canApplyEndOfMoveTurnRight();
 	FTacticalCombatReportSummary resolveCurrentFirePhase();
 	void completeDefensiveFirePhase();
 	void completeOffensiveFirePhase();

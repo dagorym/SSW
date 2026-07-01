@@ -1,7 +1,7 @@
 /**
  * @file FBattleScreen.cpp
  * @brief Implementation file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
  * @date Last Modified:  Jun 30, 2026
  *
@@ -692,6 +692,22 @@ void FBattleScreen::completeSeekerPlacement() {
 void FBattleScreen::completeMovePhase() {
 	m_tacticalGame->completeMovePhase();
 	reDraw();
+}
+
+bool FBattleScreen::applyEndOfMoveTurn(int direction) {
+	const bool changed = m_tacticalGame->applyEndOfMoveTurn(direction);
+	if (changed) {
+		reDraw();
+	}
+	return changed;
+}
+
+bool FBattleScreen::canApplyEndOfMoveTurnLeft() {
+	return m_tacticalGame->canApplyEndOfMoveTurnLeft();
+}
+
+bool FBattleScreen::canApplyEndOfMoveTurnRight() {
+	return m_tacticalGame->canApplyEndOfMoveTurnRight();
 }
 
 FTacticalCombatReportSummary FBattleScreen::resolveCurrentFirePhase() {
