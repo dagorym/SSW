@@ -2,7 +2,7 @@
   "status": "success",
   "task": "TMF-06",
   "plan": "plans/tactical-misc-fixes-plan.md",
-  "branch": "tmf-TMF-06-documenter-20260630",
+  "branch_name": "tmf-TMF-06-documenter-20260630",
   "documentation_commit": "bf4d26a",
   "documentation_files_modified": [
     "AGENTS.md",
