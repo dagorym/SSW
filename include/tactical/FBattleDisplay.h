@@ -3,7 +3,7 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 30, 2026 (TMF-05: add Turn Left / Turn Right buttons and panel for end-of-move facing change)
+ * @date Last Modified: Jun 30, 2026 (TMF-06: guard showTacticalDamageSummaryDialog on weaponsFired > 0 in fire-done handlers)
  *
  */
 
