@@ -1,0 +1,1279 @@
+# Implementer Report
+
+Status:
+- success
+
+Task summary:
+- TMF-05: Add end-of-move single facing change — Turn Left and Turn Right action buttons in the tactical move phase.
+
+Changed files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Validation commands run:
+- make (from repo root)
+- make tactical-tests && ./tactical/TacticalTests (from tests/)
+- make gui-tests && xvfb-run -a ./GuiTests (from tests/gui/)
+
+Validation outcome:
+- PASS: clean build (0 errors, pre-existing FJumpRoute warnings only). Tactical tests: 227/227 pass. GUI tests: 52/60 pass; 8 pre-existing failures confirmed by stash-and-rerun baseline, none introduced by TMF-05.
+
+Implementation/code commit hash:
+- 0bf0d9e
+
+Artifacts written:
+- artifacts/tactical-misc-fixes/TMF-05/implementer_report.md
+- artifacts/tactical-misc-fixes/TMF-05/tester_prompt.txt
+- artifacts/tactical-misc-fixes/TMF-05/implementer_result.json
+
+Implementation context:
+- F
+- T
+- a
+- c
+- t
+- i
+- c
+- a
+- l
+- T
+- u
+- r
+- n
+- D
+- a
+- t
+- a
+-  
+- g
+- a
+- i
+- n
+- s
+-  
+- p
+- e
+- n
+- d
+- i
+- n
+- g
+- E
+- n
+- d
+- O
+- f
+- M
+- o
+- v
+- e
+- F
+- a
+- c
+- i
+- n
+- g
+-  
+- (
+- -
+- 1
+-  
+- =
+-  
+- n
+- o
+- n
+- e
+- )
+-  
+- a
+- n
+- d
+-  
+- e
+- n
+- d
+- O
+- f
+- M
+- o
+- v
+- e
+- O
+- r
+- i
+- g
+- i
+- n
+- F
+- a
+- c
+- i
+- n
+- g
+-  
+- (
+- -
+- 1
+-  
+- =
+-  
+- n
+- o
+- t
+-  
+- s
+- e
+- t
+- )
+- .
+-  
+- c
+- a
+- n
+- U
+- s
+- e
+- E
+- n
+- d
+- O
+- f
+- M
+- o
+- v
+- e
+- T
+- u
+- r
+- n
+- (
+- )
+-  
+- (
+- f
+- i
+- l
+- e
+- -
+- l
+- o
+- c
+- a
+- l
+-  
+- s
+- t
+- a
+- t
+- i
+- c
+- )
+-  
+- g
+- a
+- t
+- e
+- s
+-  
+- o
+- n
+-  
+- M
+- R
+- >
+- 0
+- ,
+-  
+- n
+- M
+- o
+- v
+- e
+- d
+- >
+- =
+- m
+- i
+- n
+- M
+- o
+- v
+- e
+- ,
+-  
+- a
+- n
+- d
+-  
+- n
+- o
+-  
+- M
+- R
+- _
+- T
+- U
+- R
+- N
+-  
+- f
+- l
+- a
+- g
+-  
+- o
+- n
+-  
+- p
+- a
+- t
+- h
+- .
+- e
+- n
+- d
+- P
+- o
+- i
+- n
+- t
+- (
+- )
+- .
+-  
+- c
+- a
+- n
+- A
+- p
+- p
+- l
+- y
+- E
+- n
+- d
+- O
+- f
+- M
+- o
+- v
+- e
+- T
+- u
+- r
+- n
+- L
+- e
+- f
+- t
+- /
+- R
+- i
+- g
+- h
+- t
+- (
+- )
+-  
+- e
+- x
+- t
+- e
+- n
+- d
+-  
+- t
+- h
+- e
+-  
+- g
+- a
+- t
+- e
+-  
+- t
+- o
+-  
+- a
+- l
+- s
+- o
+-  
+- a
+- l
+- l
+- o
+- w
+-  
+- r
+- e
+- v
+- e
+- r
+- s
+- i
+- n
+- g
+-  
+- a
+-  
+- s
+- a
+- m
+- e
+- -
+- d
+- i
+- r
+- e
+- c
+- t
+- i
+- o
+- n
+-  
+- p
+- e
+- n
+- d
+- i
+- n
+- g
+-  
+- t
+- u
+- r
+- n
+- .
+-  
+- a
+- p
+- p
+- l
+- y
+- E
+- n
+- d
+- O
+- f
+- M
+- o
+- v
+- e
+- T
+- u
+- r
+- n
+- (
+- +
+- 1
+- /
+- -
+- 1
+- )
+-  
+- s
+- e
+- t
+- s
+-  
+- o
+- r
+-  
+- c
+- l
+- e
+- a
+- r
+- s
+-  
+- t
+- h
+- e
+-  
+- p
+- e
+- n
+- d
+- i
+- n
+- g
+-  
+- s
+- t
+- a
+- t
+- e
+-  
+- a
+- n
+- d
+-  
+- c
+- a
+- l
+- l
+- s
+-  
+- s
+- h
+- i
+- p
+- -
+- >
+- s
+- e
+- t
+- H
+- e
+- a
+- d
+- i
+- n
+- g
+- (
+- )
+-  
+- i
+- m
+- m
+- e
+- d
+- i
+- a
+- t
+- e
+- l
+- y
+-  
+- f
+- o
+- r
+-  
+- r
+- e
+- n
+- d
+- e
+- r
+- i
+- n
+- g
+-  
+- s
+- i
+- n
+- c
+- e
+-  
+- F
+- B
+- a
+- t
+- t
+- l
+- e
+- B
+- o
+- a
+- r
+- d
+-  
+- c
+- a
+- n
+- n
+- o
+- t
+-  
+- b
+- e
+-  
+- m
+- o
+- d
+- i
+- f
+- i
+- e
+- d
+-  
+- (
+- n
+- o
+- t
+-  
+- i
+- n
+-  
+- a
+- l
+- l
+- o
+- w
+- e
+- d
+-  
+- f
+- i
+- l
+- e
+- s
+- )
+- .
+-  
+- h
+- a
+- n
+- d
+- l
+- e
+- M
+- o
+- v
+- e
+- H
+- e
+- x
+- S
+- e
+- l
+- e
+- c
+- t
+- i
+- o
+- n
+- (
+- )
+-  
+- c
+- l
+- e
+- a
+- r
+- s
+-  
+- p
+- e
+- n
+- d
+- i
+- n
+- g
+-  
+- s
+- t
+- a
+- t
+- e
+-  
+- (
+- r
+- e
+- s
+- t
+- o
+- r
+- i
+- n
+- g
+-  
+- o
+- r
+- i
+- g
+- i
+- n
+-  
+- h
+- e
+- a
+- d
+- i
+- n
+- g
+- )
+-  
+- b
+- e
+- f
+- o
+- r
+- e
+-  
+- p
+- r
+- o
+- c
+- e
+- s
+- s
+- i
+- n
+- g
+-  
+- a
+- n
+- y
+-  
+- h
+- e
+- x
+-  
+- c
+- l
+- i
+- c
+- k
+- .
+-  
+- f
+- i
+- n
+- a
+- l
+- i
+- z
+- e
+- M
+- o
+- v
+- e
+- m
+- e
+- n
+- t
+- S
+- t
+- a
+- t
+- e
+- (
+- )
+-  
+- c
+- o
+- m
+- m
+- i
+- t
+- s
+-  
+- p
+- e
+- n
+- d
+- i
+- n
+- g
+- E
+- n
+- d
+- O
+- f
+- M
+- o
+- v
+- e
+- F
+- a
+- c
+- i
+- n
+- g
+-  
+- t
+- o
+-  
+- b
+- o
+- t
+- h
+-  
+- c
+- u
+- r
+- H
+- e
+- a
+- d
+- i
+- n
+- g
+-  
+- a
+- n
+- d
+-  
+- f
+- i
+- n
+- a
+- l
+- H
+- e
+- a
+- d
+- i
+- n
+- g
+-  
+- b
+- e
+- f
+- o
+- r
+- e
+-  
+- t
+- h
+- e
+-  
+- e
+- x
+- i
+- s
+- t
+- i
+- n
+- g
+-  
+- s
+- e
+- t
+- H
+- e
+- a
+- d
+- i
+- n
+- g
+-  
+- c
+- a
+- l
+- l
+- .
+-  
+- F
+- B
+- a
+- t
+- t
+- l
+- e
+- D
+- i
+- s
+- p
+- l
+- a
+- y
+-  
+- c
+- o
+- n
+- s
+- t
+- r
+- u
+- c
+- t
+- o
+- r
+-  
+- c
+- r
+- e
+- a
+- t
+- e
+- s
+-  
+- m
+- _
+- t
+- u
+- r
+- n
+- B
+- u
+- t
+- t
+- o
+- n
+- P
+- a
+- n
+- e
+- l
+-  
+- a
+- s
+-  
+- a
+-  
+- f
+- r
+- e
+- e
+- -
+- f
+- l
+- o
+- a
+- t
+- i
+- n
+- g
+-  
+- c
+- h
+- i
+- l
+- d
+-  
+- w
+- x
+- P
+- a
+- n
+- e
+- l
+-  
+- (
+- n
+- o
+- t
+-  
+- i
+- n
+-  
+- t
+- h
+- e
+-  
+- r
+- o
+- o
+- t
+- S
+- i
+- z
+- e
+- r
+- )
+-  
+- w
+- i
+- t
+- h
+-  
+- m
+- _
+- b
+- u
+- t
+- t
+- o
+- n
+- T
+- u
+- r
+- n
+- L
+- e
+- f
+- t
+-  
+- a
+- n
+- d
+-  
+- m
+- _
+- b
+- u
+- t
+- t
+- o
+- n
+- T
+- u
+- r
+- n
+- R
+- i
+- g
+- h
+- t
+-  
+- c
+- h
+- i
+- l
+- d
+- r
+- e
+- n
+- .
+-  
+- d
+- r
+- a
+- w
+- M
+- o
+- v
+- e
+- S
+- h
+- i
+- p
+- (
+- )
+-  
+- p
+- o
+- s
+- i
+- t
+- i
+- o
+- n
+- s
+-  
+- t
+- h
+- e
+-  
+- p
+- a
+- n
+- e
+- l
+-  
+- u
+- s
+- i
+- n
+- g
+-  
+- t
+- h
+- e
+-  
+- s
+- a
+- m
+- e
+-  
+- l
+- M
+- a
+- r
+- g
+- i
+- n
+-  
+- f
+- o
+- r
+- m
+- u
+- l
+- a
+-  
+- a
+- s
+-  
+- d
+- r
+- a
+- w
+- S
+- e
+- e
+- k
+- e
+- r
+- A
+- c
+- t
+- i
+- v
+- a
+- t
+- i
+- o
+- n
+- (
+- )
+-  
+- a
+- n
+- d
+-  
+- u
+- p
+- d
+- a
+- t
+- e
+- s
+-  
+- b
+- u
+- t
+- t
+- o
+- n
+-  
+- e
+- n
+- a
+- b
+- l
+- e
+-  
+- s
+- t
+- a
+- t
+- e
+- s
+-  
+- e
+- a
+- c
+- h
+-  
+- p
+- a
+- i
+- n
+- t
+- ;
+-  
+- e
+- v
+- e
+- n
+- t
+- s
+-  
+- a
+- r
+- e
+-  
+- c
+- o
+- n
+- n
+- e
+- c
+- t
+- e
+- d
+-  
+- o
+- n
+- l
+- y
+-  
+- w
+- h
+- e
+- n
+-  
+- t
+- h
+- e
+-  
+- p
+- a
+- n
+- e
+- l
+-  
+- t
+- r
+- a
+- n
+- s
+- i
+- t
+- i
+- o
+- n
+- s
+-  
+- f
+- r
+- o
+- m
+-  
+- h
+- i
+- d
+- d
+- e
+- n
+-  
+- t
+- o
+-  
+- s
+- h
+- o
+- w
+- n
+- .
+-  
+- d
+- r
+- a
+- w
+- (
+- )
+-  
+- h
+- i
+- d
+- e
+- s
+-  
+- t
+- h
+- e
+-  
+- p
+- a
+- n
+- e
+- l
+-  
+- u
+- n
+- c
+- o
+- n
+- d
+- i
+- t
+- i
+- o
+- n
+- a
+- l
+- l
+- y
+-  
+- f
+- o
+- r
+-  
+- n
+- o
+- n
+- -
+- P
+- H
+- _
+- M
+- O
+- V
+- E
+-  
+- p
+- h
+- a
+- s
+- e
+- s
+-  
+- a
+- n
+- d
+-  
+- n
+- o
+- n
+- -
+- B
+- S
+- _
+- B
+- a
+- t
+- t
+- l
+- e
+-  
+- s
+- t
+- a
+- t
+- e
+- s
+- .
+-  
+- o
+- n
+- M
+- o
+- v
+- e
+- D
+- o
+- n
+- e
+- (
+- )
+-  
+- a
+- l
+- s
+- o
+-  
+- d
+- i
+- s
+- c
+- o
+- n
+- n
+- e
+- c
+- t
+- s
+-  
+- a
+- n
+- d
+-  
+- h
+- i
+- d
+- e
+- s
+-  
+- t
+- h
+- e
+-  
+- p
+- a
+- n
+- e
+- l
+- .
+
+Expected validation failures carried forward:
+- None

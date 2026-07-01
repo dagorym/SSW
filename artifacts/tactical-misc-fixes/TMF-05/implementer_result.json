@@ -1,0 +1,26 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-05/implementer_report.md",
+    "artifacts/tactical-misc-fixes/TMF-05/tester_prompt.txt",
+    "artifacts/tactical-misc-fixes/TMF-05/implementer_result.json"
+  ],
+  "branch_name": "tmf-TMF-05-implementer-20260630",
+  "changed_files": [
+    "include/tactical/FTacticalGame.h",
+    "src/tactical/FTacticalGame.cpp",
+    "include/tactical/FBattleScreen.h",
+    "src/tactical/FBattleScreen.cpp",
+    "include/tactical/FBattleDisplay.h",
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "code_commit_hash": "0bf0d9e",
+  "pass_label": null,
+  "status": "success",
+  "task_id": null,
+  "validation_commands": [
+    "make (from repo root)",
+    "make tactical-tests && ./tactical/TacticalTests (from tests/)",
+    "make gui-tests && xvfb-run -a ./GuiTests (from tests/gui/)"
+  ],
+  "validation_outcome": "PASS: clean build (0 errors, pre-existing FJumpRoute warnings only). Tactical tests: 227/227 pass. GUI tests: 52/60 pass; 8 pre-existing failures confirmed by stash-and-rerun baseline, none introduced by TMF-05."
+}

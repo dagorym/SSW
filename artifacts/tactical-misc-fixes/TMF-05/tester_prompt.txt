@@ -1,0 +1,62 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- TMF-05: Add end-of-move single facing change — Turn Left and Turn Right action buttons in the tactical move phase.
+
+Modified files:
+- include/tactical/FTacticalGame.h
+- src/tactical/FTacticalGame.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- Turn Left and Turn Right buttons appear in the move-phase action panel, in a dedicated child panel to the right of Movement Done and left of ship-stats column
+- Both direction buttons enabled when no pending turn is active and the ship has unused MR (MR_TURN not on final hex, minimum move satisfied)
+- When a one-hexside turn is pending, only the reverse direction button is enabled
+- Pending facing is uncommitted until Movement Done (finalizeMovementState) commits it
+- Clicking a movement hex while a pending turn is active clears the pending turn and restores the original heading before processing the hex
+- Ships that decelerate to speed 0 this turn can also use the end-of-move turn (extends existing free-rotation gate)
+- Ship heading updates immediately on Turn click for visual feedback (setHeading on m_curShip)
+- Turn panel is hidden in all non-PH_MOVE phases
+
+Create test files in:
+- tests/tactical/ (e.g. FTacticalEndOfMoveTurnTest.h / FTacticalEndOfMoveTurnTest.cpp)
+- Register new test class in tests/tactical/TacticalTests.cpp
+
+Implementation context for testing:
+- FTacticalTurnData gains two new fields: pendingEndOfMoveFacing (-1 = no pending change) and endOfMoveOriginFacing (-1 = not set).
+- canUseEndOfMoveTurn() (file-local static in src/tactical/FTacticalGame.cpp) gates on: MR > 0, nMoved >= minMove (= speed - ADF), and no MR_TURN flag on path.endPoint(). Returns false if pendingEndOfMoveFacing != -1.
+- canApplyEndOfMoveTurnLeft() / canApplyEndOfMoveTurnRight() extend the gate: when a pending turn is active, only the reverse direction returns true (allowing reversal back to origin heading).
+- applyEndOfMoveTurn(+1) sets pendingEndOfMoveFacing = turnShip(origHeading, +1), stores origHeading in endOfMoveOriginFacing, and calls ship->setHeading(newHeading) immediately for visual feedback.
+- applyEndOfMoveTurn(-1) when a left-turn is pending: clears pendingEndOfMoveFacing, restores ship->setHeading(endOfMoveOriginFacing), resets both fields to -1.
+- handleMoveHexSelection() clears pending state (restores origin heading) before processing any hex click during PH_MOVE.
+- finalizeMovementState() commits pendingEndOfMoveFacing to curHeading and finalHeading before the existing setHeading call.
+- FBattleDisplay constructor creates m_turnButtonPanel as a free-floating child wxPanel (not in rootSizer) with m_buttonTurnLeft and m_buttonTurnRight children.
+- drawMoveShip() positions the panel using the same lMargin formula as drawSeekerActivation() and updates button enable states each paint; events connected only when panel transitions from hidden to shown.
+- draw() hides the panel for non-PH_MOVE phases and non-BS_Battle states; onMoveDone() also disconnects and hides it.
+- Heading convention: 0=W, 1=SW, 2=SE, 3=E, 4=NE, 5=NW; turnShip(heading, +1) = left turn, turnShip(heading, -1) = right turn.
+- MR_TURN flag marks hexes where an MR was consumed for a mid-move turn.
+
+Suggested test command(s):
+- make (from repo root)
+- make -C tests tactical-tests && ./tests/tactical/TacticalTests
+- make -C tests/gui && xvfb-run -a ./tests/gui/GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None.
+
+Pre-existing failures (not introduced by TMF-05):
+- GUI tests: 8 pre-existing source-contract failures confirmed by stash-and-rerun at commit 886ed1c: 3 in StrategicGuiLiveTest, 4 in TacticalGuiLiveTest, 1 in testICMSelectionDialogInteractionFinalizesAssignedCountsAndAmmo.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes/TMF-05
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
