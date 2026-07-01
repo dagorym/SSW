@@ -250,7 +250,7 @@ protected:
 	 */
 	void onTurnRight( wxCommandEvent& event );
 
-	/// event handler for defensive fire complete button
+	/// event handler for defensive fire complete button; shows damage summary only when weaponsFired > 0
 	void onDefensiveFireDone( wxCommandEvent& event );
 
 	/// event handler for mine placement complete button
@@ -560,7 +560,7 @@ protected:
 	 */
 	void checkDefenseSelection(wxMouseEvent &event);
 
-	/// event handler for defensive fire complete button
+	/// event handler for offensive fire complete button; shows damage summary only when weaponsFired > 0
 	void onOffensiveFireDone( wxCommandEvent& event );
 
 	/**

@@ -1377,7 +1377,12 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	// Fire resolution runs in the model first and captures destroyed-ship IDs.
 	// Screen cleanup then consumes that bookkeeping and clears it at the seam.
 	const FTacticalCombatReportSummary summary = m_parent->resolveCurrentFirePhase();
-	m_parent->showTacticalDamageSummaryDialog(summary);
+	// Only show the damage dialog when at least one weapon actually fired.
+	// An empty damage summary is NOT a valid "nothing fired" proxy: a weapon
+	// can fire and miss (or be fully intercepted) yet produce no damage rows.
+	if (summary.weaponsFired > 0) {
+		m_parent->showTacticalDamageSummaryDialog(summary);
+	}
 	m_parent->clearDestroyedShips();
 	m_parent->completeDefensiveFirePhase();
 	m_first=true;
@@ -1391,7 +1396,12 @@ void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
 	Layout();
 	// Keep same lifecycle as defensive fire: model capture first, wx cleanup second.
 	const FTacticalCombatReportSummary summary = m_parent->resolveCurrentFirePhase();
-	m_parent->showTacticalDamageSummaryDialog(summary);
+	// Only show the damage dialog when at least one weapon actually fired.
+	// An empty damage summary is NOT a valid "nothing fired" proxy: a weapon
+	// can fire and miss (or be fully intercepted) yet produce no damage rows.
+	if (summary.weaponsFired > 0) {
+		m_parent->showTacticalDamageSummaryDialog(summary);
+	}
 	m_parent->clearDestroyedShips();
 	m_parent->completeOffensiveFirePhase();
 	m_first=true;

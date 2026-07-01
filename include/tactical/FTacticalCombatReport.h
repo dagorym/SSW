@@ -258,14 +258,31 @@ struct FTacticalHitDetailSummary {
 	FTacticalHitDetailSummary() : hullDamage(0), effects(), outcome(""), displayLine("") {}
 };
 
+/**
+ * @brief Summarized output from a single tactical combat report pass.
+ *
+ * Carries per-ship hit/damage summaries, optional hit details, formatted
+ * display lines, and a count of weapons that actually fired during the phase.
+ * `weaponsFired` is populated by `buildTacticalCombatReportSummary` from the
+ * number of attack entries in the underlying report (each entry represents one
+ * weapon that returned `fired() == true`). Callers that conditionally show the
+ * damage-summary dialog must check `weaponsFired > 0` rather than testing
+ * whether `ships` or `displayLines` are empty, because a weapon can fire and
+ * miss (or be fully intercepted) without producing any damage rows.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 30, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
 struct FTacticalCombatReportSummary {
 	FTacticalCombatReportContext context;
 	bool showHitDetails;
+	int weaponsFired;
 	std::vector<FTacticalShipReportSummary> ships;
 	std::vector<FTacticalHitDetailSummary> hitDetails;
 	std::vector<std::string> displayLines;
 
-	FTacticalCombatReportSummary() : showHitDetails(true), ships(), hitDetails(), displayLines() {}
+	FTacticalCombatReportSummary() : showHitDetails(true), weaponsFired(0), ships(), hitDetails(), displayLines() {}
 };
 
 struct FTacticalCombatReport {
@@ -677,9 +694,29 @@ inline FTacticalHitDetailSummary buildHitDetailSummary(const FTacticalAttackRepo
 
 } // namespace TacticalCombatReportDetail
 
+/**
+ * @brief Build a display-ready summary from the current tactical combat report.
+ *
+ * Converts the raw `FTacticalCombatReport` into an `FTacticalCombatReportSummary`
+ * suitable for display in the damage-summary dialog.  The resulting
+ * `weaponsFired` field is set to the number of attack entries in `report`, which
+ * equals the number of weapons whose `fire()` returned `fired() == true` for
+ * this phase.  Callers should check `summary.weaponsFired > 0` to decide whether
+ * to show the damage dialog; testing `ships` or `displayLines` emptiness is
+ * insufficient because a weapon can fire, miss, and produce no damage rows.
+ *
+ * @param report  The accumulated tactical report for the current fire phase.
+ * @return        A populated `FTacticalCombatReportSummary` including
+ *                `weaponsFired`, per-ship summaries, and formatted display lines.
+ *
+ * @author gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @date Created: May 27, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
 inline FTacticalCombatReportSummary buildTacticalCombatReportSummary(const FTacticalCombatReport & report) {
 	FTacticalCombatReportSummary summary;
 	summary.context = report.context;
+	summary.weaponsFired = (int)report.attacks.size();
 
 	std::map<TacticalCombatReportDetail::TacticalShipSummaryKey, FTacticalShipReportSummary> summaryMap;
 	std::vector<TacticalCombatReportDetail::TacticalShipSummaryKey> summaryOrder;
