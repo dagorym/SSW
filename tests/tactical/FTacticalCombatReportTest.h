@@ -51,6 +51,9 @@ class FTacticalCombatReportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testTacticalCombatReportSummaryDocumentsCanonicalAttackHullDamageRule );
 	CPPUNIT_TEST( testBattleScreenNormalizesNestedAttackEventsOntoStoredAttackIndex );
 	CPPUNIT_TEST( testBattleScreenStoresStandaloneImmediateEventsWithUnattachedAttackIndex );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryWeaponsFiredZeroForEmptyReport );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryWeaponsFiredCountsAttackEntries );
+	CPPUNIT_TEST( testBuildTacticalCombatReportSummaryWeaponsFiredNonZeroForMissWithNoDamageRows );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -321,6 +324,46 @@ public:
 	 * @date Last Modified: Mar 22, 2026
 	 */
 	void testBattleScreenStoresStandaloneImmediateEventsWithUnattachedAttackIndex();
+
+	/**
+	 * @brief Verifies buildTacticalCombatReportSummary sets weaponsFired to zero when the report has no attacks.
+	 *
+	 * Behavioral test: constructs an empty FTacticalCombatReport (no attack entries), calls
+	 * buildTacticalCombatReportSummary, and asserts the returned summary has weaponsFired == 0.
+	 * This covers the "zero weapons fired -> dialog SKIPPED" branch of the AC.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testBuildTacticalCombatReportSummaryWeaponsFiredZeroForEmptyReport();
+
+	/**
+	 * @brief Verifies buildTacticalCombatReportSummary sets weaponsFired equal to the number of attack entries.
+	 *
+	 * Behavioral test: constructs an FTacticalCombatReport with two attack entries, calls
+	 * buildTacticalCombatReportSummary, and asserts weaponsFired == 2. Confirms the count
+	 * derives from report.attacks.size(), not from damage rows.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testBuildTacticalCombatReportSummaryWeaponsFiredCountsAttackEntries();
+
+	/**
+	 * @brief Verifies weaponsFired is non-zero and ships is empty when all attacks miss and produce no damage rows.
+	 *
+	 * Behavioral test: constructs a report with a single miss attack (hit==false, hullDamage==0),
+	 * calls buildTacticalCombatReportSummary, and asserts weaponsFired == 1 while ships is empty.
+	 * This covers the key AC distinction: "at least one weapon fired but ALL shots miss / are fully
+	 * intercepted (empty damage rows) -> weaponsFired > 0 and dialog STILL SHOWN".
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testBuildTacticalCombatReportSummaryWeaponsFiredNonZeroForMissWithNoDamageRows();
 };
 
 }

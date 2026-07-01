@@ -1072,6 +1072,88 @@ void FTacticalCombatReportTest::testBattleScreenNormalizesNestedAttackEventsOnto
 	CPPUNIT_ASSERT(secondStored.subject.shipID == secondAttack.target.shipID);
 }
 
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryWeaponsFiredZeroForEmptyReport() {
+	// AC: FTacticalCombatReportSummary.weaponsFired == 0 when no weapons fired.
+	// An empty report (no attacks) must yield weaponsFired == 0 so callers correctly
+	// skip the damage-summary dialog when nothing fired.
+	FTacticalCombatReport report;
+	report.context.reportType = TRT_OffensiveFire;
+	report.context.phase = 1;
+	report.context.actingPlayerID = 0;
+	report.active = true;
+	// No attacks appended — simulates a fire phase where no weapon was selected or fired.
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+
+	CPPUNIT_ASSERT_EQUAL(0, summary.weaponsFired);
+	CPPUNIT_ASSERT(summary.ships.empty());
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryWeaponsFiredCountsAttackEntries() {
+	// AC: weaponsFired equals the number of attack entries (each entry == one weapon that fired).
+	// Confirms the count comes from report.attacks.size(), not from damage rows or ship summaries.
+	FTacticalCombatReport report;
+	report.context.reportType = TRT_OffensiveFire;
+	report.context.phase = 2;
+	report.context.actingPlayerID = 0;
+	report.active = true;
+
+	FTacticalAttackReport attack1;
+	attack1.attacker = FTacticalShipReference(1, 0, "Attacker");
+	attack1.target = FTacticalShipReference(2, 1, "Target");
+	attack1.weapon = FTacticalWeaponReference(10, "Laser Battery");
+	attack1.hit = true;
+	attack1.hullDamage = 5;
+	attack1.intercepted = false;
+
+	FTacticalAttackReport attack2;
+	attack2.attacker = FTacticalShipReference(1, 0, "Attacker");
+	attack2.target = FTacticalShipReference(2, 1, "Target");
+	attack2.weapon = FTacticalWeaponReference(11, "Laser Battery 2");
+	attack2.hit = true;
+	attack2.hullDamage = 3;
+	attack2.intercepted = false;
+
+	report.attacks.push_back(attack1);
+	report.attacks.push_back(attack2);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+
+	CPPUNIT_ASSERT_EQUAL(2, summary.weaponsFired);
+}
+
+void FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryWeaponsFiredNonZeroForMissWithNoDamageRows() {
+	// AC: weaponsFired > 0 AND ships is empty when all attacks miss (no damage rows).
+	// This is the critical AC distinction: a weapon that fires and misses still sets
+	// weaponsFired > 0 so the caller shows the dialog. Checking ships.empty() alone would
+	// incorrectly suppress the dialog in this case.
+	FTacticalCombatReport report;
+	report.context.reportType = TRT_OffensiveFire;
+	report.context.phase = 3;
+	report.context.actingPlayerID = 0;
+	report.active = true;
+
+	FTacticalAttackReport missAttack;
+	missAttack.attacker = FTacticalShipReference(1, 0, "Attacker");
+	missAttack.target = FTacticalShipReference(2, 1, "Target");
+	missAttack.weapon = FTacticalWeaponReference(10, "Laser Battery");
+	missAttack.hit = false;       // missed
+	missAttack.hullDamage = 0;    // no damage
+	missAttack.intercepted = false;
+	missAttack.note = "miss";
+
+	report.attacks.push_back(missAttack);
+
+	const FTacticalCombatReportSummary summary = buildTacticalCombatReportSummary(report);
+
+	// weaponsFired must be 1: the weapon fired even though it missed.
+	CPPUNIT_ASSERT_EQUAL(1, summary.weaponsFired);
+	// No damage rows: ships should be empty (nothing took damage).
+	CPPUNIT_ASSERT(summary.ships.empty());
+	// Key invariant: weaponsFired > 0 drives dialog display, not ships.empty().
+	CPPUNIT_ASSERT(summary.weaponsFired > 0);
+}
+
 void FTacticalCombatReportTest::testBattleScreenStoresStandaloneImmediateEventsWithUnattachedAttackIndex() {
 	// AC: standalone report events always remain detached from attack-indexed detail.
 	FTacticalGame tacticalGame;

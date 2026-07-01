@@ -1323,4 +1323,32 @@ assertContains(seekersBody, "dc.DrawText(\"Placed seekers (click to recall):\", 
 assertBefore(seekersBody, "int lMargin = 310;", "const int recallMargin = 620;");
 }
 
+void FTacticalBattleDisplayFireFlowTest::testDefensiveFireDoneGuardsDialogOnWeaponsFiredPositive() {
+// Source-contract supplement for the dialog-skip AC.
+// Behavioral coverage lives in FTacticalCombatReportTest (weaponsFiredZeroForEmptyReport,
+// weaponsFiredNonZeroForMissWithNoDamageRows). This test locks the guard into place.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event )");
+
+// The guard must be present: zero weapons fired -> dialog skipped.
+assertContains(body, "if (summary.weaponsFired > 0)");
+// The dialog call must be inside the guard (guard appears before dialog call).
+assertContains(body, "m_parent->showTacticalDamageSummaryDialog(summary);");
+assertBefore(body, "if (summary.weaponsFired > 0)", "m_parent->showTacticalDamageSummaryDialog(summary);");
+}
+
+void FTacticalBattleDisplayFireFlowTest::testOffensiveFireDoneGuardsDialogOnWeaponsFiredPositive() {
+// Source-contract supplement for the dialog-skip AC.
+// Behavioral coverage lives in FTacticalCombatReportTest (weaponsFiredZeroForEmptyReport,
+// weaponsFiredNonZeroForMissWithNoDamageRows). This test locks the guard into place.
+const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string body = extractFunctionBody(source, "void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event )");
+
+// The guard must be present: zero weapons fired -> dialog skipped.
+assertContains(body, "if (summary.weaponsFired > 0)");
+// The dialog call must be inside the guard (guard appears before dialog call).
+assertContains(body, "m_parent->showTacticalDamageSummaryDialog(summary);");
+assertBefore(body, "if (summary.weaponsFired > 0)", "m_parent->showTacticalDamageSummaryDialog(summary);");
+}
+
 }

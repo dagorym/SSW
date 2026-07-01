@@ -66,6 +66,8 @@ CPPUNIT_TEST( testDrawPlaceMinesExpandsPanelHeightWhenRowsExceedMinimum );
 CPPUNIT_TEST( testDrawPlaceSeekersExpandsPanelHeightWhenRowsExceedMinimum );
 CPPUNIT_TEST( testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum );
 CPPUNIT_TEST( testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern );
+CPPUNIT_TEST( testDefensiveFireDoneGuardsDialogOnWeaponsFiredPositive );
+CPPUNIT_TEST( testOffensiveFireDoneGuardsDialogOnWeaponsFiredPositive );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -541,6 +543,38 @@ void testDrawSeekerActivationExpandsPanelHeightWhenRowsExceedMinimum();
  * @date Last Modified: Jun 23, 2026
  */
 void testDrawPlaceSeekersThreeColumnLayoutMatchesMinePhasePattern();
+
+/**
+ * @brief Source-contract: onDefensiveFireDone guards showTacticalDamageSummaryDialog on weaponsFired > 0.
+ *
+ * Supplements the behavioral weaponsFired tests in FTacticalCombatReportTest. Verifies that the
+ * guard `if (summary.weaponsFired > 0)` appears in the onDefensiveFireDone body before
+ * `showTacticalDamageSummaryDialog`, ensuring zero-weapons-fired phases skip the dialog.
+ * Behavioral coverage for the weaponsFired count lives in
+ * FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryWeaponsFiredZeroForEmptyReport
+ * and testBuildTacticalCombatReportSummaryWeaponsFiredNonZeroForMissWithNoDamageRows.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 30, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
+void testDefensiveFireDoneGuardsDialogOnWeaponsFiredPositive();
+
+/**
+ * @brief Source-contract: onOffensiveFireDone guards showTacticalDamageSummaryDialog on weaponsFired > 0.
+ *
+ * Supplements the behavioral weaponsFired tests in FTacticalCombatReportTest. Verifies that the
+ * guard `if (summary.weaponsFired > 0)` appears in the onOffensiveFireDone body before
+ * `showTacticalDamageSummaryDialog`, ensuring zero-weapons-fired phases skip the dialog.
+ * Behavioral coverage for the weaponsFired count lives in
+ * FTacticalCombatReportTest::testBuildTacticalCombatReportSummaryWeaponsFiredZeroForEmptyReport
+ * and testBuildTacticalCombatReportSummaryWeaponsFiredNonZeroForMissWithNoDamageRows.
+ *
+ * @author claude-sonnet-4-6 (medium)
+ * @date Created: Jun 30, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
+void testOffensiveFireDoneGuardsDialogOnWeaponsFiredPositive();
 };
 
 }
