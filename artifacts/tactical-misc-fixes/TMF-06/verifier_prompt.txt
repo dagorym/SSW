@@ -1,0 +1,64 @@
+You are the Verifier agent for this project.
+
+Your task is to verify TMF-06: skip post-fire damage-summary dialog when no weapon actually fired.
+
+Begin work immediately in this run. Do not stop after scope confirmation, convention discovery, or diff review when blocking inputs are present. Continue through the full verification workflow, write all required artifacts, and commit them before reporting success.
+
+## Story summary
+
+TMF-06 added a `weaponsFired` count to `FTacticalCombatReportSummary` and guarded `showTacticalDamageSummaryDialog` in both fire-done handlers so that a fire phase in which no weapon actually fired skips the damage-summary dialog entirely. The mine-damage path calls `ITacticalUI::showDamageSummary` directly and is unaffected.
+
+## Acceptance criteria
+
+- **AC1**: `FTacticalCombatReportSummary.weaponsFired` is set by `buildTacticalCombatReportSummary` to `(int)report.attacks.size()` — zero for an empty report, 2 for a report with two attack entries.
+- **AC2**: When `weaponsFired == 0`, `onDefensiveFireDone` and `onOffensiveFireDone` skip `showTacticalDamageSummaryDialog`.
+- **AC3**: When `weaponsFired > 0` but all attacks missed/were intercepted (producing no damage rows, `ships` empty), the dialog is still shown — `weaponsFired == 1` with `ships.empty() == true` satisfies the guard.
+- **AC4**: No regression — 249 TacticalTests pass; mine-damage report path unaffected.
+
+## Implementation details
+
+- `weaponsFired` field added to `struct FTacticalCombatReportSummary` in `include/tactical/FTacticalCombatReport.h`; populated as `(int)report.attacks.size()` inside `buildTacticalCombatReportSummary`.
+- Guard `if (summary.weaponsFired > 0)` wraps `m_parent->showTacticalDamageSummaryDialog(summary)` in both `onDefensiveFireDone` and `onOffensiveFireDone` in `src/tactical/FBattleDisplay.cpp`.
+- `FTacticalGame.h` and `FTacticalGame.cpp` were NOT modified.
+- Mine-damage path (`applyFireDamage` calling `ITacticalUI::showDamageSummary` directly) was NOT modified.
+
+## Files changed (Implementer + Tester + Documenter)
+
+- `include/tactical/FTacticalCombatReport.h` — `FTacticalCombatReportSummary` struct gains `weaponsFired`; `buildTacticalCombatReportSummary` sets it; full Doxygen blocks on both.
+- `include/tactical/FBattleDisplay.h` — one-liner `///` comments on `onDefensiveFireDone` and `onOffensiveFireDone` updated to describe the `weaponsFired > 0` guard; file header Last Modified updated for TMF-06.
+- `src/tactical/FBattleDisplay.cpp` — `if (summary.weaponsFired > 0)` guard inserted in both fire-done handlers.
+- `tests/tactical/FTacticalCombatReportTest.h` / `.cpp` — three new behavioral tests:
+  - `testBuildTacticalCombatReportSummaryWeaponsFiredZeroForEmptyReport`
+  - `testBuildTacticalCombatReportSummaryWeaponsFiredCountsAttackEntries`
+  - `testBuildTacticalCombatReportSummaryWeaponsFiredNonZeroForMissWithNoDamageRows` (AC3: miss/intercepted still shows dialog)
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.h` / `.cpp` — two new source-contract supplements:
+  - `testDefensiveFireDoneGuardsDialogOnWeaponsFiredPositive`
+  - `testOffensiveFireDoneGuardsDialogOnWeaponsFiredPositive`
+- `AGENTS.md` — fire-phase ownership bullet updated to record `weaponsFired`, the guard in both fire-done handlers, and that `buildTacticalCombatReportSummary` sets the count; mine-damage path unaffected note added.
+- `doc/test-contracts.md` — TMF-06 entry added covering the three behavioral tests and the two source-contract supplements, including the AC3 miss-still-shows-dialog distinction.
+
+## Test results (Tester stage)
+
+- TacticalTests: 249 pass / 0 fail (includes the 3 new FTacticalCombatReportTest behavioral tests)
+- SSWTests: 186/9 (9 pre-existing failures, no new regressions)
+- GuiTests: 55/8 (8 pre-existing failures, no new regressions)
+
+## Verification scope
+
+1. Confirm `weaponsFired` field exists on `FTacticalCombatReportSummary` and is set correctly in `buildTacticalCombatReportSummary`.
+2. Confirm `if (summary.weaponsFired > 0)` guard is present in both `onDefensiveFireDone` and `onOffensiveFireDone` in `src/tactical/FBattleDisplay.cpp`.
+3. Confirm the three behavioral tests in `FTacticalCombatReportTest` cover AC1 (zero, count) and AC3 (miss/intercepted still shows).
+4. Confirm the two source-contract supplements in `FTacticalBattleDisplayFireFlowTest` assert the guard text.
+5. Confirm `FTacticalGame.h`/`.cpp` and the mine-damage path are unmodified.
+6. Build and run TacticalTests; confirm 249 pass with no new failures.
+7. Confirm `doc/test-contracts.md` TMF-06 entry is accurate and present.
+8. Confirm `AGENTS.md` fire-phase ownership notes include `weaponsFired` and the dialog guard.
+9. Confirm `doc/rules/tactical_operations_manual.md` was NOT modified.
+
+## Artifact directory
+
+artifacts/tactical-misc-fixes/TMF-06
+
+## Completion gate
+
+Do not report success unless all required artifacts (verifier_report.md, verifier_result.json) exist, all changes are committed, and the TacticalTests suite passes with no new failures.
