@@ -4,7 +4,7 @@
     "artifacts/tactical-misc-fixes/TMF-05/verifier_result.json"
   ],
   "blocking_finding_count": 0,
-  "branch_name": "tmf-TMF-05-documenter-20260630",
+  "branch_name": "tmf-TMF-05-verifier-20260630",
   "documentation_accuracy_summary": [
     "ACCURATE. doc/UsersGuide.md documents the new Turn Left/Right buttons correctly including reversibility, MR consumption, commitment at Movement Done, hex-click cancel, and speed-0 extension. AGENTS.md correctly describes FTacticalTurnData fields, FBattleDisplay turn panel ownership, FBattleScreen delegation, and FTacticalEndOfMoveTurnTest registration. doc/test-contracts.md has a TMF-05 entry cataloging all 17 behavioral model tests and 3 GUI tests. Doxygen headers are updated on all new/edited functions. doc/rules/tactical_operations_manual.md is unchanged (empty diff confirmed)."
   ],
