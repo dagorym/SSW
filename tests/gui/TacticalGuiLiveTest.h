@@ -56,6 +56,9 @@ CPPUNIT_TEST( testBattleScreenExtraStyleExcludesTopLevelExDialog );
 CPPUNIT_TEST( testBattleScreenDefaultStyleIncludesMinimizeBox );
 CPPUNIT_TEST( testBattleScreenShowModalContainsGtkWindowSetModal );
 CPPUNIT_TEST( testBattleScreenXCloseDismissesActiveChildDialog );
+CPPUNIT_TEST( testTurnButtonPanelHiddenInNonMovePhase );
+CPPUNIT_TEST( testTurnButtonPanelShownAndEnableStateReflectsModelInMovePhase );
+CPPUNIT_TEST( testTurnButtonClickAppliesEndOfMoveTurnToModel );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -554,6 +557,49 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 30, 2026
 	 */
 	void testBattleScreenXCloseDismissesActiveChildDialog();
+
+	/**
+	 * @brief Behavioral: Turn button panel is hidden in non-PH_MOVE phases and shown in PH_MOVE.
+	 *
+	 * TMF-05: draw() hides m_turnButtonPanel when the phase is not PH_MOVE.
+	 * Verifies the panel is hidden after draw() in PH_DEFENSE_FIRE, PH_ATTACK_FIRE, and
+	 * PH_SEEKER_ACTIVATION, and shown in PH_MOVE when a ship with MR > 0 is selected.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testTurnButtonPanelHiddenInNonMovePhase();
+
+	/**
+	 * @brief Behavioral: Turn button enable state in PH_MOVE reflects model canApply* return values.
+	 *
+	 * TMF-05: drawMoveShip() calls canApplyEndOfMoveTurnLeft() / canApplyEndOfMoveTurnRight()
+	 * and uses the results to set button enable states via wxButton::Enable().
+	 * Verifies:
+	 * - Both buttons enabled initially when MR > 0 and min-move satisfied.
+	 * - After applying a left turn, only Turn Right is enabled (reverse only).
+	 * - After reversing, both buttons re-enabled.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testTurnButtonPanelShownAndEnableStateReflectsModelInMovePhase();
+
+	/**
+	 * @brief Behavioral: clicking Turn Left/Right button routes through to applyEndOfMoveTurn().
+	 *
+	 * TMF-05: onTurnLeft() / onTurnRight() call applyEndOfMoveTurn(+1/-1) on the parent
+	 * battle screen. Verifies that after clicking Turn Left the model's pending facing
+	 * is set (observable via findTurnData->pendingEndOfMoveFacing != -1) and the ship
+	 * heading has changed.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testTurnButtonClickAppliesEndOfMoveTurnToModel();
 };
 
 }
