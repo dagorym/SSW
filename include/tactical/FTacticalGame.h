@@ -283,7 +283,7 @@ typedef struct {
  *
  * @author Tom Stephens, gpt-5.4 (high), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
  * @date Created: Mar 29, 2026
- * @date Last Modified: Jun 23, 2026
+ * @date Last Modified: Jun 30, 2026
  */
 class FTacticalGame {
 public:
@@ -935,6 +935,18 @@ unsigned int getWinnerID() const { return m_winnerID; }
 void clearWinner();
 
 void resetMovementState();
+/**
+ * @brief Commit end-of-move state and finalize movement for all ships this turn.
+ *
+ * If the currently selected ship has a pending end-of-move facing change
+ * (`pendingEndOfMoveFacing != -1` in its `FTacticalTurnData`), commits that heading
+ * to `curHeading` and `finalHeading` before finalizing. When no pending turn is set,
+ * the existing heading is used unchanged. Called when the player clicks Movement Done.
+ *
+ * @author Tom Stephens, claude-sonnet-4-6 (medium)
+ * @date Created: Mar 29, 2026
+ * @date Last Modified: Jun 30, 2026
+ */
 void finalizeMovementState();
 void clearMovementHighlights();
 void resetTurnInfoForCurrentMover();
@@ -1007,6 +1019,20 @@ const VehicleList * findHexOccupantsForShip(unsigned int shipID) const;
 	FVehicle * pickTarget(const FVehicle * selected, const VehicleList & ships) const;
 	bool findHexInList(PointList list, FPoint ref, int & count) const;
 	void setInitialRoute();
+	/**
+	 * @brief Handle a board hex click during the move phase.
+	 *
+	 * If a pending end-of-move facing change is active, clears
+	 * `pendingEndOfMoveFacing`/`endOfMoveOriginFacing` and restores the origin heading
+	 * before processing the hex so the click is not affected by the uncommitted rotation.
+	 *
+	 * @param hex The tactical hex that was clicked.
+	 * @return True when the click produced a model state change.
+	 *
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium)
+	 * @date Created: Mar 29, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
 	bool handleMoveHexSelection(const FPoint & hex);
 	void computeRemainingMoves(FPoint start);
 	void computePath(PointList & list, FPoint hex, int heading);
