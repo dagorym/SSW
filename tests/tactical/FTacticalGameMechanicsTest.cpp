@@ -1395,4 +1395,131 @@ void FTacticalGameMechanicsTest::testPreGameSeekerPlacementIsAdditive() {
 	delete attackFleet;
 }
 
+void FTacticalGameMechanicsTest::testDefenderMovePhaseGatingRejectsCompletionBeforeMinimumMove() {
+// AC: TMF-04 — At the start of the defender's move phase, before any hex-click,
+// a Minelayer with speed=10 / ADF=1 must NOT be allowed to complete its move phase
+// (isMoveComplete() must return false) because it still needs to move 9 hexes.
+//
+// The pre-fix bug: checkMoveStatus() used the stale m_shipPos (the attacker's last
+// placement position) instead of the defender ship's actual board position.
+// When m_shipPos=(54,10) and the Minelayer's heading is 3, findNextHex((54,10),3)
+// returns (55,10), which fails the in-bounds check (x<55 is false), leaving
+// finished=true and spuriously setting isMoveComplete()=true.
+//
+// Post-fix behavior: checkMoveStatus() calls findShipHex() which returns the
+// Minelayer's actual position (10,10); findNextHex((10,10),3)=(11,10) is in bounds;
+// finished=false; isMoveComplete()=false — correct.
+//
+// This test MUST fail against the pre-fix code and pass after the fix.
+	using namespace Frontier;
+
+	// Build a Minelayer (defender) with speed=10, ADF=1 (minMove = 9 hexes required).
+	FVehicle * minelayer = createShip("Minelayer");
+	CPPUNIT_ASSERT_MESSAGE("Minelayer ship must be creatable", minelayer != NULL);
+	minelayer->setSpeed(10);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Minelayer ADF must be 1", 1, minelayer->getADF());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Minelayer speed must be 10", 10, minelayer->getSpeed());
+
+	FFleet * defendFleet = new FFleet();
+	minelayer->setOwner(0);
+	defendFleet->addShip(minelayer);
+	FleetList defendFleets;
+	defendFleets.push_back(defendFleet);
+
+	// Build an AssaultScout (attacker) — default speed=0, so its move phase is
+	// trivially complete (minMove = 0 - ADF < 0, no ship blocks completion).
+	FVehicle * attacker = createShip("AssaultScout");
+	CPPUNIT_ASSERT_MESSAGE("AssaultScout ship must be creatable", attacker != NULL);
+	FFleet * attackFleet = new FFleet();
+	attacker->setOwner(1);
+	attackFleet->addShip(attacker);
+	FleetList attackFleets;
+	attackFleets.push_back(attackFleet);
+
+	FTacticalGame game;
+	game.setupFleets(&attackFleets, &defendFleets, false, NULL);
+
+	// Place the Minelayer at (10,10) with heading 3 (pointing right, toward
+	// increasing x).  In the hex grid, heading 3 from (10,10) points to (11,10).
+	// From (54,10) heading 3 points to (55,10) which is OUT OF BOUNDS (x >= 55).
+	// This asymmetry is the crux of the pre-fix / post-fix difference.
+	game.setState(BS_SetupDefendFleet);
+	game.setControlState(true);
+	game.setShip(minelayer);
+	game.placeShip(FPoint(10, 10));
+	game.setShipPlacementHeading(3);   // heading 3 = "right" in hex grid
+
+	// Place the AssaultScout LAST at (54,10) heading 3.
+	// After this call, m_shipPos = (54,10) — the stale value that the pre-fix bug
+	// inherits when checkMoveStatus() runs for the defender's move phase.
+	game.setState(BS_SetupAttackFleet);
+	game.setControlState(true);
+	game.setShip(attacker);
+	game.placeShip(FPoint(54, 10));
+	game.setShipPlacementHeading(3);
+
+	// Enter BS_Battle with the defender as the moving player, then trigger the
+	// defender's move phase via the normal setPhase(PH_MOVE) entry point.
+	// setPhase(PH_MOVE) → beginSeekerActivationPhase() → (no seekers) →
+	// beginMovePhase() → toggleActivePlayer() + resetMovementState() →
+	// resetTurnInfoForCurrentMover() + checkMoveStatus().
+	//
+	// At this point m_shipPos = (54,10) (stale from the attacker's placement).
+	//
+	// Pre-fix checkMoveStatus() for the Minelayer (heading=3, minMove=9):
+	//   path.getPathLength()==0 → pos = m_shipPos = (54,10)
+	//   findNextHex((54,10), 3) = (55,10)  →  55 >= 55  → out of bounds
+	//   finished stays true → setMoveComplete(true)  [WRONG]
+	//
+	// Post-fix checkMoveStatus():
+	//   path.getPathLength()==0 → findShipHex(minelayer_ID, pos) = (10,10)
+	//   findNextHex((10,10), 3) = (11,10)  →  11 < 55  → valid
+	//   finished = false → setMoveComplete(false)  [CORRECT]
+	game.setState(BS_Battle);
+	game.setMovingPlayer(false);   // false → defender is the moving player
+	game.setPhase(PH_MOVE);
+
+	// BEHAVIORAL ASSERTION 1 (AC #1, #2): isMoveComplete() must be false at
+	// defender move-phase entry — before any hex-click — because the Minelayer
+	// has speed=10 / ADF=1 and has not yet moved 9 hexes.
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-04: isMoveComplete() must be false at defender move-phase entry "
+		"when Minelayer has speed=10/ADF=1 and zero hexes moved (pre-fix bug "
+		"would incorrectly return true here)",
+		!game.isMoveComplete());
+
+	// BEHAVIORAL ASSERTION 2 (AC #2, #3): select the Minelayer and move it the
+	// minimum 9 hexes; isMoveComplete() must become true once the minimum is met.
+	// Click on the Minelayer's hex to select it (sets m_drawRoute=true).
+	const bool selected = game.handleHexClick(FPoint(10, 10));
+	CPPUNIT_ASSERT_MESSAGE(
+		"handleHexClick on Minelayer hex must select the ship in PH_MOVE",
+		selected);
+
+	// The initial movement hex list should have at least 9 entries
+	// (Minelayer speed=10, ADF=1 → speed+ADF = 11 entries generated).
+	const std::vector<FPoint> & movHexes = game.getMovementHexes();
+	CPPUNIT_ASSERT_MESSAGE(
+		"Movement hex list must have at least 9 entries after selecting Minelayer "
+		"(speed=10, ADF=1 generates up to 11 forward hexes)",
+		movHexes.size() >= 9);
+
+	// Click the 9th hex (index 8) to move exactly 9 hexes in one click.
+	// handleHexClick → handleMoveHexSelection finds it at list position 9 →
+	// sets nMoved=9 → checkMoveStatus: 9 < 9 is false → finished=true →
+	// setMoveComplete(true).
+	const FPoint target9hex = movHexes[8];
+	const bool moved = game.handleHexClick(target9hex);
+	CPPUNIT_ASSERT_MESSAGE(
+		"handleHexClick on the 9th movement hex must succeed (move 9 hexes)",
+		moved);
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMF-04: isMoveComplete() must be true after Minelayer moves the minimum 9 hexes",
+		game.isMoveComplete());
+
+	delete defendFleet;
+	delete attackFleet;
+}
+
 }

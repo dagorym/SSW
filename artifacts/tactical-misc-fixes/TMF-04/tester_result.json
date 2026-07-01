@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-04/tester_report.md",
+    "artifacts/tactical-misc-fixes/TMF-04/tester_result.json"
+  ],
+  "branch_name": "tmf-TMF-04-tester-20260630",
+  "changed_files": [
+    "tests/tactical/FTacticalGameMechanicsTest.h",
+    "tests/tactical/FTacticalGameMechanicsTest.cpp"
+  ],
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "TMF-04",
+  "test_method": "FTacticalGameMechanicsTest::testDefenderMovePhaseGatingRejectsCompletionBeforeMinimumMove",
+  "validation_commands": [
+    "make -C tests tactical-tests",
+    "tests/tactical/TacticalTests"
+  ],
+  "validation_outcome": "PASS — build clean, 227/227 tactical tests passed (226 pre-existing + 1 new)"
+}

@@ -16,9 +16,9 @@ namespace FrontierTests {
  *
  * Exercises the tactical regression behavior covered by this fixture case.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
  * @date Created: Mar 29, 2026
- * @date Last Modified: Jun 22, 2026
+ * @date Last Modified: Jun 30, 2026
  */
 class FTacticalGameMechanicsTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalGameMechanicsTest );
@@ -46,6 +46,7 @@ CPPUNIT_TEST( testFBattleScreenGetActiveSeekersByMovingPlayerThisPhaseDelegate )
 CPPUNIT_TEST( testPreGameOrdnancePlacementRecordingBehavior );
 CPPUNIT_TEST( testPreGameMinePlacementPreservesShipAfterBeginMinePlacement );
 CPPUNIT_TEST( testPreGameSeekerPlacementIsAdditive );
+CPPUNIT_TEST( testDefenderMovePhaseGatingRejectsCompletionBeforeMinimumMove );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -354,6 +355,40 @@ void testSeekerDeploymentPhaseStateMachineTransitions();
 	 * @date Last Modified: Jun 22, 2026
 	 */
 	void testPreGameSeekerPlacementIsAdditive();
+
+	/**
+	 * @brief Behavioral regression for TMF-04: the defender move-phase entry gating
+	 *        bug in checkMoveStatus() that allowed Movement Done to be enabled
+	 *        immediately without any ship having moved.
+	 *
+	 * The bug: checkMoveStatus() used m_shipPos as the position fallback when a
+	 * ship's path was empty (phase entry).  m_shipPos holds the last-placed or
+	 * last-selected ship and is stale at phase entry — especially for the defending
+	 * player, whose move phase inherits m_shipPos from the attacker's last placement.
+	 * When that stale position sits at the board edge (x=54 heading 3), the next hex
+	 * in the forward direction is (55, y), which fails the in-bounds check, leaving
+	 * finished=true and setting isMoveComplete()=true spuriously.
+	 *
+	 * The fix: use findShipHex() to look up each ship's actual board position instead
+	 * of the stale m_shipPos.
+	 *
+	 * Test scenario:
+	 * - Minelayer (defender, speed=10, ADF=1, minMove=9) placed at (10,10) heading 3.
+	 * - AssaultScout (attacker, speed=0) placed LAST at (54,10) so m_shipPos=(54,10).
+	 * - Set movingPlayer=false (defender), state=BS_Battle, then enter PH_MOVE.
+	 * - Pre-fix: checkMoveStatus() uses m_shipPos=(54,10); findNextHex((54,10),3)=(55,10)
+	 *   which fails x<55; finished stays true; isMoveComplete()=true WRONG.
+	 * - Post-fix: checkMoveStatus() calls findShipHex() → (10,10); findNextHex((10,10),3)
+	 *   =(11,10) in bounds; finished=false; isMoveComplete()=false CORRECT.
+	 * - After moving 9 hexes, isMoveComplete() must become true.
+	 *
+	 * This test MUST fail against the pre-fix code and pass after the fix.
+	 *
+	 * @author claude-sonnet-4-6 (medium)
+	 * @date Created: Jun 30, 2026
+	 * @date Last Modified: Jun 30, 2026
+	 */
+	void testDefenderMovePhaseGatingRejectsCompletionBeforeMinimumMove();
 };
 
 }
