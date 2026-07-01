@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes/TMF-06/implementer_report.md",
+    "artifacts/tactical-misc-fixes/TMF-06/tester_prompt.txt",
+    "artifacts/tactical-misc-fixes/TMF-06/implementer_result.json"
+  ],
+  "branch_name": "tmf-TMF-06-implementer-20260630",
+  "changed_files": [
+    "include/tactical/FTacticalCombatReport.h",
+    "include/tactical/FBattleDisplay.h",
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "code_commit_hash": "61b09be",
+  "pass_label": null,
+  "status": "success",
+  "task_id": "TMF-06",
+  "validation_commands": [
+    "make -C /home/tstephen/repos/worktrees/tmf-TMF-06-implementer-20260630",
+    "make -C tests tactical-tests && ./tests/tactical/TacticalTests",
+    "DISPLAY=:0 ./tests/gui/GuiTests"
+  ],
+  "validation_outcome": "PASS with pre-existing failures: build succeeded, 244/244 tactical tests pass; GUI suite has 8 pre-existing source-contract failures unrelated to this change."
+}

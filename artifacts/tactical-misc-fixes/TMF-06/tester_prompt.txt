@@ -1,0 +1,45 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Skip post-fire damage-summary dialog when no weapon actually fired. Added weaponsFired count to FTacticalCombatReportSummary, populated from report.attacks.size() in buildTacticalCombatReportSummary. Guarded showTacticalDamageSummaryDialog in both onDefensiveFireDone and onOffensiveFireDone to only show when weaponsFired > 0.
+
+Modified files:
+- include/tactical/FTacticalCombatReport.h
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+
+Acceptance criteria to validate (from Planner):
+- FTacticalCombatReportSummary carries a weapons-fired count (or equivalent boolean) populated from fireAllWeapons() before the report is cleared.
+- After a defensive or offensive fire phase with no weapon fired, the damage dialog is not shown.
+- After a fire phase with at least one weapon fired — including all-miss / fully-intercepted (empty damage rows) — the damage dialog is still shown.
+- No regression to existing damage-summary contents or to the mine-damage report path that intentionally shows when empty.
+
+Create test files in:
+- tests/tactical/FTacticalCombatReportTest.{h,cpp} for weaponsFired field and count verification
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.{h,cpp} for dialog-skip behavior in fire-done handlers
+
+Implementation context for testing:
+- weaponsFired is set in buildTacticalCombatReportSummary (include/tactical/FTacticalCombatReport.h around line 697) as (int)report.attacks.size(). Each entry in attacks represents one weapon that returned fired()==true (appendTacticalAttackReport is only called on that condition).
+- Both onDefensiveFireDone and onOffensiveFireDone in src/tactical/FBattleDisplay.cpp (lines ~1371, ~1386) now guard showTacticalDamageSummaryDialog with if (summary.weaponsFired > 0).
+- The mine-damage path in applyFireDamage uses ITacticalUI::showDamageSummary directly with its own damagedShip conditional and is unaffected.
+- FTacticalGame.h and src/tactical/FTacticalGame.cpp were not modified.
+- The dialog-skip guard applies only to the fire-phase paths; the mine-damage and seeker-damage immediate-report paths are separate code paths not guarded by weaponsFired.
+
+Suggested test command(s):
+- make -C <worktree> tests
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes/TMF-06
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
