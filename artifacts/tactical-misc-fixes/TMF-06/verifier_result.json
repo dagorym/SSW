@@ -4,7 +4,7 @@
     "artifacts/tactical-misc-fixes/TMF-06/verifier_result.json"
   ],
   "blocking_finding_count": 0,
-  "branch_name": "tmf-TMF-06-documenter-20260630",
+  "branch_name": "tmf-TMF-06-verifier-20260630",
   "documentation_accuracy_summary": [
     "AGENTS.md TMF-06 sub-bullet accurately describes the implementation, all 5 behavioral tests, and 2 source-contract supplements including the 2 new pass-2 GUI tests with correct mechanism (CountingMockTacticalUI, FireDoneObserverBattleScreen, ITacticalUI seam, invocation counter). doc/test-contracts.md TMF-06 entry extended with pass-2 descriptions, pass-1 entries intact. doc/rules/tactical_operations_manual.md is unchanged (confirmed by git diff). Pass-1 NOTE about comment typo at FBattleDisplay.h:253: current code correctly reads 'event handler for defensive fire complete button; shows damage summary only when weaponsFired > 0' \u2014 the comment was always correct and the NOTE is resolved."
   ],
