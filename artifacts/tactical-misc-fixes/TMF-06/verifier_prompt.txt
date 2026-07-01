@@ -1,0 +1,93 @@
+Your role is 'Verifier'. Your task is as follows:
+
+## Context
+Task: TMF-06 — Skip post-fire damage-summary dialog when no weapon actually fired.
+This is a PASS-2 (post-remediation) verification run. The pass-1 Verifier raised:
+  - WARNING: behavioral test gap — dialog suppression for AC2/AC3 had no live wx
+    runtime test; only source-contract supplements existed.
+  - NOTE: inline comment on onDefensiveFireDone in FBattleDisplay.h said "offensive"
+    instead of "defensive".
+
+The pass-2 tester addressed the WARNING by adding two direct behavioral GUI tests.
+The pass-1 documenter addressed the NOTE (comment typo fix). This pass-2 documenter
+extended the documentation to cover the new tests.
+
+Your primary task is to confirm the WARNING is resolved and assess whether any
+BLOCKING issue exists. A residual WARNING on this second pass is acceptable.
+
+## Production Fix Summary
+- `FTacticalCombatReportSummary` gained `weaponsFired` (int, default 0).
+- `buildTacticalCombatReportSummary` sets `summary.weaponsFired = (int)report.attacks.size()`.
+- `FBattleDisplay::onDefensiveFireDone()` and `onOffensiveFireDone()` guard
+  `showTacticalDamageSummaryDialog(summary)` behind `if (summary.weaponsFired > 0)`.
+- Mine-damage path (`applyFireDamage` / `ITacticalUI::showDamageSummary`) is unaffected.
+- `FTacticalGame`, `FTacticalGame.h`, and `FTacticalGame.cpp` were not modified.
+
+## Pass-2 New Behavioral GUI Coverage (Tester)
+Two new tests in `tests/gui/TacticalGuiLiveTest.{h,cpp}` (GuiTests runner):
+- `testDefensiveFireDoneSkipsDialogWhenNoWeaponsFired`: installs `CountingMockTacticalUI`
+  on `FireDoneObserverBattleScreen` via the `ITacticalUI` seam, sets game to
+  `BS_Battle/PH_DEFENSE_FIRE`, triggers a draw to wire the button, fires the button
+  click event programmatically with an empty game (weaponsFired == 0), asserts mock
+  invocation counter did not increase (dialog suppressed). Addresses pass-1 WARNING.
+- `testOffensiveFireDoneSkipsDialogWhenNoWeaponsFired`: mirror for PH_ATTACK_FIRE.
+Test results: GuiTests 57/65 pass (8 pre-existing failures unrelated to TMF-06, 2 new
+tests PASS). TacticalTests 249/249 PASS.
+
+## Comment Typo Fix (Pass-1 Documenter)
+`include/tactical/FBattleDisplay.h`: the inline one-liner on `onDefensiveFireDone`
+now reads "defensive fire complete button" (not "offensive"). The `onOffensiveFireDone`
+comment correctly reads "offensive fire complete button". Confirmed in this pass.
+
+## Documentation Changes (This Pass-2 Documenter)
+- `doc/test-contracts.md`: TMF-06 entry extended with descriptions of the two new
+  behavioral GUI tests and how they observe dialog suppression via the counting mock.
+  All pass-1 entries retained.
+- `AGENTS.md`: new sub-bullet added in the GUI tests section describing the two
+  TMF-06 behavioral dialog-suppression tests alongside the existing TMF-05 sub-bullet.
+  The existing pass-1 fire-phase ownership note is not duplicated.
+
+## Acceptance Criteria to Verify
+AC1: `buildTacticalCombatReportSummary` sets `weaponsFired` from `report.attacks.size()`.
+AC2: `onDefensiveFireDone` and `onOffensiveFireDone` skip `showTacticalDamageSummaryDialog`
+     when `weaponsFired == 0`.
+AC3: A phase where all weapons missed (attacks recorded, ships.empty()) still shows the
+     dialog because `weaponsFired > 0`.
+AC4: Mine-damage path (`applyFireDamage` → `showDamageSummary`) is unaffected.
+
+## Files to Inspect
+### Implementation
+- `include/tactical/FTacticalCombatReport.h` — `FTacticalCombatReportSummary.weaponsFired` field
+- `src/tactical/FBattleDisplay.cpp` — `buildTacticalCombatReportSummary`, `onDefensiveFireDone`, `onOffensiveFireDone`
+- `include/tactical/FBattleDisplay.h` — onDefensiveFireDone / onOffensiveFireDone comments
+
+### Tests
+- `tests/tactical/FTacticalCombatReportTest.{h,cpp}` — three AC1/AC3 behavioral tests
+- `tests/tactical/FTacticalBattleDisplayFireFlowTest.{h,cpp}` — two source-contract supplements
+- `tests/gui/TacticalGuiLiveTest.{h,cpp}` — two new pass-2 behavioral GUI tests
+
+### Documentation (Documenter Changes)
+- `doc/test-contracts.md` — TMF-06 entry (verify pass-2 extensions present; pass-1 entries intact)
+- `AGENTS.md` — GUI tests section (verify TMF-06 sub-bullet added near line 232)
+
+## Branch and Artifacts
+Branch: `tmf-TMF-06-documenter-20260630`
+Shared artifact directory: `artifacts/tactical-misc-fixes/TMF-06/`
+Documentation commit: `7a4e00c`
+
+## Required Artifacts
+Write to `artifacts/tactical-misc-fixes/TMF-06/`:
+- `verifier_report.md`
+- `verifier_result.json`
+
+## Instructions to Verifier
+This is a post-remediation (pass-2) run. The pass-1 WARNING about behavioral test gap
+for dialog suppression has been addressed by the two new GUI tests in TacticalGuiLiveTest.
+Confirm this WARNING is resolved by verifying the two new tests exist, are registered in
+GuiTests.cpp, pass, and directly observe dialog suppression through the ITacticalUI seam.
+A residual WARNING on this second pass is acceptable; any BLOCKING issue must be called out.
+
+Do not stop after activation output, scope confirmation, or diff inspection when blocking
+inputs are present. Continue through the full verification, artifact writing, and commit.
+Report success only after all required artifacts exist and all changes are committed on
+branch `tmf-TMF-06-documenter-20260630`.
