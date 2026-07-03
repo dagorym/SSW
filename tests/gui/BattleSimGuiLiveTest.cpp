@@ -293,11 +293,16 @@ void clickDone() {
 class ScenarioEditorGUITestPeer : public ScenarioEditorGUI {
 public:
 ScenarioEditorGUITestPeer(wxWindow * parent)
-: ScenarioEditorGUI(parent), m_finalizeCalled(false) {
+: ScenarioEditorGUI(parent), m_finalizeCallCount(0) {
 }
 
 bool finalizeCalled() const {
-	return m_finalizeCalled;
+	return m_finalizeCallCount > 0;
+}
+
+/// number of times finalizeStartBattle() has been invoked (SEB-01 single-EndModal coverage)
+int getFinalizeCallCount() const {
+	return m_finalizeCallCount;
 }
 
 bool hasStaticBoxParent(wxWindow * child, const wxString & expectedLabel) const {
@@ -358,11 +363,11 @@ void clickStartBattle() {
 
 protected:
 virtual void finalizeStartBattle() wxOVERRIDE {
-	m_finalizeCalled = true;
+	++m_finalizeCallCount;
 }
 
 private:
-bool m_finalizeCalled;
+int m_finalizeCallCount;
 };
 
 }
@@ -846,6 +851,139 @@ void BattleSimGuiLiveTest::testScenarioEditorStartBattleLaunchesBattleScreenWith
 	}
 
 	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
+	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
+	if (parent->IsShown()) {
+		parent->Hide();
+	}
+	parent->Destroy();
+	m_harness.pumpEvents(10);
+	stabilizeTopLevels(m_harness);
+	forceCloseShownTopLevels(m_harness);
+	CPPUNIT_ASSERT_EQUAL(baselineShownTopLevels, countShownTopLevels(m_harness));
+	CPPUNIT_ASSERT_EQUAL(0, countShownTopLevelsNotInBaseline(m_harness, baselineTopLevels));
+}
+
+void BattleSimGuiLiveTest::testScenarioEditorStartBattleDoesNotHideDialogAndFinalizesOnce() {
+	// SEB-01: onStartBattle() must not Hide() the still-modal editor dialog
+	// before showing the nested FBattleScreen modally. On wxGTK, Hide()
+	// (Show(false)) on a live modal dialog implicitly calls
+	// EndModal(wxID_CANCEL); finalizeStartBattle() then calling EndModal(0)
+	// a second time is the double-EndModal crash this coverage guards
+	// against. Against the pre-fix code (Hide() present) this test fails
+	// because the dialog is not shown when the nested FBattleScreen
+	// appears; against the fixed code it passes.
+	const std::vector<wxTopLevelWindow *> baselineTopLevels = m_harness.getTopLevelWindows(false);
+	const int baselineShownTopLevels = countShownTopLevels(m_harness);
+	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Scenario Editor EndModal Parent");
+	parent->Show();
+	m_harness.pumpEvents();
+
+	FBattleScreen::resetLifecycleCounters();
+	{
+		ScenarioEditorGUITestPeer * dialog = new ScenarioEditorGUITestPeer(parent);
+		dialog->Show();
+		m_harness.pumpEvents();
+		bool launchedTopLevelPresented = false;
+		bool dialogShownWhenBattleScreenAppeared = false;
+		m_harness.runVoidFunctionWithAction([&]() {
+			dialog->chooseDefenderTeam(1);
+			dialog->chooseDefenderType(0);
+			dialog->addDefenderShip();
+			dialog->chooseAttackerTeam(2);
+			dialog->chooseAttackerType(0);
+			dialog->addAttackerShip();
+			dialog->clickStartBattle();
+		}, [&]() {
+			wxTopLevelWindow * launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
+				return topLevel != NULL && topLevel != parent && topLevel != dialog;
+			}, 200, 5);
+			launchedTopLevelPresented = (launchedTopLevel != NULL);
+			dialogShownWhenBattleScreenAppeared = dialog->IsShown();
+		}, 0, 200);
+
+		CPPUNIT_ASSERT(launchedTopLevelPresented);
+		CPPUNIT_ASSERT(dialogShownWhenBattleScreenAppeared);
+		CPPUNIT_ASSERT_EQUAL(1, dialog->getFinalizeCallCount());
+		if (dialog->IsShown()) {
+			dialog->Hide();
+		}
+		dialog->Destroy();
+		m_harness.pumpEvents(5);
+	}
+
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 1);
+	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
+	if (parent->IsShown()) {
+		parent->Hide();
+	}
+	parent->Destroy();
+	m_harness.pumpEvents(10);
+	stabilizeTopLevels(m_harness);
+	forceCloseShownTopLevels(m_harness);
+	CPPUNIT_ASSERT_EQUAL(baselineShownTopLevels, countShownTopLevels(m_harness));
+	CPPUNIT_ASSERT_EQUAL(0, countShownTopLevelsNotInBaseline(m_harness, baselineTopLevels));
+}
+
+void BattleSimGuiLiveTest::testScenarioDialogScenario1DoesNotHideDialogAndRemainsReplayable() {
+	// SEB-01: ScenarioDialog::onScenario1() must not wrap bb.ShowModal() in
+	// Hide()/Show(); the dialog stays shown behind the nested FBattleScreen
+	// and must remain a valid, replayable modal owner (a second scenario
+	// launch succeeds) after the nested battle screen closes.
+	const std::vector<wxTopLevelWindow *> baselineTopLevels = m_harness.getTopLevelWindows(false);
+	const int baselineShownTopLevels = countShownTopLevels(m_harness);
+	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Scenario Dialog Replay Parent");
+	parent->Show();
+	m_harness.pumpEvents();
+
+	FBattleScreen::resetLifecycleCounters();
+	{
+		ScenarioDialogTestPeer * dialog = new ScenarioDialogTestPeer(parent);
+		dialog->Show();
+		m_harness.pumpEvents();
+		CPPUNIT_ASSERT(dialog->IsShown());
+
+		bool firstLaunchPresented = false;
+		bool dialogShownDuringFirstBattleScreen = false;
+		m_harness.runVoidFunctionWithAction([&]() {
+			dialog->clickScenario1();
+		}, [&]() {
+			wxTopLevelWindow * launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
+				return topLevel != NULL && topLevel != parent && topLevel != dialog;
+			}, 200, 5);
+			firstLaunchPresented = (launchedTopLevel != NULL);
+			dialogShownDuringFirstBattleScreen = dialog->IsShown();
+		}, 0, 200);
+		CPPUNIT_ASSERT(firstLaunchPresented);
+		CPPUNIT_ASSERT(dialogShownDuringFirstBattleScreen);
+		CPPUNIT_ASSERT(dialog->IsShown());
+
+		// Replayability: the dialog remains a valid modal owner and can launch
+		// a second scenario's battle screen without needing to be re-shown.
+		bool secondLaunchPresented = false;
+		bool dialogShownDuringSecondBattleScreen = false;
+		m_harness.runVoidFunctionWithAction([&]() {
+			dialog->clickScenario1();
+		}, [&]() {
+			wxTopLevelWindow * launchedTopLevel = m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * topLevel) {
+				return topLevel != NULL && topLevel != parent && topLevel != dialog;
+			}, 200, 5);
+			secondLaunchPresented = (launchedTopLevel != NULL);
+			dialogShownDuringSecondBattleScreen = dialog->IsShown();
+		}, 0, 200);
+		CPPUNIT_ASSERT(secondLaunchPresented);
+		CPPUNIT_ASSERT(dialogShownDuringSecondBattleScreen);
+		CPPUNIT_ASSERT(dialog->IsShown());
+
+		if (dialog->IsShown()) {
+			dialog->Hide();
+		}
+		dialog->Destroy();
+		m_harness.pumpEvents(5);
+	}
+
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= 2);
 	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
 	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
 	if (parent->IsShown()) {

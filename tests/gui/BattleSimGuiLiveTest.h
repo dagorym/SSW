@@ -36,6 +36,8 @@ CPPUNIT_TEST( testScenarioDialogMenuQuitUnwindsBattleScreenModalCaller );
 CPPUNIT_TEST( testScenarioDialogTitleBarCloseUnwindsBattleScreenModalCaller );
 CPPUNIT_TEST( testScenarioDialogScenarioPathLaunchesBattleScreenWithLifecycleCoverage );
 CPPUNIT_TEST( testScenarioEditorStartBattleLaunchesBattleScreenWithLifecycleCoverage );
+CPPUNIT_TEST( testScenarioEditorStartBattleDoesNotHideDialogAndFinalizesOnce );
+CPPUNIT_TEST( testScenarioDialogScenario1DoesNotHideDialogAndRemainsReplayable );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -129,6 +131,26 @@ public:
 	 * @date Last Modified: Apr 04, 2026
 	 */
 	void testScenarioEditorStartBattleLaunchesBattleScreenWithLifecycleCoverage();
+	/**
+	 * @brief SEB-01: verifies onStartBattle() does not Hide() the editor dialog before the
+	 * nested FBattleScreen's ShowModal(), and that finalizeStartBattle() (single EndModal)
+	 * runs exactly once. Fails against the pre-fix Hide()-before-ShowModal() behavior.
+	 *
+	 * @author Sonnet 5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	void testScenarioEditorStartBattleDoesNotHideDialogAndFinalizesOnce();
+	/**
+	 * @brief SEB-01: verifies ScenarioDialog::onScenario1() does not wrap bb.ShowModal() in
+	 * Hide()/Show(), and that the dialog remains a valid, replayable modal owner across two
+	 * successive scenario launches.
+	 *
+	 * @author Sonnet 5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	void testScenarioDialogScenario1DoesNotHideDialogAndRemainsReplayable();
 };
 
 }

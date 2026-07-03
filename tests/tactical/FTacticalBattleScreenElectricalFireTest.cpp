@@ -197,14 +197,16 @@ const char * scenarioSignatures[] = {
 };
 for (size_t i = 0; i < sizeof(scenarioSignatures) / sizeof(scenarioSignatures[0]); ++i) {
 const std::string scenarioBody = extractFunctionBody(scenarioDialogSource, scenarioSignatures[i]);
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(scenarioBody, "Hide();"));
+// SEB-01: onScenarioN no longer wraps bb.ShowModal() in Hide()/Show(). On wxGTK,
+// Show(false) on a live modal dialog implicitly calls EndModal(wxID_CANCEL); removing
+// the wrap keeps this dialog's modal lifecycle single-ended and consistent with
+// ScenarioEditorGUI::onStartBattle. This structural/lifecycle claim is a supplement to
+// the behavioral coverage in BattleSimGuiLiveTest
+// (testScenarioDialogScenario1DoesNotHideDialogAndRemainsReplayable), which drives the
+// real handler and observes the dialog stays shown across the nested FBattleScreen.
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(scenarioBody, "Hide();"));
 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(scenarioBody, "bb.ShowModal();"));
-CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), countOccurrences(scenarioBody, "Show();"));
-std::vector<std::string> scenarioSequence;
-scenarioSequence.push_back("Hide();");
-scenarioSequence.push_back("bb.ShowModal();");
-scenarioSequence.push_back("Show();");
-assertAppearsInOrder(scenarioBody, scenarioSequence);
+CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), countOccurrences(scenarioBody, "Show();"));
 CPPUNIT_ASSERT(scenarioBody.find("bb.Show();") == std::string::npos);
 }
 
