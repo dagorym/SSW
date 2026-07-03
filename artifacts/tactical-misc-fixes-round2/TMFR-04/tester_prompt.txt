@@ -1,0 +1,45 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Made GUI source-contract tests cwd-independent by routing all hard-coded ../../src/... (and ../../include/...) source-contract path reads in StrategicGuiLiveTest.cpp and TacticalGuiLiveTest.cpp through the existing GUI_TEST_REPO_ROOT build define, and de-duplicated repeated identical @author entries in TacticalGuiLiveTest.h.
+
+Modified files:
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+
+Acceptance criteria to validate (from Planner):
+- GUI source-contract tests resolve source paths via GUI_TEST_REPO_ROOT and pass when launched both from tests/gui and from the repository root.
+- No remaining hard-coded ../../src/... path in the affected GUI tests.
+- Duplicate @author tags in tests/gui/TacticalGuiLiveTest.h collapsed to one per distinct author (none removed).
+- The full GUI suite passes; no behavioral coverage lost.
+
+Create test files in:
+- No new tests were created; this is test-infrastructure hygiene (path resolution + comment de-duplication), not a behavior change.
+- Existing coverage in tests/gui/StrategicGuiLiveTest.cpp and tests/gui/TacticalGuiLiveTest.cpp continues to exercise the same assertions, now via cwd-independent path resolution.
+- Tester should re-run the full tests/gui suite (`cd tests/gui && make && DISPLAY=:0 ./GuiTests`) from both tests/gui and the repository root to confirm no coverage was lost and no new false failures were introduced.
+
+Implementation context for testing:
+- TacticalGuiLiveTest.cpp already defined a guiRepoFile(relativePath) helper built on the GUI_TEST_REPO_ROOT compile macro, but only a few call sites used it; replaced the remaining ~24 raw "../../src/tactical/FBattleDisplay.cpp", "../../src/tactical/FBattleBoard.cpp", and "../../src/gui/ICMSelectionGUI.cpp" literals (inside sourceContainsLineToken(std::vector<std::string>(1, ...)) calls) with guiRepoFile("src/...") equivalents.
+- StrategicGuiLiveTest.cpp had no equivalent helper for its readFileText(...) calls; added a repoFile(relativePath) helper (same pattern: std::string(GUI_TEST_REPO_ROOT) + "/" + relativePath) beside the existing readFileText() helper, then updated the FileCheck array (18 entries: ViewFleetGUI.cpp, SystemDialogGUI.cpp, TransferShipsGUI.cpp, UPFUnattachedGUI.cpp, SatharFleetsGUI.cpp, SelectJumpGUI.cpp, BattleResultsGUI.cpp), the DialogContractCheck array (SatharRetreatGUI.cpp, CombatLocationGUI.cpp, TwoPlanetsGUI.cpp, SelectResolutionGUI.cpp), and the four direct readFileText calls (WXStrategicUI.cpp, FApp.cpp, WXStartupLaunch.h, FMainFrame.cpp) to resolve via repoFile(...), changing the literal path entries from '../../src/...' to 'src/...' (relative to GUI_TEST_REPO_ROOT, which the tests/gui Makefile already defines as $(CURDIR)/../.. -- the repository root -- so no Makefile change was needed).
+- Left the pre-existing '../../data/splash.png' and '../../icons' cwd-detection fallback checks in StrategicGuiLiveTest.cpp and BattleSimGuiLiveTest.cpp untouched: these are tolerant multi-candidate runtime-asset lookups (they try the cwd-relative form first and fall back), not single-hardcoded-path source-contract reads, and fall outside the stated '../../src/...' scope.
+- Collapsed two duplicate @author doc-comment lines in TacticalGuiLiveTest.h: the class-level comment (originally 11 comma-separated entries, 'claude-sonnet-4-6 (medium)' repeated 8 times) collapsed to the 5 distinct authors present (gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)); a method-level comment ('claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)') collapsed to a single entry. No distinct author was removed. Verified no other @author line in TacticalGuiLiveTest.h or TacticalGuiLiveTest.cpp has an intra-line duplicate.
+
+Suggested test command(s):
+- cd tests/gui && make
+- cd tests/gui && DISPLAY=:0 ./GuiTests
+- cd <repo-root> && DISPLAY=:0 ./tests/gui/GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes-round2/TMFR-04
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
