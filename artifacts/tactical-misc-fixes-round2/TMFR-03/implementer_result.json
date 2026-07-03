@@ -1,0 +1,22 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes-round2/TMFR-03/implementer_report.md",
+    "artifacts/tactical-misc-fixes-round2/TMFR-03/tester_prompt.txt",
+    "artifacts/tactical-misc-fixes-round2/TMFR-03/implementer_result.json"
+  ],
+  "branch_name": "fixes-tmfr-03-implementer-20260703",
+  "changed_files": [
+    "include/tactical/FBattleDisplay.h",
+    "src/tactical/FBattleDisplay.cpp"
+  ],
+  "code_commit_hash": "af2fad0da854482594cd9175505cab258653a936",
+  "pass_label": null,
+  "status": "PASS",
+  "task_id": "TMFR-03",
+  "validation_commands": [
+    "make",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make && ./GuiTests (run from tests/gui/ so its relative-path source-contract assertions resolve; DISPLAY=:0 was already available so xvfb-run was not needed)"
+  ],
+  "validation_outcome": "make (repo root) succeeded with no new warnings/errors; src/tactical rebuilt cleanly on its own with -Wall -Woverloaded-virtual and produced no warnings. tests/tactical/TacticalTests: 254 run, 3 failures, 0 errors -- all three are expected consequences of the approved behavior change (see expected_validation_failures). tests/gui/GuiTests (run with cwd=tests/gui so its relative source-file path arguments resolve correctly): 67 run, 1 failure, 0 errors -- that single failure is the GUI-suite instance of the same expected consequence (source-contract check for the old single-line instruction string). No other regressions observed in either suite."
+}
