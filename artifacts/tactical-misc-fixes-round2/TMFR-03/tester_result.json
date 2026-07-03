@@ -1,0 +1,54 @@
+{
+  "status": "success",
+  "task": "TMFR-03",
+  "branch": "fixes-tmfr-03-tester-20260703",
+  "test_commit": "4e0d9c8ccef48ddcaba8e2838d095c6ee34ede37",
+  "test_files_added_or_modified": [
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp",
+    "tests/tactical/FTacticalBattleDisplayFireFlowTest.h"
+  ],
+  "new_tests_added": [
+    "TacticalGuiLiveTest::testTurnPanelShownAtDefaultWindowSize",
+    "TacticalGuiLiveTest::testTurnPanelPlacedRightOfMovementDoneAndLeftOfShipInfoColumn",
+    "TacticalGuiLiveTest::testTurnPanelCaptionRendersAboveButtons",
+    "TacticalGuiLiveTest::testTurnPanelHeightExpandsToContainCaptionAndButtonsWithoutClipping"
+  ],
+  "existing_tests_updated": [
+    "FTacticalBattleDisplayFireFlowTest::testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases",
+    "FTacticalBattleDisplayFireFlowTest::testLowerPanelReflowPathRecomputesMovePromptReservationFromCurrentGeometry",
+    "FTacticalBattleDisplayFireFlowTest::testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers",
+    "TacticalGuiLiveTest::testTacticalActionButtonsStayBelowPromptReservationAcrossPhases"
+  ],
+  "update_justification": "Source-contract tests locked to the pre-fix buildMovePromptText() 3-arg signature and the old single-line move-phase instruction text, both of which the approved TMFR-03 task intentionally changed (4-arg signature with detailPromptThree; long instruction split across two lines). Not runtime regressions.",
+  "test_commands_run": [
+    "make",
+    "cd tests && make",
+    "cd tests/tactical && ./TacticalTests",
+    "cd tests/gui && ./GuiTests",
+    "cd tests && ./SSWTests"
+  ],
+  "test_results": {
+    "TacticalTests": { "total": 254, "failures": 0, "errors": 0 },
+    "GuiTests": { "total": 71, "failures": 0, "errors": 0 },
+    "SSWTests": { "total": 198, "failures": 0, "errors": 0 }
+  },
+  "acceptance_criteria_status": {
+    "instruction_wrapped_panel_x_from_wrapped_widths": "validated",
+    "panel_visible_and_placed_correctly_at_default_size": "validated",
+    "caption_drawn_above_buttons_correct_wording": "validated",
+    "panel_height_grows_without_clipping": "validated",
+    "no_regression_to_other_move_phase_paths": "validated"
+  },
+  "implementation_defects_found": [],
+  "cleanup": {
+    "temporary_byproducts_removed": true,
+    "notes": "No non-standard temporary files were created; build outputs under tests/ are standard gitignored Makefile artifacts."
+  },
+  "artifacts_written": [
+    "artifacts/tactical-misc-fixes-round2/TMFR-03/tester_report.md",
+    "artifacts/tactical-misc-fixes-round2/TMFR-03/tester_result.json",
+    "artifacts/tactical-misc-fixes-round2/TMFR-03/documenter_prompt.txt"
+  ]
+}
