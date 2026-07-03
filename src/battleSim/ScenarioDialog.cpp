@@ -128,9 +128,15 @@ void ScenarioDialog::onScenario1( wxCommandEvent& event ){
 	aList.push_back(f);
 	bb.setupFleets(&aList,&dList,true,st);
 
-	Hide();
+	// Sonnet 5 (medium): Do not wrap bb.ShowModal() in Hide()/Show(). On
+	// wxGTK, Show(false) on a live modal dialog implicitly calls
+	// EndModal(wxID_CANCEL), which is a fragile way to keep this dialog out
+	// from behind FBattleScreen and offers no benefit here since this dialog
+	// is only closed explicitly by onDone() -> EndModal(0). Leaving this
+	// dialog shown behind the modal FBattleScreen keeps it replayable and
+	// matches the single-EndModal modal lifecycle used elsewhere (see
+	// ScenarioEditorGUI::onStartBattle).
 	bb.ShowModal();
-	Show();
 
 //	event.Skip();
 }
@@ -203,9 +209,9 @@ void ScenarioDialog::onScenario2( wxCommandEvent& event ){
 	aList.push_back(f);
 	bb.setupFleets(&aList,&dList,true,st);
 
-	Hide();
+	// Sonnet 5 (medium): see onScenario1() for why Hide()/Show() are removed
+	// around bb.ShowModal() (single-EndModal modal lifecycle, replayability).
 	bb.ShowModal();
-	Show();
 
 //	event.Skip();
 }
@@ -249,9 +255,9 @@ void ScenarioDialog::onScenario3( wxCommandEvent& event ){
 	aList.push_back(f);
 	bb.setupFleets(&aList,&dList,false,NULL);
 
-	Hide();
+	// Sonnet 5 (medium): see onScenario1() for why Hide()/Show() are removed
+	// around bb.ShowModal() (single-EndModal modal lifecycle, replayability).
 	bb.ShowModal();
-	Show();
 
 //	event.Skip();
 }
@@ -333,9 +339,9 @@ void ScenarioDialog::onScenario4( wxCommandEvent& event ){
 	aList.push_back(f);
 	bb.setupFleets(&aList,&dList,true,st);
 
-	Hide();
+	// Sonnet 5 (medium): see onScenario1() for why Hide()/Show() are removed
+	// around bb.ShowModal() (single-EndModal modal lifecycle, replayability).
 	bb.ShowModal();
-	Show();
 
 //	event.Skip();
 }

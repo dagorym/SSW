@@ -421,9 +421,17 @@ void ScenarioEditorGUI::onStartBattle( wxCommandEvent& event ){
 	FFleet *defendFleet = createFleet(defenders,m_defenderTeam->GetStringSelection().ToStdString(),defenderID);
 	dList.push_back(defendFleet);
 	// start the battle
+	// Sonnet 5 (medium): Do NOT call Hide() here. On wxGTK, Show(false) on a
+	// live modal dialog implicitly calls EndModal(wxID_CANCEL); doing so
+	// before bb.ShowModal() and then calling finalizeStartBattle() (which
+	// calls EndModal(0) below) ends this dialog's modal loop twice, tripping
+	// the wxGTK assert at src/gtk/dialog.cpp:193 ("either wxDialog::EndModal
+	// called twice or ShowModal wasn't called"). Leaving this dialog shown
+	// behind the modal FBattleScreen and ending the loop exactly once via
+	// finalizeStartBattle() after ShowModal() returns keeps behavior
+	// consistent and correct on both wxGTK and MSW.
 	FBattleScreen bb;
 	bb.setupFleets(&aList,&dList,hasPlanet,station);
-	Hide();
 	bb.ShowModal();
 	///@todo clean up ships and fleets
 //	VehicleList vList = attackFleet->getShipList();
