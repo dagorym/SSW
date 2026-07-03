@@ -1,0 +1,54 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Validated and documented the canUseEndOfMoveTurn() fix in src/tactical/FTacticalGame.cpp, which replaced the buggy per-hex MR_TURN flag test at the path end hex with the whole-path budget rule countFlags(MR_TURN) < getMR(), so a ship with remaining MR (e.g. a minelayer with MR=2 that used one turn) can still make an end-of-move turn.
+
+Acceptance criteria to verify:
+- Turn buttons are enabled whenever countFlags(MR_TURN) < getMR() would allow another turn, including in the hex immediately after a turn -- covered by testCanApplyTurnWhenMRTurnBudgetRemainsAfterOneTurnUsed (MR=3, 1 turn used) and testMinelayerWithMRTwoCanStillTurnAfterUsingOneTurnViaRealMovement (MR=2 minelayer, real forward-then-turn movement via handleHexClick).
+- A minelayer with MR=2 that used one turn can still make an end-of-move turn; blocked only when turns used reach MR (or a turn is pending, or minimum move unmet) -- covered by testMinelayerWithMRTwoCanStillTurnAfterUsingOneTurnViaRealMovement (allowed) and testMinelayerWithMRTwoBlockedAfterUsingBothTurnsViaRealMovement / testCannotApplyTurnWhenMRTurnBudgetExhausted (blocked at countFlags==MR); pending-turn and minimum-move gates already covered by existing testSecondSameDirectionTurnIsBlockedWhenPendingExists and testCannotApplyTurnBeforeMinimumMoveIsSatisfied, both still passing.
+- Reverse/undo of a pending turn, the one-hexside clamp, and commit-at-Movement-Done are unchanged -- existing behavioral tests (testApplyingReverseWhenLeftPendingRestoresOriginHeading, testApplyingReverseWhenRightPendingRestoresOriginHeading, testReverseClearsPendingFacingFields, testFinalizeMovementStateCommitsPendingFacing, testFinalizeWithNoPendingUsesCurrentHeading) all still pass unmodified, confirming no regression.
+- No regression to normal in-route turning or Movement Done gating -- full TacticalTests (254) and SSWTests (198) suites pass with no new failures beyond the intentionally updated test.
+- doc/test-contracts.md TMF-05 entry accurately reflects the whole-path budget rule and the current FTacticalEndOfMoveTurnTest roster (20 tests).
+
+Implementation branch or worktree context:
+- Worktree branch fixes-tmfr-02-documenter-20260703, positioned after Tester commit 2ad1e08 and before Verifier.
+- Implementer commit 725915c fixed canUseEndOfMoveTurn() in src/tactical/FTacticalGame.cpp: replaced getFlag(endPoint()) & MR_TURN with countFlags(MR_TURN) >= (unsigned int)ship->getMR(), preserving the nMoved >= speed - ADF and pendingEndOfMoveFacing != -1 guards.
+- Tester commit 2ad1e08 updated tests/tactical/FTacticalEndOfMoveTurnTest.{cpp,h}: renamed/replaced the outdated testCannotApplyTurnWhenPathEndHexHasMRTurnFlag with testCanApplyTurnWhenMRTurnBudgetRemainsAfterOneTurnUsed, added testCannotApplyTurnWhenMRTurnBudgetExhausted, and added two real-movement tests (testMinelayerWithMRTwoCanStillTurnAfterUsingOneTurnViaRealMovement, testMinelayerWithMRTwoBlockedAfterUsingBothTurnsViaRealMovement) that drive the repro through handleHexClick().
+- Documenter commit 3394ef8 updated doc/test-contracts.md's TMF-05 entry to match the corrected gate rule and current test roster.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FTacticalGame.cpp (Implementer: canUseEndOfMoveTurn() fix + Doxygen update)
+- tests/tactical/FTacticalEndOfMoveTurnTest.cpp (Tester: new/renamed test cases)
+- tests/tactical/FTacticalEndOfMoveTurnTest.h (Tester: new/renamed test declarations and CPPUNIT_TEST registrations)
+- doc/test-contracts.md (Documenter: TMF-05 catalog entry correction)
+
+Commands executed:
+- cd tests && make tactical-tests
+- cd tests/tactical && ./TacticalTests
+
+Final test outcomes:
+- tests/tactical/TacticalTests: OK (254 tests) after doc-only commit, confirming the FTacticalEndOfMoveTurnTest count and behavior documented in doc/test-contracts.md matches the shipped test suite.
+- Prior full-suite outcomes reported by Tester (unchanged by this documentation pass): tests/tactical/TacticalTests OK (254 tests), tests/SSWTests OK (198 tests).
+
+Plan or evaluation context guidance:
+- plans/tactical-misc-fixes-round2-plan.md, subtask TMFR-02 (Fix Turn Left/Right enable rule).
+- Documentation Impact for TMFR-02 in the plan: update doc/test-contracts.md's turn-button enable contract to the budget rule; update Doxygen headers on edited functions (already done by Implementer).
+
+Convention-file guidance:
+- AGENTS.md governs Doxygen header, module boundary, and test-authoring conventions.
+- doc/test-contracts.md is the canonical tactical test-source-contract catalog referenced from AGENTS.md's Testing section.
+- doc/rules/tactical_operations_manual.md MUST NOT be edited (non-negotiable repository constraint); this fix aligns code to the manual's existing MR-as-turn-budget rule with no conflict.
+
+Updated documentation files:
+- doc/test-contracts.md
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes-round2/TMFR-02
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
