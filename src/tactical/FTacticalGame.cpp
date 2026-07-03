@@ -826,19 +826,24 @@ void FTacticalGame::finalizeMovementState() {
 /**
  * @brief Internal helper: check if the active ship may use an end-of-move facing change.
  *
- * The ship must have met its minimum required move, have remaining MR budget for a
- * turn in the final occupied hex, and must not have already used a turn in that hex
- * via normal movement. A pending end-of-move turn counts as the MR consumed, so this
- * helper returns false when no additional budget is available.
+ * The ship must have met its minimum required move and have remaining MR budget across
+ * the whole path (turns already used compared against the ship's MR), matching the
+ * whole-path budget rule used by the route-highlight computation in
+ * computeRemainingMoves(). MR_TURN flags are recorded on the hex a ship turns INTO, not
+ * on the hex it is departing from, so a per-hex flag test at the end-of-path hex is not
+ * a valid proxy for remaining MR budget: a turn-then-advance on the final leg flags the
+ * ship's current hex (the destination of that turn) even though additional MR remains.
+ * A pending end-of-move turn counts as one MR unit consumed, so this helper returns
+ * false when no additional budget is available.
  *
  * @param ship  Active ship pointer (must be non-NULL).
  * @param turnData  Turn data for the active ship (must be non-NULL).
  *
  * @return True when the ship has budget for exactly one end-of-move facing change.
  *
- * @author claude-sonnet-4-6 (medium)
+ * @author claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created: Jun 30, 2026
- * @date Last Modified: Jun 30, 2026
+ * @date Last Modified: Jul 03, 2026
  */
 static bool canUseEndOfMoveTurn(FVehicle * ship, FTacticalTurnData * turnData) {
 	if (ship == NULL || turnData == NULL) { return false; }
@@ -846,12 +851,9 @@ static bool canUseEndOfMoveTurn(FVehicle * ship, FTacticalTurnData * turnData) {
 	// Minimum move check: nMoved >= speed - ADF (result may be <= 0, so also accept nMoved == 0)
 	const int minMove = turnData->speed - ship->getADF();
 	if (turnData->nMoved < minMove) { return false; }
-	// One-turn-per-hex limit at the final occupied hex.
-	// If path has moved hexes (length > 1), check if the end hex already has an MR_TURN flag.
-	if (turnData->path.getPathLength() > 1) {
-		if (turnData->path.getFlag(turnData->path.endPoint()) & MR_TURN) {
-			return false;
-		}
+	// Whole-path MR turn budget, matching the route-highlight rule in computeRemainingMoves().
+	if (turnData->path.countFlags(MR_TURN) >= (unsigned int)ship->getMR()) {
+		return false;
 	}
 	// If a pending end-of-move turn already exists, no additional MR budget is available.
 	if (turnData->pendingEndOfMoveFacing != -1) { return false; }
