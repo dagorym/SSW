@@ -1,0 +1,67 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented the SEB-01 fix for the BattleSim wxGTK double-wxDialog::EndModal crash: ScenarioEditorGUI::onStartBattle and ScenarioDialog::onScenarioN no longer wrap bb.ShowModal() in Hide()/Show(), each launching dialog now ends its modal loop exactly once, and two new behavioral tests plus a reconciled source-contract test lock this in BattleSimGuiLiveTest and FTacticalBattleScreenElectricalFireTest.
+
+Acceptance criteria to verify:
+- onStartBattle no longer calls Hide() before bb.ShowModal() (verified behaviorally: dialog remains shown when the nested FBattleScreen appears) and finalizeStartBattle() runs exactly once (single EndModal).
+- Each onScenarioN no longer wraps bb.ShowModal() in Hide()/Show() (verified behaviorally for onScenario1 across two launches, and via updated source-contract assertions for all four onScenarioN handlers).
+- FBattleScreen, LocalGameDialog, BattleSimFrame, and the generated .h are unchanged (no edits made to those files; only tests/gui and tests/tactical files were changed by the Tester).
+- Builds cleanly; existing BattleSim/GUI and tactical suites pass except the one expected-obsolete test, which was reconciled.
+- Documentation reflects the actual implemented and tested diff: doc/test-contracts.md now records the removed Hide()/Show() lifecycle, the two new behavioral tests, the reconciled source-contract test, and the outstanding required user manual-verification pass for the end-to-end no-assert runtime behavior.
+
+Implementation branch or worktree context:
+- Implementer commit 57cf70b07b30561e24c2a18c72ece784a7ac12bb removed the premature Hide() in ScenarioEditorGUI::onStartBattle() and the Hide()/Show() wrap around bb.ShowModal() in ScenarioDialog::onScenario1()..onScenario4().
+- Tester commit f3bb588d726143ae80d4cd807e8c1b99b2166930 added testScenarioEditorStartBattleDoesNotHideDialogAndFinalizesOnce and testScenarioDialogScenario1DoesNotHideDialogAndRemainsReplayable to BattleSimGuiLiveTest, and reconciled FTacticalBattleScreenElectricalFireTest::testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen's source-contract assertions to 0x Hide()/0x Show()/1x bb.ShowModal().
+- Documenter commit afecbbd648c0f01c8858808cd9b104ce0c83f32f added the SEB-01 entry to doc/test-contracts.md; no product or test files were modified in this pass.
+- Root cause: on wxGTK, Show(false) on a live modal dialog implicitly calls EndModal(wxID_CANCEL); the subsequent explicit EndModal(0) in finalizeStartBattle() then double-ended the modal loop, tripping the wxGTK assert at src/gtk/dialog.cpp:193.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/battleSim/ScenarioEditorGUI.cpp
+- src/battleSim/ScenarioDialog.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.h
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+- doc/test-contracts.md
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start
+- myteam get skill documenter/preflight
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01/documenter_prompt.txt --repo-root <worktree>
+- myteam get skill documenter/diff-review
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 079034f --head HEAD
+- git show 57cf70b0 -- src/battleSim/ScenarioEditorGUI.cpp src/battleSim/ScenarioDialog.cpp
+- git show f3bb588 -- tests/gui/BattleSimGuiLiveTest.cpp tests/gui/BattleSimGuiLiveTest.h tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+- grep -n BattleSim/Scenario/EndModal/SelectCombatGUI AGENTS.md
+- grep -n BattleSim/Scenario/'Start Battle'/'Local Game' doc/UsersGuide.md
+- myteam get skill documenter/doc-editing
+- myteam get skill diff-first-editing
+- git commit doc/test-contracts.md
+- myteam get skill artifact-paths
+- myteam get skill documenter/artifact-writing
+- python3 .myteam/documenter/artifact-writing/write_documenter_artifacts.py --artifact-dir artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01 --repo-root <worktree>
+
+Final test outcomes:
+- No test files were modified in this documentation-only pass; final test outcomes are unchanged from the Tester handoff: BattleSimGuiLiveTest::testScenarioEditorStartBattleDoesNotHideDialogAndFinalizesOnce (new) PASS, BattleSimGuiLiveTest::testScenarioDialogScenario1DoesNotHideDialogAndRemainsReplayable (new) PASS, FTacticalBattleScreenElectricalFireTest::testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen (reconciled) PASS, GUI suite 67/67 (one documented transient centering flake on rerun-clean), Tactical suite 253/253, SSWTests 198/198.
+
+Plan or evaluation context guidance:
+- plans/scenario-editor-startbattle-endmodal-fix-plan.md, subtask SEB-01, Overall Documentation Impact section: doc/test-contracts.md should be added/adjusted (done); AGENTS.md should be noted only if the BattleSim modal flow is already documented there (not applicable, no change made); doc/UsersGuide.md only if the BattleSim custom/predefined flow is user-documented (not applicable, no change made); doc/rules/tactical_operations_manual.md MUST NOT change (respected).
+
+Convention-file guidance:
+- AGENTS.md Single-Source-of-Truth Rule: project facts belong in exactly one canonical location; doc/test-contracts.md is the canonical per-test source-contract catalog for tactical/BattleSim GUI-live tests, so the new SEB-01 lifecycle fact was recorded there rather than duplicated elsewhere.
+- AGENTS.md Function Comments convention (author/date fields) was already satisfied by the Implementer's and Tester's in-code Doxygen updates; no further in-code documentation changes were required in this pass.
+
+Updated documentation files:
+- doc/test-contracts.md
+
+Shared artifact directory:
+- artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

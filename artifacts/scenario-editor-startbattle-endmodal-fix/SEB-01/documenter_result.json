@@ -1,0 +1,15 @@
+{
+  "artifact_file_paths": [
+    "artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01/documenter_report.md",
+    "artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01/documenter_result.json",
+    "artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01/verifier_prompt.txt"
+  ],
+  "branch_name": "fixes-seb01-documenter-20260703",
+  "documentation_commit_hash": "afecbbd648c0f01c8858808cd9b104ce0c83f32f",
+  "documentation_files_changed": [
+    "doc/test-contracts.md"
+  ],
+  "pass_label": null,
+  "status": "success",
+  "task_id": "SEB-01"
+}
