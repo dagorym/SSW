@@ -1,7 +1,7 @@
 /**
  * @file FBattleScreen.h
  * @brief Header file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), Claude Sonnet 5 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-5 (medium)
  * @date Created:  Jul 11, 2008
  * @date Last Modified: Jul 03, 2026
  *
@@ -22,13 +22,6 @@ namespace Frontier {
 class FTacticalGame;
 class WXTacticalUI;
 
-}
-
-/// Forward declaration for the wxWidgets modality-blocking helper used by FBattleScreen::ShowModal()/EndModal().
-class wxWindowDisabler;
-
-namespace Frontier {
-
 /**
  * @brief Class for the Main tactical combat board
  *
@@ -45,23 +38,9 @@ namespace Frontier {
  * destruction and modal callers unwind back to their launch sites without
  * allowing default frame destruction to touch stack-owned instances.
  *
- * As of the TMFR-01 modality rework, ShowModal() no longer relies on a
- * GTK-level `gtk_window_set_modal()` grab to block the strategic layer: a
- * GTK-modal top-level has no minimize button regardless of `wxMINIMIZE_BOX`,
- * so the grab has been dropped in favor of a `wxWindowDisabler` that disables
- * every other top-level window (the strategic main frame, any launching
- * dialog such as `SelectCombatGUI`, etc.) for the duration of the battle and
- * restores their prior enabled state in EndModal(). This keeps the frame a
- * normal top-level (minimize and the title-bar X both remain effective)
- * while still preventing interaction with the rest of the application. The
- * GTK "activate"-based bypass originally added only for `File -> Quit` is
- * now paired with an equivalent GTK "delete-event" bypass so the title-bar X
- * reaches the same close path even while a child `WXTacticalUI` dialog
- * (damage summary / ICM selection / winner info) is modal.
- *
- * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), claude-sonnet-4-6 (medium), Claude Sonnet 5 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jul 03, 2026
+ * @date Last Modified:  May 27, 2026
  */
 class FBattleScreen : public wxFrame
 {
@@ -80,57 +59,17 @@ public:
 	 * @param size Initial top-level window size.
 	 * @param style wxWidgets top-level style flags for the frame-backed surface.
 	 *
-	 * On GTK, this also installs two low-level signal bypasses on the frame's
-	 * native widgets: one on the File menu's Quit item's "activate" signal, and
-	 * one on the top-level widget's "delete-event" signal (the title-bar X).
-	 * Both bypasses fire only when `wxModalDialogHook::GetOpenCount() > 0`
-	 * (i.e. some wxDialog, including a WXTacticalUI child dialog, is currently
-	 * modal), which is exactly the condition under which wx's own menu-event
-	 * and close-event routing can otherwise swallow the corresponding user
-	 * action. See onMenuQuit() and onClose() for the shared close path they
-	 * both ultimately reach.
-	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), Claude Sonnet 5 (medium)
+	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  Jul 03, 2026
+	 * @date Last Modified:  May 23, 2026
 	 */
 	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1200,900 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxRESIZE_BORDER );
 //	FBattleScreen(const wxString& title = "Star Frontiers Knight Hawks Battle Board", const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 750,550 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 	/// Default destructor
 	~FBattleScreen();
-	/**
-	 * @brief Run a class-owned event loop so legacy blocking launch sites stay source-compatible on wxFrame.
-	 *
-	 * Preserves battle modality with a `wxWindowDisabler` (disabling every
-	 * other top-level window for the object's lifetime, restored in
-	 * EndModal()) instead of the previous `gtk_window_set_modal()` GTK grab.
-	 * Dropping the GTK grab keeps the frame a normal, non-GTK-modal top-level
-	 * so `wxMINIMIZE_BOX` remains effective and the title-bar close control
-	 * keeps working; the strategic main frame and any launching dialog (e.g.
-	 * `SelectCombatGUI`) stay non-interactive for the duration of the battle
-	 * regardless.
-	 *
-	 * @return Modal return code stored via SetReturnCode()/EndModal().
-	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), Claude Sonnet 5 (medium)
-	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  Jul 03, 2026
-	 */
+	/// Runs a class-owned event loop so legacy blocking launch sites stay source-compatible on wxFrame. On GTK, calls gtk_window_set_modal(TRUE) before Show() so the window acquires the input grab during the show phase, ensuring menu events are delivered even when launched from a modal dialog.
 	int ShowModal();
-	/**
-	 * @brief End frame-backed modal compatibility mode.
-	 *
-	 * Deletes the `wxWindowDisabler` created in ShowModal() (restoring the
-	 * prior enabled state of every other top-level window) before exiting the
-	 * event loop and hiding the frame, matching wxDialog::EndModal ordering,
-	 * without destroying stack-owned instances.
-	 *
-	 * @param returnCode Return code stored for the ShowModal() caller.
-	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), Claude Sonnet 5 (medium)
-	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  Jul 03, 2026
-	 */
+	/// Ends frame-backed modal compatibility mode: exits the event loop first, then hides the frame (matching wxDialog::EndModal ordering) without destroying stack-owned instances.
 	void EndModal(int returnCode);
 	/// Returns true when modal compatibility mode is active.
 	bool IsModal() const;
@@ -756,8 +695,6 @@ protected:
 	bool m_modalActive;
 	/// true while the screen-owned shared close lifecycle is actively unwinding this surface
 	bool m_closeInProgress;
-	/// wxWindowDisabler owned for the ShowModal()/EndModal() lifetime; disables every other top-level window (strategic main frame, launching dialogs) to preserve battle modality without a GTK modal grab. NULL when no battle is modally active.
-	wxWindowDisabler * m_windowDisabler;
 
 	/// Print a winner message and exit the battle screen through the shared close path.
 	void declareWinner();
@@ -772,19 +709,11 @@ protected:
 	 * destruction is not scheduled so the first valid close request cannot leave
 	 * the tactical top-level stuck open.
 	 *
-	 * Before hiding or ending the modal loop, ALL active WXTacticalUI child
-	 * modal dialogs are dismissed innermost-first via dismissActiveDialog()
-	 * (which now unwinds the WXTacticalUI dialog stack rather than a single
-	 * tracked pointer) so that wxGTK's automatic EndModal side-effect
-	 * (triggered by hiding the parent frame while a child dialog is still
-	 * modal) never finds an untracked, still-modal dialog to duplicate-close,
-	 * even when more than one child dialog has been live during the battle.
-	 *
 	 * @param returnCode Return code propagated back to modal compatibility callers.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), Claude Sonnet 5 (medium)
+	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  May 22, 2026
-	 * @date Last Modified:  Jul 03, 2026
+	 * @date Last Modified:  May 23, 2026
 	 */
 	void closeBattleScreen(int returnCode = 0);
 	/**
@@ -793,16 +722,13 @@ protected:
 	 * The native close event reuses closeBattleScreen(GetReturnCode()) so menu and
 	 * title-bar shutdown stay centralized in FBattleScreen. Accepted close events
 	 * are fully handled in this method and do not continue into wx default close
-	 * handling afterward. Every active WXTacticalUI child modal dialog is dismissed
-	 * inside closeBattleScreen before the frame hides itself. This handler is also
-	 * reachable via the constructor's GTK "delete-event" bypass when a child dialog
-	 * is modal and would otherwise swallow the title-bar X.
+	 * handling afterward.
 	 *
 	 * @param event wxWidgets top-level close event for the tactical frame.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), Claude Sonnet 5 (medium)
+	 * @author Tom Stephens, gpt-5.4 (high)
 	 * @date Created:  May 22, 2026
-	 * @date Last Modified:  Jul 03, 2026
+	 * @date Last Modified:  May 23, 2026
 	 */
 	void onClose(wxCloseEvent & event);
 	/**
