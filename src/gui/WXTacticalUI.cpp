@@ -1,9 +1,9 @@
 /**
  * @file WXTacticalUI.cpp
  * @brief Concrete bridge from tactical game logic to wxWidgets dialogs.
- * @author Tom Stephens, gpt-5.3-codex (medium), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.3-codex (medium), claude-sonnet-4-6 (medium), Claude Sonnet 5 (medium)
  * @date Created: Mar 29, 2026
- * @date Last Modified: Jun 30, 2026
+ * @date Last Modified: Jul 03, 2026
  */
 
 #include "gui/WXTacticalUI.h"
@@ -21,7 +21,7 @@ namespace Frontier {
 
 int WXTacticalUI::s_modalAutoDismissMs = 0;
 
-WXTacticalUI::WXTacticalUI(wxWindow* parent) : m_parent(parent), m_activeDialog(NULL) {}
+WXTacticalUI::WXTacticalUI(wxWindow* parent) : m_parent(parent) {}
 
 WXTacticalUI::~WXTacticalUI() {}
 
@@ -54,9 +54,11 @@ void WXTacticalUI::showMessage(const std::string& title,
       autoDismiss = new ModalAutoDismissTimer(&dialog);
       autoDismiss->Start(s_modalAutoDismissMs, true);
     }
-    m_activeDialog = &dialog;
+    m_dialogStack.push_back(&dialog);
     dialog.ShowModal();
-    m_activeDialog = NULL;
+    if (!m_dialogStack.empty()) {
+      m_dialogStack.pop_back();
+    }
     if (autoDismiss != NULL) {
       delete autoDismiss;
     }
@@ -72,9 +74,11 @@ int WXTacticalUI::showDamageSummary(const FTacticalCombatReportSummary& summary)
   } else {
     dialog.CentreOnScreen(wxBOTH);
   }
-  m_activeDialog = &dialog;
+  m_dialogStack.push_back(&dialog);
   int result = dialog.ShowModal();
-  m_activeDialog = NULL;
+  if (!m_dialogStack.empty()) {
+    m_dialogStack.pop_back();
+  }
   return result;
 }
 
@@ -90,9 +94,11 @@ int WXTacticalUI::runICMSelection(std::vector<ICMData*>& icmData,
   } else {
     dialog.CentreOnScreen(wxBOTH);
   }
-  m_activeDialog = &dialog;
+  m_dialogStack.push_back(&dialog);
   int result = dialog.ShowModal();
-  m_activeDialog = NULL;
+  if (!m_dialogStack.empty()) {
+    m_dialogStack.pop_back();
+  }
   return result;
 }
 
@@ -107,12 +113,29 @@ void WXTacticalUI::setModalAutoDismissMs(int timeoutMs) {
 }
 
 bool WXTacticalUI::hasPendingDialog() const {
-  return m_activeDialog != NULL && m_activeDialog->IsModal();
+  for (std::vector<wxDialog*>::const_reverse_iterator it = m_dialogStack.rbegin();
+       it != m_dialogStack.rend(); ++it) {
+    wxDialog* dialog = *it;
+    if (dialog != NULL && dialog->IsModal()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void WXTacticalUI::dismissActiveDialog() {
-  if (m_activeDialog != NULL && m_activeDialog->IsModal()) {
-    m_activeDialog->EndModal(wxID_CANCEL);
+  // Walk innermost-first (back of the stack, i.e. most recently opened) to
+  // outermost so every live child dialog's EndModal() runs before this
+  // method returns. Each dialog's own showMessage()/showDamageSummary()/
+  // runICMSelection() call pops it from the stack once its ShowModal() call
+  // unwinds; this loop only calls EndModal() and never mutates the stack
+  // directly.
+  for (std::vector<wxDialog*>::const_reverse_iterator it = m_dialogStack.rbegin();
+       it != m_dialogStack.rend(); ++it) {
+    wxDialog* dialog = *it;
+    if (dialog != NULL && dialog->IsModal()) {
+      dialog->EndModal(wxID_CANCEL);
+    }
   }
 }
 

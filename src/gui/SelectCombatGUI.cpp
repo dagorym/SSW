@@ -198,16 +198,24 @@ void SelectCombatGUI::onView( wxCommandEvent& event ){
  * @brief Handle the Attack! button press to launch a tactical battle.
  *
  * Resolves combat location and fleet assignments, then launches an
- * FBattleScreen for the tactical encounter. This dialog is hidden
- * before ShowModal() so that GTK releases its modal grab; without
- * this, FBattleScreen cannot acquire the grab and its File->Quit
- * menu item never generates wxEVT_MENU events.
+ * FBattleScreen for the tactical encounter. This dialog (the launching
+ * parent for the battle) is hidden before FBattleScreen::ShowModal() and
+ * re-shown after it returns: SelectCombatGUI is itself a genuine wxDialog
+ * still holding its own native GTK modal grab while this handler runs, and
+ * since TMFR-01 removed FBattleScreen's own `gtk_window_set_modal()` grab (so
+ * the battle window keeps a working minimize button and title-bar close),
+ * that still-active SelectCombatGUI grab would otherwise block all input to
+ * the new FBattleScreen top-level entirely. Hiding this dialog releases its
+ * grab for the battle's duration; FBattleScreen::ShowModal() separately
+ * installs a `wxWindowDisabler` that keeps the strategic main frame (this
+ * dialog's parent) and this dialog itself non-interactive for the same
+ * duration, restoring both when the battle closes.
  *
  * @param event wxCommandEvent from the Attack! button
  *
- * @author Claude Sonnet 4.6 (medium)
+ * @author Claude Sonnet 4.6 (medium), Claude Sonnet 5 (medium)
  * @date Created: May 23, 2026
- * @date Last Modified: May 23, 2026
+ * @date Last Modified: Jul 03, 2026
  */
 void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 	int planet = 0;  // this is the index of the planet in the planet list the attack is against
@@ -281,8 +289,12 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 		} else {
 			bb.setupFleets(&dList,&aList,!((bool)combatLocation),station);
 		}
-//		bb.Show(true);
+		// Release this dialog's own GTK modal grab so the (no-longer
+		// GTK-modal) FBattleScreen can actually receive input; see the
+		// onAttack() Doxygen comment above for the full rationale.
+		this->Show(false);
 		bb.ShowModal();
+		this->Show(true);
 		///@todo clean up ships
 	}
 

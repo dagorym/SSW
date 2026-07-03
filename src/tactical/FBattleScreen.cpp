@@ -1,9 +1,9 @@
 /**
  * @file FBattleScreen.cpp
  * @brief Implementation file for BattleScreen class
- * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium)
+ * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium), Claude Sonnet 5 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 30, 2026
+ * @date Last Modified:  Jul 03, 2026
  *
  */
 
@@ -111,7 +111,8 @@ FBattleScreen::FBattleScreen(const wxString& title, const wxPoint& pos, const wx
 	m_modalEventLoop(NULL),
 	m_modalReturnCode(wxID_CANCEL),
 	m_modalActive(false),
-	m_closeInProgress(false)
+	m_closeInProgress(false),
+	m_windowDisabler(NULL)
 {
 	g_battleScreenConstructedCount++;
 	g_battleScreenLiveCount++;
@@ -178,11 +179,20 @@ TacticalUI(this);
 	Bind(wxEVT_SIZE, &FBattleScreen::onSize, this);
 
 #ifdef __WXGTK__
-	// wxWidgets' IsMenuEventAllowed() (src/gtk/menu.cpp) blocks menu events
-	// from wxFrame windows whenever wxModalDialogHook::GetOpenCount() > 0,
-	// i.e. whenever any wxDialog is running ShowModal().  FBattleScreen is a
-	// wxFrame acting as a modal window launched from within SelectCombatGUI's
-	// modal loop, so wx silently drops Quit menu events.
+	// wxWidgets blocks certain event-routing paths on a wxFrame whenever
+	// wxModalDialogHook::GetOpenCount() > 0, i.e. whenever any wxDialog
+	// (including a WXTacticalUI child dialog such as the damage summary, ICM
+	// selection, or winner/info message) is currently running ShowModal().
+	// FBattleScreen relies on both its File->Quit menu command and its
+	// title-bar close ("X") reaching onClose()/closeBattleScreen() at any
+	// point in the battle, including while such a child dialog is modal, so
+	// both vectors get a matching low-level GTK bypass below.
+
+	// (1) IsMenuEventAllowed() (src/gtk/menu.cpp) blocks menu events from
+	// wxFrame windows under the same GetOpenCount() condition, so wx silently
+	// drops Quit menu events while a child dialog is modal (this also
+	// originally applied when FBattleScreen itself was launched from within
+	// SelectCombatGUI's own modal loop).
 	//
 	// Fix: connect an "activate" handler AFTER wx's own handler.  wx's handler
 	// returns early without dispatching the event when a modal dialog is open.
@@ -215,6 +225,30 @@ TacticalUI(this);
 			g_list_free(barItems);
 		}
 	}
+
+	// (2) Generalization of (1) to the title-bar X: connect directly to the
+	// top-level GtkWidget's native "delete-event" signal (fired when the
+	// window manager's close control is activated) BEFORE wx's own handler
+	// runs. When a child dialog is modal, dispatch the same wxCloseEvent the
+	// title-bar X would normally produce directly via HandleWindowEvent() so
+	// onClose()/closeBattleScreen() still run and return TRUE to indicate the
+	// delete-event has been handled. When no dialog is modal, return FALSE so
+	// wx's normal delete-event -> wxCloseEvent -> onClose() routing continues
+	// unchanged. closeBattleScreen()'s m_closeInProgress guard keeps this safe
+	// even if both this bypass and wx's own routing ever fire for the same
+	// close request.
+	g_signal_connect(m_widget, "delete-event",
+		G_CALLBACK(+[](GtkWidget*, GdkEvent*, void* data) -> gboolean {
+			FBattleScreen* self = static_cast<FBattleScreen*>(data);
+			if (wxModalDialogHook::GetOpenCount() > 0) {
+				wxCloseEvent evt(wxEVT_CLOSE_WINDOW);
+				evt.SetEventObject(self);
+				evt.SetCanVeto(true);
+				self->HandleWindowEvent(evt);
+				return TRUE;
+			}
+			return FALSE;
+		}), this);
 #endif
 
 }
@@ -229,6 +263,13 @@ FBattleScreen::~FBattleScreen(){
 	}
 	if (m_tacticalUI) { delete m_tacticalUI; }
 	if (m_tacticalGame) { delete m_tacticalGame; }
+	// Safety net: normally EndModal() already deletes m_windowDisabler before
+	// this destructor runs, but guard against destruction while still modal
+	// so other top-level windows are never left disabled.
+	if (m_windowDisabler != NULL) {
+		delete m_windowDisabler;
+		m_windowDisabler = NULL;
+	}
 //	delete m_wd;
 //	this->MakeModal(false);
 }
@@ -242,15 +283,18 @@ int FBattleScreen::ShowModal() {
 	m_modalReturnCode = wxID_CANCEL;
 	m_closeInProgress = false;
 
-	// NOTE: wxDialog::ShowModal() on GTK does NOT use wxWindowDisabler — it
-	// relies purely on gtk_window_set_modal() for input restriction.  We
-	// follow the same pattern: no wxWindowDisabler here.
-
-	// Mirror wxDialog::ShowModal(): mark the window as modal before Show() so
-	// GTK calls gtk_grab_add() during the show phase.
-#ifdef __WXGTK__
-	gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE);
-#endif
+	// TMFR-01: modality is now enforced with a wxWindowDisabler instead of a
+	// GTK-level gtk_window_set_modal() grab. A GTK-modal top-level has no
+	// minimize button regardless of wxMINIMIZE_BOX, and it also caused the
+	// title-bar X to be swallowed while a child WXTacticalUI dialog held its
+	// own modal grab. wxWindowDisabler disables every other top-level window
+	// (the strategic main frame, any launching dialog such as
+	// SelectCombatGUI, etc.) for the lifetime of this object, restoring their
+	// prior enabled state when it is deleted in EndModal(). This keeps
+	// FBattleScreen itself a normal, non-GTK-modal top-level so both the
+	// minimize control and the title-bar X keep working, while the rest of
+	// the application remains non-interactive for the duration of the battle.
+	m_windowDisabler = new wxWindowDisabler(this);
 
 	Show(true);
 	Raise();
@@ -259,10 +303,6 @@ int FBattleScreen::ShowModal() {
 	m_modalEventLoop = &modalEventLoop;
 	m_modalEventLoop->Run();
 	m_modalEventLoop = NULL;
-
-#ifdef __WXGTK__
-	gtk_window_set_modal(GTK_WINDOW(m_widget), FALSE);
-#endif
 
 	return m_modalReturnCode;
 }
@@ -274,6 +314,13 @@ void FBattleScreen::EndModal(int returnCode) {
 
 	SetReturnCode(returnCode);
 	m_modalActive = false;
+
+	// Restore every other top-level window's prior enabled state before
+	// exiting the event loop and hiding this frame.
+	if (m_windowDisabler != NULL) {
+		delete m_windowDisabler;
+		m_windowDisabler = NULL;
+	}
 
 	// Exit the event loop first (matching wxDialog::EndModal ordering), then
 	// hide the window.  Hiding before exiting can trigger GTK unmap events
@@ -991,13 +1038,17 @@ void FBattleScreen::closeBattleScreen(int returnCode) {
 		return;
 	}
 
-	// Dismiss any active WXTacticalUI child modal dialog before hiding this
-	// frame.  When a child wxDialog still has a live modal loop and
-	// Show(false) is called on the parent frame, wxGTK's dialog.cpp
+	// Dismiss every active WXTacticalUI child modal dialog, innermost-first,
+	// before hiding this frame.  When a child wxDialog still has a live modal
+	// loop and Show(false) is called on the parent frame, wxGTK's dialog.cpp
 	// Show(false) handler calls EndModal(wxID_CANCEL) on the child as a
-	// side-effect.  If the child's EndModal was already called here first,
-	// IsModal() returns false and the duplicate call is suppressed, avoiding
-	// the "wxDialog::EndModal called twice" assert.
+	// side-effect.  dismissActiveDialog() now unwinds WXTacticalUI's full
+	// dialog stack (not just a single tracked pointer), so this remains safe
+	// even when more than one child dialog has been live during the battle:
+	// each dialog's EndModal is already called here first, so IsModal()
+	// returns false for all of them and wxGTK's automatic side-effect finds
+	// nothing left to duplicate-close, avoiding the "wxDialog::EndModal
+	// called twice" assert.
 	if (m_tacticalUI != NULL) {
 		m_tacticalUI->dismissActiveDialog();
 	}
