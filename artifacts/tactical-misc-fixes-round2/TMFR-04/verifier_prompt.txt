@@ -1,0 +1,57 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Made GUI source-contract tests cwd-independent by routing hard-coded ../../src/... (and ../../include/...) path reads in tests/gui/StrategicGuiLiveTest.cpp and tests/gui/TacticalGuiLiveTest.cpp through the existing GUI_TEST_REPO_ROOT build define (via new repoFile()/existing guiRepoFile() helpers), and de-duplicated repeated identical @author entries in tests/gui/TacticalGuiLiveTest.h. This is test-infrastructure hygiene; no product behavior changed. Documenter reviewed the diff and confirmed no documentation update was required (see Assumptions).
+
+Acceptance criteria to verify:
+- GUI source-contract tests resolve source paths via GUI_TEST_REPO_ROOT and pass when launched both from tests/gui and from the repository root -- confirmed by the Tester running tests/gui/GuiTests from both locations with all Strategic/Tactical source-contract cases passing consistently.
+- No remaining hard-coded ../../src/... path in the affected GUI tests -- confirmed via grep across StrategicGuiLiveTest.cpp and TacticalGuiLiveTest.cpp (zero matches); re-confirmed by the Documenter via the same grep.
+- Duplicate @author tags in tests/gui/TacticalGuiLiveTest.h collapsed to one per distinct author, none removed -- confirmed via grep of all @author lines: the class-level line now lists 5 distinct authors and the method-level line lists 1, with no other line in the file containing an intra-line duplicate.
+- The full GUI suite passes; no behavioral coverage lost -- confirmed via repeated GuiTests runs (71 tests each); the only intermittent failure observed (testLocalGameDialogLaunchesPredefinedAndCustomModalChains, a modal-centering timing flake in BattleSimGuiLiveTest.cpp) is in a file untouched by this diff and is pre-existing, unrelated flakiness, not a coverage loss.
+- Documentation impact assessed: no AGENTS.md or doc/test-contracts.md update is warranted for this purely test-infrastructure change (see Documenter assumptions/rationale).
+
+Implementation branch or worktree context:
+- Branch/worktree: fixes-tmfr-04-tester-20260703 (worktree at /home/tstephen/repos/worktrees/fixes-tmfr-04-tester-20260703); Documenter worktree: fixes-tmfr-04-documenter-20260703 at /home/tstephen/repos/worktrees/fixes-tmfr-04-documenter-20260703
+- Implementer commit: 15f2a27 'TMFR-04: resolve GUI source-contract paths via GUI_TEST_REPO_ROOT'
+- Comparison base: cfaa9c3 (TMFR-03 verifier pass, immediately prior to the TMFR-04 implementer change)
+- Tester made no changes (test_commit_hash: 'No Changes Made'); Documenter made no changes (documentation_commit_hash: 'No Changes Made') -- the only substantive commit in scope for this subtask is the Implementer's 15f2a27.
+
+Files modified by the Implementer, Tester, and Documenter:
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+
+Commands executed:
+- grep -n '\.\./\.\./' AGENTS.md doc/test-contracts.md
+- grep -n 'GUI_TEST_REPO_ROOT' AGENTS.md doc/test-contracts.md tests/gui/Makefile
+- grep -n 'guiRepoFile|repoFile|GUI_TEST_REPO_ROOT' doc/test-contracts.md
+- grep -n 'sourceContainsLineToken|FileCheck|DialogContractCheck|readFileText' AGENTS.md doc/test-contracts.md
+- git diff cfaa9c3..15f2a27 -- tests/gui
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base cfaa9c3 --head 15f2a27
+
+Final test outcomes:
+- No new test runs were performed by the Documenter; the Tester's prior GuiTests results (71 tests, all Strategic/Tactical source-contract cases passing consistently across repo-root and tests/gui invocations, with one pre-existing unrelated BattleSimGuiLiveTest centering flake) remain the governing evidence for this subtask.
+- diff-review tool output: likely_documentation_impact=false, existing_docs_may_be_outdated=false, guidance_review_likely=false, candidate_documentation_targets=[] for the cfaa9c3..15f2a27 diff limited to tests/gui/StrategicGuiLiveTest.cpp, tests/gui/TacticalGuiLiveTest.cpp, tests/gui/TacticalGuiLiveTest.h.
+
+Plan or evaluation context guidance:
+- Plan: plans/tactical-misc-fixes-round2-plan.md (tactical-misc-fixes-round2 plan; task TMFR-04).
+- Plan's Documentation Impact hint: note the GUI_TEST_REPO_ROOT-based path resolution for GUI source-contract tests if test conventions are documented there; no production-code documentation impact.
+- Documenter finding: the GUI_TEST_REPO_ROOT/guiRepoFile() convention is already documented in doc/test-contracts.md (SMRV-01 entry), so no new entry was needed -- TMFR-04 only extends an already-documented convention to remaining call sites.
+
+Convention-file guidance:
+- AGENTS.md GUI-tests bullet list and doc/test-contracts.md were scanned for stale ../../src or GUI_TEST_REPO_ROOT statements; none found needing correction.
+- doc/rules/tactical_operations_manual.md was not touched (non-negotiable constraint) -- this subtask has no rules-document surface.
+
+Updated documentation files:
+- None
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes-round2/TMFR-04
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
