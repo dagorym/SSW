@@ -1,0 +1,54 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Added behavioral test coverage for the SEB-01 double-wxDialog::EndModal fix in BattleSim (ScenarioEditorGUI::onStartBattle and ScenarioDialog::onScenarioN) and reconciled the one obsolete source-contract assertion in FTacticalBattleScreenElectricalFireTest that encoded the pre-fix Hide()/Show() wrapping.
+
+Acceptance criteria validated:
+- onStartBattle no longer calls Hide() before bb.ShowModal() (verified behaviorally: dialog remains shown when the nested FBattleScreen appears) and finalizeStartBattle() runs exactly once (single EndModal).
+- Each onScenarioN no longer wraps bb.ShowModal() in Hide()/Show() (verified behaviorally for onScenario1 across two launches, and via updated source-contract assertions for all four onScenarioN handlers).
+- FBattleScreen, LocalGameDialog, BattleSimFrame, and the generated .h are unchanged (no edits made to those files; only tests/gui and tests/tactical files were changed).
+- Builds cleanly; existing BattleSim/GUI and tactical suites pass except the one expected-obsolete test, which was reconciled per item 3.
+
+Implementation branch or worktree context:
+- Implementer commit 57cf70b07b30561e24c2a18c72ece784a7ac12bb on branch fixes-seb01-implementer-20260703 removed the premature Hide() in ScenarioEditorGUI::onStartBattle() and the Hide()/Show() wrap around bb.ShowModal() in ScenarioDialog::onScenario1()..onScenario4().
+- Root cause: on wxGTK, Show(false) on a live modal dialog implicitly calls EndModal(wxID_CANCEL); the subsequent explicit EndModal(0) in finalizeStartBattle() then double-ended the modal loop, tripping the wxGTK assert at src/gtk/dialog.cpp:193.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/battleSim/ScenarioEditorGUI.cpp
+- src/battleSim/ScenarioDialog.cpp
+- tests/gui/BattleSimGuiLiveTest.cpp
+- tests/gui/BattleSimGuiLiveTest.h
+- tests/tactical/FTacticalBattleScreenElectricalFireTest.cpp
+
+Test commit:
+- f3bb588d726143ae80d4cd807e8c1b99b2166930
+
+Commands executed:
+- make -C src all
+- cd tests/gui && make && DISPLAY=:0 ./GuiTests
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+- cd tests && make && ./SSWTests
+
+Final test outcomes:
+- BattleSimGuiLiveTest::testScenarioEditorStartBattleDoesNotHideDialogAndFinalizesOnce (new): drives the real onStartBattle via clickStartBattle with the harness auto-dismissing the nested FBattleScreen; asserts the ScenarioEditorGUI dialog was still shown when the nested FBattleScreen appeared (would fail against the pre-fix Hide()-before-ShowModal() code) and that finalizeStartBattle() ran exactly once. PASS.
+- BattleSimGuiLiveTest::testScenarioDialogScenario1DoesNotHideDialogAndRemainsReplayable (new): drives ScenarioDialog::onScenario1() twice via clickScenario1 with harness auto-dismiss of each nested FBattleScreen; asserts the dialog was never Hide()-den around bb.ShowModal() and remained a valid, replayable modal owner across two successive scenario launches (FBattleScreen constructed/destroyed twice, zero live instances at the end). PASS.
+- FTacticalBattleScreenElectricalFireTest::testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen (reconciled): source-contract assertions updated from '1x Hide(), 1x bb.ShowModal(), 1x Show() in order' to '0x Hide(), 1x bb.ShowModal(), 0x Show()' to match the approved SEB-01 fix; kept only as a structural supplement, with the crash-avoidance behavior itself covered by the new behavioral tests above. PASS.
+
+Documentation context:
+- AGENTS.md documents BattleSim/GUI test conventions in the Testing section; no BattleSim-specific user-facing documentation currently describes the onStartBattle/onScenarioN modal lifecycle, so this is primarily an internal test/behavior fix.
+- Runtime verification of the wxGTK double-EndModal crash fix (BattleSim -> Play a Local Game -> Create a New Custom Game -> build fleets -> Start Battle; and BattleSim -> Play a Local Game -> Play a Predefined Game -> Play a scenario -> Done) remains a REQUIRED user manual-verification pass and was explicitly NOT attempted in the automated harness per task instructions (prior rounds found driving two nested live modal loops end-to-end hangs the runner / causes heap corruption).
+
+Plan and diff context:
+- artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01/implementer_report.md documents the root cause and fix.
+- git show 57cf70b07b30561e24c2a18c72ece784a7ac12bb shows the full production diff (src/battleSim/ScenarioDialog.cpp and src/battleSim/ScenarioEditorGUI.cpp).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
