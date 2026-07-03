@@ -1,0 +1,32 @@
+{
+  "artifact_file_paths": [
+    "artifacts/battle-window-rollback/RB-01/tester_report.md",
+    "artifacts/battle-window-rollback/RB-01/tester_result.json",
+    "artifacts/battle-window-rollback/RB-01/documenter_prompt.txt"
+  ],
+  "branch_name": "fixes-rb01-tester-20260703",
+  "commands_run": [
+    "make -C src all",
+    "make all_clean",
+    "make",
+    "cd tests && ./SSWTests",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests/gui && make && DISPLAY=:0 ./GuiTests"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "65 tests, OK (0 failures)",
+    "SSWTests": "198 tests, OK (0 failures)",
+    "TacticalTests": "253 tests, OK (0 failures)"
+  },
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "RB-01",
+  "test_commit_hash": "51fba48",
+  "test_files_changed": [
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/tactical/WXTacticalUIAdapterTest.cpp",
+    "tests/tactical/WXTacticalUIAdapterTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}
