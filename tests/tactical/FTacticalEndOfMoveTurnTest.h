@@ -1,14 +1,15 @@
 /**
  * @file FTacticalEndOfMoveTurnTest.h
- * @brief Header file for end-of-move single facing change behavioral tests (TMF-05).
+ * @brief Header file for end-of-move single facing change behavioral tests (TMF-05, TMFR-02).
  *
  * Covers canApplyEndOfMoveTurnLeft(), canApplyEndOfMoveTurnRight(), applyEndOfMoveTurn(),
- * finalizeMovementState() pending-turn commit, handleHexClick() pending-turn clear, and
- * speed-0 deceleration extension of the free-rotation gate.
+ * finalizeMovementState() pending-turn commit, handleHexClick() pending-turn clear,
+ * speed-0 deceleration extension of the free-rotation gate, and the whole-path MR_TURN
+ * budget rule used by canUseEndOfMoveTurn() (TMFR-02).
  *
- * @author claude-sonnet-4-6 (medium)
+ * @author claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created: Jun 30, 2026
- * @date Last Modified: Jun 30, 2026
+ * @date Last Modified: Jul 03, 2026
  */
 
 #ifndef FTACTICALENDOFMOVETURNTEST_H_
@@ -19,21 +20,24 @@
 namespace FrontierTests {
 
 /**
- * @brief CppUnit fixture for FTacticalGame end-of-move single facing change (TMF-05).
+ * @brief CppUnit fixture for FTacticalGame end-of-move single facing change (TMF-05, TMFR-02).
  *
  * All tests construct real FTacticalGame instances with real ship/fleet objects and
  * observe runtime results — no source-text inspection is used.
  *
- * @author claude-sonnet-4-6 (medium)
+ * @author claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created: Jun 30, 2026
- * @date Last Modified: Jun 30, 2026
+ * @date Last Modified: Jul 03, 2026
  */
 class FTacticalEndOfMoveTurnTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( FTacticalEndOfMoveTurnTest );
 CPPUNIT_TEST( testCanApplyTurnBothDirectionsWhenMRAvailableAndMinMoveSatisfied );
 CPPUNIT_TEST( testCannotApplyTurnWhenMRIsZero );
 CPPUNIT_TEST( testCannotApplyTurnBeforeMinimumMoveIsSatisfied );
-CPPUNIT_TEST( testCannotApplyTurnWhenPathEndHexHasMRTurnFlag );
+CPPUNIT_TEST( testCanApplyTurnWhenMRTurnBudgetRemainsAfterOneTurnUsed );
+CPPUNIT_TEST( testCannotApplyTurnWhenMRTurnBudgetExhausted );
+CPPUNIT_TEST( testMinelayerWithMRTwoCanStillTurnAfterUsingOneTurnViaRealMovement );
+CPPUNIT_TEST( testMinelayerWithMRTwoBlockedAfterUsingBothTurnsViaRealMovement );
 CPPUNIT_TEST( testApplyLeftTurnSetsHeadingImmediatelyForVisualFeedback );
 CPPUNIT_TEST( testApplyRightTurnSetsHeadingImmediatelyForVisualFeedback );
 CPPUNIT_TEST( testPendingTurnRecordsOriginAndNewFacing );
@@ -78,12 +82,44 @@ void testCannotApplyTurnWhenMRIsZero();
 void testCannotApplyTurnBeforeMinimumMoveIsSatisfied();
 
 /**
- * @brief Turn is blocked when the path end hex already has an MR_TURN flag.
- * @author claude-sonnet-4-6 (medium)
- * @date Created: Jun 30, 2026
- * @date Last Modified: Jun 30, 2026
+ * @brief Turn remains available when the whole-path MR_TURN budget has not been
+ *        exhausted (MR=3, one turn already used, 1 < 3 still allows a turn). This
+ *        supersedes the prior (buggy) per-hex end-flag rule: MR_TURN is recorded on
+ *        the hex a ship turns INTO, so a turn-then-advance on the final leg used to
+ *        flag the destination hex and incorrectly block the turn even with MR left.
+ * @author claude-sonnet-5 (medium)
+ * @date Created: Jul 03, 2026
+ * @date Last Modified: Jul 03, 2026
  */
-void testCannotApplyTurnWhenPathEndHexHasMRTurnFlag();
+void testCanApplyTurnWhenMRTurnBudgetRemainsAfterOneTurnUsed();
+
+/**
+ * @brief Turn is blocked once the whole-path MR_TURN count reaches the ship's MR
+ *        (MR=2, both turns used, 2 >= 2 blocks further turns).
+ * @author claude-sonnet-5 (medium)
+ * @date Created: Jul 03, 2026
+ * @date Last Modified: Jul 03, 2026
+ */
+void testCannotApplyTurnWhenMRTurnBudgetExhausted();
+
+/**
+ * @brief Repro scenario (TMFR-02): a minelayer with MR=2 that used exactly one
+ *        MR_TURN via real forward-then-turn movement (not a manually injected flag)
+ *        can still make an end-of-move turn in the hex right after that turn.
+ * @author claude-sonnet-5 (medium)
+ * @date Created: Jul 03, 2026
+ * @date Last Modified: Jul 03, 2026
+ */
+void testMinelayerWithMRTwoCanStillTurnAfterUsingOneTurnViaRealMovement();
+
+/**
+ * @brief A minelayer with MR=2 that has used two MR_TURNs via real movement (the
+ *        full budget) is blocked from an end-of-move turn.
+ * @author claude-sonnet-5 (medium)
+ * @date Created: Jul 03, 2026
+ * @date Last Modified: Jul 03, 2026
+ */
+void testMinelayerWithMRTwoBlockedAfterUsingBothTurnsViaRealMovement();
 
 /**
  * @brief applyEndOfMoveTurn(+1) updates ship heading immediately for visual feedback.

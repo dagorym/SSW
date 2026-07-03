@@ -1,6 +1,7 @@
 /**
  * @file FTacticalEndOfMoveTurnTest.cpp
- * @brief Behavioral tests for TMF-05 end-of-move single facing change.
+ * @brief Behavioral tests for TMF-05 end-of-move single facing change and the
+ *        TMFR-02 whole-path MR_TURN budget fix in canUseEndOfMoveTurn().
  *
  * All tests construct the real FTacticalGame model with real ship/fleet objects,
  * exercise the runtime API, and assert observable results (heading values, pending
@@ -10,15 +11,16 @@
  * turnShip(h, +1) = left turn (heading + 1 mod 6)
  * turnShip(h, -1) = right turn (heading - 1 mod 6)
  *
- * @author claude-sonnet-4-6 (medium)
+ * @author claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created: Jun 30, 2026
- * @date Last Modified: Jun 30, 2026
+ * @date Last Modified: Jul 03, 2026
  */
 
 #include "FTacticalEndOfMoveTurnTest.h"
 
 #include "core/FHexMap.h"
 #include "ships/FFrigate.h"
+#include "ships/FMinelayer.h"
 #include "strategic/FFleet.h"
 #include "tactical/FTacticalGame.h"
 
@@ -201,30 +203,223 @@ void FTacticalEndOfMoveTurnTest::testCannotApplyTurnBeforeMinimumMoveIsSatisfied
 }
 
 /**
- * Turn is blocked when the path end hex already has an MR_TURN flag.
+ * Turn remains available when the whole-path MR_TURN budget has not been exhausted.
  *
- * Move the ship 1 hex via a left-turn hex (the left hexes contain hexes that
- * were approached with an MR_TURN). We simulate by directly adding an MR_TURN
- * flag on the path end hex inside the turn data.
+ * TMFR-02: canUseEndOfMoveTurn() was fixed to use the whole-path budget rule
+ * (countFlags(MR_TURN) < getMR()) instead of testing only the end-of-path hex's
+ * flag. This test uses MR=3 with exactly one MR_TURN flag recorded on the path
+ * (1 < 3), so the turn must be allowed. Previously (pre-fix) this scenario was
+ * incorrectly blocked because MR_TURN is recorded on the hex a ship turns INTO,
+ * and a turn-then-advance on the final leg flagged the ship's current (destination)
+ * hex even though MR remained.
  */
-void FTacticalEndOfMoveTurnTest::testCannotApplyTurnWhenPathEndHexHasMRTurnFlag() {
+void FTacticalEndOfMoveTurnTest::testCanApplyTurnWhenMRTurnBudgetRemainsAfterOneTurnUsed() {
     FEndOfMoveTurnFixture fixture;
     setupFixtureWithMoves(fixture, 0, 0, 3);
 
     FTacticalTurnData * td = requireTurnData(fixture);
 
-    // Manually simulate having entered the current hex with a left-turn MR.
-    // Add a second hex to the path and flag it with MR_TURN.
+    // Simulate having used exactly one MR_TURN via normal movement: add a hex to
+    // the path and flag it MR_TURN. countFlags(MR_TURN) is now 1, MR is 3 (1 < 3).
     FPoint endHex(15, 11); // any hex different from the start
     td->path.addPoint(endHex);
     td->path.addFlag(endHex, MR_TURN);
 
-    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnLeft should return false when path end has MR_TURN",
+    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnLeft should return true when MR_TURN budget remains (1 < 3)",
+        fixture.game.canApplyEndOfMoveTurnLeft());
+    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnRight should return true when MR_TURN budget remains (1 < 3)",
+        fixture.game.canApplyEndOfMoveTurnRight());
+
+    destroyFixture(fixture);
+}
+
+/**
+ * Turn is blocked once the whole-path MR_TURN count reaches the ship's MR.
+ *
+ * Companion case to testCanApplyTurnWhenMRTurnBudgetRemainsAfterOneTurnUsed:
+ * MR=2 with two distinct hexes flagged MR_TURN on the path (2 >= 2) must block
+ * the end-of-move turn, confirming the budget rule still gates correctly once
+ * turns used reach MR.
+ */
+void FTacticalEndOfMoveTurnTest::testCannotApplyTurnWhenMRTurnBudgetExhausted() {
+    FEndOfMoveTurnFixture fixture;
+    setupFixtureWithMoves(fixture, 0, 0, 2);
+
+    FTacticalTurnData * td = requireTurnData(fixture);
+
+    // Simulate having used two MR_TURNs via normal movement.
+    FPoint firstTurnHex(15, 11);
+    FPoint secondTurnHex(15, 12);
+    td->path.addPoint(firstTurnHex);
+    td->path.addFlag(firstTurnHex, MR_TURN);
+    td->path.addPoint(secondTurnHex);
+    td->path.addFlag(secondTurnHex, MR_TURN);
+
+    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnLeft should return false when MR_TURN budget is exhausted (2 >= 2)",
         !fixture.game.canApplyEndOfMoveTurnLeft());
-    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnRight should return false when path end has MR_TURN",
+    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnRight should return false when MR_TURN budget is exhausted (2 >= 2)",
         !fixture.game.canApplyEndOfMoveTurnRight());
 
     destroyFixture(fixture);
+}
+
+// ---------------------------------------------------------------------------
+// TMFR-02 repro scenario: minelayer with MR=2, real forward-then-turn movement
+// (no manually injected path flags) driven through handleHexClick() using the
+// left/right turn hex lists exposed by getLeftTurnHexes()/getRightTurnHexes().
+// ---------------------------------------------------------------------------
+
+namespace {
+
+struct FMinelayerTurnFixture {
+    FTacticalGame game;
+    FleetList attackFleets;
+    FleetList defendFleets;
+    FFleet * attackFleet;
+    FFleet * defendFleet;
+    FMinelayer * attacker;
+    FFrigate * defender;
+    FPoint attackerPos;
+    FPoint defenderPos;
+};
+
+/**
+ * Set up a two-ship game in PH_MOVE with an FMinelayer attacker selected,
+ * MR overridden to 2, and speed set high enough to permit a forward move plus
+ * two subsequent turn-hex selections.
+ */
+static void setupMinelayerFixture(FMinelayerTurnFixture & fixture, int attackerSpeed) {
+    fixture.attackFleet = new FFleet();
+    fixture.defendFleet = new FFleet();
+    fixture.attacker = new FMinelayer();
+    fixture.defender = new FFrigate();
+    fixture.attackerPos = FPoint(15, 10);
+    fixture.defenderPos = FPoint(25, 25);
+
+    fixture.attackFleet->addShip(fixture.attacker);
+    fixture.defendFleet->addShip(fixture.defender);
+    fixture.attackFleets.push_back(fixture.attackFleet);
+    fixture.defendFleets.push_back(fixture.defendFleet);
+
+    fixture.game.setupFleets(&fixture.attackFleets, &fixture.defendFleets, false, NULL);
+
+    fixture.game.setState(BS_SetupDefendFleet);
+    fixture.game.setControlState(true);
+    fixture.game.setShip(fixture.defender);
+    CPPUNIT_ASSERT(fixture.game.placeShip(fixture.defenderPos));
+    CPPUNIT_ASSERT(fixture.game.setShipPlacementHeading(3));
+
+    fixture.game.setState(BS_SetupAttackFleet);
+    fixture.game.setControlState(true);
+    fixture.game.setShip(fixture.attacker);
+    CPPUNIT_ASSERT(fixture.game.placeShip(fixture.attackerPos));
+    CPPUNIT_ASSERT(fixture.game.setShipPlacementHeading(1)); // heading SW
+
+    fixture.attacker->setSpeed(attackerSpeed);
+    fixture.attacker->setMR(2);
+    CPPUNIT_ASSERT_EQUAL(2, static_cast<int>(fixture.attacker->getMR()));
+
+    fixture.game.setState(BS_Battle);
+    fixture.game.setMovingPlayer(true);
+    fixture.game.setPhase(PH_MOVE);
+    CPPUNIT_ASSERT(fixture.game.selectShipFromHex(fixture.attackerPos));
+}
+
+static void destroyMinelayerFixture(FMinelayerTurnFixture & fixture) {
+    for (FleetList::iterator itr = fixture.attackFleets.begin(); itr != fixture.attackFleets.end(); ++itr) {
+        delete *itr;
+    }
+    for (FleetList::iterator itr = fixture.defendFleets.begin(); itr != fixture.defendFleets.end(); ++itr) {
+        delete *itr;
+    }
+    fixture.attackFleets.clear();
+    fixture.defendFleets.clear();
+}
+
+static FTacticalTurnData * requireMinelayerTurnData(FMinelayerTurnFixture & fixture) {
+    FTacticalTurnData * td = fixture.game.findTurnData(fixture.attacker->getID());
+    CPPUNIT_ASSERT_MESSAGE("Turn data not found for minelayer attacker", td != NULL);
+    return td;
+}
+
+/// Click one available left-turn hex if present, otherwise fall back to a straight
+/// movement hex; returns true if a hex was clicked.
+static bool clickLeftTurnOrForwardHex(FMinelayerTurnFixture & fixture) {
+    const std::vector<FPoint> & leftHexes = fixture.game.getLeftTurnHexes();
+    if (!leftHexes.empty()) {
+        return fixture.game.handleHexClick(leftHexes.front());
+    }
+    const std::vector<FPoint> & moves = fixture.game.getMovementHexes();
+    CPPUNIT_ASSERT_MESSAGE("No movement or turn hexes available", !moves.empty());
+    return fixture.game.handleHexClick(moves.front());
+}
+
+} // anonymous namespace
+
+/**
+ * Repro scenario: minelayer with MR=2, speed high enough to move forward once and
+ * then use exactly one real MR_TURN via a left-turn hex click. The turn budget used
+ * (1) is below MR (2), so canApplyEndOfMoveTurnLeft/Right must return true in the
+ * hex right after that turn — this is the exact TMFR-02 defect scenario, driven
+ * entirely through real movement (not a manually injected path flag).
+ */
+void FTacticalEndOfMoveTurnTest::testMinelayerWithMRTwoCanStillTurnAfterUsingOneTurnViaRealMovement() {
+    FMinelayerTurnFixture fixture;
+    setupMinelayerFixture(fixture, 3 /* speed */);
+
+    // First hex: move straight forward so the path has length > 1 and turn hexes
+    // become available on the next selection.
+    const std::vector<FPoint> & initialMoves = fixture.game.getMovementHexes();
+    CPPUNIT_ASSERT_MESSAGE("Initial movement hexes must be available", !initialMoves.empty());
+    CPPUNIT_ASSERT(fixture.game.handleHexClick(initialMoves.front()));
+
+    // Second hex: use a real left-turn (falls back to forward if no turn hex is
+    // offered, though MR=2 with countFlags==0 < 2 should offer left/right hexes).
+    const std::vector<FPoint> & leftHexes = fixture.game.getLeftTurnHexes();
+    CPPUNIT_ASSERT_MESSAGE("Left-turn hexes must be available with MR_TURN budget remaining", !leftHexes.empty());
+    CPPUNIT_ASSERT(fixture.game.handleHexClick(leftHexes.front()));
+
+    FTacticalTurnData * td = requireMinelayerTurnData(fixture);
+    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), td->path.countFlags(MR_TURN));
+    CPPUNIT_ASSERT_MESSAGE("Minimum move must be satisfied for this scenario to be meaningful",
+        td->nMoved >= td->speed - fixture.attacker->getADF());
+
+    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnLeft should be true right after using 1 of 2 MR_TURNs",
+        fixture.game.canApplyEndOfMoveTurnLeft());
+    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnRight should be true right after using 1 of 2 MR_TURNs",
+        fixture.game.canApplyEndOfMoveTurnRight());
+
+    destroyMinelayerFixture(fixture);
+}
+
+/**
+ * A minelayer with MR=2 that has used both MR_TURNs via real movement (countFlags
+ * == MR) is blocked from a further end-of-move turn, confirming the budget still
+ * gates correctly once fully consumed.
+ */
+void FTacticalEndOfMoveTurnTest::testMinelayerWithMRTwoBlockedAfterUsingBothTurnsViaRealMovement() {
+    FMinelayerTurnFixture fixture;
+    setupMinelayerFixture(fixture, 4 /* speed */);
+
+    const std::vector<FPoint> & initialMoves = fixture.game.getMovementHexes();
+    CPPUNIT_ASSERT_MESSAGE("Initial movement hexes must be available", !initialMoves.empty());
+    CPPUNIT_ASSERT(fixture.game.handleHexClick(initialMoves.front()));
+
+    // Use both MR_TURN budget units via successive left-turn hex clicks.
+    CPPUNIT_ASSERT(clickLeftTurnOrForwardHex(fixture));
+    CPPUNIT_ASSERT(clickLeftTurnOrForwardHex(fixture));
+
+    FTacticalTurnData * td = requireMinelayerTurnData(fixture);
+    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2), td->path.countFlags(MR_TURN));
+    CPPUNIT_ASSERT_MESSAGE("Minimum move must be satisfied for this scenario to be meaningful",
+        td->nMoved >= td->speed - fixture.attacker->getADF());
+
+    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnLeft should be false once both MR_TURNs are used",
+        !fixture.game.canApplyEndOfMoveTurnLeft());
+    CPPUNIT_ASSERT_MESSAGE("canApplyEndOfMoveTurnRight should be false once both MR_TURNs are used",
+        !fixture.game.canApplyEndOfMoveTurnRight());
+
+    destroyMinelayerFixture(fixture);
 }
 
 /**
