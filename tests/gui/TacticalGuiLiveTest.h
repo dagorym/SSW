@@ -20,7 +20,7 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created: Apr 04, 2026
  * @date Last Modified: Jul 03, 2026 (TMFR-03: add Turn-panel default-size/placement/caption/height-expansion coverage)
  */
@@ -248,7 +248,7 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * - Clicking a recall region via checkOffensiveSeekerPendingSelection() removes the
 	 *   pending seeker and restores ammo (AC3; existing recall behavior preserved).
 	 *
-	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @author claude-sonnet-4-6 (medium)
 	 * @date Created: Jun 02, 2026
 	 * @date Last Modified: Jun 29, 2026
 	 */

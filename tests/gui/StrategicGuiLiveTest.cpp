@@ -232,6 +232,12 @@ std::string readFileText(const std::string & path) {
 	return contents.str();
 }
 
+// Returns an absolute path to a repository file using the GUI_TEST_REPO_ROOT compile macro.
+// Use this for source-contract path lookups to avoid cwd-relative fragility.
+std::string repoFile(const std::string & relativePath) {
+	return std::string(GUI_TEST_REPO_ROOT) + "/" + relativePath;
+}
+
 class SystemDialogGUITestPeer : public SystemDialogGUI {
 public:
 SystemDialogGUITestPeer(wxWindow * parent, FSystem * sys, FMap * map, FPlayer * player, const wxString & title)
@@ -909,29 +915,29 @@ struct FileCheck {
 };
 
 const FileCheck checks[] = {
-	{"../../src/gui/ViewFleetGUI.cpp", "m_listBox1 = new wxListBox( shipListBox,", "m_listBox1 = new wxListBox( this,"},
-	{"../../src/gui/ViewFleetGUI.cpp", "ADF = new wxStaticText(shipInfoBox,", "ADF = new wxStaticText(this,"},
-	{"../../src/gui/SystemDialogGUI.cpp", "m_listBox1 = new wxListBox( planetsBox,", "m_listBox1 = new wxListBox( this,"},
-	{"../../src/gui/SystemDialogGUI.cpp", "m_listBox2 = new wxListBox( stationTypeBox,", "m_listBox2 = new wxListBox( this,"},
-	{"../../src/gui/SystemDialogGUI.cpp", "m_listBox3 = new wxListBox( fleetsBox,", "m_listBox3 = new wxListBox( this,"},
-	{"../../src/gui/TransferShipsGUI.cpp", "m_listBox1 = new wxListBox( sourceFleetBox,", "m_listBox1 = new wxListBox( this,"},
-	{"../../src/gui/TransferShipsGUI.cpp", "m_listBox2 = new wxListBox( transferFleetBox,", "m_listBox2 = new wxListBox( this,"},
-	{"../../src/gui/UPFUnattachedGUI.cpp", "m_listBox1 = new wxListBox( unattachedShipsBox,", "m_listBox1 = new wxListBox( this,"},
-	{"../../src/gui/UPFUnattachedGUI.cpp", "m_choice1 = new wxChoice( newFleetBox,", "m_choice1 = new wxChoice( this,"},
-	{"../../src/gui/UPFUnattachedGUI.cpp", "m_listBox2 = new wxListBox( fleetShipsBox,", "m_listBox2 = new wxListBox( this,"},
-	{"../../src/gui/SatharFleetsGUI.cpp", "m_listBox1 = new wxListBox( unassignedShipsBox,", "m_listBox1 = new wxListBox( this,"},
-	{"../../src/gui/SatharFleetsGUI.cpp", "m_choice1 = new wxChoice( newFleetBox,", "m_choice1 = new wxChoice( this,"},
-	{"../../src/gui/SatharFleetsGUI.cpp", "m_listBox2 = new wxListBox( fleetShipsBox,", "m_listBox2 = new wxListBox( this,"},
-	{"../../src/gui/SelectJumpGUI.cpp", "m_listBox1 = new wxListBox( destinationsBox,", "m_listBox1 = new wxListBox( this,"},
-	{"../../src/gui/SelectJumpGUI.cpp", "m_staticText2 = new wxStaticText( jumpInfoBox,", "m_staticText2 = new wxStaticText( this,"},
-	{"../../src/gui/BattleResultsGUI.cpp", "m_listBox1 = new wxListBox( fleetShipsBox,", "m_listBox1 = new wxListBox( this,"},
-	{"../../src/gui/BattleResultsGUI.cpp", "m_textCtrl2 = new wxTextCtrl( editShipStatsBox,", "m_textCtrl2 = new wxTextCtrl( this,"},
-	{"../../src/gui/BattleResultsGUI.cpp", "m_staticText8 = new wxStaticText( editShipStatsBox,", "m_staticText8 = new wxStaticText( this,"},
-	{"../../src/gui/BattleResultsGUI.cpp", "m_staticText12 = new wxStaticText( editShipStatsBox,", "m_staticText12 = new wxStaticText( this,"}
+	{"src/gui/ViewFleetGUI.cpp", "m_listBox1 = new wxListBox( shipListBox,", "m_listBox1 = new wxListBox( this,"},
+	{"src/gui/ViewFleetGUI.cpp", "ADF = new wxStaticText(shipInfoBox,", "ADF = new wxStaticText(this,"},
+	{"src/gui/SystemDialogGUI.cpp", "m_listBox1 = new wxListBox( planetsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"src/gui/SystemDialogGUI.cpp", "m_listBox2 = new wxListBox( stationTypeBox,", "m_listBox2 = new wxListBox( this,"},
+	{"src/gui/SystemDialogGUI.cpp", "m_listBox3 = new wxListBox( fleetsBox,", "m_listBox3 = new wxListBox( this,"},
+	{"src/gui/TransferShipsGUI.cpp", "m_listBox1 = new wxListBox( sourceFleetBox,", "m_listBox1 = new wxListBox( this,"},
+	{"src/gui/TransferShipsGUI.cpp", "m_listBox2 = new wxListBox( transferFleetBox,", "m_listBox2 = new wxListBox( this,"},
+	{"src/gui/UPFUnattachedGUI.cpp", "m_listBox1 = new wxListBox( unattachedShipsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"src/gui/UPFUnattachedGUI.cpp", "m_choice1 = new wxChoice( newFleetBox,", "m_choice1 = new wxChoice( this,"},
+	{"src/gui/UPFUnattachedGUI.cpp", "m_listBox2 = new wxListBox( fleetShipsBox,", "m_listBox2 = new wxListBox( this,"},
+	{"src/gui/SatharFleetsGUI.cpp", "m_listBox1 = new wxListBox( unassignedShipsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"src/gui/SatharFleetsGUI.cpp", "m_choice1 = new wxChoice( newFleetBox,", "m_choice1 = new wxChoice( this,"},
+	{"src/gui/SatharFleetsGUI.cpp", "m_listBox2 = new wxListBox( fleetShipsBox,", "m_listBox2 = new wxListBox( this,"},
+	{"src/gui/SelectJumpGUI.cpp", "m_listBox1 = new wxListBox( destinationsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"src/gui/SelectJumpGUI.cpp", "m_staticText2 = new wxStaticText( jumpInfoBox,", "m_staticText2 = new wxStaticText( this,"},
+	{"src/gui/BattleResultsGUI.cpp", "m_listBox1 = new wxListBox( fleetShipsBox,", "m_listBox1 = new wxListBox( this,"},
+	{"src/gui/BattleResultsGUI.cpp", "m_textCtrl2 = new wxTextCtrl( editShipStatsBox,", "m_textCtrl2 = new wxTextCtrl( this,"},
+	{"src/gui/BattleResultsGUI.cpp", "m_staticText8 = new wxStaticText( editShipStatsBox,", "m_staticText8 = new wxStaticText( this,"},
+	{"src/gui/BattleResultsGUI.cpp", "m_staticText12 = new wxStaticText( editShipStatsBox,", "m_staticText12 = new wxStaticText( this,"}
 };
 
 for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); ++i) {
-	const std::string contents = readFileText(checks[i].path);
+	const std::string contents = readFileText(repoFile(checks[i].path));
 	const std::string required(checks[i].required);
 	const std::string forbidden(checks[i].forbidden);
 	CPPUNIT_ASSERT_MESSAGE(std::string("Missing expected pattern in ") + checks[i].path,
@@ -1018,7 +1024,7 @@ void StrategicGuiLiveTest::testWXStrategicUIParentlessRetreatModalPathWithRuntim
 }
 
 void StrategicGuiLiveTest::testWXStrategicUISourceGuardsRuntimeAndPreservesParentlessFlow() {
-	const std::string source = readFileText("../../src/gui/WXStrategicUI.cpp");
+	const std::string source = readFileText(repoFile("src/gui/WXStrategicUI.cpp"));
 	CPPUNIT_ASSERT(!source.empty());
 	const std::string runtimeGuard = "if (!hasUsableWxUIRuntime()) {";
 	const std::string cancelReturn = "return cancelResult();";
@@ -1275,14 +1281,14 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 	};
 
 	const DialogContractCheck checks[] = {
-		{"../../src/gui/SatharRetreatGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
-		{"../../src/gui/CombatLocationGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
-		{"../../src/gui/TwoPlanetsGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
-		{"../../src/gui/SelectResolutionGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"}
+		{"src/gui/SatharRetreatGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
+		{"src/gui/CombatLocationGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
+		{"src/gui/TwoPlanetsGUI.cpp", "this->SetSizerAndFit( fgSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"},
+		{"src/gui/SelectResolutionGUI.cpp", "this->SetSizerAndFit( bSizer1 );", "this->SetMinSize( this->GetSize() );", "this->CentreOnParent( wxBOTH );", "this->Centre( wxBOTH );"}
 	};
 
 	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); ++i) {
-		const std::string contents = readFileText(checks[i].path);
+		const std::string contents = readFileText(repoFile(checks[i].path));
 		CPPUNIT_ASSERT(!contents.empty());
 		CPPUNIT_ASSERT(contents.find(checks[i].setSizerAndFitCall) != std::string::npos);
 		CPPUNIT_ASSERT(contents.find(checks[i].minSizeCall) != std::string::npos);
@@ -1290,7 +1296,7 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 		CPPUNIT_ASSERT(contents.find(checks[i].centerFallbackCall) != std::string::npos);
 	}
 
-	const std::string appContents = readFileText("../../src/FApp.cpp");
+	const std::string appContents = readFileText(repoFile("src/FApp.cpp"));
 	CPPUNIT_ASSERT(!appContents.empty());
 	CPPUNIT_ASSERT(appContents.find("createStartupSplashAndFrame(") != std::string::npos);
 	CPPUNIT_ASSERT(appContents.find("return new FMainFrame(") != std::string::npos);
@@ -1300,7 +1306,7 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 	CPPUNIT_ASSERT(appContents.find("wxPoint(50,50)") == std::string::npos);
 	CPPUNIT_ASSERT(appContents.find("wxPoint(50, 50)") == std::string::npos);
 
-	const std::string launchHelperContents = readFileText("../../include/gui/WXStartupLaunch.h");
+	const std::string launchHelperContents = readFileText(repoFile("include/gui/WXStartupLaunch.h"));
 	CPPUNIT_ASSERT(!launchHelperContents.empty());
 	CPPUNIT_ASSERT(launchHelperContents.find("wxSPLASH_CENTRE_ON_SCREEN | wxSPLASH_TIMEOUT") != std::string::npos);
 	CPPUNIT_ASSERT(launchHelperContents.find("wxFRAME_NO_TASKBAR") != std::string::npos);
@@ -1327,7 +1333,7 @@ void StrategicGuiLiveTest::testRemediatedStrategicDialogsUseFirstShowSizingContr
 	CPPUNIT_ASSERT(frameCenterPos < frameShowPos);
 	CPPUNIT_ASSERT(frameShowPos < setTopWindowPos);
 
-	const std::string mainFrameContents = readFileText("../../src/FMainFrame.cpp");
+	const std::string mainFrameContents = readFileText(repoFile("src/FMainFrame.cpp"));
 	CPPUNIT_ASSERT(!mainFrameContents.empty());
 	CPPUNIT_ASSERT(mainFrameContents.find("CentreOnScreen(wxBOTH);") != std::string::npos);
 }

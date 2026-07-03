@@ -1144,22 +1144,22 @@ CPPUNIT_ASSERT_MESSAGE(
 CPPUNIT_ASSERT_MESSAGE(
 	"Movement prompts should use wrapped prompt drawing in constrained widths.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"drawWrappedActionPrompt("));
 CPPUNIT_ASSERT_MESSAGE(
 	"Movement prompt line reservation should be calculated from wrapped line counts.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"countWrappedActionPromptLines("));
 CPPUNIT_ASSERT_MESSAGE(
 	"Movement prompt rendering must reserve dynamic action-prompt lines.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"reserveActionPromptLines("));
 CPPUNIT_ASSERT_MESSAGE(
 	"Movement-phase ship stats margin fallback must derive from available width.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"largestMarginWithStatsRoom"));
 
 struct Scenario {
@@ -1243,37 +1243,37 @@ void TacticalGuiLiveTest::testSeekerActivationPanelSourceContracts() {
 CPPUNIT_ASSERT_MESSAGE(
 	"Seeker activation panel should display instructional prompt text.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"Seeker activation phase."));
 CPPUNIT_ASSERT_MESSAGE(
 	"Seeker activation panel should explain row-based deactivation.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"Click a row below to deactivate an activated seeker."));
 CPPUNIT_ASSERT_MESSAGE(
 	"Seeker activation panel should register one clickable row per activated seeker.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"m_seekerActivationRegions.push_back"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Seeker activation row clicks should deactivate the selected seeker ID.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"deactivateActiveSeekerByID(m_seekerActivationSeekerIDs[i])"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Battle-board activation rendering should use moving-player inactive seeker stacks.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleBoard.cpp")),
 		"getInactiveSeekerActivationHexes()"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Battle-board battle rendering should draw active seekers only.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleBoard.cpp")),
 		"getSeekerMissilesAtHex(hex, true)"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Activation-phase board clicks should activate one seeker at the clicked hex.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleBoard.cpp")),
 		"m_parent->activateInactiveSeekerAtHex(hex);"));
 }
 
@@ -1281,37 +1281,37 @@ void TacticalGuiLiveTest::testSetupPlacementSourceRowsAndOrdnanceColorContracts(
 CPPUNIT_ASSERT_MESSAGE(
 	"Setup placement panel should render deployable source rows.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"const std::vector<FTacticalDeploymentSource> & deployableSources = m_parent->getDeployablePlacementSources();"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Setup placement panel should read selected placement source index.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"const int selectedSourceIndex = m_parent->getSelectedPlacementSourceIndex();"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Setup placement rows should display per-slot ammo values.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"os << \"Ammo: \" << weapon->getAmmo();"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Setup placement row clicks should change active source by row index.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"m_parent->selectPlacementSourceByIndex(static_cast<unsigned int>(m_shipSelectionSourceIndices[i]));"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Setup placement board should render placed ordnance from source-tracked records.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleBoard.cpp")),
 		"const std::vector<FTacticalPlacedOrdnance> & placedOrdnance = m_parent->getPlacedOrdnance();"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Setup placement board should shade ordnance by source ship/weapon color.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleBoard.cpp")),
 		"getPlacementSourceColor(itr->source.shipID, itr->source.weaponIndex)"));
 CPPUNIT_ASSERT_MESSAGE(
 	"Setup placement board should invoke source-colored ordnance rendering in BS_PlaceMines.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleBoard.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleBoard.cpp")),
 		"drawPlacementOrdnanceHexes(dc);"));
 }
 
@@ -1442,7 +1442,7 @@ const int expectedLeftOffset = 40;
 CPPUNIT_ASSERT_MESSAGE(
 	"Stacked fallback should trigger when split mode cannot preserve full prompt-width padding.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 		"largestMarginWithStatsRoom < leftOffset + ACTION_PROMPT_MIN_WIDTH + BORDER"));
 FFleet * attackFleet = new FFleet();
 FFleet * defendFleet = new FFleet();
@@ -1687,7 +1687,7 @@ bool modalActionRan = false;
 CPPUNIT_ASSERT_MESSAGE(
 	"ICMSelectionGUI spinner constructor must keep explicit vertical style token.",
 	sourceContainsLineToken(
-		std::vector<std::string>(1, "../../src/gui/ICMSelectionGUI.cpp"),
+		std::vector<std::string>(1, guiRepoFile("src/gui/ICMSelectionGUI.cpp")),
 		"wxSP_ARROW_KEYS | wxSP_VERTICAL"));
 const int modalResult = m_harness.runModalFunctionWithAction([&]() {
 	return dialog->ShowModal();
@@ -4702,22 +4702,22 @@ void TacticalGuiLiveTest::testTurnPanelCaptionRendersAboveButtons() {
 	CPPUNIT_ASSERT_MESSAGE(
 		"TMFR-03: caption wording must match the specified text exactly (line 1).",
 		sourceContainsLineToken(
-			std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+			std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 			"If at the end of a ship's movement"));
 	CPPUNIT_ASSERT_MESSAGE(
 		"TMFR-03: caption wording must match the specified text exactly (line 2).",
 		sourceContainsLineToken(
-			std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+			std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 			"you want to make a facing change"));
 	CPPUNIT_ASSERT_MESSAGE(
 		"TMFR-03: caption wording must match the specified text exactly (line 3).",
 		sourceContainsLineToken(
-			std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+			std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 			"(and have remaining MR), use these"));
 	CPPUNIT_ASSERT_MESSAGE(
 		"TMFR-03: caption wording must match the specified text exactly (line 4).",
 		sourceContainsLineToken(
-			std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+			std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
 			"buttons to make a single final turn."));
 
 	screen->Destroy();
