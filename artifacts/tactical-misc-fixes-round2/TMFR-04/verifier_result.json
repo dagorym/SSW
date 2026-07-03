@@ -1,0 +1,28 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes-round2/TMFR-04/verifier_report.md",
+    "artifacts/tactical-misc-fixes-round2/TMFR-04/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "fixes-tmfr-04-verifier-20260703",
+  "documentation_accuracy_summary": [
+    "No documentation was updated, and independent review confirms none was warranted.",
+    "doc/test-contracts.md's SMRV-01 entry already documents the exact convention this diff extends: a guiRepoFile() helper 'added to normalize source-contract path resolution from the GUI_TEST_REPO_ROOT compile macro introduced by SMRV-T1'. TMFR-04 only extends that already-documented pattern to remaining hard-coded literals via an analogous new repoFile() helper (StrategicGuiLiveTest.cpp) and the pre-existing guiRepoFile() helper (TacticalGuiLiveTest.cpp) \u2014 no new documentable concept is introduced.",
+    "grep of AGENTS.md and doc/test-contracts.md shows no stale '../../src' references tied to this diff's affected tests.",
+    "doc/rules/tactical_operations_manual.md confirmed unmodified (0 diff lines across cfaa9c3..HEAD).",
+    "The @author de-duplication is in-code comment hygiene with no external documentation surface.",
+    "The Documenter's no-op rationale holds under independent verification."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "TMFR-04",
+  "test_sufficiency_summary": [
+    "The acceptance criteria concern test-infrastructure hygiene (cwd-independence of path resolution), not new production behavior, so the correct verification is exercising the actual GuiTests binary from both invocation directories and observing pass/fail outcomes \u2014 a behavioral check, not source-inspection.",
+    "Independently rebuilt tests/gui (make -C tests/gui, clean build succeeded with no errors) and ran DISPLAY=:0 ./GuiTests from both tests/gui and the repository root: both runs produced 'OK (71 tests)' with zero failures, directly confirming cwd-independence.",
+    "This corroborates the Tester's report, which recorded one intermittent flake (testLocalGameDialogLaunchesPredefinedAndCustomModalChains in BattleSimGuiLiveTest.cpp, a file untouched by this diff) in some of its runs; both of my runs had zero failures, consistent with that flake being real but unrelated, pre-existing, and non-deterministic.",
+    "No production code changed, so no new behavioral test was required for a new behavior claim; existing source-contract tests continue to assert the same string/token contracts as before, only via a cwd-independent path builder."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
