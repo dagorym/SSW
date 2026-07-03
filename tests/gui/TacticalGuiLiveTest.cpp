@@ -246,6 +246,18 @@ int seekerActivationDoneButtonRightExtentPublic() const {
 		: kLeftOffset + btnBestW;
 	return btnAbsRight - kLeftOffset;
 }
+
+/// returns the current screen rect of the Turn Left/Turn Right button panel (TMFR-03)
+wxRect turnButtonPanelRectPublic() const {
+	CPPUNIT_ASSERT(m_turnButtonPanel != NULL);
+	return m_turnButtonPanel->GetRect();
+}
+
+/// returns the current screen rect of the Movement Done button (TMFR-03)
+wxRect moveDoneButtonRectPublic() const {
+	CPPUNIT_ASSERT(m_buttonMoveDone != NULL);
+	return m_buttonMoveDone->GetRect();
+}
 };
 
 wxTextCtrl * findFirstTextCtrl(wxWindow * root) {
@@ -1115,11 +1127,20 @@ m_harness.cleanupOrphanTopLevels(10);
 
 void TacticalGuiLiveTest::testTacticalActionButtonsStayBelowPromptReservationAcrossPhases() {
 const int expectedLeftOffset = 40;
+// TMFR-03: the long single-line reminder was split onto two shorter lines
+// (detailPromptTwo/detailPromptThree) so the widest wrapped line stays well
+// inside the move-phase prompt column; verify both halves are still present
+// and retain the quoted button label.
 CPPUNIT_ASSERT_MESSAGE(
-	"Movement reminder text must retain the quoted button label.",
+	"Movement reminder text must retain the quoted button label (line 1).",
 	sourceContainsLineToken(
 		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
-		"Press the 'Movement Done' button when all ships have been assigned their movement instructions."));
+		"Press the 'Movement Done' button when all ships"));
+CPPUNIT_ASSERT_MESSAGE(
+	"Movement reminder text must retain its continuation line (line 2).",
+	sourceContainsLineToken(
+		std::vector<std::string>(1, guiRepoFile("src/tactical/FBattleDisplay.cpp")),
+		"have been assigned their movement instructions."));
 CPPUNIT_ASSERT_MESSAGE(
 	"Movement prompts should use wrapped prompt drawing in constrained widths.",
 	sourceContainsLineToken(
@@ -4522,6 +4543,236 @@ void TacticalGuiLiveTest::testTurnButtonClickAppliesEndOfMoveTurnToModel() {
 	} else {
 		std::cerr << "TMF05-turn-click: panel not shown (geometry constraint); skipping click-wiring assertions." << std::endl;
 	}
+
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testTurnPanelShownAtDefaultWindowSize() {
+	// TMFR-03 AC: at the default window size (panelWidth == 1200, matching
+	// FBattleScreen's default wxSize(1200,900)), the Turn Left/Turn Right panel
+	// must be visible. Before the fix, lMargin was computed from the unwrapped
+	// extent of the long move-phase instruction line, which overshot the
+	// ship-stats column and hid the panel on every paint.
+	std::cerr << "TMFR03-shown-default:start" << std::endl;
+	FBattleScreen::resetLifecycleCounters();
+
+	FVehicle * attacker = NULL;
+	FBattleScreen * screen = makeBattleScreenInMovePhase(
+		NULL, NULL, &attacker, NULL, m_harness, "TMFR-03 Default Size Shown");
+	CPPUNIT_ASSERT(screen != NULL);
+	CPPUNIT_ASSERT(attacker != NULL);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(screen);
+	CPPUNIT_ASSERT(displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(1200, 900);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: Turn Left/Turn Right panel must be shown at the default window "
+		"size (panelWidth=1200) once the panel's placement is measured from wrapped "
+		"line widths instead of the unwrapped instruction extent.",
+		peer->isTurnButtonPanelShown());
+
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testTurnPanelPlacedRightOfMovementDoneAndLeftOfShipInfoColumn() {
+	// TMFR-03 AC: the panel is placed right of Movement Done and left of the
+	// ship-info column at the default window size.
+	std::cerr << "TMFR03-placement:start" << std::endl;
+	FBattleScreen::resetLifecycleCounters();
+
+	FVehicle * attacker = NULL;
+	FBattleScreen * screen = makeBattleScreenInMovePhase(
+		NULL, NULL, &attacker, NULL, m_harness, "TMFR-03 Placement");
+	CPPUNIT_ASSERT(screen != NULL);
+	CPPUNIT_ASSERT(attacker != NULL);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(screen);
+	CPPUNIT_ASSERT(displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(1200, 900);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: panel must be shown at the default window size to verify placement.",
+		peer->isTurnButtonPanelShown());
+
+	const wxRect panelRect = peer->turnButtonPanelRectPublic();
+	const wxRect moveDoneRect = peer->moveDoneButtonRectPublic();
+	const int shipStatsLeftMargin = peer->shipStatsLeftMarginPublic();
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: Turn panel must be positioned at or right of the Movement Done "
+		"button's right edge.",
+		panelRect.GetX() >= moveDoneRect.GetRight());
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: Turn panel's right edge must remain left of the ship-info "
+		"(ship-stats) column so it does not overlap ship stats.",
+		panelRect.GetRight() <= shipStatsLeftMargin);
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: Turn panel must be at/near the top of the lower panel, at or "
+		"below the first action-prompt line.",
+		panelRect.GetY() >= FBattleDisplayTestPeer::actionPromptLineY(0));
+
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testTurnPanelCaptionRendersAboveButtons() {
+	// TMFR-03 AC: a caption is drawn above the Turn Left/Turn Right buttons.
+	// Behavioral verification: after draw(), the region directly above the
+	// button panel (where the caption is drawn) must contain white pixels
+	// (the caption is drawn in white text on a black background), proving text
+	// was actually rendered there rather than merely asserting the source
+	// contains the literal string. The exact wording is locked separately via
+	// a source-contract supplement below (AGENTS.md permits source-contract
+	// checks as a supplement to, not a replacement for, behavioral coverage).
+	std::cerr << "TMFR03-caption:start" << std::endl;
+	FBattleScreen::resetLifecycleCounters();
+
+	FVehicle * attacker = NULL;
+	FBattleScreen * screen = makeBattleScreenInMovePhase(
+		NULL, NULL, &attacker, NULL, m_harness, "TMFR-03 Caption");
+	CPPUNIT_ASSERT(screen != NULL);
+	CPPUNIT_ASSERT(attacker != NULL);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(screen);
+	CPPUNIT_ASSERT(displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	wxBitmap bmp(1200, 900);
+	{
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: panel must be shown at the default window size to verify the caption.",
+		peer->isTurnButtonPanelShown());
+
+	const wxRect panelRect = peer->turnButtonPanelRectPublic();
+	const int captionTop = FBattleDisplayTestPeer::actionPromptLineY(0);
+	const int captionBottom = panelRect.GetY();
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: caption must occupy vertical space above the button panel.",
+		captionBottom > captionTop);
+
+	const wxImage img = bmp.ConvertToImage();
+	const int x0 = std::max(0, panelRect.GetX());
+	const int x1 = std::min(img.GetWidth() - 1, panelRect.GetX() + std::max(panelRect.GetWidth(), 1) + 40);
+	const int y0 = std::max(0, captionTop);
+	const int y1 = std::min(img.GetHeight() - 1, captionBottom);
+	bool foundWhitePixel = false;
+	for (int py = y0; py <= y1 && !foundWhitePixel; ++py) {
+		for (int px = x0; px <= x1 && !foundWhitePixel; ++px) {
+			if (img.GetRed(px, py) >= 200
+			    && img.GetGreen(px, py) >= 200
+			    && img.GetBlue(px, py) >= 200) {
+				foundWhitePixel = true;
+			}
+		}
+	}
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: no white caption text pixels found in the region above the Turn "
+		"Left/Turn Right button panel; the caption must be drawn there.",
+		foundWhitePixel);
+
+	// Source-contract supplement: lock the exact caption wording specified by the task.
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: caption wording must match the specified text exactly (line 1).",
+		sourceContainsLineToken(
+			std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+			"If at the end of a ship's movement"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: caption wording must match the specified text exactly (line 2).",
+		sourceContainsLineToken(
+			std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+			"you want to make a facing change"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: caption wording must match the specified text exactly (line 3).",
+		sourceContainsLineToken(
+			std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+			"(and have remaining MR), use these"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: caption wording must match the specified text exactly (line 4).",
+		sourceContainsLineToken(
+			std::vector<std::string>(1, "../../src/tactical/FBattleDisplay.cpp"),
+			"buttons to make a single final turn."));
+
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+void TacticalGuiLiveTest::testTurnPanelHeightExpandsToContainCaptionAndButtonsWithoutClipping() {
+	// TMFR-03 AC: the lower panel's requestedDisplayHeight grows to contain the
+	// caption plus the button row without clipping, and the block does not
+	// overlap the instruction or ship-info columns.
+	std::cerr << "TMFR03-height-expand:start" << std::endl;
+	FBattleScreen::resetLifecycleCounters();
+
+	FVehicle * attacker = NULL;
+	FBattleScreen * screen = makeBattleScreenInMovePhase(
+		NULL, NULL, &attacker, NULL, m_harness, "TMFR-03 Height Expansion");
+	CPPUNIT_ASSERT(screen != NULL);
+	CPPUNIT_ASSERT(attacker != NULL);
+
+	FBattleDisplay * displayPanel = findFirstBattleDisplay(screen);
+	CPPUNIT_ASSERT(displayPanel != NULL);
+	FBattleDisplayTestPeer * peer = static_cast<FBattleDisplayTestPeer *>(displayPanel);
+
+	{
+		wxMemoryDC dc;
+		wxBitmap bmp(1200, 900);
+		dc.SelectObject(bmp);
+		displayPanel->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+	}
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: panel must be shown at the default window size to verify height "
+		"expansion.",
+		peer->isTurnButtonPanelShown());
+
+	const wxRect panelRect = peer->turnButtonPanelRectPublic();
+	const int requestedDisplayHeight = peer->requestedDisplayHeightPublic();
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: requestedDisplayHeight must grow to at least cover the caption "
+		"plus button row bottom so the block is never clipped.",
+		requestedDisplayHeight >= panelRect.GetBottom());
+
+	const int shipStatsLeftMargin = peer->shipStatsLeftMarginPublic();
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: expanded panel block must not overlap the ship-info column.",
+		panelRect.GetRight() <= shipStatsLeftMargin);
+
+	const int promptTextBottomY = FBattleDisplayTestPeer::actionPromptLineY(0);
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-03: the caption/button block must not start above the reserved "
+		"action-prompt column top.",
+		panelRect.GetY() >= promptTextBottomY);
 
 	screen->Destroy();
 	m_harness.pumpEvents(5);

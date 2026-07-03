@@ -562,27 +562,40 @@ assertBefore(body, "m_parent->completeMovePhase();", "m_buttonMoveDone->Hide();"
 
 void FTacticalBattleDisplayFireFlowTest::testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases() {
 // AC: move-phase text guides stopped-ship facing, normal movement, and no-selection states.
+//
+// TMFR-03: drawMoveShip() no longer duplicates this prompt-construction logic inline; it now
+// calls buildMovePromptText() (used previously only by refreshMovePromptReservation()) so the
+// two call sites can never diverge. The stopped-facing/normal-movement/no-selection branching
+// therefore now lives in buildMovePromptText(), and the former single long "Press the
+// 'Movement Done' button..." line is split onto detailPromptTwo/detailPromptThree so the widest
+// wrapped line stays inside the move-phase prompt column.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
-const std::string body = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
+const std::string builderBody = extractFunctionBody(
+	source,
+	"void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo, wxString & detailPromptThree) const");
+const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
 
-assertContains(body, "bool stoppedShipFacingSelection = false;");
-assertContains(body, "stoppedShipFacingSelection = (turnData.speed == 0");
-assertContains(body, "&& turnData.nMoved == 0");
-assertContains(body, "&& m_parent->getShip()->getMR() > 0);");
-assertContains(body, "if (stoppedShipFacingSelection) {");
-assertContains(body, "Select a highlighted preview route to choose your starting facing.");
-assertContains(body, "Continue a route, or click an adjacent hex then Movement Done to rotate in place.");
-assertContains(body, "} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {");
-assertContains(body, "Select route hexes to move the ship.");
-assertContains(body, "Press the 'Movement Done' button when all ships have been assigned their movement instructions.");
-assertContains(body, "} else {");
-assertContains(body, "Please select a ship to move.");
-assertContains(body, "drawWrappedActionPrompt(");
-assertContains(body, "countWrappedActionPromptLines(");
-assertContains(body, "reserveActionPromptLines(");
-assertNotContains(body, "Select an adjacent hex to choose facing.");
-assertNotContains(body, "Then move along a route, or press Movement Done to rotate in place.");
-assertNotContains(body, "Press Movement Done when all ships finish movement.");
+assertContains(builderBody, "bool stoppedShipFacingSelection = false;");
+assertContains(builderBody, "stoppedShipFacingSelection = (turnData.speed == 0");
+assertContains(builderBody, "&& turnData.nMoved == 0");
+assertContains(builderBody, "&& m_parent->getShip()->getMR() > 0);");
+assertContains(builderBody, "if (stoppedShipFacingSelection) {");
+assertContains(builderBody, "Select a highlighted preview route to choose your starting facing.");
+assertContains(builderBody, "Continue a route, or click an adjacent hex then Movement Done to rotate in place.");
+assertContains(builderBody, "} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {");
+assertContains(builderBody, "Select route hexes to move the ship.");
+assertContains(builderBody, "detailPromptTwo = \"Press the 'Movement Done' button when all ships\";");
+assertContains(builderBody, "detailPromptThree = \"have been assigned their movement instructions.\";");
+assertContains(builderBody, "} else {");
+assertContains(builderBody, "Please select a ship to move.");
+assertNotContains(builderBody, "Select an adjacent hex to choose facing.");
+assertNotContains(builderBody, "Then move along a route, or press Movement Done to rotate in place.");
+assertNotContains(builderBody, "Press Movement Done when all ships finish movement.");
+
+assertContains(drawBody, "buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo, detailPromptThree);");
+assertContains(drawBody, "drawWrappedActionPrompt(");
+assertContains(drawBody, "countWrappedActionPromptLines(");
+assertContains(drawBody, "reserveActionPromptLines(");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testActionPromptSpacingContractConstantsAndHelpersDefined() {
@@ -1018,7 +1031,9 @@ assertNotContains(reflowBody, "setPhase(");
 
 assertContains(refreshBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);");
 assertContains(refreshBody, "int promptMaxWidth = getCurrentPromptMaxWidth(panelWidth);");
-assertContains(refreshBody, "buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo);");
+// TMFR-03: buildMovePromptText() gained a 4th output parameter (detailPromptThree) so the
+// long move-phase instruction wraps onto two shorter lines instead of one long one.
+assertContains(refreshBody, "buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo, detailPromptThree);");
 assertContains(refreshBody, "countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);");
 assertContains(refreshBody, "reserveActionPromptLines(promptLineCount);");
 CPPUNIT_ASSERT(countOccurrences(refreshBody, "ensureLowerPanelLayoutState(panelWidth, panelHeight);") >= 3);
@@ -1029,9 +1044,14 @@ assertContains(maxWidthBody, "promptMaxWidth = 120;");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testMovePromptConstrainedWidthSelectionPathUsesDeterministicHelpers() {
+// TMFR-03: buildMovePromptText() gained a 4th output parameter (detailPromptThree); locate it by
+// its current 4-arg signature. drawMoveShip() now calls buildMovePromptText() directly instead of
+// duplicating the prompt strings inline, so it no longer contains the literal prompt text.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
-const std::string builderBody = extractFunctionBody(source, "void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo) const");
+const std::string builderBody = extractFunctionBody(
+	source,
+	"void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo, wxString & detailPromptThree) const");
 const std::string header = readFile(repoFile("include/tactical/FBattleDisplay.h"));
 
 assertContains(drawBody, "refreshMovePromptReservation(dc, panelWidth, panelHeight);");
@@ -1039,22 +1059,29 @@ assertContains(drawBody, "int promptMaxWidth = getCurrentPromptMaxWidth(panelWid
 assertContains(drawBody, "wxString turnPrompt;");
 assertContains(drawBody, "wxString detailPromptOne;");
 assertContains(drawBody, "wxString detailPromptTwo;");
+assertContains(drawBody, "wxString detailPromptThree;");
+assertContains(drawBody, "buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo, detailPromptThree);");
 assertBefore(drawBody, "refreshMovePromptReservation(dc, panelWidth, panelHeight);", "drawWrappedActionPrompt(");
-assertContains(drawBody, "Select a highlighted preview route to choose your starting facing.");
-assertContains(drawBody, "Press the 'Movement Done' button when all ships have been assigned their movement instructions.");
+// TMFR-03: panel placement now measures wrapped line widths instead of the unwrapped extent.
+assertContains(drawBody, "measureWrappedActionPromptWidth(dc, detailPromptOne, promptMaxWidth)");
+assertContains(drawBody, "measureWrappedActionPromptWidth(dc, turnPrompt, promptMaxWidth)");
+assertContains(drawBody, "measureWrappedActionPromptWidth(dc, detailPromptTwo, promptMaxWidth)");
+assertContains(drawBody, "measureWrappedActionPromptWidth(dc, detailPromptThree, promptMaxWidth)");
 
 assertContains(builderBody, "if (stoppedShipFacingSelection) {");
 assertContains(builderBody, "Select a highlighted preview route to choose your starting facing.");
 assertContains(builderBody, "Continue a route, or click an adjacent hex then Movement Done to rotate in place.");
 assertContains(builderBody, "} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {");
 assertContains(builderBody, "Select route hexes to move the ship.");
-assertContains(builderBody, "Press the 'Movement Done' button when all ships have been assigned their movement instructions.");
+assertContains(builderBody, "detailPromptTwo = \"Press the 'Movement Done' button when all ships\";");
+assertContains(builderBody, "detailPromptThree = \"have been assigned their movement instructions.\";");
 assertContains(builderBody, "} else {");
 assertContains(builderBody, "Please select a ship to move.");
 
-assertContains(header, "void buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo) const;");
+assertContains(header, "void buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo, wxString & detailPromptThree) const;");
 assertContains(header, "void refreshMovePromptReservation(wxDC &dc, int panelWidth, int panelHeight);");
 assertContains(header, "int getCurrentPromptMaxWidth(int panelWidth) const;");
+assertContains(header, "int measureWrappedActionPromptWidth(wxDC &dc, const wxString &promptText, int maxWidth) const;");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testShipStatsMeasurementAndSplitEligibilityUseContentBasedSizing() {

@@ -20,9 +20,9 @@ namespace FrontierTests {
  * battle-screen close-path scenarios. Close-path coverage now requires tactical windows to stop
  * showing and lifecycle counters to settle instead of accepting pending-delete state alone.
  *
- * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author gpt-5.3-codex (medium), gpt-5.4 (high), claude-sonnet-4-6 (high), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Jun 30, 2026
+ * @date Last Modified: Jul 03, 2026 (TMFR-03: add Turn-panel default-size/placement/caption/height-expansion coverage)
  */
 class TacticalGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( TacticalGuiLiveTest );
@@ -61,6 +61,10 @@ CPPUNIT_TEST( testBattleScreenXCloseDismissesActiveChildDialog );
 CPPUNIT_TEST( testTurnButtonPanelHiddenInNonMovePhase );
 CPPUNIT_TEST( testTurnButtonPanelShownAndEnableStateReflectsModelInMovePhase );
 CPPUNIT_TEST( testTurnButtonClickAppliesEndOfMoveTurnToModel );
+CPPUNIT_TEST( testTurnPanelShownAtDefaultWindowSize );
+CPPUNIT_TEST( testTurnPanelPlacedRightOfMovementDoneAndLeftOfShipInfoColumn );
+CPPUNIT_TEST( testTurnPanelCaptionRendersAboveButtons );
+CPPUNIT_TEST( testTurnPanelHeightExpandsToContainCaptionAndButtonsWithoutClipping );
 CPPUNIT_TEST( testDefensiveFireDoneSkipsDialogWhenNoWeaponsFired );
 CPPUNIT_TEST( testOffensiveFireDoneSkipsDialogWhenNoWeaponsFired );
 CPPUNIT_TEST_SUITE_END();
@@ -661,6 +665,59 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 30, 2026
 	 */
 	void testTurnButtonClickAppliesEndOfMoveTurnToModel();
+
+	/**
+	 * @brief Behavioral: Turn Left/Turn Right panel is shown at the default window size.
+	 *
+	 * TMFR-03: before the fix, the panel's left margin was computed from the unwrapped
+	 * text extent of the long move-phase instruction line, which overshot the ship-stats
+	 * column and hid the panel on every paint at the default window size (panelWidth=1200,
+	 * matching FBattleScreen's default wxSize(1200,900)). Verifies the panel is shown once
+	 * placement is computed from wrapped line widths instead.
+	 *
+	 * @author claude-sonnet-5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	void testTurnPanelShownAtDefaultWindowSize();
+
+	/**
+	 * @brief Behavioral: Turn panel is placed right of Movement Done and left of ship-info column.
+	 *
+	 * TMFR-03: verifies panelRect.GetX() >= Movement Done button's right edge, and
+	 * panelRect.GetRight() <= the ship-stats left margin, at the default window size.
+	 *
+	 * @author claude-sonnet-5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	void testTurnPanelPlacedRightOfMovementDoneAndLeftOfShipInfoColumn();
+
+	/**
+	 * @brief Behavioral: a caption is drawn above the Turn Left/Turn Right buttons.
+	 *
+	 * TMFR-03: verifies white caption text pixels are rendered in the region directly
+	 * above the button panel after draw(), and locks the exact specified caption wording
+	 * as a source-contract supplement to the pixel-level behavioral assertion.
+	 *
+	 * @author claude-sonnet-5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	void testTurnPanelCaptionRendersAboveButtons();
+
+	/**
+	 * @brief Behavioral: the lower panel grows to contain the caption plus button row.
+	 *
+	 * TMFR-03: verifies requestedDisplayHeight covers the caption+button block's bottom
+	 * edge (no clipping) and that the block does not overlap the ship-info column or sit
+	 * above the reserved action-prompt column top.
+	 *
+	 * @author claude-sonnet-5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	void testTurnPanelHeightExpandsToContainCaptionAndButtonsWithoutClipping();
 
 	/**
 	 * @brief Behavioral: onDefensiveFireDone does NOT invoke showDamageSummary when no weapons fired.
