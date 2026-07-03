@@ -1,7 +1,7 @@
 {
   "status": "success",
   "task": "TMFR-03",
-  "branch": "fixes-tmfr-03-tester-20260703",
+  "branch_name": "fixes-tmfr-03-tester-20260703",
   "test_commit": "4e0d9c8ccef48ddcaba8e2838d095c6ee34ede37",
   "test_files_added_or_modified": [
     "tests/gui/TacticalGuiLiveTest.cpp",
