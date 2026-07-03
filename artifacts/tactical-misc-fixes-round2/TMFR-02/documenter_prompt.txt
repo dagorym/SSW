@@ -1,0 +1,54 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated the canUseEndOfMoveTurn() fix in src/tactical/FTacticalGame.cpp, which replaced the buggy per-hex MR_TURN flag test at the path end hex with the whole-path budget rule countFlags(MR_TURN) < getMR(), so a ship with remaining MR (e.g. a minelayer with MR=2 that used one turn) can still make an end-of-move turn.
+
+Acceptance criteria validated:
+- Turn buttons are enabled whenever countFlags(MR_TURN) < getMR() would allow another turn, including in the hex immediately after a turn -- covered by testCanApplyTurnWhenMRTurnBudgetRemainsAfterOneTurnUsed (MR=3, 1 turn used) and testMinelayerWithMRTwoCanStillTurnAfterUsingOneTurnViaRealMovement (MR=2 minelayer, real forward-then-turn movement via handleHexClick).
+- A minelayer with MR=2 that used one turn can still make an end-of-move turn; blocked only when turns used reach MR (or a turn is pending, or minimum move unmet) -- covered by testMinelayerWithMRTwoCanStillTurnAfterUsingOneTurnViaRealMovement (allowed) and testMinelayerWithMRTwoBlockedAfterUsingBothTurnsViaRealMovement / testCannotApplyTurnWhenMRTurnBudgetExhausted (blocked at countFlags==MR); pending-turn and minimum-move gates already covered by existing testSecondSameDirectionTurnIsBlockedWhenPendingExists and testCannotApplyTurnBeforeMinimumMoveIsSatisfied, both still passing.
+- Reverse/undo of a pending turn, the one-hexside clamp, and commit-at-Movement-Done are unchanged -- existing behavioral tests (testApplyingReverseWhenLeftPendingRestoresOriginHeading, testApplyingReverseWhenRightPendingRestoresOriginHeading, testReverseClearsPendingFacingFields, testFinalizeMovementStateCommitsPendingFacing, testFinalizeWithNoPendingUsesCurrentHeading) all still pass unmodified, confirming no regression.
+- No regression to normal in-route turning or Movement Done gating -- full TacticalTests (254) and SSWTests (198) suites pass with no new failures beyond the intentionally updated test.
+
+Implementation branch or worktree context:
+- src/tactical/FTacticalGame.cpp: canUseEndOfMoveTurn() (~line 843) now blocks on turnData->path.countFlags(MR_TURN) >= (unsigned int)ship->getMR() instead of testing the end-of-path hex's MR_TURN flag.
+- Preserved unchanged: ship->getMR() == 0 short-circuit, nMoved >= (speed - ADF) minimum-move guard, and pendingEndOfMoveFacing != -1 guard.
+- Not touched: canApplyEndOfMoveTurnLeft()/canApplyEndOfMoveTurnRight(), applyEndOfMoveTurn(), turnShip() one-hexside clamp, finalizeMovementState() commit-at-Movement-Done.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/tactical/FTacticalGame.cpp
+- tests/tactical/FTacticalEndOfMoveTurnTest.cpp
+- tests/tactical/FTacticalEndOfMoveTurnTest.h
+
+Test commit:
+- 2ad1e08af354a372631e4f74cc2f1f5d54e2c5fd
+
+Commands executed:
+- make -C tests tactical-tests
+- tests/tactical/TacticalTests
+- make (root)
+- tests/SSWTests (run with cwd=tests)
+
+Final test outcomes:
+- tests/tactical/TacticalTests: OK (254 tests) -- includes updated/added FTacticalEndOfMoveTurnTest cases
+- tests/SSWTests: OK (198 tests) -- full regression suite, no new failures
+- Full root `make` build succeeds with no compile errors introduced by test changes
+
+Documentation context:
+- doc/test-contracts.md documents TMF-05 end-of-move turn test contracts in tests/tactical/FTacticalEndOfMoveTurnTest.cpp; the outdated testCannotApplyTurnWhenPathEndHexHasMRTurnFlag contract was renamed/replaced and two new minelayer real-movement tests and one manual-flag companion test were added for TMFR-02 -- update the catalog entry accordingly.
+- AGENTS.md documents FTacticalTurnData pendingEndOfMoveFacing/endOfMoveOriginFacing and the TMF-05 end-of-move turn mechanism; no AGENTS.md architecture facts changed by this fix (only the internal budget-check rule inside canUseEndOfMoveTurn()), so likely no AGENTS.md edit is needed beyond confirming the existing description remains accurate.
+
+Plan and diff context:
+- Plan: plans/tactical-misc-fixes-round2-plan.md, subtask TMFR-02.
+- Implementer commit: 725915cd02be927aaf7317a1c7e2c8d191387130 'TMFR-02: fix end-of-move turn budget to use whole-path MR_TURN count' in src/tactical/FTacticalGame.cpp.
+- Tester commit: 2ad1e08af354a372631e4f74cc2f1f5d54e2c5fd in tests/tactical/FTacticalEndOfMoveTurnTest.{cpp,h}.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes-round2/TMFR-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
