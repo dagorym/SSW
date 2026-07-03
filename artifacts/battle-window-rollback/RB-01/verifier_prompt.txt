@@ -1,0 +1,70 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Rolled back the battle-window close/Quit/modality/minimize attempts (TMF-02 b938d8f, TMF-03 233c1ad, TMFR-01 d4699c6) to merge-base (5c3f91a) behavior in FBattleScreen, WXTacticalUI, and SelectCombatGUI, while preserving TMF-05's (0bf0d9e) end-of-move Turn Left/Right button wiring. Verified the Implementer's production rollback against merge-base and removed six now-obsolete TMF-02/TMF-03/TMFR-01 tests referencing removed symbols/behavior so the full suites build and pass. Documenter pass: reconciled doc/test-contracts.md and AGENTS.md to remove stale descriptions of the reverted mechanisms and corrected a doc/UsersGuide.md claim about the minimize button.
+
+Acceptance criteria to verify:
+- Battle-window close/Quit/modality/minimize code in FBattleScreen, WXTacticalUI, and SelectCombatGUI matches merge-base (5c3f91a) behavior (verified via empty/scoped git diff against 5c3f91a).
+- TMF-05 end-of-move Turn Left/Right button wiring in FBattleScreen is fully preserved and still documented in AGENTS.md and doc/UsersGuide.md.
+- doc/test-contracts.md and AGENTS.md no longer describe the reverted TMF-02/TMF-03/TMFR-01 mechanisms (wxWindowDisabler, m_dialogStack, m_activeDialog, dismissActiveDialog/hasPendingDialog, delete-event title-bar-X bypass, minimize-button restoration) or reference the six removed test cases.
+- TMFR-02/03/04 documentation is unchanged and still accurate.
+- doc/rules/tactical_operations_manual.md left unchanged.
+- Full suites (top-level make, tactical suite, GUI suite, SSWTests) build and pass (Tester-verified; unaffected by documentation-only changes).
+
+Implementation branch or worktree context:
+- Worktree /home/tstephen/repos/worktrees/fixes-rb01-tester-20260703, branch fixes-rb01-tester-20260703; Documenter worktree /home/tstephen/repos/worktrees/fixes-rb01-documenter-20260703, branch fixes-rb01-documenter-20260703.
+- Implementer commit d0e1134 (production rollback); Tester commit 51fba48 (test cleanup); Documenter commit 06f954d (documentation reconciliation).
+- Merge-base 5c3f91a; reverted commits b938d8f (TMF-02), 233c1ad (TMF-03), d4699c6 (TMFR-01); preserved 0bf0d9e (TMF-05) and all TMFR-02/03/04 work.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FBattleScreen.cpp
+- include/tactical/FBattleScreen.h
+- src/gui/WXTacticalUI.cpp
+- include/gui/WXTacticalUI.h
+- src/gui/SelectCombatGUI.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+- tests/tactical/WXTacticalUIAdapterTest.cpp
+- tests/tactical/WXTacticalUIAdapterTest.h
+- AGENTS.md
+- doc/test-contracts.md
+- doc/UsersGuide.md
+
+Commands executed:
+- git diff 5c3f91a -- include/gui/WXTacticalUI.h include/gui/WXTacticalUI.cpp src/gui/WXTacticalUI.cpp src/gui/SelectCombatGUI.cpp (empty)
+- git diff 5c3f91a -- doc/UsersGuide.md (only TMF-05 preserved section after edit)
+- git diff 5c3f91a -- AGENTS.md (only TMF-05/TMF-06/TMFR-03 preserved additions after edit)
+- grep -rn for dismissActiveDialog/hasPendingDialog/m_dialogStack/m_activeDialog/wxWindowDisabler across src/, include/, doc/, AGENTS.md
+- grep -rn for the six removed TacticalGuiLiveTest/WXTacticalUIAdapterTest names across tests/ (confirmed absent)
+- git show 5c3f91a:doc/UsersGuide.md and git show 5c3f91a:AGENTS.md for baseline wording comparison
+- git add AGENTS.md doc/UsersGuide.md doc/test-contracts.md; git commit
+
+Final test outcomes:
+- No production or test code was changed by the Documenter; only AGENTS.md, doc/test-contracts.md, and doc/UsersGuide.md were edited.
+- Tester's final outcomes (unchanged, carried forward): SSWTests 198 tests OK; TacticalTests 253 tests OK; GuiTests 65 tests OK (DISPLAY=:0); top-level make after make all_clean exits 0.
+
+Plan or evaluation context guidance:
+- No dedicated plans/*.md file exists for this rollback; scoped entirely via artifacts/battle-window-rollback/RB-01/.
+- Comparison base for diff review: merge-base 5c3f91a. Rollback commit d0e1134. Test-cleanup commit 51fba48. Documentation commit 06f954d.
+- doc/rules/tactical_operations_manual.md MUST NOT change; it was not touched by any stage of this rollback.
+
+Convention-file guidance:
+- AGENTS.md is the repository's single source of truth for architecture/testing conventions; non-bootstrap sections may be updated when the implemented diff changes their accuracy, which applied here because TMF-02/TMF-03/TMFR-01 mechanisms they described no longer exist.
+- doc/test-contracts.md is the detailed per-test source-contract catalog referenced from AGENTS.md; entries for reverted mechanisms and deleted tests must not remain.
+- doc/UsersGuide.md is user-facing; claims about window-manager behavior (minimize button) must match what the restored merge-base modal-grab code actually does.
+
+Updated documentation files:
+- AGENTS.md
+- doc/test-contracts.md
+- doc/UsersGuide.md
+
+Shared artifact directory:
+- artifacts/battle-window-rollback/RB-01
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
