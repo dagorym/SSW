@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes-round2/TMFR-02/implementer_report.md",
+    "artifacts/tactical-misc-fixes-round2/TMFR-02/tester_prompt.txt",
+    "artifacts/tactical-misc-fixes-round2/TMFR-02/implementer_result.json"
+  ],
+  "branch_name": "fixes-tmfr-02-implementer-20260703",
+  "changed_files": [
+    "src/tactical/FTacticalGame.cpp"
+  ],
+  "code_commit_hash": "725915cd02be927aaf7317a1c7e2c8d191387130",
+  "pass_label": null,
+  "status": "PASS",
+  "task_id": "TMFR-02",
+  "validation_commands": [
+    "make",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests"
+  ],
+  "validation_outcome": "make succeeded with no warnings/errors introduced by the change. tests/tactical/TacticalTests: 251 run, 1 failure, 0 errors. The single failure (FTacticalEndOfMoveTurnTest::testCannotApplyTurnWhenPathEndHexHasMRTurnFlag) is an expected consequence of the approved behavior change: that test manually flags the end-of-path hex with MR_TURN while MR=3 (only 1 of 3 MR turns used) and asserts the turn should be blocked, which is exactly the buggy per-hex-flag behavior the task instructed us to remove. Under the corrected whole-path-budget rule (countFlags(MR_TURN)=1 < getMR()=3) the turn is correctly allowed, so this existing test now encodes the old bug and needs to be updated by the Tester stage per the task's Tester handoff note (add a turn-budget enable test with MR=2, one turn used)."
+}

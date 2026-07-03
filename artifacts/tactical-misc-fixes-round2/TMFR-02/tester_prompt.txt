@@ -1,0 +1,43 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Fix end-of-move Turn Left/Right enable logic in canUseEndOfMoveTurn() (src/tactical/FTacticalGame.cpp) so a ship with remaining MR can still turn: replaced the buggy per-hex MR_TURN flag test at the path end hex with the whole-path budget rule countFlags(MR_TURN) < getMR() already used by computeRemainingMoves(), so a minelayer with MR=2 that used one turn can still turn in the hex right after that turn.
+
+Modified files:
+- src/tactical/FTacticalGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- Turn buttons are enabled whenever countFlags(MR_TURN) < getMR() would allow another turn, including in the hex immediately after a turn.
+- A minelayer with MR=2 that used one turn can still make an end-of-move turn; it is blocked only when turns used reach MR (or a turn is already pending, or the minimum move is unmet).
+- Reverse/undo of a pending turn, the one-hexside clamp, and commit-at-Movement-Done are unchanged.
+- No regression to normal in-route turning or Movement Done gating.
+
+Create test files in:
+- tests/tactical/FTacticalGameMechanicsTest.{cpp,h} or tests/tactical/FTacticalMoveRouteSelectionTest.{cpp,h} per the task's Tester handoff note
+- tests/tactical/FTacticalEndOfMoveTurnTest.cpp also exists and contains the now-outdated testCannotApplyTurnWhenPathEndHexHasMRTurnFlag test that must be updated to reflect the whole-path MR budget rule (MR=3 with 1 turn used should now return true, not false); consider adding a companion case where turns used == MR to confirm the block still applies
+
+Implementation context for testing:
+- Fixed function: static bool canUseEndOfMoveTurn(FVehicle*, FTacticalTurnData*) in src/tactical/FTacticalGame.cpp (~line 843).
+- Old (buggy) rule: tested turnData->path.getFlag(turnData->path.endPoint()) & MR_TURN, which is wrong because MR_TURN is recorded on the hex a ship turns INTO (see handleMoveHexSelection ~line 2631-2632), not the hex it turns from; a turn-then-advance on the final leg flags the ship's current (destination) hex even though MR remains.
+- New rule: turnData->path.countFlags(MR_TURN) >= (unsigned int)ship->getMR() blocks the turn; this matches the whole-path budget check already used by computeRemainingMoves() at src/tactical/FTacticalGame.cpp:2376 (turnData->path.countFlags(MR_TURN) < turnLimit).
+- Preserved unchanged: the ship->getMR() == 0 short-circuit, the nMoved >= (speed - ADF) minimum-move guard, and the turnData->pendingEndOfMoveFacing != -1 guard (a pending turn always blocks a second one regardless of remaining MR budget).
+- Not touched: canApplyEndOfMoveTurnLeft()/canApplyEndOfMoveTurnRight() reverse/undo logic, applyEndOfMoveTurn(), the one-hexside clamp in turnShip(), and finalizeMovementState() commit-at-Movement-Done behavior.
+- Repro scenario from the task: minelayer with MR=2, one turn already used via normal movement (1 MR_TURN flag on the path), buttons should now be enabled in the hex right after the turn (countFlags==1 < MR==2); blocked only once a second turn brings countFlags to 2.
+
+Suggested test command(s):
+- make
+- cd tests && make tactical-tests && ./tactical/TacticalTests
+
+Existing validations expected to fail only because approved behavior changed:
+- tests/tactical/FTacticalEndOfMoveTurnTest.cpp::testCannotApplyTurnWhenPathEndHexHasMRTurnFlag fails against the corrected code because it asserts the old buggy per-hex-flag behavior (MR=3, 1 turn used via manual flag on the end-of-path hex, asserts turn blocked). Under the whole-path MR budget rule this should be allowed (1 < 3), so the assertion is now backwards. The Tester must update or replace this test's expectation to assert the turn is allowed here, and add/keep coverage for the case where countFlags(MR_TURN) == getMR() (turns exhausted) still blocking the turn.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/tactical-misc-fixes-round2/TMFR-02
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
