@@ -1,0 +1,38 @@
+{
+  "artifact_file_paths": [
+    "artifacts/tactical-misc-fixes-round2/TMFR-01/tester_report.md",
+    "artifacts/tactical-misc-fixes-round2/TMFR-01/tester_result.json",
+    "artifacts/tactical-misc-fixes-round2/TMFR-01/documenter_prompt.txt"
+  ],
+  "branch_name": "fixes-tmfr-01-tester-20260703",
+  "commands_run": [
+    "cd tests/gui && make && ./GuiTests",
+    "cd tests && make tactical-tests && ./tactical/TacticalTests",
+    "cd tests && make && ./SSWTests",
+    "make (repo root)"
+  ],
+  "pass_fail_totals": {
+    "GuiTests_fail_pre_existing": 1,
+    "GuiTests_pass": 66,
+    "GuiTests_total": 67,
+    "SSWTests_fail": 0,
+    "SSWTests_pass": 195,
+    "SSWTests_total": 195,
+    "TacticalTests_fail": 0,
+    "TacticalTests_pass": 251,
+    "TacticalTests_total": 251
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": "TMFR-01",
+  "test_commit_hash": "d49f4fcc0e238e58c74c2cc1727cc7858a84adfa",
+  "test_files_changed": [
+    "tests/gui/TacticalGuiLiveTest.h",
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/tactical/WXTacticalUIAdapterTest.h",
+    "tests/tactical/WXTacticalUIAdapterTest.cpp",
+    "tests/tactical/FTacticalGameMockUITest.h",
+    "tests/tactical/FTacticalGameMockUITest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
