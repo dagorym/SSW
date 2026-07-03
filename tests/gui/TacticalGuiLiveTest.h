@@ -54,7 +54,9 @@ CPPUNIT_TEST( testSeekerMoveCountOverlaySupressesOpponentLabelsDuringActivation 
 CPPUNIT_TEST( testSeekerActivationRowTextShowsPositionAndMarginIsDynamic );
 CPPUNIT_TEST( testBattleScreenExtraStyleExcludesTopLevelExDialog );
 CPPUNIT_TEST( testBattleScreenDefaultStyleIncludesMinimizeBox );
-CPPUNIT_TEST( testBattleScreenShowModalContainsGtkWindowSetModal );
+CPPUNIT_TEST( testWxWindowDisablerDisablesOtherTopLevelsAndRestoresOnDelete );
+CPPUNIT_TEST( testBattleScreenCloseIsIdempotentAcrossDuplicateCloseEvents );
+CPPUNIT_TEST( testWXTacticalUIDismissActiveDialogDismissesNestedStackInnermostFirst );
 CPPUNIT_TEST( testBattleScreenXCloseDismissesActiveChildDialog );
 CPPUNIT_TEST( testTurnButtonPanelHiddenInNonMovePhase );
 CPPUNIT_TEST( testTurnButtonPanelShownAndEnableStateReflectsModelInMovePhase );
@@ -518,20 +520,77 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	void testBattleScreenDefaultStyleIncludesMinimizeBox();
 
 	/**
-	 * @brief Source-contract supplement: ShowModal() still contains the gtk_window_set_modal call.
+	 * @brief Behavioral: wxWindowDisabler-based other-window enable/disable bookkeeping.
 	 *
-	 * TMF-02 AC2: Confirms that removing wxTOPLEVEL_EX_DIALOG did not inadvertently remove the
-	 * gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) call that preserves modal grab behavior.
-	 * This is a source-contract-only assertion. Exercising FBattleScreen::ShowModal() behaviorally
-	 * would block the test event loop under xvfb because FBattleScreen runs a custom modal event
-	 * loop that never returns during a headless test run; therefore this source-contract check is
-	 * the sole verification of this specific GTK call's presence.
+	 * TMFR-01: `FBattleScreen::ShowModal()` now installs a `wxWindowDisabler(this)` instead of
+	 * the removed `gtk_window_set_modal()` grab, disabling every other top-level window for the
+	 * battle's duration and restoring them on delete. `FBattleScreen::ShowModal()` itself cannot
+	 * be driven live under the headless harness (its custom modal event loop blocks the runner;
+	 * see the retired TMF-02 AC2 source-contract test this replaces), so this test exercises the
+	 * `wxWindowDisabler` mechanism directly and behaviorally: it constructs two ordinary top-level
+	 * windows standing in for the strategic main frame and a launching dialog, constructs a
+	 * `wxWindowDisabler` skipping one of them (mirroring `new wxWindowDisabler(this)` in
+	 * `ShowModal()`), and asserts the other window becomes disabled while the skipped window stays
+	 * enabled, then asserts the disabled window is restored to enabled once the disabler is
+	 * deleted (mirroring `EndModal()`/`~FBattleScreen()` deleting `m_windowDisabler`). This proves
+	 * the enable/disable bookkeeping FBattleScreen relies on functions as required without
+	 * asserting anything about `FBattleScreen::ShowModal()` from source structure alone.
 	 *
-	 * @author claude-sonnet-4-6 (medium)
-	 * @date Created: Jun 30, 2026
-	 * @date Last Modified: Jun 30, 2026
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
 	 */
-	void testBattleScreenShowModalContainsGtkWindowSetModal();
+	void testWxWindowDisablerDisablesOtherTopLevelsAndRestoresOnDelete();
+
+	/**
+	 * @brief Behavioral: closeBattleScreen()'s m_closeInProgress guard is safe against reentrancy.
+	 *
+	 * TMFR-01: the title-bar X now reaches onClose()/closeBattleScreen() via a GTK
+	 * "delete-event" bypass in addition to wx's normal close routing and the File->Quit
+	 * "activate" bypass, so more than one close vector can reach closeBattleScreen() for the
+	 * same close request in close succession. Investigation during test authoring found that
+	 * a second closeBattleScreen() call made strictly AFTER the first one has fully returned
+	 * does not exercise this guard meaningfully (both the non-modal branch's
+	 * `if (!IsBeingDeleted())` reset and the modal branch's EndModal() reset
+	 * m_closeInProgress to false as part of a normal, successful close, so a later independent
+	 * call is expected to safely re-run Hide()/Destroy(), which are themselves idempotent in
+	 * wx). The guard's real job is preventing a call that arrives WHILE the first call is still
+	 * executing (before it resets the flag) from re-running dialog dismissal/Hide()/Destroy()
+	 * teardown concurrently. This test reproduces that reentrant scenario directly via
+	 * AccessibleBattleScreen::Show(), which synthesizes a nested closeBattleScreen() call from
+	 * inside the outer call's own Hide() (mirroring two close vectors firing for the same close
+	 * in immediate succession), and asserts the reentrant call observes m_closeInProgress
+	 * already set (took the guarded no-op path) and that the frame still ends up hidden.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	void testBattleScreenCloseIsIdempotentAcrossDuplicateCloseEvents();
+
+	/**
+	 * @brief Behavioral: WXTacticalUI::dismissActiveDialog() API surface, plus a source-contract
+	 *        supplement locking the multi-dialog stack shape and iteration order.
+	 *
+	 * TMFR-01: WXTacticalUI's single `m_activeDialog` pointer was replaced with an
+	 * innermost-first `m_dialogStack` (`std::vector<wxDialog*>`) so that more than one live
+	 * child dialog can all be dismissed by one dismissActiveDialog() call. A genuinely nested
+	 * two-dialog runtime scenario (opening a second showMessage() dialog from an action running
+	 * inside the first dialog's live ShowModal() event loop) was attempted here and confirmed
+	 * infeasible in this harness: it reliably hung the test runner indefinitely with no crash
+	 * and no further progress. Per the TMFR-01 Verification Policy, this test therefore
+	 * behaviorally exercises the single-dialog case (hasPendingDialog() becomes true while a
+	 * real dialog is modal, then false immediately after dismissActiveDialog() -- the same API
+	 * surface the multi-dialog stack path shares) and locks the multi-dialog STACK shape and
+	 * iteration behavior (an innermost-first `std::vector<wxDialog*>`, walked from `rbegin()`)
+	 * with a source-contract supplement, since the two-and-more-dialog runtime sequence cannot
+	 * be safely reproduced live in this harness.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	void testWXTacticalUIDismissActiveDialogDismissesNestedStackInnermostFirst();
 
 	/**
 	 * @brief Behavioral: WXTacticalUI dismiss API and FBattleScreen X-close lifecycle

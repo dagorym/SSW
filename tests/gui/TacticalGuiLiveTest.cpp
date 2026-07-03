@@ -592,6 +592,43 @@ public:
 		: FBattleScreen(title) {}
 	/// Expose the owned WXTacticalUI for TMF-03 dismiss-path testing.
 	WXTacticalUI * getTacticalUI() { return m_tacticalUI; }
+	/// TMFR-01: expose the single closeBattleScreen() call for direct idempotency testing.
+	void callCloseBattleScreenOnce(int returnCode) {
+		closeBattleScreen(returnCode);
+	}
+	/// TMFR-01: expose the m_closeInProgress guard field itself so reentrancy can be
+	/// verified directly without depending on wx's version-specific IsBeingDeleted()/
+	/// deferred-deletion timing semantics.
+	bool isCloseInProgressForTest() const { return m_closeInProgress; }
+
+	/// TMFR-01: when armed, synthesizes a reentrant closeBattleScreen() call from
+	/// inside Show(false) -- i.e. from inside the outer closeBattleScreen() call's
+	/// own Hide() -- mirroring the real-world race the m_closeInProgress guard
+	/// protects against (a second close vector, such as the GTK delete-event
+	/// bypass or wx's own close routing, reaching onClose()/closeBattleScreen()
+	/// again before the first call has finished unwinding).
+	void armReentrantCloseOnHide() {
+		m_reentrantCloseOnHide = true;
+	}
+	/// TMFR-01: true if the reentrant call observed m_closeInProgress already set,
+	/// proving it took the guarded early-return path instead of re-running
+	/// dialog dismissal/Hide()/Destroy() teardown a second time.
+	bool reentrantCallSawGuardActive() const {
+		return m_reentrantCallSawGuardActive;
+	}
+
+	virtual bool Show(bool show = true) wxOVERRIDE {
+		if (!show && m_reentrantCloseOnHide) {
+			m_reentrantCloseOnHide = false;
+			m_reentrantCallSawGuardActive = isCloseInProgressForTest();
+			closeBattleScreen(GetReturnCode());
+		}
+		return FBattleScreen::Show(show);
+	}
+
+private:
+	bool m_reentrantCloseOnHide = false;
+	bool m_reentrantCallSawGuardActive = false;
 };
 
 void waitForBattleScreenLifecycleSettle(WXGuiTestHarness & harness,
@@ -3827,26 +3864,222 @@ void TacticalGuiLiveTest::testBattleScreenDefaultStyleIncludesMinimizeBox() {
 		(styleFlag & wxMINIMIZE_BOX) != 0);
 }
 
-// TMF-02 source-contract supplement: ShowModal() must still contain the
-// gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) call that preserves modal
-// grab behavior after the wxTOPLEVEL_EX_DIALOG removal.
-// AC2's gtk_window_set_modal grab is locked only by this source-contract assertion.
-// Exercising FBattleScreen::ShowModal() behaviorally would block the test event loop
-// under xvfb because FBattleScreen runs its own custom modal event loop that never
-// returns during a headless test run. The source-contract check is therefore the
-// sole verification of this specific GTK call's presence.
-void TacticalGuiLiveTest::testBattleScreenShowModalContainsGtkWindowSetModal() {
-	std::cerr << "TMF02-gtk-modal-contract:start" << std::endl;
-	std::vector<std::string> battleScreenSrc;
-	battleScreenSrc.push_back(guiRepoFile("src/tactical/FBattleScreen.cpp"));
+// TMFR-01: the TMF-02 AC2 source-contract test that used to lock the presence of
+// gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) in ShowModal() is retired here.
+// TMFR-01's approved acceptance criteria explicitly require "The GTK modal grab is
+// no longer used to enforce battle modality" -- removing that exact call is the
+// intended behavior change, so the old assertion is now obsolete and would
+// contradict the approved acceptance criteria if kept. Per the TMFR-01 Verification
+// Policy, this is NOT replaced with an equivalent source-contract assertion that
+// ShowModal() constructs a wxWindowDisabler; instead, the wxWindowDisabler-based
+// enable/disable mechanism FBattleScreen now relies on is covered behaviorally below
+// (testWxWindowDisablerDisablesOtherTopLevelsAndRestoresOnDelete), since
+// FBattleScreen::ShowModal() itself still cannot be driven live under this harness
+// (its custom modal event loop blocks the test runner).
+
+// TMFR-01: Behavioral coverage of the wxWindowDisabler-based other-window
+// enable/disable bookkeeping that FBattleScreen::ShowModal()/EndModal() rely on to
+// preserve battle modality without a GTK modal grab.
+void TacticalGuiLiveTest::testWxWindowDisablerDisablesOtherTopLevelsAndRestoresOnDelete() {
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(5);
+
+	// Stand in for the strategic main frame / launching dialog (e.g. SelectCombatGUI)
+	// that FBattleScreen::ShowModal() disables for the battle's duration, and the
+	// battle screen frame itself, which wxWindowDisabler must skip.
+	wxFrame * otherTopLevel = new wxFrame(NULL, wxID_ANY, wxT("TMFR-01 Other TopLevel"));
+	wxFrame * keptEnabled = new wxFrame(NULL, wxID_ANY, wxT("TMFR-01 Kept Enabled TopLevel"));
+	otherTopLevel->Show();
+	keptEnabled->Show();
+	m_harness.pumpEvents(5);
 
 	CPPUNIT_ASSERT_MESSAGE(
-		"TMF-02 AC2 source-contract: FBattleScreen::ShowModal() must contain "
-		"gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE) so the GTK input grab "
-		"is established when the battle screen is launched modally. "
-		"This call mirrors wxDialog::ShowModal() on GTK and must not be removed "
-		"along with the wxTOPLEVEL_EX_DIALOG extra-style line.",
-		sourceContainsLineToken(battleScreenSrc, "gtk_window_set_modal(GTK_WINDOW(m_widget), TRUE)"));
+		"TMFR-01 precondition: both top-level windows must start enabled.",
+		otherTopLevel->IsEnabled() && keptEnabled->IsEnabled());
+
+	{
+		// Mirrors `m_windowDisabler = new wxWindowDisabler(this);` in
+		// FBattleScreen::ShowModal(), skipping the window passed to the ctor.
+		wxWindowDisabler disabler(keptEnabled);
+		m_harness.pumpEvents(3);
+
+		CPPUNIT_ASSERT_MESSAGE(
+			"TMFR-01: every other top-level window must become disabled while the "
+			"wxWindowDisabler is alive, mirroring the battle-modality bookkeeping.",
+			!otherTopLevel->IsEnabled());
+		CPPUNIT_ASSERT_MESSAGE(
+			"TMFR-01: the window passed to wxWindowDisabler's ctor must remain enabled.",
+			keptEnabled->IsEnabled());
+	}
+	// Disabler destructor runs here, mirroring `delete m_windowDisabler;` in
+	// FBattleScreen::EndModal() / the ~FBattleScreen() safety net.
+	m_harness.pumpEvents(3);
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01: the other top-level window must be restored to enabled once the "
+		"wxWindowDisabler is destroyed, matching EndModal()'s restore-on-close behavior.",
+		otherTopLevel->IsEnabled());
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01: the skipped window must remain enabled after the disabler is destroyed.",
+		keptEnabled->IsEnabled());
+
+	otherTopLevel->Destroy();
+	keptEnabled->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+// TMFR-01: closeBattleScreen()'s m_closeInProgress guard must make the close path
+// safe against reentrancy when a second close vector (title-bar X GTK bypass, wx's
+// own close routing, File->Quit) reaches onClose()/closeBattleScreen() again before
+// the first call has finished unwinding -- the real-world race the guard exists for.
+//
+// Investigation note: sequential closeBattleScreen() calls made strictly AFTER the
+// first one has already returned do not exercise this guard meaningfully in the
+// non-modal (Show()-based) branch this test can safely drive -- both that branch's
+// `if (!IsBeingDeleted()) { m_closeInProgress = false; }` and the modal branch's
+// EndModal() reset m_closeInProgress to false as part of a normal, successful close,
+// so a second, later call is expected to run through Hide()/Destroy() again (which
+// are themselves safe to call more than once in wx). The guard's actual job is
+// preventing a call that arrives WHILE the first call is still executing (before it
+// has reset the flag) from re-running dialog dismissal/Hide()/Destroy() teardown a
+// second time concurrently. This test reproduces that reentrant scenario directly
+// via AccessibleBattleScreen::Show(), which synthesizes a nested closeBattleScreen()
+// call from inside the outer call's own Hide() -- mirroring two close vectors firing
+// for the same close in immediate succession.
+void TacticalGuiLiveTest::testBattleScreenCloseIsIdempotentAcrossDuplicateCloseEvents() {
+	FBattleScreen::resetLifecycleCounters();
+	const int baselineConstructed = FBattleScreen::getConstructedCount();
+
+	AccessibleBattleScreen * battleScreen = new AccessibleBattleScreen(wxT("TMFR-01 Duplicate Close Events"));
+	battleScreen->SetReturnCode(wxID_OK);
+	battleScreen->Show();
+	m_harness.pumpEvents(5);
+	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * window) {
+		return window == battleScreen;
+	}) != NULL);
+	CPPUNIT_ASSERT(FBattleScreen::getConstructedCount() >= baselineConstructed + 1);
+	CPPUNIT_ASSERT(battleScreen->IsShown());
+	CPPUNIT_ASSERT(!battleScreen->isCloseInProgressForTest());
+
+	battleScreen->armReentrantCloseOnHide();
+
+	// AC: a reentrant closeBattleScreen() call arriving while the first call's
+	// own Hide() is still executing (m_closeInProgress already set) must be a
+	// safe no-op; reaching the assertions below at all (rather than aborting
+	// the process from a second concurrent dialog-dismissal/Hide()/Destroy()
+	// pass) already proves that.
+	battleScreen->callCloseBattleScreenOnce(wxID_OK);
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01: the reentrant closeBattleScreen() call (fired from inside the "
+		"outer call's own Hide()) must observe m_closeInProgress already set, "
+		"proving it took the guarded early-return path.",
+		battleScreen->reentrantCallSawGuardActive());
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01: the frame must still end up hidden after the outer "
+		"closeBattleScreen() call completes despite the reentrant attempt.",
+		!battleScreen->IsShown());
+
+	m_harness.pumpEvents(10);
+	m_harness.cleanupOrphanTopLevels(10);
+}
+
+// TMFR-01: WXTacticalUI's dismiss API must dismiss every live child dialog,
+// innermost-first, not just the most recently opened one.
+//
+// A genuinely nested two-dialog runtime scenario (opening a second showMessage()
+// dialog from an action running inside the first dialog's live ShowModal() event
+// loop, via a further nested wxTheApp->CallAfter()) was attempted here and
+// confirmed infeasible in this harness: it reliably hung the test runner
+// indefinitely with no crash and no further progress, for the same class of reason
+// documented at testBattleScreenXCloseDismissesActiveChildDialog above (nested
+// live modal loops interacting badly with this non-modal/CallAfter-driven test
+// setup). Per the TMFR-01 Verification Policy, driving that exact runtime sequence
+// live is out of scope for automated coverage here.
+//
+// Adopted approach: behaviorally exercise the single-dialog case (hasPendingDialog()
+// becomes true while a real dialog is modal, then false immediately after
+// dismissActiveDialog() -- the same API surface the multi-dialog stack path shares),
+// and lock the multi-dialog STACK shape and iteration behavior with a source-contract
+// supplement, since the two-and-more-dialog runtime sequence cannot be safely
+// reproduced in this harness.
+void TacticalGuiLiveTest::testWXTacticalUIDismissActiveDialogDismissesNestedStackInnermostFirst() {
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(5);
+
+	FBattleScreen::resetLifecycleCounters();
+	AccessibleBattleScreen * screen = new AccessibleBattleScreen(wxT("TMFR-01 Dialog Stack Dismiss"));
+	screen->Show();
+	m_harness.pumpEvents(5);
+	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindow([&](wxTopLevelWindow * w) {
+		return w == screen;
+	}) != NULL);
+
+	WXTacticalUI * tacticalUI = screen->getTacticalUI();
+	CPPUNIT_ASSERT(tacticalUI != NULL);
+
+	bool hadPendingDuringAction = false;
+	bool hadNoPendingAfterDismiss = false;
+
+	// Behavioral: a single live dialog is pushed onto and dismissed via the same
+	// hasPendingDialog()/dismissActiveDialog() API the multi-dialog stack path uses.
+	m_harness.runVoidFunctionWithAction([&]() {
+		tacticalUI->showMessage("TMFR-01 Stack Dismiss", "Dismiss test");
+	}, [&]() {
+		hadPendingDuringAction = tacticalUI->hasPendingDialog();
+		tacticalUI->dismissActiveDialog();
+		hadNoPendingAfterDismiss = !tacticalUI->hasPendingDialog();
+	}, wxID_CANCEL, 300);
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01: hasPendingDialog() must be true while a dialog pushed onto "
+		"m_dialogStack is still modal.",
+		hadPendingDuringAction);
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01: hasPendingDialog() must be false immediately after "
+		"dismissActiveDialog() dismisses the only entry on the stack.",
+		hadNoPendingAfterDismiss);
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01: dismissActiveDialog() must leave no pending dialog once "
+		"showMessage() has returned and popped its entry.",
+		!tacticalUI->hasPendingDialog());
+
+	m_harness.pumpEvents(3);
+	wxCloseEvent closeEvent(wxEVT_CLOSE_WINDOW);
+	closeEvent.SetEventObject(screen);
+	wxPostEvent(screen, closeEvent);
+	CPPUNIT_ASSERT(m_harness.waitForTopLevelWindowClosed([&](wxTopLevelWindow * w) {
+		return w == screen;
+	}, 1500, 10, true));
+	waitForBattleScreenLifecycleSettle(m_harness);
+	WXTacticalUI::setModalAutoDismissMs(0);
+	m_harness.cleanupOrphanTopLevels(10);
+
+	// Source-contract supplement: locks the multi-dialog STACK shape and
+	// iteration behavior that the single-dialog behavioral coverage above cannot
+	// exercise, since a genuinely nested multi-dialog runtime sequence is
+	// confirmed infeasible in this harness (see comment above). Confirms
+	// WXTacticalUI tracks an innermost-first std::vector<wxDialog*> stack (not a
+	// single pointer) and that dismissActiveDialog() walks the entire stack
+	// (rbegin()/rend()) calling EndModal() on every still-modal entry, so more
+	// than one live child dialog is dismissed by a single call -- this is a
+	// supplement to, not a substitute for, the behavioral coverage above.
+	std::vector<std::string> wxTacticalUIHeaderSrc;
+	wxTacticalUIHeaderSrc.push_back(guiRepoFile("include/gui/WXTacticalUI.h"));
+	std::vector<std::string> wxTacticalUISrc;
+	wxTacticalUISrc.push_back(guiRepoFile("src/gui/WXTacticalUI.cpp"));
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01 source-contract: WXTacticalUI must track live child dialogs as a "
+		"std::vector<wxDialog*> stack, not a single tracked pointer, so more than "
+		"one live child dialog can be dismissed by dismissActiveDialog().",
+		sourceContainsLineToken(wxTacticalUIHeaderSrc, "std::vector<wxDialog*> m_dialogStack;"));
+	CPPUNIT_ASSERT_MESSAGE(
+		"TMFR-01 source-contract: dismissActiveDialog() must walk the dialog "
+		"stack from rbegin() (innermost/most recently opened) so every live "
+		"entry is dismissed, not just the most recently opened one.",
+		sourceContainsLineToken(wxTacticalUISrc, "for (std::vector<wxDialog*>::const_reverse_iterator it = m_dialogStack.rbegin();"));
 }
 
 // TMF-03: Behavioral test — WXTacticalUI dismiss API correctness and

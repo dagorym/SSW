@@ -50,4 +50,23 @@ void WXTacticalUIAdapterTest::testNotifyWinnerUsesNoParentFallbackSafely() {
 	ui.notifyWinner(false);
 }
 
+void WXTacticalUIAdapterTest::testHasPendingDialogAndDismissActiveDialogAreSafeNoOpsWithEmptyStack() {
+	WXTacticalUI ui(NULL);
+
+	// TMFR-01: on a fresh adapter, m_dialogStack has never had anything pushed onto
+	// it, so hasPendingDialog() must report false.
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"TMFR-01: hasPendingDialog() must be false on a fresh WXTacticalUI with an "
+		"empty dialog stack.",
+		false, ui.hasPendingDialog());
+
+	// dismissActiveDialog() must be a safe no-op when no dialog has ever been pushed.
+	ui.dismissActiveDialog();
+
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"TMFR-01: hasPendingDialog() must remain false after dismissActiveDialog() is "
+		"called on an empty dialog stack.",
+		false, ui.hasPendingDialog());
+}
+
 } // namespace FrontierTests

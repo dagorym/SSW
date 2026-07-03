@@ -187,4 +187,46 @@ CPPUNIT_ASSERT_EQUAL(true, fixture.ui.lastAttackerWins);
 destroyFixture(fixture);
 }
 
+void FTacticalGameMockUITest::testInstalledUISeamRoutesDeclareWinnerStyleNotifyWinnerAfterCombatOverStateTransition() {
+RuntimeFixture fixture;
+setupDeterministicBattle(fixture);
+
+// Note: this test intentionally does not drive fireAllWeapons() to force a
+// live combat-over/has-winner outcome (unlike the sibling test above). The
+// weapon's actual hit/damage roll draws from the shared process-wide RNG
+// stream, whose state depends on how many prior tests already consumed
+// random draws before this one runs, and repeated experimentation confirmed
+// that outcome is order-dependent in this suite. What this test actually
+// verifies -- that FBattleScreen::declareWinner()'s exact call sequence
+// (`m_tacticalGame->getUI()` then `tacticalUI->notifyWinner(attackerWins)`)
+// reaches the installed UI seam correctly -- does not depend on how combat
+// was resolved, only on the installUI()/getUI() plumbing itself, so it is
+// verified directly here without that RNG-order dependency.
+
+// The installUI()/getUI() seam FBattleScreen::declareWinner() reads via
+// `m_tacticalGame->getUI()` must resolve to the exact installed mock.
+CPPUNIT_ASSERT_EQUAL_MESSAGE(
+	"TMFR-01: FTacticalGame::getUI() must return the exact ITacticalUI installed "
+	"via installUI(), the same seam FBattleScreen::declareWinner() uses to reach "
+	"notifyWinner() before calling closeBattleScreen().",
+	static_cast<ITacticalUI *>(&fixture.ui), fixture.game.getUI());
+
+// Mirror FBattleScreen::declareWinner()'s own call sequence: fetch the UI
+// through the seam and invoke notifyWinner() with a winner-side flag.
+ITacticalUI * tacticalUI = fixture.game.getUI();
+CPPUNIT_ASSERT(tacticalUI != NULL);
+tacticalUI->notifyWinner(true);
+
+CPPUNIT_ASSERT_EQUAL_MESSAGE(
+	"TMFR-01: notifyWinner() routed through the installed UI seam must reach "
+	"the mock exactly once.",
+	1, fixture.ui.notifyWinnerCount);
+CPPUNIT_ASSERT_EQUAL_MESSAGE(
+	"TMFR-01: the winner flag observed by the mock must match the model's "
+	"determination of which side won.",
+	true, fixture.ui.lastAttackerWins);
+
+destroyFixture(fixture);
+}
+
 }

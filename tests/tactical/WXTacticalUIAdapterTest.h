@@ -26,6 +26,7 @@ CPPUNIT_TEST( testAdapterConstructsAsITacticalUI );
 CPPUNIT_TEST( testRequestRedrawIsSafeWithAndWithoutParent );
 CPPUNIT_TEST( testRunICMSelectionValidatesInputs );
 CPPUNIT_TEST( testNotifyWinnerUsesNoParentFallbackSafely );
+CPPUNIT_TEST( testHasPendingDialogAndDismissActiveDialogAreSafeNoOpsWithEmptyStack );
 CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -72,6 +73,24 @@ void testRunICMSelectionValidatesInputs();
  * @date Last Modified: Apr 18, 2026
  */
 void testNotifyWinnerUsesNoParentFallbackSafely();
+/**
+ * @brief Verifies hasPendingDialog()/dismissActiveDialog() are safe no-ops on a fresh
+ *        WXTacticalUI instance whose dialog stack has never had a dialog pushed onto it.
+ *
+ * TMFR-01: m_activeDialog (a single pointer) was replaced with m_dialogStack (a
+ * std::vector<wxDialog*>). This behaviorally confirms the empty-stack edge case: a
+ * freshly constructed adapter (no showMessage()/showDamageSummary()/runICMSelection()
+ * call has ever pushed a dialog) reports hasPendingDialog() == false, and calling
+ * dismissActiveDialog() on that empty stack does not crash or throw. Real nested,
+ * multi-dialog stack-ordering coverage (which requires driving live, nested wx modal
+ * dialogs) lives in tests/gui/TacticalGuiLiveTest.cpp, which has the wx runtime bootstrap
+ * this standalone tactical test runner does not provide.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 03, 2026
+ * @date Last Modified: Jul 03, 2026
+ */
+void testHasPendingDialogAndDismissActiveDialogAreSafeNoOpsWithEmptyStack();
 };
 
 } // namespace FrontierTests
