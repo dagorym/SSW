@@ -1,9 +1,13 @@
 /**
  * @file FBattleDisplay.cpp
  * @brief Implementation file for BattleDispaly class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 30, 2026 (TMF-01: single-source SEEKER_ACTIVATION_*_INSTRUCTION constants in drawSeekerActivation)
+ * @date Last Modified:  Jul 03, 2026 (TMFR-03: drawMoveShip() Turn-panel placement now uses
+ * measureWrappedActionPromptWidth() wrapped line widths instead of the unwrapped instruction
+ * extent so the panel is visible at the default window size; buildMovePromptText() splits the
+ * long move-phase instruction onto detailPromptTwo/detailPromptThree; a short caption is drawn
+ * above the Turn Left/Turn Right buttons and requestedDisplayHeight grows to fit it)
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -191,7 +195,7 @@ int FBattleDisplay::getCurrentPromptMaxWidth(int panelWidth) const{
 	return promptMaxWidth;
 }
 
-void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo) const{
+void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo, wxString & detailPromptThree) const{
 	std::ostringstream os;
 	os << "It is the ";
 	if (m_parent->getActivePlayer()){
@@ -214,12 +218,17 @@ void FBattleDisplay::buildMovePromptText(wxString & turnPrompt, wxString & detai
 		}
 	}
 
+	detailPromptThree.clear();
 	if (stoppedShipFacingSelection) {
 		detailPromptOne = "Select a highlighted preview route to choose your starting facing.";
 		detailPromptTwo = "Continue a route, or click an adjacent hex then Movement Done to rotate in place.";
 	} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
 		detailPromptOne = "Select route hexes to move the ship.";
-		detailPromptTwo = "Press the 'Movement Done' button when all ships have been assigned their movement instructions.";
+		// TMFR-03: split the long single-line instruction onto two shorter lines so
+		// the widest rendered line stays well inside the move-phase prompt column;
+		// see measureWrappedActionPromptWidth() usage in drawMoveShip().
+		detailPromptTwo = "Press the 'Movement Done' button when all ships";
+		detailPromptThree = "have been assigned their movement instructions.";
 	} else {
 		detailPromptOne = "Please select a ship to move.";
 		detailPromptTwo.clear();
@@ -234,10 +243,12 @@ void FBattleDisplay::refreshMovePromptReservation(wxDC &dc, int panelWidth, int 
 	wxString turnPrompt;
 	wxString detailPromptOne;
 	wxString detailPromptTwo;
-	buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo);
+	wxString detailPromptThree;
+	buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo, detailPromptThree);
 	int promptLineCount = countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);
 	promptLineCount += countWrappedActionPromptLines(dc, detailPromptOne, promptMaxWidth);
 	promptLineCount += countWrappedActionPromptLines(dc, detailPromptTwo, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptThree, promptMaxWidth);
 	reserveActionPromptLines(promptLineCount);
 
 	ensureLowerPanelLayoutState(panelWidth, panelHeight);
@@ -245,6 +256,7 @@ void FBattleDisplay::refreshMovePromptReservation(wxDC &dc, int panelWidth, int 
 	promptLineCount = countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);
 	promptLineCount += countWrappedActionPromptLines(dc, detailPromptOne, promptMaxWidth);
 	promptLineCount += countWrappedActionPromptLines(dc, detailPromptTwo, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptThree, promptMaxWidth);
 	reserveActionPromptLines(promptLineCount);
 	ensureLowerPanelLayoutState(panelWidth, panelHeight);
 }
@@ -366,6 +378,38 @@ void FBattleDisplay::drawWrappedActionPrompt(wxDC &dc, const wxString &promptTex
 		dc.DrawText(currentLine,leftOffset,getActionPromptLineY(lineCursor));
 		lineCursor++;
 	}
+}
+
+int FBattleDisplay::measureWrappedActionPromptWidth(wxDC &dc, const wxString &promptText, int maxWidth) const{
+	if (promptText.IsEmpty()){
+		return 0;
+	}
+	if (maxWidth <= 0){
+		return dc.GetTextExtent(promptText).GetWidth();
+	}
+	wxArrayString words = wxSplit(promptText, ' ');
+	if (words.IsEmpty()){
+		return 0;
+	}
+	int widestLine = 0;
+	wxString currentLine;
+	for (size_t i = 0; i < words.size(); i++){
+		const wxString & word = words[i];
+		if (word.IsEmpty()){
+			continue;
+		}
+		const wxString candidate = currentLine.IsEmpty() ? word : currentLine + " " + word;
+		if (!currentLine.IsEmpty() && dc.GetTextExtent(candidate).GetWidth() > maxWidth){
+			widestLine = std::max(widestLine, dc.GetTextExtent(currentLine).GetWidth());
+			currentLine = word;
+		} else {
+			currentLine = candidate;
+		}
+	}
+	if (!currentLine.IsEmpty()){
+		widestLine = std::max(widestLine, dc.GetTextExtent(currentLine).GetWidth());
+	}
+	return widestLine;
 }
 
 FBattleDisplay::ShipStatsLayoutRequirements FBattleDisplay::measureShipStatsLayoutRequirements(wxDC &dc) const{
@@ -1088,47 +1132,22 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 	dc.DrawText("",leftOffset,promptTopY);
 	int promptMaxWidth = getCurrentPromptMaxWidth(panelWidth);
 	dc.SetTextForeground(white);
-	bool stoppedShipFacingSelection = false;
-	if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
-		const std::map<unsigned int, FTacticalTurnData> & turnInfo = m_parent->getTurnInfo();
-		std::map<unsigned int, FTacticalTurnData>::const_iterator turnItr = turnInfo.find(m_parent->getShip()->getID());
-		if (turnItr != turnInfo.end()) {
-			const FTacticalTurnData & turnData = turnItr->second;
-			stoppedShipFacingSelection = (turnData.speed == 0
-				&& turnData.nMoved == 0
-				&& m_parent->getShip()->getMR() > 0);
-		}
-	}
 	wxString turnPrompt;
 	wxString detailPromptOne;
 	wxString detailPromptTwo;
-	std::ostringstream os;
-	os << "It is the ";
-	if (m_parent->getActivePlayer()){
-		os << "attacker's ";
-	} else {
-		os << "defender's ";
-	}
-	os << "turn.";
-	turnPrompt = wxString(os.str());
-	if (stoppedShipFacingSelection) {
-		detailPromptOne = "Select a highlighted preview route to choose your starting facing.";
-		detailPromptTwo = "Continue a route, or click an adjacent hex then Movement Done to rotate in place.";
-	} else if (m_parent->getShip() != NULL && m_parent->getShip()->getOwner() == m_parent->getMovingPlayerID()) {
-		detailPromptOne = "Select route hexes to move the ship.";
-		detailPromptTwo = "Press the 'Movement Done' button when all ships have been assigned their movement instructions.";
-	} else {
-		detailPromptOne = "Please select a ship to move.";
-	}
+	wxString detailPromptThree;
+	buildMovePromptText(turnPrompt, detailPromptOne, detailPromptTwo, detailPromptThree);
 	int promptLineCount = countWrappedActionPromptLines(dc, turnPrompt, promptMaxWidth);
 	promptLineCount += countWrappedActionPromptLines(dc, detailPromptOne, promptMaxWidth);
 	promptLineCount += countWrappedActionPromptLines(dc, detailPromptTwo, promptMaxWidth);
+	promptLineCount += countWrappedActionPromptLines(dc, detailPromptThree, promptMaxWidth);
 	reserveActionPromptLines(promptLineCount);
 
 	int promptLineCursor = 0;
 	drawWrappedActionPrompt(dc, turnPrompt, promptMaxWidth, promptLineCursor);
 	drawWrappedActionPrompt(dc, detailPromptOne, promptMaxWidth, promptLineCursor);
 	drawWrappedActionPrompt(dc, detailPromptTwo, promptMaxWidth, promptLineCursor);
+	drawWrappedActionPrompt(dc, detailPromptThree, promptMaxWidth, promptLineCursor);
 
 	if (m_lowerPanelLayoutState.reservedPromptLines < ACTION_PROMPT_MAX_LINES){
 		for (int i = m_lowerPanelLayoutState.reservedPromptLines; i < ACTION_PROMPT_MAX_LINES; i++){
@@ -1143,17 +1162,25 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 		m_first=false;
 	}
 
-	// TMF-05: Position and show the Turn Left / Turn Right panel.
+	// TMF-05/TMFR-03: Position and show the Turn Left / Turn Right panel, with a
+	// short caption drawn above the buttons.
 	// The panel is placed in the middle column: to the right of Movement Done and
 	// the left instruction text, and to the left of the ship-stats column.
 	// Mirror the lMargin math from drawSeekerActivation() (:1717-1730).
 	{
-		// Compute left-column instruction width: measure the widest line drawn above.
+		// TMFR-03: measure the widest *wrapped* rendered line instead of the
+		// unwrapped full-string extent. The unwrapped extent of the long move-phase
+		// instruction line vastly overstated the rendered width (the text is always
+		// drawn wrapped via drawWrappedActionPrompt() above), which pushed lMargin
+		// past the ship-stats column and hid the panel on every paint.
 		dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 		const int instrW = std::max(
-			dc.GetTextExtent(detailPromptOne).GetWidth(),
-			std::max(dc.GetTextExtent(turnPrompt).GetWidth(),
-				dc.GetTextExtent(detailPromptTwo).GetWidth()));
+			measureWrappedActionPromptWidth(dc, detailPromptOne, promptMaxWidth),
+			std::max(
+				measureWrappedActionPromptWidth(dc, turnPrompt, promptMaxWidth),
+				std::max(
+					measureWrappedActionPromptWidth(dc, detailPromptTwo, promptMaxWidth),
+					measureWrappedActionPromptWidth(dc, detailPromptThree, promptMaxWidth))));
 		// Compute Movement Done button's right extent relative to leftOffset.
 		const int moveBtnBestW = m_buttonMoveDone->GetBestSize().GetWidth();
 		const wxPoint moveBtnPos = m_buttonMoveDone->GetPosition();
@@ -1167,9 +1194,41 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 			? m_lowerPanelLayoutState.shipStatsLeftMargin
 			: lMargin + m_turnButtonPanel->GetBestSize().GetWidth() + 2*BORDER;
 		const int panelX = lMargin;
-		const int panelY = getActionPromptLineY(0);
-		// Only show when panel fits left of ship-stats column.
-		if (panelX + m_turnButtonPanel->GetBestSize().GetWidth() + 2*BORDER <= statsLeft) {
+
+		// TMFR-03: short caption drawn above the Turn Left/Turn Right buttons,
+		// wrapped to roughly the combined width of the two buttons.
+		static const wxString TURN_CAPTION_LINES[] = {
+			"If at the end of a ship's movement",
+			"you want to make a facing change",
+			"(and have remaining MR), use these",
+			"buttons to make a single final turn."
+		};
+		const int TURN_CAPTION_LINE_COUNT = sizeof(TURN_CAPTION_LINES) / sizeof(TURN_CAPTION_LINES[0]);
+		const wxFont captionFont(8,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL);
+		dc.SetFont(captionFont);
+		int captionW = 0;
+		const int captionLineHeight = dc.GetCharHeight() + 2;
+		for (int i = 0; i < TURN_CAPTION_LINE_COUNT; i++){
+			captionW = std::max(captionW, dc.GetTextExtent(TURN_CAPTION_LINES[i]).GetWidth());
+		}
+		const int captionH = TURN_CAPTION_LINE_COUNT * captionLineHeight;
+		const int blockWidth = std::max(m_turnButtonPanel->GetBestSize().GetWidth(), captionW);
+
+		const int captionY = getActionPromptLineY(0);
+		const int panelY = captionY + captionH + BORDER;
+
+		// Grow the lower panel so the caption plus button row are never clipped.
+		const int blockBottom = panelY + m_turnButtonPanel->GetBestSize().GetHeight() + BORDER;
+		if (blockBottom > m_lowerPanelLayoutState.requestedDisplayHeight){
+			m_lowerPanelLayoutState.requestedDisplayHeight = blockBottom;
+			applyRequestedDisplayHeight();
+		}
+
+		// Only show when the block fits left of the ship-stats column.
+		if (panelX + blockWidth + 2*BORDER <= statsLeft) {
+			for (int i = 0; i < TURN_CAPTION_LINE_COUNT; i++){
+				dc.DrawText(TURN_CAPTION_LINES[i], panelX, captionY + i * captionLineHeight);
+			}
 			m_turnButtonPanel->SetPosition(wxPoint(panelX, panelY));
 			m_turnButtonPanel->SetSize(m_turnButtonPanel->GetBestSize());
 			const bool canLeft = m_parent->canApplyEndOfMoveTurnLeft();

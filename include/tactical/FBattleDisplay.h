@@ -1,9 +1,12 @@
 /**
  * @file FBattleDisplay.h
  * @brief Header file for BattleDisplay class
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-5 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 30, 2026 (TMF-06: guard showTacticalDamageSummaryDialog on weaponsFired > 0 in fire-done handlers)
+ * @date Last Modified: Jul 03, 2026 (TMFR-03: buildMovePromptText() gains detailPromptThree so the
+ * long move-phase instruction wraps onto two shorter lines instead of one long one; added
+ * measureWrappedActionPromptWidth() so the Turn-panel placement in drawMoveShip() is computed
+ * from actual wrapped line widths instead of the unwrapped instruction extent)
  *
  */
 
@@ -432,7 +435,26 @@ protected:
 	 */
 	bool setStationRotation(wxMouseEvent &event);
 
-	///Draws prompt to select ship to move
+	/**
+	 * @brief Draw prompt to select ship to move and the end-of-move Turn Left/Right panel.
+	 *
+	 * TMFR-03: the Turn-panel's left edge (`lMargin`) is computed from
+	 * `measureWrappedActionPromptWidth()` (actual wrapped instruction line widths)
+	 * instead of the unwrapped instruction extent, so the panel no longer overshoots
+	 * the ship-info column and is shown at the default window size. A short caption
+	 * ("If at the end of a ship's movement you want to make a facing change (and have
+	 * remaining MR), use these buttons to make a single final turn.") is drawn above
+	 * the Turn Left/Turn Right buttons, sized to roughly the width of the two buttons
+	 * side by side; `m_lowerPanelLayoutState.requestedDisplayHeight` is grown (and
+	 * reapplied via `applyRequestedDisplayHeight()`) when the caption plus button row
+	 * would otherwise be clipped.
+	 *
+	 * @param dc The device context to draw on.
+	 *
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
+	 * @date Created: Jul 11, 2008
+	 * @date Last Modified: Jul 03, 2026 (TMFR-03: fix Turn-panel placement math and add caption)
+	 */
 	void drawMoveShip(wxDC &dc);
 
 	/// Draws the stats for the currently selected ship
@@ -739,6 +761,28 @@ protected:
 	/// draws wrapped prompt text into action-prompt lines and returns consumed lines by reference
 	void drawWrappedActionPrompt(wxDC &dc, const wxString &promptText, int maxWidth, int &lineCursor);
 
+	/**
+	 * @brief Measure the widest rendered line width of a prompt after word-wrapping.
+	 *
+	 * Mirrors the wrap decisions made by `countWrappedActionPromptLines()` and
+	 * `drawWrappedActionPrompt()` (same greedy word-wrap at `maxWidth`), but
+	 * returns the widest individual wrapped line's pixel width instead of a line
+	 * count. Used by `drawMoveShip()` (TMFR-03) so the Turn-panel's left edge is
+	 * computed from the actual wrapped rendering width of the move-phase
+	 * instruction text instead of the unwrapped full-string extent, which was
+	 * the root cause of the panel overshooting the ship-info column.
+	 *
+	 * @param dc Device context used for text measurement; caller sets the font.
+	 * @param promptText Candidate prompt text to wrap and measure.
+	 * @param maxWidth Wrap width in pixels; values <= 0 return the unwrapped extent.
+	 * @return Widest wrapped line width in pixels, or 0 for empty text.
+	 *
+	 * @author claude-sonnet-5 (medium)
+	 * @date Created: Jul 03, 2026
+	 * @date Last Modified: Jul 03, 2026
+	 */
+	int measureWrappedActionPromptWidth(wxDC &dc, const wxString &promptText, int maxWidth) const;
+
 	/// validates or updates the shared lower-panel layout state for the current geometry;
 	/// preserves any requestedDisplayHeight already expanded by draw helpers within the
 	/// current tactical phase (drawPlaceMines, drawPlaceSeekers, drawSeekerActivation);
@@ -773,8 +817,24 @@ protected:
 	/// returns prompt width after accounting for right-split ship stat placement
 	int getCurrentPromptMaxWidth(int panelWidth) const;
 
-	/// derives move-phase prompt strings based on active turn and selected ship state
-	void buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo) const;
+	/**
+	 * @brief Derive move-phase prompt strings based on active turn and selected ship state.
+	 *
+	 * `detailPromptTwo`/`detailPromptThree` split what was previously a single long
+	 * "Press the 'Movement Done' button..." line onto two shorter lines (TMFR-03) so
+	 * each line's rendered width stays well inside the move-phase prompt column;
+	 * `detailPromptThree` is empty when only one or zero detail lines apply.
+	 *
+	 * @param turnPrompt Output: whose-turn-it-is line.
+	 * @param detailPromptOne Output: first detail line.
+	 * @param detailPromptTwo Output: second detail line (may be empty).
+	 * @param detailPromptThree Output: third detail line (may be empty).
+	 *
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
+	 * @date Created: Jun 29, 2026
+	 * @date Last Modified: Jul 03, 2026 (TMFR-03: split long detail line onto detailPromptThree)
+	 */
+	void buildMovePromptText(wxString & turnPrompt, wxString & detailPromptOne, wxString & detailPromptTwo, wxString & detailPromptThree) const;
 
 	/// recomputes reserved prompt lines for move phase using current constrained width
 	void refreshMovePromptReservation(wxDC &dc, int panelWidth, int panelHeight);
