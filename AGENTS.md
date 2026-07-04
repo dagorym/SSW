@@ -418,4 +418,5 @@ All modules compile with: `-Wall -Woverloaded-virtual -DLINUX -fprofile-arcs -ft
 - Design documentation: `doc/DesignNotes.md`
 - User Guide: `doc/UsersGuide.md`
 - Game rules for tactical combat: `doc/rules/tactical_operations_manual.md`
+- Game rules for strategic game: `doc/rules/second-sathar-war-rules.md`
 - Tactical test source-contract catalog: `doc/test-contracts.md` (detailed per-test contracts extracted from this file; read it only when modifying the specific tactical tests it covers)
