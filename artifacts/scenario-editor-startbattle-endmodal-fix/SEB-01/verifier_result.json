@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01/verifier_report.md",
+    "artifacts/scenario-editor-startbattle-endmodal-fix/SEB-01/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "fixes-seb01-verifier-20260703",
+  "documentation_accuracy_summary": [
+    "doc/test-contracts.md's new SEB-01 entry accurately describes the removed Hide()/Show() calls, the exact discriminating behavioral assertions in the two new BattleSimGuiLiveTest tests, the reconciled source-contract counts (0x Hide, 1x ShowModal, 0x Show), and explicitly and correctly defers the end-to-end no-assert runtime verification to a REQUIRED user manual-verification pass, matching the task's explicit scope constraint that this end-to-end path is unsafe to drive in the headless harness.",
+    "doc/rules/tactical_operations_manual.md is confirmed unchanged (0 diff) across the full SEB-01 change range, satisfying the non-negotiable constraint in AGENTS.md.",
+    "No other documentation files were touched or needed updates; AGENTS.md and doc/UsersGuide.md do not document BattleSim scenario-launch modal topology, so there was nothing to reconcile there, as the Documenter's commit message correctly notes."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "PASS",
+  "status": "complete",
+  "task_id": "SEB-01",
+  "test_sufficiency_summary": [
+    "The two new BattleSimGuiLiveTest tests are genuinely behavioral: they construct real ScenarioEditorGUI/ScenarioDialog test-peer objects, click the real button handlers (clickStartBattle()/clickScenario1()), and assert on live runtime state (dialog->IsShown() while the nested FBattleScreen top-level window is present, dialog->getFinalizeCallCount()==1, and FBattleScreen construct/destroy/live-instance counters) rather than on source text.",
+    "Read the pre-fix code path mentally against the discriminating assertion: with the removed Hide() restored, dialog->IsShown() would be false at the moment the nested FBattleScreen's top-level window appears (Hide() sets shown=false synchronously before ShowModal() is entered), so testScenarioEditorStartBattleDoesNotHideDialogAndFinalizesOnce would fail against unfixed code, and testScenarioDialogScenario1DoesNotHideDialogAndRemainsReplayable would likewise observe dialogShownDuringFirstBattleScreen==false. Both tests satisfy the repository's Behavioral Verification policy (AGENTS.md).",
+    "FTacticalBattleScreenElectricalFireTest::testBattleSimLaunchPathUsesModalDialogFlowIntoBattleScreen was correctly reconciled to assert 0x 'Hide();', 1x 'bb.ShowModal();', 0x 'Show();' per onScenarioN body, matching the shipped diff exactly (verified by reading both the diff and the current test source); this is used only as a structural supplement alongside the behavioral coverage, consistent with policy.",
+    "Independently rebuilt from a clean worktree state and reran all required suites: GuiTests 67/67 passing (one run showed a transient 'centered' assertion flake on testLocalGameDialogLaunchesPredefinedAndCustomModalChains, which is the documented pre-existing flake unrelated to SEB-01; an immediate rerun passed clean at 67/67), TacticalTests 253/253 passing, SSWTests 198/198 passing (one run showed a transient, unrelated flake in FFleetTest::testDecTransitTime outside the SEB-01 change surface; an immediate rerun passed clean at 198/198). Counts match the prior baselines (GUI 67, Tactical 253, SSW 198)."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
