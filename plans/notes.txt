@@ -46,13 +46,11 @@ data:
 
   ---
 
-Seeker missiles
-* 
 
 General UI issues
-* no minimize button in the Battlebard titlebar
-* error when clicking the x button in the title bar mid game
-    ../src/gtk/dialog.cpp(193): assert "Assert failure" failed in EndModal(): either wxDialog:EndModal called twice or ShowModal wasn't called
+* no minimize button in the Battlebard titlebar 
 
 General Gameplay
 * If a ship still has MR left at the end of its turn, it should be able to make a single facing change without moving.
+
+ 
