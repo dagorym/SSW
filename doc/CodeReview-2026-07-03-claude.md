@@ -613,6 +613,7 @@ A pragmatic sequencing that front-loads correctness and de-risks the bigger refa
    `FBattleBoard`; delete dead files/commented-out code.
 
 **Next (structural, sequenced):**
+
 5. Save-format hardening (version header, fixed-width, error propagation, persist current
    defense + ID counters) — one coordinated change, since it breaks save compatibility once.
 6. Deterministic RNG seam; then start the source-contract → behavioral burn-down (the two
@@ -623,6 +624,7 @@ A pragmatic sequencing that front-loads correctness and de-risks the bigger refa
    BattleSim scenarios and strategic OOB.
 
 **Then (feature work — the missing game):**
+
 9. Tactical Repair Turn (unlocks the damage table's intended balance; needs the turn counter
    anyway) → strategic Repair/SCC system → supply & rearming → break-off → docking/basing →
    evasive maneuvers, planet LOS, ship orbits, breakup rolls → scenario victory conditions →
