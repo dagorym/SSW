@@ -1184,38 +1184,63 @@ void FGame::cleanUpShips(){
 
 	// loop over all the player's fleets and check their ships
 	for (PlayerList::iterator pItr = m_players.begin(); pItr < m_players.end(); pItr++){
-		FleetList fList = (*pItr)->getFleetList();
+		FleetList &fList = (*pItr)->getFleetList();  // live reference, not a copy
+		std::vector<FFleet *> emptiedFleets;  // fleets to remove once the fleet scan below completes
 		for (FleetList::iterator fItr = fList.begin(); fItr < fList.end(); fItr++){
-			VehicleList sList = (*fItr)->getShipList();
-			for (VehicleList::iterator sItr = sList.begin(); sItr < sList.end(); sItr ++){
-				if ((*sItr)->getHP() <= 0){  // if the ship is destroyed remove it
-					(*pItr)->addDestroyedShip(*sItr);  // add the ship to the player's destroyed ship list
-					// update destroyed ship counters
-					if ((*pItr)->getName()=="UPF"){
-						m_lostTendayUPF++;
-					} else {
-						m_lostTendaySathar++;
-						if ((*sItr)->getType()!= "Fighter"){
-							m_lostSatharShips++;
-						}
-						if ((*sItr)->getType() == "HvCruiser"){
-							m_lostHC++;
-						}
-						if ((*sItr)->getType() == "AssaultCarrier"){
-							m_lostAC++;
-						}
-					}
-					sItr = sList.erase(sItr);  // remove the ship from the fleet.
+			FFleet *fleet = *fItr;
+			const VehicleList &sList = fleet->getShipList();  // live reference, not a copy
+			// first pass: collect the IDs of destroyed ships without mutating the list we're
+			// iterating (avoids the classic erase-while-iterating skip bug), and reload survivors.
+			std::vector<unsigned int> destroyedIDs;
+			for (VehicleList::const_iterator sItr = sList.begin(); sItr != sList.end(); sItr++){
+				if ((*sItr)->getHP() <= 0){  // if the ship is destroyed, remember it for removal
+					destroyedIDs.push_back((*sItr)->getID());
 				} else { // reload it's weapons
 					///@todo this should eventually check for being in supply
 					(*sItr)->reload();
 				}
 			}
-			if (sList.size() == 0){  // if the fleet is now empty remove it
-				unsigned int sysID = (*fItr)->getLocation();
-				m_universe->getSystem(sysID)->removeFleet((*fItr)->getID());  // remove the fleet from the system it's in
-				fItr = fList.erase(fItr);  // remove the fleet from the player's list.
+			// second pass: remove each destroyed ship from the real fleet exactly once and
+			// record it on the owning player exactly once.
+			for (std::vector<unsigned int>::iterator idItr = destroyedIDs.begin(); idItr != destroyedIDs.end(); idItr++){
+				FVehicle *ship = fleet->removeShip(*idItr);  // remove the ship from the real fleet
+				if (ship == NULL){
+					continue;  // already gone; do not double-record or double-count
+				}
+				(*pItr)->addDestroyedShip(ship);  // add the ship to the player's destroyed ship list
+				// update destroyed ship counters
+				if ((*pItr)->getName()=="UPF"){
+					m_lostTendayUPF++;
+				} else {
+					m_lostTendaySathar++;
+					if (ship->getType()!= "Fighter"){
+						m_lostSatharShips++;
+					}
+					if (ship->getType() == "HvCruiser"){
+						m_lostHC++;
+					}
+					if (ship->getType() == "AssaultCarrier"){
+						m_lostAC++;
+					}
+				}
 			}
+			if (fleet->getShipList().size() == 0){  // if the fleet is now empty, mark it for removal
+				emptiedFleets.push_back(fleet);
+			}
+		}
+		// remove any emptied fleets from the real player and their real system, then delete
+		// the now-orphaned fleet objects. This runs after the fList scan above so we never
+		// erase from fList while iterating it.
+		for (std::vector<FFleet *>::iterator efItr = emptiedFleets.begin(); efItr != emptiedFleets.end(); efItr++){
+			FFleet *fleet = *efItr;
+			unsigned int fleetID = fleet->getID();
+			unsigned int sysID = fleet->getLocation();
+			(*pItr)->removeFleet(fleetID);  // remove the fleet from the player's real list
+			FSystem *sys = m_universe->getSystem(sysID);
+			if (sys != NULL){
+				sys->removeFleet(fleetID);  // remove the fleet from the system it's in
+			}
+			delete fleet;  // no other owner remains; free the emptied fleet
 		}
 	}
 }
