@@ -1,0 +1,44 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Fix Critical defect C5: FMainFrame::onClose() tested result == wxID_OK before saving, but a wxYES_NO|wxCANCEL wxMessageDialog never returns wxID_OK (only wxID_YES, wxID_NO, or wxID_CANCEL), so choosing "Yes, save" silently discarded the game without saving. Changed the save-branch check to result == wxID_YES and updated the onClose() Doxygen header in include/FMainFrame.h to document the Yes/No/Cancel behavior.
+
+Modified files:
+- src/FMainFrame.cpp
+- include/FMainFrame.h
+
+Acceptance criteria to validate (from Planner):
+- Yes invokes the save path before reset
+- No resets without saving
+- Cancel aborts the close (no save, no reset)
+
+Create test files in:
+- tests/gui/StrategicGuiLiveTest.cpp (or a new FMainFrame-focused GUI live test alongside it) per AGENTS.md GUI testing conventions
+
+Implementation context for testing:
+- File src/FMainFrame.cpp, function FMainFrame::onClose(wxCommandEvent&) at approximately line 298: constructs a wxMessageDialog(this, ..., wxYES_NO|wxCANCEL|wxYES_DEFAULT|wxICON_QUESTION) and calls ShowModal().
+- Prior behavior: `if(result==wxID_CANCEL){ return; }` then `if (result == wxID_OK){ onSave(event); }` then unconditional `resetGame();`. Because the dialog style has no OK button, the wxID_OK branch was dead code, so clicking Yes fell through to resetGame() without ever calling onSave() -- the game was discarded silently.
+- Fix: changed `result == wxID_OK` to `result == wxID_YES` so Yes now calls onSave(event) before resetGame(). No still falls through to resetGame() without saving (unchanged). Cancel still returns early via the existing wxID_CANCEL check (unchanged, no save, no reset).
+- Scope was intentionally limited to this one comparison plus the onClose() Doxygen header in include/FMainFrame.h; the save/open dialog path and broader Cancel hardening (roadmap item H15) were explicitly out of scope and not touched.
+- onSave(wxCommandEvent&) is defined in src/FMainFrame.cpp and itself may show further file-picker/save dialogs; onClose() is only the entry point being fixed here.
+- resetGame() (src/FMainFrame.cpp ~line 311) clears the drawing panel, deletes m_game, sets it to NULL, disables relevant menu items, and refreshes the frame -- unchanged by this fix.
+- Behavioral testing of Yes/No/Cancel requires driving the real wxMessageDialog modal (e.g. via the WXGuiTestHarness showModalWithAction/runVoidFunctionWithAction helpers documented in AGENTS.md) and asserting onSave()/resetGame() side effects (e.g. m_game becomes NULL only after the expected path, and a save side effect -- such as a file write or a save-invoked flag/mock hook -- is observed only on Yes). A source-text check alone (e.g. grepping for wxID_YES) is insufficient per AGENTS.md's mandatory behavioral-test policy and must only supplement a real behavioral assertion.
+
+Suggested test command(s):
+- make (repo root)
+- make -C src/core; make -C src/strategic; make -C src/ships; make -C src/weapons; make -C src/defenses (non-GUI module builds, ran individually)
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+
+Existing validations expected to fail only because approved behavior changed:
+- `make` (repo root) and `cd tests/gui && make && xvfb-run -a ./GuiTests` cannot currently be run to completion in this sandbox because wxWidgets is not built/installed (wx-config missing entirely, confirmed pre-existing and unrelated to this diff -- see validation_outcome for full evidence). The Tester must attempt these commands in a properly provisioned environment; if the same wx-config gap persists there, escalate the environment gap rather than treating it as a defect in this change.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-5
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
