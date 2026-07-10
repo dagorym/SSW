@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-3/implementer_report.md",
+    "artifacts/phase1-critical-defects/CRIT-3/tester_prompt.txt",
+    "artifacts/phase1-critical-defects/CRIT-3/implementer_result.json"
+  ],
+  "branch_name": "coord-phase1-critical-defects-CRIT-3-implementer-20260710",
+  "changed_files": [
+    "src/ships/FVehicle.cpp",
+    "include/ships/FVehicle.h"
+  ],
+  "code_commit_hash": "5ff1c210dd8a8942080cfebea72f7df4e421505b",
+  "pass_label": null,
+  "status": "Success",
+  "task_id": "CRIT-3",
+  "validation_commands": [
+    "make (repo root)",
+    "cd tests && make && ./SSWTests",
+    "cd src/core && make; cd src/defenses && make; cd src/weapons && make; cd src/ships && make; cd src/strategic && make (targeted non-GUI module builds)",
+    "Standalone AddressSanitizer smoke harness (not part of the repo test suite): compiled core+defenses+weapons+ships sources directly with g++ -fsanitize=address against an FFrigate save()/load() round trip, then called getCurrentDefense()->getType() and exercised takeDamage()"
+  ],
+  "validation_outcome": "The repo-root `make` and `cd tests && make && ./SSWTests` commands from the task's Validation section could not be run to completion in this sandbox: wxWidgets 3.3.1/wx-config and CppUnit are not installed and cannot be installed (no sudo; apt candidates exist but require a password), so libgui.a and every tests/* target fail at the wx-config/cppunit dependency step before reaching the ships module. This is a pre-existing environment gap unrelated to this change: it reproduces identically on an unmodified checkout (libgui.a is the second prerequisite built by src/Makefile's `all` target, ahead of libships.a) and blocks all six CRIT-1..CRIT-6 worktrees equally. As a substitute, every non-GUI module that depends on ships (core, defenses, weapons, ships, strategic) was built directly via each module's own Makefile and compiles cleanly with zero new warnings or errors after this change (tactical/gui modules fail only on missing wx headers, same as before this change). In addition, a standalone AddressSanitizer smoke harness (script and source kept outside the repo, under the session scratchpad, not part of tests/) was built and run: with the fix in place, save() then load() an FFrigate, call getCurrentDefense()->getType(), and 25 takeDamage() calls all pass cleanly under ASan (heap-use-after-free detection); a differential run with the fix `git stash`-ed out reproduces a heap-use-after-free at the exact getCurrentDefense() read, freed inside FVehicle::load()'s `delete m_defenses[i]` loop (src/ships/FVehicle.cpp:219) -- confirming both the defect and the fix. All changes were restored from the stash after the differential run, verified via `git diff` to match the committed diff exactly."
+}
