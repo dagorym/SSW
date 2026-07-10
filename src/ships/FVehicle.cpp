@@ -226,6 +226,18 @@ int FVehicle::load(std::istream &is) {
 		d->load(is);
 		m_defenses.push_back(d);
 	}
+	// m_defenses was just rebuilt above (and any prior defenses, including
+	// the constructor-time default, were deleted); m_currentDefense must be
+	// re-pointed at a live entry so getCurrentDefense() never returns a
+	// dangling pointer. Reset to the base defense at index 0 when present;
+	// otherwise fabricate a safe default FNone so the pointer is always valid.
+	if (!m_defenses.empty()){
+		m_currentDefense = m_defenses[0];
+	} else {
+		FDefense *d = new FNone();
+		m_defenses.push_back(d);
+		m_currentDefense = d;
+	}
 	return 0;
 }
 
