@@ -102,20 +102,51 @@ void FGameConfig::reset(){
 	}
 }
 
+size_t FGameConfig::computeSafeTerminatorIndex(long readlinkResult, size_t bufferCapacity)
+{
+	if (bufferCapacity == 0) {
+		return 0;
+	}
+	if (readlinkResult <= 0) {
+		// readlink() failure (or a degenerate zero-length result); there is
+		// no valid data in the buffer, so terminate at index 0.
+		return 0;
+	}
+	size_t index = static_cast<size_t>(readlinkResult);
+	if (index >= bufferCapacity) {
+		// Never write past the buffer, even if the raw result is
+		// (unexpectedly) at or beyond capacity.
+		index = bufferCapacity - 1;
+	}
+	return index;
+}
+
 FGameConfig::FGameConfig(){
 	// determine the base path to the game's directory structure
 	// read in the path.  They way to do this varies by OS.
-	int bufsize = 1000;
 #ifdef LINUX
 	// setup the buffer
 	char buf[1000];
-	size_t size = readlink("/proc/self/exe", buf, bufsize);
-	buf[size] = 0;  // add the null termination
-	std::string path(buf);
-	path = path.substr(0, path.find_last_of('/'));
-	m_executablePath = ensureTrailingSeparator(path);
-	m_basePath = path.substr(0, (path.find_last_of('/')) + 1);
+	// Reserve one byte of capacity for the null terminator, and capture the
+	// result in a signed type so a readlink() failure (-1) is never
+	// misinterpreted as a huge unsigned length.
+	ssize_t size = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+	if (size <= 0) {
+		// readlink() failed; fall back to a safe, defined empty path state
+		// instead of writing to an out-of-bounds or undefined index.
+		m_executablePath.clear();
+		m_basePath.clear();
+	} else {
+		const size_t terminatorIndex =
+				computeSafeTerminatorIndex(static_cast<long>(size), sizeof(buf));
+		buf[terminatorIndex] = 0;  // add the null termination, always in-bounds
+		std::string path(buf);
+		path = path.substr(0, path.find_last_of('/'));
+		m_executablePath = ensureTrailingSeparator(path);
+		m_basePath = path.substr(0, (path.find_last_of('/')) + 1);
+	}
 #else
+	int bufsize = 1000;
 	wchar_t buf[1000];
 	DWORD size = GetModuleFileName(NULL, buf, bufsize);
 	std::wstring wpath(buf);
