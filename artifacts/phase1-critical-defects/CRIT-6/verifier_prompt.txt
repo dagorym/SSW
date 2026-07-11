@@ -1,0 +1,87 @@
+Your role is 'verifier'. Your task is as follows:
+
+Verify subtask CRIT-6: the fix for the out-of-bounds write in
+FGameConfig::FGameConfig() (readlink("/proc/self/exe", ...) previously stored
+its return in a size_t and unconditionally wrote buf[size] = 0).
+
+Shared artifact directory (repository-root-relative):
+- artifacts/phase1-critical-defects/CRIT-6
+
+Branch / worktree:
+- Branch: coord-phase1-critical-defects-CRIT-6-tester-20260710
+- All Implementer and Tester changes are committed on this branch.
+
+Acceptance criteria to verify:
+1. Normal executable path: m_basePath / m_executablePath resolve as before.
+2. readlink failure (-1) causes no OOB write and leaves config in a safe,
+   defined state (m_basePath / m_executablePath empty).
+3. A path at/above buffer capacity writes no byte past buf.
+4. Repo builds; existing suites still pass.
+
+Files changed by the Implementer (inspect for the fix):
+- src/core/FGameConfig.cpp
+    - constructor captures readlink() return in a signed ssize_t, requests
+      sizeof(buf) - 1 bytes, computes the terminator index via
+      computeSafeTerminatorIndex(), and on failure (size <= 0) clears
+      m_basePath / m_executablePath.
+    - new pure static helper computeSafeTerminatorIndex(long readlinkResult,
+      size_t bufferCapacity): returns 0 for bufferCapacity==0 or
+      readlinkResult<=0, otherwise clamps to bufferCapacity-1 when the raw
+      result is at/above capacity.
+- include/core/FGameConfig.h
+    - public static declaration + Doxygen for computeSafeTerminatorIndex();
+      updated constructor Doxygen.
+
+Files changed by the Tester (behavioral coverage):
+- tests/core/FGameConfigTest.cpp
+- tests/core/FGameConfigTest.h
+  Added 7 CppUnit cases (registered via CPPUNIT_TEST in the header; the fixture
+  is already registered in tests/SSWTests.cpp):
+    testComputeSafeTerminatorIndexWithinBoundsReturnsRawResult
+    testComputeSafeTerminatorIndexClampsWhenResultEqualsCapacity
+    testComputeSafeTerminatorIndexClampsWhenResultExceedsCapacity
+    testComputeSafeTerminatorIndexReturnsZeroOnNegativeReadlinkResult
+    testComputeSafeTerminatorIndexReturnsZeroOnZeroReadlinkResult
+    testComputeSafeTerminatorIndexReturnsZeroWhenBufferCapacityZero
+    testComputeSafeTerminatorIndexNeverWritesPastBufferAcrossBoundaryValues
+  The last is an end-to-end guarded-buffer test that reproduces the
+  constructor's exact write pattern buf[computeSafeTerminatorIndex(...)] = 0
+  and asserts no byte outside an 8-byte buffer is touched for readlink results
+  { -1, 0, 8, 9, 100 }.
+
+Commit references:
+- Implementer code commit: 7ab17897
+- Tester test commit: cec2da37
+- Tester artifact commit: this second commit (see git log on the branch)
+
+How to build and run (wxWidgets 3.3.2 and CppUnit are installed in this
+environment; nothing is blocked):
+- Top-level build: run `make` at the repo root (exit 0 expected).
+- Tests: build with `make` inside tests/, then run `./SSWTests` WITH THE
+  WORKING DIRECTORY SET TO tests/ so cwd-relative source lookups resolve.
+- Expected result: OK (205 tests). Baseline without the new tests is 198,
+  so the count increase (+7) confirms the new cases link and execute.
+
+Important note on test execution: several pre-existing
+FGameHeaderDependencyTest cases resolve source files relative to the current
+working directory and will report "Expected at least one candidate file path to
+be readable" if ./SSWTests is launched from a directory other than tests/.
+This is a pre-existing, cwd-dependent condition unrelated to CRIT-6; run the
+suite from tests/ to observe the clean OK (205 tests).
+
+Regression evidence (fails-against-unfixed): a standalone driver reproducing
+the pre-fix logic buf[static_cast<size_t>(readlinkResult)] = 0 produced
+out-of-bounds indices for readlink results -1, 8, 9, and 100 (capacity 8) —
+exactly the cases the new assertions reject; the fixed helper clamps all
+in-bounds.
+
+Startup guidance:
+- Blocking inputs (acceptance criteria, implementation context, branch, and
+  artifacts) are all present. Begin verification immediately and continue in the
+  same run; do not stop after scope confirmation or diff review.
+
+Completion gate:
+- Report success only after you have independently rebuilt and re-run the suite
+  to completion, confirmed all four acceptance criteria, confirmed all changes
+  are committed with a clean working tree, and written your required verifier
+  artifacts to artifacts/phase1-critical-defects/CRIT-6.
