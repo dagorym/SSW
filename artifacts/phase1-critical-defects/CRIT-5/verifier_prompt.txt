@@ -1,0 +1,76 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Validated the CRIT-5 fix to FMainFrame::onClose() (src/FMainFrame.cpp, include/FMainFrame.h), which changed the save-branch comparison from the dead result == wxID_OK to result == wxID_YES so choosing Yes on the wxYES_NO|wxCANCEL save-confirmation dialog now actually invokes onSave() before resetGame(); No still resets without saving and Cancel still aborts the close with no save and no reset. Reviewed the Implementer's Doxygen update on FMainFrame::onClose() (include/FMainFrame.h) against the shipped fix and the actual code at src/FMainFrame.cpp:298-309, and confirmed it accurately documents the Yes/No/Cancel behavior -- no correction was needed. Checked doc/UsersGuide.md's Close menu description (line 83) per plan section 5's low-likelihood flag: it already describes the intended Yes/No behavior ('if you wish to save, it behaves just like selecting the Save option ... after the game is saved or the save is declined, the current game is cleared'), which was always the correct behavior -- only the code was wrong -- so no wording change was needed. Annotated doc/synthesized-roadmap.md's C5 defect row as resolved, pointing at CRIT-5, per the plan's optional traceability guidance, mirroring the sibling CRIT-1/CRIT-3/CRIT-6 documenter precedent. doc/rules/tactical_operations_manual.md was not touched (non-negotiable constraint). No implementation or test behavior was changed.
+
+Acceptance criteria to verify:
+- Answering Yes to the close prompt invokes the save path (onSave()) before the game is reset (resetGame()).
+- Answering No resets without saving.
+- Cancel aborts the close without resetting or saving.
+- Repo builds; existing suites still pass.
+
+Implementation branch or worktree context:
+- Branch: coord-phase1-critical-defects-CRIT-5-documenter-20260710. Base branch for the feature diff: coord-phase1-critical-defects (merge-base 984f9c3f). All Implementer, Tester, and Documenter changes are committed on this branch.
+- Fix under test: src/FMainFrame.cpp FMainFrame::onClose(wxCommandEvent&) changed `if (result == wxID_OK)` to `if (result == wxID_YES)` at line ~305 (commit d31daf53); the wxID_CANCEL early-return and the subsequent resetGame() call are unchanged.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/FMainFrame.cpp (Implementer) -- FMainFrame::onClose(): changed `if (result == wxID_OK)` to `if (result == wxID_YES)` at line ~305; wxID_CANCEL early-return and the subsequent resetGame() call are unchanged.
+- include/FMainFrame.h (Implementer) -- updated the onClose() Doxygen block to document the Yes/No/Cancel behavior (Yes saves via onSave() before resetGame(); No resets without saving; Cancel aborts entirely); @author appended with the implementing model; @date Last Modified bumped.
+- tests/gui/StrategicGuiLiveTest.h and tests/gui/StrategicGuiLiveTest.cpp (Tester) -- added 3 new behavioral CppUnit cases driving the real wxMessageDialog modal via GTK response codes: testMainFrameOnCloseYesInvokesSaveBeforeReset (GTK_RESPONSE_YES; asserts onSave()'s wxFileDialog was observed and that the Save menu item was still enabled at the moment that dialog appeared, proving save ran before resetGame(), and that Save/Close are disabled after onClose() returns), testMainFrameOnCloseNoResetsWithoutSaving (GTK_RESPONSE_NO; asserts no file dialog appeared while Save/Close still end up disabled), testMainFrameOnCloseCancelAbortsWithoutSaveOrReset (GTK_RESPONSE_CANCEL; asserts no file dialog appeared and Save/Close remain enabled, i.e. resetGame() did not run).
+- tests/gui/Makefile (Tester, test-build-only) -- added `pkg-config --cflags gtk+-3.0` to CXXFLAGS (mirroring the existing src/tactical/Makefile convention) so the new tests can drive native GTK wxMessageDialog/wxFileDialog widgets directly; does not affect any production Makefile.
+- doc/synthesized-roadmap.md (Documenter, documentation-only) -- appended a '[RESOLVED — see CRIT-5: ...]' note to the C5 defect table row for traceability, per plan section 5 (optional). No other rows or sections touched.
+- include/FMainFrame.h (Documenter review, no edit) -- verified the Implementer's onClose() Doxygen block against the shipped code and found it already accurate; made no change.
+- doc/UsersGuide.md (Documenter review, no edit) -- verified the existing Close menu description (line 83) already states the correct Yes/No save-then-clear behavior; made no change.
+- doc/rules/tactical_operations_manual.md: NOT touched (non-negotiable constraint respected).
+
+Commands executed:
+- env -C <worktree> myteam get role documenter
+- env -C <worktree> myteam get skill execution-start
+- env -C <worktree> myteam get skill documenter/preflight
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input artifacts/phase1-critical-defects/CRIT-5/documenter_prompt.txt --repo-root <worktree>
+- env -C <worktree> myteam get skill documenter/diff-review
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 984f9c3f --head HEAD
+- git show d31daf53 -- src/FMainFrame.cpp include/FMainFrame.h
+- grep -n 'void FMainFrame::onClose' -A 25 src/FMainFrame.cpp
+- grep -n -i 'close|save the game|save before' doc/UsersGuide.md
+- grep -n -i 'onClose|wxID_OK|save.*before.*clos' doc/DesignNotes.md AGENTS.md CLAUDE.md
+- grep -n 'CRIT-5|C5' -A 60 plans/phase1-critical-defects-plan.md
+- git -C <SSW> log coord-phase1-critical-defects-CRIT-1-documenter-20260710 --oneline
+- git -C <SSW> show 9e2097be (CRIT-1 documenter roadmap-annotation precedent)
+- git -C <SSW> show 0908506d:artifacts/phase1-critical-defects/CRIT-3/documenter_report.md
+- git -C <SSW> show coord-phase1-critical-defects-CRIT-6-documenter-20260710:doc/synthesized-roadmap.md
+- env -C <worktree> myteam get skill diff-first-editing
+- env -C <worktree> myteam get skill documenter/commit-flow
+- env -C <worktree> myteam get skill two-commit-artifact-flow
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root <worktree> --phase docs
+- git add doc/synthesized-roadmap.md
+- git commit -F <msg-file>
+- env -C <worktree> myteam get skill documenter/artifact-writing
+- env -C <worktree> myteam get skill documenter/verifier-handoff
+- python3 .myteam/documenter/artifact-writing/write_documenter_artifacts.py --input <input.json> --artifact-dir artifacts/phase1-critical-defects/CRIT-5 --repo-root <worktree>
+
+Final test outcomes:
+- No new test runs were performed by the Documenter; this change is documentation-only (a single roadmap traceability annotation) and does not touch executable or test code.
+- Governing evidence remains the Tester's results carried forward from artifacts/phase1-critical-defects/CRIT-5/tester_report.md and tester_result.json: tests/gui/GuiTests 70/70 passed under xvfb-run (including the 3 new CRIT-5 tests testMainFrameOnCloseYesInvokesSaveBeforeReset, testMainFrameOnCloseNoResetsWithoutSaving, testMainFrameOnCloseCancelAbortsWithoutSaveOrReset), tests/SSWTests 198/198 passed (run with cwd=tests), and a differential regression check confirming testMainFrameOnCloseYesInvokesSaveBeforeReset fails deterministically against the unfixed (result == wxID_OK) code and passes with the fix, while the No/Cancel tests remain green in both cases.
+
+Plan or evaluation context guidance:
+- Plan path: plans/phase1-critical-defects-plan.md (CRIT-5 defect, section 3 subtask and section 5 Overall Documentation Impact).
+- Comparison base: parent commit 984f9c3f (the commit immediately before the implementer's d31daf53 fix commit); also the merge-base with the coord-phase1-critical-defects coordination branch.
+
+Convention-file guidance:
+- AGENTS.md build/test entry points: repo-root `make`; top-level suite `cd tests && make && ./SSWTests`; GUI suite `cd tests/gui && make && xvfb-run -a ./GuiTests`.
+- Note: several pre-existing FGameHeaderDependencyTest cases in SSWTests resolve source files relative to the current working directory and report spurious 'file not readable' failures unless ./SSWTests is launched from tests/ -- this is pre-existing and unrelated to CRIT-5.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-5
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
