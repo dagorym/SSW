@@ -1,0 +1,71 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Validated CRIT-4 documentation impact: SelectCombatGUI::onAttack() translates TwoPlanetsGUI::ShowModal()'s raw button identifiers (1/2 via EndModal(1)/EndModal(2)) into a 0-based m_system->getPlanetList() index (button 1 -> 0, button 2 -> 1, any other/cancel value -> 0) before the three getPlanetList()[planet] call sites. Reviewed the Implementer's Doxygen update on SelectCombatGUI::onAttack() (src/gui/SelectCombatGUI.cpp) and confirmed it is accurate and complete per repository policy (no code-doc edit needed). Annotated the C4 row of doc/synthesized-roadmap.md as resolved for traceability, matching the pattern already established by the CRIT-1 documenter run.
+
+Acceptance criteria to verify:
+- Selecting the first planet resolves against getPlanetList()[0]; the second against getPlanetList()[1].
+- No path indexes getPlanetList() out of range for a 2-planet system, including on cancel/close.
+- Repo builds; existing suites still pass.
+- Documentation Impact (plan): Update the Doxygen header on SelectCombatGUI::onAttack(); no user-facing docs expected -- verified accurate, no further edits required.
+
+Implementation branch or worktree context:
+- Fix commit bf9dbec0 (Implementer) in src/gui/SelectCombatGUI.cpp translates TwoPlanetsGUI::ShowModal() (1/2) into a 0-based planet index before the three m_system->getPlanetList()[planet] call sites (attack target/CombatLocationGUI, station lookup, destroyStation). The same commit updated the Doxygen header on onAttack() to describe this translation; that update was reviewed and found accurate.
+- include/gui/TwoPlanetsGUI.h (wxFormBuilder generated, 'DO NOT EDIT') still calls EndModal(1)/EndModal(2) from OnButton1()/OnButton2(), unchanged as required by the plan.
+- include/gui/SelectCombatGUI.h was left unedited by the Implementer (no signature change) and needed no Documenter edit either.
+- Test commit bd6bce361a3f724bb3d533b935157c11e54efa95 (Tester) added tests/gui/StrategicGuiLiveTest.cpp/.h coverage: testSelectCombatAttackTranslatesTwoPlanetsSelectionToStationIndex drives the real onAttack() -> TwoPlanetsGUI -> SelectResolutionGUI -> FBattleScreen modal chain for EndModal() codes 1, 2, and a cancel-like value (42), asserting FBattleScreen::getStation() reports getPlanetList()[0], [1], and [0] respectively.
+- Documenter stage (this run) made a single documentation-only change: doc/synthesized-roadmap.md, commit 9eb1430d02bcbbfdd46186afd71194c350d3b429.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/gui/SelectCombatGUI.cpp (Implementer, commit bf9dbec0 -- planet-index translation fix and Doxygen header update)
+- tests/gui/StrategicGuiLiveTest.cpp (Tester, commit bd6bce36 -- new behavioral regression test)
+- tests/gui/StrategicGuiLiveTest.h (Tester, commit bd6bce36 -- new test declaration/registration)
+- doc/synthesized-roadmap.md (Documenter, commit 9eb1430d -- C4 row annotated resolved, traceability only, optional per plan)
+- artifacts/phase1-critical-defects/CRIT-4/implementer_report.md, implementer_result.json (Implementer artifacts)
+- artifacts/phase1-critical-defects/CRIT-4/tester_report.md, tester_result.json, tester_prompt.txt, documenter_prompt.txt (Tester artifacts)
+- artifacts/phase1-critical-defects/CRIT-4/documenter_report.md, documenter_result.json, verifier_prompt.txt (Documenter artifacts -- this stage)
+
+Commands executed:
+- git -C <worktree> log --oneline -15
+- git -C <worktree> show bf9dbec0 -- src/gui/SelectCombatGUI.cpp
+- grep -n getPlanetList|onAttack|planet src/gui/SelectCombatGUI.cpp
+- grep -n onAttack include/gui/SelectCombatGUI.h
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <handoff> --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base bf9dbec0~1 --head bd6bce36
+- grep -n -i CRIT-4|C4 plans/phase1-critical-defects-plan.md
+- grep -n -i C4|CRIT-4|TwoPlanetsGUI|SelectCombatGUI doc/synthesized-roadmap.md
+- grep -n -i planet|TwoPlanets|attack doc/UsersGuide.md
+- git add doc/synthesized-roadmap.md
+- git commit -F <doc commit message file> -- documentation commit 9eb1430d02bcbbfdd46186afd71194c350d3b429
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root <worktree> --phase docs --documentation-commit-hash 9eb1430d02bcbbfdd46186afd71194c350d3b429
+
+Final test outcomes:
+- Documentation-only change (doc/synthesized-roadmap.md, a one-line table-cell annotation); no source, header, or test files were modified by the Documenter, so no rebuild or retest was required beyond the Tester's confirmed results.
+- Carried forward from Tester: make (repo root) full build succeeds.
+- Carried forward from Tester: cd tests/gui && make && xvfb-run -a ./GuiTests -- OK (68 tests), 0 failures, including testSelectCombatAttackTranslatesTwoPlanetsSelectionToStationIndex.
+- Carried forward from Tester: cd tests && ./SSWTests -- OK (198 tests), 0 failures (non-GUI suite, no regressions).
+
+Plan or evaluation context guidance:
+- Governing plan: plans/phase1-critical-defects-plan.md, CRIT-4 subtask (lines 87-96).
+- Plan's Documentation Impact hint: 'Update the Doxygen header on SelectCombatGUI::onAttack(). No user-facing docs expected.' -- confirmed satisfied by the Implementer's commit bf9dbec0; no further edits made.
+- Plan line 134: 'Optional (Documenter): annotate doc/synthesized-roadmap.md to mark C1-C6 as resolved once merged (traceability only; not required for feature correctness).' Applied to the C4 row in this run, matching the precedent already set for C1 by a concurrent sibling documenter pass.
+- Comparison base for this review: bf9dbec0 (implementer fix commit) through bd6bce36 (tester test commit) on branch coord-phase1-critical-defects-CRIT-4-tester-20260710.
+
+Convention-file guidance:
+- AGENTS.md Doxygen policy: full header blocks required for classes/major functions (brief + full description, @param, @author with model+reasoning level, Created/Last Modified dates, additive author list). The Implementer's onAttack() update conforms to this exactly (author list preserved, Last Modified updated to Jul 10, 2026).
+- AGENTS.md Non-negotiable Constraints: doc/rules/tactical_operations_manual.md must not be edited -- not touched, not implicated by this GUI-only fix.
+- AGENTS.md Single-Source-of-Truth Rule: project facts belong in exactly one canonical location -- respected by not duplicating the planet-index translation explanation into doc/UsersGuide.md (already generic/correct) or doc/test-contracts.md (tactical-only scope, this test is strategic/GUI); the roadmap annotation only adds a pointer/traceability note, not a duplicated fact.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-4
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
