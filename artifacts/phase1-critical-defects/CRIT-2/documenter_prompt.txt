@@ -1,0 +1,77 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary (CRIT-2):
+- The Implementer fixed Critical defect C2: FGame::checkForVictory() evaluated
+  the Sathar retreat conditions 4 and 5 swapped relative to the condition text
+  shown by FGame::showRetreatConditions(). The fix swaps the case-4 and case-5
+  bodies in the switch(m_satharRetreat) block so each case number evaluates the
+  condition matching its displayed text:
+    * case 4 (STATIONS): at a tenday boundary (m_round % 10 == 0 && m_round > 0),
+      UPF victory iff m_stationsDestroyed < 2; resets m_stationsDestroyed = 0.
+    * case 5 (SHIP-LOSS): at a tenday boundary, UPF victory iff
+      m_lostTendaySathar > m_lostTendayUPF; resets m_lostTendaySathar = 0 and
+      m_lostTendayUPF = 0.
+  Fighter/militia counting (S2/S3) is out of scope and unchanged.
+- The Tester added behavioral (runtime) regression coverage to the FGameTest
+  fixture. No production-code test seam was required.
+
+Commits (on stage branch coord-phase1-critical-defects-CRIT-2-tester-20260711):
+- Implementer code fix:  2828da4394af65e9766330feca9a42b92bd8bcbf
+- Tester behavioral tests: 3c3fb2f8932ad2493955aed5027927fec78ce276
+
+Files changed across the two stages:
+- src/strategic/FGame.cpp        (fix: swapped case-4/case-5 bodies; Doxygen header updated)
+- include/strategic/FGame.h      (Doxygen header on checkForVictory() documents per-case mapping and the C2 swap fix)
+- tests/strategic/FGameTest.cpp  (7 new behavioral tests + RetreatConditionMockUI mock + helpers; file-header author/date updated)
+- tests/strategic/FGameTest.h    (7 test registrations + declarations; file-header author/date updated)
+
+Acceptance criteria (all COVERED by passing behavioral tests):
+- Condition 4 selected: UPF victory reported at a tenday boundary iff fewer than
+  two stations were destroyed that tenday; station counter resets at the boundary.
+- Condition 5 selected: UPF victory reported at a tenday boundary iff Sathar
+  tenday ship losses exceed UPF tenday ship losses; both tenday loss counters
+  reset at the boundary.
+- The evaluated condition matches the condition text for the same case number.
+
+Test approach (for accurate documentation):
+- checkForVictory() is PRIVATE; it is reached only through the public
+  FGame::endUPFTurn() turn flow. The tests select the retreat condition through
+  the real init(NULL) path via a mock IStrategicUI (selectRetreatCondition),
+  stage station/ship destruction through the real checkForCombat() ->
+  cleanUpShips() combat path, observe UPF wins via the production notifyVictory(1)
+  callback, and read counter resets back from the real FGame::save() byte stream.
+  No public setters/getters were added to FGame.
+
+Validation:
+- make (repo root): clean, exit 0.
+- cd tests && make && ./SSWTests (cwd = tests/): OK (217 tests), all passing,
+  green across 4 consecutive runs.
+- Regression proof: re-swapping the case bodies made all 6 counter-driven tests
+  fail; restoring the fix returns them to green.
+
+Documentation guidance:
+- NON-NEGOTIABLE: doc/rules/tactical_operations_manual.md must NOT be edited.
+- Confirm the CLAUDE.md / AGENTS.md test catalog (tests/strategic/* bullet) still
+  reads accurately given the new FGameTest coverage; if a brief mention of the
+  checkForVictory retreat-condition tests belongs there, add it in the canonical
+  location only (single-source-of-truth rule). Do not restate project facts in
+  entry-point pointer files.
+- The Doxygen headers on checkForVictory() (FGame.h/FGame.cpp) were updated by
+  the Implementer; verify they remain accurate and complete. Update any related
+  design notes (e.g. doc/DesignNotes.md) only if they currently describe the
+  victory/retreat-condition logic and would otherwise be stale.
+- Do not modify production logic or tests; this is a documentation pass.
+
+Coordinator awareness note (not a documentation task):
+- A pre-existing, out-of-scope flaky test (FFleetTest::testDecTransitTime) can
+  fail ~9% of runs due to a time-seeded RNG risk-jump roll. It is unrelated to
+  CRIT-2. No action was taken. Do not document this as a CRIT-2 behavior.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-2
+
+Completion gate:
+- Write documenter_report.md, documenter_result.json, and the verifier handoff
+  prompt (verifier_prompt.txt) into the shared artifact directory, record the
+  stage branch under "branch_name", and commit all changes before reporting
+  success.
