@@ -1,0 +1,56 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validate the CRIT-3 fix in FVehicle::load() (src/ships/FVehicle.cpp, include/ships/FVehicle.h) that repoints m_currentDefense at the live m_defenses[0] entry after the defense list is rebuilt from the stream, instead of leaving it dangling at a freed pre-load defense object.
+
+Acceptance criteria validated:
+- AC1: After save() then load() on a vehicle, getCurrentDefense() returns a valid, live defense object (calling getType() on it is safe) rather than a freed pointer -- covered by testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload, which forces the defense-rebuild loop to free two chunks so a pointer-identity check (getCurrentDefense() == getDefense(0)) deterministically fails on the unfixed code and passes with the fix; also asserts getCurrentDefense()->getType() == FDefense::NONE
+- AC2: A loaded vehicle can be fired upon / enter the combat damage path without a use-after-free -- covered by testLoadedVehicleSurvivesWeaponFireViaCurrentDefense, which fires a real FWeapon at a freshly loaded FVehicle, exercising the exact call site (FWeapon::fire() reading target->getCurrentDefense()) the fix addresses, and asserts the fire completes and getCurrentDefense() remains safely usable afterward
+- AC3: Repo builds; existing suites still pass -- verified via a from-clean `make` (repo root) and `cd tests && make && ./SSWTests` (200/200 passing) plus `cd tests/tactical && make tactical-tests && ./TacticalTests` (253/253 passing); the previously-reported wxWidgets/CppUnit toolchain gap is resolved in this environment (wx-config 3.3.2, CppUnit present) so full builds and full suites now run to completion
+
+Implementation branch or worktree context:
+- Implementer branch/commit: coord-phase1-critical-defects-CRIT-3-implementer-20260710, code commit 5ff1c210dd8a8942080cfebea72f7df4e421505b
+- Fix location: src/ships/FVehicle.cpp FVehicle::load(), immediately after the defense-rebuild loop -- reassigns m_currentDefense = m_defenses[0] when non-empty, else fabricates a fallback FNone
+- Doxygen comment update: include/ships/FVehicle.h load() documentation updated to describe the new m_currentDefense reset behavior
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/ships/FVehicle.cpp
+- include/ships/FVehicle.h
+- tests/ships/FVehicleTest.cpp
+- tests/ships/FVehicleTest.h
+
+Test commit:
+- 8d372d11ef85d3935b6e9ee6cf9fc6d847ee7480
+
+Commands executed:
+- make (repo root, from a clean `make all_clean` state)
+- cd tests && make && ./SSWTests
+- cd tests/tactical && make tactical-tests && ./TacticalTests
+- Differential regression check: temporarily reverted the CRIT-3 fix block in src/ships/FVehicle.cpp, rebuilt src/ships and tests, reran ./SSWTests to confirm testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload fails deterministically (1 failure, 199 passing); restored the fix via `git checkout -- src/ships/FVehicle.cpp`, rebuilt, and reran ./SSWTests to confirm 200/200 passing again
+
+Final test outcomes:
+- SSWTests: OK (200 tests) -- includes 2 new FVehicleTest cases covering CRIT-3
+- TacticalTests (tests/tactical, standalone runner): OK (253 tests)
+- GuiTests: built successfully but NOT executed -- this sandbox has neither xvfb-run nor Xvfb installed for a virtual display; CRIT-3 touches no GUI code (src/ships/FVehicle.cpp, include/ships/FVehicle.h only), so this is a pre-existing environment tooling gap unrelated to the change under test
+- Differential check: with the fix removed, testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload fails with 'assertion failed - Expression: target.getCurrentDefense() == target.getDefense(0)' at FVehicleTest.cpp:599, proving the test is a genuine regression test for the CRIT-3 defect and not a source-inspection-only check
+
+Documentation context:
+- No user-facing behavior changed (defense selection UI/gameplay is unaffected); this is an internal correctness fix for a use-after-free that only manifested once a saved game was reloaded and entered combat
+- Roadmap item H2 (persisting which defense was active before save) remains explicitly out of scope; loaded vehicles always reset to the base defense (index 0) after load, matching pre-bug intent
+- A pre-existing, unrelated defect was observed but not touched: every concrete ship subclass constructor calls m_defenses.clear() without first deleting the FVehicle base constructor's default FNone entry, leaking one object per ship construction (visible via LeakSanitizer in the implementer's ASan smoke harness) -- worth flagging to the Coordinator/roadmap owner as a possible future Medium item
+
+Plan and diff context:
+- Plan: plans/phase1-critical-defects-plan.md (CRIT-3)
+- Diff under test: git show 5ff1c210dd8a8942080cfebea72f7df4e421505b -- include/ships/FVehicle.h src/ships/FVehicle.cpp
+- Test diff: git show 8d372d11ef85d3935b6e9ee6cf9fc6d847ee7480 -- tests/ships/FVehicleTest.cpp tests/ships/FVehicleTest.h
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
