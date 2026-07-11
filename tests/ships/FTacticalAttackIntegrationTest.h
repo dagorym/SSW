@@ -20,9 +20,9 @@ using namespace Frontier;
  * This fixture validates that fire outcomes and reported tactical damage effects
  * remain consistent with legacy side effects and fallback semantics.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created: Mar 20, 2026
- * @date Last Modified: May 02, 2026
+ * @date Last Modified: Jul 11, 2026
  */
 class FTacticalAttackIntegrationTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FTacticalAttackIntegrationTest );
