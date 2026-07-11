@@ -26,6 +26,9 @@ namespace FrontierTests {
 class StrategicGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( StrategicGuiLiveTest );
 CPPUNIT_TEST( testMainFrameBuildsExpectedInitialUI );
+CPPUNIT_TEST( testMainFrameOnCloseYesInvokesSaveBeforeReset );
+CPPUNIT_TEST( testMainFrameOnCloseNoResetsWithoutSaving );
+CPPUNIT_TEST( testMainFrameOnCloseCancelAbortsWithoutSaveOrReset );
 CPPUNIT_TEST( testGamePanelPaintTracksParentSize );
 CPPUNIT_TEST( testStrategicDialogsCloseModallyWithoutInput );
 CPPUNIT_TEST( testStrategicDialogsUseStaticBoxChildParents );
@@ -73,6 +76,33 @@ public:
 	 * @date Last Modified: Apr 04, 2026
 	 */
 	void testMainFrameBuildsExpectedInitialUI();
+	/**
+	 * @brief Verifies FMainFrame::onClose() invokes onSave() before resetGame() when the
+	 * Yes/No/Cancel save-confirmation dialog returns wxID_YES (CRIT-5 regression coverage).
+	 *
+	 * @author Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testMainFrameOnCloseYesInvokesSaveBeforeReset();
+	/**
+	 * @brief Verifies FMainFrame::onClose() resets without saving when the save-confirmation
+	 * dialog returns wxID_NO (CRIT-5 regression coverage).
+	 *
+	 * @author Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testMainFrameOnCloseNoResetsWithoutSaving();
+	/**
+	 * @brief Verifies FMainFrame::onClose() aborts the close entirely (no save, no reset) when
+	 * the save-confirmation dialog returns wxID_CANCEL (CRIT-5 regression coverage).
+	 *
+	 * @author Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testMainFrameOnCloseCancelAbortsWithoutSaveOrReset();
 	/**
 	 * @brief Validates offscreen WXMapDisplay rendering for key strategic map elements.
 	 *

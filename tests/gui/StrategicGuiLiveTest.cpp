@@ -12,13 +12,20 @@
 #include <sstream>
 
 #include <wx/dcmemory.h>
+#include <wx/dialog.h>
+#include <wx/filedlg.h>
 #include <wx/filefn.h>
 #include <wx/display.h>
 #include <wx/filename.h>
+#include <wx/menu.h>
+#include <wx/msgdlg.h>
 #include <wx/panel.h>
 #include <wx/splash.h>
+#include <wx/timer.h>
 #include <wx/toplevel.h>
 #include <wx/window.h>
+
+#include <gtk/gtk.h>
 
 #include "FGamePanel.h"
 #include "FMainFrame.h"
@@ -691,6 +698,87 @@ private:
 int m_finishCode;
 };
 
+/**
+ * @brief Repeating timer that observes and sequentially dismisses the nested modal dialogs
+ * opened by FMainFrame::onClose() / FMainFrame::onSave().
+ *
+ * FMainFrame::onClose() shows a plain wxMessageDialog (wxYES_NO|wxCANCEL) and, when the user
+ * answers Yes, onSave() then shows a wxFileDialog. On the GTK port neither of these dialogs is
+ * a "real" wx top-level window: wxMessageDialog::ShowModal() creates a bare GtkMessageDialog
+ * and blocks in gtk_dialog_run(), and (on GTK >= 3.20, as used here) wxFileDialog::ShowModal()
+ * blocks in gtk_native_dialog_run() over a GtkFileChooserNative. Neither widget is registered
+ * in wx's own wxTopLevelWindows list, so the shared WXGuiTestHarness modal helpers (which only
+ * scan that list) cannot see or dismiss them. This recorder instead polls GTK's own top-level
+ * window list directly and answers each native dialog with the real GTK response id, which is
+ * the only way to drive these dialogs deterministically without real keyboard/mouse input. A
+ * repeating wxTimer is used (rather than a single scheduled action) because the second dialog
+ * does not exist until the first native modal loop has actually returned control to
+ * FMainFrame::onClose(), which can only happen once the timer's own event dispatch (not the
+ * still-running action that requested it) observes the dismissal.
+ *
+ * @author Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+class SequentialCloseDialogRecorder : public wxTimer {
+public:
+	explicit SequentialCloseDialogRecorder(int messageDialogResponse)
+		: m_messageDialogResponse(messageDialogResponse),
+		  m_lastDismissed(NULL),
+		  m_sawMessageDialog(false),
+		  m_sawFileDialog(false),
+		  m_saveMenuEnabledWhenFileDialogSeen(false),
+		  m_saveMenuItem(NULL) {
+	}
+
+	/// Registers the Save menu item so the recorder can snapshot its enabled state when the
+	/// save (file) dialog is observed, proving the save path ran before resetGame() disabled it.
+	void setSaveMenuItem(wxMenuItem * saveMenuItem) {
+		m_saveMenuItem = saveMenuItem;
+	}
+
+	bool sawMessageDialog() const { return m_sawMessageDialog; }
+	bool sawFileDialog() const { return m_sawFileDialog; }
+	bool saveMenuEnabledWhenFileDialogSeen() const { return m_saveMenuEnabledWhenFileDialogSeen; }
+
+	virtual void Notify() wxOVERRIDE {
+		GtkWidget * modal = NULL;
+		GList * toplevels = gtk_window_list_toplevels();
+		for (GList * elem = toplevels; elem != NULL; elem = elem->next) {
+			GtkWidget * candidate = GTK_WIDGET(elem->data);
+			if (candidate != NULL && GTK_IS_DIALOG(candidate) && gtk_widget_get_visible(candidate)) {
+				modal = candidate;
+			}
+		}
+		g_list_free(toplevels);
+
+		if (modal == NULL || modal == m_lastDismissed) {
+			return;
+		}
+		m_lastDismissed = modal;
+		if (GTK_IS_MESSAGE_DIALOG(modal)) {
+			m_sawMessageDialog = true;
+			gtk_dialog_response(GTK_DIALOG(modal), m_messageDialogResponse);
+		} else {
+			// Any other native dialog observed here after the message dialog is the
+			// wxFileDialog opened by onSave().
+			m_sawFileDialog = true;
+			if (m_saveMenuItem != NULL) {
+				m_saveMenuEnabledWhenFileDialogSeen = m_saveMenuItem->IsEnabled();
+			}
+			gtk_dialog_response(GTK_DIALOG(modal), GTK_RESPONSE_CANCEL);
+		}
+	}
+
+private:
+	int m_messageDialogResponse;
+	GtkWidget * m_lastDismissed;
+	bool m_sawMessageDialog;
+	bool m_sawFileDialog;
+	bool m_saveMenuEnabledWhenFileDialogSeen;
+	wxMenuItem * m_saveMenuItem;
+};
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( StrategicGuiLiveTest );
@@ -740,6 +828,120 @@ CPPUNIT_ASSERT(!endSatharItem->IsEnabled());
 CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
 CPPUNIT_ASSERT(!placeNovaItem->IsEnabled());
 CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnCloseYesInvokesSaveBeforeReset() {
+	FMainFrame * frame = new FMainFrame("FMainFrame OnClose Yes Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	// resetGame()'s only publicly observable effect (with no FMainFrame internals touched)
+	// is that it unconditionally disables these two menu items; enabling them here through
+	// the public wxMenuItem API simulates an "active game" state so that a subsequent
+	// disable is a meaningful, observable signal that resetGame() actually ran.
+	saveItem->Enable(true);
+	closeItem->Enable(true);
+
+	SequentialCloseDialogRecorder recorder(GTK_RESPONSE_YES);
+	recorder.setSaveMenuItem(saveItem);
+	recorder.Start(15, false);
+
+	wxCommandEvent closeEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Close);
+	frame->onClose(closeEvent);
+
+	recorder.Stop();
+	m_harness.pumpEvents(10);
+
+	// Regression guard for CRIT-5: before the fix, Yes matched a dead `wxID_OK` branch, so
+	// onSave() -- and therefore its wxFileDialog -- was never invoked. Observing the file
+	// dialog is direct behavioral proof the save path now runs on Yes.
+	CPPUNIT_ASSERT(recorder.sawMessageDialog());
+	CPPUNIT_ASSERT(recorder.sawFileDialog());
+	// The Save menu item was still enabled at the moment the save dialog was showing,
+	// proving the save path executed before resetGame() disabled it.
+	CPPUNIT_ASSERT(recorder.saveMenuEnabledWhenFileDialogSeen());
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnCloseNoResetsWithoutSaving() {
+	FMainFrame * frame = new FMainFrame("FMainFrame OnClose No Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	saveItem->Enable(true);
+	closeItem->Enable(true);
+
+	SequentialCloseDialogRecorder recorder(GTK_RESPONSE_NO);
+	recorder.setSaveMenuItem(saveItem);
+	recorder.Start(15, false);
+
+	wxCommandEvent closeEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Close);
+	frame->onClose(closeEvent);
+
+	recorder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(recorder.sawMessageDialog());
+	// No must never invoke the save path.
+	CPPUNIT_ASSERT(!recorder.sawFileDialog());
+	// resetGame() must still run: the menu items end up disabled.
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnCloseCancelAbortsWithoutSaveOrReset() {
+	FMainFrame * frame = new FMainFrame("FMainFrame OnClose Cancel Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	saveItem->Enable(true);
+	closeItem->Enable(true);
+
+	SequentialCloseDialogRecorder recorder(GTK_RESPONSE_CANCEL);
+	recorder.setSaveMenuItem(saveItem);
+	recorder.Start(15, false);
+
+	wxCommandEvent closeEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Close);
+	frame->onClose(closeEvent);
+
+	recorder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(recorder.sawMessageDialog());
+	// Cancel must never invoke the save path.
+	CPPUNIT_ASSERT(!recorder.sawFileDialog());
+	// Cancel must abort the close entirely: resetGame() must not run, so the menu items
+	// remain in their pre-close (enabled) state.
+	CPPUNIT_ASSERT(saveItem->IsEnabled());
+	CPPUNIT_ASSERT(closeItem->IsEnabled());
 
 	frame->Destroy();
 	m_harness.pumpEvents(10);
