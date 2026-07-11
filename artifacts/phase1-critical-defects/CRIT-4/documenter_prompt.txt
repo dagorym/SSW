@@ -1,0 +1,53 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated CRIT-4: SelectCombatGUI::onAttack() now translates TwoPlanetsGUI::ShowModal()'s raw button identifiers (1/2 via EndModal(1)/EndModal(2)) into a 0-based m_system->getPlanetList() index (button 1 -> 0, button 2 -> 1, any other/cancel value -> 0) before the three getPlanetList()[planet] call sites, instead of using the raw ShowModal() return value directly.
+
+Acceptance criteria validated:
+- Selecting the first planet resolves against getPlanetList()[0]; the second against getPlanetList()[1].
+- No path indexes getPlanetList() out of range for a 2-planet system, including on cancel/close.
+
+Implementation branch or worktree context:
+- Branch/worktree: coord-phase1-critical-defects-CRIT-4-tester-20260710 (based on the implementer's completed CRIT-4 branch).
+- Fix commit bf9dbec0 (implementer) in src/gui/SelectCombatGUI.cpp translates TwoPlanetsGUI::ShowModal() (1/2) into a 0-based planet index before the three m_system->getPlanetList()[planet] call sites (attack target/CombatLocationGUI, station lookup, destroyStation).
+- include/gui/TwoPlanetsGUI.h (wxFormBuilder generated, not editable) still calls EndModal(1)/EndModal(2) from OnButton1()/OnButton2().
+- include/gui/SelectCombatGUI.h was left unedited by the implementer (no signature change).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/gui/SelectCombatGUI.cpp (implementer fix)
+- tests/gui/StrategicGuiLiveTest.cpp (tester coverage)
+- tests/gui/StrategicGuiLiveTest.h (tester coverage)
+
+Test commit:
+- bd6bce361a3f724bb3d533b935157c11e54efa95
+
+Commands executed:
+- make (repo root)
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests && ./SSWTests
+
+Final test outcomes:
+- make (repo root): full build succeeds with the fix in src/gui/SelectCombatGUI.cpp and no other implementation changes.
+- cd tests/gui && make && xvfb-run -a ./GuiTests: OK (68 tests), 0 failures, exit code 0. New test testSelectCombatAttackTranslatesTwoPlanetsSelectionToStationIndex passed within this run.
+- cd tests && ./SSWTests: OK (198 tests), 0 failures, exit code 0 (unaffected non-GUI suite, confirms no regressions).
+- New behavioral test drives the real SelectCombatGUI::onAttack() -> TwoPlanetsGUI -> SelectResolutionGUI -> FBattleScreen modal chain via a live PlanetAttackFlowTimer and asserts, for TwoPlanetsGUI EndModal() codes 1, 2, and a cancel-like value (42), that FBattleScreen::getStation() reports dualPlanetSystem.getPlanetList()[0], [1], and [0] respectively -- proving button 1 -> index 0, button 2 -> index 1, and cancel/other -> a safe default of index 0, with no out-of-range getPlanetList() access in a 2-planet system.
+
+Documentation context:
+- This is an internal bugfix to strategic combat planet targeting (Sathar attacking a 2-planet system); no user-facing rules or UI text changed.
+- No entries in doc/rules/tactical_operations_manual.md or doc/rules/second-sathar-war-rules.md are implicated -- this is strategic dialog wiring, not a rules change.
+- doc/test-contracts.md only catalogs tactical module test contracts (SMC-*, SMF-*, etc.); this new GUI test lives in the strategic module and does not need an entry there unless the Documenter's conventions say otherwise.
+
+Plan and diff context:
+- plans/phase1-critical-defects-plan.md is the governing plan; CRIT-4 is one subtask of it.
+- Comparison base: bf9dbec0 (implementer's CRIT-4 fix commit) through bd6bce36 (this tester's test commit) on branch coord-phase1-critical-defects-CRIT-4-tester-20260710.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-4
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

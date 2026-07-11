@@ -12,13 +12,20 @@
 #include <sstream>
 
 #include <wx/dcmemory.h>
+#include <wx/dialog.h>
+#include <wx/filedlg.h>
 #include <wx/filefn.h>
 #include <wx/display.h>
 #include <wx/filename.h>
+#include <wx/menu.h>
+#include <wx/msgdlg.h>
 #include <wx/panel.h>
 #include <wx/splash.h>
+#include <wx/timer.h>
 #include <wx/toplevel.h>
 #include <wx/window.h>
+
+#include <gtk/gtk.h>
 
 #include "FGamePanel.h"
 #include "FMainFrame.h"
@@ -691,6 +698,204 @@ private:
 int m_finishCode;
 };
 
+/**
+ * @brief Repeating timer that observes and sequentially dismisses the nested modal dialogs
+ * opened by FMainFrame::onClose() / FMainFrame::onSave().
+ *
+ * FMainFrame::onClose() shows a plain wxMessageDialog (wxYES_NO|wxCANCEL) and, when the user
+ * answers Yes, onSave() then shows a wxFileDialog. On the GTK port neither of these dialogs is
+ * a "real" wx top-level window: wxMessageDialog::ShowModal() creates a bare GtkMessageDialog
+ * and blocks in gtk_dialog_run(), and (on GTK >= 3.20, as used here) wxFileDialog::ShowModal()
+ * blocks in gtk_native_dialog_run() over a GtkFileChooserNative. Neither widget is registered
+ * in wx's own wxTopLevelWindows list, so the shared WXGuiTestHarness modal helpers (which only
+ * scan that list) cannot see or dismiss them. This recorder instead polls GTK's own top-level
+ * window list directly and answers each native dialog with the real GTK response id, which is
+ * the only way to drive these dialogs deterministically without real keyboard/mouse input. A
+ * repeating wxTimer is used (rather than a single scheduled action) because the second dialog
+ * does not exist until the first native modal loop has actually returned control to
+ * FMainFrame::onClose(), which can only happen once the timer's own event dispatch (not the
+ * still-running action that requested it) observes the dismissal.
+ *
+ * @author Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+class SequentialCloseDialogRecorder : public wxTimer {
+public:
+	explicit SequentialCloseDialogRecorder(int messageDialogResponse)
+		: m_messageDialogResponse(messageDialogResponse),
+		  m_lastDismissed(NULL),
+		  m_sawMessageDialog(false),
+		  m_sawFileDialog(false),
+		  m_saveMenuEnabledWhenFileDialogSeen(false),
+		  m_saveMenuItem(NULL) {
+	}
+
+	/// Registers the Save menu item so the recorder can snapshot its enabled state when the
+	/// save (file) dialog is observed, proving the save path ran before resetGame() disabled it.
+	void setSaveMenuItem(wxMenuItem * saveMenuItem) {
+		m_saveMenuItem = saveMenuItem;
+	}
+
+	bool sawMessageDialog() const { return m_sawMessageDialog; }
+	bool sawFileDialog() const { return m_sawFileDialog; }
+	bool saveMenuEnabledWhenFileDialogSeen() const { return m_saveMenuEnabledWhenFileDialogSeen; }
+
+	virtual void Notify() wxOVERRIDE {
+		GtkWidget * modal = NULL;
+		GList * toplevels = gtk_window_list_toplevels();
+		for (GList * elem = toplevels; elem != NULL; elem = elem->next) {
+			GtkWidget * candidate = GTK_WIDGET(elem->data);
+			if (candidate != NULL && GTK_IS_DIALOG(candidate) && gtk_widget_get_visible(candidate)) {
+				modal = candidate;
+			}
+		}
+		g_list_free(toplevels);
+
+		if (modal == NULL || modal == m_lastDismissed) {
+			return;
+		}
+		m_lastDismissed = modal;
+		if (GTK_IS_MESSAGE_DIALOG(modal)) {
+			m_sawMessageDialog = true;
+			gtk_dialog_response(GTK_DIALOG(modal), m_messageDialogResponse);
+		} else {
+			// Any other native dialog observed here after the message dialog is the
+			// wxFileDialog opened by onSave().
+			m_sawFileDialog = true;
+			if (m_saveMenuItem != NULL) {
+				m_saveMenuEnabledWhenFileDialogSeen = m_saveMenuItem->IsEnabled();
+			}
+			gtk_dialog_response(GTK_DIALOG(modal), GTK_RESPONSE_CANCEL);
+		}
+	}
+
+private:
+	int m_messageDialogResponse;
+	GtkWidget * m_lastDismissed;
+	bool m_sawMessageDialog;
+	bool m_sawFileDialog;
+	bool m_saveMenuEnabledWhenFileDialogSeen;
+	wxMenuItem * m_saveMenuItem;
+};
+
+/**
+ * @brief Repeating timer that drives the nested modal chain launched by
+ * SelectCombatGUI::onAttack() when the Sathar attack a two-planet system.
+ *
+ * On each tick it advances a small state machine: first it ends the live
+ * TwoPlanetsGUI modal with the caller-supplied EndModal() code (mirroring a
+ * real "first planet"/"second planet" button press), then it steers the
+ * SelectResolutionGUI modal to the "Battle Board" path, then it captures the
+ * FVehicle* station FBattleScreen::getStation() reports before ending that
+ * modal too. Capturing the station this way proves, end to end through real
+ * wx modal objects, which 0-based planet index SelectCombatGUI::onAttack()
+ * actually used for `m_system->getPlanetList()[planet]`.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+class PlanetAttackFlowTimer : public wxTimer {
+public:
+	explicit PlanetAttackFlowTimer(int planetSelectionCode)
+	: m_planetSelectionCode(planetSelectionCode), m_stage(0), m_capturedStation(NULL) {
+	}
+
+	FVehicle * capturedStation() const {
+		return m_capturedStation;
+	}
+
+	bool sawBattleScreen() const {
+		return m_stage >= 3;
+	}
+
+	virtual void Notify() wxOVERRIDE {
+		if (m_stage == 0) {
+			TwoPlanetsGUI * dialog = findModalTopLevel<TwoPlanetsGUI>();
+			if (dialog != NULL) {
+				m_stage = 1;
+				dialog->EndModal(m_planetSelectionCode);
+			}
+			return;
+		}
+		if (m_stage == 1) {
+			SelectResolutionGUI * dialog = findModalTopLevel<SelectResolutionGUI>();
+			if (dialog != NULL) {
+				m_stage = 2;
+				dialog->EndModal(0);  // 0 == "Battle Board" per SelectResolutionGUI::onBattleBoard
+			}
+			return;
+		}
+		if (m_stage == 2) {
+			Frontier::FBattleScreen * battleScreen = findModalBattleScreen();
+			if (battleScreen != NULL) {
+				m_capturedStation = battleScreen->getStation();
+				m_stage = 3;
+				battleScreen->EndModal(0);
+			}
+			return;
+		}
+	}
+
+private:
+	template<typename T>
+	static T * findModalTopLevel() {
+		wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
+		while (node != NULL) {
+			T * candidate = dynamic_cast<T *>(node->GetData());
+			wxDialog * asDialog = dynamic_cast<wxDialog *>(node->GetData());
+			if (candidate != NULL && asDialog != NULL && asDialog->IsModal()) {
+				return candidate;
+			}
+			node = node->GetNext();
+		}
+		return NULL;
+	}
+
+	static Frontier::FBattleScreen * findModalBattleScreen() {
+		wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
+		while (node != NULL) {
+			Frontier::FBattleScreen * battleScreen = dynamic_cast<Frontier::FBattleScreen *>(node->GetData());
+			if (battleScreen != NULL && battleScreen->IsModal()) {
+				return battleScreen;
+			}
+			node = node->GetNext();
+		}
+		return NULL;
+	}
+
+	int m_planetSelectionCode;
+	int m_stage;
+	FVehicle * m_capturedStation;
+};
+
+/**
+ * @brief Runs SelectCombatGUI::onAttack() end to end via a real TwoPlanetsGUI
+ * selection and returns the FVehicle* station FBattleScreen received.
+ *
+ * @param harness Shared GUI test harness used to pump events after the drive.
+ * @param dialog Attacker-selected SelectCombatGUI peer to drive.
+ * @param planetSelectionCode EndModal() code applied to the TwoPlanetsGUI modal
+ * (1 == first planet, 2 == second planet, any other value simulates cancel/close).
+ * @return The FVehicle* station observed on FBattleScreen, or NULL if none was seen.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+FVehicle * driveTwoPlanetAttackAndCaptureStation(WXGuiTestHarness & harness,
+                                                 SelectCombatGUITestPeer & dialog,
+                                                 int planetSelectionCode) {
+	PlanetAttackFlowTimer flowTimer(planetSelectionCode);
+	flowTimer.Start(20, false);
+	dialog.selectAttackerFleet(0);
+	dialog.clickAttack();
+	flowTimer.Stop();
+	harness.pumpEvents(5);
+	return flowTimer.capturedStation();
+}
+
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( StrategicGuiLiveTest );
@@ -740,6 +945,120 @@ CPPUNIT_ASSERT(!endSatharItem->IsEnabled());
 CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
 CPPUNIT_ASSERT(!placeNovaItem->IsEnabled());
 CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnCloseYesInvokesSaveBeforeReset() {
+	FMainFrame * frame = new FMainFrame("FMainFrame OnClose Yes Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	// resetGame()'s only publicly observable effect (with no FMainFrame internals touched)
+	// is that it unconditionally disables these two menu items; enabling them here through
+	// the public wxMenuItem API simulates an "active game" state so that a subsequent
+	// disable is a meaningful, observable signal that resetGame() actually ran.
+	saveItem->Enable(true);
+	closeItem->Enable(true);
+
+	SequentialCloseDialogRecorder recorder(GTK_RESPONSE_YES);
+	recorder.setSaveMenuItem(saveItem);
+	recorder.Start(15, false);
+
+	wxCommandEvent closeEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Close);
+	frame->onClose(closeEvent);
+
+	recorder.Stop();
+	m_harness.pumpEvents(10);
+
+	// Regression guard for CRIT-5: before the fix, Yes matched a dead `wxID_OK` branch, so
+	// onSave() -- and therefore its wxFileDialog -- was never invoked. Observing the file
+	// dialog is direct behavioral proof the save path now runs on Yes.
+	CPPUNIT_ASSERT(recorder.sawMessageDialog());
+	CPPUNIT_ASSERT(recorder.sawFileDialog());
+	// The Save menu item was still enabled at the moment the save dialog was showing,
+	// proving the save path executed before resetGame() disabled it.
+	CPPUNIT_ASSERT(recorder.saveMenuEnabledWhenFileDialogSeen());
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnCloseNoResetsWithoutSaving() {
+	FMainFrame * frame = new FMainFrame("FMainFrame OnClose No Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	saveItem->Enable(true);
+	closeItem->Enable(true);
+
+	SequentialCloseDialogRecorder recorder(GTK_RESPONSE_NO);
+	recorder.setSaveMenuItem(saveItem);
+	recorder.Start(15, false);
+
+	wxCommandEvent closeEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Close);
+	frame->onClose(closeEvent);
+
+	recorder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(recorder.sawMessageDialog());
+	// No must never invoke the save path.
+	CPPUNIT_ASSERT(!recorder.sawFileDialog());
+	// resetGame() must still run: the menu items end up disabled.
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnCloseCancelAbortsWithoutSaveOrReset() {
+	FMainFrame * frame = new FMainFrame("FMainFrame OnClose Cancel Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	saveItem->Enable(true);
+	closeItem->Enable(true);
+
+	SequentialCloseDialogRecorder recorder(GTK_RESPONSE_CANCEL);
+	recorder.setSaveMenuItem(saveItem);
+	recorder.Start(15, false);
+
+	wxCommandEvent closeEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Close);
+	frame->onClose(closeEvent);
+
+	recorder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(recorder.sawMessageDialog());
+	// Cancel must never invoke the save path.
+	CPPUNIT_ASSERT(!recorder.sawFileDialog());
+	// Cancel must abort the close entirely: resetGame() must not run, so the menu items
+	// remain in their pre-close (enabled) state.
+	CPPUNIT_ASSERT(saveItem->IsEnabled());
+	CPPUNIT_ASSERT(closeItem->IsEnabled());
 
 	frame->Destroy();
 	m_harness.pumpEvents(10);
@@ -1491,6 +1810,100 @@ void StrategicGuiLiveTest::testSelectCombatLaunchesBattleScreenAndCleansUpLifeti
 	}
 	dialog->Destroy();
 	m_harness.pumpEvents(5);
+
+	parent->Destroy();
+	m_harness.pumpEvents(10);
+	if (!originalCwd.IsEmpty()) {
+		wxSetWorkingDirectory(originalCwd);
+	}
+	FGameConfig::reset();
+	FGameConfig::create();
+}
+
+void StrategicGuiLiveTest::testSelectCombatAttackTranslatesTwoPlanetsSelectionToStationIndex() {
+	// CRIT-4 regression coverage: TwoPlanetsGUI::ShowModal() returns the raw
+	// button identifiers 1/2 via EndModal(1)/EndModal(2), not a 0-based list
+	// index. SelectCombatGUI::onAttack() must translate that raw result into
+	// a valid m_system->getPlanetList() index (button 1 -> 0, button 2 -> 1,
+	// any other/cancel value -> 0) before using it, so it never selects the
+	// wrong planet and never indexes the 2-planet list out of range.
+	const wxString originalCwd = wxGetCwd();
+	if (!wxFileName::DirExists(wxT("icons")) && wxFileName::DirExists(wxT("../../icons"))) {
+		CPPUNIT_ASSERT(wxSetWorkingDirectory(wxT("../../")));
+	}
+	FGameConfig::reset();
+	FGameConfig::create();
+
+	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Two Planet Attack Parent", wxDefaultPosition, wxSize(720, 520));
+	parent->Show();
+	m_harness.pumpEvents();
+
+	FPlayer player;
+	player.setName("Sathar Attack Test Player");
+
+	FSystem dualPlanetSystem("Two Planet Attack System", 0.0f, 0.0f, 0.0f, player.getID());
+	FPlanet * firstPlanet = new FPlanet("Alpha");
+	FVehicle * firstStation = createShip("FortifiedStation", "Alpha Station");
+	firstPlanet->addStation(firstStation);
+	dualPlanetSystem.addPlanet(firstPlanet);
+
+	FPlanet * secondPlanet = new FPlanet("Beta");
+	FVehicle * secondStation = createShip("FortifiedStation", "Beta Station");
+	secondPlanet->addStation(secondStation);
+	dualPlanetSystem.addPlanet(secondPlanet);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), dualPlanetSystem.getPlanetList().size());
+	CPPUNIT_ASSERT_EQUAL(firstStation, dualPlanetSystem.getPlanetList()[0]->getStation());
+	CPPUNIT_ASSERT_EQUAL(secondStation, dualPlanetSystem.getPlanetList()[1]->getStation());
+
+	FFleet * attackerFleet = new FFleet;
+	attackerFleet->setName("Sathar Attack Fleet");
+	attackerFleet->setIcon("icons/Sathar.png");
+	attackerFleet->setOwner(player.getID());
+	attackerFleet->addShip(createShip("Destroyer"));
+	FleetList attackers;
+	attackers.push_back(attackerFleet);
+	FleetList defenders;  // intentionally empty: skips CombatFleetsGUI/CombatLocationGUI so
+	                       // the station lookup at m_system->getPlanetList()[planet] is reached directly.
+	PlayerList players;
+
+	// selectionCode is the raw TwoPlanetsGUI::EndModal() value (1 == first
+	// planet button, 2 == second planet button, 42 simulates a cancel/close
+	// value outside {1,2}); expectedPlanetIndex is the 0-based index the fix
+	// must resolve to.
+	struct Scenario {
+		int selectionCode;
+		size_t expectedPlanetIndex;
+	};
+	const Scenario scenarios[] = {
+		{1, 0},   // first planet button -> getPlanetList()[0]
+		{2, 1},   // second planet button -> getPlanetList()[1]
+		{42, 0},  // cancel/close-like value -> safe default of getPlanetList()[0]
+	};
+
+	FBattleScreen::resetLifecycleCounters();
+	for (size_t i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); ++i) {
+		SelectCombatGUITestPeer * dialog = new SelectCombatGUITestPeer(
+		    parent, &dualPlanetSystem, defenders, attackers, &players, true /* satharAttacking */);
+
+		FVehicle * capturedStation = driveTwoPlanetAttackAndCaptureStation(m_harness, *dialog, scenarios[i].selectionCode);
+
+		CPPUNIT_ASSERT_EQUAL(1, dialog->finishCode());
+		CPPUNIT_ASSERT(capturedStation != NULL);
+		FVehicle * expectedStation = dualPlanetSystem.getPlanetList()[scenarios[i].expectedPlanetIndex]->getStation();
+		FVehicle * otherStation = dualPlanetSystem.getPlanetList()[1 - scenarios[i].expectedPlanetIndex]->getStation();
+		CPPUNIT_ASSERT_EQUAL(expectedStation, capturedStation);
+		CPPUNIT_ASSERT(capturedStation != otherStation);
+
+		if (dialog->IsShown()) {
+			dialog->Hide();
+		}
+		dialog->Destroy();
+		m_harness.pumpEvents(5);
+	}
+	CPPUNIT_ASSERT_EQUAL(3, FBattleScreen::getConstructedCount());
+	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
 
 	parent->Destroy();
 	m_harness.pumpEvents(10);

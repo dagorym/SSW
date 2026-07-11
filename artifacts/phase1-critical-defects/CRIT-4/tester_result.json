@@ -1,0 +1,28 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-4/tester_report.md",
+    "artifacts/phase1-critical-defects/CRIT-4/tester_result.json",
+    "artifacts/phase1-critical-defects/CRIT-4/documenter_prompt.txt"
+  ],
+  "branch_name": "coord-phase1-critical-defects-CRIT-4-tester-20260710",
+  "commands_run": [
+    "make (repo root)",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests",
+    "cd tests && ./SSWTests"
+  ],
+  "pass_fail_totals": {
+    "GuiTests_failed": 0,
+    "GuiTests_total": 68,
+    "SSWTests_failed": 0,
+    "SSWTests_total": 198
+  },
+  "pass_label": "all suites green",
+  "status": "success",
+  "task_id": "phase1-critical-defects/CRIT-4",
+  "test_commit_hash": "bd6bce361a3f724bb3d533b935157c11e54efa95",
+  "test_files_changed": [
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/StrategicGuiLiveTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}

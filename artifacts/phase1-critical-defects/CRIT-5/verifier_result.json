@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-5/verifier_report.md",
+    "artifacts/phase1-critical-defects/CRIT-5/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "coord-phase1-critical-defects-CRIT-5-verifier-20260710",
+  "documentation_accuracy_summary": [
+    "include/FMainFrame.h onClose() Doxygen block (lines 116-128) accurately documents the shipped Yes/No/Cancel behavior and correctly preserves the original @author (Tom Stephens) while appending the implementing model, per CLAUDE.md's author-list rule.",
+    "doc/synthesized-roadmap.md's C5 row resolution annotation (line 112) accurately restates the fix (comparison now against wxID_YES) and the resulting Yes/No/Cancel behavior; it is a pure documentation-only addition with no behavioral diff and does not alter or contradict the original defect description above it.",
+    "doc/UsersGuide.md line 83 (unmodified) already described the correct intended Yes/No behavior before this fix (only the implementation was wrong); Documenter's decision not to edit it is correct and independently verified in this session by inspection.",
+    "doc/rules/tactical_operations_manual.md: confirmed absent from the diff; non-negotiable constraint respected."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "CRIT-5",
+  "test_sufficiency_summary": [
+    "Sufficient. The 3 new tests map 1:1 onto the 3 acceptance-criteria branches (Yes/No/Cancel) and are genuinely behavioral per AGENTS.md's mandatory Behavioral Verification policy: each constructs a real FMainFrame, invokes the real onClose(wxCommandEvent&), drives the real native wxMessageDialog (and, for Yes, the real wxFileDialog opened by onSave()) via GTK response codes, and asserts on observed runtime state -- dialog appearance (proving/disproving onSave() ran) and post-call wxMenuItem enable state (proving/disproving resetGame() ran) -- not on source text or structure.",
+    "Independently reconfirmed the fails-against-unfixed property in this session: temporarily reverted src/FMainFrame.cpp's comparison back to `result == wxID_OK` (matching pre-fix commit 984f9c3f), rebuilt tests/gui, and reran GuiTests under xvfb-run. Exactly one failure occurred -- testMainFrameOnCloseYesInvokesSaveBeforeReset, on `CPPUNIT_ASSERT(recorder.sawFileDialog())` -- while testMainFrameOnCloseNoResetsWithoutSaving, testMainFrameOnCloseCancelAbortsWithoutSaveOrReset, and all other 68 tests remained green (69/70 passed, 1 failed). Restored src/FMainFrame.cpp via `git checkout --`, verified a clean working tree, rebuilt, and reran: GuiTests 70/70 and SSWTests 198/198 both passed again.",
+    "No coverage gaps that create meaningful delivery risk for this subtask's scope. The onSave()/wxFileDialog cancel-handling and broader save/open dialog hardening are explicitly out of scope per the plan (roadmap item H15) and not part of CRIT-5's acceptance criteria."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

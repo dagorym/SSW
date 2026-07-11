@@ -302,7 +302,7 @@ void FMainFrame::onClose(wxCommandEvent &event){
 	if(result==wxID_CANCEL){
 		return;
 	}
-	if (result == wxID_OK){
+	if (result == wxID_YES){
 		onSave(event);
 	}
 	resetGame();

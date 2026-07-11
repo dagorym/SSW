@@ -1,0 +1,45 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Fix Critical defect C6 in FGameConfig::FGameConfig() (src/core/FGameConfig.cpp): readlink("/proc/self/exe", ...) stored its return in a size_t and unconditionally wrote buf[size] = 0, causing an out-of-bounds write on readlink failure (-1) or when the path length is at/above buffer capacity, in a singleton constructor with no error path.
+
+Modified files:
+- src/core/FGameConfig.cpp
+- include/core/FGameConfig.h
+
+Acceptance criteria to validate (from Planner):
+- Normal executable path: m_basePath / m_executablePath resolve as before.
+- readlink failure (-1) causes no OOB write and leaves config in a safe, defined state.
+- A path at/above buffer capacity writes no byte past buf.
+
+Create test files in:
+- tests/core/FGameConfigTest.cpp and tests/core/FGameConfigTest.h (existing suite; already registered in tests/SSWTests.cpp)
+
+Implementation context for testing:
+- src/core/FGameConfig.cpp:105-133 (constructor) now captures readlink's return in a signed `ssize_t`, requests at most `sizeof(buf) - 1` bytes (reserving room for the terminator), and only writes `buf[terminatorIndex] = 0` after computing terminatorIndex via the new `FGameConfig::computeSafeTerminatorIndex(long readlinkResult, size_t bufferCapacity)` helper.
+- computeSafeTerminatorIndex() (declared public/static in include/core/FGameConfig.h, defined in src/core/FGameConfig.cpp just above the constructor) returns 0 for bufferCapacity==0 or readlinkResult<=0 (readlink failure), otherwise clamps to bufferCapacity-1 when the raw result would be at/above capacity. It is a pure function with no process/filesystem dependency, added specifically so the Tester can exercise boundary and failure behavior without spawning a real process or mocking readlink.
+- On readlink failure (size <= 0), the constructor now sets m_basePath and m_executablePath to empty strings (a safe, defined state) instead of reading/parsing an undefined buffer.
+- The normal success path (readlink succeeds, path within buffer) is functionally unchanged: same substr/ensureTrailingSeparator logic produces the same m_executablePath/m_basePath as before.
+- The Windows (#else) branch is untouched aside from moving the `int bufsize = 1000;` declaration into that branch (it was previously declared before the #ifdef and became unused on the LINUX branch once sizeof(buf)-1 replaced it directly, which would otherwise trigger a -Wall unused-variable warning on Linux builds).
+- Doxygen header for the FGameConfig() constructor (include/core/FGameConfig.h) was updated to describe the readlink safety handling, with Last Modified date bumped and 'Claude Sonnet 5 (medium)' appended to the existing @author list (Tom Stephens preserved per project convention). A full Doxygen header block was added for the new computeSafeTerminatorIndex() method.
+
+Suggested test command(s):
+- cd src/core && make clean && make
+- cd src/strategic && make; cd src/ships && make; cd src/weapons && make; cd src/defenses && make (non-gui module build sanity)
+- make (repo root, top-level build) -- BLOCKED in this sandbox: wx-config/wxWidgets is not installed (which wx-config exits 1), unrelated to this change; failure occurs compiling src/gui/AssignedICMData.cpp on 'wx/wx.h: No such file or directory'
+- cd tests && make && ./SSWTests -- BLOCKED for the same reason: tests/core/Makefile itself invokes wx-config for CXXFLAGS/LIBS because WXIconCacheTest.cpp/WXStrategicUITest.cpp live under tests/core
+- Standalone scratch verification: compiled a small driver against libcore.a exercising FGameConfig::computeSafeTerminatorIndex(50,1000)==50, (1000,1000)==999, (5000,1000)==999, (-1,1000)==0, (0,1000)==0, (10,0)==0, plus FGameConfig::create().getBasePath() non-empty for the real /proc/self/exe path -- all assertions passed
+
+Existing validations expected to fail only because approved behavior changed:
+- `make` (repo root) and `cd tests && make && ./SSWTests` cannot complete in this sandbox because wxWidgets is not installed at all (wx-config missing, pkg-config missing). This blocks the gui module and, separately, tests/core's own Makefile (which unconditionally passes `wx-config --cxxflags`/`--libs` because WXIconCacheTest.cpp and WXStrategicUITest.cpp live in tests/core). This is a pre-existing environment/toolchain gap, not caused by this change -- confirmed by non-gui modules (core, strategic, ships, weapons, defenses) all building cleanly with zero warnings against the modified FGameConfig.cpp/.h. The Tester should attempt the canonical `cd tests && make && ./SSWTests` in an environment where wxWidgets 3.3.1 is actually installed; if the same environment gap is present there too, document it the same way and rely on module-level non-gui builds plus targeted behavioral tests against FGameConfig::computeSafeTerminatorIndex() and FGameConfig::create().getBasePath().
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-6
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

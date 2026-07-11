@@ -1,0 +1,93 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Fix Critical defect C2: FGame::checkForVictory() evaluated the Sathar retreat
+  conditions 4 and 5 swapped relative to the condition text shown by
+  FGame::showRetreatConditions(). The fix swaps the case-4 and case-5 bodies in
+  the switch(m_satharRetreat) block so each case number evaluates the condition
+  matching its displayed text:
+    * case 4 (STATIONS): at a tenday boundary, UPF victory iff
+      m_stationsDestroyed < 2; resets m_stationsDestroyed = 0.
+    * case 5 (SHIP-LOSS): at a tenday boundary, UPF victory iff
+      m_lostTendaySathar > m_lostTendayUPF; resets m_lostTendaySathar = 0 and
+      m_lostTendayUPF = 0.
+  The tenday gate (m_round % 10 == 0 && m_round > 0) is preserved on both cases.
+  Fighter/militia counting (S2/S3) is out of scope and unchanged.
+
+Modified files:
+- src/strategic/FGame.cpp
+- include/strategic/FGame.h
+
+Acceptance criteria to validate (from Planner):
+- Condition 4 selected: UPF victory reported at a tenday boundary iff fewer than
+  two stations were destroyed that tenday; station counter resets at the
+  boundary.
+- Condition 5 selected: UPF victory reported at a tenday boundary iff Sathar
+  tenday ship losses exceed UPF tenday ship losses; the tenday loss counters
+  (m_lostTendaySathar, m_lostTendayUPF) reset at the boundary.
+- The evaluated condition matches the condition text for the same case number.
+
+Create/extend behavioral test files in:
+- tests/strategic/FGameTest.cpp and tests/strategic/FGameTest.h (existing
+  FGameTest fixture builds a real populated game via FGame::create() + init(NULL)).
+
+Implementation context for testing:
+- checkForVictory() is a PRIVATE FGame method. The public path that reaches it is
+  FGame::endUPFTurn() (public, include/strategic/FGame.h:174), which calls
+  checkForVictory() at src/strategic/FGame.cpp:521 and then increments m_round.
+- Return-value contract of checkForVictory(): 0 = no winner this round, 1 = UPF
+  win, 2 = Sathar win, 3 = draw. checkForVictory() computes UPFVictory /
+  SatharVictory then maps them to the return code lower in the function (read the
+  end of checkForVictory() for the exact draw/priority mapping when asserting the
+  numeric return).
+- The retreat-condition selector m_satharRetreat and the counters m_round,
+  m_stationsDestroyed, m_lostTendaySathar, m_lostTendayUPF are PRIVATE members
+  with NO public setters/getters today (only getRound() exists). To drive the
+  case-4 vs case-5 branches with controlled inputs you will likely need a minimal
+  test seam. Preferred options, in order:
+    1. If the existing FGameTest can already reach these branches through the
+       normal public turn flow (e.g. by staging real combat losses / station
+       destruction and stepping endUPFTurn() to a tenday boundary), do that and
+       assert the observable victory outcome and the counter resets on the next
+       cycle.
+    2. If a direct seam is required, request a minimal test-only accessor (e.g.
+       setters for m_satharRetreat and the tenday counters, and/or a public
+       wrapper that invokes checkForVictory()) via the coordinator, since those
+       edits fall under the implementer's allowed files
+       (src/strategic/FGame.cpp, include/strategic/FGame.h) and are outside the
+       tester's file scope. Do NOT weaken the fix to make it testable.
+- IMPORTANT (behavioral, not source-inspection): assertContains-style checks on
+  the source text do NOT satisfy the repository's behavioral-verification
+  mandate. For each selected condition you must construct real FGame state,
+  invoke the victory evaluation at a tenday boundary, and assert (a) the exact
+  victory outcome for the given counter values and (b) that the correct counters
+  reset at the boundary. Include at least one regression case that would FAIL
+  against the pre-fix (swapped) code: e.g. with m_satharRetreat = 4,
+  m_stationsDestroyed = 5, m_lostTendaySathar = 5, m_lostTendayUPF = 0 at a
+  tenday boundary, the fixed code must NOT declare UPF victory (5 stations
+  destroyed >= 2), whereas the swapped code would have (because it read the
+  ship-loss counters). Add the symmetric case for m_satharRetreat = 5.
+
+Suggested test command(s):
+- make (repo root)
+- cd tests && make && ./SSWTests   # run ./SSWTests with cwd = tests/
+
+Validation already performed by implementer:
+- Repo-root `make`: clean build, exit 0.
+- `cd tests && make && ./SSWTests` (cwd = tests/): builds and passes -- OK (210 tests).
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing
+  work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository
+  conventions when repository evidence is sufficient, and label those choices as
+  assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, or framework discovery when
+  testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are
+  committed.

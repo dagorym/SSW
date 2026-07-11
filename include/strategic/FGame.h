@@ -401,9 +401,18 @@ private:
    * If there is no winner this round it returns a 0.  If the UPF win, it returns a 1.
    * If the Sathar win it returns a 2.  And if it is a draw, it returns a 3.
    *
-   * @author Tom Stephens
+   * The Sathar retreat condition switch is keyed by @c m_satharRetreat and each case
+   * number must evaluate the condition matching the text shown by showRetreatConditions():
+   * case 4 is the station/fortress-destruction condition (UPF wins a tenday boundary if
+   * fewer than two stations were destroyed that tenday, via @c m_stationsDestroyed, which
+   * is reset at the boundary), and case 5 is the ship-loss condition (UPF wins a tenday
+   * boundary if Sathar tenday ship losses exceed UPF losses, via @c m_lostTendaySathar /
+   * @c m_lostTendayUPF, both reset at the boundary). These two cases were previously
+   * evaluated swapped relative to their displayed condition text (defect C2); fixed here.
+   *
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Apr 15, 2008
-   * @date Last Modified:  Apr 15, 2008
+   * @date Last Modified:  Jul 11, 2026
    */
   int checkForVictory();
 
@@ -443,9 +452,17 @@ private:
    * The method also checks all the stations and removes the destroyed
    * ones from the game.
    *
-   * @author Tom Stephens
+   * Operates directly on the live per-player fleet lists and live
+   * per-fleet ship lists (rather than by-value copies), so removals and
+   * loss-counter increments apply to the real game state exactly once
+   * per destroyed ship. Destroyed ship IDs are collected before any
+   * mutation to avoid an erase-while-iterating skip bug. A fleet emptied
+   * by this pass is removed from both its owning player and its system,
+   * then deleted, since neither retains any other live reference to it.
+   *
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  May 28, 2009
-   * @date Last Modified:  May 28, 2009
+   * @date Last Modified:  Jul 10, 2026
    */
   void cleanUpShips();
 

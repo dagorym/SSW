@@ -7,6 +7,7 @@
 
 #include "FGameConfigTest.h"
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <iterator>
 
@@ -190,6 +191,91 @@ void FGameConfigTest::testResolveAssetPathIncludesExecutableParentFallbackContra
 			"joinPath(m_executablePath, std::string(\"../\") + normalizedAssetPath);");
 	assertContains(source, "if (pathExists(executableParentCandidate)) {");
 	assertContains(source, "return executableParentCandidate;");
+}
+
+void FGameConfigTest::testComputeSafeTerminatorIndexWithinBoundsReturnsRawResult(){
+	// CRIT-6 AC1 (normal path arithmetic): a readlink() result that is
+	// strictly within buffer capacity is returned unchanged so the
+	// constructor's normal-path substr/ensureTrailingSeparator logic is
+	// unaffected by the new clamping helper.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5),
+			FGameConfig::computeSafeTerminatorIndex(5, 1000));
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(998),
+			FGameConfig::computeSafeTerminatorIndex(998, 1000));
+}
+
+void FGameConfigTest::testComputeSafeTerminatorIndexClampsWhenResultEqualsCapacity(){
+	// CRIT-6 AC3: a readlink() result exactly at buffer capacity would
+	// previously write buf[capacity] (one past the last valid index); the
+	// helper must clamp it to capacity - 1.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(999),
+			FGameConfig::computeSafeTerminatorIndex(1000, 1000));
+}
+
+void FGameConfigTest::testComputeSafeTerminatorIndexClampsWhenResultExceedsCapacity(){
+	// CRIT-6 AC3: a readlink() result above buffer capacity must also clamp
+	// to capacity - 1, never producing an out-of-bounds index.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(999),
+			FGameConfig::computeSafeTerminatorIndex(5000, 1000));
+}
+
+void FGameConfigTest::testComputeSafeTerminatorIndexReturnsZeroOnNegativeReadlinkResult(){
+	// CRIT-6 AC2: readlink() failure is signaled by -1. Before the fix, a
+	// size_t capture of -1 became a huge unsigned value and produced an
+	// out-of-bounds buf[size] = 0 write. The helper must return 0.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0),
+			FGameConfig::computeSafeTerminatorIndex(-1, 1000));
+}
+
+void FGameConfigTest::testComputeSafeTerminatorIndexReturnsZeroOnZeroReadlinkResult(){
+	// CRIT-6 AC2: a degenerate zero-length readlink() result carries no
+	// usable path data and must not be treated as a valid index.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0),
+			FGameConfig::computeSafeTerminatorIndex(0, 1000));
+}
+
+void FGameConfigTest::testComputeSafeTerminatorIndexReturnsZeroWhenBufferCapacityZero(){
+	// Degenerate buffer capacity of zero must never produce a valid-looking
+	// nonzero index (there is no valid index into a zero-capacity buffer,
+	// so 0 is the documented safe sentinel).
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0),
+			FGameConfig::computeSafeTerminatorIndex(500, 0));
+}
+
+void FGameConfigTest::testComputeSafeTerminatorIndexNeverWritesPastBufferAcrossBoundaryValues(){
+	// CRIT-6 AC2/AC3 end-to-end: reproduce the constructor's exact write
+	// pattern (buf[computeSafeTerminatorIndex(...)] = 0) against a small
+	// guarded buffer and prove no byte outside the buffer is ever touched,
+	// for both the failure case and the at/above-capacity boundary case
+	// that previously caused an out-of-bounds write.
+	struct GuardedBuffer {
+		unsigned char before[4];
+		char buf[8];
+		unsigned char after[4];
+	};
+
+	const long boundaryReadlinkResults[] = { -1, 0, 8, 9, 100 };
+	const size_t bufferCapacity = sizeof(static_cast<GuardedBuffer *>(0)->buf);
+
+	for (size_t i = 0; i < sizeof(boundaryReadlinkResults) / sizeof(boundaryReadlinkResults[0]); ++i) {
+		GuardedBuffer guarded;
+		std::memset(guarded.before, 0xAA, sizeof(guarded.before));
+		std::memset(guarded.buf, 0x55, sizeof(guarded.buf));
+		std::memset(guarded.after, 0xAA, sizeof(guarded.after));
+
+		const size_t terminatorIndex = FGameConfig::computeSafeTerminatorIndex(
+				boundaryReadlinkResults[i], bufferCapacity);
+
+		CPPUNIT_ASSERT(terminatorIndex < bufferCapacity);
+		guarded.buf[terminatorIndex] = 0;
+
+		for (size_t g = 0; g < sizeof(guarded.before); ++g) {
+			CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(0xAA), guarded.before[g]);
+		}
+		for (size_t g = 0; g < sizeof(guarded.after); ++g) {
+			CPPUNIT_ASSERT_EQUAL(static_cast<unsigned char>(0xAA), guarded.after[g]);
+		}
+	}
 }
 
 }

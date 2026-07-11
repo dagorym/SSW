@@ -203,18 +203,30 @@ void SelectCombatGUI::onView( wxCommandEvent& event ){
  * this, FBattleScreen cannot acquire the grab and its File->Quit
  * menu item never generates wxEVT_MENU events.
  *
+ * When two planets are present, `TwoPlanetsGUI::ShowModal()` returns the
+ * raw button identifiers `1` (first planet) or `2` (second planet) via
+ * `EndModal(1)`/`EndModal(2)`, not a 0-based list index. That raw result
+ * is translated here into a valid 0-based index into
+ * `m_system->getPlanetList()` (button 1 -> 0, button 2 -> 1) before use;
+ * any other/cancel return value falls back to index 0 so the planet list
+ * is never indexed out of range.
+ *
  * @param event wxCommandEvent from the Attack! button
  *
  * @author Claude Sonnet 4.6 (medium)
  * @date Created: May 23, 2026
- * @date Last Modified: May 23, 2026
+ * @date Last Modified: Jul 10, 2026
  */
 void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 	int planet = 0;  // this is the index of the planet in the planet list the attack is against
 	if(m_satharAttacking){
 		if (m_system->getPlanetList().size()==2){
 			TwoPlanetsGUI d(this,m_system);
-			planet = d.ShowModal();
+			int selection = d.ShowModal();
+			// TwoPlanetsGUI::OnButton1()/OnButton2() call EndModal(1)/EndModal(2),
+			// so translate those raw button IDs into a 0-based planet list index.
+			// Any other value (including a cancel/close) safely defaults to 0.
+			planet = (selection == 2) ? 1 : 0;
 		}
 	}
 //	std::cerr << "Attacking planet " << planet << std::endl;

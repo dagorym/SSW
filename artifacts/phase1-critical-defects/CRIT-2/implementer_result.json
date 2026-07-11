@@ -1,0 +1,21 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-2/implementer_report.md",
+    "artifacts/phase1-critical-defects/CRIT-2/tester_prompt.txt",
+    "artifacts/phase1-critical-defects/CRIT-2/implementer_result.json"
+  ],
+  "branch_name": "coord-phase1-critical-defects-CRIT-2-implementer-20260711",
+  "changed_files": [
+    "src/strategic/FGame.cpp",
+    "include/strategic/FGame.h"
+  ],
+  "code_commit_hash": "2828da4394af65e9766330feca9a42b92bd8bcbf",
+  "pass_label": null,
+  "status": "success",
+  "task_id": "CRIT-2",
+  "validation_commands": [
+    "make (repo root)",
+    "cd tests && make && ./SSWTests (cwd = tests/)"
+  ],
+  "validation_outcome": "Repo-root `make` builds cleanly (exit 0) with no new warnings in FGame.cpp/FGame.h. The test build (`cd tests && make`) links successfully and the top-level suite (`./SSWTests` run with cwd = tests/) reports OK (210 tests), all passing. The wxWidgets 3.3.2 + CppUnit toolchain is present in this environment, so both required validation commands ran to completion in the foreground. The fix swaps the case-4 and case-5 bodies in checkForVictory()'s switch(m_satharRetreat): case 4 now evaluates the STATIONS condition (m_stationsDestroyed < 2 at a tenday boundary, resetting m_stationsDestroyed = 0) and case 5 the SHIP-LOSS condition (m_lostTendaySathar > m_lostTendayUPF at a tenday boundary, resetting m_lostTendaySathar = 0 and m_lostTendayUPF = 0), matching showRetreatConditions() text. The tenday gate (m_round % 10 == 0 && m_round > 0) is preserved on both cases; cases 1-3, the station-count Sathar-victory scan, and fighter/militia (S2/S3) counting are unchanged. The Doxygen header on checkForVictory() was updated (description documents the per-case condition mapping and the C2 swap fix; @date Last Modified Jul 11, 2026; @author 'Tom Stephens, Claude Sonnet 5 (medium)'). NOTE for Tester: checkForVictory() is private (reached via public FGame::endUPFTurn()), and m_satharRetreat / m_stationsDestroyed / m_lostTendaySathar / m_lostTendayUPF / m_round are private with no public setters today; a minimal implementer-provided test seam may be required to drive the case-4/case-5 branches with controlled inputs -- see tester_prompt.txt."
+}

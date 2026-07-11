@@ -1,0 +1,26 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-4/verifier_report.md",
+    "artifacts/phase1-critical-defects/CRIT-4/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "coord-phase1-critical-defects-CRIT-4-verifier-20260710",
+  "documentation_accuracy_summary": [
+    "The Doxygen header on SelectCombatGUI::onAttack() (src/gui/SelectCombatGUI.cpp) accurately describes the new translation logic (button 1 -> 0, button 2 -> 1, other/cancel -> 0) and matches the implemented code exactly; @author was correctly left unchanged (same model/reasoning level as the original author) and @date Last Modified was bumped, per AGENTS.md's Doxygen/author-list policy.",
+    "doc/synthesized-roadmap.md's C4 row annotation (commit 9eb1430d) accurately references the resolving commit (bf9dbec0), correctly states include/gui/TwoPlanetsGUI.h was left unmodified per its generated-file banner, and points to the artifacts directory for traceability; confirmed via merge-base diff to be a single-line, documentation-only change with zero behavioral effect and no touch to any other roadmap row (C1/C3/C6's prior RESOLVED annotations, visible only in a misleading two-dot diff against the now-advanced coord-phase1-critical-defects branch, are untouched by this subtask's actual commits).",
+    "doc/UsersGuide.md's 'Select Target Planet' section already describes planet selection generically ('select the button of the system you want to attack') without encoding the internal indexing bug, so it required no wording change; independently confirmed by grepping doc/UsersGuide.md for planet/attack references.",
+    "doc/rules/tactical_operations_manual.md is confirmed untouched by this change (non-negotiable constraint), and no other documentation file was modified."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "CRIT-4",
+  "test_sufficiency_summary": [
+    "Sufficient. testSelectCombatAttackTranslatesTwoPlanetsSelectionToStationIndex (tests/gui/StrategicGuiLiveTest.cpp) is a genuine behavioral test per AGENTS.md's mandatory-behavioral-verification policy: it constructs a real two-planet FSystem with distinct FVehicle stations, drives the actual SelectCombatGUI::onAttack() handler through a live TwoPlanetsGUI modal (via a real wxTimer-driven EndModal() on the live dialog, not a mock), continues through SelectResolutionGUI and a real FBattleScreen, and asserts on the observed runtime result (FBattleScreen::getStation() identity) rather than on source text.",
+    "Covers all three required scenarios from the plan: EndModal(1) -> getPlanetList()[0], EndModal(2) -> getPlanetList()[1], and EndModal(42) (a value outside {1,2}, simulating cancel/close) -> the safe default getPlanetList()[0]; also asserts the captured station differs from the other planet's station, ruling out both index-off-by-one and coincidental pointer aliasing.",
+    "Verified independently: rebuilt from a clean tree (`make` at repo root, exit 0) and reran `cd tests/gui && make && xvfb-run -a ./GuiTests` -- OK (68 tests), including the new test; and `cd tests && ./SSWTests` -- OK (198 tests), 0 failures, confirming no regressions in the non-GUI suite.",
+    "One NOTE-level observation (non-blocking): the CombatLocationGUI and destroyStation() call sites are not independently exercised by name, but they consume the same already-validated `planet` variable with no intervening reassignment, so the risk this creates is negligible."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

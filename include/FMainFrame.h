@@ -116,13 +116,16 @@ public:
   /**
    * @brief Method to handle the File:Close menu option
    *
-   * This is the method called when the File:Close menu option is selected
+   * This is the method called when the File:Close menu option is selected.
+   * Prompts the user with a Yes/No/Cancel save confirmation: Yes saves the
+   * game (via onSave()) before resetting it, No resets without saving, and
+   * Cancel aborts the close entirely (no save, no reset).
    *
    * @param event The wxWidget window event that triggered the function call
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, Sonnet 5 (medium)
    * @date Created:  Mar 17, 2005
-   * @date Last Modified:  Mar 17, 2008
+   * @date Last Modified:  Jul 10, 2026
    */
   void onClose(wxCommandEvent& event);
 

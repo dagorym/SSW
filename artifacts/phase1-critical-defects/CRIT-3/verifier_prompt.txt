@@ -1,0 +1,73 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Validated the CRIT-3 fix in FVehicle::load() (src/ships/FVehicle.cpp, include/ships/FVehicle.h) that repoints m_currentDefense at the live m_defenses[0] entry after the defense list is rebuilt from the stream, instead of leaving it dangling at a freed pre-load defense object. Reviewed the Implementer's and Tester's diffs, confirmed the repository-required Doxygen header on FVehicle::load() was already updated accurately (no correction needed), confirmed doc/DesignNotes.md and doc/UsersGuide.md require no changes (neither documents save/load defense-persistence semantics and no user-facing behavior changed), and annotated doc/synthesized-roadmap.md's C3 defect row as resolved (pointing at CRIT-3) per the plan's optional traceability guidance.
+
+Acceptance criteria to verify:
+- AC1: After save() then load() on a vehicle, getCurrentDefense() returns a valid, live defense object (calling getType() on it is safe) rather than a freed pointer -- covered by testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload, which forces the defense-rebuild loop to free two chunks so a pointer-identity check (getCurrentDefense() == getDefense(0)) deterministically fails on the unfixed code and passes with the fix; also asserts getCurrentDefense()->getType() == FDefense::NONE
+- AC2: A loaded vehicle can be fired upon / enter the combat damage path without a use-after-free -- covered by testLoadedVehicleSurvivesWeaponFireViaCurrentDefense, which fires a real FWeapon at a freshly loaded FVehicle, exercising the exact call site (FWeapon::fire() reading target->getCurrentDefense()) the fix addresses, and asserts the fire completes and getCurrentDefense() remains safely usable afterward
+- AC3: Repo builds; existing suites still pass -- verified via a from-clean make (repo root) and cd tests && make && ./SSWTests (200/200 passing) plus cd tests/tactical && make tactical-tests && ./TacticalTests (253/253 passing); the previously-reported wxWidgets/CppUnit toolchain gap is resolved in this environment (wx-config 3.3.2, CppUnit present) so full builds and full suites now run to completion
+
+Implementation branch or worktree context:
+- Implementer branch/commit: coord-phase1-critical-defects-CRIT-3-implementer-20260710, code commit 5ff1c210dd8a8942080cfebea72f7df4e421505b
+- Fix location: src/ships/FVehicle.cpp FVehicle::load(), immediately after the defense-rebuild loop -- reassigns m_currentDefense = m_defenses[0] when non-empty, else fabricates a fallback FNone
+- Doxygen comment update: include/ships/FVehicle.h load() documentation updated to describe the new m_currentDefense reset behavior (reviewed by Documenter and confirmed accurate)
+- Tester commit: 8d372d11ef85d3935b6e9ee6cf9fc6d847ee7480, adds two behavioral regression tests to tests/ships/FVehicleTest.cpp / .h
+- Documenter commit: 0c1f43a154f1812f3c73e3c629d926aa83400c2e, annotates doc/synthesized-roadmap.md's C3 row as resolved; no product, test, or Doxygen content changed
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/ships/FVehicle.cpp
+- include/ships/FVehicle.h
+- tests/ships/FVehicleTest.cpp
+- tests/ships/FVehicleTest.h
+- doc/synthesized-roadmap.md
+
+Commands executed:
+- env -C <worktree> myteam get role documenter
+- env -C <worktree> myteam get skill execution-start
+- env -C <worktree> myteam get skill documenter/preflight
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input artifacts/phase1-critical-defects/CRIT-3/documenter_prompt.txt --repo-root <worktree>
+- env -C <worktree> myteam get skill documenter/diff-review
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 984f9c3f --head HEAD
+- git show 5ff1c210dd8a8942080cfebea72f7df4e421505b -- include/ships/FVehicle.h src/ships/FVehicle.cpp
+- git show 8d372d11ef85d3935b6e9ee6cf9fc6d847ee7480 -- tests/ships/FVehicleTest.cpp tests/ships/FVehicleTest.h
+- grep -n 'CRIT-3' -A 40 plans/phase1-critical-defects-plan.md
+- grep -n -i 'C3|CRIT-3|m_currentDefense|FVehicle::load' doc/synthesized-roadmap.md
+- grep -n -i 'currentDefense|getCurrentDefense|m_defenses\[0\]|defense.*load|load.*defense' doc/DesignNotes.md doc/UsersGuide.md
+- grep -n -i 'save|load' doc/UsersGuide.md
+- grep -n -i 'currentDefense|FVehicle::load|m_defenses' AGENTS.md
+- env -C <worktree> myteam get skill documenter/doc-editing
+- env -C <worktree> myteam get skill diff-first-editing
+- git log --all --oneline | grep -i document (precedent review: TMFR-04 no-op case, CRIT-6 roadmap-annotation precedent)
+- git show a747631d -- doc/synthesized-roadmap.md (sibling CRIT-6 documenter precedent for the [RESOLVED] annotation convention)
+- env -C <worktree> python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root <worktree> --phase docs
+- git add doc/synthesized-roadmap.md
+- git commit -F <commit-message-file>
+
+Final test outcomes:
+- No new test runs were performed by the Documenter; this change is documentation-only (a roadmap traceability annotation) and does not touch executable or test code.
+- Governing evidence remains the Tester's results carried forward from artifacts/phase1-critical-defects/CRIT-3/tester_report.md: SSWTests OK (200 tests, including the 2 new FVehicleTest CRIT-3 regression cases), TacticalTests (tests/tactical standalone runner) OK (253 tests), GuiTests built but not executed (no xvfb-run/Xvfb in this sandbox; CRIT-3 touches no GUI code), and a differential check confirming testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload fails deterministically against the unfixed code and passes with the fix.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase1-critical-defects-plan.md, section 'CRIT-3 — Reset m_currentDefense after FVehicle::load()' (allowed files, task, acceptance criteria, Documentation Impact: 'Update the Doxygen header on FVehicle::load() in include/ships/FVehicle.h. No user-facing docs expected.')
+- Plan section 5 'Overall Documentation Impact': mandatory Doxygen header update (done by Implementer, verified by Documenter); optional roadmap annotation in doc/synthesized-roadmap.md to mark the corresponding defect resolved (done in this pass, following the CRIT-6 sibling precedent); doc/UsersGuide.md close/save wording verification applies to CRIT-5, not CRIT-3; AGENTS.md, CLAUDE.md, doc/DesignNotes.md, and doc/rules/tactical_operations_manual.md are explicitly untouched
+- Non-negotiable repository constraint: doc/rules/tactical_operations_manual.md must never be edited; it was not touched
+
+Convention-file guidance:
+- AGENTS.md 'Function Comments' section: Doxygen-style headers mandatory in header files; simple getters use a one-line /// comment, class/major functions use a full @brief/@param/@author/@date block; on update, bump @date Last Modified and append (never remove) @author entries. FVehicle::load()'s block already follows this convention correctly per the Implementer's edit.
+- AGENTS.md Single-Source-of-Truth Rule: do not restate project facts across entry-point files; canonical facts belong in exactly one place. Followed by placing the roadmap resolution note only in doc/synthesized-roadmap.md's existing C3 row rather than duplicating it elsewhere.
+- Repository documentation directory convention is doc/ (singular), not docs/ (plural) -- relevant because the generic validate_documenter_state.py tool's docs-path heuristic assumes docs/.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-3
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
