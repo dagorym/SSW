@@ -1,0 +1,63 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validate CRIT-1: FGame::cleanUpShips() rewritten to mutate the live per-player fleet lists and per-fleet ship lists (instead of by-value copies) so destroyed ships are removed from real fleets, loss counters increment exactly once per destroyed ship (no re-scan inflation), and emptied fleets are removed from both their owning player and system and then deleted.
+
+Acceptance criteria validated:
+- A ship with HP <= 0 is absent from its owning FFleet::getShipList() after cleanup and the survivor remains -- verified by testCleanUpShipsRemovesDestroyedShipAndReloadsSurvivor (fleet size 1 afterward, destroyed ID absent, survivor ID present).
+- Surviving ships remain in their fleet and have been reload()ed -- same test depletes a survivor Destroyer's torpedo ammo (2 -> 0) before cleanup and asserts it is back to 2 afterward.
+- Loss counters increase by exactly the count of matching destroyed ships per cleanUpShips() call with no re-scan inflation -- verified by testCleanUpShipsUpdatesLossCountersWithoutInflation: a destroyed Sathar Destroyer bumps m_lostSatharShips and m_lostTendaySathar by exactly 1 (m_lostHC/m_lostAC/m_lostTendayUPF unchanged), and a second no-destruction turn pass does not further increment. Counters are read behaviorally from the real FGame::save() byte stream.
+- A fleet emptied by cleanup is absent from both its owning FPlayer's fleet list and its FSystem's fleet list afterward -- verified by testCleanUpShipsRemovesEmptiedFleetFromPlayerAndSystem (fleet present in both lists before endUPFTurn(), absent from both by ID after).
+- Repo builds; existing suites still pass -- full repo-root make (exit 0) and cd tests && make && ./SSWTests OK (201 tests, no pre-existing regressions).
+- Behavioral verification per AGENTS.md: all 3 new cases fail against the un-fixed FGame.cpp and pass against the fix.
+
+Implementation branch or worktree context:
+- Implementation branch merged for test: coord-phase1-critical-defects-CRIT-1-implementer-20260710 (code commit 43fc466fab0be28e319504fd5fa24a8a03f536a5).
+- Tester branch: coord-phase1-critical-defects-CRIT-1-tester-20260710 (test commit b60874752ea8f091b98e4bfddc94f70a79d715d6).
+- cleanUpShips() and checkForCombat() are private; tests drive cleanup through the public FGame::endUPFTurn() turn path with opposing non-transit UPF and Sathar fleets co-located in the same real system and a ship's HP set to 0 via FVehicle::setHP(int). No private method is called directly.
+- Because FGame exposes no public getters for the private loss counters, the loss-counter test reads them behaviorally by parsing the leading fixed-layout fields of the real FGame::save() output (bool m_gui, uint m_round, uint m_currentPlayer, int m_satharRetreat, then the six int counters), matching the exact field order in FGame::save()/load().
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FGame.cpp (Implementer -- cleanUpShips() live-container rewrite)
+- include/strategic/FGame.h (Implementer -- updated Doxygen header on cleanUpShips())
+- tests/strategic/FGameTest.cpp (Tester -- 3 new behavioral cases + readLossCounters helper)
+- tests/strategic/FGameTest.h (Tester -- 3 new CPPUNIT_TEST registrations + method declarations)
+
+Test commit:
+- b60874752ea8f091b98e4bfddc94f70a79d715d6
+
+Commands executed:
+- make -C src/core
+- make -C src/strategic
+- make (repo root) -- full build incl. all module + test libraries, exit 0
+- cd tests && make -- builds SSWTests + GuiTests, exit 0
+- cd tests && ./SSWTests -- OK (201 tests), exit 0
+- Negative control: reverted src/strategic/FGame.cpp to pre-fix (43fc466~1), rebuilt strategic + SSWTests, ran ./SSWTests -- the 3 new FGameTest cases FAILED (201 run, 3 failures); restored the fix and reconfirmed OK (201 tests)
+
+Final test outcomes:
+- cd tests && ./SSWTests (cwd=tests/): OK (201 tests), exit 0.
+- testCleanUpShipsRemovesDestroyedShipAndReloadsSurvivor: PASS
+- testCleanUpShipsRemovesEmptiedFleetFromPlayerAndSystem: PASS
+- testCleanUpShipsUpdatesLossCountersWithoutInflation: PASS
+- Negative control against pre-fix code: all 3 cases FAILED as expected (proves behavioral coverage), then PASS after restoring the fix.
+
+Documentation context:
+- CRIT-1 is part of the phase1-critical-defects plan (plans/phase1-critical-defects-plan.md).
+- The behavior change is internal to strategic turn processing (destroyed-ship/fleet cleanup); no user-facing rules or UsersGuide changes are implied. Doc impact is limited to code-level Doxygen, already updated by the Implementer on cleanUpShips().
+- doc/rules/tactical_operations_manual.md must NOT be edited (non-negotiable constraint).
+
+Plan and diff context:
+- Shared artifact directory: artifacts/phase1-critical-defects/CRIT-1 (contains implementer_report.md, implementer_result.json, tester_prompt.txt, and now the tester artifacts).
+- Comparison base for the fix diff: 43fc466fab0be28e319504fd5fa24a8a03f536a5~1 vs 43fc466 (src/strategic/FGame.cpp, include/strategic/FGame.h).
+- Test diff: b60874752ea8f091b98e4bfddc94f70a79d715d6 (tests/strategic/FGameTest.cpp, tests/strategic/FGameTest.h).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

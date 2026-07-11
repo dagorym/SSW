@@ -1,0 +1,65 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Validate CRIT-1: FGame::cleanUpShips() rewritten to mutate the live per-player fleet lists and per-fleet ship lists (instead of by-value copies) so destroyed ships are removed from real fleets, loss counters increment exactly once per destroyed ship (no re-scan inflation), and emptied fleets are removed from both their owning player and system and then deleted. Documenter verified the Implementer's updated Doxygen block on cleanUpShips() is accurate and complete, and annotated doc/synthesized-roadmap.md to mark defect C1 as resolved (optional traceability per the plan).
+
+Acceptance criteria to verify:
+- A ship with HP <= 0 is absent from its owning FFleet::getShipList() after cleanup and the survivor remains -- verified by testCleanUpShipsRemovesDestroyedShipAndReloadsSurvivor (fleet size 1 afterward, destroyed ID absent, survivor ID present).
+- Surviving ships remain in their fleet and have been reload()ed -- same test depletes a survivor Destroyer's torpedo ammo (2 -> 0) before cleanup and asserts it is back to 2 afterward.
+- Loss counters increase by exactly the count of matching destroyed ships per cleanUpShips() call with no re-scan inflation -- verified by testCleanUpShipsUpdatesLossCountersWithoutInflation: a destroyed Sathar Destroyer bumps m_lostSatharShips and m_lostTendaySathar by exactly 1 (m_lostHC/m_lostAC/m_lostTendayUPF unchanged), and a second no-destruction turn pass does not further increment. Counters are read behaviorally from the real FGame::save() byte stream.
+- A fleet emptied by cleanup is absent from both its owning FPlayer's fleet list and its FSystem's fleet list afterward -- verified by testCleanUpShipsRemovesEmptiedFleetFromPlayerAndSystem (fleet present in both lists before endUPFTurn(), absent from both by ID after).
+- Repo builds; existing suites still pass -- full repo-root make (exit 0) and cd tests && make && ./SSWTests OK (201 tests, no pre-existing regressions).
+- Behavioral verification per AGENTS.md: all 3 new cases fail against the un-fixed FGame.cpp and pass against the fix.
+- Repository-required Doxygen documentation on the changed cleanUpShips() declaration is accurate, complete, and reflects the live-container behavior (verified, no correction needed).
+
+Implementation branch or worktree context:
+- Implementation branch merged for test: coord-phase1-critical-defects-CRIT-1-implementer-20260710 (code commit 43fc466fab0be28e319504fd5fa24a8a03f536a5).
+- Tester branch: coord-phase1-critical-defects-CRIT-1-tester-20260710 (test commit b60874752ea8f091b98e4bfddc94f70a79d715d6).
+- Documenter branch: coord-phase1-critical-defects-CRIT-1-documenter-20260710, documentation commit 9e2097be456b2532c831ff993134a703bc8ab1f.
+- cleanUpShips() and checkForCombat() are private; tests drive cleanup through the public FGame::endUPFTurn() turn path with opposing non-transit UPF and Sathar fleets co-located in the same real system and a ship's HP set to 0 via FVehicle::setHP(int). No private method is called directly.
+- Because FGame exposes no public getters for the private loss counters, the loss-counter test reads them behaviorally by parsing the leading fixed-layout fields of the real FGame::save() output, matching the exact field order in FGame::save()/load().
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FGame.cpp (Implementer -- cleanUpShips() live-container rewrite)
+- include/strategic/FGame.h (Implementer -- updated Doxygen header on cleanUpShips(), reviewed by Documenter and confirmed accurate/complete, no changes needed)
+- tests/strategic/FGameTest.cpp (Tester -- 3 new behavioral cases + readLossCounters helper)
+- tests/strategic/FGameTest.h (Tester -- 3 new CPPUNIT_TEST registrations + method declarations)
+- doc/synthesized-roadmap.md (Documenter -- annotated C1 defect row as resolved, traceability only, optional per plan)
+
+Commands executed:
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <handoff> --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 984f9c3f --head HEAD
+- git diff 43fc466f~1 43fc466f -- include/strategic/FGame.h
+- git diff 43fc466f~1 43fc466f -- src/strategic/FGame.cpp
+- python3 .myteam/documenter/agents-guidance/detect_guidance_targets.py (classified src/strategic/FGame.cpp, include/strategic/FGame.h, tests/strategic/FGameTest.cpp, tests/strategic/FGameTest.h as non-guidance)
+- git add doc/synthesized-roadmap.md
+- git commit -F <doc commit message file> -- documentation commit 9e2097be456b2532c831ff993134a703bc8ab1f
+
+Final test outcomes:
+- No code or test files were modified by the Documenter; the pre-existing Tester result stands: cd tests && ./SSWTests OK (201 tests), exit 0, all 3 new FGameTest cases PASS.
+- Documentation-only change (doc/synthesized-roadmap.md); no rebuild required and none performed.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase1-critical-defects-plan.md, CRIT-1 subtask (stable ID CRIT-1 maps 1:1 to roadmap defect C1).
+- Plan line 134 explicitly authorizes the Documenter to optionally annotate doc/synthesized-roadmap.md marking C1-C6 as resolved once merged, for traceability only; this run annotated only C1 since only CRIT-1 has completed the Implementer/Tester/Documenter chain.
+- Documentation Impact guidance in the incoming handoff: the CRIT-1 behavior change is internal to strategic turn processing (destroyed-ship/fleet cleanup); no user-facing rules or UsersGuide changes are implied; doc impact is limited to code-level Doxygen (already updated by Implementer) plus the optional roadmap annotation.
+
+Convention-file guidance:
+- AGENTS.md Function Comments section: full Doxygen header blocks with @brief, description, @author (comma-separated, never removing prior authors), @date Created/Last Modified are mandatory on changed functions; verified the Implementer's update to FGame::cleanUpShips() in include/strategic/FGame.h satisfies this (accurate description of live-container behavior, author list appended with 'Claude Sonnet 5 (medium)', Last Modified updated to Jul 10, 2026).
+- AGENTS.md Single-Source-of-Truth Rule: do not duplicate project facts across entry-point files; no CLAUDE.md/AGENTS.md changes were needed for this internal bugfix.
+- AGENTS.md Non-negotiable Constraints: doc/rules/tactical_operations_manual.md must never be edited -- confirmed untouched.
+- detect_guidance_targets.py classified all Implementer/Tester changed files as non-guidance; no AGENTS.md or .myteam guidance review was required.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-1
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
