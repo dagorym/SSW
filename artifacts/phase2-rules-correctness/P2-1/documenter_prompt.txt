@@ -1,0 +1,63 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Pass-2 remediation re-validation for P2-1 (defect T1): the first-pass Verifier returned PASS with a single COSMETIC WARNING (doc/synthesized-roadmap.md T1 row cites FDisruptorCannon.cpp:16 for m_range=9, but the Doxygen header edit shifted that line to 17 -- a Documenter-owned fix). The implementation (src/weapons/FDisruptorCannon.cpp, m_range=9) and the committed behavioral tests (tests/weapons/FDisruptorCannonTest.{h,cpp}: testConstructor asserting 9, testSetTargetAcceptsRangeAtMax, testSetTargetRejectsRangeBeyondMax) are unchanged from pass-1 and remain committed on this branch (commit d43644d4). This pass re-ran the full build and both relevant suites in the foreground to reconfirm green status before handing off a narrow documentation-only remediation to the Documenter.
+
+Acceptance criteria validated:
+- A freshly constructed FDisruptorCannon reports range 9 (FDisruptorCannonTest::testConstructor) -- re-confirmed unchanged in pass-2.
+- setTarget(target, 9, ...) accepts the target; setTarget(target, 10..12, ...) rejects it (FDisruptorCannonTest::testSetTargetAcceptsRangeAtMax, testSetTargetRejectsRangeBeyondMax) -- re-confirmed unchanged in pass-2.
+- Repo builds clean; existing suites pass (SSWTests: 219 run / 0 failures; TacticalTests: 253 run / 0 failures) -- re-confirmed in pass-2 with identical totals to pass-1.
+
+Implementation branch or worktree context:
+- Implementer branch/commit (pass-1, unchanged): fc0c137f (src/weapons/FDisruptorCannon.cpp: m_range 12 -> 9, plus Doxygen header update adding an @date Last Modified line).
+- Tester branch/worktree: p2rc-P2-1-tester-20260711 (worktree /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711); test commit remains d43644d4 from pass-1 -- no new test commit was made or needed in pass-2.
+- Prior pass-1 Documenter commit: 3db5cd6c (doc/synthesized-roadmap.md T1 row annotated RESOLVED, citing FDisruptorCannon.cpp:16).
+- Prior pass-1 Verifier commit/verdict: 6dfdd2e2, PASS with one COSMETIC WARNING -- stale line-number citation (FDisruptorCannon.cpp:16 should now read :17) caused by the Implementer's Doxygen header edit shifting the constructor body down one line.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- doc/synthesized-roadmap.md (the only file requiring a change this pass -- T1 row, line ~596, citation `src/weapons/FDisruptorCannon.cpp:16` must become `:17`)
+- src/weapons/FDisruptorCannon.cpp (read-only reference: confirm m_range=9 is on line 17, not 16, before editing the citation)
+- tests/weapons/FDisruptorCannonTest.cpp (read-only reference: unchanged since pass-1, contains testConstructor/testSetTargetAcceptsRangeAtMax/testSetTargetRejectsRangeBeyondMax)
+- tests/weapons/FDisruptorCannonTest.h (read-only reference: unchanged since pass-1)
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711 make
+- env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711/tests make
+- env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711/tests ./SSWTests
+- env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711/tests make tactical-tests
+- env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711/tests/tactical ./TacticalTests
+
+Final test outcomes:
+- Repo build clean via `make` at repo root (exit 0, SSW and BattleSim + all module/test libraries built with no changes needed).
+- `env -C tests make` (fresh test-binary relink): exit 0, no errors.
+- ./SSWTests (run with cwd=tests/): OK (219 tests), 0 failures, 0 errors -- identical totals to pass-1, including FDisruptorCannonTest::testConstructor asserting getRange()==9, testSetTargetAcceptsRangeAtMax, and testSetTargetRejectsRangeBeyondMax.
+- `env -C tests make tactical-tests && env -C tests/tactical ./TacticalTests`: OK (253 tests), 0 failures, 0 errors -- identical totals to pass-1.
+- git status --porcelain was clean both before and after this pass's build/test run -- no test or source changes were made or are needed; the pass-1 test commit d43644d4 (tests/weapons/FDisruptorCannonTest.cpp, tests/weapons/FDisruptorCannonTest.h) remains the authoritative and only test commit for this subtask.
+- AC1 (freshly constructed FDisruptorCannon reports range 9): still validated by FDisruptorCannonTest::testConstructor.
+- AC2 (setTarget(target,9,...) accepted; setTarget(target,10..12,...) rejected): still validated by testSetTargetAcceptsRangeAtMax and testSetTargetRejectsRangeBeyondMax.
+- AC3 (repo builds clean; existing suites pass except the one intentionally updated assertion): still validated -- no suite regressed across this re-run.
+- This pass confirms the Verifier's pass-1 finding was correctly scoped as documentation-only: no test or implementation change is required, only a one-line citation fix in doc/synthesized-roadmap.md (FDisruptorCannon.cpp:16 -> :17), independently re-confirmed by inspecting src/weapons/FDisruptorCannon.cpp (m_range=9 is on line 17: lines 1-7 are the Doxygen file header including the added `@date Last Modified` line, line 13 opens the constructor, m_name/m_fullName/m_type occupy lines 14-16, and m_range=9 is line 17) against doc/synthesized-roadmap.md:596 (still citing `:16`).
+
+Documentation context:
+- This is a remediation pass: the only required documentation change is correcting the stale line-number citation in doc/synthesized-roadmap.md's T1 row (section 6.1) from `src/weapons/FDisruptorCannon.cpp:16` to `src/weapons/FDisruptorCannon.cpp:17`.
+- Independently re-verified in this pass: src/weapons/FDisruptorCannon.cpp lines 1-7 are the Doxygen file header (including the `@date Last Modified: Jul 11, 2026` line added by the Implementer), the constructor opens at line 13, m_name/m_fullName/m_type are set on lines 14-16, and `m_range=9;` is on line 17.
+- The RESOLVED annotation itself (wording, commit hash fc0c137f, manual citations RA 9 / weapon text l.951 / Weapon Restrictions Table l.1145, and the list of behavioral test names) is otherwise accurate and should be re-confirmed as still correct, not rewritten -- only the line-number digit needs to change.
+- No other documentation files need changes: doc/rules/tactical_operations_manual.md must NOT be touched (non-editable rules oracle per AGENTS.md); doc/UsersGuide.md and doc/DesignNotes.md do not reference the Disruptor Cannon's numeric range; doc/test-contracts.md does not need updating since this coverage is behavioral, not source-contract.
+
+Plan and diff context:
+- Plan: plans/phase2-rules-correctness-followups-plan.md, subtask P2-1 / defect T1.
+- This is a Verifier-driven remediation restart (pass-2) of the P2-1 chain; comparison base for the documentation fix is the current tip of branch p2rc-P2-1-tester-20260711 (which already contains the pass-1 Implementer/Tester/Documenter/Verifier commits through 6dfdd2e2 plus the pass-1 archive commit 5abba169). Keep artifacts/phase2-rules-correctness/P2-1/history/pass-1/ untouched; write live pass-2 Documenter artifacts to artifacts/phase2-rules-correctness/P2-1/ directly.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
