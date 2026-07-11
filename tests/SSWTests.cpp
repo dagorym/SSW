@@ -27,6 +27,7 @@
 #include "weapons/FSeekerMissileLauncherTest.h"
 #include "weapons/FTorpedoTest.h"
 #include "weapons/FWeaponFireResultTest.h"
+#include "weapons/FWeaponDefenseResolutionTest.h"
 #include "ships/FVehicleTest.h"
 #include "ships/FTacticalAttackIntegrationTest.h"
 #include "ships/FAssaultScoutTest.h"
@@ -82,6 +83,7 @@ int main( int argc, char **argv)
   runner.addTest( FSeekerMissileLauncherTest::suite() );
   runner.addTest( FTorpedoTest::suite() );
   runner.addTest( FWeaponFireResultTest::suite() );
+  runner.addTest( FWeaponDefenseResolutionTest::suite() );
   runner.addTest( FVehicleTest::suite() );
   runner.addTest( FTacticalAttackIntegrationTest::suite() );
   runner.addTest( FAssaultScoutTest::suite() );

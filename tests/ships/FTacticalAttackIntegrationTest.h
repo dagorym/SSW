@@ -31,6 +31,8 @@ class FTacticalAttackIntegrationTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testFireCopiesAppliedNonHullEffectsIntoAttackResult );
 	CPPUNIT_TEST( testFireReportsConvertedADFHitAsHullDamage );
 	CPPUNIT_TEST( testFireReportsDisastrousFireFallbackAsHullDamage );
+	CPPUNIT_TEST( testMaskingScreenTorpedoOutResolvesAgainstTargetDefenseNotAttackerMSAndDoesNotHalveDamage );
+	CPPUNIT_TEST( testParentlessLaserFireDoesNotCrashAndDoesNotHalveDamageAgainstNonMaskedTarget );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -101,6 +103,38 @@ public:
 	 * @date Last Modified: May 02, 2026
 	 */
 	void testFireReportsDisastrousFireFallbackAsHullDamage();
+
+	/**
+	 * @brief Verifies a non-laser weapon (Torpedo) fired from a ship whose own
+	 * Masking Screen is raised resolves to-hit against the TARGET's
+	 * most-effective operating defense (with attract override), not the
+	 * attacker's Masking Screen, and does not halve damage. This is the T3
+	 * regression case: the "fired out of the screen" to-hit override is
+	 * laser-only (LC/LB), so a Torpedo must ignore the attacker's raised MS
+	 * entirely and resolve via FVehicle::resolveToHitModifier() on the
+	 * target instead. This assertion fails against the pre-fix code, which
+	 * applied the attacker's MS modifier to every weapon type.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testMaskingScreenTorpedoOutResolvesAgainstTargetDefenseNotAttackerMSAndDoesNotHalveDamage();
+
+	/**
+	 * @brief Verifies a laser weapon fired with no parent (as mines and
+	 * seekers fire) against a target whose current defense is NOT a Masking
+	 * Screen does not crash and does not halve damage. This exercises the
+	 * damage-halving block's `(m_parent != NULL && ...)` guard on the
+	 * attacker side of the halving condition -- the specific null-deref risk
+	 * the guard was added to prevent, since the target-side check alone is
+	 * false here and the OR must evaluate the (now-guarded) attacker side.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testParentlessLaserFireDoesNotCrashAndDoesNotHalveDamageAgainstNonMaskedTarget();
 };
 
 }
