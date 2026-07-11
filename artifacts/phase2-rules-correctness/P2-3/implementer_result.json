@@ -1,0 +1,32 @@
+{
+  "subtask": "P2-3",
+  "title": "Strategic rules deviations S2 and S3 in post-combat loss counting",
+  "role": "implementer",
+  "status": "complete",
+  "result": "PASS",
+  "model": "Claude Sonnet 5 (medium)",
+  "date": "2026-07-11",
+  "files_changed": [
+    "src/strategic/FGame.cpp",
+    "include/strategic/FGame.h"
+  ],
+  "changes": {
+    "S2": "cleanUpShips() now increments m_lostSatharShips for every destroyed Sathar ship including fighters (removed the getType() != 'Fighter' guard on that counter).",
+    "S3": "cleanUpShips() increments m_lostTendaySathar / m_lostTendayUPF only when the destroyed ship is neither a fighter nor a member of a militia fleet (fleet->isMilitia()), applied on both sides.",
+    "unchanged": "Conditions 1/2 (m_lostAC/m_lostHC), removal/ownership logic, and save()/load() left intact.",
+    "doxygen": "cleanUpShips() header updated (Last Modified Jul 11, 2026; author list; condition-3/condition-5 counting rules documented)."
+  },
+  "validation": {
+    "build_root_make": "exit 0 (clean)",
+    "test_suite": "OK (217 tests) with cwd=tests/",
+    "notes": "10 FGameHeaderDependencyTest failures only appear when SSWTests is run from a cwd other than tests/ (cwd-relative source-inspection paths); pre-existing and unrelated to this change."
+  },
+  "acceptance_criteria": {
+    "sathar_fighter_increases_lostSatharShips": true,
+    "fighters_do_not_change_tenday_counters": true,
+    "militia_does_not_change_tenday_counters": true,
+    "nonfighter_nonmilitia_increments_correct_tenday_counter": true,
+    "checkForVictory_case5_uses_filtered_counts": true,
+    "builds_clean_suites_pass": true
+  }
+}

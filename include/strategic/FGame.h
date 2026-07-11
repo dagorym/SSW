@@ -460,9 +460,18 @@ private:
    * by this pass is removed from both its owning player and its system,
    * then deleted, since neither retains any other live reference to it.
    *
+   * Loss-counter rules match the Sathar retreat condition text shown by
+   * showRetreatConditions(): condition 3 ("40 ships, including fighters")
+   * means @c m_lostSatharShips counts every destroyed Sathar ship,
+   * including fighters. Condition 5 ("Fighters and Militia ships are not
+   * counted") means @c m_lostTendaySathar / @c m_lostTendayUPF only count
+   * a destroyed ship when it is neither a fighter nor a member of a
+   * militia fleet (per FFleet::isMilitia()); this exclusion applies to
+   * both sides.
+   *
    * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  May 28, 2009
-   * @date Last Modified:  Jul 10, 2026
+   * @date Last Modified:  Jul 11, 2026
    */
   void cleanUpShips();
 

@@ -1209,13 +1209,19 @@ void FGame::cleanUpShips(){
 				}
 				(*pItr)->addDestroyedShip(ship);  // add the ship to the player's destroyed ship list
 				// update destroyed ship counters
+				// retreat condition 5 ("Fighters and Militia ships are not counted") excludes
+				// fighters and ships from militia fleets from both tenday counters, on both sides.
+				bool countsTowardTenday = (ship->getType() != "Fighter") && !fleet->isMilitia();
 				if ((*pItr)->getName()=="UPF"){
-					m_lostTendayUPF++;
-				} else {
-					m_lostTendaySathar++;
-					if (ship->getType()!= "Fighter"){
-						m_lostSatharShips++;
+					if (countsTowardTenday){
+						m_lostTendayUPF++;
 					}
+				} else {
+					if (countsTowardTenday){
+						m_lostTendaySathar++;
+					}
+					// retreat condition 3 ("40 ships, including fighters") counts fighters.
+					m_lostSatharShips++;
 					if (ship->getType() == "HvCruiser"){
 						m_lostHC++;
 					}
