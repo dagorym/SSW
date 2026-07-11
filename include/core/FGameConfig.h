@@ -147,16 +147,19 @@ protected:
 	 *
 	 * On Linux, the executable's own path is resolved via
 	 * `readlink("/proc/self/exe", ...)` into a fixed-size buffer, reserving
-	 * room for the null terminator and clamping the terminator index through
-	 * `computeSafeTerminatorIndex()` so no out-of-bounds write can occur for
-	 * any readlink() return value (including failure, which returns a
-	 * negative value). On readlink() failure, `m_basePath` and
-	 * `m_executablePath` are left as empty strings — a safe, defined state —
-	 * rather than reading an undefined/garbage buffer.
+	 * room for the null terminator. The raw result is captured in a signed
+	 * `ssize_t` and checked before the buffer is ever touched: a
+	 * non-positive result (failure, or a degenerate zero-length result)
+	 * skips the buffer write entirely and leaves `m_basePath` and
+	 * `m_executablePath` as empty strings — a safe, defined state — rather
+	 * than reading an undefined/garbage buffer. Only on a positive result is
+	 * the null-terminator index computed via `computeSafeTerminatorIndex()`,
+	 * which clamps it into range so a result at or above the buffer's
+	 * capacity still cannot write out of bounds.
 	 *
 	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Jan 28, 2008
-	 * @date Last Modified:  Jul 10, 2026
+	 * @date Last Modified:  Jul 11, 2026
 	 */
 	FGameConfig();
 
