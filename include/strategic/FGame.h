@@ -401,9 +401,18 @@ private:
    * If there is no winner this round it returns a 0.  If the UPF win, it returns a 1.
    * If the Sathar win it returns a 2.  And if it is a draw, it returns a 3.
    *
-   * @author Tom Stephens
+   * The Sathar retreat condition switch is keyed by @c m_satharRetreat and each case
+   * number must evaluate the condition matching the text shown by showRetreatConditions():
+   * case 4 is the station/fortress-destruction condition (UPF wins a tenday boundary if
+   * fewer than two stations were destroyed that tenday, via @c m_stationsDestroyed, which
+   * is reset at the boundary), and case 5 is the ship-loss condition (UPF wins a tenday
+   * boundary if Sathar tenday ship losses exceed UPF losses, via @c m_lostTendaySathar /
+   * @c m_lostTendayUPF, both reset at the boundary). These two cases were previously
+   * evaluated swapped relative to their displayed condition text (defect C2); fixed here.
+   *
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Apr 15, 2008
-   * @date Last Modified:  Apr 15, 2008
+   * @date Last Modified:  Jul 11, 2026
    */
   int checkForVictory();
 
