@@ -41,6 +41,8 @@ class FVehicleTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST( testDisastrousFireAppliesFullEligibleBundleWithoutHullDamage );
 	CPPUNIT_TEST( testDisastrousFireReportsOnlyNewPartialEffectsWithoutHullDamage );
 	CPPUNIT_TEST( testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply );
+	CPPUNIT_TEST( testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload );
+	CPPUNIT_TEST( testLoadedVehicleSurvivesWeaponFireViaCurrentDefense );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -205,6 +207,27 @@ public:
 	 * @date Last Modified: May 02, 2026
 	 */
 	void testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply();
+
+	/**
+	 * @brief Verifies CRIT-3: load() repoints m_currentDefense at the live
+	 * reloaded defense instead of leaving it dangling at a freed pre-load entry.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload();
+
+	/**
+	 * @brief Verifies CRIT-3: a freshly loaded vehicle can be fired upon (the
+	 * combat damage path reads target->getCurrentDefense() directly) without
+	 * a use-after-free.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testLoadedVehicleSurvivesWeaponFireViaCurrentDefense();
 };
 
 }

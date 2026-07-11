@@ -125,11 +125,16 @@ public:
 	 * This method is the inverse of the save method.  It reads the data for
 	 * the class from the designated input stream.  This method returns 0 if
 	 * everything is okay and a positive integer error code if there is a
-	 * failure
+	 * failure. After the weapon and defense lists are rebuilt from the
+	 * stream, m_currentDefense is re-pointed at the live m_defenses[0] entry
+	 * (or a freshly created default FNone if m_defenses is somehow empty) so
+	 * it never dangles at a defense object freed during the reload. Which
+	 * defense was active before the save is not persisted; the active
+	 * defense always resets to the base defense on load.
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 06, 2008
-	 * @date Last Modified:  Mar 06, 2008
+	 * @date Last Modified:  Jul 10, 2026
 	 */
 	virtual int load(std::istream &is);
 

@@ -62,6 +62,17 @@ public:
 	void setNavControlError(int value) { m_navError = value; }
 };
 
+// Exposes an append-only way to give a vehicle multiple *live* defenses
+// (without clearing the existing list the way FVehicleDamageHarness::addDefense
+// does) so CRIT-3 regression coverage can force FVehicle::load()'s
+// defense-rebuild loop to free more than one pre-existing defense object.
+class FVehicleDefenseReloadHarness : public FVehicle {
+public:
+	void appendDefense(FDefense::Defense type) {
+		m_defenses.push_back(createDefense(type));
+	}
+};
+
 const int SEEDED_DAMAGE_TABLE_ROLL = 7;
 
 void applyAdvancedRoll(FVehicleDamageHarness &vehicle, int targetRoll, int damage, FTacticalDamageResolution &result) {
@@ -551,6 +562,82 @@ void FVehicleTest::testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply(
 	CPPUNIT_ASSERT(vehicle.isOnFire());
 	CPPUNIT_ASSERT(vehicle.getHP() == 16);
 	assertSingleHullDamageEffect(result, 120, 20, 16, 4);
+}
+
+void FVehicleTest::testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload() {
+	// AC (CRIT-3): after FVehicle::load() rebuilds m_defenses, m_currentDefense
+	// must point at the live m_defenses[0] entry, not a freed pre-load defense.
+	//
+	// The target vehicle below is given TWO live defenses before load() runs, so
+	// the defense-rebuild loop frees two chunks in order (index 0 then index 1).
+	// The very first defense allocated while repopulating the list reliably
+	// reuses the *last* freed chunk (index 1's address), not index 0's. With the
+	// bug still present, m_currentDefense is left holding index 0's (now-freed,
+	// and address-distinct) pointer, so this identity check fails deterministically
+	// against the unfixed code; with the fix, m_currentDefense is explicitly
+	// reassigned to the new m_defenses[0], so the identity check passes.
+	FVehicle source; // keeps its single constructor-default (FNone) defense
+
+	const char *filename = "FVehicleTest_defense_reload.tmp";
+	std::remove(filename);
+	std::ofstream os(filename, std::ios::binary);
+	source.save(os);
+	os.close();
+
+	FVehicleDefenseReloadHarness target;
+	target.appendDefense(FDefense::PS); // target now has two live defenses pre-load
+
+	std::ifstream is(filename, std::ios::binary);
+	std::string type;
+	readString(is, type);
+	target.load(is);
+	is.close();
+	std::remove(filename);
+
+	CPPUNIT_ASSERT(target.getDefenseCount() == 1);
+	CPPUNIT_ASSERT(target.getDefense(0) != NULL);
+	CPPUNIT_ASSERT(target.getCurrentDefense() == target.getDefense(0));
+	CPPUNIT_ASSERT(target.getCurrentDefense()->getType() == FDefense::NONE);
+}
+
+void FVehicleTest::testLoadedVehicleSurvivesWeaponFireViaCurrentDefense() {
+	// AC (CRIT-3): a loaded vehicle must be safely targetable in the combat
+	// damage path. FWeapon::fire() unconditionally reads
+	// m_target->getCurrentDefense() while computing to-hit probability (see
+	// FWeapon.cpp), so firing at a freshly loaded vehicle exercises the exact
+	// call site the fix addresses; this must complete without a crash and
+	// report a resolved (fired) outcome.
+	FVehicleDamageHarness attacker;
+	attacker.configureStats(20, 4, 3, 10);
+	attacker.addWeapon(FWeapon::LB);
+	FWeapon *weapon = attacker.getWeapon(0);
+	CPPUNIT_ASSERT(weapon != NULL);
+
+	FVehicle source;
+
+	const char *filename = "FVehicleTest_fire_after_reload.tmp";
+	std::remove(filename);
+	std::ofstream os(filename, std::ios::binary);
+	source.save(os);
+	os.close();
+
+	FVehicle target;
+	std::ifstream is(filename, std::ios::binary);
+	std::string type;
+	readString(is, type);
+	target.load(is);
+	is.close();
+	std::remove(filename);
+
+	weapon->setTarget(&target, 3);
+	FTacticalAttackResult result = weapon->fire();
+
+	CPPUNIT_ASSERT(result.skipReason == TASR_None);
+	CPPUNIT_ASSERT(result.fired());
+	CPPUNIT_ASSERT(result.outcome == TAO_Hit || result.outcome == TAO_Missed);
+	// Post-fire access confirms getCurrentDefense() still resolves to a live object.
+	CPPUNIT_ASSERT(target.getCurrentDefense() != NULL);
+	CPPUNIT_ASSERT(target.getCurrentDefense()->getType() == FDefense::NONE);
 }
 
 const int FVehicleTest::save(std::ostream &os) const {return 0;}
