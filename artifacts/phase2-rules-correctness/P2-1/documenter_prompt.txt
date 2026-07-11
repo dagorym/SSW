@@ -1,0 +1,57 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated Implementer's T1 fix (FDisruptorCannon::m_range corrected from 12 to 9 per tactical_operations_manual.md RA 9, weapon text l.951, Weapon Restrictions Table l.1145). Updated the pre-existing testConstructor assertion from range==12 to range==9 (expected consequence of the approved behavior change) and added two new behavioral tests validating FWeapon::setTarget's range clamp: acceptance at r=9 and rejection at r=10, r=11, r=12.
+
+Acceptance criteria validated:
+- A freshly constructed FDisruptorCannon reports range 9 (FDisruptorCannonTest::testConstructor).
+- setTarget(target, 9, ...) accepts the target; setTarget(target, 10..12, ...) rejects it (FDisruptorCannonTest::testSetTargetAcceptsRangeAtMax, testSetTargetRejectsRangeBeyondMax).
+- Repo builds clean; existing suites pass except the one pre-existing test intentionally updated to assert the corrected range=9 (SSWTests: 219 run / 0 failures; TacticalTests: 253 run / 0 failures).
+
+Implementation branch or worktree context:
+- Implementer branch/commit: p2rc-P2-1-implementer-20260711 @ fc0c137f0400a37d9a9950e0aa8d58daa6f556c6 (src/weapons/FDisruptorCannon.cpp: m_range 12 -> 9, plus Doxygen header update).
+- Tester branch/worktree: p2rc-P2-1-tester-20260711 (worktree /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711), test commit d43644d4.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/weapons/FDisruptorCannon.cpp
+- tests/weapons/FDisruptorCannonTest.cpp
+- tests/weapons/FDisruptorCannonTest.h
+
+Test commit:
+- d43644d4
+
+Commands executed:
+- make (repo root)
+- env -C tests ./SSWTests
+- env -C tests make tactical-tests
+- env -C tests/tactical ./TacticalTests
+- env -C tests/weapons make
+
+Final test outcomes:
+- Repo build clean via `make` at repo root (exit 0, SSW and BattleSim + all test binaries built).
+- ./SSWTests (run from tests/ so relative-path source-inspection tests resolve): OK (219 tests), 0 failures, 0 errors -- includes FDisruptorCannonTest::testConstructor now asserting range==9, plus new testSetTargetAcceptsRangeAtMax and testSetTargetRejectsRangeBeyondMax.
+- cd tests && make tactical-tests && ./TacticalTests: OK (253 tests), 0 failures, 0 errors.
+- tests/weapons module has no standalone WeaponsTests runner binary (Makefile only builds libweaponsTests.a); `make` in tests/weapons confirms clean compile of the updated FDisruptorCannonTest.cpp/.h into that library, and SSWTests is the actual link/run entry point for weapons module fixtures.
+- AC1 (freshly constructed FDisruptorCannon reports range 9): validated by FDisruptorCannonTest::testConstructor.
+- AC2 (setTarget(target,9,...) accepted; setTarget(target,10..12,...) rejected): validated by new FDisruptorCannonTest::testSetTargetAcceptsRangeAtMax and testSetTargetRejectsRangeBeyondMax, asserting getTarget()/getTargetRange() observably reflect acceptance vs rejection.
+- AC3 (repo builds clean; existing suites pass except the one pre-existing test intentionally updated): validated -- the only test change was the expected testConstructor range assertion update; no other suite regressed.
+
+Documentation context:
+- No user-facing docs (doc/UsersGuide.md, doc/DesignNotes.md) reference the Disruptor Cannon's numeric range; doc/rules/tactical_operations_manual.md is the non-editable rules oracle and already specifies RA 9 -- it was the correctness source, not something to update.
+- Check whether any changelog (doc/CHANGELOG_0.0.18.md) or synthesized roadmap (doc/synthesized-roadmap.md) tracks per-weapon defect fixes and should note T1/P2-1.
+- No GUI or player-facing display strings encode weapon range numerically outside the weapon class itself, per Implementer's report -- confirm during documentation pass.
+
+Plan and diff context:
+- Plan: plans/phase2-rules-correctness-followups-plan.md, subtask P2-1 / defect T1.
+- Comparison base: master (or the phase2-rules-correctness-followups coordination branch this subtask branches from) -- diff should cover this subtask's implementer + tester commits only, not unrelated phase2 subtasks (P2-2..P2-7) which are separate in-flight work.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
