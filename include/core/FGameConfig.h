@@ -125,6 +125,7 @@ public:
 	 *
 	 * @author Claude Sonnet 5 (medium)
 	 * @date Created: Jul 10, 2026
+	 * @date Last Modified: Jul 11, 2026
 	 */
 	static size_t computeSafeTerminatorIndex(long readlinkResult, size_t bufferCapacity);
 
