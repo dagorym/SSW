@@ -2,7 +2,8 @@
  * @file FWeapon.cpp
  * @brief Implementation file for the FWeapon class
  * @date Created: Feb 27, 2009
- * @author: Tom Stephens
+ * @date Last Modified: Jul 11, 2026
+ * @author: Tom Stephens, Claude Sonnet 5 (medium)
  */
 
 #include "weapons/FWeapon.h"
@@ -132,11 +133,18 @@ FTacticalAttackResult FWeapon::fire(){
 
 	int roll = irand(100);
 	int toHitProb = m_baseToHitProb + ((m_isHeadOn)?10:0);
-	// modify based on target's current defensive system or the attacker's if the attacker has a MS up
-	if (m_parent!=NULL && m_parent->getCurrentDefense()->getType()==FDefense::MS){
+	// A masking screen affects a laser fired out of it exactly as one fired
+	// into it (manual: "fired out of the screen" effect is laser-only), so
+	// only resolve against the attacker's raised MS when this is a laser and
+	// the weapon has a parent (mines/seekers have none). Every other case --
+	// including non-laser weapons fired from inside an attacker's MS --
+	// resolves against the target's most-effective OPERATING defense, with
+	// the attracting-screen override, via FVehicle::resolveToHitModifier().
+	if ((m_type==FWeapon::LC || m_type==FWeapon::LB) && m_parent!=NULL &&
+			m_parent->getCurrentDefense()->getType()==FDefense::MS){
 		toHitProb += m_parent->getCurrentDefense()->getAttackModifier(m_type);
 	} else {
-		toHitProb += m_target->getCurrentDefense()->getAttackModifier(m_type);
+		toHitProb += m_target->resolveToHitModifier(m_type);
 	}
 	if (m_RD){
 		toHitProb -= 5*m_targetRange;
@@ -167,7 +175,8 @@ FTacticalAttackResult FWeapon::fire(){
 		damage += m_dMod;
 		// reduce damage if shooting a laser weapon at (or out of) a masking screen
 		if((m_type==FWeapon::LC || m_type==FWeapon::LB) &&
-				(m_target->getCurrentDefense()->getType()==FDefense::MS||m_parent->getCurrentDefense()->getType()==FDefense::MS)){
+				(m_target->getCurrentDefense()->getType()==FDefense::MS||
+						(m_parent!=NULL && m_parent->getCurrentDefense()->getType()==FDefense::MS))){
 			damage = damage/2 + damage%2;  // half damage rounded up
 		}
 		FTacticalDamageResolution damageResolution;
