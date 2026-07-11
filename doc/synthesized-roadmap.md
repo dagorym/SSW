@@ -593,7 +593,7 @@ and win/draw detection (modulo the bugs above).
 
 | # | Contradiction | Manual | Code |
 |---|---------------|--------|------|
-| T1 | **Disruptor Beam Cannon range** | RA **9** (weapon text l.951 and Weapon Restrictions Table l.1145) | `m_range=12` (`src/weapons/FDisruptorCannon.cpp:16`) — verified |
+| T1 | **Disruptor Beam Cannon range** — ***RESOLVED*** (P2-1, commit `fc0c137f`) | RA **9** (weapon text l.951 and Weapon Restrictions Table l.1145) | `m_range=9` (`src/weapons/FDisruptorCannon.cpp:16`) — _Resolved: `FDisruptorCannon`'s constructor now sets `m_range=9` to match the manual's RA 9; behavioral coverage in `FDisruptorCannonTest::testConstructor`, `testSetTargetAcceptsRangeAtMax`, and `testSetTargetRejectsRangeBeyondMax`; see `artifacts/phase2-rules-correctness/P2-1`._ |
 | T2 | **"Most effective defense" rule** (l.235-238, 411-416) | To-hit resolves against the most effective defense the target owns; only an attracting screen overrides | Resolves against the *currently selected* defense only (`FWeapon.cpp:136-140`). A ship with RH that raises a Proton Screen becomes *easier* to hit with lasers (75% vs the correct 60%) |
 | T3 | **Masking-screen fired-out-of effect** (l.433-436) | Applies **only to lasers** | If the attacker has MS active, *every* weapon type uses the attacker's MS modifier and ignores the target's defense entirely — e.g. a torpedo fired from inside an MS at a stasis-screened target resolves at 50% instead of 75% |
 | T4 | **Head-on gravity crash** (l.887-896) | Cannot be avoided "even if it turns in hex 2" | Ship is only destroyed if its *finalized* position ends adjacent to and facing the planet; the movement UI still offers MR turns from the gravity hex, letting it escape |
