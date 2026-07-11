@@ -1,17 +1,21 @@
 /**
  * @file FGameTest.cpp
  * @brief Implementation file for the FGameTest class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created: Jun 19, 2009
+ * @date Last Modified: Jul 11, 2026
  */
 
 #include "FGameTest.h"
 #include <cstdio>
 #include <fstream>
+#include <vector>
 #include "strategic/FFleet.h"
 #include "strategic/FSystem.h"
 #include "strategic/FMap.h"
+#include "strategic/FPlanet.h"
 #include "strategic/FPlayer.h"
+#include "strategic/IStrategicUI.h"
 #include "ships/FVehicle.h"
 #include "weapons/FWeapon.h"
 //#include "strategic/FGame.h"
@@ -74,6 +78,108 @@ void readLossCounters(FGame &game, int &lostHC, int &lostAC, int &lostSatharShip
 	is.read(reinterpret_cast<char *>(&stationsDestroyed), sizeof(stationsDestroyed));
 	is.close();
 	std::remove(filename);
+}
+
+/**
+ * @brief Minimal mock IStrategicUI used to drive FGame::init() with a fixed
+ * Sathar retreat condition and to observe checkForVictory()'s only externally
+ * visible outcome signal: the notifyVictory(int) callback.
+ *
+ * FGame::checkForVictory() is private and its numeric return value is not
+ * otherwise observable from outside FGame; the only public path that reaches
+ * it is FGame::endUPFTurn(), and the only place a UPF win (result == 1) is
+ * observable is the notifyVictory(1) call the production code itself makes
+ * when it decides the UPF have won. Recording those calls is a behavioral
+ * read of the real evaluated outcome, not a source-text inspection.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+class RetreatConditionMockUI : public IStrategicUI {
+public:
+	explicit RetreatConditionMockUI(int retreatCondition) : m_retreatCondition(retreatCondition) {}
+
+	void showMessage(const std::string&, const std::string&) {}
+	void notifyFailedJump(const std::string&) {}
+	void notifyVictory(int result) { victoryNotifications.push_back(result); }
+	int selectRetreatCondition() { return m_retreatCondition; }
+	int runUPFUnattachedSetup(FPlayer*, FMap*) { return 0; }
+	int runSatharFleetSetup(FPlayer*, FMap*, bool) { return 0; }
+	void showSystemDialog(FSystem*, FMap*, FPlayer*) {}
+	void showFleetDialog(FFleet*, FSystem*, FSystem*) {}
+	void showRetreatConditions(const std::string& text) { lastRetreatConditionsText = text; }
+	int selectCombat(FSystem*, FleetList, FleetList, PlayerList*) { return 0; }
+	void requestRedraw() {}
+
+	int m_retreatCondition;
+	std::vector<int> victoryNotifications;
+	std::string lastRetreatConditionsText;
+};
+
+/**
+ * @brief Adds a Sathar-owned fleet co-located with a station-bearing system so
+ * FGame::checkForCombat() detects an opposing presence and invokes the
+ * private cleanUpShips() through the public endUPFTurn() turn path.
+ *
+ * @param sathar      The Sathar FPlayer that will own the new fleet.
+ * @param sys         The system to place the fleet in; must contain a station
+ *                     so combat is detected even with no other UPF fleet present.
+ * @param fleetName    Name to give the new fleet.
+ * @param doomedCount  Number of ships to add with HP already set to 0.
+ * @param survivorCount Number of ships to add at full health.
+ * @return Pointer to the newly created and system/player-registered fleet.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+FFleet * addCoLocatedSatharRaiders(FPlayer *sathar, FSystem *sys, const std::string &fleetName,
+		int doomedCount, int survivorCount){
+	FFleet *raiders = new FFleet;
+	raiders->setName(fleetName);
+	raiders->setOwner(sathar->getID());
+	raiders->setLocation(sys, false);
+	for (int i = 0; i < doomedCount; i++){
+		FVehicle *doomed = createShip("Destroyer");
+		doomed->setHP(0);
+		raiders->addShip(doomed);
+	}
+	for (int i = 0; i < survivorCount; i++){
+		FVehicle *survivor = createShip("Destroyer");
+		raiders->addShip(survivor);
+	}
+	sathar->addFleet(raiders);
+	sys->addFleet(raiders);
+	return raiders;
+}
+
+/**
+ * @brief Sets the HP of the station at the given system/planet to 0 so the
+ * next cleanUpShips() pass counts it as destroyed.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+void destroyStationAt(const std::string &sysName, const std::string &planetName){
+	FVehicle *station = FMap::getMap().getSystem(sysName)->getPlanet(planetName)->getStation();
+	CPPUNIT_ASSERT(station != NULL);
+	station->setHP(0);
+}
+
+/**
+ * @brief Calls FGame::endUPFTurn() repeatedly, the only public path that
+ * reaches the private checkForVictory().
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+void advanceUPFTurns(FGame *game, int count){
+	for (int i = 0; i < count; i++){
+		game->endUPFTurn();
+	}
 }
 
 }  // namespace
@@ -372,6 +478,294 @@ void FGameTest::testCleanUpShipsUpdatesLossCountersWithoutInflation(){
 	CPPUNIT_ASSERT(lostHCAfter2 == lostHCAfter1);
 	CPPUNIT_ASSERT(lostACAfter2 == lostACAfter1);
 	CPPUNIT_ASSERT(lostTendayUPFAfter2 == lostTendayUPFAfter1);
+}
+
+/**
+ * Acceptance criterion (C2): "Condition 4 selected: UPF victory reported at a
+ * tenday boundary iff fewer than two stations were destroyed that tenday;
+ * station counter resets at the boundary."
+ *
+ * Drives the private checkForVictory() through the only public path that
+ * reaches it, FGame::endUPFTurn(), with m_satharRetreat == 4 and exactly one
+ * station destroyed (below the two-station threshold). Because checkForVictory()
+ * is private, the outcome is observed the way the production code itself
+ * surfaces it -- the notifyVictory(1) callback on the installed IStrategicUI
+ * mock -- and the counter reset is observed by parsing FGame::save()'s real
+ * byte stream (readLossCounters), not by inspecting source text.
+ *
+ * This regresses the pre-fix (swapped) defect: before the fix, case 4
+ * evaluated the ship-loss condition instead of the station condition, so this
+ * scenario (0 ship losses either side) would NOT have produced a UPF victory
+ * under the swapped code, whereas the fixed code correctly does.
+ */
+void FGameTest::testCheckForVictoryCondition4WinsWithStationsBelowThresholdAndResetsCounter(){
+	delete m_g1;
+	RetreatConditionMockUI *ui = new RetreatConditionMockUI(4);
+	m_g1 = &(FGame::create(ui));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(sathar != NULL);
+	FSystem *sys = FMap::getMap().getSystem("Theseus");
+	CPPUNIT_ASSERT(sys != NULL);
+
+	// destroy exactly one station (< 2) and trigger combat/cleanup in the
+	// same system so the destruction registers before the tenday boundary
+	destroyStationAt("Theseus", "Minotaur");
+	addCoLocatedSatharRaiders(sathar, sys, "Test Case4 Win Raiders", 0, 1);
+
+	m_g1->endUPFTurn();        // call #1: registers 1 destroyed station; round 0 -> 1
+	advanceUPFTurns(m_g1, 10); // calls #2-#11: call #11 checks round==10 (tenday boundary)
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ui->victoryNotifications.size());
+	CPPUNIT_ASSERT_EQUAL(1, ui->victoryNotifications[0]);
+
+	int lostHC, lostAC, lostSathar, lostTendaySathar, lostTendayUPF, stationsDestroyed;
+	readLossCounters(*m_g1, lostHC, lostAC, lostSathar, lostTendaySathar, lostTendayUPF, stationsDestroyed);
+	CPPUNIT_ASSERT_EQUAL(0, stationsDestroyed);
+
+	delete ui;
+}
+
+/**
+ * Acceptance criterion (C2): station counter resets at the tenday boundary
+ * regardless of the win/lose outcome, and no UPF victory is reported once the
+ * two-station threshold is met.
+ *
+ * m_satharRetreat == 4 with exactly two stations destroyed (at the
+ * threshold, not below it): checkForVictory() must not call notifyVictory(),
+ * but m_stationsDestroyed must still reset to 0 at the boundary.
+ */
+void FGameTest::testCheckForVictoryCondition4NoWinAtThresholdButCounterStillResets(){
+	delete m_g1;
+	RetreatConditionMockUI *ui = new RetreatConditionMockUI(4);
+	m_g1 = &(FGame::create(ui));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(sathar != NULL);
+	FSystem *sys = FMap::getMap().getSystem("Theseus");
+	CPPUNIT_ASSERT(sys != NULL);
+
+	destroyStationAt("Theseus", "Minotaur");
+	destroyStationAt("K'aken-Kar", "Ken'zah Kit");
+	addCoLocatedSatharRaiders(sathar, sys, "Test Case4 NoWin Raiders", 0, 1);
+
+	m_g1->endUPFTurn();
+	advanceUPFTurns(m_g1, 10);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ui->victoryNotifications.size());
+
+	int lostHC, lostAC, lostSathar, lostTendaySathar, lostTendayUPF, stationsDestroyed;
+	readLossCounters(*m_g1, lostHC, lostAC, lostSathar, lostTendaySathar, lostTendayUPF, stationsDestroyed);
+	CPPUNIT_ASSERT_EQUAL(0, stationsDestroyed);
+
+	delete ui;
+}
+
+/**
+ * C2 regression case explicitly requested by the Planner: with
+ * m_satharRetreat == 4, m_stationsDestroyed == 5, m_lostTendaySathar == 5,
+ * and m_lostTendayUPF == 0 at a tenday boundary, the fixed code must NOT
+ * declare UPF victory (5 stations destroyed is not below the two-station
+ * threshold), whereas the pre-fix (swapped) code -- which evaluated
+ * m_lostTendaySathar > m_lostTendayUPF for case 4 -- would have declared a
+ * UPF victory here (5 > 0). This is a behavioral test that fails against the
+ * unfixed/swapped code and passes against the fix.
+ */
+void FGameTest::testCheckForVictoryCondition4RegressionDoesNotAwardVictoryWhenStationsAtFiveDespiteShipLossImbalance(){
+	delete m_g1;
+	RetreatConditionMockUI *ui = new RetreatConditionMockUI(4);
+	m_g1 = &(FGame::create(ui));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(sathar != NULL);
+	FSystem *sys = FMap::getMap().getSystem("Theseus");
+	CPPUNIT_ASSERT(sys != NULL);
+
+	// 5 stations destroyed (>= 2, so the fixed station-based case 4 condition
+	// is NOT satisfied)
+	destroyStationAt("Theseus", "Minotaur");
+	destroyStationAt("K'aken-Kar", "Ken'zah Kit");
+	destroyStationAt("Araks", "Hentz");
+	destroyStationAt("Prenglar", "Gran Quivera");
+	destroyStationAt("K'tsa-Kar", "Kawdl-Kit");
+
+	// 5 Sathar ship losses vs 0 UPF ship losses this tenday: with the pre-fix
+	// (swapped) case 4 body, this imbalance alone would have declared a UPF
+	// victory regardless of the station count.
+	addCoLocatedSatharRaiders(sathar, sys, "Test Case4 Regression Raiders", 5, 0);
+
+	m_g1->endUPFTurn();
+	advanceUPFTurns(m_g1, 10);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ui->victoryNotifications.size());
+
+	delete ui;
+}
+
+/**
+ * Acceptance criterion (C2): "Condition 5 selected: UPF victory reported at a
+ * tenday boundary iff Sathar tenday ship losses exceed UPF tenday ship
+ * losses; the tenday loss counters (m_lostTendaySathar, m_lostTendayUPF)
+ * reset at the boundary."
+ *
+ * m_satharRetreat == 5 with 3 Sathar ships lost and 1 UPF ship lost this
+ * tenday (3 > 1): checkForVictory() must call notifyVictory(1), and both
+ * tenday loss counters must reset to 0 at the boundary.
+ */
+void FGameTest::testCheckForVictoryCondition5WinsWhenSatharLossesExceedUPFAndResetsCounters(){
+	delete m_g1;
+	RetreatConditionMockUI *ui = new RetreatConditionMockUI(5);
+	m_g1 = &(FGame::create(ui));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	const VehicleList &upfShips = upfFleet->getShipList();
+	CPPUNIT_ASSERT(upfShips.size() >= 1);
+	upfShips[0]->setHP(0); // 1 UPF ship lost this tenday
+
+	FSystem *sys = FMap::getMap().getSystem("Theseus");
+	CPPUNIT_ASSERT(sys != NULL);
+	addCoLocatedSatharRaiders(sathar, sys, "Test Case5 Win Raiders", 3, 0); // 3 Sathar ships lost
+
+	m_g1->endUPFTurn();
+	advanceUPFTurns(m_g1, 10);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ui->victoryNotifications.size());
+	CPPUNIT_ASSERT_EQUAL(1, ui->victoryNotifications[0]);
+
+	int lostHC, lostAC, lostSathar, lostTendaySathar, lostTendayUPF, stationsDestroyed;
+	readLossCounters(*m_g1, lostHC, lostAC, lostSathar, lostTendaySathar, lostTendayUPF, stationsDestroyed);
+	CPPUNIT_ASSERT_EQUAL(0, lostTendaySathar);
+	CPPUNIT_ASSERT_EQUAL(0, lostTendayUPF);
+
+	delete ui;
+}
+
+/**
+ * Acceptance criterion (C2): tenday loss counters reset at the boundary
+ * regardless of the win/lose outcome, and no UPF victory is reported when
+ * Sathar tenday losses do not exceed UPF's.
+ *
+ * m_satharRetreat == 5 with 1 Sathar ship lost and 2 UPF ships lost this
+ * tenday (1 !> 2): checkForVictory() must not call notifyVictory(), but both
+ * tenday loss counters must still reset to 0 at the boundary.
+ */
+void FGameTest::testCheckForVictoryCondition5NoWinWhenSatharLossesDoNotExceedUPFButCountersStillReset(){
+	delete m_g1;
+	RetreatConditionMockUI *ui = new RetreatConditionMockUI(5);
+	m_g1 = &(FGame::create(ui));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	const VehicleList &upfShips = upfFleet->getShipList();
+	CPPUNIT_ASSERT(upfShips.size() >= 2);
+	upfShips[0]->setHP(0);
+	upfShips[1]->setHP(0); // 2 UPF ships lost this tenday
+
+	FSystem *sys = FMap::getMap().getSystem("Theseus");
+	CPPUNIT_ASSERT(sys != NULL);
+	addCoLocatedSatharRaiders(sathar, sys, "Test Case5 NoWin Raiders", 1, 0); // 1 Sathar ship lost
+
+	m_g1->endUPFTurn();
+	advanceUPFTurns(m_g1, 10);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ui->victoryNotifications.size());
+
+	int lostHC, lostAC, lostSathar, lostTendaySathar, lostTendayUPF, stationsDestroyed;
+	readLossCounters(*m_g1, lostHC, lostAC, lostSathar, lostTendaySathar, lostTendayUPF, stationsDestroyed);
+	CPPUNIT_ASSERT_EQUAL(0, lostTendaySathar);
+	CPPUNIT_ASSERT_EQUAL(0, lostTendayUPF);
+
+	delete ui;
+}
+
+/**
+ * C2 regression case explicitly requested by the Planner: the symmetric
+ * counterpart for m_satharRetreat == 5. With m_stationsDestroyed == 5 (at/
+ * above the case-4 threshold), m_lostTendaySathar == 5, and
+ * m_lostTendayUPF == 0 at a tenday boundary, the fixed code correctly
+ * declares a UPF victory (5 > 0), whereas the pre-fix (swapped) code -- which
+ * evaluated m_stationsDestroyed < 2 for case 5 -- would have missed this real
+ * win (5 is not < 2). This is a behavioral test that fails against the
+ * unfixed/swapped code (no notifyVictory(1) call) and passes against the fix.
+ */
+void FGameTest::testCheckForVictoryCondition5RegressionAwardsVictoryWhenStationsAtFiveDespiteBeingAboveThreshold(){
+	delete m_g1;
+	RetreatConditionMockUI *ui = new RetreatConditionMockUI(5);
+	m_g1 = &(FGame::create(ui));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	// 5 stations destroyed (>= 2): with the pre-fix (swapped) case 5 body,
+	// this station count alone would have suppressed the real win below.
+	destroyStationAt("Theseus", "Minotaur");
+	destroyStationAt("K'aken-Kar", "Ken'zah Kit");
+	destroyStationAt("Araks", "Hentz");
+	destroyStationAt("Prenglar", "Gran Quivera");
+	destroyStationAt("K'tsa-Kar", "Kawdl-Kit");
+
+	FSystem *sys = FMap::getMap().getSystem("Theseus");
+	CPPUNIT_ASSERT(sys != NULL);
+	addCoLocatedSatharRaiders(sathar, sys, "Test Case5 Regression Raiders", 5, 0); // 5 Sathar losses, 0 UPF
+
+	m_g1->endUPFTurn();
+	advanceUPFTurns(m_g1, 10);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ui->victoryNotifications.size());
+	CPPUNIT_ASSERT_EQUAL(1, ui->victoryNotifications[0]);
+
+	delete ui;
+}
+
+/**
+ * Acceptance criterion (C2): "The evaluated condition matches the condition
+ * text for the same case number."
+ *
+ * showRetreatConditions() text for case 4 must reference the station-count
+ * condition (the same m_stationsDestroyed counter checkForVictory()
+ * evaluates for case 4), and case 5's text must reference the ship-loss
+ * condition (the same m_lostTendaySathar/m_lostTendayUPF counters
+ * checkForVictory() evaluates for case 5). Combined with the counter-driven
+ * behavioral tests above, this ties the displayed condition text to the
+ * actual evaluated behavior for each case number.
+ */
+void FGameTest::testShowRetreatConditionsTextMatchesEvaluatedCaseNumber(){
+	delete m_g1;
+	RetreatConditionMockUI *ui4 = new RetreatConditionMockUI(4);
+	m_g1 = &(FGame::create(ui4));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	m_g1->showRetreatConditions();
+	CPPUNIT_ASSERT(ui4->lastRetreatConditionsText.find("stations") != std::string::npos);
+
+	delete m_g1;
+	delete ui4;
+
+	RetreatConditionMockUI *ui5 = new RetreatConditionMockUI(5);
+	m_g1 = &(FGame::create(ui5));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	m_g1->showRetreatConditions();
+	CPPUNIT_ASSERT(ui5->lastRetreatConditionsText.find("lost more ships in\ncombat") != std::string::npos);
+
+	delete m_g1;
+	delete ui5;
+	m_g1 = &(FGame::create()); // leave a benign default instance for tearDown()
 }
 
 }
