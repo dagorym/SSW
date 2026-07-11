@@ -1,0 +1,31 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-3/tester_report.md",
+    "artifacts/phase1-critical-defects/CRIT-3/tester_result.json",
+    "artifacts/phase1-critical-defects/CRIT-3/documenter_prompt.txt"
+  ],
+  "branch_name": "coord-phase1-critical-defects-CRIT-3-tester-20260710",
+  "commands_run": [
+    "make (repo root, from a clean `make all_clean` state)",
+    "cd tests && make && ./SSWTests",
+    "cd tests/tactical && make tactical-tests && ./TacticalTests",
+    "Differential regression check: temporarily reverted the CRIT-3 fix block in src/ships/FVehicle.cpp, rebuilt src/ships and tests, reran ./SSWTests to confirm testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload fails deterministically (1 failure, 199 passing); restored the fix via `git checkout -- src/ships/FVehicle.cpp`, rebuilt, and reran ./SSWTests to confirm 200/200 passing again"
+  ],
+  "pass_fail_totals": {
+    "SSWTests_failed": 0,
+    "SSWTests_passed": 200,
+    "SSWTests_total": 200,
+    "TacticalTests_failed": 0,
+    "TacticalTests_passed": 253,
+    "TacticalTests_total": 253
+  },
+  "pass_label": null,
+  "status": "Success",
+  "task_id": "CRIT-3",
+  "test_commit_hash": "8d372d11ef85d3935b6e9ee6cf9fc6d847ee7480",
+  "test_files_changed": [
+    "tests/ships/FVehicleTest.cpp",
+    "tests/ships/FVehicleTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}

@@ -28,6 +28,13 @@ class FGameConfigTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testResolveAssetPathFindsRepoAssetWhenRunningFromTests );
 	CPPUNIT_TEST( testResolveAssetPathNormalizesLeadingDotSlashAndSeparators );
 	CPPUNIT_TEST( testResolveAssetPathIncludesExecutableParentFallbackContract );
+	CPPUNIT_TEST( testComputeSafeTerminatorIndexWithinBoundsReturnsRawResult );
+	CPPUNIT_TEST( testComputeSafeTerminatorIndexClampsWhenResultEqualsCapacity );
+	CPPUNIT_TEST( testComputeSafeTerminatorIndexClampsWhenResultExceedsCapacity );
+	CPPUNIT_TEST( testComputeSafeTerminatorIndexReturnsZeroOnNegativeReadlinkResult );
+	CPPUNIT_TEST( testComputeSafeTerminatorIndexReturnsZeroOnZeroReadlinkResult );
+	CPPUNIT_TEST( testComputeSafeTerminatorIndexReturnsZeroWhenBufferCapacityZero );
+	CPPUNIT_TEST( testComputeSafeTerminatorIndexNeverWritesPastBufferAcrossBoundaryValues );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -48,6 +55,13 @@ public:
 	void testResolveAssetPathFindsRepoAssetWhenRunningFromTests();
 	void testResolveAssetPathNormalizesLeadingDotSlashAndSeparators();
 	void testResolveAssetPathIncludesExecutableParentFallbackContract();
+	void testComputeSafeTerminatorIndexWithinBoundsReturnsRawResult();
+	void testComputeSafeTerminatorIndexClampsWhenResultEqualsCapacity();
+	void testComputeSafeTerminatorIndexClampsWhenResultExceedsCapacity();
+	void testComputeSafeTerminatorIndexReturnsZeroOnNegativeReadlinkResult();
+	void testComputeSafeTerminatorIndexReturnsZeroOnZeroReadlinkResult();
+	void testComputeSafeTerminatorIndexReturnsZeroWhenBufferCapacityZero();
+	void testComputeSafeTerminatorIndexNeverWritesPastBufferAcrossBoundaryValues();
 };
 
 }

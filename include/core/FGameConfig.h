@@ -106,6 +106,28 @@ public:
 	 */
 	std::string resolveAssetPath(const std::string &assetPath) const;
 
+	/**
+	 * @brief Compute a safe, in-bounds index for null-terminating a readlink() buffer.
+	 *
+	 * `readlink()` returns the number of bytes written into the destination
+	 * buffer on success, or a negative value on failure; it never guarantees
+	 * the result is a valid index for null-terminating the buffer (a failure
+	 * return of -1 cast to `size_t` becomes a huge value, and a result equal
+	 * to the requested length may still need clamping). This helper
+	 * centralizes that arithmetic so the constructor can never perform an
+	 * out-of-bounds write, and so the clamping logic can be exercised by
+	 * behavioral tests without spawning a real process.
+	 *
+	 * @param readlinkResult raw return value from readlink() (bytes written, or negative/zero on failure)
+	 * @param bufferCapacity total capacity (in bytes) of the destination buffer
+	 * @return an index in the range [0, bufferCapacity - 1] safe for `buf[index] = 0`;
+	 *         returns 0 when bufferCapacity is 0 or readlinkResult indicates failure (<= 0)
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 10, 2026
+	 */
+	static size_t computeSafeTerminatorIndex(long readlinkResult, size_t bufferCapacity);
+
 private:
 	/// Static instance of the FGameConfig class
 	static FGameConfig * m_config;
@@ -123,9 +145,21 @@ protected:
 	 * size 0.  However, if set to false the Frontier systems are
 	 * set up as described in the Alpha Dawn rules.
 	 *
-	 * @author Tom Stephens
+	 * On Linux, the executable's own path is resolved via
+	 * `readlink("/proc/self/exe", ...)` into a fixed-size buffer, reserving
+	 * room for the null terminator. The raw result is captured in a signed
+	 * `ssize_t` and checked before the buffer is ever touched: a
+	 * non-positive result (failure, or a degenerate zero-length result)
+	 * skips the buffer write entirely and leaves `m_basePath` and
+	 * `m_executablePath` as empty strings — a safe, defined state — rather
+	 * than reading an undefined/garbage buffer. Only on a positive result is
+	 * the null-terminator index computed via `computeSafeTerminatorIndex()`,
+	 * which clamps it into range so a result at or above the buffer's
+	 * capacity still cannot write out of bounds.
+	 *
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Jan 28, 2008
-	 * @date Last Modified:  Feb 19, 2008
+	 * @date Last Modified:  Jul 11, 2026
 	 */
 	FGameConfig();
 

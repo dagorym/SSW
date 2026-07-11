@@ -1,0 +1,137 @@
+Your role is 'verifier'. Your task is as follows:
+
+Verify subtask CRIT-6: the fix for the out-of-bounds write in
+FGameConfig::FGameConfig() (readlink("/proc/self/exe", ...) previously stored
+its return in a size_t and unconditionally wrote buf[size] = 0, an OOB write
+on readlink failure (-1) or a path at/above buffer capacity).
+
+Shared artifact directory (repository-root-relative):
+- artifacts/phase1-critical-defects/CRIT-6
+
+Branch / worktree:
+- Branch: coord-phase1-critical-defects-CRIT-6-documenter-20260710
+- Base branch for the feature diff: coord-phase1-critical-defects
+- All Implementer, Tester, and Documenter changes are committed on this branch.
+
+Acceptance criteria to verify (from plans/phase1-critical-defects-plan.md, CRIT-6):
+1. Normal executable path: m_basePath / m_executablePath resolve as before.
+2. readlink failure (-1) causes no OOB write and leaves config in a safe,
+   defined state (m_basePath / m_executablePath empty).
+3. A path at/above buffer capacity writes no byte past buf.
+4. Repo builds; existing suites still pass.
+
+Full modified-file review surface (inspect the diff against the coordination
+branch, e.g. `git diff coord-phase1-critical-defects...HEAD`):
+
+Implementer (production code):
+- src/core/FGameConfig.cpp
+    - constructor captures readlink() return in a signed ssize_t, requests
+      sizeof(buf) - 1 bytes, computes the terminator index via
+      computeSafeTerminatorIndex() only on the success path (size > 0), and
+      on failure (size <= 0) skips the buffer write entirely and clears
+      m_basePath / m_executablePath.
+    - new pure static helper computeSafeTerminatorIndex(long readlinkResult,
+      size_t bufferCapacity): returns 0 for bufferCapacity==0 or
+      readlinkResult<=0, otherwise clamps to bufferCapacity-1 when the raw
+      result is at/above capacity, else returns the raw result unchanged.
+- include/core/FGameConfig.h
+    - public static declaration + full Doxygen block for
+      computeSafeTerminatorIndex() (brief, description, @param x2, @return,
+      @author, @date Created).
+    - updated constructor Doxygen (@author appended with the implementing
+      model, @date Last Modified bumped, description explains the
+      readlink() signed-capture / early-return-on-failure / clamped-index
+      behavior).
+
+Tester (behavioral coverage):
+- tests/core/FGameConfigTest.cpp
+- tests/core/FGameConfigTest.h
+  Added 7 CppUnit cases (registered via CPPUNIT_TEST in the header; the
+  fixture is already registered in tests/SSWTests.cpp):
+    testComputeSafeTerminatorIndexWithinBoundsReturnsRawResult
+    testComputeSafeTerminatorIndexClampsWhenResultEqualsCapacity
+    testComputeSafeTerminatorIndexClampsWhenResultExceedsCapacity
+    testComputeSafeTerminatorIndexReturnsZeroOnNegativeReadlinkResult
+    testComputeSafeTerminatorIndexReturnsZeroOnZeroReadlinkResult
+    testComputeSafeTerminatorIndexReturnsZeroWhenBufferCapacityZero
+    testComputeSafeTerminatorIndexNeverWritesPastBufferAcrossBoundaryValues
+  The last is an end-to-end guarded-buffer test that reproduces the
+  constructor's exact write pattern buf[computeSafeTerminatorIndex(...)] = 0
+  and asserts no byte outside an 8-byte buffer is touched for readlink
+  results { -1, 0, 8, 9, 100 }.
+
+Documenter (documentation-only):
+- include/core/FGameConfig.h
+    - Corrected the constructor's Doxygen description: the original
+      Implementer wording implied computeSafeTerminatorIndex() was
+      responsible for making the failure case safe. In fact, on failure
+      (size <= 0) the constructor takes an early-return branch that never
+      touches buf at all and never calls computeSafeTerminatorIndex();
+      that helper is only invoked on the success path to clamp an
+      at/above-capacity index into range. The corrected wording states
+      this precisely. @date Last Modified bumped to reflect the doc edit;
+      @author list unchanged (same model/reasoning-level entry already
+      present, per the "append not replace" author-list rule).
+    - No change to computeSafeTerminatorIndex()'s Doxygen block; it was
+      already accurate (verified against the implementation: returns 0 for
+      bufferCapacity==0 or readlinkResult<=0, otherwise clamps into
+      [0, bufferCapacity-1]).
+- doc/synthesized-roadmap.md
+    - Optional traceability-only edit per plan section 5: appended a
+      "[RESOLVED — see CRIT-6: ...]" note to the C6 defect table row.
+      No other rows/sections touched.
+- doc/rules/tactical_operations_manual.md: NOT touched (non-negotiable
+  constraint respected).
+- No user-facing documentation was added or changed; per plan section 5
+  this is a memory-safety fix with no user-facing behavior change, so none
+  was expected.
+
+Commit references on this branch (chronological):
+- 7ab17897 Fix CRIT-6: prevent OOB write in FGameConfig readlink handling (Implementer)
+- 6c7bf464 Add implementer artifacts for CRIT-6
+- cec2da37 Add CRIT-6 behavioral tests for FGameConfig readlink OOB guard (Tester)
+- 0cb3f327 Add CRIT-6 tester artifacts (report, result, verifier handoff)
+- a747631d Doc pass for CRIT-6: correct constructor Doxygen accuracy, mark C6 resolved (Documenter)
+- (a further Documenter commit adds this artifact set)
+
+How to build and run (wxWidgets 3.3.x and CppUnit are installed in this
+environment; nothing is blocked):
+- Top-level build: run `make` at the repo root (exit 0 expected).
+- Tests: `cd tests && make && ./SSWTests`, with the working directory set to
+  tests/ when the binary runs, so cwd-relative source lookups resolve.
+- Expected result: all tests pass, including the 7 new
+  computeSafeTerminatorIndex cases in FGameConfigTest (baseline suite count
+  before CRIT-6 was 198; expect 205 after).
+
+Important note on test execution: several pre-existing
+FGameHeaderDependencyTest cases resolve source files relative to the current
+working directory and will report "Expected at least one candidate file path
+to be readable" if ./SSWTests is launched from a directory other than
+tests/. This is a pre-existing, cwd-dependent condition unrelated to CRIT-6;
+run the suite from tests/ to observe a clean run.
+
+Regression evidence (fails-against-unfixed): a standalone driver reproducing
+the pre-fix logic buf[static_cast<size_t>(readlinkResult)] = 0 produced
+out-of-bounds indices for readlink results -1, 8, 9, and 100 (capacity 8) —
+exactly the cases the new assertions reject; the fixed helper clamps all of
+them in-bounds.
+
+Documentation-only diff to sanity-check (should have zero effect on binary
+behavior):
+- `git diff 0cb3f327...a747631d` — confirm it touches only comment text in
+  include/core/FGameConfig.h and a table cell in
+  doc/synthesized-roadmap.md, and that `src/core/FGameConfig.cpp` is
+  unchanged since the Tester's commit.
+
+Startup guidance:
+- Blocking inputs (acceptance criteria, implementation context, branch, and
+  artifacts) are all present. Begin verification immediately and continue in
+  the same run; do not stop after scope confirmation or diff review.
+
+Completion gate:
+- Report success only after you have independently rebuilt and re-run the
+  full suite to completion, confirmed all four acceptance criteria,
+  confirmed the documentation-only changes introduce no behavioral diff,
+  confirmed all changes are committed with a clean working tree, and
+  written your required verifier artifacts to
+  artifacts/phase1-critical-defects/CRIT-6.

@@ -1,0 +1,59 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-1/verifier_report.md",
+    "artifacts/phase1-critical-defects/CRIT-1/verifier_result.json"
+  ],
+  "branch_name": "coord-phase1-critical-defects-CRIT-1-verifier-20260710",
+  "verdict": "PASS",
+  "task_id": "CRIT-1",
+  "status": "success",
+  "pass_label": "PASS",
+  "commands_run": [
+    "make all_clean (repo root), exit 0",
+    "make (repo root) -- full clean build incl. all module + test libraries, SSW, BattleSim, SSWTests, GuiTests, TacticalTests, exit 0",
+    "./SSWTests run with cwd=tests/ -- OK (201 tests), exit 0",
+    "git diff coord-phase1-critical-defects...HEAD --stat / per-file review of src/strategic/FGame.cpp, include/strategic/FGame.h, tests/strategic/FGameTest.cpp, tests/strategic/FGameTest.h, doc/synthesized-roadmap.md",
+    "git diff coord-phase1-critical-defects...HEAD -- doc/rules/tactical_operations_manual.md -- confirmed empty (untouched)",
+    "Negative control: in-place reverted src/strategic/FGame.cpp cleanUpShips() fleet-processing loop to pre-fix by-value-copy version (matching commit 43fc466f~1), rebuilt src/strategic and tests/, ran ./SSWTests -- 4 failures/201 (the 3 target FGameTest cases plus one unrelated pre-existing flaky FFleetTest::testDecTransitTime cascade)",
+    "git checkout -- src/strategic/FGame.cpp -- restored fix, verified git status clean",
+    "Rebuilt src/strategic and tests/ again, ran ./SSWTests twice more -- OK (201 tests) both times, confirming fix restores all target cases and no other regression"
+  ],
+  "acceptance_criteria": {
+    "destroyed_ship_removed_from_live_fleet_and_recorded_once": "PASS",
+    "loss_counters_increment_exactly_once_no_reinflation": "PASS",
+    "emptied_fleet_removed_from_player_and_system": "PASS",
+    "surviving_ships_remain_and_reloaded": "PASS",
+    "repo_builds_and_existing_suites_pass": "PASS",
+    "fails_against_unfixed_reconfirmed_independently": "PASS",
+    "tactical_operations_manual_untouched": "PASS",
+    "roadmap_doc_change_is_documentation_only": "PASS"
+  },
+  "test_totals": {
+    "total_tests": 201,
+    "failures": 0,
+    "errors": 0
+  },
+  "negative_control_test_totals": {
+    "total_tests_run": 201,
+    "failures": 4,
+    "target_crit1_cases_failed": 3,
+    "unrelated_cascading_failure": 1
+  },
+  "findings": [
+    {
+      "severity": "WARNING",
+      "summary": "FrontierTests::FFleetTest::testDecTransitTime is flaky/order-and-RNG-dependent (FFleet::decTransitTime() uses irand(100) > getRJChance() with a time-seeded RNG). Observed 1 failure across 3 fresh full-suite runs during this verification, unrelated to any CRIT-1 change (FFleetTest.cpp/FFleet.cpp are outside the CRIT-1 diff surface). Not blocking; noted for a possible separate follow-up.",
+      "blocking": false
+    }
+  ],
+  "diff_reviewed": "coord-phase1-critical-defects...HEAD",
+  "files_reviewed": [
+    "src/strategic/FGame.cpp",
+    "include/strategic/FGame.h",
+    "tests/strategic/FGameTest.cpp",
+    "tests/strategic/FGameTest.h",
+    "doc/synthesized-roadmap.md"
+  ],
+  "working_tree_clean": true,
+  "all_changes_committed": true
+}

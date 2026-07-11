@@ -1,0 +1,31 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-1/tester_report.md",
+    "artifacts/phase1-critical-defects/CRIT-1/tester_result.json",
+    "artifacts/phase1-critical-defects/CRIT-1/documenter_prompt.txt"
+  ],
+  "branch_name": "coord-phase1-critical-defects-CRIT-1-tester-20260710",
+  "commands_run": [
+    "make -C src/core",
+    "make -C src/strategic",
+    "make (repo root) -- full build incl. all module + test libraries, exit 0",
+    "cd tests && make -- builds SSWTests + GuiTests, exit 0",
+    "cd tests && ./SSWTests -- OK (201 tests), exit 0",
+    "Negative control: reverted src/strategic/FGame.cpp to pre-fix (43fc466~1), rebuilt strategic + SSWTests, ran ./SSWTests -- the 3 new FGameTest cases FAILED (201 run, 3 failures); restored the fix and reconfirmed OK (201 tests)"
+  ],
+  "pass_fail_totals": {
+    "errors": 0,
+    "failures": 0,
+    "new_tester_cases_added": 3,
+    "total_tests": 201
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": "CRIT-1",
+  "test_commit_hash": "b60874752ea8f091b98e4bfddc94f70a79d715d6",
+  "test_files_changed": [
+    "tests/strategic/FGameTest.cpp",
+    "tests/strategic/FGameTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}
