@@ -443,9 +443,17 @@ private:
    * The method also checks all the stations and removes the destroyed
    * ones from the game.
    *
-   * @author Tom Stephens
+   * Operates directly on the live per-player fleet lists and live
+   * per-fleet ship lists (rather than by-value copies), so removals and
+   * loss-counter increments apply to the real game state exactly once
+   * per destroyed ship. Destroyed ship IDs are collected before any
+   * mutation to avoid an erase-while-iterating skip bug. A fleet emptied
+   * by this pass is removed from both its owning player and its system,
+   * then deleted, since neither retains any other live reference to it.
+   *
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  May 28, 2009
-   * @date Last Modified:  May 28, 2009
+   * @date Last Modified:  Jul 10, 2026
    */
   void cleanUpShips();
 

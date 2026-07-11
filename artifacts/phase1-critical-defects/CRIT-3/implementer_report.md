@@ -1,0 +1,39 @@
+# Implementer Report
+
+Status:
+- Success
+
+Task summary:
+- Fix Critical defect C3: FVehicle::load() rebuilt m_defenses but never reassigned m_currentDefense, leaving it dangling at the freed constructor-time defense (use-after-free whenever a loaded game enters combat). After the defense list is rebuilt in FVehicle::load(), m_currentDefense is now re-pointed at the live m_defenses[0] entry, with a safe fallback FNone fabricated if m_defenses is ever empty.
+
+Changed files:
+- src/ships/FVehicle.cpp
+- include/ships/FVehicle.h
+
+Validation commands run:
+- make (repo root)
+- cd tests && make && ./SSWTests
+- cd src/core && make; cd src/defenses && make; cd src/weapons && make; cd src/ships && make; cd src/strategic && make (targeted non-GUI module builds)
+- Standalone AddressSanitizer smoke harness (not part of the repo test suite): compiled core+defenses+weapons+ships sources directly with g++ -fsanitize=address against an FFrigate save()/load() round trip, then called getCurrentDefense()->getType() and exercised takeDamage()
+
+Validation outcome:
+- The repo-root `make` and `cd tests && make && ./SSWTests` commands from the task's Validation section could not be run to completion in this sandbox: wxWidgets 3.3.1/wx-config and CppUnit are not installed and cannot be installed (no sudo; apt candidates exist but require a password), so libgui.a and every tests/* target fail at the wx-config/cppunit dependency step before reaching the ships module. This is a pre-existing environment gap unrelated to this change: it reproduces identically on an unmodified checkout (libgui.a is the second prerequisite built by src/Makefile's `all` target, ahead of libships.a) and blocks all six CRIT-1..CRIT-6 worktrees equally. As a substitute, every non-GUI module that depends on ships (core, defenses, weapons, ships, strategic) was built directly via each module's own Makefile and compiles cleanly with zero new warnings or errors after this change (tactical/gui modules fail only on missing wx headers, same as before this change). In addition, a standalone AddressSanitizer smoke harness (script and source kept outside the repo, under the session scratchpad, not part of tests/) was built and run: with the fix in place, save() then load() an FFrigate, call getCurrentDefense()->getType(), and 25 takeDamage() calls all pass cleanly under ASan (heap-use-after-free detection); a differential run with the fix `git stash`-ed out reproduces a heap-use-after-free at the exact getCurrentDefense() read, freed inside FVehicle::load()'s `delete m_defenses[i]` loop (src/ships/FVehicle.cpp:219) -- confirming both the defect and the fix. All changes were restored from the stash after the differential run, verified via `git diff` to match the committed diff exactly.
+
+Implementation/code commit hash:
+- 5ff1c210dd8a8942080cfebea72f7df4e421505b
+
+Artifacts written:
+- artifacts/phase1-critical-defects/CRIT-3/implementer_report.md
+- artifacts/phase1-critical-defects/CRIT-3/tester_prompt.txt
+- artifacts/phase1-critical-defects/CRIT-3/implementer_result.json
+
+Implementation context:
+- FVehicle::load() is at src/ships/FVehicle.cpp (load() spans roughly lines 186-241 after this change). The defense-rebuild loop deletes every entry in the pre-existing m_defenses vector (including the constructor-time default FNone that m_currentDefense originally pointed at -- see FVehicle::FVehicle() at src/ships/FVehicle.cpp:130-132) and repopulates it from the stream via createDefense(defType) + d->load(is).
+- The fix adds, immediately after the defense-rebuild loop and before `return 0;`: if m_defenses is non-empty, m_currentDefense = m_defenses[0]; otherwise a new FNone is constructed, pushed onto m_defenses, and pointed at by m_currentDefense.
+- FVehicle::save() writes m_type (via writeString) before m_ID, but FVehicle::load() does NOT read m_type -- the real call convention (see FFleet::load() at src/strategic/FFleet.cpp:173-174) is that the caller reads the type string itself, calls createShip(type) to construct the correctly-typed subclass, and only then calls load() on that instance to consume the remainder of the record. Any behavioral test must follow the same convention: read/skip the leading type string (or use the same higher-level load path FFleet/FPlayer/FGame use) before invoking FVehicle::load() directly, or drive the test through FFleet::load()/FPlayer::load() instead.
+- getCurrentDefense() is declared in include/ships/FVehicle.h (getter returns m_currentDefense directly, no null-check on the caller side historically, so a live pointer is required at all times after construction).
+- Persisting which defense was active before save is explicitly out of scope for this fix (roadmap item H2); the active defense always resets to the base defense (index 0) on load, matching pre-bug intent (every ship's base defense, e.g. Reflective Hull, is pushed first in each subclass constructor's m_defenses list, mirroring FVehicle's own base-class FNone-at-index-0 pattern).
+- Unrelated, pre-existing issue observed but NOT touched (out of scope for CRIT-3, allowed files are only FVehicle.cpp/FVehicle.h): every concrete ship subclass constructor (e.g. FFrigate::FFrigate() at src/ships/FFrigate.cpp:44) calls `m_defenses.clear()` without first deleting the FVehicle base constructor's default FNone entry, leaking that one object per ship construction. This was visible as a LeakSanitizer report in the ASan smoke harness and is unrelated to the load()/m_currentDefense defect; worth flagging to the Coordinator/roadmap owner as a possible future Medium item, but out of scope here.
+
+Expected validation failures carried forward:
+- `make` (repo root) and `cd tests && make && ./SSWTests` cannot complete in this sandbox: libgui.a and the tests/* Makefiles unconditionally invoke `wx-config` and link CppUnit, and neither wxWidgets nor CppUnit is installed (no sudo available to install them). This reproduces identically without this change (verified: `git stash` of this change still hits the same wx-config/cppunit failure at the same build step), so it is a pre-existing environment/tooling gap, not a regression introduced by this fix.

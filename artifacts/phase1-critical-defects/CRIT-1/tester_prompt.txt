@@ -1,0 +1,46 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Fix Critical defect C1: FGame::cleanUpShips() mutated by-value copies of the fleet and ship vectors, so destroyed ships were never removed from real fleets, loss counters could inflate on re-scan, and empty fleets were never removed. Rewrote the cleanup loop to operate on the live FPlayer/FFleet containers via FFleet::removeShip(id) and FPlayer::removeFleet(id)/FSystem::removeFleet(id), collecting destroyed-ship IDs before mutation to avoid the erase-while-iterating skip bug, and deleting emptied, orphaned fleet objects.
+
+Modified files:
+- src/strategic/FGame.cpp
+- include/strategic/FGame.h
+
+Acceptance criteria to validate (from Planner):
+- A ship with HP <= 0 is absent from its owning FFleet::getShipList() after cleanup and appears exactly once in the owning FPlayer's destroyed record.
+- Loss counters (m_lostTendayUPF/m_lostTendaySathar/m_lostSatharShips/m_lostHC/m_lostAC) increase by exactly the count of matching destroyed ships per cleanUpShips() call, with no inflation from re-scanning.
+- A fleet emptied by cleanup is absent from both its owning FPlayer's fleet list and its FSystem's fleet list afterward.
+- Surviving ships remain in their fleet and have been reload()ed.
+- Repo builds; existing suites still pass (blocked in this sandbox by pre-existing missing wx-config -- see validation_outcome).
+
+Create test files in:
+- tests/strategic/FGameTest.cpp and tests/strategic/FGameTest.h (existing FGameTest fixture already uses FGame::create() + init(NULL) to build a real populated game).
+
+Implementation context for testing:
+- cleanUpShips() is a private FGame method; the only public entry point that reaches it is FGame::checkForCombat() (also private), which calls cleanUpShips() when a system currently has both a non-transit UPF fleet and a non-transit Sathar fleet present (combatOccurred flag). A behavioral test must drive cleanup through whatever public turn-processing path in FGame ultimately invokes checkForCombat() (e.g. ending a turn/round with opposing fleets co-located and a ship's HP set to <= 0 via FVehicle::setHP(int)), rather than calling cleanUpShips()/checkForCombat() directly.
+- FFleet::removeShip(unsigned int id) (src/strategic/FFleet.cpp:71) returns the removed FVehicle* without deleting it; ownership passes to whoever calls it -- cleanUpShips() immediately hands that pointer to FPlayer::addDestroyedShip(ship), preserving today's destroyed-ship ownership contract (no new deletion of destroyed ships; that remains Phase 2 scope per the plan).
+- FPlayer::removeFleet(unsigned int id) (src/strategic/FPlayer.cpp:162) and FSystem::removeFleet(unsigned int id) (src/strategic/FSystem.cpp:41) both erase-and-return without deleting; cleanUpShips() now calls both for any fleet left with 0 ships, then deletes the orphaned FFleet object itself, since no other live reference to a fleet was found in the codebase (searched for in-transit/secondary fleet tracking in FGame.cpp/FGame.h; fleets are only referenced from FPlayer::m_fleets and FSystem::m_fleets, both of which are cleared before the delete).
+- The rewritten loop collects destroyed ship IDs in a first pass (read-only over the live const VehicleList& from FFleet::getShipList()) and removes them in a second pass by ID via FFleet::removeShip(id), avoiding the original code's erase-while-iterating skip bug (iterator invalidation plus a double sItr++ after erase). Surviving ships are still reload()ed in the same first pass, preserving the existing '@todo check for being in supply' comment on that line.
+- Empty-fleet removal is deferred to after each player's fleet-list scan completes (fleets to remove are collected into a small std::vector<FFleet*>), so the outer fList iteration is never mutated mid-scan.
+- The Doxygen header on FGame::cleanUpShips() in include/strategic/FGame.h was updated: description now documents the live-container behavior and the two-pass/ID-collection approach; @date Last Modified set to Jul 10, 2026; @author now reads 'Tom Stephens, Claude Sonnet 5 (medium)' (original author preserved, new author appended per repository convention).
+
+Suggested test command(s):
+- make -C src/core
+- make -C src/strategic
+- make (repo root)
+- cd tests && make && ./SSWTests
+
+Existing validations expected to fail only because approved behavior changed:
+- `make` from repo root and `cd tests && make && ./SSWTests` cannot run to completion in this sandbox because `wx-config` is absent from the environment entirely (no wxWidgets install, no package, only unbuilt source with .in templates). This is a pre-existing, environment-wide gap affecting every GUI-linked Makefile in the repository (src/gui, and all of tests/core, tests/strategic, tests/ships, tests/weapons, tests/tactical), not something introduced by this change. It was verified that src/core and src/strategic -- the only two modules this change touches -- compile cleanly and independently of wx-config.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

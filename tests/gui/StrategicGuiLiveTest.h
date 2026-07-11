@@ -41,6 +41,7 @@ CPPUNIT_TEST( testCombatSelectionDialogsReturnCodesAndState );
 CPPUNIT_TEST( testRemediatedStrategicDialogsUseFirstShowSizingContract );
 CPPUNIT_TEST( testStartupLaunchCreatesCenteredSplashAndMainFrame );
 CPPUNIT_TEST( testSelectCombatLaunchesBattleScreenAndCleansUpLifetime );
+CPPUNIT_TEST( testSelectCombatAttackTranslatesTwoPlanetsSelectionToStationIndex );
 CPPUNIT_TEST( testBattleResultsDialogUpdatesShipStatistics );
 CPPUNIT_TEST( testWXMapDisplayOffscreenRendering );
 CPPUNIT_TEST( testWXPlayerDisplayOffscreenRendersSystemAndTransitFleets );
@@ -223,6 +224,17 @@ public:
 	 * @date Last Modified: Apr 04, 2026
 	 */
 	void testSelectCombatLaunchesBattleScreenAndCleansUpLifetime();
+	/**
+	 * @brief Verifies CRIT-4: TwoPlanetsGUI button selection maps to the correct
+	 * 0-based getPlanetList() index (button 1 -> 0, button 2 -> 1, cancel -> 0)
+	 * by driving the real onAttack() modal chain and checking which planet's
+	 * station FBattleScreen received.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testSelectCombatAttackTranslatesTwoPlanetsSelectionToStationIndex();
 	/**
 	 * @brief Confirms battle-results dialog paths update editable ship statistics fields.
 	 *
