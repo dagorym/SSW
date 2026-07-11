@@ -576,8 +576,8 @@ and win/draw detection (modulo the bugs above).
 | # | Deviation | Rules say | Code does |
 |---|-----------|-----------|-----------|
 | S1 | Retreat conditions 4/5 swapped in evaluation (= defect C2) | 4 = tenday stations; 5 = tenday losses | Evaluated inverted (`FGame.cpp:1046-1064`) |
-| S2 | Condition 3 fighter counting | "lost 40 ships, **including** fighters" | Fighters excluded (`FGame.cpp:1198-1200`) |
-| S3 | Condition 5 fighter/militia counting | Fighters and militia **not** counted | All ships counted (`FGame.cpp:1194-1197`) |
+| S2 | Condition 3 fighter counting — ***RESOLVED*** (P2-3, commit `d6a6702d`) | "lost 40 ships, **including** fighters" | _Resolved: `cleanUpShips()` now increments `m_lostSatharShips` for every destroyed Sathar ship, including fighters (the old `getType() != "Fighter"` guard on that counter was removed); see `artifacts/phase2-rules-correctness/P2-3`._ |
+| S3 | Condition 5 fighter/militia counting — ***RESOLVED*** (P2-3, commit `d6a6702d`) | Fighters and militia **not** counted | _Resolved: `m_lostTendaySathar`/`m_lostTendayUPF` now increment only when the destroyed ship is neither a fighter nor a member of a militia fleet (`FFleet::isMilitia()`), via `countsTowardTenday = (ship->getType() != "Fighter") && !fleet->isMilitia();`, applied on both the UPF and Sathar sides; see `artifacts/phase2-rules-correctness/P2-3`._ |
 | S4 | Sathar OOB light cruisers | 2 | 7 (`FGame.cpp:220`) — verified |
 | S5 | UPF non-attached | 1 Minelayer, no carrier | 1 Assault Carrier, no Minelayer (`FGame.cpp:245-278`) |
 | S6 | Armed stations | 10 (18 stations total) | 11 — extra at Dramune/Outer Reach (`FGame.cpp:929-930`); the Sathar victory threshold (`stationCount <= 7`) is calibrated to 19, so the two deviations only cancel if both stay |
