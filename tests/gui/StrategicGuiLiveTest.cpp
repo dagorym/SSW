@@ -17,6 +17,7 @@
 #include <wx/filename.h>
 #include <wx/panel.h>
 #include <wx/splash.h>
+#include <wx/timer.h>
 #include <wx/toplevel.h>
 #include <wx/window.h>
 
@@ -690,6 +691,123 @@ virtual void finishDialog(int returnCode) wxOVERRIDE {
 private:
 int m_finishCode;
 };
+
+/**
+ * @brief Repeating timer that drives the nested modal chain launched by
+ * SelectCombatGUI::onAttack() when the Sathar attack a two-planet system.
+ *
+ * On each tick it advances a small state machine: first it ends the live
+ * TwoPlanetsGUI modal with the caller-supplied EndModal() code (mirroring a
+ * real "first planet"/"second planet" button press), then it steers the
+ * SelectResolutionGUI modal to the "Battle Board" path, then it captures the
+ * FVehicle* station FBattleScreen::getStation() reports before ending that
+ * modal too. Capturing the station this way proves, end to end through real
+ * wx modal objects, which 0-based planet index SelectCombatGUI::onAttack()
+ * actually used for `m_system->getPlanetList()[planet]`.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+class PlanetAttackFlowTimer : public wxTimer {
+public:
+	explicit PlanetAttackFlowTimer(int planetSelectionCode)
+	: m_planetSelectionCode(planetSelectionCode), m_stage(0), m_capturedStation(NULL) {
+	}
+
+	FVehicle * capturedStation() const {
+		return m_capturedStation;
+	}
+
+	bool sawBattleScreen() const {
+		return m_stage >= 3;
+	}
+
+	virtual void Notify() wxOVERRIDE {
+		if (m_stage == 0) {
+			TwoPlanetsGUI * dialog = findModalTopLevel<TwoPlanetsGUI>();
+			if (dialog != NULL) {
+				m_stage = 1;
+				dialog->EndModal(m_planetSelectionCode);
+			}
+			return;
+		}
+		if (m_stage == 1) {
+			SelectResolutionGUI * dialog = findModalTopLevel<SelectResolutionGUI>();
+			if (dialog != NULL) {
+				m_stage = 2;
+				dialog->EndModal(0);  // 0 == "Battle Board" per SelectResolutionGUI::onBattleBoard
+			}
+			return;
+		}
+		if (m_stage == 2) {
+			Frontier::FBattleScreen * battleScreen = findModalBattleScreen();
+			if (battleScreen != NULL) {
+				m_capturedStation = battleScreen->getStation();
+				m_stage = 3;
+				battleScreen->EndModal(0);
+			}
+			return;
+		}
+	}
+
+private:
+	template<typename T>
+	static T * findModalTopLevel() {
+		wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
+		while (node != NULL) {
+			T * candidate = dynamic_cast<T *>(node->GetData());
+			wxDialog * asDialog = dynamic_cast<wxDialog *>(node->GetData());
+			if (candidate != NULL && asDialog != NULL && asDialog->IsModal()) {
+				return candidate;
+			}
+			node = node->GetNext();
+		}
+		return NULL;
+	}
+
+	static Frontier::FBattleScreen * findModalBattleScreen() {
+		wxWindowList::compatibility_iterator node = wxTopLevelWindows.GetFirst();
+		while (node != NULL) {
+			Frontier::FBattleScreen * battleScreen = dynamic_cast<Frontier::FBattleScreen *>(node->GetData());
+			if (battleScreen != NULL && battleScreen->IsModal()) {
+				return battleScreen;
+			}
+			node = node->GetNext();
+		}
+		return NULL;
+	}
+
+	int m_planetSelectionCode;
+	int m_stage;
+	FVehicle * m_capturedStation;
+};
+
+/**
+ * @brief Runs SelectCombatGUI::onAttack() end to end via a real TwoPlanetsGUI
+ * selection and returns the FVehicle* station FBattleScreen received.
+ *
+ * @param harness Shared GUI test harness used to pump events after the drive.
+ * @param dialog Attacker-selected SelectCombatGUI peer to drive.
+ * @param planetSelectionCode EndModal() code applied to the TwoPlanetsGUI modal
+ * (1 == first planet, 2 == second planet, any other value simulates cancel/close).
+ * @return The FVehicle* station observed on FBattleScreen, or NULL if none was seen.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+FVehicle * driveTwoPlanetAttackAndCaptureStation(WXGuiTestHarness & harness,
+                                                 SelectCombatGUITestPeer & dialog,
+                                                 int planetSelectionCode) {
+	PlanetAttackFlowTimer flowTimer(planetSelectionCode);
+	flowTimer.Start(20, false);
+	dialog.selectAttackerFleet(0);
+	dialog.clickAttack();
+	flowTimer.Stop();
+	harness.pumpEvents(5);
+	return flowTimer.capturedStation();
+}
 
 }
 
@@ -1491,6 +1609,100 @@ void StrategicGuiLiveTest::testSelectCombatLaunchesBattleScreenAndCleansUpLifeti
 	}
 	dialog->Destroy();
 	m_harness.pumpEvents(5);
+
+	parent->Destroy();
+	m_harness.pumpEvents(10);
+	if (!originalCwd.IsEmpty()) {
+		wxSetWorkingDirectory(originalCwd);
+	}
+	FGameConfig::reset();
+	FGameConfig::create();
+}
+
+void StrategicGuiLiveTest::testSelectCombatAttackTranslatesTwoPlanetsSelectionToStationIndex() {
+	// CRIT-4 regression coverage: TwoPlanetsGUI::ShowModal() returns the raw
+	// button identifiers 1/2 via EndModal(1)/EndModal(2), not a 0-based list
+	// index. SelectCombatGUI::onAttack() must translate that raw result into
+	// a valid m_system->getPlanetList() index (button 1 -> 0, button 2 -> 1,
+	// any other/cancel value -> 0) before using it, so it never selects the
+	// wrong planet and never indexes the 2-planet list out of range.
+	const wxString originalCwd = wxGetCwd();
+	if (!wxFileName::DirExists(wxT("icons")) && wxFileName::DirExists(wxT("../../icons"))) {
+		CPPUNIT_ASSERT(wxSetWorkingDirectory(wxT("../../")));
+	}
+	FGameConfig::reset();
+	FGameConfig::create();
+
+	wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Two Planet Attack Parent", wxDefaultPosition, wxSize(720, 520));
+	parent->Show();
+	m_harness.pumpEvents();
+
+	FPlayer player;
+	player.setName("Sathar Attack Test Player");
+
+	FSystem dualPlanetSystem("Two Planet Attack System", 0.0f, 0.0f, 0.0f, player.getID());
+	FPlanet * firstPlanet = new FPlanet("Alpha");
+	FVehicle * firstStation = createShip("FortifiedStation", "Alpha Station");
+	firstPlanet->addStation(firstStation);
+	dualPlanetSystem.addPlanet(firstPlanet);
+
+	FPlanet * secondPlanet = new FPlanet("Beta");
+	FVehicle * secondStation = createShip("FortifiedStation", "Beta Station");
+	secondPlanet->addStation(secondStation);
+	dualPlanetSystem.addPlanet(secondPlanet);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), dualPlanetSystem.getPlanetList().size());
+	CPPUNIT_ASSERT_EQUAL(firstStation, dualPlanetSystem.getPlanetList()[0]->getStation());
+	CPPUNIT_ASSERT_EQUAL(secondStation, dualPlanetSystem.getPlanetList()[1]->getStation());
+
+	FFleet * attackerFleet = new FFleet;
+	attackerFleet->setName("Sathar Attack Fleet");
+	attackerFleet->setIcon("icons/Sathar.png");
+	attackerFleet->setOwner(player.getID());
+	attackerFleet->addShip(createShip("Destroyer"));
+	FleetList attackers;
+	attackers.push_back(attackerFleet);
+	FleetList defenders;  // intentionally empty: skips CombatFleetsGUI/CombatLocationGUI so
+	                       // the station lookup at m_system->getPlanetList()[planet] is reached directly.
+	PlayerList players;
+
+	// selectionCode is the raw TwoPlanetsGUI::EndModal() value (1 == first
+	// planet button, 2 == second planet button, 42 simulates a cancel/close
+	// value outside {1,2}); expectedPlanetIndex is the 0-based index the fix
+	// must resolve to.
+	struct Scenario {
+		int selectionCode;
+		size_t expectedPlanetIndex;
+	};
+	const Scenario scenarios[] = {
+		{1, 0},   // first planet button -> getPlanetList()[0]
+		{2, 1},   // second planet button -> getPlanetList()[1]
+		{42, 0},  // cancel/close-like value -> safe default of getPlanetList()[0]
+	};
+
+	FBattleScreen::resetLifecycleCounters();
+	for (size_t i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); ++i) {
+		SelectCombatGUITestPeer * dialog = new SelectCombatGUITestPeer(
+		    parent, &dualPlanetSystem, defenders, attackers, &players, true /* satharAttacking */);
+
+		FVehicle * capturedStation = driveTwoPlanetAttackAndCaptureStation(m_harness, *dialog, scenarios[i].selectionCode);
+
+		CPPUNIT_ASSERT_EQUAL(1, dialog->finishCode());
+		CPPUNIT_ASSERT(capturedStation != NULL);
+		FVehicle * expectedStation = dualPlanetSystem.getPlanetList()[scenarios[i].expectedPlanetIndex]->getStation();
+		FVehicle * otherStation = dualPlanetSystem.getPlanetList()[1 - scenarios[i].expectedPlanetIndex]->getStation();
+		CPPUNIT_ASSERT_EQUAL(expectedStation, capturedStation);
+		CPPUNIT_ASSERT(capturedStation != otherStation);
+
+		if (dialog->IsShown()) {
+			dialog->Hide();
+		}
+		dialog->Destroy();
+		m_harness.pumpEvents(5);
+	}
+	CPPUNIT_ASSERT_EQUAL(3, FBattleScreen::getConstructedCount());
+	CPPUNIT_ASSERT_EQUAL(FBattleScreen::getConstructedCount(), FBattleScreen::getDestroyedCount());
+	CPPUNIT_ASSERT_EQUAL(0, FBattleScreen::getLiveInstanceCount());
 
 	parent->Destroy();
 	m_harness.pumpEvents(10);
