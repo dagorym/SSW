@@ -1,0 +1,41 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Fix tactical defect T1: FDisruptorCannon::m_range was 12, but the tactical operations manual (RA 9; weapon text l.951 and Weapon Restrictions Table l.1145) requires 9. Changed m_range from 12 to 9 in the FDisruptorCannon constructor and updated the file Doxygen header (@date Last Modified, @author) per CLAUDE.md convention.
+
+Modified files:
+- src/weapons/FDisruptorCannon.cpp
+
+Acceptance criteria to validate (from Planner):
+- A freshly constructed FDisruptorCannon reports range 9.
+- setTarget(target, 9, ...) accepts the target; setTarget(target, 10..12, ...) rejects it (range clamp now excludes 10-12).
+- Repo builds clean; existing suites still pass (except the one pre-existing test asserting the old defective range=12, which is an expected consequence of this fix and must be updated by the Tester to assert range=9).
+
+Create test files in:
+- tests/weapons/FDisruptorCannonTest.{h,cpp} -- update testConstructor's CPPUNIT_ASSERT(m_w1->getRange() == 12) to assert 9, and add behavioral setTarget(range) accept/reject coverage for 9 vs 10-12.
+- tests/tactical/FTacticalBatteryRangeClampTest.{h,cpp} -- existing range-clamp coverage pattern; may add/extend Disruptor Cannon range-clamp assertions here if that suits the established pattern for other weapons.
+
+Implementation context for testing:
+- FDisruptorCannon constructor is in src/weapons/FDisruptorCannon.cpp; m_range field (inherited from FWeapon) is set directly in the constructor body.
+- FWeapon::setTarget(FVehicle *v, int r, bool headOn) in src/weapons/FWeapon.cpp clamps via `if (r <= (int)m_range) { accept }`; with m_range now 9, r==9 is accepted and r in 10..12 is rejected (previously accepted up to 12).
+- No other fields changed: m_nDice, m_FF, m_RD, m_damageTableMod, m_baseToHitProb, m_name, m_fullName, m_type are unchanged.
+- doc/rules/tactical_operations_manual.md is the non-editable correctness oracle (RA 9 for Disruptor Cannon; weapon text l.951; Weapon Restrictions Table l.1145) and was not touched.
+- Only src/weapons/FDisruptorCannon.cpp was in scope for this subtask; test files were intentionally left unmodified by the Implementer per role constraints even though one pre-existing test now fails as an expected consequence of the fix.
+
+Suggested test command(s):
+- make (repo root)
+- cd tests && make && ./SSWTests
+
+Existing validations expected to fail only because approved behavior changed:
+- FrontierTests::FDisruptorCannonTest::testConstructor (tests/weapons/FDisruptorCannonTest.cpp:29) currently asserts m_w1->getRange() == 12. This assertion now fails against the corrected range=9 and must be updated by the Tester to assert 9, consistent with the approved P2-1 acceptance criteria.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

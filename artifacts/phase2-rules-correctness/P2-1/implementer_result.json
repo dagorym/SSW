@@ -1,0 +1,20 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-1/implementer_report.md",
+    "artifacts/phase2-rules-correctness/P2-1/tester_prompt.txt",
+    "artifacts/phase2-rules-correctness/P2-1/implementer_result.json"
+  ],
+  "branch_name": "p2rc-P2-1-implementer-20260711",
+  "changed_files": [
+    "src/weapons/FDisruptorCannon.cpp"
+  ],
+  "code_commit_hash": "fc0c137f0400a37d9a9950e0aa8d58daa6f556c6",
+  "pass_label": "P2-1 Disruptor Cannon range fix",
+  "status": "PASS",
+  "task_id": "P2-1",
+  "validation_commands": [
+    "make (repo root)",
+    "cd tests && make && ./SSWTests"
+  ],
+  "validation_outcome": "Repo build clean (make from repo root, exit 0). Full suite ./SSWTests: 217 run, 1 failure, 0 errors. The single failure is FrontierTests::FDisruptorCannonTest::testConstructor at FDisruptorCannonTest.cpp:29 (CPPUNIT_ASSERT(m_w1->getRange() == 12)) -- this is the pre-existing test hard-coding the old defective range value; it is an expected consequence of the approved T1 behavior fix, not a regression (see plan P2-1 acceptance criteria: 'A freshly constructed FDisruptorCannon reports range 9'; and the Tester handoff note that the new behavioral test 'must fail against the old value 12'). No other test failures were observed. tests/weapons has no standalone WeaponsTests binary target (module Makefile only builds libweaponsTests.a); ./SSWTests is the actual full-suite entry point that links and runs FDisruptorCannonTest."
+}
