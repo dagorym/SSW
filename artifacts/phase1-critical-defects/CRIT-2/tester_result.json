@@ -1,0 +1,39 @@
+{
+  "task_id": "CRIT-2",
+  "status": "success",
+  "branch_name": "coord-phase1-critical-defects-CRIT-2-tester-20260711",
+  "test_commit_hash": "3c3fb2f8932ad2493955aed5027927fec78ce276",
+  "code_under_test_commit_hash": "2828da4394af65e9766330feca9a42b92bd8bcbf",
+  "seam_required": false,
+  "changed_files": [
+    "tests/strategic/FGameTest.cpp",
+    "tests/strategic/FGameTest.h"
+  ],
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-2/tester_report.md",
+    "artifacts/phase1-critical-defects/CRIT-2/tester_result.json",
+    "artifacts/phase1-critical-defects/CRIT-2/documenter_prompt.txt"
+  ],
+  "tests_added": [
+    "FGameTest::testCheckForVictoryCondition4WinsWithStationsBelowThresholdAndResetsCounter",
+    "FGameTest::testCheckForVictoryCondition4NoWinAtThresholdButCounterStillResets",
+    "FGameTest::testCheckForVictoryCondition4RegressionDoesNotAwardVictoryWhenStationsAtFiveDespiteShipLossImbalance",
+    "FGameTest::testCheckForVictoryCondition5WinsWhenSatharLossesExceedUPFAndResetsCounters",
+    "FGameTest::testCheckForVictoryCondition5NoWinWhenSatharLossesDoNotExceedUPFButCountersStillReset",
+    "FGameTest::testCheckForVictoryCondition5RegressionAwardsVictoryWhenStationsAtFiveDespiteBeingAboveThreshold",
+    "FGameTest::testShowRetreatConditionsTextMatchesEvaluatedCaseNumber"
+  ],
+  "validation_commands": [
+    "make (repo root)",
+    "cd tests && make && ./SSWTests (cwd = tests/)"
+  ],
+  "validation_outcome": "Repo-root `make` builds clean (exit 0). Test build (`cd tests && make`) links clean (exit 0). Top-level suite `./SSWTests` (cwd = tests/) reports OK (217 tests), all passing, confirmed green across 4 consecutive runs with the fix in place. No production-code test seam was required: checkForVictory()'s private case-4/case-5 branches were driven end-to-end through the public FGame::endUPFTurn() flow with the retreat condition selected via a mock IStrategicUI, station/ship destruction staged through the real cleanUpShips() combat path, UPF-win outcomes observed via the production notifyVictory(1) callback, and counter resets read back from the real FGame::save() byte stream. Regression proof: temporarily re-swapping the case bodies in src/strategic/FGame.cpp (reproducing the pre-fix defect) caused all 6 counter-driven tests to FAIL (case-4 expected-1/actual-0, case-4 no-win expected-0/actual-2, case-4 regression expected-0/actual-1, case-5 expected-0/actual-3, case-5 no-win expected-0/actual-1, case-5 regression expected-1/actual-0); restoring the fix returns them all to green. FGame.cpp is confirmed back to the committed fix and only the two test files are modified.",
+  "acceptance_criteria_coverage": {
+    "condition_4_upf_victory_iff_fewer_than_two_stations_and_counter_resets": "COVERED (testCheckForVictoryCondition4WinsWithStationsBelowThresholdAndResetsCounter + testCheckForVictoryCondition4NoWinAtThresholdButCounterStillResets)",
+    "condition_5_upf_victory_iff_sathar_losses_exceed_upf_and_tenday_counters_reset": "COVERED (testCheckForVictoryCondition5WinsWhenSatharLossesExceedUPFAndResetsCounters + testCheckForVictoryCondition5NoWinWhenSatharLossesDoNotExceedUPFButCountersStillReset)",
+    "evaluated_condition_matches_displayed_text_for_same_case_number": "COVERED (testShowRetreatConditionsTextMatchesEvaluatedCaseNumber, plus the counter-driven tests tie each case number's evaluation to the correct counters)",
+    "planner_mandated_swapped_code_regression_cases": "COVERED (testCheckForVictoryCondition4RegressionDoesNotAwardVictoryWhenStationsAtFiveDespiteShipLossImbalance and testCheckForVictoryCondition5RegressionAwardsVictoryWhenStationsAtFiveDespiteBeingAboveThreshold; both proven to fail against pre-fix code)"
+  },
+  "notes": "Pre-existing flaky test flagged for coordinator awareness (out of CRIT-2 scope, no action taken): FFleetTest::testDecTransitTime failed once during the swapped-code regression run. Root cause is a time-seeded RNG risk-jump: FFleet::decTransitTime() rolls irand(100) > getRJChance(); the test fleet (speed 2, no battleship) has getRJChance() == 90, so the jump fails ~9% of the time. irand uses the global RNG seeded by srand(time(NULL)) in the FGame constructor, so the pass/fail depends on the wall-clock second. It is unrelated to the CRIT-2 fix and to the added tests; the full suite passed cleanly on 4 consecutive runs with the fix.",
+  "pass_label": null
+}

@@ -1,0 +1,62 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- CRIT-2: FGame::checkForVictory() evaluated Sathar retreat conditions 4 and 5 swapped relative to the text shown by FGame::showRetreatConditions(); Implementer swapped the case-4/case-5 bodies so case 4 evaluates the station-destruction condition and case 5 evaluates the ship-loss condition, and Tester added 7 behavioral FGameTest cases proving the fix and pinning the regression.
+
+Acceptance criteria to verify:
+- Condition 4 selected: UPF victory at a tenday boundary iff fewer than two stations were destroyed that tenday; station counter resets. Verified by src/strategic/FGame.cpp case 4 (m_stationsDestroyed < 2, reset to 0) and behavioral tests testCheckForVictoryCondition4WinsWithStationsBelowThresholdAndResetsCounter / testCheckForVictoryCondition4NoWinAtThresholdButCounterStillResets / testCheckForVictoryCondition4RegressionDoesNotAwardVictoryWhenStationsAtFiveDespiteShipLossImbalance.
+- Condition 5 selected: UPF victory at a tenday boundary iff Sathar tenday ship losses exceed UPF; both tenday loss counters reset. Verified by src/strategic/FGame.cpp case 5 (m_lostTendaySathar > m_lostTendayUPF, both reset to 0) and behavioral tests testCheckForVictoryCondition5WinsWhenSatharLossesExceedUPFAndResetsCounters / testCheckForVictoryCondition5NoWinWhenSatharLossesDoNotExceedUPFButCountersStillReset / testCheckForVictoryCondition5RegressionAwardsVictoryWhenStationsAtFiveDespiteBeingAboveThreshold.
+- The evaluated condition matches the condition text for the same case number. Verified by testShowRetreatConditionsTextMatchesEvaluatedCaseNumber and by the updated Doxygen block on FGame::checkForVictory() in include/strategic/FGame.h, which documents the per-case mapping against FGame::showRetreatConditions()'s displayed text.
+- All 217 SSWTests pass (Tester validation, commit 3c3fb2f8; code under test 2828da43).
+
+Implementation branch or worktree context:
+- Implementer commit: 2828da43 (Fix CRIT-2: swapped case-4/case-5 bodies in FGame::checkForVictory(), plus Doxygen header update in include/strategic/FGame.h)
+- Tester commit: 3c3fb2f8 (7 new behavioral FGameTest cases plus RetreatConditionMockUI and helper methods in tests/strategic/FGameTest.{h,cpp}; no production-code test seam added)
+- Documenter commit: daf8a2a3 (documentation-only: annotate the C2 row in doc/synthesized-roadmap.md as resolved)
+- Stage branch: coord-phase1-critical-defects-CRIT-2-documenter-20260711, branched from the Tester's coord-phase1-critical-defects-CRIT-2-tester-20260711 lineage off coordination branch coord-phase1-critical-defects
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FGame.cpp
+- include/strategic/FGame.h
+- tests/strategic/FGameTest.cpp
+- tests/strategic/FGameTest.h
+- doc/synthesized-roadmap.md
+
+Commands executed:
+- git -C <worktree> log --oneline -10
+- git -C <worktree> diff coord-phase1-critical-defects..HEAD -- src/strategic/FGame.cpp include/strategic/FGame.h
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input documenter_prompt_crit2.txt --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base coord-phase1-critical-defects --head HEAD
+- grep -n 'showRetreatConditions' -A 40 src/strategic/FGame.cpp
+- grep -n -i 'retreat' doc/DesignNotes.md doc/UsersGuide.md
+- grep -n -i 'checkForVictory|m_satharRetreat|stationsDestroyed|lostTendaySathar|lostTendayUPF' doc/DesignNotes.md doc/UsersGuide.md doc/synthesized-roadmap.md
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root <worktree> --phase docs --artifact-dir artifacts/phase1-critical-defects/CRIT-2
+- git -C <worktree> commit -F crit2_doc_commit_msg.txt
+
+Final test outcomes:
+- No rebuild performed by the Documenter: the only change is a documentation-only annotation to doc/synthesized-roadmap.md (a resolved-defect traceability marker), which does not touch any compiled or tested source.
+- Tester's last validated run (commit 3c3fb2f8, code under test 2828da43): 'make' clean build, 'cd tests && make' clean build/link, './SSWTests' -> OK (217 tests), confirmed green across 4 consecutive runs. A pre-existing time-seeded flaky test (FFleetTest::testDecTransitTime, ~9% RNG-dependent risk-jump roll) was observed once during an unrelated re-swap regression-proof run and is unrelated to CRIT-2; it is not present in the fixed-code validation runs.
+
+Plan or evaluation context guidance:
+- plans/phase1-critical-defects-plan.md (CRIT-2 section) is the governing plan; its optional traceability note for marking roadmap defects resolved was followed for the C2 row in doc/synthesized-roadmap.md.
+- Comparison base for the full diff: coord-phase1-critical-defects (the coordination branch / merge-base for this stage branch).
+
+Convention-file guidance:
+- AGENTS.md / CLAUDE.md: NON-NEGOTIABLE — doc/rules/tactical_operations_manual.md must never be edited (not touched; unrelated to this strategic-layer fix).
+- AGENTS.md / CLAUDE.md: per the plan's section 5 'Untouched' list and explicit coordinator instruction, AGENTS.md and CLAUDE.md were left unmodified for this plan.
+- AGENTS.md Doxygen conventions: function/class header blocks require @author (append, never remove, new authors) and @date Last Modified updates; verified the Implementer's include/strategic/FGame.h checkForVictory() header already complies (author list appended with 'Claude Sonnet 5 (medium)', Last Modified updated to Jul 11, 2026) and required no correction.
+- Single-Source-of-Truth Rule (AGENTS.md): the per-case victory-condition mapping now lives solely in the checkForVictory() Doxygen block in include/strategic/FGame.h; it is not duplicated in doc/DesignNotes.md or doc/UsersGuide.md.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-2
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

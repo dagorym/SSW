@@ -1045,21 +1045,21 @@ int FGame::checkForVictory(){
 		break;
 	case 4:
 		if (m_round % 10 == 0 && m_round > 0){ // its the end of a tenday
+			if(m_stationsDestroyed < 2){
+				UPFVictory = true;
+			}
+			// it's the end of the tenday so reset the counter
+			m_stationsDestroyed = 0;
+		}
+		break;
+	case 5:
+		if (m_round % 10 == 0 && m_round > 0){ // its the end of a tenday
 			if(m_lostTendaySathar > m_lostTendayUPF){
 				UPFVictory = true;
 			}
 			// it's the end of the tenday so reset the counter
 			m_lostTendaySathar = 0;
 			m_lostTendayUPF = 0;
-		}
-		break;
-	case 5:
-		if (m_round % 10 == 0 && m_round > 0){ // its the end of a tenday
-			if(m_stationsDestroyed < 2){
-				UPFVictory = true;
-			}
-			// it's the end of the tenday so reset the counter
-			m_stationsDestroyed = 0;
 		}
 		break;
 	default:

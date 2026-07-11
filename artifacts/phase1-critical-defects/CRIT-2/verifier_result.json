@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase1-critical-defects/CRIT-2/verifier_report.md",
+    "artifacts/phase1-critical-defects/CRIT-2/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "coord-phase1-critical-defects-CRIT-2-verifier-20260711",
+  "documentation_accuracy_summary": [
+    "Accurate. The include/strategic/FGame.h Doxygen header correctly describes case 4 = station/fortress destruction via m_stationsDestroyed and case 5 = ship-loss via m_lostTendaySathar/m_lostTendayUPF, matching the implemented switch and the showRetreatConditions() text; author/date updated per AGENTS.md (original author preserved, new author appended).",
+    "The doc/synthesized-roadmap.md C2 row RESOLVED annotation is documentation/traceability only with zero behavioral effect and matches the shipped fix.",
+    "Non-editable doc/rules/tactical_operations_manual.md, AGENTS.md, and CLAUDE.md are untouched."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "CRIT-2",
+  "test_sufficiency_summary": [
+    "Sufficient and behavioral. All four acceptance criteria are covered by runtime tests that construct real FGame state and assert observed outcomes (notifyVictory callback + save()-stream counter reads), not source-text inspection.",
+    "Criterion 1 (case 4): testCheckForVictoryCondition4WinsWithStationsBelowThresholdAndResetsCounter (1 station -> win + reset) and testCheckForVictoryCondition4NoWinAtThresholdButCounterStillResets (2 stations -> no win, counter still resets).",
+    "Criterion 2 (case 5): testCheckForVictoryCondition5WinsWhenSatharLossesExceedUPFAndResetsCounters (3 vs 1 -> win + both counters reset) and testCheckForVictoryCondition5NoWinWhenSatharLossesDoNotExceedUPFButCountersStillReset (1 vs 2 -> no win, both counters reset).",
+    "Criterion 3 (text matches evaluated case): testShowRetreatConditionsTextMatchesEvaluatedCaseNumber ties displayed text (stations/case4, ship-loss/case5) to the counters each case evaluates.",
+    "Disambiguation is genuine: the two Planner-mandated regression cases (Condition4Regression: 5 stations + 5v0 ship imbalance -> must NOT win; Condition5Regression: 5 stations + 5v0 -> must win) use asymmetric station/ship counts so a swap is detectable, not merely a zero-vs-nonzero smoke check.",
+    "Fails-against-unfixed independently reconfirmed by the Verifier: after re-swapping the case bodies, exactly the 6 counter-driven tests failed with the same expected/actual values documented by the Tester (case4 win 1/0, case4 no-win 0/2, case4 regression 0/1, case5 win 0/3, case5 no-win 0/1, case5 regression 1/0); the 7th text test is swap-invariant by design; restoring the fix returned all 217 tests to green."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
