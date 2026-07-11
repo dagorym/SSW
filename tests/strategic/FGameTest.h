@@ -26,6 +26,9 @@ class FGameTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testShowRetreatCondition );
 	CPPUNIT_TEST( testGetPlayer );
 	CPPUNIT_TEST( testSerialize );
+	CPPUNIT_TEST( testCleanUpShipsRemovesDestroyedShipAndReloadsSurvivor );
+	CPPUNIT_TEST( testCleanUpShipsRemovesEmptiedFleetFromPlayerAndSystem );
+	CPPUNIT_TEST( testCleanUpShipsUpdatesLossCountersWithoutInflation );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -44,6 +47,9 @@ public:
 	void testShowRetreatCondition();
 	void testGetPlayer();
 	void testSerialize();
+	void testCleanUpShipsRemovesDestroyedShipAndReloadsSurvivor();
+	void testCleanUpShipsRemovesEmptiedFleetFromPlayerAndSystem();
+	void testCleanUpShipsUpdatesLossCountersWithoutInflation();
 };
 
 }
