@@ -1,0 +1,61 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated the CRIT-5 fix to FMainFrame::onClose() (src/FMainFrame.cpp, include/FMainFrame.h), which changed the save-branch comparison from the dead `result == wxID_OK` to `result == wxID_YES` so choosing Yes on the wxYES_NO|wxCANCEL save-confirmation dialog now actually invokes onSave() before resetGame(); No still resets without saving and Cancel still aborts the close with no save and no reset.
+
+Acceptance criteria validated:
+- Yes invokes the save path before reset -- testMainFrameOnCloseYesInvokesSaveBeforeReset drives the real wxMessageDialog with GTK_RESPONSE_YES and asserts onSave()'s wxFileDialog is observed (recorder.sawFileDialog()), that the Save menu item was still enabled at the moment that dialog appeared (recorder.saveMenuEnabledWhenFileDialogSeen(), proving save ran before resetGame()), and that Save/Close are disabled after onClose() returns (resetGame() ran).
+- No resets without saving -- testMainFrameOnCloseNoResetsWithoutSaving asserts GTK_RESPONSE_NO never produces a file dialog (recorder.sawFileDialog() is false) while Save/Close still end up disabled (resetGame() still ran).
+- Cancel aborts the close (no save, no reset) -- testMainFrameOnCloseCancelAbortsWithoutSaveOrReset asserts GTK_RESPONSE_CANCEL never produces a file dialog and that Save/Close remain enabled after onClose() returns (resetGame() did not run).
+- Repo builds; existing suites still pass -- src/core, src/strategic, src/ships, src/weapons, src/defenses all build cleanly; tests/gui/GuiTests is 70/70 under xvfb-run; tests/SSWTests is 198/198.
+
+Implementation branch or worktree context:
+- Branch/worktree: coord-phase1-critical-defects-CRIT-5-tester-20260710 (implementer's fix already committed at d31daf53 on this branch before testing began).
+- Fix under test: src/FMainFrame.cpp FMainFrame::onClose(wxCommandEvent&) changed `if (result == wxID_OK)` to `if (result == wxID_YES)` around line 305; include/FMainFrame.h onClose() Doxygen header updated to document the Yes/No/Cancel behavior.
+- Verified regression coverage empirically: reverted src/FMainFrame.cpp to the pre-fix comparison, rebuilt, and confirmed only the new Yes-path test fails; restored the fix via git checkout afterward.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/FMainFrame.cpp
+- include/FMainFrame.h
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/Makefile
+
+Test commit:
+- 433a76e5
+
+Commands executed:
+- make -C src/core
+- make -C src/strategic
+- make -C src/ships
+- make -C src/weapons
+- make -C src/defenses
+- make -C tests/gui
+- xvfb-run -a tests/gui/GuiTests
+- make -C tests
+- tests/SSWTests (run with cwd=tests via env -C)
+
+Final test outcomes:
+- tests/gui/GuiTests: 70/70 passed under xvfb-run, including the 3 new CRIT-5 tests (testMainFrameOnCloseYesInvokesSaveBeforeReset, testMainFrameOnCloseNoResetsWithoutSaving, testMainFrameOnCloseCancelAbortsWithoutSaveOrReset).
+- Regression check: temporarily reverted src/FMainFrame.cpp to the pre-fix `result == wxID_OK` comparison (from commit 984f9c3f), rebuilt, and reran GuiTests under xvfb-run -- exactly testMainFrameOnCloseYesInvokesSaveBeforeReset failed (recorder.sawFileDialog() was false, i.e. onSave() was never invoked on Yes), while the No and Cancel tests still passed as expected. Restored src/FMainFrame.cpp via `git checkout -- src/FMainFrame.cpp` (verified clean, no implementation diff) and rebuilt/reran GuiTests to confirm 70/70 green again.
+- tests/SSWTests: 198/198 passed when run with cwd=tests (the suite's FGameHeaderDependencyTest cases resolve paths relative to the tests/ directory; running from repo root without that cwd produces 9 spurious 'file not readable' failures unrelated to this change).
+
+Documentation context:
+- No user-facing behavior changed from what was originally intended (the Save-game-before-close prompt was always supposed to save on Yes); this is a bugfix restoring intended behavior rather than a new feature, so likely no UsersGuide.md changes are needed beyond confirming existing docs already describe the intended Yes/No/Cancel semantics.
+- doc/CHANGELOG_0.0.18.md may warrant a changelog entry noting the Close/New/Open 'save before closing' prompt now actually saves when the user selects Yes.
+- tests/gui/Makefile now runs `pkg-config --cflags gtk+-3.0` in CXXFLAGS (mirroring the existing src/tactical/Makefile convention) because the new tests must drive native (non-wx-tracked) wxMessageDialog/wxFileDialog GTK widgets directly; this is a test-build-only change and does not affect production Makefiles.
+
+Plan and diff context:
+- Plan path: plans/phase1-critical-defects-plan.md (CRIT-5 defect).
+- Comparison base: parent commit 984f9c3f ("Add Phase1 cleanup plan", the commit immediately before the implementer's d31daf53 fix commit) is the pre-fix baseline used for the regression-catch verification described above.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase1-critical-defects/CRIT-5
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
