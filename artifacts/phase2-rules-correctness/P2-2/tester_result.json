@@ -1,0 +1,34 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-2/tester_report.md",
+    "artifacts/phase2-rules-correctness/P2-2/tester_result.json",
+    "artifacts/phase2-rules-correctness/P2-2/documenter_prompt.txt"
+  ],
+  "branch_name": "p2rc-P2-2-tester-20260711",
+  "commands_run": [
+    "make (repo root, clean full build) -- exit 0",
+    "make (tests/weapons module library) -- exit 0",
+    "make (tests/ships module library) -- exit 0",
+    "make all_clean && make (repo root, final clean full build) -- exit 0",
+    "env -C tests ./SSWTests -- OK (226 tests)",
+    "temporary pre-fix regression check: reverted src/weapons/FWeapon.cpp, src/ships/FVehicle.cpp, include/ships/FVehicle.h to the parent commit, rebuilt, reran SSWTests -- confirmed 2 targeted assertion failures plus a SIGSEGV (gdb backtrace: null deref in FVehicle::getCurrentDefense() called with this=0x0 from FWeapon::fire() at FWeapon.cpp:170) in the parentless-laser test, then restored the implementation (working tree matches HEAD) and reran SSWTests -- OK (226 tests)"
+  ],
+  "pass_fail_totals": {
+    "failed": 0,
+    "new_tests_added": 9,
+    "passed": 226,
+    "total_tests_in_suite": 226
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": "P2-2",
+  "test_commit_hash": "5ed8a0a932def8b61de946e517509fe5b2c17a3b",
+  "test_files_changed": [
+    "tests/weapons/FWeaponDefenseResolutionTest.h",
+    "tests/weapons/FWeaponDefenseResolutionTest.cpp",
+    "tests/ships/FTacticalAttackIntegrationTest.h",
+    "tests/ships/FTacticalAttackIntegrationTest.cpp",
+    "tests/SSWTests.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
