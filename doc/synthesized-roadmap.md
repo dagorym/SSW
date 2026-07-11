@@ -143,7 +143,10 @@ Ordered by impact.
   (`FMap.cpp:31-33`), unlike `FMap::create()` which null-checks first — any `getMap()` before
   a `create()` (e.g. a partial/bad load) is a null deref.
 - `FPlayer::m_destroyed` never freed, never serialized (it is the data the Replacements rule
-  needs).
+  needs). **[RESOLVED (freeing) — see P2-5: `FPlayer::~FPlayer()` now deletes and clears every
+  ship in `m_destroyed`, with the sole-ownership contract documented on `addDestroyedShip()`
+  and `m_destroyed`. Serialization remains intentionally deferred — see `doc/deferred-tasks.md`
+  item F2-serialization.]**
 - `cancelJump()` leaves `m_dx/m_dy` pointing at the cancelled destination — the returning
   fleet's map position keeps advancing the wrong way (`FFleet.cpp:190-198`).
 - ICM rule data duplicated in two places that can double-apply (`m_ICMMod` in weapon ctors vs

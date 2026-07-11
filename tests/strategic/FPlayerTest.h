@@ -28,6 +28,8 @@ class FPlayerTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testAddUnattachedShips );
 	CPPUNIT_TEST( testAddDestroyedShips );
 	CPPUNIT_TEST( testSerialize );
+	CPPUNIT_TEST( testDestroyedShipFreedExactlyOnceOnPlayerDestruction );
+	CPPUNIT_TEST( testSurvivingFleetShipNotDoubleDeletedByDestroyedList );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -48,6 +50,8 @@ public:
 	void testAddUnattachedShips();
 	void testAddDestroyedShips();
 	void testSerialize();
+	void testDestroyedShipFreedExactlyOnceOnPlayerDestruction();
+	void testSurvivingFleetShipNotDoubleDeletedByDestroyedList();
 };
 
 }

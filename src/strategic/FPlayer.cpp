@@ -24,6 +24,8 @@ FPlayer::FPlayer(){
   m_classCount++;
 }
 
+// See FPlayer::~FPlayer() Doxygen block in FPlayer.h for the ownership
+// contract this destructor implements (m_fleets, m_unattached, m_destroyed).
 FPlayer::~FPlayer(){
 //	std::cerr << "Entering FPlayer destructor" << std::endl;
 //	std::cerr << "There are " << m_fleets.size() << " fleets to remove" << std::endl;
@@ -46,6 +48,19 @@ FPlayer::~FPlayer(){
 		m_unattached.clear();
 	} else {
 		m_unattached.clear();
+	}
+//	std::cerr << "There are " << m_destroyed.size() << " destroyed ships to remove" << std::endl;
+	// FPlayer is the sole owner of ships in m_destroyed (see addDestroyedShip()); they were
+	// already removed -- not deleted -- from their owning fleet/unattached list by the caller
+	// before being handed off here, so freeing them now cannot double-delete a ship still held
+	// by m_fleets or m_unattached.
+	if (m_destroyed.size() > 0){
+		for (unsigned int i = 0; i < m_destroyed.size(); i++) {
+			delete m_destroyed[i];
+		}
+		m_destroyed.clear();
+	} else {
+		m_destroyed.clear();
 	}
 	m_classCount--;
 	if (m_classCount==0){  // if all players have been deleted

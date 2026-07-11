@@ -1,0 +1,81 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Reviewed the Implementer's fix for reviewer follow-up F2 (FPlayer becomes the sole owner of ships in m_destroyed and frees them in ~FPlayer(), with the ownership contract documented on ~FPlayer(), addDestroyedShip(), and the m_destroyed member) and the Tester's two behavioral tests proving destroyed ships are freed exactly once with no double-delete of ships still held by surviving fleets. The Implementer's Doxygen updates in include/strategic/FPlayer.h already fully satisfied CLAUDE.md's header/author/date conventions and the class-level docblock, and doc/deferred-tasks.md was already created with complete H2 and F2-serialization entries (description, origin, why-deferred, target phase) per the plan's Documentation Impact section, so no further in-code documentation or deferred-tasks.md edits were required. The only Documenter-owned edit was annotating doc/synthesized-roadmap.md's 'FPlayer::m_destroyed never freed, never serialized' Notable-Medium bullet as RESOLVED (freeing) for P2-5, mirroring the Phase 1 C1-C6 tag pattern, and cross-referencing the still-deferred F2-serialization item; only that one bullet was touched, per the Coordinator's instruction not to touch other in-flight subtasks' roadmap lines. save()/load() were confirmed untouched and m_destroyed remains unserialized by design.
+
+Acceptance criteria to verify:
+- An FPlayer owning ships in m_destroyed frees them on destruction -- each destructed exactly once (FPlayerTest::testDestroyedShipFreedExactlyOnceOnPlayerDestruction).
+- No double-delete of a ship still held by a surviving fleet; the surviving fleet's sibling ship is still freed exactly once via the existing m_fleets path (FPlayerTest::testSurvivingFleetShipNotDoubleDeletedByDestroyedList).
+- Ownership contract documented on m_destroyed and addDestroyedShip() in include/strategic/FPlayer.h.
+- ~FPlayer() Doxygen header updated (@date Last Modified Jul 11, 2026, @author includes Claude Sonnet 5 (medium), description).
+- save()/load() NOT touched; m_destroyed NOT serialized.
+- doc/deferred-tasks.md created with H2 and F2-serialization entries, each with description, origin, why deferred (save-format break), and target phase.
+- Repo builds clean; existing suites still pass (SSWTests: 219 run, 0 failures/errors in this documenter's run; TacticalTests: 253 run, 0 failures/errors).
+- doc/synthesized-roadmap.md's F2 (m_destroyed) Notable-Medium bullet is annotated RESOLVED referencing this subtask, per the plan's Documentation Impact section.
+
+Implementation branch or worktree context:
+- Implementer branch/commit: p2rc-P2-5-implementer-20260711 @ 69d300b7 (src/strategic/FPlayer.cpp: ~FPlayer() m_destroyed delete-and-clear loop; include/strategic/FPlayer.h: ownership-contract Doxygen on ~FPlayer(), addDestroyedShip(), m_destroyed, and class-level header; doc/deferred-tasks.md: new file with H2 and F2-serialization entries).
+- Tester branch/commit: p2rc-P2-5-tester-20260711 @ 93e01370 (tests/strategic/FPlayerTest.cpp: CountingVehicle helper + testDestroyedShipFreedExactlyOnceOnPlayerDestruction + testSurvivingFleetShipNotDoubleDeletedByDestroyedList; tests/strategic/FPlayerTest.h: two new fixture method declarations registered in the suite).
+- Documenter branch/worktree: p2rc-P2-5-documenter-20260711 (worktree /home/tstephen/repos/worktrees/p2rc-P2-5-documenter-20260711), documentation commit 29e588324ae927a951fa6ea18b5103779c14b61b.
+- Comparison base: 37fb564b (Planner commit for the Phase 2 rules-correctness + Phase-1 follow-ups plan).
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FPlayer.cpp (Implementer: ~FPlayer() third cleanup block deleting and clearing m_destroyed)
+- include/strategic/FPlayer.h (Implementer: ownership-contract Doxygen on ~FPlayer(), addDestroyedShip(), m_destroyed member comment; class-level @author/@date/description update)
+- doc/deferred-tasks.md (Implementer: new standing deferred-items list; H2 and F2-serialization entries)
+- tests/strategic/FPlayerTest.cpp (Tester: CountingVehicle instrumented-destruction helper; testDestroyedShipFreedExactlyOnceOnPlayerDestruction; testSurvivingFleetShipNotDoubleDeletedByDestroyedList)
+- tests/strategic/FPlayerTest.h (Tester: two new fixture method declarations registered in CPPUNIT_TEST_SUITE)
+- doc/synthesized-roadmap.md (Documenter: F2/m_destroyed Notable-Medium bullet annotated RESOLVED, cross-referencing doc/deferred-tasks.md's F2-serialization item)
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start
+- myteam get skill documenter/preflight
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <prompt> --repo-root <worktree>
+- myteam get skill documenter/diff-review
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --base 37fb564b --head HEAD
+- git diff 37fb564b HEAD -- include/strategic/FPlayer.h src/strategic/FPlayer.cpp doc/deferred-tasks.md
+- git diff 37fb564b HEAD -- tests/strategic/FPlayerTest.cpp tests/strategic/FPlayerTest.h
+- grep -n P2-5 plans/phase2-rules-correctness-followups-plan.md
+- grep -n F2|H2 doc/synthesized-roadmap.md
+- myteam get skill diff-first-editing
+- edit doc/synthesized-roadmap.md (F2/m_destroyed bullet RESOLVED annotation)
+- make (repo root)
+- env -C tests make
+- env -C tests ./SSWTests
+- env -C tests make tactical-tests
+- env -C tests/tactical ./TacticalTests
+- git add doc/synthesized-roadmap.md
+- git commit -F <message file>
+
+Final test outcomes:
+- make (repo root): clean build, exit 0.
+- env -C tests ./SSWTests: OK (219 tests), 0 failures, 0 errors -- includes the two new FPlayerTest tests (testDestroyedShipFreedExactlyOnceOnPlayerDestruction, testSurvivingFleetShipNotDoubleDeletedByDestroyedList); the 9 pre-existing FGameHeaderDependencyTest worktree-source-path failures noted by the Tester did not reproduce in this documenter's build/run (all 219 passed clean in this worktree).
+- env -C tests make tactical-tests && env -C tests/tactical ./TacticalTests: OK (253 tests), 0 failures, 0 errors.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase2-rules-correctness-followups-plan.md, subtask P2-5 (lines 137-148): 'Free FPlayer::m_destroyed + document ownership contract; create the deferred-tasks doc (F2)'.
+- Plan section 2b design decision 4 (binding): 'F2 -- Fix leak + ownership contract now, defer serialization. FPlayer becomes the documented sole owner of m_destroyed and frees them in its destructor. Do not serialize m_destroyed here; record that deferral in doc/deferred-tasks.md.'
+- Plan section 2b design decision 3 (binding): 'H2 -- Deferred. Do not persist the active defense in this plan (it breaks the save format). Record it in doc/deferred-tasks.md for the save-format hardening phase.'
+- Plan section 5 (Documentation Impact, lines 194-199): annotate doc/synthesized-roadmap.md's reviewer follow-ups F1, F2, F4 (and other addressed items) as RESOLVED mirroring the Phase 1 C1-C6 tag pattern; each subtask's Documenter adds its own annotation, union-merged at integration; doc/deferred-tasks.md is created by P2-5 for H2 and F2-serialization; doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md are non-editable.
+
+Convention-file guidance:
+- AGENTS.md Non-negotiable Constraints: doc/rules/tactical_operations_manual.md must never be edited; doc/rules/second-sathar-war-rules.md is likewise non-editable -- neither was touched.
+- CLAUDE.md Function Comments section: Doxygen @date Last Modified and @author (model name + reasoning level, e.g. 'Claude Sonnet 5 (medium)', appended without removing prior authors) updates are mandatory on touched functions/classes; the Implementer already applied these correctly to include/strategic/FPlayer.h's class docblock, ~FPlayer(), and addDestroyedShip(), so no further in-code documentation changes were required by the Documenter.
+- Repository documentation convention uses doc/ (singular), not docs/ (plural), for all project documentation including doc/synthesized-roadmap.md and doc/deferred-tasks.md.
+- Coordinator clarification: the single @date line already present in include/core/FGameConfig.h is the plan's unrelated F5 cosmetic edit from the base commit 37fb564b and was left untouched.
+- Coordinator clarification: only the F2/m_destroyed roadmap bullet was annotated; other subtasks' roadmap rows (T1/T2/T3/S2/S3/RV/F1/F4, etc.) are separate in-flight work and were not touched.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-5
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

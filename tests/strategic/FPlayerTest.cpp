@@ -6,10 +6,38 @@
  */
 
 #include "FPlayerTest.h"
+#include <algorithm>
 #include <cstdio>
+#include <vector>
 
 namespace FrontierTests {
 using namespace Frontier;
+
+namespace {
+	/**
+	 * @brief FVehicle subclass instrumented to record destruction, used to
+	 * prove FPlayer::m_destroyed ownership behavior behaviorally.
+	 *
+	 * Each instance records its own `this` pointer (as an FVehicle*) into a
+	 * shared static log when it is destructed. Tests reset the log, exercise
+	 * some FPlayer/FFleet ownership scenario, and then assert on exactly
+	 * which pointers were destructed and how many times, which proves both
+	 * "freed exactly once" and "no double-delete of an aliased pointer"
+	 * without relying on undefined double-free behavior.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 */
+	class CountingVehicle : public FVehicle {
+	public:
+		CountingVehicle() : FVehicle() {}
+		virtual ~CountingVehicle() {
+			s_destructedPointers.push_back(this);
+		}
+		static std::vector<FVehicle*> s_destructedPointers;
+	};
+	std::vector<FVehicle*> CountingVehicle::s_destructedPointers;
+}
 
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( FPlayerTest );
@@ -140,6 +168,71 @@ void FPlayerTest::testSerialize(){
 	CPPUNIT_ASSERT(fList[0]->getID() == fID);
 	CPPUNIT_ASSERT(fList[0]->getShipList().size() == 1);
 	CPPUNIT_ASSERT(fList[0]->getShipList()[0]->getID() == sID1);
+}
+
+// Reviewer follow-up F2: FPlayer must be the sole owner of ships in
+// m_destroyed and free them in ~FPlayer(). Against the unfixed destructor
+// (no delete loop over m_destroyed), this test fails because the
+// instrumented ship's destructor never runs, so s_destructedPointers stays
+// empty instead of recording exactly one entry.
+void FPlayerTest::testDestroyedShipFreedExactlyOnceOnPlayerDestruction(){
+	CountingVehicle::s_destructedPointers.clear();
+
+	CountingVehicle *v = new CountingVehicle();
+	FVehicle *vAsBase = v;
+
+	{
+		FPlayer p;
+		p.addDestroyedShip(v);
+		// p (and, per the ownership contract, v) is destructed at the
+		// closing brace below.
+	}
+
+	CPPUNIT_ASSERT_EQUAL( (size_t)1, CountingVehicle::s_destructedPointers.size() );
+	CPPUNIT_ASSERT( CountingVehicle::s_destructedPointers[0] == vAsBase );
+}
+
+// Reviewer follow-up F2 aliasing check: a ship removed from a fleet via
+// FFleet::removeShip() (which erases without deleting) and then handed to
+// addDestroyedShip() must be freed exactly once overall -- once via
+// ~FPlayer()'s m_destroyed cleanup -- while a sibling ship left in the
+// surviving fleet is freed exactly once via the existing FFleet destructor
+// path. Neither ship may be destructed zero times (a leak) or more than
+// once (a double-delete/aliasing bug).
+void FPlayerTest::testSurvivingFleetShipNotDoubleDeletedByDestroyedList(){
+	CountingVehicle::s_destructedPointers.clear();
+
+	CountingVehicle *survivor = new CountingVehicle();
+	CountingVehicle *destroyedShip = new CountingVehicle();
+
+	FFleet *fleet = new FFleet;
+	fleet->setIcon("icons/UPF.png");
+	fleet->addShip(survivor);
+	fleet->addShip(destroyedShip);
+
+	unsigned int destroyedId = destroyedShip->getID();
+	FVehicle *removed = fleet->removeShip(destroyedId);
+	CPPUNIT_ASSERT( removed == destroyedShip );
+	// destroyedShip is no longer reachable through the fleet's ship list.
+	CPPUNIT_ASSERT( fleet->getShip(destroyedId) == NULL );
+
+	{
+		FPlayer p;
+		p.addFleet(fleet);        // fleet (and its remaining ship, survivor) owned by p
+		p.addDestroyedShip(removed); // destroyedShip ownership transferred to p
+		// p, fleet, survivor, and destroyedShip are all destructed at the
+		// closing brace below.
+	}
+
+	CPPUNIT_ASSERT_EQUAL( (size_t)2, CountingVehicle::s_destructedPointers.size() );
+	CPPUNIT_ASSERT_EQUAL( (size_t)1, (size_t)std::count(
+		CountingVehicle::s_destructedPointers.begin(),
+		CountingVehicle::s_destructedPointers.end(),
+		static_cast<FVehicle*>(survivor) ) );
+	CPPUNIT_ASSERT_EQUAL( (size_t)1, (size_t)std::count(
+		CountingVehicle::s_destructedPointers.begin(),
+		CountingVehicle::s_destructedPointers.end(),
+		static_cast<FVehicle*>(destroyedShip) ) );
 }
 
 }

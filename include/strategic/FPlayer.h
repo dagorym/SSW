@@ -28,18 +28,36 @@ namespace Frontier
  * The FPlayer class is responsible for deleting all of the fleets that
  * the player posses when the class is destroyed.  Fleet icon image data
  * is no longer stored here; only the icon file name is retained and
- * resolved at render time.
+ * resolved at render time. FPlayer is also the sole owner of ships in its
+ * destroyed-ship list (see addDestroyedShip()) and frees them on
+ * destruction.
  *
- * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created:  Jan 17, 2005
- * @date Last Modified:  Mar 28, 2026
+ * @date Last Modified:  Jul 11, 2026
  */
 class FPlayer : public Frontier::FPObject
 {
 public:
   /// Default Constructor
 	FPlayer();
-  /// Default destructor
+
+  /**
+   * @brief Destructor -- frees every fleet, unattached ship, and destroyed ship owned by this player
+   *
+   * Deletes every fleet in m_fleets and every ship in m_unattached, then
+   * deletes every ship in m_destroyed and clears all three lists. FPlayer
+   * is the sole owner of a ship once it has been handed to
+   * addDestroyedShip() (see that method's ownership contract); such a ship
+   * has already been removed -- not deleted -- from whatever fleet or
+   * unattached list previously held it, so it is not reachable through
+   * m_fleets or m_unattached by the time this destructor runs and freeing
+   * it here cannot double-delete a ship a surviving fleet still owns.
+   *
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
+   * @date Created:  Jan 17, 2005
+   * @date Last Modified:  Jul 11, 2026
+   */
 	virtual ~FPlayer();
 
   /**
@@ -169,14 +187,25 @@ public:
      * that have been destroyed in battle.  This list will be used for
      * reinfocements if that optional rule is used
      *
+     * Ownership contract: once a ship pointer is passed to this method,
+     * FPlayer becomes its sole owner and will delete it in ~FPlayer(). The
+     * caller must have already removed the ship from any fleet or
+     * unattached list that previously held it (without deleting it -- see
+     * FFleet::removeShip()) before calling this method, so the ship is
+     * referenced only by m_destroyed afterward. Do not retain or free the
+     * pointer elsewhere after calling this method. m_destroyed is not
+     * currently serialized by save()/load(); that is deferred (see
+     * doc/deferred-tasks.md, item F2-serialization).
+     *
      * If there is a problem adding the ship to the fleet the method will
      * return a non zero error code.  Otherwise it will return a 0.
      *
-     * @param ship Pointer a FVehicle object that holds the ship information
+     * @param ship Pointer a FVehicle object that holds the ship information.
+     *   Ownership transfers to FPlayer; the caller must not delete it.
      *
-     * @author Tom Stephens
+     * @author Tom Stephens, Claude Sonnet 5 (medium)
      * @date Created:  May 30, 2008
-     * @date Last Modified:  May 30, 2008
+     * @date Last Modified:  Jul 11, 2026
      */
     int addDestroyedShip( FVehicle * ship );
 
@@ -311,7 +340,11 @@ private:
   std::string m_iconName;
   /// list of unattached ships
   VehicleList m_unattached;
-  /// list of destroyed ships
+  /// List of destroyed ships. FPlayer owns every ship in this list once it
+  /// has been passed to addDestroyedShip() and frees them all in
+  /// ~FPlayer(); see addDestroyedShip() for the full ownership contract.
+  /// Not currently serialized by save()/load() (deferred; see
+  /// doc/deferred-tasks.md, item F2-serialization).
   VehicleList m_destroyed;
   /// counter for number of instances of this class
   static unsigned int m_classCount;
