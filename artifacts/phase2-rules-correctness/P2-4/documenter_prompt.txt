@@ -1,0 +1,108 @@
+Your role is 'documenter'. Your task is as follows:
+
+Document the P2-4 pass-2 remediation: the bounded retreat-condition re-prompt
+loop in FGame::init(). This is a follow-up to the pass-1 P2-4 work (retreat-
+condition validation), addressing the single non-blocking WARNING the pass-1
+Verifier raised.
+
+Task summary:
+- Pass-1 (code commit 5745906f) made FGame::init() validate
+  IStrategicUI::selectRetreatCondition() against the valid 1..5 range and
+  re-prompt on out-of-range values, guarding only the m_ui == NULL case against
+  an infinite loop.
+- Pass-2 (Implementer code commit 30b16cc09f5e41e526b2fbe28f235702ff9c5c1c)
+  bounds the re-prompt loop with a documented cap
+  (kMaxRetreatConditionPrompts = 1000). The loop still re-prompts on every
+  invalid value but stops after 1000 attempts. m_satharRetreat is only assigned
+  when the final value is actually in 1..5, so an exhausted cap leaves
+  m_satharRetreat at its prior/default value (constructor default -1 on the
+  normal startup path) instead of storing a bogus out-of-range value. init()
+  still returns 0 in this case; the guard's purpose is bounded termination plus
+  never storing a bogus value, not surfacing a distinct error code.
+- Tester added one new behavioral test proving the bound; the 3 pass-1 tests are
+  unchanged and green. Full suite: OK (230 tests), no failures.
+
+Acceptance criteria validated (pass-2):
+- Bounded-cap exhaustion: a degenerate mock IStrategicUI that always returns an
+  out-of-range value causes init() to TERMINATE (does not hang) and to call
+  selectRetreatCondition() EXACTLY 1000 times (the documented cap) -- proving
+  the loop is bounded, not merely "eventually" stopping.
+- No bogus stored value: after cap exhaustion, showRetreatConditions() dispatches
+  the safe default branch ("Error:  No retreat condition selected") and NONE of
+  the five valid 1..5 condition texts, proving m_satharRetreat was left at its
+  unset/default value and never set to the invalid sentinel.
+- The 3 pass-1 tests remain green unchanged (re-prompt-until-valid, valid-first
+  single call, stored-condition drives correct per-condition dispatch).
+
+Implementation branch / worktree context:
+- Tester branch: p2rc-P2-4-tester-20260711
+- Worktree: /home/tstephen/repos/worktrees/p2rc-P2-4-tester-20260711
+- Compare against the pass-2 Implementer code commit
+  30b16cc09f5e41e526b2fbe28f235702ff9c5c1c (and its parent) for the source-level
+  diff; the Tester commit below adds only test files.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FGame.cpp  (FGame::init() — bounded re-prompt loop; the
+  behavior/rationale to document)
+- include/strategic/FGame.h  (FGame::init Doxygen header updated by Implementer)
+- tests/strategic/FGameRetreatConditionValidationTest.cpp  (Tester: new bounded-
+  cap-exhaustion test method + its mock usage)
+- tests/strategic/FGameRetreatConditionValidationTest.h  (Tester: new
+  CPPUNIT_TEST entry + method declaration/Doxygen)
+
+Test commit:
+- 76aa9dedfec2e7fbe82aab3ce4d0e25a093ad7e6
+
+Commands executed:
+- make            (repo root — clean build, exit 0)
+- cd tests && make   (test suite build — clean)
+- ./SSWTests      (cwd = tests/ — OK (230 tests), zero failures, no NEW failures)
+
+Final test outcomes:
+- OK (230 tests); baseline was 229, +1 for the new bounded-cap-exhaustion test.
+- No new failures; FGameHeaderDependencyTest (prone to cwd-artifact failures in
+  unusual worktree cwds) did not fail when run with cwd = tests/.
+
+Documentation context:
+- The retreat-condition validation Medium was already annotated in
+  doc/synthesized-roadmap.md during pass-1 (an RV / resolution annotation was
+  added and P2-4 marked RESOLVED). The pass-1 roadmap RV annotation is ALREADY
+  PRESENT — re-confirm it still accurately reflects the now-bounded behavior;
+  do NOT duplicate or add a second annotation. If the existing annotation's
+  wording does not mention the bounded-loop safety cap, a minimal in-place
+  clarification is acceptable, but avoid introducing a duplicate entry.
+- Consider whether AGENTS.md / CLAUDE.md need any note (likely NOT — this is an
+  internal init() robustness fix with no public-API or build/test-workflow
+  change). doc/rules/tactical_operations_manual.md must NOT be edited under any
+  circumstance.
+- The behavior now confirmed by implementation + tests: FGame::init() bounds the
+  Sathar retreat-condition re-prompt loop at kMaxRetreatConditionPrompts = 1000
+  and never stores an out-of-range retreat condition; on cap exhaustion
+  m_satharRetreat keeps its prior/default value.
+
+Plan and diff context:
+- Plan path (assumption): plans/phase2-rules-correctness-followups-plan.md
+  (P2-4 subtask). Confirm from repository context if the exact path differs.
+- Comparison base (assumption): the pass-2 Implementer code commit
+  30b16cc0 vs its parent for source; the Tester commit 76aa9ded for test files.
+  Label as an assumption if you must infer a different base.
+
+Startup behavior:
+- If the Tester branch/worktree context and the above story and diff context are
+  present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-
+  convention details from repository context when repository evidence is
+  sufficient, and label those choices as assumptions instead of treating them as
+  blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or
+  diff review when documentation work can proceed.
+
+Shared artifact directory (reuse, repository-root-relative):
+- artifacts/phase2-rules-correctness/P2-4/
+  (history/pass-1/ under this directory is archived pass-1 output — leave it
+  untouched; write your pass-2 documenter_report.md, documenter_result.json, and
+  verifier_prompt.txt directly under artifacts/phase2-rules-correctness/P2-4/.)
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are
+  committed.

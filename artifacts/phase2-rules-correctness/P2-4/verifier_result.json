@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-4/verifier_report.md",
+    "artifacts/phase2-rules-correctness/P2-4/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "p2rc-P2-4-verifier-20260711",
+  "documentation_accuracy_summary": [
+    "include/strategic/FGame.h init() Doxygen now states the re-prompt loop is bounded by 'a generous internal attempt cap' so a degenerate non-NULL UI cannot hang init() forever, and that on cap exhaustion m_satharRetreat is left at its prior/default value rather than set to a bogus out-of-range value \u2014 this matches src/strategic/FGame.cpp exactly (kMaxRetreatConditionPrompts=1000 cap and the guarded assignment), verified by reading both.",
+    "doc/synthesized-roadmap.md's retreat-condition RV bullet was edited in a single hunk to cite commits 5745906f and 30b16cc0 and to describe the kMaxRetreatConditionPrompts=1000 cap and the leave-at-prior/default fallback; git diff 1d98e5ea..HEAD -- doc/synthesized-roadmap.md shows only that one bullet changed, no other roadmap rows disturbed.",
+    "doc/rules/* has zero diff against base \u2014 the non-editable rules manual was not touched.",
+    "artifacts/phase2-rules-correctness/P2-4/history/pass-1/ has zero diff since being archived at 1d98e5ea \u2014 the pass-1 history was left untouched by this pass."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "pass-2",
+  "status": "success",
+  "task_id": "P2-4 (RV) pass-2 remediation",
+  "test_sufficiency_summary": [
+    "The new behavioral test testInitBoundsRepromptLoopAndLeavesRetreatConditionUnset constructs a real FGame via FGame::create(&mock) with a degenerate ScriptedRetreatConditionMockStrategicUI seeded with [-1] (which replays -1 forever), calls game->init(NULL), and asserts init() returns 0 \u2014 proving termination (an unbounded pre-fix loop would hang the entire suite here). It then asserts mock.selectRetreatConditionCalls == 1000, proving the loop is bounded to exactly the documented cap rather than merely 'eventually' stopping. Finally it calls game->showRetreatConditions() and asserts the dispatched text contains 'Error' (the default/unset branch) and contains none of the five valid conditions' distinguishing phrases, proving m_satharRetreat was left at its prior/default value (-1) rather than set to the bogus sentinel.",
+    "I independently re-derived the call-count arithmetic against src/strategic/FGame.cpp: the first call sets attempts=1 (calls=1); the loop runs while attempts<1000, each iteration calling once and incrementing; the final loop iteration at attempts=999 makes call #1000, after which attempts becomes 1000 and the loop exits \u2014 total exactly 1000 calls, matching the CPPUNIT_ASSERT_EQUAL(1000, ...). No off-by-one.",
+    "The 3 pass-1 tests (reprompt-until-valid asserting selectRetreatConditionCalls==4 and 'five heavy cruisers' dispatch, valid-first asserting exactly 1 call, and stored-condition-drives-dispatch) are unchanged and still green, so normal re-prompt-until-valid and valid-first behavior is preserved and independently re-confirmed.",
+    "Behaviorally confirmed by running the full suite from tests/: SSWTests reports OK (230 tests), 0 failures, 0 errors \u2014 one more than the pass-1 total of 229, consistent with the single added test. The suite output includes the new test's 'Error:  No retreat condition selected' dispatch, direct runtime evidence the safe-default branch is hit after the bounded loop exhausts.",
+    "Coverage satisfies CLAUDE.md's Behavioral Verification policy: the bounded-termination, exact-call-count, and safe-default claims are all backed by observed runtime results (return value, mock call counter, dispatched text), not source inspection. The pass-1 test-author note documents that this test fails (hangs) against the pre-fix unbounded loop and would also fail against a bugged bound that stored the last-seen invalid value, so it is not vacuously green."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

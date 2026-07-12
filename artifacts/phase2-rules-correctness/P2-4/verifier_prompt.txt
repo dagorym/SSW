@@ -1,0 +1,51 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Document the P2-4 pass-2 remediation: FGame::init() now bounds the retreat-condition re-prompt loop with an internal attempt cap (kMaxRetreatConditionPrompts = 1000), addressing the single non-blocking WARNING the pass-1 Verifier raised (a degenerate but non-NULL UI that returns an invalid value on every call could otherwise spin init() forever). m_satharRetreat is assigned only when the final value is in 1..5; on cap exhaustion it is left at its prior/default value rather than a bogus out-of-range value. Normal interactive behavior is unchanged.
+
+Acceptance criteria to verify:
+- The FGame::init() Doxygen header accurately describes the bounded fallback (attempt cap + leave-default-on-exhaustion) -- CONFIRMED accurate as written by the Implementer; no change needed.
+- The doc/synthesized-roadmap.md Medium RV bullet accurately reflects the shipped pass-2 behavior including the bounded loop -- UPDATED: the single RV bullet now documents the kMaxRetreatConditionPrompts = 1000 cap and leave-default-on-exhaustion behavior, and cites commit 30b16cc0 alongside 5745906f. No other roadmap rows touched.
+- No executable or test behavior changed by the documentation pass; full suite remains OK (230 tests).
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/p2rc-P2-4-documenter-20260711 on branch p2rc-P2-4-documenter-20260711 (branched from the pass-2 Tester chain).
+- Pass-2 Implementer commit 30b16cc0 bounds the loop; Tester commit 76aa9ded adds the exhaustion test; documenter commit badba8eb updates the roadmap bullet.
+- Pass-1 baseline: commit 5745906f (validated 1..5 and re-prompted, guarding only m_ui == NULL).
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FGame.cpp -- FGame::init() bounded re-prompt loop (kMaxRetreatConditionPrompts = 1000; conditional m_satharRetreat assignment) [Implementer, 30b16cc0]
+- include/strategic/FGame.h -- FGame::init Doxygen header describing the bounded fallback [Implementer, 30b16cc0]
+- tests/strategic/FGameRetreatConditionValidationTest.cpp -- new behavioral bounded-cap-exhaustion test plus 3 unchanged pass-1 tests [Tester, 76aa9ded]
+- tests/strategic/FGameRetreatConditionValidationTest.h -- test fixture declaration for the new test [Tester, 76aa9ded]
+- doc/synthesized-roadmap.md -- Medium RV bullet updated to document the bounded loop [Documenter, badba8eb]
+
+Commands executed:
+- make (repo root) -- exit 0, all modules and executables built
+- cd tests && make -- exit 0, test suite linked
+- cd tests && ./SSWTests -- OK (230 tests)
+
+Final test outcomes:
+- OK (230 tests) -- full SSWTests suite green, including the 3 pass-1 retreat-condition validation tests and the new pass-2 bounded-cap-exhaustion test (FGameRetreatConditionValidationTest::testInitBoundsRepromptLoopAndLeavesRetreatConditionUnset).
+
+Plan or evaluation context guidance:
+- plans/phase2-rules-correctness-followups-plan.md (P2-4 retreat-condition validation follow-up).
+- Pass-1 Verifier raised one non-blocking WARNING: unbounded re-prompt loop against a degenerate non-NULL UI; pass-2 remediates it with a bounded cap.
+
+Convention-file guidance:
+- AGENTS.md: doc/rules/* are non-editable and were not touched. Doxygen file/function header policy (@author, @date Last Modified) applies to in-code documentation; the changed FGame::init header was authored by the Implementer and confirmed accurate.
+- Single-Source-of-Truth rule: the bounded-loop behavior fact lives in the FGame::init Doxygen header (in code) and in the synthesized-roadmap RV bullet (defect-tracking); no duplication introduced elsewhere.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-4
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

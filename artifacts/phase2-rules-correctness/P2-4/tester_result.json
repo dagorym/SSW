@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "task_id": "P2-4",
+  "pass_label": "pass-2",
+  "task_name": "Validate Sathar retreat-condition selection (pass-2 remediation: bounded re-prompt loop)",
+  "branch": "p2rc-P2-4-tester-20260711",
+  "code_commit_under_test": "30b16cc09f5e41e526b2fbe28f235702ff9c5c1c",
+  "test_commit": "76aa9dedfec2e7fbe82aab3ce4d0e25a093ad7e6",
+  "test_files_changed": [
+    "tests/strategic/FGameRetreatConditionValidationTest.cpp",
+    "tests/strategic/FGameRetreatConditionValidationTest.h"
+  ],
+  "new_tests": [
+    "FGameRetreatConditionValidationTest::testInitBoundsRepromptLoopAndLeavesRetreatConditionUnset"
+  ],
+  "existing_tests_modified": [],
+  "commands_run": [
+    "make",
+    "cd tests && make",
+    "./SSWTests (cwd=tests/)"
+  ],
+  "totals": {
+    "total_tests": 230,
+    "passed": 230,
+    "failed": 0,
+    "new_tests_added": 1,
+    "baseline_before_new_test": 229
+  },
+  "unmet_acceptance_criteria": [],
+  "validation_outcome": "PASS - clean repo-root build (exit 0); SSWTests reports OK (230 tests) with cwd=tests/, no failures and no NEW failures (FGameHeaderDependencyTest did not fail). The new bounded-cap-exhaustion test asserts init() terminates, selectRetreatCondition() is called exactly 1000 times, and showRetreatConditions() dispatches the 'Error: No retreat condition selected' default branch (never a valid 1..5 condition text), proving m_satharRetreat is left at its unset/default value. The 3 pass-1 tests are unchanged and green.",
+  "artifacts": [
+    "artifacts/phase2-rules-correctness/P2-4/tester_report.md",
+    "artifacts/phase2-rules-correctness/P2-4/tester_result.json",
+    "artifacts/phase2-rules-correctness/P2-4/documenter_prompt.txt"
+  ],
+  "notes": "history/pass-1/ under this directory was left untouched. No new mock class was needed; the existing ScriptedRetreatConditionMockStrategicUI replays its last scripted value once exhausted, so a single-element invalid sequence (-1 ~ wxID_CANCEL) yields always-invalid behavior. All assertions are behavioral; no source-string inspection substitutes for runtime verification."
+}

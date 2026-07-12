@@ -1,0 +1,53 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Author behavioral CppUnit tests for FGame::init()'s Sathar retreat-condition validation/re-prompt loop (commit 5745906f), which validates IStrategicUI::selectRetreatCondition()'s return value against the valid 1..5 range and re-invokes it until a valid value is returned before storing it in m_satharRetreat, so an X-close/cancel (wxID_CANCEL or any out-of-range value) can never silently disable UPF victory for the rest of the game.
+
+Acceptance criteria validated:
+- AC1 Re-prompt-until-valid: testInitRepromptsUntilValidRetreatConditionIsReturned scripts a mock IStrategicUI returning 0, 6, -1 (all out-of-range/cancel-like) then a valid 2; asserts selectRetreatConditionCalls == 4 (> 1, proving re-prompt occurred) and, via showRetreatConditions(), that the dispatched text matches condition 2 ('five heavy cruisers') rather than the 'Error: No retreat condition selected' default. Verified to fail against the pre-fix unvalidated assignment.
+- AC2 Valid-first, no extra prompts: testInitAcceptsValidRetreatConditionWithoutExtraPrompts scripts a mock returning 4 on the first call; asserts selectRetreatConditionCalls == 1 and the dispatched showRetreatConditions() text matches condition 4 ('destroying at least two' stations/fortresses).
+- AC3 Post-setup dispatch correctness: testInitStoredConditionDrivesCorrectVictoryDispatch scripts a mock returning 5 on the first call; asserts init() succeeds with exactly one selectRetreatCondition() call and the stored condition dispatches to the real condition-5 showRetreatConditions() text ('Fighters and Militia ships are not counted') rather than the default/error branch. checkForVictory() itself is private (no public accessor and no public mutators for the private loss-counter members it reads), so this test uses the feasible, publicly observable proxy through the same m_satharRetreat member that checkForVictory()'s victory switch reads, per the task's own guidance to prefer showRetreatConditions() when checkForVictory() end-to-end setup is not feasible.
+
+Implementation branch or worktree context:
+- Branch: p2rc-P2-4-tester-20260711 (worktree /home/tstephen/repos/worktrees/p2rc-P2-4-tester-20260711)
+- Implementer commit under test: 5745906f2ea50e3de9b4f3ec8ae479b5d84c7ff8 (P2-4: Validate Sathar retreat-condition selection (reject cancel/out-of-range))
+- Prior commit in the worktree history: 41bba30a (P2-4: Implementer artifacts and Tester handoff for retreat-condition validation)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FGame.cpp (FGame::init(wxWindow*) retreat-condition validation/re-prompt loop)
+- include/strategic/FGame.h (FGame::init Doxygen header only)
+- tests/strategic/FGameRetreatConditionValidationTest.h (new)
+- tests/strategic/FGameRetreatConditionValidationTest.cpp (new)
+- tests/SSWTests.cpp (new fixture registration)
+
+Test commit:
+- 3abe46a6
+
+Commands executed:
+- make (repo root)
+- cd tests && make && ./SSWTests
+- Pre-fix regression check: reverted src/strategic/FGame.cpp init() to the pre-fix unvalidated assignment, rebuilt src/strategic and relinked tests/SSWTests, reran ./SSWTests to confirm testInitRepromptsUntilValidRetreatConditionIsReturned (and only that test) fails, then restored src/strategic/FGame.cpp via `git checkout -- src/strategic/FGame.cpp` and rebuilt/reran to confirm a clean pass
+
+Final test outcomes:
+- Post-fix (commit 5745906f, current worktree state): `OK (229 tests)` -- full suite green, no new failures, no FGameHeaderDependencyTest cwd-artifact regressions observed.
+- Pre-fix regression check (init() temporarily reverted to `m_satharRetreat = m_ui->selectRetreatCondition();` with no validation loop): `Run: 229 Failures: 1` -- the single failure was FGameRetreatConditionValidationTest::testInitRepromptsUntilValidRetreatConditionIsReturned, failing on `mock.selectRetreatConditionCalls > 1` (the mock was called exactly once and the invalid first value was stored verbatim), exactly the defect the fix addresses. FGame.cpp was restored to the fix afterward and the full suite re-verified green before committing.
+
+Documentation context:
+- doc/synthesized-roadmap.md likely tracks this as a Phase 2 rules-correctness follow-up (retreat-condition cancel/out-of-range defect); check for an entry to mark RESOLVED, following the pattern used for prior P2-* items (e.g. P2-3's S2/S3 loss-counting entry).
+- No user-facing rules text changes: the Sathar retreat-condition options and their meanings (doc/rules/second-sathar-war-rules.md) are unchanged; this is purely a defensive UI-return-value validation fix in FGame::init(), not a new game rule.
+- include/strategic/FGame.h already carries an updated Doxygen block on init() describing the validation/re-prompt loop; confirm it stays accurate if init() changes further.
+
+Plan and diff context:
+- Plan: plans/phase2-rules-correctness-followups-plan.md (Phase 2 rules-correctness + Phase-1 reviewer follow-ups plan, item P2-4)
+- Comparison base: master (or the coordination branch's merge-base), consistent with prior P2-* items in this plan (e.g. P2-3 merged via coordination branch coord-phase2-rules-correctness-followups per repository convention).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-4
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

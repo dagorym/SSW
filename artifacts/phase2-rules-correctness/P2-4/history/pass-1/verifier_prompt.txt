@@ -1,0 +1,56 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- P2-4: FGame::init() now validates IStrategicUI::selectRetreatCondition()'s return value against the valid 1..5 range and re-invokes it until a valid value is returned before storing it in m_satharRetreat, so an X-close/cancel (wxID_CANCEL or any out-of-range value) can never silently disable UPF victory for the rest of the game. The re-prompt loop only runs when m_ui != NULL.
+
+Acceptance criteria to verify:
+- Given a mock IStrategicUI that first returns an invalid value (e.g. wxID_CANCEL/0/6) and then a valid one, m_satharRetreat ends up holding the valid value, and setup does not proceed with an out-of-range condition.
+- Given a mock that returns a valid 1..5 immediately, it is stored unchanged with no extra prompts.
+- checkForVictory() therefore always evaluates a real 1..5 retreat condition after setup (UPF victory is never silently disabled by a bogus stored value).
+- Repo builds; existing suites still pass.
+- Documentation Impact (from plan): Doxygen header on the affected setup function in include/strategic/FGame.h. No user-facing docs.
+- doc/synthesized-roadmap.md's section-2 'Notable Medium' retreat-condition-validation bullet annotated RESOLVED (P2-4), per Coordinator clarification, touching only that one bullet.
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/p2rc-P2-4-documenter-20260711, branch p2rc-P2-4-documenter-20260711, branched from p2rc-P2-4-tester-20260711 which branched from p2rc-P2-4-implementer-20260711.
+- Implementer commit 5745906f2ea50e3de9b4f3ec8ae479b5d84c7ff8: 'P2-4: Validate Sathar retreat-condition selection (reject cancel/out-of-range)' -- src/strategic/FGame.cpp init() validation/re-prompt loop; include/strategic/FGame.h init() Doxygen header update.
+- Tester commit 3abe46a63443446a18426a37ca7a4d16a6f58318: 'P2-4: Add behavioral tests for retreat-condition validation in FGame::init()' -- tests/strategic/FGameRetreatConditionValidationTest.{h,cpp} (new, scripted mock IStrategicUI), tests/SSWTests.cpp fixture registration.
+- Documenter commit a7481ae1: 'P2-4: Mark retreat-condition validation Medium RESOLVED in synthesized-roadmap.md' -- doc/synthesized-roadmap.md single-bullet RESOLVED annotation.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FGame.cpp
+- include/strategic/FGame.h
+- tests/strategic/FGameRetreatConditionValidationTest.h
+- tests/strategic/FGameRetreatConditionValidationTest.cpp
+- tests/SSWTests.cpp
+- doc/synthesized-roadmap.md
+
+Commands executed:
+- make -C tests -j4 (full local build: core, strategic, ships, weapons, defenses, tactical, gui, battleSim, SSWTests, GuiTests, TacticalTests) -- success
+- env -C tests ./SSWTests -- OK (229 tests)
+
+Final test outcomes:
+- SSWTests: OK (229 tests), including the Tester's 3 new FGameRetreatConditionValidationTest behavioral tests (re-prompt-until-valid, valid-first single call, stored-condition dispatch)
+
+Plan or evaluation context guidance:
+- plans/phase2-rules-correctness-followups-plan.md, item P2-4 / RV (lines 125-135): validate the Sathar retreat-condition selection.
+- plans/phase2-rules-correctness-followups-plan.md section 5 (Documentation Impact, overall): '...the retreat-condition validation Medium (section 2 "Notable Medium")...' -- resolved to doc/synthesized-roadmap.md lines 137-139.
+
+Convention-file guidance:
+- AGENTS.md / CLAUDE.md Function Comments section: Doxygen file/function headers mandatory; on update, refresh description/params, add current agent to @author (never remove prior authors), update @date Last Modified.
+- doc/synthesized-roadmap.md RESOLVED-tag pattern established by Phase 1 C1-C6 and mirrored by P2-1 (T1) and P2-3 (S2/S3): bold ***RESOLVED*** marker with (subtask, commit `hash`), followed by an italicized _Resolved: ..._ note describing the shipped fix and pointing at the artifacts/<plan>/<subtask> directory.
+- doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md are non-editable per AGENTS.md; left untouched (no rules-text change was needed -- the Sathar retreat-condition options themselves are unchanged, only the input-validation behavior around selecting one).
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-4
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
