@@ -1,0 +1,44 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Add a repo-root 'make check' target that builds everything (via the existing 'all' target) and runs all three CppUnit test suites in sequence -- tests/SSWTests, tests/tactical/TacticalTests, and tests/gui/GuiTests under xvfb-run -a -- propagating a non-zero exit if any suite fails. Only the repo-root Makefile was edited.
+
+Modified files:
+- Makefile (repo root): added .PHONY 'check' target depending on 'all'; added 'check' to the .PHONY list
+
+Acceptance criteria to validate (from Planner):
+- From a clean tree, `make check` builds all three runners and runs all three suites, with GuiTests under xvfb-run.
+- When all suites pass, `make check` exits 0.
+- When any one suite fails (temporarily breaking a single assertion), `make check` exits non-zero -- failure is not masked.
+- `make check` takes no arguments and needs only the already-required deps (wxWidgets 3.3.2, CppUnit, xvfb).
+
+Create test files in:
+- No new CppUnit fixtures are expected for this build-target deliverable (per the plan's Tester handoff).
+- The deliverable is the Makefile target itself; verification is behavioral at the make level (build + run all three suites + correct exit code), not a new unit-test fixture.
+
+Implementation context for testing:
+- New target added to the repo-root Makefile: `check: all` followed by three recipe lines -- `cd tests && ./SSWTests`, `cd tests/tactical && ./TacticalTests`, `cd tests/gui && xvfb-run -a ./GuiTests`.
+- 'check' depends on the existing 'all' target, which runs `$(MAKE) -C src all` then `$(MAKE) -C tests all SKIP_MODEL_DEPS=1`; 'all' already builds SSW, BattleSim, and all three test runners (tests/Makefile 'all' depends on gui-tests and tactical-tests).
+- Failure propagation relies on default Make semantics: recipe lines carry no leading '-' and no error-masking construct, so a non-zero suite exit aborts the target immediately (observed: make stopped at the first failing suite, SSWTests, and did not run TacticalTests/GuiTests).
+- GuiTests requires an X display; it is wrapped in `xvfb-run -a` so `make check` is headless-capable.
+- The target is self-contained in the repo-root Makefile; tests/Makefile was not modified (it is owned by subtask P3-1).
+- Deps confirmed present in this environment: wx-config --version reports 3.3.2; xvfb-run is at /usr/bin/xvfb-run; CppUnit links the existing suites.
+- Environment note: compound shell commands are disabled in this harness, so the foreground make check was invoked as a single `make -C <repo-root> check`; exit-code capture for the failing run used a small wrapper script that appends MAKE_CHECK_EXIT=$?.
+
+Suggested test command(s):
+- make -C <repo-root> check   (foreground, blocking) -- clean/green run: exit 0
+- make check with one temporarily-broken assertion in tests/core/FPointTest.cpp -- exit 2 (non-zero), then reverted via git checkout
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase3-build-system-ci/P3-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
