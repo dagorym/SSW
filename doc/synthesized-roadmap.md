@@ -697,7 +697,7 @@ A pragmatic sequencing that front-loads correctness and de-risks the bigger refa
 1. Defects C1–C6 (each with a behavioral regression test).
 2. T1 (disruptor range 9), T2/T3 (defense-selection logic in `FWeapon::fire()` — one
    function), S2/S3 (loss-counter filters), retreat-condition validation.
-3. `make check` target + minimal CI; pin `-std=c++17` both platforms; common.mk.
+3. `make check` target + minimal CI; pin `-std=c++17` both platforms; common.mk. **[RESOLVED (build-system portion) — see Phase 3 P3-1/P3-2/P3-3 (`artifacts/phase3-build-system-ci/`): a repo-root `common.mk` now backs the six non-GUI src Makefiles and the four simple test-lib Makefiles; `-std=c++17` is pinned on every Linux compile (via `common.mk` or inline in the wx-heavy/orchestration Makefiles) and on Windows (`<LanguageStandard>stdcpp17</LanguageStandard>` in `SSW.Common.props`); `src/tactical`'s wx include flags now derive from `wx-config` via `common.mk`'s lazy `WX_CXXFLAGS`, retiring the machine-specific hardcoded `gtk3-unicode-static-3.3` path (§3.5's "cheap win"); and the repo-root `make check` target builds everything and runs all three suites (`SSWTests`, `TacticalTests`, `GuiTests` under `xvfb-run`), propagating failure on any suite. Deliberately deferred: the minimal CI workflow itself (tracked separately as P3-4), the Windows `<ConformanceMode>` flip, the `FBattleScreen`/`FBattleBoard`/`FBattleDisplay`→`src/gui` relocation, and CMake adoption.]**
 4. Bind-once buttons + `updateForPhase()` in `FBattleDisplay`; paint-DC fix in
    `FBattleBoard`; delete dead files/commented-out code.
 

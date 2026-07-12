@@ -1,0 +1,53 @@
+{
+  "status": "success",
+  "subtask": "P3-1",
+  "plan": "phase3-build-system-ci",
+  "branch_name": "phase3-P3-1-implementer-20260712",
+  "code_commit": "c88719a6ca39836c8ef8cba33dc093da3a611255",
+  "changed_files": [
+    "common.mk",
+    "src/Makefile",
+    "src/battleSim/Makefile",
+    "src/core/Makefile",
+    "src/defenses/Makefile",
+    "src/gui/Makefile",
+    "src/ships/Makefile",
+    "src/strategic/Makefile",
+    "src/tactical/Makefile",
+    "src/weapons/Makefile",
+    "tests/Makefile",
+    "tests/core/Makefile",
+    "tests/gui/Makefile",
+    "tests/ships/Makefile",
+    "tests/strategic/Makefile",
+    "tests/tactical/Makefile",
+    "tests/weapons/Makefile"
+  ],
+  "validation_commands": [
+    "make all_clean",
+    "make",
+    "(cd tests && make && ./SSWTests)",
+    "(cd tests/tactical && make && ./TacticalTests)",
+    "(cd tests/gui && make && xvfb-run -a ./GuiTests)",
+    "make COVERAGE=1 tests"
+  ],
+  "validation_outcome": {
+    "clean_full_build": "exit 0; SSW, BattleSim, and all three test runners built with -std=c++17",
+    "SSWTests": "OK (245 tests)",
+    "TacticalTests": "OK (253 tests)",
+    "GuiTests": "OK (75 tests) under xvfb-run -a",
+    "std_c++17_pin": "present in a sample pure-module compile line and confirmed inline everywhere",
+    "tactical_wx_flags": "derived from wx-config via common.mk WX_CXXFLAGS; hardcoded gtk3-unicode-static-3.3 path removed from src/tactical/Makefile",
+    "pure_modules_wx_free": "src/{core,strategic,ships,weapons,defenses}/Makefile contain no wx-config and no WX_CXXFLAGS; make -n compile line has zero wx-config invocations",
+    "drift_fixes": "malformed 'rm  -f*.gcov' and stale '-I../../../src/include' both removed from the tree",
+    "coverage_opt_in": "make -n COVERAGE=1 and full make COVERAGE=1 tests both add -fprofile-arcs -ftest-coverage",
+    "strict_std_stop_constraint": "not triggered; strict -std=c++17 compiled cleanly with no gnu++17 fallback"
+  },
+  "artifacts_written": [
+    "artifacts/phase3-build-system-ci/P3-1/implementer_report.md",
+    "artifacts/phase3-build-system-ci/P3-1/implementer_result.json",
+    "artifacts/phase3-build-system-ci/P3-1/tester_prompt.txt"
+  ],
+  "approved_deviation": "src/tactical obtains wx include flags from wx-config via shared common.mk WX_CXXFLAGS — a user-approved deviation from the current AGENTS.md/CLAUDE.md no-wx-config-in-the-six-modules rule; the carve-out is handled by this subtask's Documenter stage. The five pure modules remain strictly wx-free.",
+  "notes": "Behavior-preserving build-config change. No C++ source/header, vs2022, or repo-root Makefile touched. No new tests expected."
+}

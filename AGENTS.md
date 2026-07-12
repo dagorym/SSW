@@ -84,7 +84,7 @@ canonical doc instead.
 
 ## Overview
 
-SSW is a C++ implementation of the Star Frontiers Second Sathar War strategic game along with a tactical component allowing users to play any of the Knight Hawks board game scenarios using wxWidgets 3.3.1 for the GUI. The repository builds two executables:
+SSW is a C++ implementation of the Star Frontiers Second Sathar War strategic game along with a tactical component allowing users to play any of the Knight Hawks board game scenarios using wxWidgets 3.3.2 for the GUI. The repository builds two executables:
 
 - **SSW**: main game
 - **BattleSim**: standalone battle simulator
@@ -141,7 +141,8 @@ Headers live under `include/` and source code under `src/`, generally mirroring 
 All game code lives in `namespace Frontier`. GUI classes (inheriting from wxWidgets) use `using namespace Frontier;` at file scope. Core/strategic/ships/weapons modules declare `namespace Frontier` and fully qualify external namespaces.
 
 ### Module Boundary Rules
-- Non-GUI model modules (`core`, `strategic`, `ships`, `weapons`, `defenses`, and non-gui tactical model code) must remain non-wx in both includes and build/link settings.
+- Non-GUI model modules (`core`, `strategic`, `ships`, `weapons`, `defenses`, and non-gui tactical model code) must remain non-wx in their C++ includes/headers.
+- In Makefile build/link settings, the five pure modules (`core`, `strategic`, `ships`, `weapons`, `defenses`) stay wx-free (no `wx-config`, no `WX_CXXFLAGS`). `src/tactical`'s Makefile is an approved exception: it references the shared, `wx-config`-derived `WX_CXXFLAGS` from `common.mk` to build its wx-bridging renderer files (`FBattleBoard`/`FBattleDisplay`/`FBattleScreen`), without introducing wx headers into the non-gui tactical model code itself. This exception lasts until those files are relocated to `src/gui` (see Contributor Notes and the roadmap).
 - Keep active wx headers/types isolated to gui-owned surfaces (`include/gui/*`, `src/gui/*`, app entrypoints, and tactical wx runtime files that explicitly bridge to GUI rendering).
 - `IStrategicUI` and `ITacticalUI` are model-facing interface seams; strategic and tactical model code consume these abstractions without owning wx-backed UI classes.
 - `WXStrategicUI` and `WXTacticalUI` are gui-module implementations of those seams and retain ownership of wx dialog/window behavior.
@@ -162,7 +163,7 @@ make docs         # Generate Doxygen documentation
 
 Individual modules can also be built by navigating to their source directories and running `make`. Each module produces a static library (`.a` file) that is linked into the final executables.
 
-Dependencies: wxWidgets 3.3.1 and CppUnit for testing. GUI-facing builds still resolve wx settings via `wx-config`; the six non-GUI module Makefiles (`src/core`, `src/strategic`, `src/ships`, `src/weapons`, `src/defenses`, and `src/tactical`) must not contain active `wx-config --cxxflags` or `wx-config --libs` usage. See `artifacts/WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
+Dependencies: wxWidgets 3.3.2 and CppUnit for testing. A repo-root `common.mk` holds the shared wx-free build base (pinned `-std=c++17`, `DEPFLAGS`, `PICFLAGS`, the `COVERAGE`/`COVERAGE_FLAGS` opt-in block, and the shared `objs`/`clean`/`coverage-clean` targets); it is `include`d by the six non-GUI src module Makefiles (`src/core`, `src/strategic`, `src/ships`, `src/weapons`, `src/defenses`, `src/tactical`) and the four simple test-lib Makefiles (`tests/core`, `tests/weapons`, `tests/strategic`, `tests/ships`). `common.mk` also lazily defines a `wx-config`-derived `WX_CXXFLAGS`, referenced only by `src/tactical`. `-std=c++17` is pinned on every Linux compile: via `common.mk` for the Makefiles that include it, and inline for the wx-heavy/orchestration Makefiles that keep their own form (`src/Makefile`, `src/gui/Makefile`, `src/battleSim/Makefile`, `tests/Makefile`, `tests/gui/Makefile`, `tests/tactical/Makefile`). GUI-facing builds still resolve wx settings via `wx-config`; five of the six non-GUI module Makefiles (`src/core`, `src/strategic`, `src/ships`, `src/weapons`, `src/defenses`) must not contain active `wx-config --cxxflags`/`wx-config --libs` usage or reference `WX_CXXFLAGS`. `src/tactical` is the approved exception — it references the shared `wx-config`-derived `WX_CXXFLAGS` (via `common.mk`) instead of a machine-specific hardcoded wx include path, so its wx-bridging renderer files keep building against whatever wx is actually installed. See `artifacts/WXWIDGETS_UPGRADE_CHANGES.md` for current integration notes.
 
 ### Windows / Visual Studio 2022
 
@@ -365,7 +366,7 @@ Updates should update the description and parameter fields as needed to reflect 
 - `wxInitAllImageHandlers()` is not needed (automatic since 3.1); use `wxOVERRIDE` instead of raw `override`. See `artifacts/WXWIDGETS_UPGRADE_CHANGES.md` for full migration notes.
 - Main app classes inherit from `wxApp` (`FApp`, `FBattleSimApp`)
 - UI panels inherit from generated GUI base classes in `include/gui/`; shared tactical wx type aggregation lives in `include/gui/GuiTypes.h`
-- Use `wx-config --cxxflags` and `wx-config --libs` for GUI-facing executable or gui-module builds; keep active `wx-config` usage out of the six non-GUI module Makefiles and preserve their explicit non-GUI build flags separately.
+- Use `wx-config --cxxflags` and `wx-config --libs` for GUI-facing executable or gui-module builds; keep active `wx-config` usage out of the five pure non-GUI module Makefiles (`core`, `strategic`, `ships`, `weapons`, `defenses`) and preserve their explicit non-GUI build flags separately. `src/tactical` is the approved exception: it consumes the shared `wx-config`-derived `WX_CXXFLAGS` from `common.mk` rather than calling `wx-config` directly or hardcoding an include path.
 - On wxGTK, prefer `wxDefaultSize` plus `SetMinSize(GetBestSize())` for sizer-managed `wxSpinCtrl` controls instead of narrow fixed widths so spin buttons keep valid geometry after layout; when the control is used as a value-selection spinner, explicitly request vertical arrows with `wxSP_ARROW_KEYS | wxSP_VERTICAL` in the style.
 - For wxGTK dialog constructors that rely on sizers, ensure the first-show size is locked before the dialog is displayed: either use `Layout()`/`Fit(this)` plus `SetMinSize(GetBestSize())`, or when the constructor immediately computes the final fixed-content size use `SetSizerAndFit(...)` plus `SetMinSize(GetSize())`; in both cases center on the parent (or on screen when unparented) so first-show geometry does not clip controls or action buttons.
 - For top-level frames without an owning parent, prefer `CentreOnScreen(wxBOTH)` after the final first-show size is established; for adapter-launched or parent-backed dialogs, prefer `CentreOnParent(wxBOTH)` with `Centre(wxBOTH)` only as the explicit no-parent fallback so live placement tests stay deterministic across BattleSim, strategic, and tactical flows.

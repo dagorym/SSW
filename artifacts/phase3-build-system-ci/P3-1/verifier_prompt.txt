@@ -1,0 +1,86 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented the P3-1 build-system refactor (new shared common.mk, -std=c++17 pinned across all Linux Makefiles, src/tactical's wx include flags now wx-config-derived via common.mk's WX_CXXFLAGS instead of a machine-specific hardcoded path, and drift fixes in src/defenses/Makefile and tests/core/Makefile). This is a pure build-configuration change with no C++ source/header edits, so the Documenter's scope was the plan's P3-1 and overall Sec 5 documentation-impact items owned by this subtask: (a) amended AGENTS.md's Module Boundary Rules and Build System/Linux/Make and wxWidgets Integration text that forbade wx-config in the six non-GUI module Makefiles, carving out src/tactical's approved use of the shared wx-config-derived WX_CXXFLAGS while keeping the five pure modules (core/strategic/ships/weapons/defenses) strictly forbidden; (b) noted common.mk as the shared Make fragment in the Build System/Linux/Make section, describing what it holds and which Makefiles include it; (c) noted the pinned -std=c++17 on every Linux compile path (via common.mk or inline in the wx-heavy/orchestration Makefiles) alongside the existing Windows stdcpp17 pin; (d) refreshed the general/Linux 'wxWidgets 3.3.1' prose to 3.3.2 in the Overview and Build System sections, explicitly leaving the Windows install-path reference (C:\Users\steph26\repos\wxWidgets-3.3.1\) and the SSW.Common.props WxWidgetsRoot default untouched, per the plan's explicit carve-out; (e) annotated doc/synthesized-roadmap.md's Part III 'Now' item #3 as RESOLVED (build-system portion), crediting P3-1/P3-2/P3-3 for common.mk, the -std=c++17 pin on both platforms, the wx-config-derived tactical flags (retiring the hardcoded gtk3-unicode-static-3.3 path called out in Sec 3.5's 'cheap win'), and the make check target, while explicitly noting the minimal CI workflow (P3-4), the Windows ConformanceMode flip, and the FBattleScreen/FBattleBoard/FBattleDisplay -> src/gui relocation remain deliberately deferred. common.mk's own header-comment documentation and the CLAUDE.md pointer file were confirmed already correct/untouched and required no edits (common.mk's header was written by the Implementer and already explains its role, the lazy WX_CXXFLAGS, and cross-references this AGENTS.md carve-out by name; CLAUDE.md contains no build-system facts to update per the single-source-of-truth rule). No Doxygen changes were needed or made -- no C++ functions or classes were added or modified in this phase.
+
+Acceptance criteria to verify:
+- common.mk exists at repo root and is included by the 6 non-GUI src module Makefiles and the 4 simple test-lib Makefiles. [Tester-verified via grep; now documented in AGENTS.md's Build System/Linux/Make section.]
+- A clean `make all_clean && make` from the repo root builds SSW, BattleSim, and all three test runners with no errors, every compile command carrying -std=c++17. [Tester-verified; the -std=c++17 pin (common.mk + inline in wx-heavy/orchestration Makefiles) is now documented in AGENTS.md.]
+- SSWTests, TacticalTests, and GuiTests (under xvfb-run -a) all still pass unchanged. [Tester-verified: 245/253/75 passing; documentation pass changed no test behavior.]
+- src/tactical's wx include flags derive from wx-config via common.mk's WX_CXXFLAGS; the hardcoded gtk3-unicode-static-3.3 path is gone from src/tactical/Makefile. [Tester-verified; now documented as the approved carve-out in AGENTS.md's Module Boundary Rules, Build System, and wxWidgets Integration sections, and in doc/synthesized-roadmap.md's item #3 RESOLVED annotation.]
+- The five pure modules (core/strategic/ships/weapons/defenses) stay wx-free: no wx-config or WX_CXXFLAGS reference, zero wx-config invocations on a dry run. [Tester-verified; documented explicitly as remaining forbidden in all three amended AGENTS.md sections.]
+- src/defenses/Makefile's 'rm  -f*.gcov' typo and tests/core/Makefile's stale ../../../src/include are fixed. [Tester-verified; build-config drift fix, no doc claim required beyond the general common.mk description since these are implementation-level fixes with no separate documented policy.]
+- Coverage still opts in: `make COVERAGE=1 tests` compiles with -fprofile-arcs -ftest-coverage. [Tester-verified; unaffected by this documentation pass.]
+- AGENTS.md/CLAUDE.md module-boundary + Build System text amended to carve out src/tactical's wx-config use while the five pure modules remain forbidden. [Done this pass; CLAUDE.md contains no facts to amend per SSOT rule -- all edits landed in AGENTS.md.]
+- common.mk noted as the shared Make fragment in the Build System/Linux/Make section. [Done this pass.]
+- Pinned -std=c++17 (both platforms) noted. [Done this pass.]
+- General/Linux wxWidgets version prose refreshed from 3.3.1 to 3.3.2, Windows install-path reference and SSW.Common.props WxWidgetsRoot default left unchanged. [Done this pass; verified by grep that the Windows-section '3.3.1' text and path were not touched.]
+- doc/synthesized-roadmap.md Part III 'Now' item #3 annotated RESOLVED per Sec 5. [Done this pass, annotated as 'RESOLVED (build-system portion)' since P3-4 CI is not yet complete in this repository state -- see assumptions.]
+
+Implementation branch or worktree context:
+- common.mk (new, repo root): wx-free shared base (COVERAGE/COVERAGE_FLAGS/COVERAGE_PREP block, .DEFAULT_GOAL, base CXXFLAGS with -std=c++17, DEPFLAGS, PICFLAGS, suffix implicit rules, shared objs/coverage-clean/clean targets) plus a lazily-defined wx-config/pkg-config-derived WX_CXXFLAGS that only src/tactical references.
+- src/core, src/strategic, src/ships, src/weapons, src/defenses, tests/core, tests/weapons, tests/strategic, tests/ships Makefiles: converted to `include ../../common.mk`, keeping only TARGET/SRCS/OBJS/DEPS and the ar rcs rule (plus wx-config/cppunit appends for the test-lib Makefiles, unchanged).
+- src/tactical/Makefile: also includes common.mk, then appends `CXXFLAGS += $(WX_CXXFLAGS)`, replacing the removed hardcoded `-I/usr/local/lib/wx/include/gtk3-unicode-static-3.3 ...` path; carries its own comment cross-referencing 'AGENTS.md module-boundary carve-out'.
+- src/Makefile, src/gui/Makefile, src/battleSim/Makefile, tests/Makefile, tests/gui/Makefile, tests/tactical/Makefile: kept their existing form, gained an inline -std=c++17.
+- src/defenses/Makefile: 'rm  -f*.gcov' (missing space, a no-op) corrected to 'rm -f *.gcov' (now inherited from common.mk's shared objs/clean/coverage-clean targets).
+- tests/core/Makefile: removed the stale out-of-repo '-I../../../src/include' path.
+- Implementer commit: c88719a6 ("P3-1: Unify Linux build with common.mk and pin -std=c++17"), on branch phase3-P3-1-implementer-20260712.
+- Implementer artifact commit: ec49dc5a ("P3-1: Implementer artifacts and Tester handoff (common.mk + -std=c++17)").
+- Tester made no code changes (Test commit: No Changes Made) and committed only verification artifacts: 4ebde2a1 ("P3-1: Tester artifacts -- verified build-system refactor is behavior-preserving"), on branch phase3-P3-1-tester-20260712.
+- Documentation commit (this pass): 5a5bcc67 ("P3-1: Document common.mk build unification and wx-config tactical carve-out").
+- Branch/worktree: phase3-P3-1-documenter-20260712, branched from phase3-P3-1-tester-20260712, which traces back to master at commit 64d09944 ("Add phase 3 plan").
+
+Files modified by the Implementer, Tester, and Documenter:
+- common.mk (new, Implementer)
+- src/Makefile, src/battleSim/Makefile, src/core/Makefile, src/defenses/Makefile, src/gui/Makefile, src/ships/Makefile, src/strategic/Makefile, src/tactical/Makefile, src/weapons/Makefile (Implementer)
+- tests/Makefile, tests/core/Makefile, tests/gui/Makefile, tests/ships/Makefile, tests/strategic/Makefile, tests/tactical/Makefile, tests/weapons/Makefile (Implementer)
+- artifacts/phase3-build-system-ci/P3-1/implementer_report.md, implementer_result.json (Implementer)
+- artifacts/phase3-build-system-ci/P3-1/tester_prompt.txt (Implementer, as Tester handoff)
+- artifacts/phase3-build-system-ci/P3-1/tester_report.md, tester_result.json (Tester)
+- artifacts/phase3-build-system-ci/P3-1/documenter_prompt.txt (Tester, as Documenter handoff)
+- AGENTS.md (Documenter - this pass): Overview, Module Boundary Rules, Build System/Linux/Make, wxWidgets Integration/Common Patterns
+- doc/synthesized-roadmap.md (Documenter - this pass): Part III 'Now' item #3 RESOLVED annotation
+- artifacts/phase3-build-system-ci/P3-1/documenter_report.md, documenter_result.json, verifier_prompt.txt (Documenter - this pass)
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start / repository-inference / artifact-paths / diff-first-editing / two-commit-artifact-flow / handoff-prompt-contract / documenter/preflight / documenter/diff-review / documenter/doc-editing / documenter/agents-guidance / documenter/artifact-writing / documenter/verifier-handoff / documenter/commit-flow
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <prompt-file> --repo-root .
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base 64d09944 --head HEAD
+- grep -n plans/phase3-build-system-ci-plan.md (sections 3 P3-1 and 5)
+- grep -n doc/synthesized-roadmap.md (Part III item 3, Sec 3.5, Sec 3.7)
+- cat common.mk, src/tactical/Makefile
+- git diff -- AGENTS.md, doc/synthesized-roadmap.md
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root . --phase docs
+- git add AGENTS.md doc/synthesized-roadmap.md
+- git commit -F <message-file>
+
+Final test outcomes:
+- No executable or test behavior changed by this documentation pass; no tests were run or required. The Tester's build-level validation remains the validation of record: common.mk exists and is included by the 6 non-GUI src Makefiles + 4 simple test-lib Makefiles (confirmed by grep); `make all_clean && make` from repo root builds SSW, BattleSim, and all three test runners with every compile command carrying -std=c++17; SSWTests OK (245), TacticalTests OK (253), GuiTests OK (75, under xvfb-run -a); src/tactical's wx flags derive from wx-config via common.mk's WX_CXXFLAGS with the gtk3-unicode-static-3.3 hardcode gone; the five pure modules stay wx-free (zero wx-config invocations on a dry run); the malformed 'rm  -f*.gcov' is fixed and tests/core/Makefile no longer references ../../../src/include; `make COVERAGE=1 tests` still compiles with -fprofile-arcs -ftest-coverage.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase3-build-system-ci-plan.md, subtask P3-1 ("common.mk + Linux -std=c++17 pin + Makefile drift fixes (BS1 + BS2-Linux)"), lines 73-98.
+- Plan's P3-1 Documentation Impact (line 96): comments at the top of common.mk (Implementer-owned, already present); required canonical-doc amendment (Documenter stage) to update AGENTS.md/CLAUDE.md's module-boundary + Build System text carving out src/tactical's WX_CXXFLAGS use, refresh the wxWidgets 3.3.1 prose to 3.3.2 (leaving the Windows path unchanged), and note common.mk as the shared Make fragment.
+- Plan section 5 (overall Documentation Impact, lines 158-165): assigns the AGENTS.md canonical-doc amendment (make check note is P3-3's; CI note is P3-4's; common.mk/-std=c++17/wx-config-carve-out/3.3.2-refresh are P3-1's) and the doc/synthesized-roadmap.md Part III item #3 RESOLVED annotation to this subtask's Documenter stage.
+- Comparison base: implementer branch phase3-P3-1-implementer-20260712 at code commit c88719a6; `git diff 64d09944` (pre-Phase-3-plan master) isolates the full set of Makefile/common.mk changes.
+
+Convention-file guidance:
+- AGENTS.md Single-Source-of-Truth Rule: canonical build/test facts live in AGENTS.md, not in entry-point pointer files. CLAUDE.md was checked (grep for wx-config/3.3.1/common.mk/std=c++17/Build System) and contains none of these facts, so it needed no edit.
+- Confirmed P3-2 (Windows stdcpp17 pin) and P3-3 (make check target) Documenter stages already landed on the shared integration branch 'phase3' in the main repo (commits 0454ce5d/fa835e54 and 11dbe555/79cc4f5a) and did not touch the items owned by this subtask (wx-config carve-out, 3.3.2 prose refresh, common.mk note, doc/synthesized-roadmap.md item #3), avoiding duplicate edits.
+- doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md are non-editable and were not touched.
+- No repository-required in-code documentation (Doxygen headers, function comments) applies: no C++ functions or classes were added or modified in this phase.
+
+Updated documentation files:
+- AGENTS.md
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase3-build-system-ci/P3-1
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
