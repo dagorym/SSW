@@ -9,7 +9,7 @@ endif
 
 .DEFAULT_GOAL := all
 
-CXXFLAGS = -I../../include -g `wx-config --cxxflags` `pkg-config --cflags gtk+-3.0` -Wall -Woverloaded-virtual -DLINUX $(COVERAGE_FLAGS) -DGUI_TEST_REPO_ROOT=\"$(CURDIR)/../..\"
+CXXFLAGS = -I../../include -g `wx-config --cxxflags` `pkg-config --cflags gtk+-3.0` -Wall -Woverloaded-virtual -DLINUX -std=c++17 $(COVERAGE_FLAGS) -DGUI_TEST_REPO_ROOT=\"$(CURDIR)/../..\"
 DEPFLAGS = -MMD -MP
 
 LIBS = `wx-config --libs`
