@@ -1,0 +1,63 @@
+{
+  "task_id": "P2-6",
+  "status": "PASS",
+  "test_commit_hash": "2961c923258c676e52c9a8faf2a96d8576f12582",
+  "changed_files": [
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/StrategicGuiLiveTest.h"
+  ],
+  "tests_added": [
+    "StrategicGuiLiveTest::testMainFrameOnSaveCancelLeavesFilesystemUntouched",
+    "StrategicGuiLiveTest::testMainFrameOnSaveConfirmWritesToDialogFullPath",
+    "StrategicGuiLiveTest::testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent",
+    "StrategicGuiLiveTest::testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState"
+  ],
+  "validation_commands": [
+    "make (from repo root)",
+    "cd tests/gui && make && xvfb-run -a timeout 250 ./GuiTests",
+    "cd tests && ./SSWTests"
+  ],
+  "validation_outcome": "Repo-root make clean (exit 0). GUI suite OK (75 tests) = 71 baseline + 4 new, no hang/crash/failure. SSWTests OK (217 tests), no regressions.",
+  "acceptance_criteria": [
+    {
+      "criterion": "Cancelling Save leaves the filesystem untouched and does not call FGame::save.",
+      "test": "testMainFrameOnSaveCancelLeavesFilesystemUntouched",
+      "result": "PASS"
+    },
+    {
+      "criterion": "Confirming Save writes to the dialog's full GetPath() location.",
+      "test": "testMainFrameOnSaveConfirmWritesToDialogFullPath",
+      "result": "PASS"
+    },
+    {
+      "criterion": "Cancelling Open creates no FGame and attempts no load; the frame stays consistent.",
+      "test": "testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent",
+      "result": "PASS"
+    },
+    {
+      "criterion": "Confirming Open loads from GetPath() and restores the post-load menu/turn state.",
+      "test": "testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState",
+      "result": "PASS"
+    },
+    {
+      "criterion": "Repo builds clean; the GUI suite passes.",
+      "test": "make + xvfb-run GuiTests",
+      "result": "PASS"
+    }
+  ],
+  "red_verification": {
+    "method": "Temporary local revert of src/FMainFrame.cpp to pre-fix 37fb564b, rebuilt, re-ran GUI suite, then restored via git checkout HEAD (never committed).",
+    "results": {
+      "testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent": "RED (segfault in onOpen()->FGame::load() on the Cancel path); green after fix.",
+      "testMainFrameOnSaveCancelLeavesFilesystemUntouched": "Green against pre-fix and post-fix: a cancelled native dialog returns an empty GetFilename(), so the pre-fix ofstream(\"\") also creates no file. Post-fix contract lock.",
+      "testMainFrameOnSaveConfirmWritesToDialogFullPath": "Green against pre-fix and post-fix: wxFD_CHANGE_DIR chdirs into the chosen folder on accept, so pre-fix GetFilename() resolves to the same absolute path as GetPath(). Post-fix contract lock.",
+      "testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState": "Green against pre-fix and post-fix: same wxFD_CHANGE_DIR equivalence as the Save confirm case. Post-fix contract lock."
+    }
+  },
+  "unmet_acceptance_criteria": [],
+  "artifact_files_written": [
+    "artifacts/phase2-rules-correctness/P2-6/tester_report.md",
+    "artifacts/phase2-rules-correctness/P2-6/tester_result.json",
+    "artifacts/phase2-rules-correctness/P2-6/documenter_prompt.txt"
+  ]
+}
