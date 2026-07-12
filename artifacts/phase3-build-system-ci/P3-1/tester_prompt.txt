@@ -1,0 +1,92 @@
+Your role is 'tester'. Your task is as follows:
+
+Verify the P3-1 build-system refactor (shared common.mk + pinned -std=c++17 +
+wx-config-derived tactical flags + Makefile drift fixes) is behavior-preserving:
+every existing test suite must still build and pass exactly as before, and the
+coverage opt-in must still work. This is a pure build-config change — no C++
+source or header was modified — so the primary verification is a clean full-suite
+build+run, NOT new CppUnit fixtures.
+
+## Modified files (code commit c88719a6ca39836c8ef8cba33dc093da3a611255)
+
+- common.mk (new, repo root)
+- src/core/Makefile, src/strategic/Makefile, src/ships/Makefile,
+  src/weapons/Makefile, src/defenses/Makefile, src/tactical/Makefile
+- src/gui/Makefile, src/battleSim/Makefile, src/Makefile
+- tests/core/Makefile, tests/weapons/Makefile, tests/strategic/Makefile,
+  tests/ships/Makefile
+- tests/Makefile, tests/gui/Makefile, tests/tactical/Makefile
+
+## Acceptance criteria (from the Planner)
+
+- common.mk exists at repo root and is `include`d by the 6 non-GUI src module
+  Makefiles and the 4 simple test-lib Makefiles.
+- `make all_clean && make` from the repo root builds SSW, BattleSim, and all
+  three test runners with no errors, and every compile command carries
+  -std=c++17 (verifiable via a dry run or a sample compile line).
+- `cd tests && make && ./SSWTests` passes; `cd tests/tactical && make &&
+  ./TacticalTests` passes; `cd tests/gui && make && xvfb-run -a ./GuiTests`
+  passes — the refactor changed no test outcome.
+- src/tactical's wx include flags derive from wx-config via common.mk's
+  WX_CXXFLAGS; the machine-specific hardcoded
+  /usr/local/lib/wx/include/gtk3-unicode-static-3.3 path no longer appears in
+  src/tactical/Makefile.
+- The five pure modules stay wx-free: none of
+  src/{core,strategic,ships,weapons,defenses}/Makefile contains wx-config, and
+  none references WX_CXXFLAGS (building them shells out to wx-config zero times —
+  confirmable via a dry run).
+- `grep -n "gcov" src/defenses/Makefile` no longer shows the malformed
+  `rm  -f*.gcov` (defenses inherits the corrected `rm -f *.gcov` from
+  common.mk); tests/core/Makefile no longer contains ../../../src/include.
+- Coverage still opts in: `make COVERAGE=1 tests` compiles with
+  -fprofile-arcs -ftest-coverage.
+
+## Test / validation commands (exact)
+
+From the repo root:
+- Clean rebuild: `make all_clean` then `make`  (expect exit 0; SSW, BattleSim,
+  and the three test runners produced).
+- Suites:
+  - `cd tests && make && ./SSWTests`               (expect: OK (245 tests))
+  - `cd tests/tactical && make && ./TacticalTests` (expect: OK (253 tests))
+  - `cd tests/gui && make && xvfb-run -a ./GuiTests` (expect: OK (75 tests))
+    NOTE: GuiTests requires an X display; run under `xvfb-run -a` in headless
+    automation. Also, SSWTests/TacticalTests must be run from their own runner
+    directory (the -D*_TEST_REPO_ROOT paths and asset lookups are cwd-relative).
+- Coverage opt-in smoke: `make COVERAGE=1 tests` (expect compile/link lines to
+  carry -fprofile-arcs -ftest-coverage).
+
+## Implementation context
+
+- common.mk holds the wx-free common base (COVERAGE block, .DEFAULT_GOAL, base
+  CXXFLAGS with -std=c++17, DEPFLAGS/PICFLAGS, suffix rules, shared
+  objs/coverage-clean/clean targets). It defines WX_CXXFLAGS LAZILY (recursive
+  `=`) as `$(shell wx-config --cxxflags) $(shell pkg-config --cflags gtk+-3.0)`.
+  The base CXXFLAGS does NOT reference WX_CXXFLAGS, so pure modules never trigger
+  wx-config. Only src/tactical appends `CXXFLAGS += $(WX_CXXFLAGS)`.
+- The six standalone Makefiles (src/, src/gui, src/battleSim, tests/, tests/gui,
+  tests/tactical) keep their own form and just gained inline `-std=c++17`.
+- Preserved: SKIP_MODEL_DEPS, the `.RECIPEPREFIX = >` style in tests/gui and
+  tests/tactical, the coverage opt-in, all target names, and every
+  -D*_TEST_REPO_ROOT define.
+- Edge case to watch: the five pure modules must invoke wx-config ZERO times.
+  Confirm with a dry run, e.g. delete one object and run
+  `make -C src/core -n FPoint.o` — the compile line must contain no wx-config.
+
+## Expected-failure note
+
+None. No existing validation is expected to fail; there is no intentional
+behavior change. If any suite fails, treat it as a regression to investigate,
+not an expected consequence.
+
+## No new fixtures expected
+
+This is a build-config change with no C++ behavior delta. No new CppUnit
+fixtures are required. If (unexpectedly) a behavioral test is warranted, it
+belongs to the module whose Makefile changed, but the primary verification
+remains a clean full-suite build+run plus the coverage opt-in smoke.
+
+## Shared artifact directory
+
+Reuse artifacts/phase3-build-system-ci/P3-1/ (repository-root-relative) for your
+tester_report.md and tester_result.json.
