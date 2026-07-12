@@ -477,6 +477,15 @@ the root cause of C4 and the retreat-condition validation bug).
   (`std::mt19937` owned per game, settable seed) — this simultaneously enables deterministic
   behavioral tests (repo policy), battle replay/debugging, and Windows test parity. The
   seeker path already funnels through one chokepoint, making it a ~20-line change there.
+  **[RESOLVED (seed seam only) — see P2-7: `include/Frontier.h` adds `seedRandomExplicit(seed)`
+  and `seedRandomFromClock()` as named, thin wraps over the same process-global `srand()`/`rand()`
+  pair `irand()` already uses; `irand()` itself is unchanged. `FGame`'s constructor now calls
+  `seedRandomFromClock()` in place of the raw `srand(time(NULL))` call, and tests call
+  `seedRandomExplicit(fixed)` to pin the shared RNG for reproducible rolls (e.g.
+  `FFleetTest::testDecTransitTime`'s risk-jump). This is deliberately the minimal named seed
+  seam, not the broader injectable per-game `std::mt19937` RNG suggested above — that broader
+  refactor (and the Windows CRT portability gap) remains open; see
+  `artifacts/phase2-rules-correctness/P2-7`.]**
 - Include-guard reality: three styles plus typos ("DISPALY") across 93 headers; the
   documented `_FOO_H_` convention is also formally reserved-identifier territory.
   `#pragma once` is the cheapest durable fix.
