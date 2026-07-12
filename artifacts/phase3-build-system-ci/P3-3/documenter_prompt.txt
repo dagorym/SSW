@@ -1,0 +1,53 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated the repo-root 'make check' target added to Makefile (check: all, followed by cd tests && ./SSWTests, cd tests/tactical && ./TacticalTests, cd tests/gui && xvfb-run -a ./GuiTests). This is a build-orchestration deliverable with no CppUnit source surface; the plan's Tester handoff explicitly expects no new fixtures, so verification was behavioral at the make level: build-from-clean-tree, run of all three suites, and exit-code propagation on both pass and fail scenarios.
+
+Acceptance criteria validated:
+- From a clean tree, `make check` builds all three runners and runs all three suites, with GuiTests under xvfb-run.
+- When all suites pass, `make check` exits 0.
+- When any one suite fails (temporarily breaking a single assertion), `make check` exits non-zero -- failure is not masked, and later suites in the sequence do not run.
+- `make check` takes no arguments and needs only the already-required deps (wxWidgets 3.3.2, CppUnit, xvfb).
+
+Implementation branch or worktree context:
+- Implementation commit: d8109d66 ("P3-3: add repo-root 'make check' target that builds and runs all three test suites").
+- Implementer artifact commit: e6d4e6b3 ("P3-3: implementer artifacts for 'make check' target").
+- Branch/worktree: phase3-P3-3-tester-20260712, based on master at commit 64d09944 ("Add phase 3 plan").
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- Makefile (repo root)
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- make -C /home/tstephen/repos/worktrees/phase3-P3-3-tester-20260712 check   (clean tree: builds SSW, BattleSim, SSWTests, TacticalTests, GuiTests, then runs all three suites; exit 0)
+- bash wrapper: make -C <repo-root> check; echo MAKE_CHECK_EXIT=$?   (re-run after temporarily breaking tests/core/FPointTest.cpp::testConstructor to force a failure)
+- git diff --stat / git status --porcelain   (confirms FPointTest.cpp break was fully reverted, working tree clean)
+- python3 .myteam/tester/commit-flow/validate_tester_state.py --repo-root <repo-root> --artifact-dir artifacts/phase3-build-system-ci/P3-3 --required-artifact tester_report.md --required-artifact tester_result.json --optional-artifact documenter_prompt.txt
+
+Final test outcomes:
+- AC1 (from a clean tree, make check builds all three runners and runs all three suites, GuiTests under xvfb-run): PASS -- ran on a genuinely unbuilt tree (no SSWTests/TacticalTests/GuiTests binaries existed beforehand); make check built src (SSW, BattleSim) and tests (SSWTests, TacticalTests, GuiTests) via the 'all' dependency, then executed 'cd tests && ./SSWTests', 'cd tests/tactical && ./TacticalTests', and 'cd tests/gui && xvfb-run -a ./GuiTests' in that order, observed directly in the make transcript.
+- AC2 (all suites pass -> exit 0): PASS -- SSWTests reported OK (245 tests), TacticalTests reported OK (253 tests), GuiTests reported OK (75 tests) under xvfb-run -a; a wrapper script capturing $? after `make check` printed MAKE_CHECK_EXIT=0.
+- AC3 (one suite fails -> exit non-zero, not masked): PASS -- temporarily changed tests/core/FPointTest.cpp::testConstructor's first assertion from `m_p1->getX() == 1` to `m_p1->getX() == 99999`, reran `make check`; SSWTests reported 'Run: 245 Failures: 1 Errors: 0' with the expected FPointTest::testConstructor failure, make printed 'make: *** [Makefile:25: check] Error 1' and stopped -- TacticalTests and GuiTests were never invoked (no 'cd tests/tactical' or 'cd tests/gui' lines after the failure) -- and the wrapper captured MAKE_CHECK_EXIT=2 (non-zero). The assertion was then reverted; git diff/status confirm the working tree is clean with the original assertion restored.
+- AC4 (make check takes no arguments and needs only already-required deps): PASS -- `make check` was invoked with no arguments or variables in every run above; `wx-config --version` reports 3.3.2, `xvfb-run` resolves to /usr/bin/xvfb-run, and CppUnit already links the three existing suites, so no new dependency was introduced.
+
+Documentation context:
+- AGENTS.md's 'Build System / Linux / Make' section lists the existing make targets (default, all, clean, tests, docs, etc.) and is the most likely place to add a one-line mention of `make check` as the combined build+test-all-suites target, consistent with how `tests` and `docs` are already documented there.
+- AGENTS.md's Testing section already documents the three individual suite run commands (SSWTests, TacticalTests, GuiTests under xvfb-run); `make check` is a convenience aggregation of exactly those same three commands plus the build, so no new testing convention or framework needs to be introduced, only a pointer/summary addition.
+- No functional/runtime game behavior changed; this is a build-orchestration-only addition.
+
+Plan and diff context:
+- Plan: plans/phase3-build-system-ci-plan.md (Phase 3 Build System / CI roadmap), subtask P3-3, per artifacts/phase3-build-system-ci/P3-3/implementer_report.md and tester_prompt.txt.
+- Comparison base: master branch at commit 64d09944 ("Add phase 3 plan"), the commit this worktree/branch was created from; `git diff 64d09944 -- Makefile` isolates the exact `check` target addition under review.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase3-build-system-ci/P3-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

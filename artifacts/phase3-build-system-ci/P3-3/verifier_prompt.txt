@@ -1,0 +1,65 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented the repo-root `make check` target added in Phase 3 subtask P3-3 (Implementer commit d8109d66). `make check` builds everything via the existing `all` target and then runs all three CppUnit suites in sequence -- SSWTests, tactical/TacticalTests, and gui/GuiTests under `xvfb-run -a` -- propagating a non-zero exit on the first suite failure. Per the plan's P3-3 Documentation Impact instruction (add the canonical build/test entry point to AGENTS.md's Running Tests section; no Doxygen), the Documenter made two additive edits to AGENTS.md: a `make check` line in the Build System / Linux / Make target list, and a pointer paragraph in the Testing / Running Tests section describing it as the one-command build+run-all-three-suites entry point and its stop-on-first-failure exit-code behavior. No other docs were touched; the broader §5 items (common.mk, -std=c++17, CI note, wx-config module-boundary amendment, 3.3.2 version prose) are explicitly owned by other subtasks' Documenter stages (P3-1, P3-4).
+
+Acceptance criteria to verify:
+- From a clean tree, `make check` builds all three runners and runs all three suites, with GuiTests under xvfb-run. [Tester-verified behaviorally; documented in AGENTS.md.]
+- When all suites pass, `make check` exits 0. [Tester-verified; MAKE_CHECK_EXIT=0.]
+- When any one suite fails (temporarily breaking a single assertion), `make check` exits non-zero -- failure is not masked, and later suites do not run. [Tester-verified; MAKE_CHECK_EXIT=2, make stopped at Makefile:25, TacticalTests/GuiTests never invoked. Documented as stop-on-first-failure in AGENTS.md.]
+- `make check` takes no arguments and needs only the already-required deps (wxWidgets 3.3.2, CppUnit, xvfb). [Tester-verified; no new dependency introduced.]
+
+Implementation branch or worktree context:
+- Makefile (repo root): added a `.PHONY` `check` target (also added `check` to the existing `.PHONY` line) with `check: all` followed by `cd tests && ./SSWTests`, `cd tests/tactical && ./TacticalTests`, and `cd tests/gui && xvfb-run -a ./GuiTests`. The target carries a self-documenting header comment. Failure propagation relies on default Make semantics (no leading `-`, no `|| true`).
+- Implementation commit: d8109d66 ("P3-3: add repo-root 'make check' target that builds and runs all three test suites").
+- Implementer artifact commit: e6d4e6b3 ("P3-3: implementer artifacts for 'make check' target").
+- Tester artifact commit: 5dee28a5 ("P3-3: Tester artifacts for 'make check' target -- all ACs PASS"). Tester made no source/test changes (Test commit: No Changes Made).
+- Documentation commit (this pass): 11dbe555 ("P3-3: document repo-root 'make check' target in AGENTS.md").
+- Branch/worktree: phase3-P3-3-documenter-20260712, branched from phase3-P3-3-tester-20260712, which is based on master at commit 64d09944 ("Add phase 3 plan").
+
+Files modified by the Implementer, Tester, and Documenter:
+- Makefile (repo root) (Implementer)
+- artifacts/phase3-build-system-ci/P3-3/implementer_report.md, implementer_result.json (Implementer)
+- artifacts/phase3-build-system-ci/P3-3/tester_prompt.txt (Implementer, as Tester handoff)
+- artifacts/phase3-build-system-ci/P3-3/tester_report.md, tester_result.json (Tester)
+- artifacts/phase3-build-system-ci/P3-3/documenter_prompt.txt (Tester, as Documenter handoff)
+- AGENTS.md (Documenter - this pass)
+- artifacts/phase3-build-system-ci/P3-3/documenter_report.md, documenter_result.json, verifier_prompt.txt (Documenter - this pass)
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start / documenter/preflight / documenter/diff-review / documenter/doc-editing / diff-first-editing / documenter/artifact-writing / documenter/verifier-handoff / documenter/commit-flow
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base 64d09944
+- git diff 64d09944 -- Makefile
+- git diff -- AGENTS.md
+- git add AGENTS.md
+- git commit -F <message-file>
+
+Final test outcomes:
+- No executable or test behavior changed by this documentation pass; no tests were run or required. The Tester's make-level behavioral validation remains the validation of record: AC1 (clean-tree `make check` builds SSW/BattleSim and all three runners, then runs SSWTests -> TacticalTests -> GuiTests-under-xvfb-run in order) PASS; AC2 (all suites pass -> exit 0; SSWTests OK 245, TacticalTests OK 253, GuiTests OK 75) PASS; AC3 (one forced-failing assertion -> `make check` exits non-zero at Makefile:25 and never invokes TacticalTests/GuiTests) PASS; AC4 (no arguments, only already-required deps wxWidgets 3.3.2 / CppUnit / xvfb) PASS.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase3-build-system-ci-plan.md, subtask P3-3 ("make check target (BS3)"), lines 112-126.
+- Plan's P3-3 Documentation Impact line (124): "The new `make check` command is a canonical build/test entry point -> the Documenter stage adds it to the AGENTS.md 'Running Tests' section (see 5). No Doxygen."
+- Plan section 5 (overall Documentation Impact) confirms `make check` belongs in AGENTS.md and attributes the common.mk / -std=c++17 / wx-config-module-boundary / CI / 3.3.2-version items to other subtasks' Documenter stages (P3-1, P3-4).
+- Comparison base: master at commit 64d09944 ("Add phase 3 plan"); `git diff 64d09944 -- Makefile` isolates the exact `check` target addition.
+
+Convention-file guidance:
+- AGENTS.md Single-Source-of-Truth Rule: canonical build/test facts live in AGENTS.md, not in entry-point pointer files (CLAUDE.md / copilot-instructions). Honored -- CLAUDE.md was not touched; the `make check` fact was placed only in AGENTS.md.
+- AGENTS.md documents `tests` and `docs` targets in the Build System / Linux / Make list and the individual suite run commands in the Running Tests section; the `make check` documentation mirrors those existing patterns rather than introducing a new convention.
+- No repository-required in-code documentation (Doxygen headers, function comments) applies: the plan states no C++ functions or classes are added or modified in this phase; the only Implementer-changed file is the repo-root Makefile.
+- doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md are non-editable and were not touched; this change has no rules-of-the-game impact.
+
+Updated documentation files:
+- AGENTS.md
+
+Shared artifact directory:
+- artifacts/phase3-build-system-ci/P3-3
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

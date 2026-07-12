@@ -154,6 +154,7 @@ From repo root:
 ```bash
 make              # Build the main executables and the top-level test targets
 make tests        # Build the test suites from the repo root
+make check        # Build everything, then run all three CppUnit suites (SSWTests, TacticalTests, GuiTests under xvfb-run), stopping and propagating a non-zero exit on the first suite failure
 make clean        # Clean both src/ and tests/ outputs
 make all_clean    # Deep clean all modules
 make docs         # Generate Doxygen documentation
@@ -277,6 +278,8 @@ Canonical headless GUI validation command:
 ```bash
 cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
+
+To build and run all three suites (`SSWTests`, `TacticalTests`, `GuiTests` under `xvfb-run -a`) in one command from a clean tree, use the repo-root `make check` target (see Build System / Linux / Make above); it depends on `all`, then runs the three suites in sequence and stops with a non-zero exit at the first suite that fails, so a later suite is never masked by an earlier one's failure.
 
 For deterministic live-dialog coverage, prefer the shared `tests/gui/WXGuiTestHarness` helpers over ad hoc timers: `showModalWithAction(...)` / `runModalFunctionWithAction(...)` / `runVoidFunctionWithAction(...)` schedule in-dialog interactions before the modal fallback closes; `waitForTopLevelWindow(...)` / `waitForModalDialog(...)` prove dialogs appeared; `waitForTopLevelWindowClosed(...)` provides a bounded wait for posted close requests. Use `showModalWithAction(...)` for direct modal ownership when app-level scheduling can race the dialog; raise fallback timeouts only where the close path can settle slowly. (Close-wait, centering, and teardown invariants are listed in the GUI tests bullet above.)
 
