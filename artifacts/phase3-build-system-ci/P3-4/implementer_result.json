@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase3-build-system-ci/P3-4/implementer_report.md",
+    "artifacts/phase3-build-system-ci/P3-4/tester_prompt.txt",
+    "artifacts/phase3-build-system-ci/P3-4/implementer_result.json"
+  ],
+  "branch_name": "phase3-P3-4-implementer-20260712",
+  "changed_files": [
+    ".github/workflows/ci.yml (new): single Ubuntu job on push/pull_request to master plus workflow_dispatch; installs C++ toolchain, libcppunit-dev, libgtk-3-dev, xvfb, curl/ca-certificates/pkg-config; provisions wxWidgets 3.3.2 from source (cached via actions/cache, keyed on wx version) since the Ubuntu 24.04 apt repos only ship wx 3.2.4; then runs `make` and `make check` unchanged."
+  ],
+  "code_commit_hash": "80933b44",
+  "pass_label": null,
+  "status": "PASS",
+  "task_id": "P3-4",
+  "validation_commands": [
+    "python3 -c \"import yaml; yaml.safe_load(open('.github/workflows/ci.yml'))\" -- YAML parses without error",
+    "manual structural review of triggers/permissions/action pins/steps against the plan's acceptance criteria",
+    "curl HEAD/GET checks confirming actions/checkout@11bd719... (v4.2.2), actions/cache@1bd1e32... (v4.2.0), and the wxWidgets 3.3.2 release tarball URL all resolve (HTTP 200) -- pins and download URL are live, not guessed",
+    "grep cross-check of tests/gui, tests/tactical, tests/Makefile, src/gui, src/battleSim, src/Makefile confirming all wx-config usage in the build is via `wx-config --cxxflags`/`--libs` on PATH, so a source-built wx install only needs its bin/ directory added to PATH",
+    "diff of the workflow's `make` / `make check` invocations against the repo-root Makefile's `all`/`check` targets (confirmed identical, no CI-only divergent path)"
+  ],
+  "validation_outcome": "PASS (structural). `.github/workflows/ci.yml` parses as valid YAML via PyYAML `safe_load` (the standard PyYAML quirk of the `on:` key parsing as the boolean `True` under YAML 1.1 is expected/harmless and does not affect GitHub's own workflow parser). actionlint was not available in this environment to run as a second check. The workflow declares `push`+`pull_request` (both scoped to `master`) and `workflow_dispatch` triggers, a single `ubuntu-24.04` job, and steps for checkout, apt dependency install, wx 3.3.2 cache+build, `wx-config` PATH wiring, `make`, and `make check`, matching the plan's acceptance criteria line-for-line. `permissions: contents: read` is set at both workflow level and job level; `actions/checkout` and `actions/cache` are pinned to commit SHAs (with the human-readable tag as a trailing comment); no `secrets.*` reference appears anywhere in the file (grep-verified). The `make` and `make check` steps invoke exactly those two bare commands -- identical to the repo-root Makefile's `all`/`check` targets verified locally by P3-1/P3-3 -- so there is no CI-only build divergence. EXPLICIT LIMITATION: GitHub Actions cannot be executed from this sandboxed environment, so no cloud run (green or otherwise) was performed or is being claimed; verification here is structural (YAML validity + triggers/job/steps/permissions/pins) plus command-parity with the locally-verified `make`/`make check`, plus live reachability checks (HTTP 200) on the three pinned/downloaded external URLs."
+}

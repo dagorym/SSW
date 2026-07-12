@@ -1,0 +1,51 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Add a minimal GitHub Actions CI workflow (.github/workflows/ci.yml) that builds the repo and runs `make check` on Ubuntu, per roadmap Phase 3 BS4. Runs after P3-1 (common.mk / -std=c++17 pin) and P3-3 (`make check` target), both already merged into this branch.
+
+Modified files:
+- .github/workflows/ci.yml (new): single Ubuntu job on push/pull_request to master plus workflow_dispatch; installs C++ toolchain, libcppunit-dev, libgtk-3-dev, xvfb, curl/ca-certificates/pkg-config; provisions wxWidgets 3.3.2 from source (cached via actions/cache, keyed on wx version) since the Ubuntu 24.04 apt repos only ship wx 3.2.4; then runs `make` and `make check` unchanged.
+
+Acceptance criteria to validate (from Planner):
+- .github/workflows/ci.yml exists and is valid workflow YAML (yaml.safe_load succeeds; actionlint not available in this environment to run as a second check).
+- The workflow declares push + pull_request (to master) + workflow_dispatch triggers, one Ubuntu job, and steps that install deps (including a wx 3.3.2 provisioning step), run `make`, and run `make check`.
+- The workflow sets `permissions: contents: read` (workflow-level and job-level), pins third-party actions to a fixed ref (commit SHA with version-tag comment), and references no secrets.
+- The build/test commands in the workflow (`make`, `make check`) match the locally-verified repo-root Makefile `all`/`check` targets exactly -- no CI-only divergent build path.
+
+Create test files in:
+- No new CppUnit fixtures apply to this deliverable -- it is a CI workflow file, not C++ source. Verification is structural/YAML-level plus command-parity review, matching the plan's own Validation/Tester-handoff sections for P3-4.
+- If the Tester wants a second automated YAML-validity check beyond plain yaml.safe_load, and `actionlint` is installable in the Tester's environment, running `actionlint .github/workflows/ci.yml` is the natural next check -- it was not available here.
+
+Implementation context for testing:
+- Trigger block: `on: push: branches: [master]`, `pull_request: branches: [master]`, and `workflow_dispatch:` (no inputs) -- matches the plan's required trigger set exactly.
+- Single job `build-and-check` runs on `ubuntu-24.04` (a currently GA-supported Actions runner label) with `timeout-minutes: 90` as a safety bound (not itself an acceptance criterion, added for CI hygiene).
+- Permissions are declared twice: once at workflow level (`permissions: contents: read` applying to all jobs) and once at job level (same value) -- this satisfies the plan's 'workflow/job permissions' phrasing literally as well as in spirit.
+- wx 3.3.2 provisioning: confirmed locally via `apt-cache policy libwxgtk3.2-dev` that Ubuntu 24.04 ('noble')'s apt repos only offer wx 3.2.4, not any 3.3.x release, so no distro package satisfies the pin. The workflow therefore builds wx 3.3.2 from the official upstream release tarball (`https://github.com/wxWidgets/wxWidgets/releases/download/v3.3.2/wxWidgets-3.3.2.tar.bz2`, confirmed reachable via a live curl HTTP 200 check from this environment) with `./configure --prefix=<workspace>/.wx-install --with-gtk=3 --disable-shared --disable-tests --with-libpng=builtin --with-libjpeg=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin`, then `make -j$(nproc) && make install`. `--disable-shared` (static .a libs) mirrors this repo's own locally-verified dev wx install (confirmed via `wx-config --libs` locally, which lists `.a` archives, not `.so`), avoiding any LD_LIBRARY_PATH/runtime-linker concerns for the test binaries `make check` executes directly. The `--with-*=builtin` flags force wx's bundled third-party image/codec/xml libs so the build does not depend on whatever incidental dev packages happen to be preinstalled on the runner image.
+- The wx install prefix is cached via `actions/cache` keyed on `wx-3.3.2-${{ runner.os }}-static-v1`; a cache hit skips the download/configure/build step entirely (`if: steps.wx-cache.outputs.cache-hit != 'true'`), so only the first run per cache generation pays the wx build cost.
+- After the (conditional) wx build, `${WX_PREFIX}/bin` is appended to `$GITHUB_PATH` so `wx-config` (used directly by src/gui, src/battleSim, src/Makefile, tests/Makefile, tests/gui/Makefile, tests/tactical/Makefile, and indirectly by src/tactical via common.mk's WX_CXXFLAGS) resolves to the freshly-built/cached 3.3.2 install for every subsequent step, including on cache-hit runs.
+- A `wx-config --version` / `wx-config --cxxflags` verification step runs before `make` purely as a diagnostic breadcrumb in CI logs -- not a hidden build step.
+- The build/test steps are exactly `make` (repo root) and `make check` (repo root) -- the same two bare commands documented in AGENTS.md and exercised locally by P3-1/P3-3; no `cd`, no extra flags, no alternate targets. `make check` already builds everything via its `all` dependency and runs the three suites (SSWTests, tactical/TacticalTests, gui/GuiTests under `xvfb-run -a`) per the repo-root Makefile (unchanged by this subtask).
+- Non-wx apt dependencies installed: build-essential, pkg-config, libcppunit-dev, libgtk-3-dev, xvfb, curl, ca-certificates. libgtk-3-dev covers both wx's own GTK3 backend requirement and the direct `pkg-config --cflags gtk+-3.0` flags src/tactical's Makefile picks up via common.mk's WX_CXXFLAGS.
+- Only `.github/workflows/ci.yml` was created; no wx-provisioning helper script was needed (all wx build steps are inline `run:` blocks per the plan's stated preference).
+- IMPORTANT LIMITATION (explicitly restated per the plan's Validation section): this Linux sandbox cannot execute GitHub Actions. No cloud run was performed and none is being claimed as green. All acceptance evidence here is structural (YAML parse, trigger/job/step/permission/pin inspection) plus command-identity with the locally-verified `make`/`make check`, plus live reachability checks on the three external URLs the workflow references (two Action commit SHAs, one wx release tarball) -- all confirmed HTTP 200 from this environment at authoring time.
+
+Suggested test command(s):
+- python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml'))" -- YAML parses without error
+- manual structural review of triggers/permissions/action pins/steps against the plan's acceptance criteria
+- curl HEAD/GET checks confirming actions/checkout@11bd719... (v4.2.2), actions/cache@1bd1e32... (v4.2.0), and the wxWidgets 3.3.2 release tarball URL all resolve (HTTP 200) -- pins and download URL are live, not guessed
+- grep cross-check of tests/gui, tests/tactical, tests/Makefile, src/gui, src/battleSim, src/Makefile confirming all wx-config usage in the build is via `wx-config --cxxflags`/`--libs` on PATH, so a source-built wx install only needs its bin/ directory added to PATH
+- diff of the workflow's `make` / `make check` invocations against the repo-root Makefile's `all`/`check` targets (confirmed identical, no CI-only divergent path)
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase3-build-system-ci/P3-4
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
