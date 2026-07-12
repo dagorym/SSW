@@ -2,7 +2,7 @@
   "status": "success",
   "subtask": "P3-1",
   "plan": "phase3-build-system-ci",
-  "branch": "phase3-P3-1-implementer-20260712",
+  "branch_name": "phase3-P3-1-implementer-20260712",
   "code_commit": "c88719a6ca39836c8ef8cba33dc093da3a611255",
   "changed_files": [
     "common.mk",
