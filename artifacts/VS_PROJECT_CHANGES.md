@@ -4,6 +4,17 @@
 
 Updated Visual Studio 2022 project files to use wxWidgets 3.3.1 instead of 3.0.3.
 
+## C++ Language Standard Pin (Phase 3 / P3-2)
+
+`vs2022/SSW.Common.props` now pins `<LanguageStandard>stdcpp17</LanguageStandard>` in the
+shared (unconditioned) `<ItemDefinitionGroup>/<ClCompile>` block, alongside the existing
+`<ConformanceMode>false</ConformanceMode>` setting, which is left unchanged. All 10 vcxproj
+files import `SSW.Common.props` and therefore inherit the C++17 pin; no individual `.vcxproj`
+was edited. This mirrors the Linux build, which already compiles with a C++17-capable
+toolchain. This is a Windows-only MSBuild setting; it has no effect on the Linux `make`
+build. MSVC compilation of this change has not been verified, since no Windows/MSVC
+environment is available from the Linux development environment used for this repository.
+
 ## Files Modified
 
 1. `SSW.vcxproj`
