@@ -1,0 +1,45 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Add a minimal deterministic RNG seed seam (reviewer follow-up F1) in include/Frontier.h, and switch FGame's constructor in src/strategic/FGame.cpp from raw srand(time(NULL)) to the new clock-based seam, so the flaky FFleetTest::testDecTransitTime (driven by irand(100) in FFleet::decTransitTime()) can be made deterministic by tests. This is the minimal seed seam, not the full injectable-RNG refactor.
+
+Modified files:
+- include/Frontier.h
+- src/strategic/FGame.cpp
+
+Acceptance criteria to validate (from Planner):
+- Calling the explicit-seed function with a fixed value makes subsequent irand() outputs reproducible (same seed -> same sequence in-process).
+- With a fixed seed set, FFleet::decTransitTime()'s risk-jump outcome is reproducible (same seed -> same transit-time progression).
+- A newly constructed FGame seeds via the clock-based seam (normal play is not pinned to a constant seed).
+- Repo builds clean; existing suites still pass (no new failures beyond the documented pre-existing FGameHeaderDependencyTest cwd-artifact failures).
+
+Create test files in:
+- tests/strategic/FFleetTest.cpp -- update testDecTransitTime to call seedRandomExplicit(<fixed seed>) in the fixture/test before exercising decTransitTime(), then assert the exact expected transit-time sequence for that seed, removing the ~9% intermittent failure caused by unseeded irand(100).
+- Optional: a small Frontier-level test (e.g. tests/core, given Frontier.h is a core/root header) asserting seedRandomExplicit(seed) -> reproducible irand() sequence across two independent draws with the same seed, and a differing sequence for a different seed.
+
+Implementation context for testing:
+- New seam lives in include/Frontier.h immediately after irand(): `inline void seedRandomExplicit(unsigned int seed)` calls srand(seed) directly (explicit-seed entry point for deterministic tests/replay); `inline void seedRandomFromClock()` calls srand((unsigned int)time(NULL)) (clock-based entry point for normal play). Both are thin wraps over the process-global srand()/rand() pair that irand() already uses -- irand() itself is byte-for-byte unchanged.
+- include/Frontier.h now also includes <ctime> (in addition to the pre-existing <cstdlib>) to declare time().
+- src/strategic/FGame::FGame(IStrategicUI * ui) in src/strategic/FGame.cpp now calls seedRandomFromClock() instead of the raw `srand(time(NULL))` it previously called; behavior for normal play is unchanged (still seeds from wall-clock time once per FGame construction), only the call site is now the shared named seam.
+- FFleet::decTransitTime() (src/strategic/FFleet.cpp:98) is unmodified -- it still calls `irand(100) > getRJChance()` for the risk-jump roll. Determinism is obtained purely by seeding the shared process RNG via seedRandomExplicit(seed) before invoking decTransitTime() in a test, since irand() always draws from the same process-global rand() stream.
+- Because seedRandomExplicit()/seedRandomFromClock() reseed the single process-global RNG, tests calling seedRandomExplicit() will affect any other irand()-consuming code called afterward in the same process (this is inherent to the minimal seam -- it is not a per-object/injectable RNG). Tests relying on determinism should seed immediately before the RNG-dependent call and should not assume isolation from other RNG consumers running interleaved in the same process.
+- Constructing a fresh FGame (e.g. via FGame::create()/FGame::create(ui)) always reseeds the shared RNG from the clock, so any seed pinned by a test before constructing an FGame will be overwritten by that construction; seed after FGame construction (or avoid constructing FGame) if a test needs a pinned seed to survive.
+- Doxygen headers were added/updated: full function-level blocks for the two new Frontier.h functions and for FGame::FGame(IStrategicUI*), plus updated file-level @author/@date Last Modified on both include/Frontier.h and src/strategic/FGame.cpp. FGame.h's one-line constructor comment was left untouched since include/strategic/FGame.h is outside this subtask's allowed-file list.
+
+Suggested test command(s):
+- make (repo root)
+- cd tests && make && ./SSWTests
+
+Existing validations expected to fail only because approved behavior changed:
+- tests/strategic/FGameHeaderDependencyTest.cpp -- all 9 tests fail with 'Expected at least one candidate file path to be readable' (forced failure at line 21). These are pre-existing source-inspection tests whose candidate-path resolution is sensitive to the worktree's on-disk layout/cwd and are unrelated to this change; the task prompt documents this as an expected pre-existing worktree artifact. No FFleetTest, FGameTest, or other strategic test failed in this run.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-7
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

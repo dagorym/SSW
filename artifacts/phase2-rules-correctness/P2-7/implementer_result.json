@@ -1,0 +1,21 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-7/implementer_report.md",
+    "artifacts/phase2-rules-correctness/P2-7/tester_prompt.txt",
+    "artifacts/phase2-rules-correctness/P2-7/implementer_result.json"
+  ],
+  "branch_name": "p2rc-P2-7-implementer-20260711",
+  "changed_files": [
+    "include/Frontier.h",
+    "src/strategic/FGame.cpp"
+  ],
+  "code_commit_hash": "ec821048",
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P2-7",
+  "validation_commands": [
+    "make (repo root)",
+    "cd tests && make && ./SSWTests"
+  ],
+  "validation_outcome": "Repo-root `make` completed with exit code 0 (builds SSW, BattleSim, and the tests/ tree, including tests/SSWTests). `./SSWTests` run from tests/ with cwd=tests: 243 run, 9 failures, 0 errors -- all 9 failures are pre-existing FGameHeaderDependencyTest source-inspection failures caused by worktree cwd path-candidate resolution (unrelated to this change, matches the task's documented pre-existing-failure note). FFleetTest (including testDecTransitTime) passed in this run. No new failures were introduced. A standalone sanity program (Frontier.h only, outside the test suite) confirmed seedRandomExplicit(N) followed by two independent irand(100) sequences of length 5 are byte-identical for the same seed, and differ for a different seed."
+}
