@@ -1,0 +1,61 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Pass-2 remediation for P2-1 (defect T1). The pass-1 Verifier returned PASS with a single COSMETIC WARNING: doc/synthesized-roadmap.md's T1 row (section 6.1, line 596) cited src/weapons/FDisruptorCannon.cpp:16 for the m_range=9 constructor line, but the Implementer's Doxygen @date Last Modified header addition shifted the constructor body down by one line, so m_range=9 is actually on line 17. This pass corrects only that one citation digit (:16 -> :17); the rest of the RESOLVED annotation (commit hash fc0c137f, manual citations RA 9 / l.951 / l.1145, and the list of behavioral test names) was re-confirmed accurate and left unchanged. No implementation or test changes were made or required.
+
+Acceptance criteria to verify:
+- doc/synthesized-roadmap.md T1 row (section 6.1) cites src/weapons/FDisruptorCannon.cpp:17 for m_range=9, matching the actual constructor line after the Doxygen header edit.
+- The rest of the T1 RESOLVED annotation (commit hash, manual line citations, behavioral test names, artifact directory reference) remains accurate and unchanged.
+- Repo builds clean and existing suites pass with no regressions: SSWTests 219 run / 0 failures / 0 errors.
+
+Implementation branch or worktree context:
+- Implementer branch/commit (pass-1, unchanged): fc0c137f (src/weapons/FDisruptorCannon.cpp: m_range 12 -> 9, plus a Doxygen @date Last Modified header line addition that shifted the constructor body down one line).
+- Tester branch/worktree (pass-1 test commit, unchanged): d43644d4 on p2rc-P2-1-tester-20260711 (tests/weapons/FDisruptorCannonTest.{h,cpp}: testConstructor, testSetTargetAcceptsRangeAtMax, testSetTargetRejectsRangeBeyondMax).
+- Tester pass-2 re-validation (no test/source changes made, confirmed still green): commit 2caca823 on p2rc-P2-1-tester-20260711 -- SSWTests 219 run / 0 failures, TacticalTests 253 run / 0 failures.
+- Prior pass-1 Documenter commit: 3db5cd6c (doc/synthesized-roadmap.md T1 row annotated RESOLVED, citing FDisruptorCannon.cpp:16).
+- Prior pass-1 Verifier commit/verdict: 6dfdd2e2, PASS with one COSMETIC WARNING (the stale :16 citation) -- see artifacts/phase2-rules-correctness/P2-1/history/pass-1/verifier_report.md.
+- This pass-2 Documenter commit: 16326ca8 (doc/synthesized-roadmap.md T1 row citation corrected to :17).
+
+Files modified by the Implementer, Tester, and Documenter:
+- doc/synthesized-roadmap.md (this pass: T1 row citation FDisruptorCannon.cpp:16 -> :17; no other rows touched)
+- src/weapons/FDisruptorCannon.cpp (unchanged since pass-1 commit fc0c137f; m_range=9 confirmed on line 17; read-only reference for this pass)
+- tests/weapons/FDisruptorCannonTest.cpp (unchanged since pass-1 commit d43644d4; read-only reference for this pass)
+- tests/weapons/FDisruptorCannonTest.h (unchanged since pass-1 commit d43644d4; read-only reference for this pass)
+
+Commands executed:
+- env -C /home/tstephen/repos/worktrees/p2rc-P2-1-documenter-20260711 make
+- env -C /home/tstephen/repos/worktrees/p2rc-P2-1-documenter-20260711/tests make
+- env -C /home/tstephen/repos/worktrees/p2rc-P2-1-documenter-20260711/tests ./SSWTests
+
+Final test outcomes:
+- Repo build clean via `make` at repo root: exit 0, no errors or warnings related to the changed file (doc-only change).
+- `env -C tests make`: exit 0, SSWTests binary relinked cleanly.
+- ./SSWTests (cwd=tests/): OK (219 tests), 0 failures, 0 errors -- identical totals to pass-1 and to the pass-2 Tester re-validation, including FDisruptorCannonTest::testConstructor asserting getRange()==9, testSetTargetAcceptsRangeAtMax, and testSetTargetRejectsRangeBeyondMax.
+- Independently re-confirmed src/weapons/FDisruptorCannon.cpp line 17 is `m_range=9;` (lines 1-7 Doxygen file header including the added @date Last Modified line, line 13 opens the constructor, m_name/m_fullName/m_type on lines 14-16, m_range=9 on line 17) before applying the citation fix.
+- git status --porcelain is clean after both the documentation commit and this artifact commit.
+
+Plan or evaluation context guidance:
+- plans/phase2-rules-correctness-followups-plan.md, subtask P2-1 / defect T1.
+- Plan Documentation Impact (section 5): annotate doc/synthesized-roadmap.md T1 (section 6.1) RESOLVED; doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md must not be touched -- both left untouched in this pass.
+- This is a Verifier-driven remediation restart (pass-2); comparison base is the tip of branch p2rc-P2-1-tester-20260711 (pass-1 Implementer/Tester/Documenter/Verifier commits through 6dfdd2e2, plus the pass-1 archive commit 5abba169 and the pass-2 Tester re-validation commit 2caca823).
+- artifacts/phase2-rules-correctness/P2-1/history/pass-1/ left untouched; live pass-2 Documenter artifacts written directly to artifacts/phase2-rules-correctness/P2-1/.
+
+Convention-file guidance:
+- AGENTS.md: doc/rules/tactical_operations_manual.md is a non-editable external artifact and was not touched.
+- AGENTS.md: doc/rules/second-sathar-war-rules.md was not in scope and was not touched.
+- CLAUDE.md Function Comments / Doxygen policy: no in-code documentation changes were needed this pass (src/weapons/FDisruptorCannon.cpp's header was already updated by the Implementer in pass-1 and is unchanged).
+- doc/synthesized-roadmap.md's existing RESOLVED-annotation style (established in Phase 1 C1/C4 rows and this pass-1 T1 row) was preserved exactly; only the single line-number digit was corrected.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-1
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

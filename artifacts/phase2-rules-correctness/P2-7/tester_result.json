@@ -1,0 +1,30 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-7/tester_report.md",
+    "artifacts/phase2-rules-correctness/P2-7/tester_result.json",
+    "artifacts/phase2-rules-correctness/P2-7/documenter_prompt.txt"
+  ],
+  "branch_name": "p2rc-P2-7-tester-20260711",
+  "commands_run": [
+    "make (repo root)",
+    "cd tests && ./SSWTests (run twice for repeatability)",
+    "standalone g++ probe programs (outside the test tree, under the scratch directory) confirming: (a) seedRandomExplicit(seed) -> reproducible irand() sequences for the same seed, differing sequences across seeds; (b) across seeds 1-200, ~10% (20/200) produce irand(100) > 90 for the risk-jump check, confirming the documented ~9-10% flake rate; (c) seed=1 deterministically yields irand(100)==85 (<=90), landing in the PASS region every run"
+  ],
+  "pass_fail_totals": {
+    "run1_failed": 0,
+    "run1_total": 245,
+    "run2_failed": 0,
+    "run2_total": 245
+  },
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "P2-7",
+  "test_commit_hash": "3dcb44ab",
+  "test_files_changed": [
+    "tests/strategic/FFleetTest.cpp",
+    "tests/core/FrontierTest.cpp",
+    "tests/core/FrontierTest.h",
+    "tests/SSWTests.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}

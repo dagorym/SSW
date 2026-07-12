@@ -1,0 +1,69 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Document the P2-6 hardening of the strategic Save/Open file-dialog paths
+  (reviewer follow-up F4 / roadmap H15). FMainFrame::onSave() and onOpen() now
+  check wxFileDialog::ShowModal() and treat Cancel/non-OK as a no-op (no
+  ofstream/ifstream opened, no FGame created, no FGame::save()/load() called),
+  and use the dialog's full GetPath() instead of the cwd-dependent GetFilename()
+  on a confirmed OK. onOpen()'s existing post-load menu-enable / turn-state logic
+  is preserved unchanged on the success path. onClose()'s save branch (fixed in
+  C5) was not touched beyond calling the updated onSave().
+
+Implementation status:
+- Implementer PASS (code commit c49823c7b0a3389fa894ad9922c09dbe5052f16b).
+- Tester PASS (test commit 2961c923258c676e52c9a8faf2a96d8576f12582).
+
+Files changed across Implementer + Tester (inspect these):
+- src/FMainFrame.cpp        (Implementer: onSave()/onOpen() Cancel-safe + GetPath())
+- include/FMainFrame.h      (Implementer: Doxygen for onSave()/onOpen())
+- tests/gui/StrategicGuiLiveTest.cpp (Tester: 4 new behavioral GUI tests + helpers)
+- tests/gui/StrategicGuiLiveTest.h   (Tester: suite registration + method Doxygen)
+
+Acceptance criteria (all validated PASS):
+- Cancelling Save leaves the filesystem untouched and does not call FGame::save.
+- Confirming Save writes to the dialog's full GetPath() location.
+- Cancelling Open creates no FGame and attempts no load; the frame stays consistent.
+- Confirming Open loads from GetPath() and restores the post-load menu/turn state.
+- Repo builds clean; the GUI suite passes.
+
+Test/validation context:
+- New tests (in the existing StrategicGuiLiveTest fixture, already linked into
+  tests/gui/GuiTests.cpp):
+  - testMainFrameOnSaveCancelLeavesFilesystemUntouched
+  - testMainFrameOnSaveConfirmWritesToDialogFullPath
+  - testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent
+  - testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState
+- Validation commands and results:
+  - make (repo root): clean.
+  - cd tests/gui && make && xvfb-run -a ./GuiTests: OK (75 tests) = 71 baseline + 4 new.
+  - cd tests && ./SSWTests: OK (217 tests).
+- Red verification (temporary pre-fix revert, restored, not committed): OpenCancel
+  segfaults against the unfixed onOpen()->FGame::load() Cancel path; the fix makes
+  it green. The Save-cancel and both confirm tests are green against pre-fix and
+  post-fix (empty cancelled GetFilename() and wxFD_CHANGE_DIR path equivalence make
+  the pre/post behavior coincide in the harness-observable scenario), so they serve
+  as post-fix contract/behavioral locks. See tester_report.md for the full analysis.
+
+Documentation guidance:
+- The canonical, single-source facts live in the code Doxygen (include/FMainFrame.h
+  already updated for onSave()/onOpen()) and CLAUDE.md/AGENTS.md. Do NOT restate
+  project facts in entry-point files. If any user-facing docs describe Save/Open
+  behavior (e.g. doc/UsersGuide.md), update them to note that cancelling Save/Open
+  is a no-op and that Save/Open now use the full chosen path. Do NOT edit
+  doc/rules/tactical_operations_manual.md (non-volatile external artifact).
+- The AGENTS.md/CLAUDE.md tests bullet for tests/gui already lists StrategicGuiLiveTest;
+  if you extend that bullet, keep it terse and consistent with existing style. Only
+  add doc for behavior that is not already captured in code Doxygen.
+
+Shared artifact directory (repository-root-relative):
+- artifacts/phase2-rules-correctness/P2-6
+
+Startup behavior:
+- If the blocking inputs above are present, begin documentation work immediately and
+  continue in the same run. Do not stop after scope confirmation, documentation
+  discovery, or diff review when inputs are present.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are
+  committed.

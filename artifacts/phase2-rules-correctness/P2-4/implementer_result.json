@@ -1,0 +1,23 @@
+{
+  "status": "COMPLETE",
+  "task_id": "P2-4",
+  "task_name": "Validate Sathar retreat-condition selection (pass-2 remediation: bound re-prompt loop)",
+  "pass_label": "pass-2",
+  "branch": "p2rc-P2-4-implementer-20260711",
+  "code_commit": "30b16cc09f5e41e526b2fbe28f235702ff9c5c1c",
+  "changed_files": [
+    "src/strategic/FGame.cpp",
+    "include/strategic/FGame.h"
+  ],
+  "validation_commands": [
+    "make",
+    "cd tests && make && ./SSWTests"
+  ],
+  "validation_outcome": "PASS - clean build (exit 0); SSWTests reports OK (229 tests) with no failures, including the pre-existing FGameRetreatConditionValidationTest suite. No new failures.",
+  "artifacts": [
+    "artifacts/phase2-rules-correctness/P2-4/implementer_report.md",
+    "artifacts/phase2-rules-correctness/P2-4/implementer_result.json",
+    "artifacts/phase2-rules-correctness/P2-4/tester_prompt.txt"
+  ],
+  "notes": "Pass-2 remediation for pass-1 Verifier WARNING: the retreat-condition re-prompt loop in FGame::init() had no upper bound, so a non-NULL but degenerate IStrategicUI (e.g. headless WXStrategicUI with wxTheApp == NULL) that always returns an invalid value would spin forever. Added a documented 1000-attempt cap; m_satharRetreat is only assigned when the final value is actually in 1..5, so an exhausted cap leaves m_satharRetreat at its prior/default value instead of storing a bogus one. Normal behavior (re-prompt until valid; valid-first stores with exactly one call) is unchanged and covered by the existing 3 pass-1 tests, all still green. checkForVictory() switch bodies (C2) and retreat-condition display text untouched; P2-3 cleanUpShips() S2/S3 fix untouched."
+}

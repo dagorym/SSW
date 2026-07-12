@@ -19,9 +19,9 @@ namespace FrontierTests {
  * runtime guards to keep wx-backed strategic behavior deterministic under test harness
  * control.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created: Apr 04, 2026
- * @date Last Modified: Apr 17, 2026
+ * @date Last Modified: Jul 11, 2026
  */
 class StrategicGuiLiveTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE( StrategicGuiLiveTest );
@@ -29,6 +29,10 @@ CPPUNIT_TEST( testMainFrameBuildsExpectedInitialUI );
 CPPUNIT_TEST( testMainFrameOnCloseYesInvokesSaveBeforeReset );
 CPPUNIT_TEST( testMainFrameOnCloseNoResetsWithoutSaving );
 CPPUNIT_TEST( testMainFrameOnCloseCancelAbortsWithoutSaveOrReset );
+CPPUNIT_TEST( testMainFrameOnSaveCancelLeavesFilesystemUntouched );
+CPPUNIT_TEST( testMainFrameOnSaveConfirmWritesToDialogFullPath );
+CPPUNIT_TEST( testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent );
+CPPUNIT_TEST( testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState );
 CPPUNIT_TEST( testGamePanelPaintTracksParentSize );
 CPPUNIT_TEST( testStrategicDialogsCloseModallyWithoutInput );
 CPPUNIT_TEST( testStrategicDialogsUseStaticBoxChildParents );
@@ -104,6 +108,48 @@ public:
 	 * @date Last Modified: Jul 11, 2026
 	 */
 	void testMainFrameOnCloseCancelAbortsWithoutSaveOrReset();
+	/**
+	 * @brief Verifies FMainFrame::onSave() leaves the filesystem untouched (and therefore
+	 * never invokes FGame::save()) when the wxFileDialog::ShowModal() result is Cancel
+	 * (P2-6 / reviewer follow-up F4 regression coverage).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testMainFrameOnSaveCancelLeavesFilesystemUntouched();
+	/**
+	 * @brief Verifies FMainFrame::onSave() writes to the dialog's full GetPath() location
+	 * (folder chosen in the dialog joined with the chosen filename) when the
+	 * wxFileDialog::ShowModal() result is OK (P2-6 / reviewer follow-up F4 regression
+	 * coverage).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testMainFrameOnSaveConfirmWritesToDialogFullPath();
+	/**
+	 * @brief Verifies FMainFrame::onOpen() creates no FGame and attempts no load(), leaving
+	 * the frame's menu/turn state unchanged, when the wxFileDialog::ShowModal() result is
+	 * Cancel (P2-6 / reviewer follow-up F4 regression coverage).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent();
+	/**
+	 * @brief Verifies FMainFrame::onOpen() loads from the dialog's full GetPath() location
+	 * and restores the existing post-load menu-enable/turn-state logic when the
+	 * wxFileDialog::ShowModal() result is OK (P2-6 / reviewer follow-up F4 regression
+	 * coverage).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState();
 	/**
 	 * @brief Validates offscreen WXMapDisplay rendering for key strategic map elements.
 	 *

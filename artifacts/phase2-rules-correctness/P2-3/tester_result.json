@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "subtask": "P2-3",
+  "plan": "phase2-rules-correctness",
+  "branch": "p2rc-P2-3-tester-20260711",
+  "test_commit": "0523299854a205135c4ea59e444d610a399568d0",
+  "test_files_changed": [
+    "tests/strategic/FGameTest.h",
+    "tests/strategic/FGameTest.cpp"
+  ],
+  "commands_run": [
+    "cd tests && make",
+    "cd tests && ./SSWTests"
+  ],
+  "totals": {
+    "total_suite_tests": 226,
+    "new_tests_added": 9,
+    "passed": 226,
+    "failed": 0
+  },
+  "red_green_verification": {
+    "method": "Temporary local revert of the src/strategic/FGame.cpp counting block to pre-fix logic; rebuilt and ran the suite; then restored via git checkout (no source revert committed).",
+    "pre_fix_failures": 6,
+    "pre_fix_failing_tests": [
+      "testCleanUpShipsCountsSatharFightersTowardLostSatharShips",
+      "testCleanUpShipsExcludesSatharFightersFromTendaySatharCounter",
+      "testCleanUpShipsExcludesUPFFightersFromTendayUPFCounter",
+      "testCleanUpShipsExcludesSatharMilitiaShipsFromTendaySatharCounter",
+      "testCleanUpShipsExcludesUPFMilitiaShipsFromTendayUPFCounter",
+      "testCheckForVictoryCondition5NoVictoryWhenFilteredSatharLossesDoNotExceedUPFDespiteFighterAndMilitiaNoise"
+    ],
+    "post_fix_result": "OK (226 tests)"
+  },
+  "acceptance_criteria_validated": [
+    "S2: destroyed Sathar fighters counted toward m_lostSatharShips",
+    "S3: fighters excluded from tenday counters on both UPF and Sathar sides",
+    "S3: militia-fleet ships excluded from tenday counters on both sides",
+    "S3: non-fighter, non-militia ships still counted on both sides",
+    "checkForVictory() condition-5 boundary uses filtered counts (positive win case and complementary negative no-victory case)"
+  ],
+  "unmet_acceptance_criteria": [],
+  "implementer_files": [
+    "src/strategic/FGame.cpp",
+    "include/strategic/FGame.h"
+  ],
+  "artifacts_written": [
+    "artifacts/phase2-rules-correctness/P2-3/tester_report.md",
+    "artifacts/phase2-rules-correctness/P2-3/tester_result.json",
+    "artifacts/phase2-rules-correctness/P2-3/documenter_prompt.txt"
+  ]
+}

@@ -1,0 +1,101 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- P2-3 fixes two strategic loss-counting defects in FGame::cleanUpShips()
+  (Second Sathar War retreat/victory conditions):
+  - S2 (retreat condition 3, "The Sathar have lost 40 ships, including
+    fighters"): m_lostSatharShips now counts EVERY destroyed Sathar ship,
+    including fighters. The old `getType() != "Fighter"` guard on that counter
+    was removed.
+  - S3 (retreat condition 5, "Fighters and Militia ships are not counted"):
+    m_lostTendaySathar / m_lostTendayUPF now increment ONLY when the destroyed
+    ship is neither a fighter nor a member of a militia fleet
+    (FFleet::isMilitia()); this exclusion applies to BOTH the UPF and Sathar
+    sides. The gating predicate is
+    `countsTowardTenday = (ship->getType() != "Fighter") && !fleet->isMilitia();`.
+  - Conditions 1/2 (m_lostAC/m_lostHC), the removal/ownership logic, and
+    save()/load() were intentionally NOT changed.
+- The Tester added nine behavioral tests to tests/strategic/FGameTest that
+  drive the private cleanUpShips()/checkForVictory() through the public
+  endUPFTurn() turn path and observe the private counters via the real
+  FGame::save() byte stream and the RetreatConditionMockUI notifyVictory
+  callback. The full suite is green: OK (226 tests) from tests/.
+
+Acceptance criteria validated:
+- S2: destroyed Sathar fighters count toward m_lostSatharShips.
+- S3: fighters excluded from the tenday counters on both sides.
+- S3: militia-fleet ships excluded from the tenday counters on both sides.
+- S3: non-fighter, non-militia ships still counted on both sides.
+- checkForVictory() condition-5 boundary uses the FILTERED tenday counts (a
+  positive filtered-win case and a complementary negative no-victory case that
+  proves filtering, not raw destroyed-ship counts, feeds the victory check).
+
+Implementation branch or worktree context:
+- Branch: p2rc-P2-3-tester-20260711
+- Worktree: /home/tstephen/repos/worktrees/p2rc-P2-3-tester-20260711
+- Implementer change: commit d6a6702d ("P2-3: Fix S2/S3 loss counting in
+  cleanUpShips (fighters + militia)").
+- Tester change: commit 0523299854a205135c4ea59e444d610a399568d0
+  ("P2-3: Add behavioral tests for S2/S3 loss counting in cleanUpShips").
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FGame.cpp        (Implementer: cleanUpShips() counting block + Doxygen header)
+- include/strategic/FGame.h      (Implementer: cleanUpShips() Doxygen header)
+- tests/strategic/FGameTest.cpp  (Tester: 9 new tests + addShipLossFleet helper)
+- tests/strategic/FGameTest.h    (Tester: CPPUNIT_TEST registrations + method decls/comments)
+
+Test commit:
+- 0523299854a205135c4ea59e444d610a399568d0
+
+Commands executed:
+- cd tests && make            (clean build, exit 0)
+- cd tests && ./SSWTests      (run with cwd = tests/; OK (226 tests))
+
+Final test outcomes:
+- Post-fix: OK (226 tests) (was 217; +9 new behavioral tests).
+- Red/green verified: a temporary local revert of the src/strategic/FGame.cpp
+  counting block to the pre-fix logic makes 6 of the 9 new tests fail (all the
+  discriminating S2/S3/condition-5 assertions); the revert was restored and NOT
+  committed. The 3 non-failing tests are intentional guards (non-fighter/
+  non-militia still counted; the positive condition-5 win case whose raw-count
+  comparison also wins).
+
+Documentation context:
+- Likely docs affected: none of the non-volatile rules documents. Do NOT edit
+  doc/rules/tactical_operations_manual.md (hard constraint). The strategic
+  rules doc doc/rules/second-sathar-war-rules.md is the authoritative rules
+  source that S2/S3 now correctly implement (retreat conditions 3 and 5) — use
+  it to confirm behavior, not to change it unless it is genuinely wrong.
+- The Doxygen header for FGame::cleanUpShips() in include/strategic/FGame.h was
+  already updated by the Implementer to describe the condition-3/condition-5
+  counter rules; confirm it accurately reflects the shipped predicate and dates.
+- If a changelog / design-note (e.g. doc/DesignNotes.md, doc/CHANGELOG_*.md) is
+  the convention for strategic rules-correctness fixes, record the S2/S3
+  counting-rule change there. Follow the CLAUDE.md Doxygen header conventions
+  (author = model that authored the change; Created/Last Modified dates) for any
+  code-comment touch-ups.
+
+Plan and diff context:
+- Plan: plans/phase2-rules-correctness-followups-plan.md (P2-3 subtask). If the
+  exact plan path must be inferred, this is the governing plan file.
+- Comparison base for the diff: the P2-3 subtask branch's fork point on the
+  coordination branch; the two relevant commits are d6a6702d (implementer) and
+  0523299854a205135c4ea59e444d610a399568d0 (tester). Treat master as the
+  ultimate merge target (labeled assumption).
+
+Startup behavior:
+- If this Tester branch/worktree context and enough story and diff context are
+  present, begin documentation work immediately and continue in the same run.
+- Infer any missing plan-path, comparison-base, artifact-path, or
+  documentation-convention details from repository context when repository
+  evidence is sufficient, and label those choices as assumptions instead of
+  treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or
+  diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-3/ (repository-root-relative; reuse it).
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are
+  committed.

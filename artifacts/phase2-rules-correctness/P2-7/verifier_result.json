@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-7/verifier_report.md",
+    "artifacts/phase2-rules-correctness/P2-7/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "p2rc-P2-7-verifier-20260711",
+  "documentation_accuracy_summary": [
+    "doc/synthesized-roadmap.md section 3.7 gets a single RESOLVED annotation appended to the existing unlabeled 'Randomness:' bullet, scoped precisely to what shipped: two named srand() wrappers, irand() itself unchanged, FGame now seeding via the clock wrapper, tests pinning via the explicit wrapper. It explicitly states the broader injectable per-game std::mt19937 refactor and the Windows CRT rand()-sequence portability gap remain open -- it does not overclaim resolution of the full roadmap item.",
+    "Only that one bullet was touched; no other roadmap rows, and no doc/rules/* files (non-editable per AGENTS.md), were modified.",
+    "Doxygen convention (CLAUDE.md) verified compliant: include/Frontier.h's two new functions (seedRandomExplicit, seedRandomFromClock) each carry a full @brief/description/@param(where applicable)/@author/@date block with @author 'Claude Sonnet 5 (medium)'; the file-level header's @author list was appended to (prior authors retained) and Last Modified updated. src/strategic/FGame.cpp's FGame::FGame(IStrategicUI*) constructor gained a full Doxygen block (@author 'Tom Stephens, Claude Sonnet 5 (medium)', prior author retained) and the file-level header gained an @author addition and a new Last Modified date."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "P2-7",
+  "test_sufficiency_summary": [
+    "tests/core/FrontierTest.cpp adds two genuinely behavioral tests (not source-inspection): testSeedRandomExplicitReproducibleSameSeed seeds seedRandomExplicit(1), draws 5 irand(100) values, reseeds with the same value, draws 5 more, and asserts element-wise equality (CPPUNIT_ASSERT_EQUAL) -- this directly exercises and observes the runtime reproducibility behavior. testSeedRandomExplicitDiffersAcrossSeeds seeds 1 then 2 and asserts the resulting sequences differ somewhere, confirming the seed value actually drives output rather than being ignored. Both satisfy the CLAUDE.md Behavioral Verification requirement.",
+    "FFleetTest::testDecTransitTime was traced end-to-end against FFleet::decTransitTime()/getRJChance() (src/strategic/FFleet.cpp:91-117,219-247): setLocation(s,true,10,dest,2,12) gives m_jumpLength=10, m_speed=2. Call 1: 10-2=8, 8<=5 false, no RNG draw (assert 8). Call 2: 8-2=6, 6<=5 false, no RNG draw (assert 6). Call 3: 6-2=4, 4<=5 true -> only this call executes the risk-jump branch, resets m_transitTime=5 and draws irand(100) vs getRJChance()==90 (speed 2, non-militia, no battleship in this fresh fleet) -- the seedRandomExplicit(1) call sits immediately before this 3rd call and after both non-RNG-consuming calls, so it seeds directly adjacent to the only draw in this section; no FGame is constructed anywhere in this test to reseed from the clock afterward. Subsequent calls occur after setLocation(getDestination()) sets m_location==m_destination, so the risk-jump branch (which requires m_location != m_destination) is never re-entered and no further irand() draws occur -- the seeded outcome cannot be perturbed later in the test.",
+    "Verified this independently: full repo-root `make` (clean) succeeded (exit 0); `cd tests && ./SSWTests` run twice back-to-back from tests/ produced 'OK (245 tests)' both times with identical outcomes, including FFleetTest::testDecTransitTime passing both runs. Running ./tests/SSWTests from the repo root (wrong cwd) reproduced the documented 9 FGameHeaderDependencyTest 'forced failure -- Expected at least one candidate file path to be readable' failures, confirming these are a pre-existing cwd-artifact environmental condition unrelated to this change, exactly as the task described. Recompiled FrontierTest.cpp and FGame.cpp in isolation: no warnings.",
+    "No missing edge case identified: same-seed reproducibility, cross-seed difference, and the one real production consumer (FFleet's risk-jump) are all covered by a behavioral assertion on observed output, not by source-string inspection."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

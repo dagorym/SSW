@@ -1,8 +1,9 @@
 /**
  * @file FGame.cpp
  * @brief Implementation file for FGame class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 12, 2005
+ * @date Last Modified:  Jul 11, 2026
  *
  */
 
@@ -35,13 +36,28 @@ FGame & FGame::create(wxWindow * win){
 	return create();
 }
 
+/**
+ * @brief Constructs the game singleton, seeding the shared RNG for normal play.
+ *
+ * Seeds the process-global RNG (consumed by irand() throughout the strategic
+ * and tactical layers) via the clock-based entry point of the Frontier.h RNG
+ * seed seam (seedRandomFromClock()), so normal play still varies per session.
+ * Deterministic tests/replay instead call seedRandomExplicit() with a fixed
+ * seed before exercising RNG-dependent behavior.
+ *
+ * @param ui optional strategic UI adapter; pass NULL for non-GUI use
+ *
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
+ * @date Created: Jan 12, 2005
+ * @date Last Modified: Jul 11, 2026
+ */
 FGame::FGame(IStrategicUI * ui){
 	m_ui = ui;
 	m_universe = NULL;
 	m_round = 0;
 	m_gui = (ui != NULL);
 	m_currentPlayer = -1;
-	srand(time(NULL));  // intialize random number generator
+	seedRandomFromClock();  // intialize random number generator
 	m_lostHC = 0;
 	m_lostAC = 0;
 	m_lostSatharShips = 0;
@@ -111,7 +127,26 @@ int FGame::init(wxWindow *w){
 	  }
   }
   if (m_ui != NULL){
-	  m_satharRetreat = m_ui->selectRetreatCondition();
+	  // Bounded re-prompt cap: a normal interactive UI returns a valid 1..5
+	  // value well within this many attempts. The cap exists to guard
+	  // against a degenerate (but non-NULL) UI -- e.g. a headless
+	  // WXStrategicUI when wxTheApp == NULL -- that returns an invalid
+	  // value (such as wxID_CANCEL) on every single call; without a cap
+	  // that case would spin forever. If the cap is exhausted without ever
+	  // seeing a valid value, m_satharRetreat is left untouched (at its
+	  // prior/default value) rather than being set to a bogus,
+	  // out-of-range value.
+	  const int kMaxRetreatConditionPrompts = 1000;
+	  int retreatCondition = m_ui->selectRetreatCondition();
+	  int retreatConditionAttempts = 1;
+	  while ((retreatCondition < 1 || retreatCondition > 5) &&
+			  retreatConditionAttempts < kMaxRetreatConditionPrompts) {
+		  retreatCondition = m_ui->selectRetreatCondition();
+		  retreatConditionAttempts++;
+	  }
+	  if (retreatCondition >= 1 && retreatCondition <= 5) {
+		  m_satharRetreat = retreatCondition;
+	  }
   }
   return 0;
 }
@@ -1209,13 +1244,19 @@ void FGame::cleanUpShips(){
 				}
 				(*pItr)->addDestroyedShip(ship);  // add the ship to the player's destroyed ship list
 				// update destroyed ship counters
+				// retreat condition 5 ("Fighters and Militia ships are not counted") excludes
+				// fighters and ships from militia fleets from both tenday counters, on both sides.
+				bool countsTowardTenday = (ship->getType() != "Fighter") && !fleet->isMilitia();
 				if ((*pItr)->getName()=="UPF"){
-					m_lostTendayUPF++;
-				} else {
-					m_lostTendaySathar++;
-					if (ship->getType()!= "Fighter"){
-						m_lostSatharShips++;
+					if (countsTowardTenday){
+						m_lostTendayUPF++;
 					}
+				} else {
+					if (countsTowardTenday){
+						m_lostTendaySathar++;
+					}
+					// retreat condition 3 ("40 ships, including fighters") counts fighters.
+					m_lostSatharShips++;
 					if (ship->getType() == "HvCruiser"){
 						m_lostHC++;
 					}

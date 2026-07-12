@@ -1,0 +1,47 @@
+{
+  "status": "success",
+  "role": "reviewer",
+  "feature": "Phase 2 — Rules-Correctness Fixes + Phase-1 Reviewer Follow-ups",
+  "plan": "plans/phase2-rules-correctness-followups-plan.md",
+  "branch": "plan-phase2-rules-correctness-followups",
+  "comparison_base": "37fb564b",
+  "head_reviewed": "1561188f",
+  "outcome": "PASS",
+  "subtasks_reviewed": ["P2-1", "P2-2", "P2-3", "P2-4", "P2-5", "P2-6", "P2-7"],
+  "verifier_verdicts": {
+    "P2-1": "PASS",
+    "P2-2": "PASS",
+    "P2-3": "PASS",
+    "P2-4": "PASS",
+    "P2-5": "PASS",
+    "P2-6": "PASS",
+    "P2-7": "PASS"
+  },
+  "independent_verification": {
+    "root_make": "exit 0 (clean build)",
+    "sswtests_from_tests_dir": "OK (245 tests), exit 0",
+    "gui_suite_xvfb": "OK (75 tests), exit 0",
+    "non_editable_files_unchanged": true,
+    "no_save_wire_format_change": true,
+    "roadmap_annotations_coexist": true,
+    "deferred_items_recorded": ["H2", "F2-serialization"]
+  },
+  "blocking_count": 0,
+  "warning_count": 0,
+  "note_count": 3,
+  "notes": [
+    "NOTE-1: P2-6 has one true red/green discriminator (open-cancel segfaults pre-fix); the other three GUI tests are behavioral contract-locks that coincide pre/post-fix in the harness scenario (transparently disclosed by the Tester). Adequate at feature level.",
+    "NOTE-2: H2 and F2-serialization remain intentionally deferred to the future save-format-hardening phase; recorded in doc/deferred-tasks.md, not gaps in this plan.",
+    "NOTE-3: resolveToHitModifier treats owned RH as always-operating per plan decision 2b-1 and the manual; noted for traceability only, not a defect."
+  ],
+  "follow_up_feature_requests": [
+    "Persist the active defense across save/load (H2): extend FVehicle::save()/load() so the currently-raised defense survives a save/reload cycle; coordinate in a single save-format-hardening phase with a versioned wire-format bump.",
+    "Serialize FPlayer::m_destroyed (F2-serialization): extend FPlayer::save()/load() to persist the destroyed-ship list to back the optional Replacements rule; bundle with H2 behind the same format version bump."
+  ],
+  "security_specialist_review_required": false,
+  "security_judgment": "Reasonable — all changes are local correctness/memory-safety/robustness with no attacker-controlled trust boundary; file dialogs read local user-chosen paths only.",
+  "artifacts_written": [
+    "artifacts/phase2-rules-correctness/reviewer_report.md",
+    "artifacts/phase2-rules-correctness/reviewer_result.json"
+  ]
+}

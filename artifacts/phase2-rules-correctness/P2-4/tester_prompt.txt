@@ -1,0 +1,137 @@
+Your role is 'tester'. Your task is as follows:
+
+Author a behavioral test for the P2-4 pass-2 remediation: the bounded
+retreat-condition re-prompt loop in FGame::init(). This is a follow-up to the
+pass-1 P2-4 work; the pass-1 Verifier returned PASS with one non-blocking
+WARNING that this pass fixes.
+
+## Modified files (implementation under test)
+- src/strategic/FGame.cpp  (FGame::init(wxWindow*) — retreat-condition
+  re-prompt loop now has a bounded attempt cap)
+- include/strategic/FGame.h (FGame::init Doxygen header only)
+
+Code commit: 30b16cc09f5e41e526b2fbe28f235702ff9c5c1c
+
+## What changed (context)
+Pass-1 (commit 5745906f) fixed FGame::init() to validate
+selectRetreatCondition() against the valid 1..5 range and re-invoke the UI
+until valid, guarding only the m_ui == NULL case against looping. The pass-1
+Verifier flagged that a non-NULL but DEGENERATE UI (e.g. a headless
+WXStrategicUI when wxTheApp == NULL) that returns an invalid value (such as
+wxID_CANCEL) on EVERY call would spin the while loop forever, since there was
+no upper bound.
+
+Pass-2 adds a bounded safety cap (kMaxRetreatConditionPrompts = 1000) to the
+loop. The loop still re-prompts on every invalid value, but now stops after
+1000 attempts. m_satharRetreat is only assigned when the final
+retreatCondition value is actually in 1..5 -- if the cap is exhausted without
+ever seeing a valid value, m_satharRetreat is left untouched at its
+prior/default value (the constructor default -1 in the normal startup path)
+instead of being set to a bogus out-of-range value. init() still returns 0 in
+this case; the point of the guard is bounded termination + never storing a
+bogus value, not surfacing a distinct error code.
+
+Current relevant code (src/strategic/FGame.cpp, in FGame::init()):
+```cpp
+if (m_ui != NULL){
+    const int kMaxRetreatConditionPrompts = 1000;
+    int retreatCondition = m_ui->selectRetreatCondition();
+    int retreatConditionAttempts = 1;
+    while ((retreatCondition < 1 || retreatCondition > 5) &&
+            retreatConditionAttempts < kMaxRetreatConditionPrompts) {
+        retreatCondition = m_ui->selectRetreatCondition();
+        retreatConditionAttempts++;
+    }
+    if (retreatCondition >= 1 && retreatCondition <= 5) {
+        m_satharRetreat = retreatCondition;
+    }
+}
+```
+
+## Acceptance criteria to cover this pass
+1. **Bounded-cap-exhaustion (NEW — the core of this remediation)**: a mock
+   IStrategicUI whose selectRetreatCondition() ALWAYS returns an invalid
+   value (e.g. always wxID_CANCEL, or always 0, or always 6) must cause
+   init() to terminate (return promptly, i.e. the test itself completes
+   without hanging/timing out) after calling selectRetreatCondition()
+   exactly kMaxRetreatConditionPrompts (1000) times -- assert the call
+   counter equals exactly 1000, proving the loop is bounded and not merely
+   "eventually gives up after some unspecified number of calls". Then assert
+   m_satharRetreat was NOT set to the invalid value -- observe this via
+   showRetreatConditions() (mock's showRetreatConditions(text) receives
+   "Error:  No retreat condition selected" for the unset/-1 default, exactly
+   as an out-of-range stored value would also read as "Error: ..." -- so
+   pair the text assertion with the exact call-count assertion above to
+   distinguish "never stored" from "stored something that happens to also
+   read as Error"). This test MUST fail (hang or assert-fail) against a
+   hypothetical unbounded loop and pass against the current bounded
+   implementation.
+   - Keep this test's cost reasonable: 1000 mock calls with no real UI/dialog
+     work is fast (sub-millisecond), so no special timeout handling should be
+     needed, but confirm the test actually completes quickly when you run it.
+2. **Keep the existing 3 pass-1 tests green** (do not modify their
+   assertions; they must continue to pass unchanged against this pass's
+   code):
+   - testInitRepromptsUntilValidRetreatConditionIsReturned
+     (invalid-then-valid re-prompt)
+   - testInitAcceptsValidRetreatConditionWithoutExtraPrompts
+     (valid-first, exactly one call)
+   - testInitStoredConditionDrivesCorrectVictoryDispatch
+     (stored condition drives correct per-condition dispatch text)
+
+## Observing the stored value
+FGame has no public getter for m_satharRetreat. Use the same approach as the
+existing pass-1 tests:
+- showRetreatConditions() routes through the mock's showRetreatConditions(text);
+  the text differs per condition 1..5 and reads "Error:  No retreat condition
+  selected" for an out-of-range/unset (-1 default) value.
+Prefer this behavioral assertion over any source-string inspection. Per
+project policy, source-contract checks may only supplement, not replace, the
+behavioral assertion of runtime behavior.
+
+## Test location guidance
+tests/strategic/FGameRetreatConditionValidationTest.cpp /
+tests/strategic/FGameRetreatConditionValidationTest.h — this fixture and its
+mock (ScriptedRetreatConditionMockStrategicUI) already exist from pass-1 and
+are already registered in tests/SSWTests.cpp. Add the new
+bounded-cap-exhaustion test as a new test method in this same fixture. You
+will likely want a small mock variant (or a constant-return mode on the
+existing scripted mock) whose selectRetreatCondition() always returns the
+same invalid value and counts calls via selectRetreatConditionCalls -- the
+existing ScriptedRetreatConditionMockStrategicUI already holds the last
+scripted value once its sequence is exhausted, so a single-element sequence
+(e.g. just wxID_CANCEL) may already give you "always returns invalid"
+behavior; verify this before adding a new mock class. Do not modify the 3
+existing test methods.
+
+## Validation commands
+- Build: make            (repo root)
+- Suite: cd tests && make && ./SSWTests   (run ./SSWTests with cwd=tests/)
+Current full suite baseline for this pass: OK (229 tests), no failures, prior
+to your new test. Expect 230 tests (or more, if you add a helper mock's own
+coverage) after you add the bounded-cap-exhaustion test, all green.
+
+## Known pre-existing note
+The FGameHeaderDependencyTest source-inspection tests can show cwd-artifact
+source-path failures when run from a worktree with an unexpected cwd; no such
+failures were observed in the implementer's own run from tests/. Confirm no
+NEW failures attributable to this change.
+
+## Startup behavior
+- If acceptance criteria and implementation context above are sufficient,
+  begin testing work immediately and continue in the same run.
+- Infer missing test-command or test-location details from repository
+  conventions when repository evidence is sufficient, and label those
+  choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory
+  confirmation, or framework discovery when testing can proceed.
+
+## Shared artifact directory (reuse)
+artifacts/phase2-rules-correctness/P2-4/
+(history/pass-1/ under this directory is archived pass-1 output — leave it
+untouched; write your pass-2 tester_report.md, tester_result.json, and
+documenter_prompt.txt directly under artifacts/phase2-rules-correctness/P2-4/.)
+
+## Completion gate
+Do not report success unless all required artifacts exist and all changes are
+committed.

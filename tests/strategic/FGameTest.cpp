@@ -155,6 +155,57 @@ FFleet * addCoLocatedSatharRaiders(FPlayer *sathar, FSystem *sys, const std::str
 }
 
 /**
+ * @brief Creates a standalone fleet for the given player at the given
+ * system, optionally flagged as a militia fleet via FFleet::setMilitia(),
+ * with doomedCount ships of shipType added at HP 0 (destroyed) and
+ * survivorCount ships of shipType left at full health. Registers the fleet
+ * with both the owning FPlayer and the FSystem, matching the registration
+ * pattern used by addCoLocatedSatharRaiders() above.
+ *
+ * FGame::cleanUpShips() (invoked through the public endUPFTurn() turn path)
+ * scans every player's every fleet once combat is detected anywhere in the
+ * game, not just the fleets co-located with the detected combat, so ships
+ * added by this helper are processed by cleanUpShips() regardless of which
+ * system a separate combat-trigger fleet (e.g. addCoLocatedSatharRaiders())
+ * is placed in.
+ *
+ * @param owner         The FPlayer ("UPF" or "Sathar") that will own the fleet.
+ * @param sys           The system to register the fleet in.
+ * @param fleetName     Name to give the new fleet.
+ * @param shipType      Ship type string passed to createShip() (e.g. "Destroyer", "Fighter").
+ * @param doomedCount   Number of ships to add with HP already set to 0.
+ * @param survivorCount Number of ships to add at full health.
+ * @param militia       When true, marks the fleet as a militia fleet via setMilitia(true, ...).
+ * @return Pointer to the newly created and system/player-registered fleet.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+FFleet * addShipLossFleet(FPlayer *owner, FSystem *sys, const std::string &fleetName,
+		const std::string &shipType, int doomedCount, int survivorCount, bool militia){
+	FFleet *fleet = new FFleet;
+	fleet->setName(fleetName);
+	fleet->setOwner(owner->getID());
+	fleet->setLocation(sys, false);
+	if (militia){
+		fleet->setMilitia(true, sys->getName());
+	}
+	for (int i = 0; i < doomedCount; i++){
+		FVehicle *doomed = createShip(shipType);
+		doomed->setHP(0);
+		fleet->addShip(doomed);
+	}
+	for (int i = 0; i < survivorCount; i++){
+		FVehicle *survivor = createShip(shipType);
+		fleet->addShip(survivor);
+	}
+	owner->addFleet(fleet);
+	sys->addFleet(fleet);
+	return fleet;
+}
+
+/**
  * @brief Sets the HP of the station at the given system/planet to 0 so the
  * next cleanUpShips() pass counts it as destroyed.
  *
@@ -766,6 +817,374 @@ void FGameTest::testShowRetreatConditionsTextMatchesEvaluatedCaseNumber(){
 	delete m_g1;
 	delete ui5;
 	m_g1 = &(FGame::create()); // leave a benign default instance for tearDown()
+}
+
+/**
+ * P2-3 (S2) acceptance criterion: "m_lostSatharShips counts EVERY destroyed
+ * Sathar ship, including fighters."
+ *
+ * Destroys 3 Sathar Fighters in a non-militia fleet and asserts
+ * m_lostSatharShips increases by exactly 3, observed via the real
+ * FGame::save() byte stream (readLossCounters()). Against the pre-fix
+ * `getType() != "Fighter"` guard on m_lostSatharShips, destroying only
+ * fighters would leave the counter unchanged (delta 0), so this assertion
+ * fails against the unfixed code and passes against the fix.
+ */
+void FGameTest::testCleanUpShipsCountsSatharFightersTowardLostSatharShips(){
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	FSystem *sys = FMap::getMap().getSystem(upfFleet->getLocation());
+	CPPUNIT_ASSERT(sys != NULL);
+
+	// combat trigger: minimal, non-destroyed Sathar presence co-located with
+	// the real UPF fleet so checkForCombat() invokes cleanUpShips()
+	addCoLocatedSatharRaiders(sathar, sys, "Test S2 Trigger Raiders", 0, 1);
+	// the actual loss under test: 3 Sathar Fighters, non-militia fleet
+	addShipLossFleet(sathar, sys, "Test S2 Fighter Squadron", "Fighter", 3, 0, false);
+
+	int lostHCBefore, lostACBefore, lostSatharBefore, lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore;
+	readLossCounters(*m_g1, lostHCBefore, lostACBefore, lostSatharBefore,
+			lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore);
+
+	m_g1->endSatharTurn();
+	m_g1->endUPFTurn();  // drives checkForCombat() -> cleanUpShips()
+
+	int lostHCAfter, lostACAfter, lostSatharAfter, lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter;
+	readLossCounters(*m_g1, lostHCAfter, lostACAfter, lostSatharAfter,
+			lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter);
+
+	CPPUNIT_ASSERT_EQUAL(lostSatharBefore + 3, lostSatharAfter);
+}
+
+/**
+ * P2-3 (S3) acceptance criterion: "m_lostTendaySathar increments only when
+ * the destroyed ship is neither a fighter nor a member of a militia fleet."
+ * This test covers the fighter exclusion on the Sathar side.
+ *
+ * Destroys 2 Sathar Fighters in a non-militia fleet and asserts
+ * m_lostTendaySathar does NOT change. Against the pre-fix code (which
+ * incremented m_lostTendaySathar unconditionally for every destroyed Sathar
+ * ship, with no fighter exclusion), this scenario would show a delta of +2,
+ * so this assertion fails against the unfixed code and passes against the fix.
+ */
+void FGameTest::testCleanUpShipsExcludesSatharFightersFromTendaySatharCounter(){
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	FSystem *sys = FMap::getMap().getSystem(upfFleet->getLocation());
+	CPPUNIT_ASSERT(sys != NULL);
+
+	addCoLocatedSatharRaiders(sathar, sys, "Test S3 Sathar Fighter Trigger Raiders", 0, 1);
+	addShipLossFleet(sathar, sys, "Test S3 Sathar Fighter Squadron", "Fighter", 2, 0, false);
+
+	int lostHCBefore, lostACBefore, lostSatharBefore, lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore;
+	readLossCounters(*m_g1, lostHCBefore, lostACBefore, lostSatharBefore,
+			lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore);
+
+	m_g1->endSatharTurn();
+	m_g1->endUPFTurn();
+
+	int lostHCAfter, lostACAfter, lostSatharAfter, lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter;
+	readLossCounters(*m_g1, lostHCAfter, lostACAfter, lostSatharAfter,
+			lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter);
+
+	CPPUNIT_ASSERT_EQUAL(lostTendaySatharBefore, lostTendaySatharAfter);
+	// cross-check: S2 still counts these same fighters toward m_lostSatharShips
+	CPPUNIT_ASSERT_EQUAL(lostSatharBefore + 2, lostSatharAfter);
+}
+
+/**
+ * P2-3 (S3) acceptance criterion: fighter exclusion applies to BOTH sides.
+ * This test covers the fighter exclusion on the UPF side.
+ *
+ * Destroys 2 UPF Fighters in a non-militia fleet and asserts
+ * m_lostTendayUPF does NOT change. Against the pre-fix code (which
+ * incremented m_lostTendayUPF unconditionally for every destroyed UPF ship,
+ * with no fighter exclusion), this scenario would show a delta of +2, so
+ * this assertion fails against the unfixed code and passes against the fix.
+ */
+void FGameTest::testCleanUpShipsExcludesUPFFightersFromTendayUPFCounter(){
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	FSystem *sys = FMap::getMap().getSystem(upfFleet->getLocation());
+	CPPUNIT_ASSERT(sys != NULL);
+
+	addCoLocatedSatharRaiders(sathar, sys, "Test S3 UPF Fighter Trigger Raiders", 0, 1);
+	addShipLossFleet(upf, sys, "Test S3 UPF Fighter Squadron", "Fighter", 2, 0, false);
+
+	int lostHCBefore, lostACBefore, lostSatharBefore, lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore;
+	readLossCounters(*m_g1, lostHCBefore, lostACBefore, lostSatharBefore,
+			lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore);
+
+	m_g1->endSatharTurn();
+	m_g1->endUPFTurn();
+
+	int lostHCAfter, lostACAfter, lostSatharAfter, lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter;
+	readLossCounters(*m_g1, lostHCAfter, lostACAfter, lostSatharAfter,
+			lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter);
+
+	CPPUNIT_ASSERT_EQUAL(lostTendayUPFBefore, lostTendayUPFAfter);
+}
+
+/**
+ * P2-3 (S3) acceptance criterion: militia exclusion applies to the Sathar
+ * side. Destroys 2 non-fighter (Destroyer) ships belonging to a militia
+ * fleet (FFleet::setMilitia(true, ...)) and asserts m_lostTendaySathar does
+ * NOT change. Against the pre-fix code (which incremented
+ * m_lostTendaySathar unconditionally, with no militia exclusion), this
+ * scenario would show a delta of +2, so this assertion fails against the
+ * unfixed code and passes against the fix.
+ */
+void FGameTest::testCleanUpShipsExcludesSatharMilitiaShipsFromTendaySatharCounter(){
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	FSystem *sys = FMap::getMap().getSystem(upfFleet->getLocation());
+	CPPUNIT_ASSERT(sys != NULL);
+
+	addCoLocatedSatharRaiders(sathar, sys, "Test S3 Sathar Militia Trigger Raiders", 0, 1);
+	addShipLossFleet(sathar, sys, "Test S3 Sathar Militia Fleet", "Destroyer", 2, 0, true);
+
+	int lostHCBefore, lostACBefore, lostSatharBefore, lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore;
+	readLossCounters(*m_g1, lostHCBefore, lostACBefore, lostSatharBefore,
+			lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore);
+
+	m_g1->endSatharTurn();
+	m_g1->endUPFTurn();
+
+	int lostHCAfter, lostACAfter, lostSatharAfter, lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter;
+	readLossCounters(*m_g1, lostHCAfter, lostACAfter, lostSatharAfter,
+			lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter);
+
+	CPPUNIT_ASSERT_EQUAL(lostTendaySatharBefore, lostTendaySatharAfter);
+	// cross-check: S2 is unaffected by militia status -- these ships still
+	// count toward m_lostSatharShips
+	CPPUNIT_ASSERT_EQUAL(lostSatharBefore + 2, lostSatharAfter);
+}
+
+/**
+ * P2-3 (S3) acceptance criterion: militia exclusion applies to BOTH sides.
+ * This test covers the militia exclusion on the UPF side. Destroys 2
+ * non-fighter (Destroyer) ships belonging to a militia fleet and asserts
+ * m_lostTendayUPF does NOT change. Against the pre-fix code (which
+ * incremented m_lostTendayUPF unconditionally, with no militia exclusion),
+ * this scenario would show a delta of +2, so this assertion fails against
+ * the unfixed code and passes against the fix.
+ */
+void FGameTest::testCleanUpShipsExcludesUPFMilitiaShipsFromTendayUPFCounter(){
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	FSystem *sys = FMap::getMap().getSystem(upfFleet->getLocation());
+	CPPUNIT_ASSERT(sys != NULL);
+
+	addCoLocatedSatharRaiders(sathar, sys, "Test S3 UPF Militia Trigger Raiders", 0, 1);
+	addShipLossFleet(upf, sys, "Test S3 UPF Militia Fleet", "Destroyer", 2, 0, true);
+
+	int lostHCBefore, lostACBefore, lostSatharBefore, lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore;
+	readLossCounters(*m_g1, lostHCBefore, lostACBefore, lostSatharBefore,
+			lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore);
+
+	m_g1->endSatharTurn();
+	m_g1->endUPFTurn();
+
+	int lostHCAfter, lostACAfter, lostSatharAfter, lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter;
+	readLossCounters(*m_g1, lostHCAfter, lostACAfter, lostSatharAfter,
+			lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter);
+
+	CPPUNIT_ASSERT_EQUAL(lostTendayUPFBefore, lostTendayUPFAfter);
+}
+
+/**
+ * P2-3 (S3) acceptance criterion: "non-fighter, non-militia ships ARE
+ * counted" toward the tenday counters. This test covers the Sathar side.
+ *
+ * Destroys 3 non-fighter Destroyers in a non-militia Sathar fleet and
+ * asserts m_lostTendaySathar increases by exactly 3. This guards against an
+ * overzealous fix that excludes more than fighters/militia ships.
+ */
+void FGameTest::testCleanUpShipsCountsNonFighterNonMilitiaSatharShipsTowardTendaySatharCounter(){
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	FSystem *sys = FMap::getMap().getSystem(upfFleet->getLocation());
+	CPPUNIT_ASSERT(sys != NULL);
+
+	addShipLossFleet(sathar, sys, "Test S3 Sathar Regular Fleet", "Destroyer", 3, 0, false);
+
+	int lostHCBefore, lostACBefore, lostSatharBefore, lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore;
+	readLossCounters(*m_g1, lostHCBefore, lostACBefore, lostSatharBefore,
+			lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore);
+
+	m_g1->endSatharTurn();
+	m_g1->endUPFTurn();
+
+	int lostHCAfter, lostACAfter, lostSatharAfter, lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter;
+	readLossCounters(*m_g1, lostHCAfter, lostACAfter, lostSatharAfter,
+			lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter);
+
+	CPPUNIT_ASSERT_EQUAL(lostTendaySatharBefore + 3, lostTendaySatharAfter);
+}
+
+/**
+ * P2-3 (S3) acceptance criterion: "non-fighter, non-militia ships ARE
+ * counted" toward the tenday counters. This test covers the UPF side.
+ *
+ * Destroys 3 non-fighter Destroyers in a non-militia UPF fleet and asserts
+ * m_lostTendayUPF increases by exactly 3.
+ */
+void FGameTest::testCleanUpShipsCountsNonFighterNonMilitiaUPFShipsTowardTendayUPFCounter(){
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FFleet *upfFleet = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(upfFleet != NULL);
+	FSystem *sys = FMap::getMap().getSystem(upfFleet->getLocation());
+	CPPUNIT_ASSERT(sys != NULL);
+
+	addCoLocatedSatharRaiders(sathar, sys, "Test S3 UPF Regular Trigger Raiders", 0, 1);
+	addShipLossFleet(upf, sys, "Test S3 UPF Regular Fleet", "Destroyer", 3, 0, false);
+
+	int lostHCBefore, lostACBefore, lostSatharBefore, lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore;
+	readLossCounters(*m_g1, lostHCBefore, lostACBefore, lostSatharBefore,
+			lostTendaySatharBefore, lostTendayUPFBefore, stationsBefore);
+
+	m_g1->endSatharTurn();
+	m_g1->endUPFTurn();
+
+	int lostHCAfter, lostACAfter, lostSatharAfter, lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter;
+	readLossCounters(*m_g1, lostHCAfter, lostACAfter, lostSatharAfter,
+			lostTendaySatharAfter, lostTendayUPFAfter, stationsAfter);
+
+	CPPUNIT_ASSERT_EQUAL(lostTendayUPFBefore + 3, lostTendayUPFAfter);
+}
+
+/**
+ * P2-3 (S3) acceptance criterion (checkForVictory condition-5 boundary,
+ * positive case): at a tenday boundary, with m_satharRetreat == 5, after
+ * filtering out fighters and militia ships, m_lostTendaySathar (2) exceeds
+ * m_lostTendayUPF (1); checkForVictory() must surface the UPF victory via
+ * notifyVictory(1).
+ *
+ * The Sathar side also loses 3 Fighters (non-militia fleet, excluded from
+ * the tenday counter) and 2 militia Destroyers (excluded via
+ * FFleet::isMilitia()) as "noise" alongside the 2 countable Destroyer
+ * losses, proving the filtered comparison -- not the raw destroyed-ship
+ * count -- feeds the victory decision.
+ */
+void FGameTest::testCheckForVictoryCondition5FilteredSatharLossesExceedUPFDespiteFighterAndMilitiaNoise(){
+	delete m_g1;
+	RetreatConditionMockUI *ui = new RetreatConditionMockUI(5);
+	m_g1 = &(FGame::create(ui));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FSystem *sys = FMap::getMap().getSystem("Theseus");
+	CPPUNIT_ASSERT(sys != NULL);
+
+	// filtered Sathar tenday losses: 2 countable Destroyers
+	addShipLossFleet(sathar, sys, "Test C5 Filtered Win Sathar Regulars", "Destroyer", 2, 0, false);
+	// noise, excluded from the tenday counter: 3 Fighters
+	addShipLossFleet(sathar, sys, "Test C5 Filtered Win Sathar Fighters", "Fighter", 3, 0, false);
+	// noise, excluded from the tenday counter: 2 militia Destroyers
+	addShipLossFleet(sathar, sys, "Test C5 Filtered Win Sathar Militia", "Destroyer", 2, 0, true);
+	// filtered UPF tenday losses: 1 countable Destroyer
+	addShipLossFleet(upf, sys, "Test C5 Filtered Win UPF Regulars", "Destroyer", 1, 0, false);
+
+	m_g1->endUPFTurn();
+	advanceUPFTurns(m_g1, 10);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ui->victoryNotifications.size());
+	CPPUNIT_ASSERT_EQUAL(1, ui->victoryNotifications[0]);
+
+	delete ui;
+}
+
+/**
+ * P2-3 (S3) acceptance criterion (checkForVictory condition-5 boundary,
+ * complementary/negative case): with m_satharRetreat == 5, the Sathar
+ * "extra" losses are all fighters and militia ships, so after filtering,
+ * m_lostTendaySathar (3) does NOT exceed m_lostTendayUPF (3) -- they are
+ * equal -- and checkForVictory() must NOT declare a UPF victory.
+ *
+ * Raw (unfiltered) Sathar losses this tenday total 12 (3 countable
+ * Destroyers + 5 Fighters + 4 militia Destroyers) versus 3 for the UPF. The
+ * pre-fix code incremented m_lostTendaySathar/m_lostTendayUPF unconditionally
+ * for every destroyed ship (no fighter or militia exclusion), so it would
+ * have compared the raw totals (12 > 3) and wrongly declared a UPF victory.
+ * This assertion (no victory) fails against that unfixed counting and passes
+ * against the fix, specifically proving the filtering feeds the victory
+ * check rather than the raw destroyed-ship counts.
+ */
+void FGameTest::testCheckForVictoryCondition5NoVictoryWhenFilteredSatharLossesDoNotExceedUPFDespiteFighterAndMilitiaNoise(){
+	delete m_g1;
+	RetreatConditionMockUI *ui = new RetreatConditionMockUI(5);
+	m_g1 = &(FGame::create(ui));
+	CPPUNIT_ASSERT(m_g1->init(NULL) == 0);
+
+	FPlayer *upf = m_g1->getPlayer(1);
+	FPlayer *sathar = m_g1->getPlayer(2);
+	CPPUNIT_ASSERT(upf != NULL);
+	CPPUNIT_ASSERT(sathar != NULL);
+
+	FSystem *sys = FMap::getMap().getSystem("Theseus");
+	CPPUNIT_ASSERT(sys != NULL);
+
+	// filtered Sathar tenday losses: 3 countable Destroyers
+	addShipLossFleet(sathar, sys, "Test C5 Filtered NoWin Sathar Regulars", "Destroyer", 3, 0, false);
+	// noise, excluded from the tenday counter: 5 Fighters
+	addShipLossFleet(sathar, sys, "Test C5 Filtered NoWin Sathar Fighters", "Fighter", 5, 0, false);
+	// noise, excluded from the tenday counter: 4 militia Destroyers
+	addShipLossFleet(sathar, sys, "Test C5 Filtered NoWin Sathar Militia", "Destroyer", 4, 0, true);
+	// filtered UPF tenday losses: 3 countable Destroyers -- equal to the
+	// filtered Sathar count, so condition 5 ("exceeds") is NOT satisfied
+	addShipLossFleet(upf, sys, "Test C5 Filtered NoWin UPF Regulars", "Destroyer", 3, 0, false);
+
+	m_g1->endUPFTurn();
+	advanceUPFTurns(m_g1, 10);
+
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ui->victoryNotifications.size());
+
+	delete ui;
 }
 
 }

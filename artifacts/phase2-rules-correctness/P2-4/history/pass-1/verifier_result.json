@@ -1,0 +1,26 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-4/verifier_report.md",
+    "artifacts/phase2-rules-correctness/P2-4/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "p2rc-P2-4-verifier-20260711",
+  "documentation_accuracy_summary": [
+    "include/strategic/FGame.h's expanded Doxygen header on FGame::init() (lines 104-113) accurately and specifically describes the validation/re-prompt loop, cites the 1..5 range, the X-close/wxID_CANCEL motivating scenario, and explicitly documents that the loop is skipped entirely when m_ui is NULL, preserving no-UI behavior -- this matches the actual src/strategic/FGame.cpp implementation exactly (verified by diff and by re-reading the implementation).",
+    "doc/synthesized-roadmap.md's single edited bullet (originally 'Retreat-condition selection stored unvalidated ... silently disabling UPF victory forever') is now suffixed with '***RESOLVED*** (P2-4, commit `5745906f`)' plus an accurate one-paragraph resolution summary referencing the 1..5 validation, the re-prompt loop, the m_ui != NULL guard, and a pointer to artifacts/phase2-rules-correctness/P2-4; diffed and confirmed only that bullet was touched (7 insertions, 1 deletion, single file changed) -- no other roadmap rows were disturbed.",
+    "No user-facing documentation impact was claimed or required by the plan, and none was made."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "OK (229 tests)",
+  "status": "success",
+  "task_id": "P2-4",
+  "test_sufficiency_summary": [
+    "FGameRetreatConditionValidationTest.cpp adds 3 genuinely behavioral CppUnit tests (registered in tests/SSWTests.cpp and tests/strategic/Makefile's wildcard build): (1) testInitRepromptsUntilValidRetreatConditionIsReturned scripts [0, 6, -1, 2] through a mock IStrategicUI, asserts selectRetreatConditionCalls == 4 (proving re-prompting occurred) and asserts the post-init dispatch text via showRetreatConditions() contains 'five heavy cruisers' (case 2) and not 'Error', proving the VALID value was stored and drives the correct switch case; (2) testInitAcceptsValidRetreatConditionWithoutExtraPrompts scripts a single valid value (4) and asserts selectRetreatConditionCalls == 1 with matching dispatch text, proving no extra prompting on a valid-first response; (3) testInitStoredConditionDrivesCorrectVictoryDispatch scripts a single valid value (5) and asserts the dispatch text reaches the case-5 branch, used as the feasible public proxy for checkForVictory()'s otherwise-private switch on the same m_satharRetreat member.",
+    "The Tester's own report documents an explicit pre-fix regression check: reverting src/strategic/FGame.cpp's init() to the unvalidated one-line assignment reproduced exactly one CppUnit failure (testInitRepromptsUntilValidRetreatConditionIsReturned failing on selectRetreatConditionCalls > 1, with the mock called only once and the invalid first value stored verbatim) before the fix was restored \u2014 this independently confirms the new test is not vacuously true and would have caught the pre-fix defect.",
+    "Coverage satisfies CLAUDE.md's Behavioral Verification Is Mandatory policy: every assertion drives real FGame::init()/showRetreatConditions() runtime behavior (call counts, dispatched text) rather than source-text/structure inspection; no criterion in this subtask is backed only by a source-contract check.",
+    "The literal m_ui == NULL non-looping guard is independently, behaviorally re-confirmed by the full suite completing (229 tests, no hang) with pre-existing no-UI tests such as FGameTest::testShowRetreatCondition (tests/strategic/FGameTest.cpp:284-287, m_g1 created via the no-UI FGame::create()) still passing and still producing the 'Error:  No retreat condition selected' default-branch text, proving the no-UI console path (m_satharRetreat stays -1) is unchanged.",
+    "Minor gap (non-blocking): no test explicitly exercises the exact boundary values 1 or 0/6 in isolation beyond what's already scripted (0 and 6 are covered as invalid; 1 is not directly exercised as a valid boundary, though 2, 4, and 5 are). This is a low-risk coverage gap given the symmetric, trivial boundary check (`retreatCondition < 1 || retreatCondition > 5`) and is not required by the acceptance criteria."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 1
+}

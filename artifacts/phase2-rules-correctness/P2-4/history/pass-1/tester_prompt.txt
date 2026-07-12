@@ -1,0 +1,74 @@
+Your role is 'tester'. Your task is as follows:
+
+Author behavioral tests for P2-4: validation of the Sathar retreat-condition
+selection in FGame::init().
+
+## Modified files (implementation under test)
+- src/strategic/FGame.cpp  (FGame::init(wxWindow*) — retreat-condition validation loop)
+- include/strategic/FGame.h (FGame::init Doxygen header only)
+
+Code commit: 5745906f2ea50e3de9b4f3ec8ae479b5d84c7ff8
+
+## What changed (context)
+Previously FGame::init() did:
+    if (m_ui != NULL){ m_satharRetreat = m_ui->selectRetreatCondition(); }
+An X-close/cancel of the retreat dialog returns wxID_CANCEL (or any out-of-range
+value), which was stored verbatim and then fell through checkForVictory()'s
+switch default, silently disabling UPF victory for the whole game.
+
+Now init() validates the returned value against the valid 1..5 range and
+re-invokes m_ui->selectRetreatCondition() until a valid 1..5 value is returned,
+then stores it. The re-prompt loop only runs when m_ui != NULL (no-UI path is
+unchanged; m_satharRetreat stays -1 when there is no UI).
+
+## Acceptance criteria to cover (all via a mock IStrategicUI)
+1. Re-prompt-until-valid: a mock that returns an invalid value first
+   (e.g. wxID_CANCEL, 0, and/or 6) and then a valid 1..5 value must cause
+   init() to keep calling selectRetreatCondition() and end with m_satharRetreat
+   holding the VALID value. Assert both the stored value AND that the call
+   counter incremented more than once (proves re-prompt occurred). This test
+   MUST fail against the pre-fix unvalidated assignment (which would store the
+   first, invalid value).
+2. Valid-first, no extra prompts: a mock returning a valid 1..5 immediately
+   must store it unchanged with exactly ONE selectRetreatCondition() call
+   (assert call count == 1 and stored value == returned value).
+3. Post-setup victory correctness: after init() with a mock returning a valid
+   condition, checkForVictory() evaluates that real 1..5 condition (UPF victory
+   is never disabled by a bogus stored value). At minimum assert m_satharRetreat
+   is in 1..5 after init(). Exercising checkForVictory() end-to-end for a chosen
+   condition is preferred where feasible.
+
+## Observing the stored value
+FGame has no public getter for m_satharRetreat. Recommended approaches:
+- Drive behavior through showRetreatConditions() (routes through the mock's
+  showRetreatConditions(text); the text differs per condition 1..5 and yields
+  "Error:  No retreat condition selected" for an out-of-range/unset value), OR
+- Exercise checkForVictory() with state set so the chosen condition's UPF
+  victory branch is observable.
+Prefer a behavioral assertion on observed output/state over any source-string
+inspection. Per project policy, source-contract checks may only supplement, not
+replace, the behavioral assertion.
+
+## Test location guidance
+tests/strategic/ — follow the mock IStrategicUI pattern in
+tests/strategic/FGameMockStrategicUITest.cpp / .h. That mock's
+selectRetreatCondition() currently returns a constant 3 and counts calls via
+selectRetreatConditionCalls; you will need a mock variant whose
+selectRetreatCondition() returns a scripted SEQUENCE of values (invalid then
+valid) to drive the re-prompt test. Register the new fixture in
+tests/SSWTests.cpp (and update tests/strategic/Makefile if you add a new file).
+
+## Validation commands
+- Build: make            (repo root)
+- Suite: cd tests && make && ./SSWTests   (run ./SSWTests with cwd=tests/)
+Expect the pre-fix baseline test #1 to fail against the unvalidated assignment
+and pass against commit 5745906f. Current full suite baseline: OK (226 tests).
+
+## Known pre-existing note
+The FGameHeaderDependencyTest source-inspection tests can show cwd-artifact
+source-path failures when run from a worktree with an unexpected cwd; they
+passed cleanly in the implementer run from tests/. Confirm no NEW failures
+attributable to this change.
+
+## Shared artifact directory (reuse)
+artifacts/phase2-rules-correctness/P2-4/

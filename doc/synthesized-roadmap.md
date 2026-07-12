@@ -130,20 +130,33 @@ Ordered by impact.
 | H12 | **`FHexPath` UB on empty/short paths and off-path points** | `src/core/FHexPath.cpp:55-97` | `getPointHeading` dereferences before the end check and reads before `begin()`; `getLastHeading` wraps an unsigned index on paths < 2; `removeTrailingPoints` on an off-path point pops to empty then calls `back()`. Exactly the "unexpected click during move phase" inputs a GUI produces. |
 | H13 | **Mine ownership is a single global** | `src/tactical/FTacticalGame.cpp:2180,3162` | `m_mineOwner` is overwritten on every placement; if both sides ever have live mines, the last placer's mines become friendly to the wrong side. The per-record `ownerID` needed to fix it already exists in `m_placedOrdnance`. |
 | H14 | **Victory is advisory; game never ends** | `src/strategic/FGame.cpp:521-524` (`@todo`), `FMainFrame.cpp:202-226` | `endUPFTurn()` computes victory and drops it; menus keep enabling turns after the victory dialog. Also `checkForVictory` has a hole: `UPFVictory && fortressCount==0 && !SatharVictory` falls through with no result. |
-| H15 _(codex)_ | **Save/Open dialogs ignore Cancel and use `GetFilename()`, not `GetPath()`** | `src/FMainFrame.cpp:128-159` | `onSave()`/`onOpen()` call `ShowModal()` without checking the result, so pressing Cancel still proceeds to open a stream on `d->GetFilename()`; and because they use `GetFilename()` (not `GetPath()`) with `wxFD_CHANGE_DIR`, the file only lands correctly by mutating the process working directory. Cancelling a save can truncate/overwrite a stale filename in the cwd; save/open location is cwd-dependent and brittle. This is the read/write sibling of the close-save bug C5 — fix all three together with `wxID_*` checks and `GetPath()`. |
+| H15 _(codex)_ | **Save/Open dialogs ignore Cancel and use `GetFilename()`, not `GetPath()`** | `src/FMainFrame.cpp:128-159` | `onSave()`/`onOpen()` call `ShowModal()` without checking the result, so pressing Cancel still proceeds to open a stream on `d->GetFilename()`; and because they use `GetFilename()` (not `GetPath()`) with `wxFD_CHANGE_DIR`, the file only lands correctly by mutating the process working directory. Cancelling a save can truncate/overwrite a stale filename in the cwd; save/open location is cwd-dependent and brittle. This is the read/write sibling of the close-save bug C5 — fix all three together with `wxID_*` checks and `GetPath()`. **[RESOLVED — see P2-6: `onSave()`/`onOpen()` now check `wxFileDialog::ShowModal()` and treat Cancel/any non-OK result as a no-op (no stream opened, no `FGame` created or loaded), and use the dialog's full `GetPath()` instead of the cwd-dependent `GetFilename()` on a confirmed OK; `onOpen()`'s post-load menu-enable / turn-state logic is unchanged on the success path; see `artifacts/phase2-rules-correctness/P2-6`.]** |
 
 ### Notable Medium (selection — full detail in section 3)
 
 - Retreat-condition selection stored unvalidated (X-close yields `wxID_CANCEL`=5101 in
   `m_satharRetreat`, silently disabling UPF victory forever) — `FGame.cpp:114`,
-  `WXStrategicUI.cpp:78-89`.
+  `WXStrategicUI.cpp:78-89`. ***RESOLVED*** (P2-4, commits `5745906f`, `30b16cc0`).
+  _Resolved: `FGame::init()` now validates `IStrategicUI::selectRetreatCondition()`'s
+  return against the valid `1..5` range and re-invokes it until a valid value is
+  returned before storing it in `m_satharRetreat`, so a cancelled/dismissed selection
+  dialog can never silently disable UPF victory for the rest of the game; the
+  re-prompt loop only runs when `m_ui != NULL`, so the no-UI console path is
+  unchanged. The re-prompt loop is additionally bounded by an internal attempt cap
+  (`kMaxRetreatConditionPrompts = 1000`) so a degenerate but non-NULL UI that never
+  returns a valid value cannot hang `init()` forever; if the cap is exhausted,
+  `m_satharRetreat` is left at its prior/default value instead of being set to a
+  bogus out-of-range value. See `artifacts/phase2-rules-correctness/P2-4`._
 - `FMap::load` appends without clearing; `FJumpRoute::load` smuggles system IDs through
   `FSystem*` pointers unpacked with a 16-bit mask (`FMap.cpp:350-351`) — breaks for IDs > 65535
   and on LLP64. _(codex)_ Also: `FMap::getMap()` returns `*m_map` with no null guard
   (`FMap.cpp:31-33`), unlike `FMap::create()` which null-checks first — any `getMap()` before
   a `create()` (e.g. a partial/bad load) is a null deref.
 - `FPlayer::m_destroyed` never freed, never serialized (it is the data the Replacements rule
-  needs).
+  needs). **[RESOLVED (freeing) — see P2-5: `FPlayer::~FPlayer()` now deletes and clears every
+  ship in `m_destroyed`, with the sole-ownership contract documented on `addDestroyedShip()`
+  and `m_destroyed`. Serialization remains intentionally deferred — see `doc/deferred-tasks.md`
+  item F2-serialization.]**
 - `cancelJump()` leaves `m_dx/m_dy` pointing at the cancelled destination — the returning
   fleet's map position keeps advancing the wrong way (`FFleet.cpp:190-198`).
 - ICM rule data duplicated in two places that can double-apply (`m_ICMMod` in weapon ctors vs
@@ -464,6 +477,15 @@ the root cause of C4 and the retreat-condition validation bug).
   (`std::mt19937` owned per game, settable seed) — this simultaneously enables deterministic
   behavioral tests (repo policy), battle replay/debugging, and Windows test parity. The
   seeker path already funnels through one chokepoint, making it a ~20-line change there.
+  **[RESOLVED (seed seam only) — see P2-7: `include/Frontier.h` adds `seedRandomExplicit(seed)`
+  and `seedRandomFromClock()` as named, thin wraps over the same process-global `srand()`/`rand()`
+  pair `irand()` already uses; `irand()` itself is unchanged. `FGame`'s constructor now calls
+  `seedRandomFromClock()` in place of the raw `srand(time(NULL))` call, and tests call
+  `seedRandomExplicit(fixed)` to pin the shared RNG for reproducible rolls (e.g.
+  `FFleetTest::testDecTransitTime`'s risk-jump). This is deliberately the minimal named seed
+  seam, not the broader injectable per-game `std::mt19937` RNG suggested above — that broader
+  refactor (and the Windows CRT portability gap) remains open; see
+  `artifacts/phase2-rules-correctness/P2-7`.]**
 - Include-guard reality: three styles plus typos ("DISPALY") across 93 headers; the
   documented `_FOO_H_` convention is also formally reserved-identifier territory.
   `#pragma once` is the cheapest durable fix.
@@ -576,8 +598,8 @@ and win/draw detection (modulo the bugs above).
 | # | Deviation | Rules say | Code does |
 |---|-----------|-----------|-----------|
 | S1 | Retreat conditions 4/5 swapped in evaluation (= defect C2) | 4 = tenday stations; 5 = tenday losses | Evaluated inverted (`FGame.cpp:1046-1064`) |
-| S2 | Condition 3 fighter counting | "lost 40 ships, **including** fighters" | Fighters excluded (`FGame.cpp:1198-1200`) |
-| S3 | Condition 5 fighter/militia counting | Fighters and militia **not** counted | All ships counted (`FGame.cpp:1194-1197`) |
+| S2 | Condition 3 fighter counting — ***RESOLVED*** (P2-3, commit `d6a6702d`) | "lost 40 ships, **including** fighters" | _Resolved: `cleanUpShips()` now increments `m_lostSatharShips` for every destroyed Sathar ship, including fighters (the old `getType() != "Fighter"` guard on that counter was removed); see `artifacts/phase2-rules-correctness/P2-3`._ |
+| S3 | Condition 5 fighter/militia counting — ***RESOLVED*** (P2-3, commit `d6a6702d`) | Fighters and militia **not** counted | _Resolved: `m_lostTendaySathar`/`m_lostTendayUPF` now increment only when the destroyed ship is neither a fighter nor a member of a militia fleet (`FFleet::isMilitia()`), via `countsTowardTenday = (ship->getType() != "Fighter") && !fleet->isMilitia();`, applied on both the UPF and Sathar sides; see `artifacts/phase2-rules-correctness/P2-3`._ |
 | S4 | Sathar OOB light cruisers | 2 | 7 (`FGame.cpp:220`) — verified |
 | S5 | UPF non-attached | 1 Minelayer, no carrier | 1 Assault Carrier, no Minelayer (`FGame.cpp:245-278`) |
 | S6 | Armed stations | 10 (18 stations total) | 11 — extra at Dramune/Outer Reach (`FGame.cpp:929-930`); the Sathar victory threshold (`stationCount <= 7`) is calibrated to 19, so the two deviations only cancel if both stay |
@@ -593,9 +615,9 @@ and win/draw detection (modulo the bugs above).
 
 | # | Contradiction | Manual | Code |
 |---|---------------|--------|------|
-| T1 | **Disruptor Beam Cannon range** | RA **9** (weapon text l.951 and Weapon Restrictions Table l.1145) | `m_range=12` (`src/weapons/FDisruptorCannon.cpp:16`) — verified |
-| T2 | **"Most effective defense" rule** (l.235-238, 411-416) | To-hit resolves against the most effective defense the target owns; only an attracting screen overrides | Resolves against the *currently selected* defense only (`FWeapon.cpp:136-140`). A ship with RH that raises a Proton Screen becomes *easier* to hit with lasers (75% vs the correct 60%) |
-| T3 | **Masking-screen fired-out-of effect** (l.433-436) | Applies **only to lasers** | If the attacker has MS active, *every* weapon type uses the attacker's MS modifier and ignores the target's defense entirely — e.g. a torpedo fired from inside an MS at a stasis-screened target resolves at 50% instead of 75% |
+| T1 | **Disruptor Beam Cannon range** — ***RESOLVED*** (P2-1, commit `fc0c137f`) | RA **9** (weapon text l.951 and Weapon Restrictions Table l.1145) | `m_range=9` (`src/weapons/FDisruptorCannon.cpp:17`) — _Resolved: `FDisruptorCannon`'s constructor now sets `m_range=9` to match the manual's RA 9; behavioral coverage in `FDisruptorCannonTest::testConstructor`, `testSetTargetAcceptsRangeAtMax`, and `testSetTargetRejectsRangeBeyondMax`; see `artifacts/phase2-rules-correctness/P2-1`._ |
+| T2 | **"Most effective defense" rule** (l.235-238, 411-416) | To-hit resolves against the most effective defense the target owns; only an attracting screen overrides | Resolves against the *currently selected* defense only (`FWeapon.cpp:136-140`). A ship with RH that raises a Proton Screen becomes *easier* to hit with lasers (75% vs the correct 60%) **[RESOLVED — see P2-2: `FWeapon::fire()` now resolves the to-hit modifier via `FVehicle::resolveToHitModifier()`, which selects the target's most-effective OPERATING defense (reflective hull plus whichever screen is currently raised) unless an attracting screen (Proton Screen↔Electron Beam, Electron Screen↔Proton Beam, Stasis Screen↔Torpedo/Seeker Missile/Mine) overrides that choice; see `artifacts/phase2-rules-correctness/P2-2`.]** |
+| T3 | **Masking-screen fired-out-of effect** (l.433-436) | Applies **only to lasers** | If the attacker has MS active, *every* weapon type uses the attacker's MS modifier and ignores the target's defense entirely — e.g. a torpedo fired from inside an MS at a stasis-screened target resolves at 50% instead of 75% **[RESOLVED — see P2-2: the masking-screen "fired out of the screen" to-hit override in `FWeapon::fire()` now applies only to laser weapons (LC/LB); every other weapon type ignores the attacker's raised Masking Screen and resolves against the target's defense via `FVehicle::resolveToHitModifier()`; see `artifacts/phase2-rules-correctness/P2-2`.]** |
 | T4 | **Head-on gravity crash** (l.887-896) | Cannot be avoided "even if it turns in hex 2" | Ship is only destroyed if its *finalized* position ends adjacent to and facing the planet; the movement UI still offers MR turns from the gravity hex, letting it escape |
 | T5 | Automatic misses (l.305-307) | d100 ≥ 96 always misses | No upper clamp in `fire()` (nearly unreachable with current stats, but not coded) |
 | T6 | Navigation-hit direction (l.1183) | 1d10 rolled **before the ship moves** each move | Direction fixed once at damage time by `irand(2)` |

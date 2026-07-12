@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-4/tester_report.md",
+    "artifacts/phase2-rules-correctness/P2-4/tester_result.json",
+    "artifacts/phase2-rules-correctness/P2-4/documenter_prompt.txt"
+  ],
+  "branch_name": "p2rc-P2-4-tester-20260711",
+  "commands_run": [
+    "make (repo root)",
+    "cd tests && make && ./SSWTests",
+    "Pre-fix regression check: reverted src/strategic/FGame.cpp init() to the pre-fix unvalidated assignment, rebuilt src/strategic and relinked tests/SSWTests, reran ./SSWTests to confirm testInitRepromptsUntilValidRetreatConditionIsReturned (and only that test) fails, then restored src/strategic/FGame.cpp via `git checkout -- src/strategic/FGame.cpp` and rebuilt/reran to confirm a clean pass"
+  ],
+  "pass_fail_totals": {
+    "post_fix_failures": 0,
+    "post_fix_total": "229 (226 baseline + 3 new)",
+    "pre_fix_regression_check_failures": 1,
+    "pre_fix_regression_check_total": 229
+  },
+  "pass_label": "OK (229 tests)",
+  "status": "success",
+  "task_id": "P2-4",
+  "test_commit_hash": "3abe46a6",
+  "test_files_changed": [
+    "tests/strategic/FGameRetreatConditionValidationTest.h (new)",
+    "tests/strategic/FGameRetreatConditionValidationTest.cpp (new)",
+    "tests/SSWTests.cpp (registered new fixture: include + runner.addTest)"
+  ],
+  "unmet_acceptance_criteria": []
+}

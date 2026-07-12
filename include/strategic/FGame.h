@@ -101,11 +101,26 @@ public:
    * installed at construction time.  It returns a zero if all is well and a
    * positive error code if there was a problem.
    *
+   * The Sathar retreat condition returned by IStrategicUI::selectRetreatCondition()
+   * is validated against the valid 1..5 range before being stored in
+   * m_satharRetreat.  If the UI returns an out-of-range value (for example
+   * wxID_CANCEL from an X-close/cancel on the selection dialog), the UI is
+   * re-invoked until a valid 1..5 value is returned, so a cancelled or
+   * dismissed dialog can never silently disable UPF victory for the rest of
+   * the game.  When m_ui is NULL, this validation/re-prompt loop is skipped
+   * entirely (there is no UI to re-invoke), preserving the existing no-UI
+   * behavior.  The re-prompt loop is bounded by a generous internal attempt
+   * cap so a degenerate but non-NULL UI (for example a headless
+   * WXStrategicUI with no live wx runtime) that returns an invalid value on
+   * every single call cannot hang init() forever; if the cap is exhausted
+   * without ever seeing a valid value, m_satharRetreat is left at its
+   * prior/default value rather than being set to a bogus out-of-range value.
+   *
    * @param w Accepted for backwards-compatible call sites; ignored internally.
    *
-   * @author Tom Stephens, gpt-5.3-codex (medium)
+   * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
    * @date Created:  Jan 14, 2005
-   * @date Last Modified:  Mar 28, 2026
+   * @date Last Modified:  Jul 11, 2026
    */
 	  int init(wxWindow *w);
 
@@ -460,9 +475,18 @@ private:
    * by this pass is removed from both its owning player and its system,
    * then deleted, since neither retains any other live reference to it.
    *
+   * Loss-counter rules match the Sathar retreat condition text shown by
+   * showRetreatConditions(): condition 3 ("40 ships, including fighters")
+   * means @c m_lostSatharShips counts every destroyed Sathar ship,
+   * including fighters. Condition 5 ("Fighters and Militia ships are not
+   * counted") means @c m_lostTendaySathar / @c m_lostTendayUPF only count
+   * a destroyed ship when it is neither a fighter nor a member of a
+   * militia fleet (per FFleet::isMilitia()); this exclusion applies to
+   * both sides.
+   *
    * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  May 28, 2009
-   * @date Last Modified:  Jul 10, 2026
+   * @date Last Modified:  Jul 11, 2026
    */
   void cleanUpShips();
 

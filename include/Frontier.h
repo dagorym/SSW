@@ -1,9 +1,9 @@
 /**
  * @file Frontier.h
  * @brief Header for the Frontier game
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), Claude Sonnet 5 (medium)
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Jun 02, 2026
+ * @date Last Modified:  Jul 11, 2026
  *
  */
 #ifndef _FRONTIER_H_
@@ -11,6 +11,7 @@
 
 #include <string>
 #include <cstdlib>
+#include <ctime>
 #include <vector>
 
 // ImageList is now defined in include/gui/GuiTypes.h
@@ -47,6 +48,42 @@ enum {
 /// integer random number generator.  Parameter range is the maximum value
 inline int irand(unsigned int range){
         return (int)(range*(rand()/(RAND_MAX+1.0)))+1;
+}
+
+/**
+ * @brief Seeds the shared process RNG (used by irand()) with an explicit value.
+ *
+ * This is the minimal deterministic-RNG seam (Phase 2 reviewer follow-up F1):
+ * a thin wrapper over the process-global srand() so callers can pin the seed
+ * used by irand() and get a reproducible sequence of outputs in-process.
+ * Intended for deterministic tests/replay, not for normal play. This is
+ * deliberately NOT a full injectable-RNG refactor; irand() itself is
+ * unchanged and continues to draw from the process-global rand().
+ *
+ * @param seed the explicit seed value to pass to srand()
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+inline void seedRandomExplicit(unsigned int seed){
+	srand(seed);
+}
+
+/**
+ * @brief Seeds the shared process RNG (used by irand()) from the wall clock.
+ *
+ * Normal-play counterpart to seedRandomExplicit(): wraps srand(time(NULL))
+ * so each session still varies, while giving normal-play callers (e.g. the
+ * FGame constructor) a single named entry point into the same seed seam
+ * used by deterministic tests/replay.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+inline void seedRandomFromClock(){
+	srand((unsigned int)time(NULL));
 }
 
 /// implements the sign function

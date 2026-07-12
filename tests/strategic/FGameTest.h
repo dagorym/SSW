@@ -37,6 +37,15 @@ class FGameTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testCheckForVictoryCondition5NoWinWhenSatharLossesDoNotExceedUPFButCountersStillReset );
 	CPPUNIT_TEST( testCheckForVictoryCondition5RegressionAwardsVictoryWhenStationsAtFiveDespiteBeingAboveThreshold );
 	CPPUNIT_TEST( testShowRetreatConditionsTextMatchesEvaluatedCaseNumber );
+	CPPUNIT_TEST( testCleanUpShipsCountsSatharFightersTowardLostSatharShips );
+	CPPUNIT_TEST( testCleanUpShipsExcludesSatharFightersFromTendaySatharCounter );
+	CPPUNIT_TEST( testCleanUpShipsExcludesUPFFightersFromTendayUPFCounter );
+	CPPUNIT_TEST( testCleanUpShipsExcludesSatharMilitiaShipsFromTendaySatharCounter );
+	CPPUNIT_TEST( testCleanUpShipsExcludesUPFMilitiaShipsFromTendayUPFCounter );
+	CPPUNIT_TEST( testCleanUpShipsCountsNonFighterNonMilitiaSatharShipsTowardTendaySatharCounter );
+	CPPUNIT_TEST( testCleanUpShipsCountsNonFighterNonMilitiaUPFShipsTowardTendayUPFCounter );
+	CPPUNIT_TEST( testCheckForVictoryCondition5FilteredSatharLossesExceedUPFDespiteFighterAndMilitiaNoise );
+	CPPUNIT_TEST( testCheckForVictoryCondition5NoVictoryWhenFilteredSatharLossesDoNotExceedUPFDespiteFighterAndMilitiaNoise );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -89,6 +98,37 @@ public:
 	/// counters actually evaluated for the corresponding case number (station
 	/// count text for case 4, ship-loss text for case 5).
 	void testShowRetreatConditionsTextMatchesEvaluatedCaseNumber();
+
+	/// P2-3 (S2): destroyed Sathar Fighters count toward m_lostSatharShips
+	/// (retreat condition 3, "40 ships, including fighters").
+	void testCleanUpShipsCountsSatharFightersTowardLostSatharShips();
+	/// P2-3 (S3): destroyed Sathar Fighters are excluded from
+	/// m_lostTendaySathar (retreat condition 5 excludes fighters and militia).
+	void testCleanUpShipsExcludesSatharFightersFromTendaySatharCounter();
+	/// P2-3 (S3): destroyed UPF Fighters are excluded from m_lostTendayUPF
+	/// (fighter exclusion applies to both sides).
+	void testCleanUpShipsExcludesUPFFightersFromTendayUPFCounter();
+	/// P2-3 (S3): destroyed non-fighter ships from a militia Sathar fleet are
+	/// excluded from m_lostTendaySathar.
+	void testCleanUpShipsExcludesSatharMilitiaShipsFromTendaySatharCounter();
+	/// P2-3 (S3): destroyed non-fighter ships from a militia UPF fleet are
+	/// excluded from m_lostTendayUPF (militia exclusion applies to both sides).
+	void testCleanUpShipsExcludesUPFMilitiaShipsFromTendayUPFCounter();
+	/// P2-3 (S3): destroyed non-fighter, non-militia Sathar ships ARE counted
+	/// toward m_lostTendaySathar.
+	void testCleanUpShipsCountsNonFighterNonMilitiaSatharShipsTowardTendaySatharCounter();
+	/// P2-3 (S3): destroyed non-fighter, non-militia UPF ships ARE counted
+	/// toward m_lostTendayUPF.
+	void testCleanUpShipsCountsNonFighterNonMilitiaUPFShipsTowardTendayUPFCounter();
+	/// P2-3 (S3): checkForVictory() condition-5 boundary declares a UPF
+	/// victory when, after filtering out fighters and militia ships, Sathar
+	/// tenday losses exceed UPF tenday losses, despite fighter/militia noise.
+	void testCheckForVictoryCondition5FilteredSatharLossesExceedUPFDespiteFighterAndMilitiaNoise();
+	/// P2-3 (S3): checkForVictory() condition-5 boundary does NOT declare a
+	/// UPF victory when the filtered Sathar/UPF tenday loss counts are equal,
+	/// even though the raw (unfiltered) Sathar total would exceed the UPF's --
+	/// proving the filtering, not the raw counts, feeds the victory check.
+	void testCheckForVictoryCondition5NoVictoryWhenFilteredSatharLossesDoNotExceedUPFDespiteFighterAndMilitiaNoise();
 };
 
 }

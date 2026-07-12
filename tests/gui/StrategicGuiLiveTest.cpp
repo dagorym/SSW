@@ -17,6 +17,8 @@
 #include <wx/filefn.h>
 #include <wx/display.h>
 #include <wx/filename.h>
+#include <wx/image.h>
+#include <wx/log.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/panel.h>
@@ -778,6 +780,160 @@ private:
 	bool m_saveMenuEnabledWhenFileDialogSeen;
 	wxMenuItem * m_saveMenuItem;
 };
+
+/**
+ * @brief One-shot (guarded) timer that observes and dismisses the native GTK file-chooser
+ * dialog opened directly by FMainFrame::onSave() / FMainFrame::onOpen() (P2-6 coverage).
+ *
+ * wxFileDialog on this GTK port runs its own gtk_native_dialog_run() loop over a
+ * GtkFileChooserNative that, with no XDG desktop portal available (as in this sandboxed
+ * headless test environment), falls back to a real GtkFileChooserDialog window. That window
+ * is not registered in wx's own wxTopLevelWindows list -- the same reason
+ * SequentialCloseDialogRecorder above must poll GTK's own top-level window list directly for
+ * the analogous wxFileDialog opened by onClose()'s Yes path. On CANCEL the discovered dialog
+ * is dismissed with GTK_RESPONSE_CANCEL untouched, mirroring a user closing the dialog without
+ * picking anything.
+ *
+ * The two accept modes both select an ALREADY-EXISTING file via gtk_file_chooser_set_filename()
+ * before responding GTK_RESPONSE_ACCEPT (the code src/gtk/filedlg.cpp's ShowModal() translates
+ * to wxID_OK). set_filename() is used -- rather than set_current_folder()/set_current_name() for
+ * a not-yet-existing target -- because the latter races the file chooser's asynchronous folder
+ * reload: the reload can clear the freshly-set name entry, leaving a SAVE dialog with an empty
+ * selection whose GTK_RESPONSE_ACCEPT the GtkFileChooserDialog silently swallows, hanging the
+ * modal loop. Selecting a real existing file sets folder + name synchronously and lets ACCEPT
+ * deliver immediately. ACCEPT_SAVE additionally disables overwrite confirmation (onSave() sets
+ * wxFD_OVERWRITE_PROMPT) so selecting the existing target does not spawn a secondary confirm
+ * dialog; onSave()'s wxID_OK branch then re-opens that exact GetPath() with a truncating
+ * std::ofstream. ACCEPT_OPEN matches onOpen()'s wxFD_FILE_MUST_EXIST semantics directly.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+class NativeFileDialogResponder : public wxTimer {
+public:
+	enum Mode { CANCEL, ACCEPT_OPEN, ACCEPT_SAVE };
+
+	explicit NativeFileDialogResponder(Mode mode, const wxString & existingFullPath = wxString())
+		: m_mode(mode), m_existingFullPath(existingFullPath), m_dismissed(false),
+		  m_selectionRequested(false), m_waitTicks(0) {
+	}
+
+	/// True once the native dialog has been located and responded to (accept or fallback cancel).
+	bool dismissed() const { return m_dismissed; }
+
+	virtual void Notify() wxOVERRIDE {
+		if (m_dismissed) {
+			return;
+		}
+		GtkWidget * modal = NULL;
+		GList * toplevels = gtk_window_list_toplevels();
+		for (GList * elem = toplevels; elem != NULL; elem = elem->next) {
+			GtkWidget * candidate = GTK_WIDGET(elem->data);
+			if (candidate != NULL && GTK_IS_FILE_CHOOSER(candidate) && gtk_widget_get_visible(candidate)) {
+				modal = candidate;
+			}
+		}
+		g_list_free(toplevels);
+		if (modal == NULL) {
+			return;
+		}
+
+		if (m_mode == CANCEL) {
+			m_dismissed = true;
+			gtk_dialog_response(GTK_DIALOG(modal), GTK_RESPONSE_CANCEL);
+			return;
+		}
+
+		// Accept path. gtk_file_chooser_set_filename() applies the selection asynchronously:
+		// the chooser must finish loading the target's folder before get_filename() reflects it.
+		// Responding GTK_RESPONSE_ACCEPT while the selection is still empty is silently swallowed
+		// by GtkFileChooserDialog (especially in SAVE mode), which hangs the native modal loop.
+		// So we request the selection on the first tick, then wait across subsequent ticks (each
+		// of which lets GTK pump its folder load) until get_filename() is non-null before
+		// responding.
+		if (!m_selectionRequested) {
+			if (m_mode == ACCEPT_SAVE) {
+				gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(modal), FALSE);
+			}
+			gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(modal), m_existingFullPath.ToStdString().c_str());
+			m_selectionRequested = true;
+			return;
+		}
+
+		gchar * current = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(modal));
+		const bool selectionRealized = (current != NULL);
+		if (current != NULL) {
+			g_free(current);
+		}
+		if (selectionRealized) {
+			m_dismissed = true;
+			gtk_dialog_response(GTK_DIALOG(modal), GTK_RESPONSE_ACCEPT);
+			return;
+		}
+		// Bounded fallback: if the selection never realizes, cancel out so the test fails
+		// deterministically instead of hanging the suite.
+		if (++m_waitTicks > 400) {
+			m_dismissed = true;
+			gtk_dialog_response(GTK_DIALOG(modal), GTK_RESPONSE_CANCEL);
+		}
+	}
+
+private:
+	Mode m_mode;
+	wxString m_existingFullPath;
+	bool m_dismissed;
+	bool m_selectionRequested;
+	int m_waitTicks;
+};
+
+/**
+ * @brief Minimal no-op IStrategicUI used only to drive FGame::init() far enough to populate a
+ * savable game (players + map) for P2-6 onOpen() confirm-path coverage.
+ *
+ * Mirrors the shape of FGameMockStrategicUITest's local MockStrategicUI, trimmed to just the
+ * canned return values FGame::init() needs to succeed without any interactive setup.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+class MinimalPrepStrategicUI : public IStrategicUI {
+public:
+	void showMessage(const std::string &, const std::string &) {}
+	void notifyFailedJump(const std::string &) {}
+	void notifyVictory(int) {}
+	int selectRetreatCondition() { return 3; }
+	int runUPFUnattachedSetup(FPlayer *, FMap *) { return 0; }
+	int runSatharFleetSetup(FPlayer *, FMap *, bool) { return 0; }
+	void showSystemDialog(FSystem *, FMap *, FPlayer *) {}
+	void showFleetDialog(FFleet *, FSystem *, FSystem *) {}
+	void showRetreatConditions(const std::string &) {}
+	int selectCombat(FSystem *, FleetList, FleetList, PlayerList *) { return 0; }
+	void requestRedraw() {}
+};
+
+/**
+ * @brief Builds a fully-initialized FGame via MinimalPrepStrategicUI, serializes it to the
+ * given path through the real FGame::save() path, then releases the singleton so a later
+ * FGame::create(...) call (FMainFrame::onOpen()'s confirm branch) starts from a clean slate.
+ *
+ * @param path Absolute path the serialized save file is written to.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 11, 2026
+ * @date Last Modified: Jul 11, 2026
+ */
+void writePreparedSaveFile(const wxString & path) {
+	MinimalPrepStrategicUI ui;
+	FGame & prepGame = FGame::create(&ui);
+	CPPUNIT_ASSERT_EQUAL(0, prepGame.init(NULL));
+	std::ofstream os(path.ToStdString().c_str(), std::ios::binary);
+	CPPUNIT_ASSERT(os.is_open());
+	prepGame.save(os);
+	os.close();
+	delete &prepGame;
+}
 
 /**
  * @brief Repeating timer that drives the nested modal chain launched by
@@ -1912,6 +2068,236 @@ void StrategicGuiLiveTest::testSelectCombatAttackTranslatesTwoPlanetsSelectionTo
 	}
 	FGameConfig::reset();
 	FGameConfig::create();
+}
+
+void StrategicGuiLiveTest::testMainFrameOnSaveCancelLeavesFilesystemUntouched() {
+	// Suppress wxLog output for the duration of the native file-dialog drive. The GtkFileChooser
+	// fallback path (and wxFD_CHANGE_DIR handling) can enqueue wxLog messages; wxLogGui defers
+	// those and then flushes them inside a *modal* message box the next time any modal dialog
+	// opens (via wxModalDialogHook), which in a headless run is never dismissed and hangs a later
+	// test. Suspending logging here keeps that queue empty.
+	wxLogNull suppressGtkFileDialogLogging;
+	FMainFrame * frame = new FMainFrame("FMainFrame OnSave Cancel Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	// Pick a deterministic, guaranteed-unused absolute target path. onSave()'s Cancel branch
+	// never touches any path at all, so this file must not exist afterward regardless of
+	// what folder the (never-shown-to-us) dialog would otherwise have defaulted to.
+	wxString reserved = wxFileName::CreateTempFileName(wxT("sswp26savecancel"));
+	CPPUNIT_ASSERT(!reserved.IsEmpty());
+	wxRemoveFile(reserved);
+	const wxString targetPath = reserved + wxT(".ssw");
+	CPPUNIT_ASSERT(!wxFileExists(targetPath));
+
+	NativeFileDialogResponder responder(NativeFileDialogResponder::CANCEL);
+	responder.Start(15, false);
+	wxCommandEvent saveEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Save);
+	frame->onSave(saveEvent);
+	responder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(responder.dismissed());
+	// Regression guard for F4/H15: before the fix, onSave() opened/truncated its target file
+	// unconditionally, ignoring ShowModal()'s result. FGame::save()'s only observable side
+	// effect is the bytes it writes to the stream onSave() opens, so the target file staying
+	// absent is direct behavioral proof neither the open nor FGame::save() ran on Cancel.
+	CPPUNIT_ASSERT(!wxFileExists(targetPath));
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnSaveConfirmWritesToDialogFullPath() {
+	// See testMainFrameOnSaveCancelLeavesFilesystemUntouched for why logging is suppressed here.
+	wxLogNull suppressGtkFileDialogLogging;
+	FMainFrame * frame = new FMainFrame("FMainFrame OnSave Confirm Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	const wxString originalCwd = wxGetCwd();
+	// Materialize a real target file in a temp folder distinct from cwd and seed it with a
+	// sentinel. The dialog will "choose" exactly this existing path; onSave()'s wxID_OK branch
+	// must re-open it at the dialog's GetPath() with a truncating std::ofstream, so an OK that
+	// actually ran the save path erases the sentinel (leaving a 0-byte file). A cancelled or
+	// skipped save would leave the sentinel intact (see the Cancel test), so this is a
+	// behavioral observation that the confirm branch opened the file at the chosen path.
+	wxString targetPath = wxFileName::CreateTempFileName(wxT("sswp26saveconfirm"));
+	CPPUNIT_ASSERT(!targetPath.IsEmpty());
+	{
+		std::ofstream seed(targetPath.ToStdString().c_str(), std::ios::binary);
+		CPPUNIT_ASSERT(seed.is_open());
+		seed << "SENTINEL-BYTES";
+		seed.close();
+	}
+	CPPUNIT_ASSERT(wxFileExists(targetPath));
+	CPPUNIT_ASSERT(wxFileName::GetSize(targetPath).ToULong() > 0);
+
+	NativeFileDialogResponder responder(NativeFileDialogResponder::ACCEPT_SAVE, targetPath);
+	responder.Start(15, false);
+	wxCommandEvent saveEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Save);
+	frame->onSave(saveEvent);
+	// wxFD_CHANGE_DIR moves the process cwd into the chosen file's folder on accept. Restore it
+	// immediately -- before pumping events -- so any deferred repaint that resolves icon assets
+	// (WXIconCache/FGameConfig::resolveAssetPath) runs from the normal working directory instead
+	// of the temp folder, which would otherwise cache a failed load and break a later test.
+	wxSetWorkingDirectory(originalCwd);
+	responder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(responder.dismissed());
+	// The confirm (wxID_OK) branch opened the dialog's chosen full path with a truncating
+	// ofstream, so the sentinel is gone. With no active game (m_game == NULL) onSave() writes
+	// no game bytes, so the truncated file is now empty -- direct proof the OK branch opened
+	// the file at GetPath().
+	CPPUNIT_ASSERT(wxFileExists(targetPath));
+	CPPUNIT_ASSERT_EQUAL(0UL, wxFileName::GetSize(targetPath).ToULong());
+
+	wxRemoveFile(targetPath);
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent() {
+	// See testMainFrameOnSaveCancelLeavesFilesystemUntouched for why logging is suppressed here.
+	wxLogNull suppressGtkFileDialogLogging;
+	FMainFrame * frame = new FMainFrame("FMainFrame OnOpen Cancel Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	wxMenuItem * retreatItem = menuBar->FindItem(ID_ShowRetreatCond);
+	wxMenuItem * endSatharItem = menuBar->FindItem(ID_EndSatharTurn);
+	wxMenuItem * endUPFItem = menuBar->FindItem(ID_EndUPFTurn);
+	wxMenuItem * addSatharItem = menuBar->FindItem(ID_AddSatharShips);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	CPPUNIT_ASSERT(retreatItem != NULL);
+	CPPUNIT_ASSERT(endSatharItem != NULL);
+	CPPUNIT_ASSERT(endUPFItem != NULL);
+	CPPUNIT_ASSERT(addSatharItem != NULL);
+	// A freshly constructed frame starts with every game-dependent menu item disabled.
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+	CPPUNIT_ASSERT(!retreatItem->IsEnabled());
+	CPPUNIT_ASSERT(!endSatharItem->IsEnabled());
+	CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
+	CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
+
+	NativeFileDialogResponder responder(NativeFileDialogResponder::CANCEL);
+	responder.Start(15, false);
+	wxCommandEvent openEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Open);
+	frame->onOpen(openEvent);
+	responder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(responder.dismissed());
+	// Regression guard for F4/H15: before the fix, onOpen() unconditionally created a new
+	// FGame and attempted load() regardless of ShowModal()'s result. The post-load
+	// menu-enable block only runs inside the wxID_OK branch, so every one of these items
+	// staying disabled is direct behavioral proof no FGame was created and no load() ran.
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+	CPPUNIT_ASSERT(!retreatItem->IsEnabled());
+	CPPUNIT_ASSERT(!endSatharItem->IsEnabled());
+	CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
+	CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState() {
+	// See testMainFrameOnSaveCancelLeavesFilesystemUntouched for why logging is suppressed here.
+	wxLogNull suppressGtkFileDialogLogging;
+	// This is the only strategic live test that renders a fully loaded game (its onOpen() repaint
+	// draws the turn counter, which pulls "icons/day.png"/"icons/tenday.png" through WXIconCache).
+	// The bare GUI test harness app's OnInit() does not register wx image handlers, and WXIconCache
+	// caches a failed load permanently, so loading a PNG here before any handler exists would poison
+	// the singleton cache and break the later testWXGameDisplayOffscreenRendersTurnCounterAndIcons
+	// day.png assertion. Registering the standard handlers up front (idempotent, matching real app
+	// startup) keeps that first PNG load -- and the cache -- valid.
+	wxInitAllImageHandlers();
+	const wxString originalCwd = wxGetCwd();
+	wxString savedGamePath = wxFileName::CreateTempFileName(wxT("sswp26openconfirm"));
+	CPPUNIT_ASSERT(!savedGamePath.IsEmpty());
+	writePreparedSaveFile(savedGamePath);
+
+	FMainFrame * frame = new FMainFrame("FMainFrame OnOpen Confirm Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	wxMenuItem * retreatItem = menuBar->FindItem(ID_ShowRetreatCond);
+	wxMenuItem * endSatharItem = menuBar->FindItem(ID_EndSatharTurn);
+	wxMenuItem * endUPFItem = menuBar->FindItem(ID_EndUPFTurn);
+	wxMenuItem * placeNovaItem = menuBar->FindItem(ID_PlaceNova);
+	wxMenuItem * addSatharItem = menuBar->FindItem(ID_AddSatharShips);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	CPPUNIT_ASSERT(retreatItem != NULL);
+	CPPUNIT_ASSERT(endSatharItem != NULL);
+	CPPUNIT_ASSERT(endUPFItem != NULL);
+	CPPUNIT_ASSERT(placeNovaItem != NULL);
+	CPPUNIT_ASSERT(addSatharItem != NULL);
+
+	NativeFileDialogResponder responder(NativeFileDialogResponder::ACCEPT_OPEN, savedGamePath);
+	responder.Start(15, false);
+	wxCommandEvent openEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Open);
+	frame->onOpen(openEvent);
+	// wxFD_CHANGE_DIR moved the cwd into the opened file's folder on accept, and onOpen() has
+	// already scheduled a repaint of the freshly loaded game. Restore the cwd before pumping so
+	// that deferred paint resolves icon assets from the normal working directory (otherwise a
+	// failed icon load is cached in the WXIconCache singleton and breaks a later rendering test).
+	wxSetWorkingDirectory(originalCwd);
+	responder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(responder.dismissed());
+	// Regression guard + criterion for F4/H15: confirming Open loads from the dialog's full
+	// GetPath() and runs the existing post-load menu-enable/turn-state logic unchanged. The
+	// prepared save's current player is Sathar (FGame::getPlayers() sets m_currentPlayer to
+	// the second/Sathar player during init()), so isUPFTurn() is false and onOpen()'s "else"
+	// branch must have run.
+	CPPUNIT_ASSERT(saveItem->IsEnabled());
+	CPPUNIT_ASSERT(closeItem->IsEnabled());
+	CPPUNIT_ASSERT(retreatItem->IsEnabled());
+	CPPUNIT_ASSERT(endSatharItem->IsEnabled());
+	CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
+	CPPUNIT_ASSERT(!placeNovaItem->IsEnabled());
+	CPPUNIT_ASSERT(addSatharItem->IsEnabled());
+
+	// Deterministically tear down the game this test loaded. onOpen() populated the process
+	// FGame/FMap singletons and handed ownership of them to the frame's m_game; the frame's
+	// wx Destroy() is deferred (the harness event pump does not run wxPendingDelete), so
+	// without this reset the loaded FMap would remain installed as the FMap singleton and the
+	// next test's ensureFrontierMap()/FMap::create() would hand back this stale map. Driving
+	// onClose() with a "No" response runs resetGame(), which deletes m_game (freeing the
+	// loaded FMap and nulling both the FGame/FMap statics) and clears the frame's own pointer
+	// so the later frame Destroy() does not double-free.
+	{
+		SequentialCloseDialogRecorder resetRecorder(GTK_RESPONSE_NO);
+		resetRecorder.Start(15, false);
+		wxCommandEvent closeEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Close);
+		frame->onClose(closeEvent);
+		resetRecorder.Stop();
+		m_harness.pumpEvents(10);
+		CPPUNIT_ASSERT(resetRecorder.sawMessageDialog());
+		// resetGame() ran: the game-dependent menu items are disabled again.
+		CPPUNIT_ASSERT(!saveItem->IsEnabled());
+		CPPUNIT_ASSERT(!closeItem->IsEnabled());
+	}
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+	wxRemoveFile(savedGamePath);
+	wxSetWorkingDirectory(originalCwd);
 }
 
 }

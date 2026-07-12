@@ -1,0 +1,47 @@
+Verifier Report
+
+Scope reviewed:
+- Reviewed the combined Implementer (fc0c137f), Tester (d43644d4), and Documenter (3db5cd6c) changes for subtask P2-1 (defect T1): FDisruptorCannon::m_range corrected from 12 to 9 in src/weapons/FDisruptorCannon.cpp, new/updated behavioral tests in tests/weapons/FDisruptorCannonTest.{cpp,h}, and a RESOLVED annotation in doc/synthesized-roadmap.md section 6.1 (T1 row).
+- Diff basis: git diff 37fb564b (Planner commit) .. HEAD (25ad7fb6) on branch p2rc-P2-1-verifier-20260711, isolated worktree branched from the completed Documenter branch.
+
+Acceptance criteria / plan reference:
+- plans/phase2-rules-correctness-followups-plan.md, subtask P2-1 (defect T1), acceptance criteria at lines 84-90.
+- Plan Documentation Impact (section 5, lines 193-199): annotate doc/synthesized-roadmap.md T1 (section 6.1) RESOLVED; doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md must not be touched.
+- doc/rules/tactical_operations_manual.md lines 951 (RA 9 weapon text) and 1145 (Weapon Restrictions Table: Disruptor Beam Cannon range 9) confirmed as the correctness oracle for this fix.
+
+Convention files considered:
+- AGENTS.md (non-editable rules-manual constraint; module boundary rules)
+- CLAUDE.md (Function Comments / Doxygen @date Last Modified and @author requirements; Behavioral Verification Is Mandatory policy)
+
+Findings
+
+BLOCKING
+- None
+
+WARNING
+- doc/synthesized-roadmap.md:596 - T1 row cites `src/weapons/FDisruptorCannon.cpp:16` for the `m_range=9` line, but the Implementer's Doxygen file-header update (adding an `@date Last Modified` line) shifted the constructor body down by one line, so `m_range=9;` is now on line 17, not 16 (line 16 is `m_type=DC;`).
+  The citation was accurate before the header edit (the pre-fix file also had m_range=12 on line 16) but is now stale by one line. It is a cosmetic precision nit only -- the surrounding prose, commit hash, manual line citations (l.951, l.1145), and test names are all correct and unambiguous, so this does not block understanding or verification. Worth a follow-on one-line touch-up but not a functional or correctness defect.
+
+NOTE
+- None
+
+Test sufficiency assessment:
+- All three acceptance criteria are backed by genuine behavioral tests, not source-inspection: FDisruptorCannonTest::testConstructor constructs a real FDisruptorCannon via createWeapon(FWeapon::DC) and asserts getRange() == 9 (tests/weapons/FDisruptorCannonTest.cpp:30-32).
+- testSetTargetAcceptsRangeAtMax constructs a real FVehicle and FDisruptorCannon, calls the real setTarget(&v, 9, true), and asserts getTarget()==&v and getTargetRange()==9 via observed post-call state (FDisruptorCannonTest.cpp:58-64).
+- testSetTargetRejectsRangeBeyondMax exercises setTarget at r=10,11,12 and asserts getTarget()==NULL / getTargetRange()==-1 for each, directly exercising FWeapon::setTarget's `if (r <= (int)m_range)` clamp (src/weapons/FWeapon.cpp:191-198) against the corrected m_range=9 (FDisruptorCannonTest.cpp:66-84).
+- Confirmed these tests would fail against the pre-fix value: the Implementer's own validation run (before the Tester's update) reported exactly one failure -- testConstructor asserting getRange()==12 -- which is the behavior this subtask intentionally changes; the setTarget clamp logic (r <= m_range) is a simple, already-existing comparison so the two new tests are mechanically guaranteed to distinguish range=9 from range=12 for r in 10..12.
+- Both new tests are registered in the CPPUNIT_TEST_SUITE (tests/weapons/FDisruptorCannonTest.h:23-24) and included in both full-suite runs (SSWTests: 219 run, 0 failures; TacticalTests unaffected at 253 run, 0 failures), matching the plan's exact expected totals.
+- No gaps identified: constructor range, accept-at-max, and reject-beyond-max together fully cover the plan's three observable acceptance criteria for P2-1.
+
+Documentation accuracy assessment:
+- doc/synthesized-roadmap.md section 6.1 T1 row is annotated RESOLVED (P2-1, commit fc0c137f) in the same style used for the Phase 1 C1/C4 RESOLVED rows, with the Manual/Code columns updated from m_range=12 to m_range=9 and a resolution note citing the three behavioral tests and the shared artifact directory.
+- The manual citations (RA 9, weapon text l.951, Weapon Restrictions Table l.1145) were independently verified against doc/rules/tactical_operations_manual.md and are accurate; that file was correctly left untouched.
+- No other documentation needed updates: doc/UsersGuide.md and doc/DesignNotes.md do not reference the Disruptor Cannon's numeric range; doc/test-contracts.md was correctly left untouched since the new coverage is behavioral, not tactical source-contract; CHANGELOG_0.0.18.md and the frozen point-in-time code-review docs are consistent with Phase 1 CRIT-1..6 practice of not touching them.
+- One minor stale line-number citation identified (see WARNING finding) -- does not affect substantive accuracy.
+
+Artifacts written:
+- artifacts/phase2-rules-correctness/P2-1/verifier_report.md
+- artifacts/phase2-rules-correctness/P2-1/verifier_result.json
+
+Verdict:
+- PASS

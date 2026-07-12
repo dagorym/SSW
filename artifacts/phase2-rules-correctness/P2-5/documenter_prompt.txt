@@ -1,0 +1,61 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Reviewer follow-up F2: FPlayer is now the sole owner of ships in m_destroyed and frees them in ~FPlayer(). The ownership contract is documented on ~FPlayer(), addDestroyedShip(), and the m_destroyed member in include/strategic/FPlayer.h. A new standing deferred-items list, doc/deferred-tasks.md, tracks two save-format-breaking items deferred to the save-format hardening phase: H2 (persist active defense across save/load) and F2-serialization (serialize FPlayer::m_destroyed for the future Replacements rule). save()/load() were intentionally NOT modified; m_destroyed remains unserialized by design.
+- Tester added two behavioral tests proving the destructor frees destroyed ships exactly once with no double-delete of ships still held by surviving fleets.
+
+Acceptance criteria validated:
+- An FPlayer owning ships in m_destroyed frees them on destruction -- each destructed exactly once (testDestroyedShipFreedExactlyOnceOnPlayerDestruction).
+- No double-delete of a ship still held by a surviving fleet; the surviving fleet's sibling ship is still freed exactly once via the existing m_fleets path (testSurvivingFleetShipNotDoubleDeletedByDestroyedList).
+- Ownership contract documented on m_destroyed and addDestroyedShip() in include/strategic/FPlayer.h (FPlayer is sole owner once addDestroyedShip() is called; frees them in the destructor).
+- ~FPlayer() Doxygen header updated (@date Last Modified Jul 11, 2026, @author includes Claude Sonnet 5 (medium), description).
+- save()/load() NOT touched; m_destroyed NOT serialized.
+- doc/deferred-tasks.md created with H2 and F2-serialization entries, each with description, origin, why deferred (save-format break), and target phase.
+- Repo builds clean; existing suites still pass (no new failures).
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/p2rc-P2-5-tester-20260711
+- Branch: p2rc-P2-5-tester-20260711 (branched from the P2-5 implementer branch p2rc-P2-5-implementer-20260711).
+- Comparison base for the diff: master (the P2-5 implementer commit is 69d300b7; the tester commit is 93e01370).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FPlayer.cpp (Implementer: ~FPlayer() third cleanup block deleting m_destroyed)
+- include/strategic/FPlayer.h (Implementer: Doxygen ownership contract on ~FPlayer(), addDestroyedShip(), m_destroyed; class-level @author/@date/description update)
+- doc/deferred-tasks.md (Implementer: new file; H2 and F2-serialization entries)
+- include/core/FGameConfig.h (Implementer: incidental single @date Last Modified line addition on computeSafeTerminatorIndex; verify it is intentional/harmless)
+- tests/strategic/FPlayerTest.cpp (Tester: CountingVehicle helper + two behavioral tests)
+- tests/strategic/FPlayerTest.h (Tester: two new fixture methods registered in the suite)
+
+Test commit:
+- 93e01370fb27cd4216e65fe855cdd998a694e47b
+
+Commands executed:
+- make (repo root) -- clean build, exit 0
+- make -C tests -- tests build, exit 0
+- ./SSWTests (cwd tests/) -- Run 219, Failures 9, Errors 0
+
+Final test outcomes:
+- 2 new behavioral tests added, both passing.
+- Full suite: 219 run, 9 failures, 0 errors. All 9 failures are pre-existing FrontierTests::FGameHeaderDependencyTest source-inspection tests that cannot resolve readable candidate file paths in this worktree layout; they fail identically on the unmodified baseline and are unrelated to P2-5. FFleetTest::testDecTransitTime (documented RNG flake, P2-7's target) did not fail in the recorded runs.
+- Red/green proof: both new tests fail against master's unfixed ~FPlayer() (Expected 1/Actual 0 and Expected 2/Actual 1) and pass against the fix. No source revert was committed.
+
+Documentation context:
+- Primary doc surface is Doxygen (already updated by the Implementer in include/strategic/FPlayer.h; verify completeness/consistency and that the class-level and member Doxygen match the CLAUDE.md format rules for @author/@date).
+- doc/deferred-tasks.md is a new standing document; confirm it is discoverable (consider whether it should be referenced from AGENTS.md's Documentation section or doc/synthesized-roadmap.md "Next" #5, per repository conventions -- do not restate facts across entry-point files; single-source-of-truth rule applies).
+- No user-facing docs (UsersGuide.md) are affected; the memory-ownership fix and the deferred serialization are internal.
+- Confirm the ownership-contract comments are accurate: FFleet::removeShip() (src/strategic/FFleet.cpp:71) erases from m_ships and returns WITHOUT deleting, so a ship in m_destroyed is referenced only by m_destroyed -- no aliasing.
+
+Plan and diff context:
+- Plan: plans/phase2-rules-correctness-followups-plan.md, subtask P2-5 (section beginning "### P2-5 -- Free `FPlayer::m_destroyed`..."). Design decisions 3 and 4 in section 2b are binding (H2 deferred; F2 fix-now/defer-serialization).
+- Base for diff: master. If the exact base must be inferred, compare against master; the two relevant commits on this branch are 69d300b7 (implementer) and 93e01370 (tester).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-5
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

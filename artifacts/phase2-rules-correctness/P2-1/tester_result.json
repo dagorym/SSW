@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-1/tester_report.md",
+    "artifacts/phase2-rules-correctness/P2-1/tester_result.json",
+    "artifacts/phase2-rules-correctness/P2-1/documenter_prompt.txt"
+  ],
+  "branch_name": "p2rc-P2-1-tester-20260711",
+  "commands_run": [
+    "env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711 make",
+    "env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711/tests make",
+    "env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711/tests ./SSWTests",
+    "env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711/tests make tactical-tests",
+    "env -C /home/tstephen/repos/worktrees/p2rc-P2-1-tester-20260711/tests/tactical ./TacticalTests"
+  ],
+  "pass_fail_totals": {
+    "SSWTests_errors": 0,
+    "SSWTests_failures": 0,
+    "SSWTests_run": 219,
+    "TacticalTests_errors": 0,
+    "TacticalTests_failures": 0,
+    "TacticalTests_run": 253
+  },
+  "pass_label": "P2-1 (T1) pass-2 remediation re-validation (post-Verifier COSMETIC WARNING)",
+  "status": "success",
+  "task_id": "P2-1",
+  "test_commit_hash": "No Changes Made",
+  "test_files_changed": [],
+  "unmet_acceptance_criteria": []
+}

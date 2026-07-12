@@ -13,6 +13,7 @@
 #include "core/FObjectTest.h"
 #include "core/FGameConfigTest.h"
 #include "core/FHexPathTest.h"
+#include "core/FrontierTest.h"
 #include "core/WXIconCacheTest.h"
 #include "core/WXStrategicUITest.h"
 #include "weapons/FWeaponTest.h"
@@ -27,6 +28,7 @@
 #include "weapons/FSeekerMissileLauncherTest.h"
 #include "weapons/FTorpedoTest.h"
 #include "weapons/FWeaponFireResultTest.h"
+#include "weapons/FWeaponDefenseResolutionTest.h"
 #include "ships/FVehicleTest.h"
 #include "ships/FTacticalAttackIntegrationTest.h"
 #include "ships/FAssaultScoutTest.h"
@@ -48,6 +50,7 @@
 #include "strategic/FGameTest.h"
 #include "strategic/FGameHeaderDependencyTest.h"
 #include "strategic/FGameMockStrategicUITest.h"
+#include "strategic/FGameRetreatConditionValidationTest.h"
 #include "strategic/FPlanetTest.h"
 #include "strategic/FFleetTest.h"
 #include "strategic/FJumpRouteTest.h"
@@ -67,6 +70,7 @@ int main( int argc, char **argv)
   runner.addTest( FPointTest::suite() );
   runner.addTest( FObjectTest::suite() );
   runner.addTest( FHexPathTest::suite() );
+  runner.addTest( FrontierTest::suite() );
   runner.addTest( FGameConfigTest::suite() );
   runner.addTest( WXIconCacheTest::suite() );
   runner.addTest( WXStrategicUITest::suite() );
@@ -82,6 +86,7 @@ int main( int argc, char **argv)
   runner.addTest( FSeekerMissileLauncherTest::suite() );
   runner.addTest( FTorpedoTest::suite() );
   runner.addTest( FWeaponFireResultTest::suite() );
+  runner.addTest( FWeaponDefenseResolutionTest::suite() );
   runner.addTest( FVehicleTest::suite() );
   runner.addTest( FTacticalAttackIntegrationTest::suite() );
   runner.addTest( FAssaultScoutTest::suite() );
@@ -103,6 +108,7 @@ int main( int argc, char **argv)
   runner.addTest( FGameTest::suite() );
   runner.addTest( FGameHeaderDependencyTest::suite() );
   runner.addTest( FGameMockStrategicUITest::suite() );
+  runner.addTest( FGameRetreatConditionValidationTest::suite() );
   runner.addTest( FPlanetTest::suite() );
   runner.addTest( FFleetTest::suite() );
   runner.addTest( FJumpRouteTest::suite() );

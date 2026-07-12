@@ -18,6 +18,23 @@ namespace Frontier
 {
 namespace {
 
+/// returns true if the given operating defense type attracts the given
+/// weapon type per the manual's attract-relation table (Proton Screen <->
+/// Electron Beam, Electron Screen <-> Proton Beam, Stasis Screen <->
+/// Torpedo/Seeker Missile/Mine)
+bool defenseAttractsWeapon(FDefense::Defense defenseType, FWeapon::Weapon weaponType) {
+	switch (defenseType) {
+	case FDefense::PS:
+		return weaponType == FWeapon::EB;
+	case FDefense::ES:
+		return weaponType == FWeapon::PB;
+	case FDefense::SS:
+		return weaponType == FWeapon::T || weaponType == FWeapon::SM || weaponType == FWeapon::M;
+	default:
+		return false;
+	}
+}
+
 void initializeDamageResolution(FTacticalDamageResolution *result, int damage, int damageMod, bool usedAdvancedTable) {
 	if (result == NULL) {
 		return;
@@ -385,6 +402,55 @@ void FVehicle::decrementMSTurnCount() {
 		m_currentDefense=m_defenses[0];
 	}
 
+}
+
+int FVehicle::resolveToHitModifier(FWeapon::Weapon w){
+	// Gather the target's OPERATING defenses only: the reflective hull (if
+	// owned) plus whichever single screen is currently raised, deduplicated
+	// by pointer identity (the raised defense may itself be the RH).
+	std::vector<FDefense *> operatingDefenses;
+	for (unsigned int i = 0; i < m_defenses.size(); i++){
+		FDefense *d = m_defenses[i];
+		if (d != NULL && d->getType() == FDefense::RH){
+			operatingDefenses.push_back(d);
+		}
+	}
+	FDefense *current = getCurrentDefense();
+	if (current != NULL){
+		bool alreadyOperating = false;
+		for (unsigned int i = 0; i < operatingDefenses.size(); i++){
+			if (operatingDefenses[i] == current){
+				alreadyOperating = true;
+				break;
+			}
+		}
+		if (!alreadyOperating){
+			operatingDefenses.push_back(current);
+		}
+	}
+
+	if (operatingDefenses.empty()){
+		return 0;
+	}
+
+	// Attract override: an operating defense that attracts this weapon type
+	// is used instead of the most-effective operating defense.
+	for (unsigned int i = 0; i < operatingDefenses.size(); i++){
+		if (defenseAttractsWeapon(operatingDefenses[i]->getType(), w)){
+			return operatingDefenses[i]->getAttackModifier(w);
+		}
+	}
+
+	// Otherwise use the most effective (minimum) modifier among the
+	// operating defenses.
+	int best = operatingDefenses[0]->getAttackModifier(w);
+	for (unsigned int i = 1; i < operatingDefenses.size(); i++){
+		int mod = operatingDefenses[i]->getAttackModifier(w);
+		if (mod < best){
+			best = mod;
+		}
+	}
+	return best;
 }
 
 unsigned int FVehicle::hasDefense(FDefense::Defense d){

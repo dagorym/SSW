@@ -1,0 +1,115 @@
+Your role is 'tester'. Your task is as follows:
+
+Author behavioral tests that lock in the P2-3 strategic loss-counting fixes (S2
+and S3) in FGame::cleanUpShips(). The implementer changed the destroyed-ship
+counting so that:
+
+  - S2 (retreat condition 3, "The Sathar have lost 40 ships, including
+    fighters"): m_lostSatharShips counts EVERY destroyed Sathar ship, including
+    fighters. (Previously fighters were excluded by a `getType() != "Fighter"`
+    guard.)
+
+  - S3 (retreat condition 5, "Fighters and Militia ships are not counted"):
+    m_lostTendaySathar / m_lostTendayUPF increment ONLY when the destroyed ship
+    is neither a fighter nor a member of a militia fleet (fleet->isMilitia()).
+    This exclusion applies to BOTH sides (UPF and Sathar). (Previously both
+    counters were incremented unconditionally for every destroyed ship.)
+
+Conditions 1/2 (m_lostAC / m_lostHC), the removal/ownership logic, and
+save()/load() were intentionally NOT changed; do not add tests that assert new
+behavior for those.
+
+Allowed files (edit only these):
+  - tests/strategic/FGameTest.h
+  - tests/strategic/FGameTest.cpp
+
+Do NOT modify any src/ or include/ production source. This is a
+behavioral-test-authoring task only.
+
+What to build:
+
+Construct real game state (real FGame, real FPlayer for both "UPF" and "Sathar",
+real FSystem, real FFleet objects, and real ships) and drive the destroyed-ship
+counting through cleanUpShips(). Because cleanUpShips() and checkForVictory() are
+private, reuse the existing patterns already established in
+tests/strategic/FGameTest.cpp:
+
+  - The RetreatConditionMockUI mock (implements IStrategicUI) installed via the
+    FGame init/create seam. It returns a fixed retreat condition from
+    selectRetreatCondition(), captures the text passed to
+    showRetreatConditions(...) in lastRetreatConditionsText, and records
+    notifyVictory(...) calls.
+  - Drive the private cleanUpShips() through the public turn path
+    (endUPFTurn() -> checkForCombat() -> cleanUpShips()), exactly as the existing
+    destroyed-ship-count and empty-fleet-pruning tests do. Set ships to HP<=0
+    (e.g. apply damage / setHP) so cleanUpShips() treats them as destroyed.
+  - Observe the private counter state through its externally visible surface:
+    the numbers printed by showRetreatConditions() into
+    lastRetreatConditionsText (condition 3 prints m_lostSatharShips; condition 5
+    prints m_lostTendaySathar and m_lostTendayUPF), and/or the notifyVictory(...)
+    callback from checkForVictory().
+
+Militia fleets are marked with FFleet::setMilitia(true, <home>) before the fleet
+is added; assert that ships in such fleets are excluded from the tenday counters.
+
+Required behavioral assertions (each must FAIL against the pre-fix counting and
+PASS after the fix):
+
+  1. S2 -- Sathar fighters counted toward m_lostSatharShips: destroy N Sathar
+     fighters (non-militia fleet) and assert m_lostSatharShips increases by
+     exactly N (observed via retreat-condition-3 status text or equivalent).
+     This must fail against the old `getType() != "Fighter"` guard.
+
+  2. S3 -- fighters excluded from tenday counters (both sides): destroy Sathar
+     fighters and assert m_lostTendaySathar does NOT change; destroy UPF fighters
+     and assert m_lostTendayUPF does NOT change.
+
+  3. S3 -- militia ships excluded from tenday counters (both sides): destroy
+     regular (non-fighter) ships that belong to a militia fleet
+     (setMilitia(true, ...)) and assert the corresponding tenday counter
+     (m_lostTendaySathar for Sathar, m_lostTendayUPF for UPF) does NOT change.
+
+  4. S3 -- non-fighter, non-militia ships ARE counted (both sides): destroy K
+     regular ships in a non-militia fleet and assert the correct side's tenday
+     counter increases by exactly K.
+
+  5. checkForVictory() condition-5 boundary: with retreat condition 5 selected,
+     arrange a tenday boundary (m_round % 10 == 0 && m_round > 0) where, after
+     filtering out fighters and militia, m_lostTendaySathar > m_lostTendayUPF,
+     and assert checkForVictory() surfaces the UPF victory (notifyVictory(1)).
+     Add the complementary case where the filtered counts do NOT satisfy
+     Sathar > UPF (e.g. the Sathar "extra" losses were all fighters/militia) and
+     assert no victory is declared -- this specifically proves the filtering
+     feeds the victory check.
+
+Register any new test methods in the FGameTest CPPUNIT_TEST_SUITE (in
+FGameTest.h) so they actually run. Follow the existing test-file conventions
+(CppUnit macros, FrontierTests namespace, include guard style) and the CLAUDE.md
+Doxygen header requirements for any new helper functions.
+
+Anti-regression requirement: each assertion above must be a true behavioral
+assertion on observed runtime counter state, and must fail against the unfixed
+counting (fighters wrongly excluded from m_lostSatharShips; fighters and militia
+wrongly included in the tenday counters). Source-string / structural inspection
+does not satisfy this task.
+
+Validation:
+  - Build and run the full suite from the tests directory:
+      cd tests && make && ./SSWTests
+    ./SSWTests must be executed with the working directory set to tests/ (the
+    source-inspection tests use cwd-relative paths); confirm a clean
+    "OK (<n> tests)" result there.
+  - Sanity-check that your new tests fail against the pre-fix counting (e.g. by
+    temporarily reverting the src/strategic/FGame.cpp counting block locally to
+    confirm red, then restoring -- do NOT commit any source revert).
+
+Artifacts:
+  - Write your tester report/results under
+    artifacts/phase2-rules-correctness/P2-3/ (repository-root-relative).
+
+Context / dependency notes:
+  - P2-3 is the FIRST subtask in the shared-FGame.cpp lane; it runs before P2-4
+    and P2-7. Keep your test additions confined to tests/strategic/FGameTest.
+  - The implementer's change is committed on this branch; see
+    artifacts/phase2-rules-correctness/P2-3/implementer_report.md for the exact
+    predicate used (countsTowardTenday = getType() != "Fighter" && !fleet->isMilitia()).

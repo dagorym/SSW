@@ -1,0 +1,60 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- P2-3 fixes two strategic loss-counting defects in FGame::cleanUpShips() (Second Sathar War retreat/victory conditions): S2 (retreat condition 3, "40 ships, including fighters") makes m_lostSatharShips count every destroyed Sathar ship including fighters (removed the old getType() != "Fighter" guard); S3 (retreat condition 5, "Fighters and Militia ships are not counted") makes m_lostTendaySathar/m_lostTendayUPF increment only when the destroyed ship is neither a fighter nor a member of a militia fleet (FFleet::isMilitia()), via countsTowardTenday = (ship->getType() != "Fighter") && !fleet->isMilitia(); applied on both the UPF and Sathar sides. Conditions 1/2 (m_lostAC/m_lostHC), removal/ownership logic, and save()/load() were intentionally left unchanged.
+
+Acceptance criteria to verify:
+- S2: destroyed Sathar fighters count toward m_lostSatharShips.
+- S3: fighters excluded from the tenday counters on both sides.
+- S3: militia-fleet ships excluded from the tenday counters on both sides.
+- S3: non-fighter, non-militia ships still counted on both sides.
+- checkForVictory() condition-5 boundary uses the FILTERED tenday counts.
+
+Implementation branch or worktree context:
+- Branch: p2rc-P2-3-documenter-20260711, branched from p2rc-P2-3-tester-20260711 (Implementer -> Tester -> Documenter chain).
+- Implementer commit: d6a6702d ("P2-3: Fix S2/S3 loss counting in cleanUpShips (fighters + militia)") -- src/strategic/FGame.cpp, include/strategic/FGame.h.
+- Tester commit: 0523299854a205135c4ea59e444d610a399568d0 ("P2-3: Add behavioral tests for S2/S3 loss counting in cleanUpShips") -- tests/strategic/FGameTest.cpp, tests/strategic/FGameTest.h (9 new tests + addShipLossFleet helper).
+- Documenter commit: eda8c1f41b8795e939f6c8166b0ce85cd9027988 -- doc/synthesized-roadmap.md (S2/S3 rows in Section 5.4 tagged RESOLVED, mirroring the Phase 1 C1-C6 pattern).
+- Plan: plans/phase2-rules-correctness-followups-plan.md (P2-3 subtask). Comparison base: 37fb564b.
+- The cleanUpShips() Doxygen header in include/strategic/FGame.h (Implementer-authored) was reviewed and confirmed to accurately describe the shipped S2/S3 predicate; left unmodified.
+- checkForVictory()'s existing Doxygen header (from the earlier C2 fix) was reviewed and confirmed to remain accurate after this change; left unmodified.
+- The Tester's 9 new test methods in tests/strategic/FGameTest.h already carry the repository-required one-line Doxygen comments; no in-code documentation gap found.
+- doc/rules/second-sathar-war-rules.md and doc/rules/tactical_operations_manual.md are non-editable authoritative sources; they were consulted to confirm S2/S3 behavior, not modified.
+- doc/deferred-tasks.md is owned by a different subtask (P2-5) and was not touched.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FGame.cpp
+- include/strategic/FGame.h
+- tests/strategic/FGameTest.cpp
+- tests/strategic/FGameTest.h
+- doc/synthesized-roadmap.md
+
+Commands executed:
+- make -C tests (clean full rebuild from this worktree, exit 0)
+- cd tests && ./SSWTests -> OK (226 tests)
+
+Final test outcomes:
+- OK (226 tests) run from tests/ as cwd
+- The 10 FGameHeaderDependencyTest failures seen only when SSWTests is invoked with cwd outside tests/ are a pre-existing, already-documented cwd-relative source-inspection path sensitivity (see implementer_result.json validation.notes) -- not a regression from this change.
+
+Plan or evaluation context guidance:
+- plans/phase2-rules-correctness-followups-plan.md, P2-3 subtask. Its Documentation Impact hint directed tagging the S2/S3 rows in doc/synthesized-roadmap.md Section 5.4 as RESOLVED (P2-3), mirroring the Phase 1 C1-C6 tag pattern; only the S2/S3 lines were touched to avoid conflicting with other in-flight subtasks' roadmap rows.
+
+Convention-file guidance:
+- AGENTS.md / CLAUDE.md: Doxygen-style file headers are mandatory for header-file functions/classes, with @author (agent model + reasoning level, never removing prior authors) and @date Created/Last Modified fields updated on change -- the Implementer's cleanUpShips() header already complies (Last Modified Jul 11, 2026; author list includes Claude Sonnet 5 (medium)).
+- doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md are explicitly non-editable per AGENTS.md's Non-negotiable Constraints; used only as the authoritative reference for confirming S2/S3 behavior.
+- Test classes follow the CppUnit <Class>Test convention documented in AGENTS.md's Testing section; the Tester's new FGameTest methods follow this and the existing FGameTest.h comment style.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-3
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

@@ -1,0 +1,22 @@
+{
+  "status": "COMPLETE",
+  "task_id": "P2-4",
+  "task_name": "Validate Sathar retreat-condition selection",
+  "branch": "p2rc-P2-4-implementer-20260711",
+  "code_commit": "5745906f2ea50e3de9b4f3ec8ae479b5d84c7ff8",
+  "changed_files": [
+    "src/strategic/FGame.cpp",
+    "include/strategic/FGame.h"
+  ],
+  "validation_commands": [
+    "make",
+    "cd tests && make && ./SSWTests"
+  ],
+  "validation_outcome": "PASS - clean build (exit 0); SSWTests reports OK (226 tests) with no failures. No new failures; FGameHeaderDependencyTest passed cleanly when run from tests/.",
+  "artifacts": [
+    "artifacts/phase2-rules-correctness/P2-4/implementer_report.md",
+    "artifacts/phase2-rules-correctness/P2-4/implementer_result.json",
+    "artifacts/phase2-rules-correctness/P2-4/tester_prompt.txt"
+  ],
+  "notes": "FGame::init() now validates selectRetreatCondition() against the valid 1..5 range and re-invokes the UI until valid before storing m_satharRetreat. Re-prompt loop only runs when m_ui != NULL, preserving no-UI behavior. checkForVictory() switch bodies (C2) and retreat display text unchanged; P2-3 cleanUpShips() S2/S3 fix untouched."
+}

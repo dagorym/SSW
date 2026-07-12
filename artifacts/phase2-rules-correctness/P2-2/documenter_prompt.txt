@@ -1,0 +1,68 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- T2/T3: Resolve weapon to-hit against the target's most-effective OPERATING defense with the attracting-screen override, and restrict the masking-screen 'fired out of the screen' effect to lasers only.
+
+Acceptance criteria validated:
+- Most-effective (no attract): target owning a reflective hull with a raised Proton Screen, fired at by a Laser Battery, resolves to-hit against the hull (modifier 0), not the raised Proton Screen (+15).
+- Attract override: target with a raised Electron Screen fired at by a Proton Beam resolves against the Electron Screen (attract modifier +10), NOT the hull (0). Analogous for Proton Screen vs Electron Beam and Stasis Screen vs Torpedo/Seeker/Mine.
+- Masking laser-out (T3): attacker with MS raised firing a laser resolves to-hit using the attacker's MS laser modifier and halves damage (rounded up).
+- Masking non-laser-out (T3 regression): attacker with MS raised firing a Torpedo resolves to-hit against the TARGET's defense (resolveToHitModifier), NOT the attacker's MS, and does NOT halve damage. Confirmed this assertion fails against the pre-fix code.
+- Masking laser-in: attacker without MS firing a laser at a target with MS raised resolves against the target's MS and halves damage.
+- No null-deref when a parentless weapon (mine/seeker) fires.
+- Repo builds; existing suites still pass.
+
+Implementation branch or worktree context:
+- Implementer branch/commit: p2rc-P2-2-implementer-20260711, code commit b65b1ffcca0466b99ba96804f3393e22f61b466a (merged into this tester worktree's history at HEAD~2).
+- Tester worktree/branch: p2rc-P2-2-tester-20260711 at /home/tstephen/repos/worktrees/p2rc-P2-2-tester-20260711.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/weapons/FWeapon.cpp
+- src/ships/FVehicle.cpp
+- include/ships/FVehicle.h
+- tests/weapons/FWeaponDefenseResolutionTest.h
+- tests/weapons/FWeaponDefenseResolutionTest.cpp
+- tests/ships/FTacticalAttackIntegrationTest.h
+- tests/ships/FTacticalAttackIntegrationTest.cpp
+- tests/SSWTests.cpp
+
+Test commit:
+- 5ed8a0a932def8b61de946e517509fe5b2c17a3b
+
+Commands executed:
+- make (repo root, clean full build) -- exit 0
+- make (tests/weapons module library) -- exit 0
+- make (tests/ships module library) -- exit 0
+- make all_clean && make (repo root, final clean full build) -- exit 0
+- env -C tests ./SSWTests -- OK (226 tests)
+- temporary pre-fix regression check: reverted src/weapons/FWeapon.cpp, src/ships/FVehicle.cpp, include/ships/FVehicle.h to the parent commit, rebuilt, reran SSWTests -- confirmed 2 targeted assertion failures plus a SIGSEGV (gdb backtrace: null deref in FVehicle::getCurrentDefense() called with this=0x0 from FWeapon::fire() at FWeapon.cpp:170) in the parentless-laser test, then restored the implementation (working tree matches HEAD) and reran SSWTests -- OK (226 tests)
+
+Final test outcomes:
+- SSWTests: OK (226 tests) run from tests/ with the fix in place (up from the prior 217).
+- Most-effective (no attract, AC1): FWeaponDefenseResolutionTest::testMostEffectiveDefenseResolvesAgainstHullOverRaisedProtonScreenForLaserBattery -- PASS with fix, fails (toHitProbability 65 != expected 50) against pre-fix code.
+- Attract override ES/PB, PS/EB, SS/T-SM-M (AC2): FWeaponDefenseResolutionTest::testAttractOverrideResolvesElectronScreenForProtonBeamOverHull, testAttractOverrideResolvesProtonScreenForElectronBeamOverHull, testAttractOverrideResolvesStasisScreenForTorpedoSeekerAndMineOverHull -- PASS.
+- Masking laser-out (AC3): FWeaponDefenseResolutionTest::testMaskingScreenLaserOutUsesAttackerModifierAndHalvesDamage -- PASS, asserts to-hit 20 and halved-rounded-up damage 5.
+- Masking non-laser regression (AC4, key discriminator): FTacticalAttackIntegrationTest::testMaskingScreenTorpedoOutResolvesAgainstTargetDefenseNotAttackerMSAndDoesNotHalveDamage -- PASS with fix (toHitProbability 125, damageRolled 9 unhalved); fails against pre-fix code (actual toHitProbability 100, since pre-fix always applied the attacker's raised MS modifier for every weapon type).
+- Masking laser-in (AC5): FWeaponDefenseResolutionTest::testMaskingScreenLaserInUsesTargetModifierAndHalvesDamage -- PASS, asserts to-hit 20 and halved-rounded-up damage 1.
+- No null-deref for parentless weapon fire (AC6): FWeaponDefenseResolutionTest::testParentlessMineFireDoesNotCrashAndResolvesAgainstTargetDefense (real Mine, natural no-parent scenario) and FTacticalAttackIntegrationTest::testParentlessLaserFireDoesNotCrashAndDoesNotHalveDamageAgainstNonMaskedTarget (parentless laser against a non-MS target, directly exercising the fixed (m_parent != NULL && ...) guard) -- both PASS with fix; the parentless-laser test segfaults (confirmed via gdb) against the pre-fix code.
+- Repo builds; existing suites still pass (AC7): clean full build (make all_clean && make) exit 0; module builds in tests/weapons and tests/ships exit 0; SSWTests 226/226, no pre-existing test regressed.
+
+Documentation context:
+- New public API: FVehicle::resolveToHitModifier(FWeapon::Weapon w) in include/ships/FVehicle.h / src/ships/FVehicle.cpp -- likely relevant to any developer-facing docs describing to-hit resolution or defense stacking.
+- Behavior change in FWeapon::fire() (src/weapons/FWeapon.cpp): the masking-screen 'fired out of the screen' to-hit override is now laser-only (LC/LB); all other weapon types resolve via the target's most-effective operating defense with the attracting-screen override.
+- doc/rules/tactical_operations_manual.md is the non-volatile external rules artifact and must NOT be edited; this change brings code into alignment with it rather than the reverse.
+
+Plan and diff context:
+- Plan: plans/phase2-rules-correctness-followups-plan.md (subtask P2-2, T2/T3).
+- Comparison base: parent commit b65b1ffcca0466b99ba96804f3393e22f61b466a~1 (pre-fix) vs the implementer's commit b65b1ffcca0466b99ba96804f3393e22f61b466a.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
