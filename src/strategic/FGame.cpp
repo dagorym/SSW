@@ -111,7 +111,11 @@ int FGame::init(wxWindow *w){
 	  }
   }
   if (m_ui != NULL){
-	  m_satharRetreat = m_ui->selectRetreatCondition();
+	  int retreatCondition = m_ui->selectRetreatCondition();
+	  while (retreatCondition < 1 || retreatCondition > 5) {
+		  retreatCondition = m_ui->selectRetreatCondition();
+	  }
+	  m_satharRetreat = retreatCondition;
   }
   return 0;
 }

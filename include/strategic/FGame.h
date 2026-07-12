@@ -101,11 +101,21 @@ public:
    * installed at construction time.  It returns a zero if all is well and a
    * positive error code if there was a problem.
    *
+   * The Sathar retreat condition returned by IStrategicUI::selectRetreatCondition()
+   * is validated against the valid 1..5 range before being stored in
+   * m_satharRetreat.  If the UI returns an out-of-range value (for example
+   * wxID_CANCEL from an X-close/cancel on the selection dialog), the UI is
+   * re-invoked until a valid 1..5 value is returned, so a cancelled or
+   * dismissed dialog can never silently disable UPF victory for the rest of
+   * the game.  When m_ui is NULL, this validation/re-prompt loop is skipped
+   * entirely (there is no UI to re-invoke), preserving the existing no-UI
+   * behavior.
+   *
    * @param w Accepted for backwards-compatible call sites; ignored internally.
    *
-   * @author Tom Stephens, gpt-5.3-codex (medium)
+   * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
    * @date Created:  Jan 14, 2005
-   * @date Last Modified:  Mar 28, 2026
+   * @date Last Modified:  Jul 11, 2026
    */
 	  int init(wxWindow *w);
 
