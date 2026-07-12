@@ -1,0 +1,69 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented the P2-7 minimal deterministic RNG seed seam (reviewer follow-up F1). include/Frontier.h adds two inline helpers -- seedRandomExplicit(unsigned int seed) (srand(seed)) for deterministic tests/replay and seedRandomFromClock() (srand(time(NULL))) for normal play -- both thin wraps over the process-global RNG that irand() already consumes; irand() itself is unchanged. src/strategic/FGame.cpp's constructor now calls seedRandomFromClock() instead of raw srand(time(NULL)), so normal play still varies per session while tests can pin the shared RNG via seedRandomExplicit(fixed) for reproducible rolls (making the formerly ~9-10% flaky FFleetTest::testDecTransitTime deterministic). Confirmed the Implementer's Doxygen headers on both new Frontier.h seam functions and the FGame constructor are complete and accurate per CLAUDE.md (@brief, description, @param where applicable, @author with 'Claude Sonnet 5 (medium)' added, @date Created/Last Modified) -- no adjustment needed. Annotated the single unlabeled 'Randomness:' bullet in doc/synthesized-roadmap.md section 3.7 as RESOLVED (P2-7), scoped explicitly to the minimal named seed seam (not the roadmap's broader injectable per-game std::mt19937 suggestion, which -- along with the Windows CRT portability gap -- is noted as still open), pointing to artifacts/phase2-rules-correctness/P2-7. Only that one bullet was touched. No user-facing docs affected.
+
+Acceptance criteria to verify:
+- seedRandomExplicit(fixed) makes subsequent irand() reproducible. -- validated PASS by Tester (tests/core/FrontierTest: testSeedRandomExplicitReproducibleSameSeed, testSeedRandomExplicitDiffersAcrossSeeds); re-run green in SSWTests (245/245).
+- Seeded, FFleet::decTransitTime()'s risk-jump is reproducible. -- validated PASS by Tester (FFleetTest::testDecTransitTime now calls seedRandomExplicit(1) before the risk-jump draw and asserts the exact transit-time progression; the fixture is now deterministic).
+- A fresh FGame seeds via the clock-based seam (normal play not pinned). -- confirmed in src/strategic/FGame.cpp constructor: raw srand(time(NULL)) replaced by seedRandomFromClock() (srand(time(NULL))), so each session still varies.
+- Repo builds clean; SSWTests 245/245. -- re-verified independently by Documenter: make exit 0; ./SSWTests OK (245 tests) from tests/.
+
+Implementation branch or worktree context:
+- Implementer commit: ec8210486320fef0968d260e70b73ea2eb04bc02 (include/Frontier.h: seedRandomExplicit()/seedRandomFromClock() inline seam + <ctime> include + Doxygen; src/strategic/FGame.cpp: constructor uses seedRandomFromClock() + Doxygen).
+- Tester commit: 3dcb44ab056bcd09e5ee357ed3aecde1dfcee7bc (tests/core/FrontierTest.{cpp,h}: new behavioral seam tests; tests/strategic/FFleetTest.cpp: seedRandomExplicit(1) before the risk-jump draw; tests/SSWTests.cpp: FrontierTest registration).
+- Documenter branch/worktree: p2rc-P2-7-documenter-20260711 (worktree /home/tstephen/repos/worktrees/p2rc-P2-7-documenter-20260711); documentation commit a0550d3f4f761e3f5a82746b50fa5ea854ab406b (doc/synthesized-roadmap.md: F1 'Randomness' bullet annotated RESOLVED).
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/Frontier.h
+- src/strategic/FGame.cpp
+- tests/core/FrontierTest.cpp
+- tests/core/FrontierTest.h
+- tests/strategic/FFleetTest.cpp
+- tests/SSWTests.cpp
+- doc/synthesized-roadmap.md
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start / preflight / diff-review / commit-flow / artifact-writing / verifier-handoff
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <prompt> --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base dd5ffb43 --head HEAD
+- git diff dd5ffb43..HEAD -- include/Frontier.h src/strategic/FGame.cpp
+- grep -n 'Randomness|3.7|F1' doc/synthesized-roadmap.md
+- make (repo root)
+- make -C tests
+- ./SSWTests (run from tests/ cwd)
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --phase docs
+- git add doc/synthesized-roadmap.md
+- git commit -F <doc commit message file>
+
+Final test outcomes:
+- make (repo root): exit 0, clean build of SSW, BattleSim, and all test binaries including the new tests/core/FrontierTest and the linked SSWTests runner.
+- make -C tests: clean rebuild; SSWTests relinked.
+- ./SSWTests (run from tests/ so relative-path source-inspection fixtures resolve): OK (245 tests), 0 failures, 0 errors -- matches the Tester's reported 245/245. (When run from a different cwd, the FGameHeaderDependencyTest source-inspection fixtures fail on relative-path lookups only; that is a cwd artifact, not a regression -- all pass from tests/.)
+
+Plan or evaluation context guidance:
+- Plan: plans/phase2-rules-correctness-followups-plan.md, subtask P2-7 (reviewer follow-up F1), lines ~163-174; design decision 2b.5 ('F1 -- Minimal production seed seam') and assumption 2c ('F1 seam shape': two inline helpers in include/Frontier.h -- clock-based for normal play, explicit-seed for deterministic tests -- with FGame's constructor switching from raw srand(time(NULL)) to the clock seam).
+- Plan section 5 (Documentation Impact, overall): 'doc/synthesized-roadmap.md -- annotate the addressed items as RESOLVED (mirroring the C1-C6 tags): ... the reviewer follow-ups F1, F2, F4. Each item's owning subtask's Documenter adds its own annotation; since these are distinct rows/lines, the Coordinator union-merges them at integration.'
+- P2-7 subtask Documentation Impact: 'Doxygen headers on the new seam functions and the updated FGame constructor. No user-facing docs.'
+- Comparison base: coordination base tip (dd5ffb43); diff scoped to this subtask's Implementer + Tester + Documenter commits only.
+
+Convention-file guidance:
+- CLAUDE.md Function Comments policy: Doxygen headers mandatory; on edit, update @date Last Modified and add the current agent model to @author. Verified the Implementer's headers on seedRandomExplicit(), seedRandomFromClock(), and FGame::FGame(IStrategicUI*) comply (author 'Claude Sonnet 5 (medium)', dates Jul 11 2026) -- no documentation-only edit required in the product files.
+- AGENTS.md / CLAUDE.md Single-Source-of-Truth Rule: canonical RNG-seam facts live in the code Doxygen (already accurate) plus the roadmap defect-tracking bullet; not duplicated into entry-point files.
+- doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md are non-editable per AGENTS.md and were not touched.
+- Roadmap annotation pattern mirrored from the Phase 1 C1-C6 and prior P2-* rows: append a bolded '**[RESOLVED (...) -- see P2-7: <summary>; see artifacts/phase2-rules-correctness/P2-7.]**' clause to the existing bullet rather than rewriting the original defect description; scoped RESOLVED tag ('seed seam only') keeps the still-open broader-RNG work visible.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-7
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
