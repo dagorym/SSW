@@ -90,26 +90,37 @@ public:
   /**
    * @brief Method to handle the File:Open menu option
    *
-   * This is the method called when the File:Open menu option is selected
+   * This is the method called when the File:Open menu option is selected.
+   * Shows a wxFileDialog and checks its ShowModal() result before acting:
+   * on Cancel (or any non-OK result) no FGame is created and no load() is
+   * attempted, leaving the frame state unchanged. On a confirmed OK, a new
+   * FGame is created and loaded from the dialog's full GetPath() (rather
+   * than the cwd-dependent GetFilename()), and the existing post-load
+   * menu-enable / turn-state logic runs unchanged.
    *
    * @param event The wxWidget window event that triggered the function call
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Mar 02, 2005
-   * @date Last Modified:  Mar 25, 2008
+   * @date Last Modified:  Jul 11, 2026
    */
   void onOpen(wxCommandEvent& event);
 
   /**
    * @brief Method to handle the File:Save menu option
    *
-   * This is the method called when the File:Save menu option is selected
+   * This is the method called when the File:Save menu option is selected.
+   * Shows a wxFileDialog and checks its ShowModal() result before acting:
+   * on Cancel (or any non-OK result) no file is opened/truncated and
+   * FGame::save() is not invoked. On a confirmed OK, the game is saved to
+   * the dialog's full GetPath() (rather than the cwd-dependent
+   * GetFilename()).
    *
    * @param event The wxWidget window event that triggered the function call
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Mar 02, 2005
-   * @date Last Modified:  Mar 05, 2008
+   * @date Last Modified:  Jul 11, 2026
    */
   void onSave(wxCommandEvent& event);
 

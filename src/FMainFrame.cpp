@@ -127,16 +127,20 @@ void FMainFrame::onNew(wxCommandEvent& event) {
 
 void FMainFrame::onSave(wxCommandEvent& WXUNUSED(event)) {
 	wxFileDialog *d = new wxFileDialog(this,"Select a game file to save","","","*.ssw",wxFD_OVERWRITE_PROMPT|wxFD_SAVE|wxFD_CHANGE_DIR);
-	d->ShowModal();
-	// get the file name to save to
-	wxString fname = d->GetFilename();
-	// open the file for writing
-	std::ofstream os(fname.ToStdString().c_str(),std::ios::binary);
-	if (m_game){
-		m_game->save(os);
+	int result = d->ShowModal();
+	if (result == wxID_OK) {
+		// get the full path to save to (cwd-independent, unlike GetFilename())
+		wxString fpath = d->GetPath();
+		// open the file for writing
+		std::ofstream os(fpath.ToStdString().c_str(),std::ios::binary);
+		if (m_game){
+			m_game->save(os);
+		}
+		// close off the file
+		os.close();
 	}
-	// close off the file
-	os.close();
+	// on Cancel (or any non-OK result), do nothing: no file is opened/truncated
+	// and no FGame::save() is invoked.
 	delete d;
 }
 
@@ -146,32 +150,36 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 	}
 	if (m_game == NULL){ // if the user canceled the save game option we will not be null and skip this
 		wxFileDialog *d = new wxFileDialog(this,"Select a game file to open","","","*.ssw",wxFD_FILE_MUST_EXIST|wxFD_OPEN|wxFD_CHANGE_DIR);
-		d->ShowModal();
-		m_game = &(FGame::create(m_strategicUI));
-		m_drawingPanel->setGame(m_game);
-		// get the file name to open
-		wxString fname = d->GetFilename();
-		// open the file for reading
-		std::ifstream is(fname.ToStdString().c_str(),std::ios::binary);
-		// load up the game
-		m_game->load(is);
-		// draw the screen
-		Refresh();
-		GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
-		GetMenuBar()->GetMenu(0)->FindItemByPosition(3)->Enable(true);
-		if(m_game->isUPFTurn()){
-			GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
-			GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
-			GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
-			GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
-			GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
-		} else {
-			GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
-			GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
-			GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
-			GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
-			GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
+		int result = d->ShowModal();
+		if (result == wxID_OK) {
+			m_game = &(FGame::create(m_strategicUI));
+			m_drawingPanel->setGame(m_game);
+			// get the full path to open (cwd-independent, unlike GetFilename())
+			wxString fpath = d->GetPath();
+			// open the file for reading
+			std::ifstream is(fpath.ToStdString().c_str(),std::ios::binary);
+			// load up the game
+			m_game->load(is);
+			// draw the screen
+			Refresh();
+			GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
+			GetMenuBar()->GetMenu(0)->FindItemByPosition(3)->Enable(true);
+			if(m_game->isUPFTurn()){
+				GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
+				GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
+				GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
+				GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
+				GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
+			} else {
+				GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
+				GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
+				GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
+				GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
+				GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
+			}
 		}
+		// on Cancel (or any non-OK result), do nothing: no FGame is created
+		// and no load() is attempted, leaving the frame state unchanged.
 		delete d;
 	}
 }
