@@ -1,8 +1,9 @@
 /**
  * @file FGame.cpp
  * @brief Implementation file for FGame class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 12, 2005
+ * @date Last Modified:  Jul 11, 2026
  *
  */
 
@@ -35,13 +36,28 @@ FGame & FGame::create(wxWindow * win){
 	return create();
 }
 
+/**
+ * @brief Constructs the game singleton, seeding the shared RNG for normal play.
+ *
+ * Seeds the process-global RNG (consumed by irand() throughout the strategic
+ * and tactical layers) via the clock-based entry point of the Frontier.h RNG
+ * seed seam (seedRandomFromClock()), so normal play still varies per session.
+ * Deterministic tests/replay instead call seedRandomExplicit() with a fixed
+ * seed before exercising RNG-dependent behavior.
+ *
+ * @param ui optional strategic UI adapter; pass NULL for non-GUI use
+ *
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
+ * @date Created: Jan 12, 2005
+ * @date Last Modified: Jul 11, 2026
+ */
 FGame::FGame(IStrategicUI * ui){
 	m_ui = ui;
 	m_universe = NULL;
 	m_round = 0;
 	m_gui = (ui != NULL);
 	m_currentPlayer = -1;
-	srand(time(NULL));  // intialize random number generator
+	seedRandomFromClock();  // intialize random number generator
 	m_lostHC = 0;
 	m_lostAC = 0;
 	m_lostSatharShips = 0;
