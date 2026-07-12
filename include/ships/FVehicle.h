@@ -24,9 +24,9 @@ struct FTacticalDamageResolution;
  * This class provides the shared hull, movement, weapon, defense, ownership,
  * and tactical-damage state used by all ship and station types.
  *
- * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created:  Mar 24, 2009
- * @date Last Modified:  May 02, 2026
+ * @date Last Modified:  Jul 11, 2026
  */
 class FVehicle : public Frontier::FPObject
 {
@@ -239,6 +239,32 @@ public:
 	 * @date Last Modified:  Apr 22, 2010
 	 */
 	unsigned int hasDefense(FDefense::Defense d);
+
+	/**
+	 * @brief resolve the to-hit modifier for an incoming weapon against this
+	 * vehicle's operating defenses
+	 *
+	 * Per the manual, when a target has more than one defensive system
+	 * operating, the to-hit resolves against whichever is most effective
+	 * against the attacking weapon, EXCEPT that a screen which "attracts"
+	 * the weapon type overrides that choice. This method considers only the
+	 * vehicle's OPERATING defenses -- the reflective hull (if owned) plus
+	 * whichever single defense is currently raised (getCurrentDefense()),
+	 * deduplicated -- and returns the minimum (most effective)
+	 * getAttackModifier(w) among them, unless one of those operating
+	 * defenses attracts w (Proton Screen attracts Electron Beam; Electron
+	 * Screen attracts Proton Beam; Stasis Screen attracts Torpedo, Seeker
+	 * Missile, and Mine), in which case that attracting defense's modifier
+	 * is returned instead. Returns 0 if the vehicle has no operating
+	 * defenses.
+	 *
+	 * @param w the type of weapon attacking this vehicle
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created:  Jul 11, 2026
+	 * @date Last Modified:  Jul 11, 2026
+	 */
+	int resolveToHitModifier(FWeapon::Weapon w);
 
 	/**
 	 * @brief check to see if ship has specified weapon

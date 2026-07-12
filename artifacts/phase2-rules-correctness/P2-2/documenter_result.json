@@ -1,0 +1,19 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase2-rules-correctness/P2-2/documenter_report.md",
+    "artifacts/phase2-rules-correctness/P2-2/documenter_result.json",
+    "artifacts/phase2-rules-correctness/P2-2/verifier_prompt.txt"
+  ],
+  "branch_name": "p2rc-P2-2-documenter-20260711",
+  "documentation_commit_hash": "98dd6cf14abc59d2ece9e3f86e9b8368f440a57e",
+  "documentation_files_changed": [
+    "include/weapons/FWeapon.h",
+    "tests/ships/FTacticalAttackIntegrationTest.h",
+    "doc/synthesized-roadmap.md"
+  ],
+  "final_test_outcome": "make (repo root) clean build exit 0; SSWTests OK (226 tests) run from tests/ directory",
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "P2-2",
+  "unmet_acceptance_criteria": []
+}

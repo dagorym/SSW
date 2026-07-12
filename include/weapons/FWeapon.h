@@ -122,11 +122,26 @@ public:
 	 * optional damage-table effects, and ammunition consumption, then returns a
 	 * structured tactical attack result.
 	 *
+	 * To-hit defensive modifier resolution: the masking screen "fired out of
+	 * the screen" override is laser-only (LC/LB) and only applies when this
+	 * weapon has a parent (mines and seekers have no firing parent) whose
+	 * raised defense is a Masking Screen -- in that laser/MS-parent case the
+	 * to-hit modifier comes from the attacker's raised Masking Screen instead
+	 * of the target's defense. Every other weapon type, and every laser fired
+	 * by a parent without a raised Masking Screen, resolves the to-hit
+	 * modifier against the target's most-effective OPERATING defense via
+	 * FVehicle::resolveToHitModifier(), which also applies the
+	 * attracting-screen override (Proton Screen attracts Electron Beam,
+	 * Electron Screen attracts Proton Beam, Stasis Screen attracts
+	 * Torpedo/Seeker Missile/Mine). Damage-halving for a laser fired at (or
+	 * out of) a raised Masking Screen remains laser-only and independent of
+	 * the to-hit resolution above.
+	 *
 	 * @return Structured attack outcome and damage/effect details
 	 *
-	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 24, 2009
-	 * @date Last Modified:  Mar 20, 2026
+	 * @date Last Modified:  Jul 11, 2026
 	 */
 	FTacticalAttackResult fire();
 

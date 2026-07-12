@@ -8,6 +8,7 @@
 #include <cstdlib>
 
 #include "tactical/FTacticalCombatReport.h"
+#include "defenses/defenses.h"
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -32,6 +33,14 @@ public:
 		m_targetRange = range;
 		m_isHeadOn = headOn;
 	}
+	/// override the weapon type (default LB) so the same harness can exercise
+	/// the laser-only masking-screen "fired out of the screen" branch vs. the
+	/// non-laser regression path (e.g. Torpedo)
+	void setWeaponType(FWeapon::Weapon t) { m_type = t; }
+	/// override the flat damage modifier so a single die roll can be made an
+	/// odd number, distinguishing "halved, rounded up" from plain integer
+	/// division
+	void setDamageMod(unsigned int d) { m_dMod = d; }
 };
 
 class FCombatVehicleHarness : public FVehicle {
@@ -56,6 +65,10 @@ public:
 
 	void setCombatControlDamaged(bool value) { m_combatControlDamaged = value; }
 	void setOnFire(bool value) { m_onFire = value; }
+	/// append a real FDefense instance to this vehicle's defense list, e.g. so
+	/// a test can raise it via setCurrentDefense(...) or have it counted as an
+	/// "operating" reflective hull by FVehicle::resolveToHitModifier()
+	void addDefense(FDefense *d) { m_defenses.push_back(d); }
 };
 
 }
@@ -219,6 +232,81 @@ void FTacticalAttackIntegrationTest::testFireReportsDisastrousFireFallbackAsHull
 	CPPUNIT_ASSERT(result.effects[0].newValue == 12);
 	CPPUNIT_ASSERT(result.effects[0].amount == 8);
 	CPPUNIT_ASSERT(result.effects[0].hullDamageApplied == 8);
+}
+
+void FTacticalAttackIntegrationTest::testMaskingScreenTorpedoOutResolvesAgainstTargetDefenseNotAttackerMSAndDoesNotHalveDamage() {
+	// AC (T3 regression): a non-laser weapon fired from inside the attacker's
+	// raised Masking Screen must resolve to-hit against the TARGET's
+	// most-effective operating defense (with attract override) via
+	// FVehicle::resolveToHitModifier(), not the attacker's MS modifier, and
+	// must not halve damage. This fails against the pre-fix code, which
+	// applied the attacker's MS modifier unconditionally to every weapon type.
+	FCombatVehicleHarness *attacker = new FCombatVehicleHarness();
+	attacker->configureStats(20, 4, 3, 8);
+	attacker->addDefense(new FMaskingScreen()); // index 1
+	attacker->setCurrentDefense(1); // attacker's MS is raised
+
+	FCombatVehicleHarness *target = new FCombatVehicleHarness();
+	target->configureStats(20, 4, 3, 8);
+	target->addDefense(new FReflectiveHull()); // index 1
+	target->addDefense(new FStasisScreen()); // index 2
+	target->setCurrentDefense(2); // target's Stasis Screen is raised (attracts Torpedo)
+
+	FWeaponFireHarness *weapon = new FWeaponFireHarness();
+	weapon->setWeaponType(FWeapon::T); // non-laser
+	weapon->setDamageMod(1); // makes the raw single-die damage an odd number
+	weapon->setParent(attacker);
+	weapon->assignTargetDirectly(target, 3);
+
+	srand(123); // deterministic: to-hit roll=7, damage die=8
+
+	FTacticalAttackResult result = weapon->fire();
+
+	// Target's operating defenses are RH (0) and raised SS (attracts T, +25);
+	// the attract override means SS's +25 wins over RH's 0. The attacker's MS
+	// modifier for Torpedo is 0 and must NOT be used at all.
+	CPPUNIT_ASSERT(result.toHitProbability == 125);
+	CPPUNIT_ASSERT(result.outcome == TAO_Hit);
+	CPPUNIT_ASSERT(result.fired());
+	// Torpedo is not LC/LB, so damage is never halved regardless of MS state.
+	CPPUNIT_ASSERT(result.damageRolled == 9);
+
+	delete weapon;
+	delete attacker;
+	delete target;
+}
+
+void FTacticalAttackIntegrationTest::testParentlessLaserFireDoesNotCrashAndDoesNotHalveDamageAgainstNonMaskedTarget() {
+	// AC: no null-deref when a parentless weapon (as mines/seekers fire)
+	// fires. This specifically exercises the damage-halving block's
+	// `(m_parent != NULL && ...)` guard: the target's current defense is NOT
+	// a Masking Screen, so the halving condition's left operand is false and
+	// the right operand (the attacker/parent check) must be evaluated. Before
+	// the fix, that right operand unconditionally dereferenced m_parent.
+	FCombatVehicleHarness *target = new FCombatVehicleHarness();
+	target->configureStats(20, 4, 3, 8);
+	target->addDefense(new FReflectiveHull()); // index 1
+	target->setCurrentDefense(1); // RH raised, not MS
+
+	FWeaponFireHarness *weapon = new FWeaponFireHarness();
+	weapon->setWeaponType(FWeapon::LB); // laser
+	// deliberately do not call setParent(...): m_parent stays NULL, as it
+	// does for mines and seekers fired from a hex rather than a ship
+	weapon->assignTargetDirectly(target, 3);
+
+	srand(24); // deterministic: to-hit roll=9, damage die=9
+
+	FTacticalAttackResult result = weapon->fire(); // must not crash
+
+	// Target's only operating defense is RH (modifier 0); the laser-out
+	// branch never applies because m_parent is NULL.
+	CPPUNIT_ASSERT(result.toHitProbability == 100);
+	CPPUNIT_ASSERT(result.outcome == TAO_Hit);
+	CPPUNIT_ASSERT(result.fired());
+	CPPUNIT_ASSERT(result.damageRolled == 9); // unhalved: neither side has MS raised
+
+	delete weapon;
+	delete target;
 }
 
 }

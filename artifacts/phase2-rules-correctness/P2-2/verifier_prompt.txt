@@ -1,0 +1,73 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- P2-2 (T2/T3): Resolve weapon to-hit against the target's most-effective OPERATING defense with the attracting-screen override, and restrict the masking-screen "fired out of the screen" effect to lasers only. The fix lives in FWeapon::fire(), backed by a new non-wx model helper FVehicle::resolveToHitModifier(FWeapon::Weapon). This aligns the code to doc/rules/tactical_operations_manual.md (the non-editable correctness oracle).
+
+Acceptance criteria to verify:
+- Most-effective (no attract): a target owning a reflective hull with a raised Proton Screen, fired at by a Laser Battery, resolves to-hit against the hull (modifier 0), NOT the raised Proton Screen (+15).
+- Attract override: a target with a raised Electron Screen fired at by a Proton Beam resolves against the Electron Screen (attract modifier +10), NOT the hull (0). Analogous for Proton Screen vs Electron Beam and Stasis Screen vs Torpedo/Seeker Missile/Mine.
+- Masking laser-out (T3): an attacker with its Masking Screen raised firing a laser resolves to-hit using the attacker's MS laser modifier and halves damage (rounded up).
+- Masking non-laser-out (T3 regression): an attacker with MS raised firing a Torpedo resolves to-hit against the TARGET's defense (FVehicle::resolveToHitModifier), NOT the attacker's MS, and does NOT halve damage. This assertion fails against the pre-fix code.
+- Masking laser-in: an attacker without MS firing a laser at a target with MS raised resolves against the target's MS and halves damage.
+- No null-deref when a parentless weapon (mine/seeker) fires (attacker-side MS check and damage-halving guard both tolerate m_parent == NULL).
+- Repo builds; existing suites still pass (SSWTests OK 226).
+- Documentation Impact (plan): Doxygen headers on FWeapon::fire() and the new FVehicle helper; no user-facing docs (rules manual is non-editable and already correct). Roadmap T2/T3 annotated RESOLVED.
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/p2rc-P2-2-documenter-20260711, branch p2rc-P2-2-documenter-20260711 (branched from the Tester branch p2rc-P2-2-tester-20260711). Coordination base commit: 37fb564b.
+- Implementer code commit b65b1ffcca0466b99ba96804f3393e22f61b466a (src/weapons/FWeapon.cpp, src/ships/FVehicle.cpp, include/ships/FVehicle.h): FWeapon::fire() now guards the masking-screen to-hit override with (m_type==LC||m_type==LB) && m_parent!=NULL && parent MS raised; every other case calls m_target->resolveToHitModifier(m_type). FVehicle::resolveToHitModifier() gathers operating defenses (reflective hull if owned + currently raised screen, deduplicated), applies the attract override (PS<->EB, ES<->PB, SS<->T/SM/M) if any operating defense attracts the weapon, else returns the minimum (most-effective) modifier; returns 0 if no operating defenses. The damage-halving block's attacker-side MS check is guarded with (m_parent != NULL && ...).
+- Tester test commit 5ed8a0a932def8b61de946e517509fe5b2c17a3b (tests/weapons/FWeaponDefenseResolutionTest.{h,cpp}, tests/ships/FTacticalAttackIntegrationTest.{h,cpp}, tests/SSWTests.cpp): 9 new behavioral tests covering all acceptance criteria, including the T3 torpedo regression and the parentless-laser null-deref guard. Tester confirmed the pre-fix code produced 2 targeted assertion failures plus a SIGSEGV (null deref in getCurrentDefense() from FWeapon::fire()) in the parentless case.
+- Documenter stage (this run) made documentation-only edits: documentation commit 98dd6cf14abc59d2ece9e3f86e9b8368f440a57e.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/weapons/FWeapon.cpp (Implementer, b65b1ffc -- laser-only masking to-hit override + resolveToHitModifier call + parentless-safe damage-halving guard)
+- src/ships/FVehicle.cpp (Implementer, b65b1ffc -- new resolveToHitModifier() + file-local defenseAttractsWeapon() helper)
+- include/ships/FVehicle.h (Implementer, b65b1ffc -- resolveToHitModifier() declaration + Doxygen; class header @author/@date refreshed)
+- tests/weapons/FWeaponDefenseResolutionTest.h / .cpp (Tester, 5ed8a0a9 -- new fixture, 7 tests)
+- tests/ships/FTacticalAttackIntegrationTest.h / .cpp (Tester, 5ed8a0a9 -- 2 added T3/parentless tests)
+- tests/SSWTests.cpp (Tester, 5ed8a0a9 -- registers the new fixture)
+- include/weapons/FWeapon.h (Documenter, 98dd6cf1 -- expanded FWeapon::fire() Doxygen header describing the laser-only masking to-hit override and most-effective/attract resolution)
+- tests/ships/FTacticalAttackIntegrationTest.h (Documenter, 98dd6cf1 -- class-level Doxygen @author/@date refresh for the added tests)
+- doc/synthesized-roadmap.md (Documenter, 98dd6cf1 -- T2/T3 rows annotated RESOLVED (P2-2), traceability only)
+- artifacts/phase2-rules-correctness/P2-2/{implementer_report.md, implementer_result.json, tester_prompt.txt, tester_report.md, tester_result.json, documenter_prompt.txt} (prior-stage artifacts)
+- artifacts/phase2-rules-correctness/P2-2/{documenter_report.md, documenter_result.json, verifier_prompt.txt} (Documenter artifacts -- this stage)
+
+Commands executed:
+- git -C <worktree> diff 37fb564b..HEAD --stat / -- src/weapons/FWeapon.cpp include/ships/FVehicle.h src/ships/FVehicle.cpp
+- read include/weapons/FWeapon.h, include/ships/FVehicle.h, tests/weapons/FWeaponDefenseResolutionTest.h, tests/ships/FTacticalAttackIntegrationTest.h
+- grep -n T2/T3/RESOLVED doc/synthesized-roadmap.md; grep -n P2-2/Documentation Impact plans/phase2-rules-correctness-followups-plan.md
+- make (repo root, foreground) -- exit 0
+- env -C tests ./SSWTests -- OK (226 tests)
+- git add include/weapons/FWeapon.h tests/ships/FTacticalAttackIntegrationTest.h doc/synthesized-roadmap.md
+- git commit -F <doc commit message file> -- documentation commit 98dd6cf14abc59d2ece9e3f86e9b8368f440a57e
+
+Final test outcomes:
+- make (repo root): clean full build, exit 0.
+- SSWTests (run from tests/ directory, e.g. env -C tests ./SSWTests): OK (226 tests), 0 failures.
+- Note: SSWTests must run with cwd=tests/; FGameHeaderDependencyTest reads source files via cwd-relative paths and produces 9 spurious "candidate file path not readable" failures from any other directory. Those 9 are a cwd artifact unrelated to this change (FGame is untouched); all 226 pass from the correct directory.
+
+Plan or evaluation context guidance:
+- Governing plan: plans/phase2-rules-correctness-followups-plan.md, subtask P2-2 (T2/T3), section around lines 92-106; Documentation Impact at line 106 ("Doxygen headers on FWeapon::fire() and the new FVehicle helper. No user-facing docs (rules manual is non-editable and already correct)."); overall Documentation Impact at lines 193-199.
+- Comparison base for this review: 37fb564b (coordination base) through 98dd6cf1 (documentation commit HEAD).
+
+Convention-file guidance:
+- CLAUDE.md/AGENTS.md Doxygen policy: full header blocks for classes/major functions (brief + full description, @param, @author with model+reasoning level, additive author list, Created/Last Modified dates). The Implementer's resolveToHitModifier() header and the expanded FWeapon::fire() header conform.
+- CLAUDE.md Non-negotiable Constraints: doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md must NOT be edited -- not touched; this change conforms the code to them.
+- CLAUDE.md Module Boundary Rules: FVehicle::resolveToHitModifier() is a non-wx model method in the ships module; no wx headers/types were introduced. The file-local defenseAttractsWeapon() helper is in an anonymous namespace in src/ships/FVehicle.cpp.
+- CLAUDE.md testing policy: behavioral verification is mandatory; the added tests construct real ships/weapons and assert observed to-hit/damage outcomes (not source-string matching).
+
+Updated documentation files:
+- include/weapons/FWeapon.h (FWeapon::fire() Doxygen header)
+- tests/ships/FTacticalAttackIntegrationTest.h (class-level Doxygen header)
+- doc/synthesized-roadmap.md (T2/T3 RESOLVED annotations)
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-2
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
