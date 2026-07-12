@@ -1,0 +1,44 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Pin the Windows/MSVC C++ standard to C++17 by adding <LanguageStandard>stdcpp17</LanguageStandard> to the shared ClCompile item-definition block in vs2022/SSW.Common.props, which all 10 vs2022 projects import. ConformanceMode was intentionally left false (unchanged) per the roadmap Phase 3 decision. This is a Windows-only build-flag change; MSVC compilation could not be executed or verified from this Linux environment.
+
+Modified files:
+- vs2022/SSW.Common.props
+
+Acceptance criteria to validate (from Planner):
+- SSW.Common.props contains exactly one <LanguageStandard>stdcpp17</LanguageStandard> in the shared ClCompile item-definition block, and the file remains well-formed XML (parses cleanly).
+- All 10 vcxproj still import SSW.Common.props (unchanged import lines), so all inherit the pin.
+- No change is made outside SSW.Common.props; the Linux `make` build is unaffected.
+- ConformanceMode remains false (unchanged) per the §2b assumption recorded in the plan.
+- The artifact explicitly records that MSVC compilation could not be verified from this Linux environment.
+
+Create test files in:
+- No CppUnit test location applies; this is a Windows-only MSBuild props change with no C++ source or Linux Makefile behavior to unit test.
+- If any structural/documentation-style check is desired, it would live outside tests/ (e.g., a script asserting XML validity of vs2022/SSW.Common.props), but no such check currently exists and none is required by the plan.
+
+Implementation context for testing:
+- Single-line addition: <LanguageStandard>stdcpp17</LanguageStandard> inserted immediately after the existing <ConformanceMode>false</ConformanceMode> line inside the shared <ItemDefinitionGroup>/<ClCompile> block (no Configuration/Platform condition) in vs2022/SSW.Common.props, at line 37.
+- All 10 .vcxproj files under vs2022/ (BattleSim.vcxproj, battleSimLib.vcxproj, core.vcxproj, defenses.vcxproj, gui.vcxproj, ships.vcxproj, SSW.vcxproj, strategic.vcxproj, tactical.vcxproj, weapons.vcxproj) import SSW.Common.props unmodified, so every project inherits stdcpp17 for both Debug/Release and Win32/x64 configurations.
+- ConformanceMode was intentionally left at false; do not flip it as part of this or any follow-on task without explicit direction, since the roadmap's §2b decision only calls for pinning the language standard.
+- This change has zero effect on the Linux/Make build: none of src/*/Makefile, tests/*/Makefile, or the repo-root Makefile reference vs2022/SSW.Common.props (confirmed via grep -rl over src, tests, and the root Makefile).
+- MSVC compilation cannot be executed or verified in this Linux worktree; do not claim a Windows build was run. Verification here is limited to XML well-formedness and import fan-out (structural checks only).
+
+Suggested test command(s):
+- python3 -c "import xml.dom.minidom as m; m.parse('vs2022/SSW.Common.props')"
+- grep -l "SSW.Common.props" vs2022/*.vcxproj
+- grep -n "LanguageStandard\|ConformanceMode" vs2022/SSW.Common.props
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase3-build-system-ci/P3-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
