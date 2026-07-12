@@ -8,6 +8,7 @@
 #include "FFleetTest.h"
 #include <cstdio>
 #include <type_traits>
+#include "Frontier.h"
 #include "strategic/FSystem.h"
 
 namespace FrontierTests {
@@ -153,6 +154,16 @@ void FFleetTest::testDecTransitTime(){
 	CPPUNIT_ASSERT(tTime == 8);
 	tTime = m_f1->decTransitTime();
 	CPPUNIT_ASSERT(tTime == 6);
+	// This 3rd call is the only one that lands on the risk-jump check
+	// (m_transitTime <= m_jumpLength/2 while location != destination), which
+	// draws irand(100) against getRJChance() (90 for speed==2, non-militia,
+	// no battleship). Unseeded, that draw fails ~10% of the time (>90),
+	// making decTransitTime() return -1 instead of 5 -- the documented
+	// intermittent failure (reviewer follow-up F1). Seed immediately before
+	// this call (not earlier, and not via constructing an FGame, which would
+	// reseed from the clock) so the draw is deterministic and no other
+	// irand() consumer runs in between.
+	seedRandomExplicit(1);
 	tTime = m_f1->decTransitTime();
 	CPPUNIT_ASSERT(tTime == 5);
 	m_f1->setLocation(m_f1->getDestination());

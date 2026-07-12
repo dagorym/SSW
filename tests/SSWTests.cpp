@@ -13,6 +13,7 @@
 #include "core/FObjectTest.h"
 #include "core/FGameConfigTest.h"
 #include "core/FHexPathTest.h"
+#include "core/FrontierTest.h"
 #include "core/WXIconCacheTest.h"
 #include "core/WXStrategicUITest.h"
 #include "weapons/FWeaponTest.h"
@@ -69,6 +70,7 @@ int main( int argc, char **argv)
   runner.addTest( FPointTest::suite() );
   runner.addTest( FObjectTest::suite() );
   runner.addTest( FHexPathTest::suite() );
+  runner.addTest( FrontierTest::suite() );
   runner.addTest( FGameConfigTest::suite() );
   runner.addTest( WXIconCacheTest::suite() );
   runner.addTest( WXStrategicUITest::suite() );
