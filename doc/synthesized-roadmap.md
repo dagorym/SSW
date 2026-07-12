@@ -136,13 +136,17 @@ Ordered by impact.
 
 - Retreat-condition selection stored unvalidated (X-close yields `wxID_CANCEL`=5101 in
   `m_satharRetreat`, silently disabling UPF victory forever) — `FGame.cpp:114`,
-  `WXStrategicUI.cpp:78-89`. ***RESOLVED*** (P2-4, commit `5745906f`). _Resolved:
-  `FGame::init()` now validates `IStrategicUI::selectRetreatCondition()`'s return
-  against the valid `1..5` range and re-invokes it until a valid value is returned
-  before storing it in `m_satharRetreat`, so a cancelled/dismissed selection dialog
-  can never silently disable UPF victory for the rest of the game; the re-prompt
-  loop only runs when `m_ui != NULL`, so the no-UI console path is unchanged. See
-  `artifacts/phase2-rules-correctness/P2-4`._
+  `WXStrategicUI.cpp:78-89`. ***RESOLVED*** (P2-4, commits `5745906f`, `30b16cc0`).
+  _Resolved: `FGame::init()` now validates `IStrategicUI::selectRetreatCondition()`'s
+  return against the valid `1..5` range and re-invokes it until a valid value is
+  returned before storing it in `m_satharRetreat`, so a cancelled/dismissed selection
+  dialog can never silently disable UPF victory for the rest of the game; the
+  re-prompt loop only runs when `m_ui != NULL`, so the no-UI console path is
+  unchanged. The re-prompt loop is additionally bounded by an internal attempt cap
+  (`kMaxRetreatConditionPrompts = 1000`) so a degenerate but non-NULL UI that never
+  returns a valid value cannot hang `init()` forever; if the cap is exhausted,
+  `m_satharRetreat` is left at its prior/default value instead of being set to a
+  bogus out-of-range value. See `artifacts/phase2-rules-correctness/P2-4`._
 - `FMap::load` appends without clearing; `FJumpRoute::load` smuggles system IDs through
   `FSystem*` pointers unpacked with a 16-bit mask (`FMap.cpp:350-351`) — breaks for IDs > 65535
   and on LLP64. _(codex)_ Also: `FMap::getMap()` returns `*m_map` with no null guard
