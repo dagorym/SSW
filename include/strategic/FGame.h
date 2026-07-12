@@ -109,7 +109,12 @@ public:
    * dismissed dialog can never silently disable UPF victory for the rest of
    * the game.  When m_ui is NULL, this validation/re-prompt loop is skipped
    * entirely (there is no UI to re-invoke), preserving the existing no-UI
-   * behavior.
+   * behavior.  The re-prompt loop is bounded by a generous internal attempt
+   * cap so a degenerate but non-NULL UI (for example a headless
+   * WXStrategicUI with no live wx runtime) that returns an invalid value on
+   * every single call cannot hang init() forever; if the cap is exhausted
+   * without ever seeing a valid value, m_satharRetreat is left at its
+   * prior/default value rather than being set to a bogus out-of-range value.
    *
    * @param w Accepted for backwards-compatible call sites; ignored internally.
    *
