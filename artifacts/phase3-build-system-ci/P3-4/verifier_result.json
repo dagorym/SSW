@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase3-build-system-ci/P3-4/verifier_report.md",
+    "artifacts/phase3-build-system-ci/P3-4/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase3-P3-4-verifier-20260712",
+  "documentation_accuracy_summary": [
+    "AGENTS.md's new 'Continuous Integration' subsection (lines 168-170) accurately describes the workflow: push/PR to master plus workflow_dispatch triggers, ubuntu-24.04 runner, the same make/make check commands documented above, and the wx 3.3.2 source-build + actions/cache rationale (Ubuntu 24.04 apt only ships wx 3.2.4) -- all independently verified against the actual .github/workflows/ci.yml contents.",
+    "doc/synthesized-roadmap.md Part III item #3 (line 700) is updated from 'RESOLVED (build-system portion)' to plain 'RESOLVED', with an annotation crediting P3-1/P3-2/P3-3/P3-4 and explicitly describing the CI deliverable (ubuntu-24.04, wx 3.3.2 source build, actions/cache). Verified against the roadmap's own item #3 text (scoped to 'make check target + minimal CI; pin -std=c++17 both platforms; common.mk') that all four stated sub-deliverables are now complete, and that the deliberately-deferred items (Windows ConformanceMode flip, FBattleScreen/FBattleBoard/FBattleDisplay->src/gui relocation, CMake adoption) were never part of item #3's original scope, so upgrading the qualifier to unqualified RESOLVED is accurate rather than overclaiming.",
+    "No duplication or contradiction found between AGENTS.md and doc/synthesized-roadmap.md's descriptions of the CI workflow; CLAUDE.md correctly contains no build/CI facts (SSOT rule preserved)."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P3-4",
+  "test_sufficiency_summary": [
+    "This is a declarative GitHub Actions YAML deliverable with no C++ runtime surface; the plan's own Validation/Tester-handoff sections anticipated that GitHub Actions cannot be executed in this sandboxed environment, so no CppUnit fixtures apply and none were added (Tester commit: 'No Changes Made').",
+    "The Tester's verification goes beyond bare source-string matching: it parses the workflow through a real YAML parser into a structured document and asserts on the resulting parsed structure (trigger branches, job count/runner, step run-block contents, permissions dict equality, SHA-pin regex match against parsed `uses:` values) -- this is execution of a real parser against the artifact and assertion on its actual resolved output, not a textual grep.",
+    "Independently re-executed this verification during this review: `yaml.safe_load` on .github/workflows/ci.yml resolves push.branches=[master], pull_request.branches=[master], workflow_dispatch present, workflow-level and job-level permissions both {contents: read}, a single ubuntu-24.04 job with 8 steps including bare 'make' and 'make check' run steps, and confirmed the literal substring 'secrets.' is absent from the raw file.",
+    "Independently confirmed both pinned action SHAs are live and correct via `git ls-remote --tags`: actions/checkout 11bd71901bbe5b1630ceea73d27597364c9af683 == refs/tags/v4.2.2; actions/cache 1bd1e32a3bdc45362d1e726936510720a7c30a57 == refs/tags/v4.2.0 -- both match their trailing version-comment claims exactly, not just 'reachable'.",
+    "Independently confirmed AC4 by reading the repo-root Makefile directly (not just trusting the Tester's claim): `default: all`, `all:` builds src+tests, `check: all` runs SSWTests, tactical/TacticalTests, and gui/GuiTests under xvfb-run -a. The workflow's bare `make` and `make check` steps invoke exactly these targets with no CI-only divergence.",
+    "actionlint unavailability was independently reconfirmed in this environment (`which actionlint` -> exit 1), consistent with the Implementer's and Tester's stated limitation.",
+    "Given the inherent inability to execute GitHub Actions in this sandbox, this combination of real-parser structural assertions, live external reachability/tag verification, and direct Makefile comparison is the strongest available verification and is treated as adequate -- not a source-inspection-only violation of the mandatory behavioral-test policy, which targets C++ application runtime behavior and does not have an executable local equivalent for a cloud-CI YAML artifact.",
+    "No coverage gaps identified relative to the five acceptance criteria."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
