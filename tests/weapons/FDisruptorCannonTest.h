@@ -1,8 +1,9 @@
 /**
  * @file FDisruptorCannonTest.h
  * @brief Header file for the FDisruptorCannonTest class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created: Jun 19, 2009
+ * @date Last Modified: Jul 11, 2026
  */
 
 #ifndef FDisruptorCannonTest_H_
@@ -19,6 +20,8 @@ class FDisruptorCannonTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST_SUITE( FDisruptorCannonTest );
 	CPPUNIT_TEST( testConstructor );
 	CPPUNIT_TEST( testFireCoverage );
+	CPPUNIT_TEST( testSetTargetAcceptsRangeAtMax );
+	CPPUNIT_TEST( testSetTargetRejectsRangeBeyondMax );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -30,6 +33,11 @@ public:
 
 	void testConstructor();
 	void testFireCoverage();
+
+	/// P2-1 AC: setTarget(target, 9, ...) is accepted because 9 is the corrected max range (RA 9).
+	void testSetTargetAcceptsRangeAtMax();
+	/// P2-1 AC: setTarget(target, r, ...) for r in 10..12 is rejected now that m_range is 9 (previously accepted up to 12).
+	void testSetTargetRejectsRangeBeyondMax();
 };
 
 }
