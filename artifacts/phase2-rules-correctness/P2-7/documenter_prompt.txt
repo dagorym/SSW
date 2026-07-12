@@ -1,0 +1,60 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated the minimal deterministic RNG seed seam (Phase 2 reviewer follow-up F1) added to include/Frontier.h (seedRandomExplicit()/seedRandomFromClock()) and src/strategic/FGame.cpp (constructor now seeds via seedRandomFromClock()). Updated FFleetTest::testDecTransitTime to call seedRandomExplicit(1) immediately before the 3rd decTransitTime() call -- the only call in that test that draws irand(100) against getRJChance() (90) in the risk-jump check -- removing the ~10% intermittent failure. Added tests/core/FrontierTest.cpp/.h with two behavioral tests proving seedRandomExplicit(seed) makes irand() reproducible for the same seed and differing across seeds, and registered FrontierTest in tests/SSWTests.cpp.
+
+Acceptance criteria validated:
+- Calling the explicit-seed function with a fixed value makes subsequent irand() outputs reproducible (same seed -> same sequence in-process) -- covered behaviorally by FrontierTest::testSeedRandomExplicitReproducibleSameSeed (two independent 5-draw sequences after seedRandomExplicit(1) are asserted equal) and testSeedRandomExplicitDiffersAcrossSeeds (seed 1 vs seed 2 sequences assert-differ).
+- With a fixed seed set, FFleet::decTransitTime()'s risk-jump outcome is reproducible (same seed -> same transit-time progression) -- covered behaviorally by FFleetTest::testDecTransitTime, which now calls seedRandomExplicit(1) immediately before the 3rd decTransitTime() call (the sole irand(100) risk-jump draw in that test) and asserts the full exact transit-time sequence 8,6,5,3,1,0, deterministically across repeated runs.
+- A newly constructed FGame seeds via the clock-based seam (normal play is not pinned to a constant seed) -- verified by source/behavior review of src/strategic/FGame.cpp: FGame::FGame(IStrategicUI*) calls seedRandomFromClock() (srand((unsigned int)time(NULL))), unchanged in normal-play behavior from the prior raw srand(time(NULL)) call, only routed through the new named seam; no test pins FGame construction to a constant seed.
+- Repo builds clean; existing suites still pass -- repo-root `make` exit 0; `./SSWTests` 245/245 passed on two consecutive runs (0 new failures; the 9 documented pre-existing FGameHeaderDependencyTest cwd-artifact failures did not manifest in this worktree layout, which is a pass-direction difference only).
+
+Implementation branch or worktree context:
+- Branch/worktree: p2rc-P2-7-tester-20260711, based on the Implementer's ec821048 commit ('P2-7: Add minimal deterministic RNG seed seam (F1)') plus 4e5162d1 (Implementer artifacts).
+- include/Frontier.h: added seedRandomExplicit(unsigned int seed) (calls srand(seed) directly) and seedRandomFromClock() (calls srand((unsigned int)time(NULL))), immediately after irand(); irand() itself is unchanged. <ctime> added to the includes.
+- src/strategic/FGame.cpp: FGame::FGame(IStrategicUI*) now calls seedRandomFromClock() instead of the raw srand(time(NULL)) it previously called.
+- FFleet::decTransitTime() (src/strategic/FFleet.cpp:98) is unmodified; the only irand() call in FFleet.cpp/FSystem.cpp is inside the risk-jump check `if (irand(100) > getRJChance())`.
+- Determinism is entirely a function of the shared process-global RNG: constructing an FGame reseeds from the clock and overwrites any prior explicit seed, so tests needing determinism must seed after any FGame construction they perform (or avoid constructing FGame) and seed immediately before the RNG-consuming call, since no other irand() consumer may run in between.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/Frontier.h
+- src/strategic/FGame.cpp
+- tests/strategic/FFleetTest.cpp
+- tests/core/FrontierTest.cpp
+- tests/core/FrontierTest.h
+- tests/SSWTests.cpp
+
+Test commit:
+- 3dcb44ab
+
+Commands executed:
+- make (repo root)
+- cd tests && ./SSWTests (run twice for repeatability)
+- standalone g++ probe programs (outside the test tree, under the scratch directory) confirming: (a) seedRandomExplicit(seed) -> reproducible irand() sequences for the same seed, differing sequences across seeds; (b) across seeds 1-200, ~10% (20/200) produce irand(100) > 90 for the risk-jump check, confirming the documented ~9-10% flake rate; (c) seed=1 deterministically yields irand(100)==85 (<=90), landing in the PASS region every run
+
+Final test outcomes:
+- Repo-root `make` completed cleanly (exit 0), building SSW, BattleSim, and the full tests/ tree including tests/SSWTests.
+- `./SSWTests` run twice from tests/ (cwd=tests/): 245 run, 0 failures, 0 errors both times (243 pre-existing tests + 2 new FrontierTest tests). FFleetTest::testDecTransitTime passed deterministically both runs.
+- The 9 pre-existing FGameHeaderDependencyTest cwd-artifact failures documented in the Implementer/Planner handoff as expected-in-worktree did NOT occur in this worktree layout -- all 9 passed, so there were 0 total failures rather than the documented 9. This is a pass-direction discrepancy only (no new failures introduced); no acceptance criterion is at risk.
+- No new failures beyond the pre-existing note; FGameTest, FGameMockStrategicUITest, and all other strategic/core/tactical/weapons/ships suites passed.
+
+Documentation context:
+- REQUIRED: annotate the F1 roadmap follow-up as RESOLVED in doc/synthesized-roadmap.md -- and ONLY that one row/bullet. The F1 item has no literal "F1" label in that file; it is the unlabeled "**Randomness:**" bullet in section "### 3.7 Build system and tests" (currently starting "`srand(time(NULL))` inside the `FGame` constructor reseeds the process-wide RNG..."). Mirror the existing C1-C6/T1-T3/S2-S3 annotation style already used elsewhere in that file (e.g. "***RESOLVED*** (P2-7, commit `ec821048`)" inline in the bullet, or a trailing "**[RESOLVED -- see P2-7: ...]**" clause) and note precisely what was and was NOT resolved: only the minimal seed seam (seedRandomExplicit()/seedRandomFromClock() in include/Frontier.h, FGame's constructor switched to the clock seam) that fixes the flaky FFleetTest::testDecTransitTime is resolved; the roadmap's broader "injectable dice seam (std::mt19937 owned per game, settable seed)" recommendation in that same bullet is explicitly a larger, NOT-yet-done refactor (the Implementer's own report calls this "the minimal seed seam, not the full injectable-RNG refactor") -- do not mark that broader recommendation resolved, and do not touch the F2 or F4 follow-up rows/bullets elsewhere in the file (those belong to other subtasks' Documenters per the plan's union-merge note).
+- Do not add or edit any other doc/synthesized-roadmap.md row while here (e.g. leave the adjacent include-guard and AGENTS.md-coverage-flags bullets in section 3.7 untouched).
+- AGENTS.md/doc/test-contracts.md do not need new entries for this change (FrontierTest and the FFleetTest seeding addition are ordinary CppUnit tests, not part of the tactical source-contract catalog); no AGENTS.md canonical-fact updates are required since the new RNG seam is a small, self-contained Frontier.h addition with its own Doxygen headers already in place from the Implementer.
+- doc/deferred-tasks.md was checked and does not currently reference F1/the flaky-test follow-up; no edit needed there for this subtask.
+
+Plan and diff context:
+- Plan: plans/phase2-rules-correctness-followups-plan.md (Phase 2 rules-correctness + Phase-1 reviewer follow-ups plan) on branch plan-phase2-rules-correctness-followups; this P2-7 subtask implements reviewer follow-up F1 from that plan/roadmap.
+- Comparison base: diff against the plan-phase2-rules-correctness-followups branch (or master) to isolate this subtask's changes; only include/Frontier.h, src/strategic/FGame.cpp, tests/strategic/FFleetTest.cpp, tests/core/FrontierTest.cpp, tests/core/FrontierTest.h, and tests/SSWTests.cpp are in scope for P2-7.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-7
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
