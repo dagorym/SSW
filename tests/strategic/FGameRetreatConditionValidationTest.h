@@ -38,6 +38,7 @@ class FGameRetreatConditionValidationTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST(testInitRepromptsUntilValidRetreatConditionIsReturned);
 	CPPUNIT_TEST(testInitAcceptsValidRetreatConditionWithoutExtraPrompts);
 	CPPUNIT_TEST(testInitStoredConditionDrivesCorrectVictoryDispatch);
+	CPPUNIT_TEST(testInitBoundsRepromptLoopAndLeavesRetreatConditionUnset);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -102,6 +103,30 @@ public:
 	 * @date Last Modified: Jul 11, 2026
 	 */
 	void testInitStoredConditionDrivesCorrectVictoryDispatch();
+
+	/**
+	 * @brief A degenerate mock that returns an out-of-range value (an
+	 *        X-close/cancel sentinel such as wxID_CANCEL) on every single
+	 *        call -- simulating a headless WXStrategicUI that never returns
+	 *        a valid 1..5 value -- must not cause init() to spin forever.
+	 *        Asserts init() terminates and returns, that
+	 *        selectRetreatCondition() was invoked exactly the bounded cap
+	 *        number of times (proving the loop is bounded rather than
+	 *        merely "eventually" terminating), and that the stored retreat
+	 *        condition is NOT a bogus out-of-range value: showRetreatConditions()
+	 *        must still dispatch the "Error:  No retreat condition selected"
+	 *        default branch (the safe unset/default state), never a valid
+	 *        1..5 condition's text, proving m_satharRetreat was left at its
+	 *        prior/default value rather than being set to the invalid
+	 *        sentinel. This test fails against a pre-fix unbounded while-loop
+	 *        (it would hang / time out) and would also fail against a bugged
+	 *        bound that stored the last-seen invalid value.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 11, 2026
+	 * @date Last Modified: Jul 11, 2026
+	 */
+	void testInitBoundsRepromptLoopAndLeavesRetreatConditionUnset();
 };
 
 }

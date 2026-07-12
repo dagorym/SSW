@@ -197,4 +197,42 @@ void FGameRetreatConditionValidationTest::testInitStoredConditionDrivesCorrectVi
 	delete game;
 }
 
+void FGameRetreatConditionValidationTest::testInitBoundsRepromptLoopAndLeavesRetreatConditionUnset() {
+	// A single-element sequence of an out-of-range X-close/cancel sentinel
+	// (-1, standing in for wxID_CANCEL) replays forever once the sequence is
+	// exhausted (see ScriptedRetreatConditionMockStrategicUI::selectRetreatCondition()),
+	// modeling a degenerate UI -- e.g. a headless WXStrategicUI -- that never
+	// returns a valid 1..5 value.
+	std::vector<int> sequence;
+	sequence.push_back(-1);
+	ScriptedRetreatConditionMockStrategicUI mock(sequence);
+
+	FGame* game = &(FGame::create(&mock));
+
+	// If the re-prompt loop is unbounded, this call hangs; a bound proves
+	// init() terminates and returns normally in the same test run.
+	CPPUNIT_ASSERT_EQUAL(0, game->init(NULL));
+
+	// The loop must be bounded to exactly the documented cap
+	// (kMaxRetreatConditionPrompts = 1000 in FGame::init()), not merely
+	// "eventually" stop for some other reason.
+	CPPUNIT_ASSERT_EQUAL(1000, mock.selectRetreatConditionCalls);
+
+	// The stored condition must NOT be the bogus out-of-range sentinel:
+	// showRetreatConditions() must fall through to the safe default/unset
+	// "Error" branch rather than dispatching any valid 1..5 condition's
+	// text, proving m_satharRetreat was left at its prior/default value
+	// instead of being set to an invalid value.
+	game->showRetreatConditions();
+	CPPUNIT_ASSERT_EQUAL(1, mock.showRetreatConditionsCalls);
+	CPPUNIT_ASSERT(mock.lastRetreatConditionsText.find("Error") != std::string::npos);
+	CPPUNIT_ASSERT(mock.lastRetreatConditionsText.find("two assault carriers") == std::string::npos);
+	CPPUNIT_ASSERT(mock.lastRetreatConditionsText.find("five heavy cruisers") == std::string::npos);
+	CPPUNIT_ASSERT(mock.lastRetreatConditionsText.find("40 ships") == std::string::npos);
+	CPPUNIT_ASSERT(mock.lastRetreatConditionsText.find("tenday passes") == std::string::npos);
+	CPPUNIT_ASSERT(mock.lastRetreatConditionsText.find("Fighters and Militia ships are not counted") == std::string::npos);
+
+	delete game;
+}
+
 }
