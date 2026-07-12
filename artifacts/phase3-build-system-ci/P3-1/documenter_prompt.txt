@@ -1,0 +1,92 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Verified the P3-1 build-system refactor (new shared common.mk, pinned -std=c++17 across all Linux Makefiles, wx-config-derived tactical include flags replacing a machine-specific hardcoded path, and drift fixes in src/defenses and tests/core) is behavior-preserving. This is a pure build-config change with no C++ source/header edits, so verification was a clean full-suite build+run of all three test runners plus static Makefile checks and a coverage opt-in smoke test -- no new CppUnit fixtures were needed or added.
+
+Acceptance criteria validated:
+- common.mk exists at repo root and is included by the 6 non-GUI src module Makefiles and the 4 simple test-lib Makefiles (10 total, confirmed by grep).
+- make all_clean && make from the repo root builds SSW, BattleSim, and all three test runners with no errors, and every compile command carries -std=c++17.
+- cd tests && make && ./SSWTests passes (OK, 245 tests); cd tests/tactical && make && ./TacticalTests passes (OK, 253 tests); cd tests/gui && make && xvfb-run -a ./GuiTests passes (OK, 75 tests) -- the refactor changed no test outcome.
+- src/tactical's wx include flags derive from wx-config via common.mk's WX_CXXFLAGS; the machine-specific hardcoded /usr/local/lib/wx/include/gtk3-unicode-static-3.3 path no longer appears in src/tactical/Makefile.
+- The five pure modules (core, strategic, ships, weapons, defenses) stay wx-free: no wx-config or WX_CXXFLAGS references in their Makefiles, and a make -n dry run for src/core/FPoint.o shells out to wx-config zero times.
+- The malformed 'rm  -f*.gcov' no longer appears anywhere (src/defenses inherits the corrected 'rm -f *.gcov' from common.mk); tests/core/Makefile no longer contains ../../../src/include.
+- Coverage still opts in: make COVERAGE=1 tests compiles with -fprofile-arcs -ftest-coverage.
+
+Implementation branch or worktree context:
+- Implementer branch: phase3-P3-1-implementer-20260712, code commit c88719a6ca39836c8ef8cba33dc093da3a611255.
+- Tester worktree/branch: phase3-P3-1-tester-20260712 (branched from the implementer's completed work), working tree clean throughout verification.
+- Approved deviation (implementer report, carried forward for the Documenter/Verifier): src/tactical obtaining wx include flags from wx-config via common.mk's WX_CXXFLAGS is a user-approved deviation from the current AGENTS.md/CLAUDE.md rule forbidding wx-config in the six non-GUI module Makefiles; the AGENTS.md/CLAUDE.md carve-out documenting this exception is owned by this subtask's Documenter stage.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- common.mk
+- src/Makefile
+- src/battleSim/Makefile
+- src/core/Makefile
+- src/defenses/Makefile
+- src/gui/Makefile
+- src/ships/Makefile
+- src/strategic/Makefile
+- src/tactical/Makefile
+- src/weapons/Makefile
+- tests/Makefile
+- tests/core/Makefile
+- tests/gui/Makefile
+- tests/ships/Makefile
+- tests/strategic/Makefile
+- tests/tactical/Makefile
+- tests/weapons/Makefile
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- make all_clean
+- make
+- (cd tests && make && ./SSWTests)
+- (cd tests/tactical && make && ./TacticalTests)
+- (cd tests/gui && make && xvfb-run -a ./GuiTests)
+- make COVERAGE=1 tests
+- grep -n "gtk3-unicode-static" src/tactical/Makefile
+- grep -n "WX_CXXFLAGS|wx-config" src/tactical/Makefile
+- grep -rn "wx-config|WX_CXXFLAGS" src/{core,strategic,ships,weapons,defenses}/Makefile
+- grep -n "gcov" src/defenses/Makefile common.mk
+- grep -n "src/include" tests/core/Makefile
+- grep -rln "rm  -f*.gcov" src tests common.mk
+- rm -f src/core/FPoint.o && make -C src/core -n FPoint.o
+- grep -l "include ../../common.mk" (10 expected Makefiles)
+
+Final test outcomes:
+- make all_clean succeeded (all libs/binaries/objects removed cleanly from src and tests trees).
+- make from repo root succeeded with exit 0, producing SSW, BattleSim, and all three test runners (SSWTests, TacticalTests, GuiTests); every compile command carried -std=c++17, confirmed via a sample pure-module line: 'g++ -c -I../../include -g -Wall -Woverloaded-virtual -DLINUX -std=c++17  -MMD -MP -fPIC -DPIC -o FGameConfig.o FGameConfig.cpp'.
+- cd tests && make && ./SSWTests -> OK (245 tests), matching the expected count exactly.
+- cd tests/tactical && make && ./TacticalTests -> OK (253 tests), matching the expected count exactly.
+- cd tests/gui && make && xvfb-run -a ./GuiTests -> OK (75 tests), matching the expected count exactly.
+- common.mk exists at the repo root and is included (via 'include ../../common.mk') by exactly the 10 expected Makefiles: src/core, src/strategic, src/ships, src/weapons, src/defenses, src/tactical, tests/core, tests/weapons, tests/strategic, tests/ships.
+- grep for 'gtk3-unicode-static' in src/tactical/Makefile returned no matches -- the machine-specific hardcoded wx include path is gone; src/tactical/Makefile now only has 'CXXFLAGS += $(WX_CXXFLAGS)' plus an explanatory comment, deriving its wx include flags from common.mk's wx-config-based WX_CXXFLAGS.
+- grep for 'wx-config' and 'WX_CXXFLAGS' across src/{core,strategic,ships,weapons,defenses}/Makefile returned no matches -- the five pure modules remain wx-free.
+- Dry-run edge case: deleted src/core/FPoint.o and ran 'make -C src/core -n FPoint.o'; the resulting compile line ('g++ -c -I../../include -g -Wall -Woverloaded-virtual -DLINUX -std=c++17  -MMD -MP -fPIC -DPIC -o FPoint.o FPoint.cpp') contains zero wx-config invocations and carries -std=c++17. The deleted object was rebuilt afterward via a real (non-dry-run) 'make -C src/core' to restore build state.
+- grep -n gcov across src/defenses/Makefile and common.mk shows only the corrected 'rm -f *.gcov' (two occurrences in common.mk's shared objs/coverage-clean targets); a repo-wide grep for the malformed 'rm  -f*.gcov' (double space, missing space before *.gcov) returned zero matches anywhere in src/, tests/, or common.mk.
+- grep -n src/include in tests/core/Makefile returned no matches -- the stale -I../../../src/include reference is gone.
+- make COVERAGE=1 tests compiled and linked successfully (exit 0); sample compile/link lines carry both -fprofile-arcs and -ftest-coverage alongside -std=c++17, e.g. 'g++ -c -I../../include -g -Wall -Woverloaded-virtual -DLINUX -std=c++17 -fprofile-arcs -ftest-coverage `wx-config --cxxflags` -DCORE_TEST_REPO_ROOT=... -o FGameConfigTest.o FGameConfigTest.cpp' and the final SSWTests link line likewise carries -fprofile-arcs -ftest-coverage.
+- git status in the worktree is clean after all builds/runs -- all build byproducts (.o/.a/.d/.gcno/.gcda and the SSW/BattleSim/SSWTests/TacticalTests/GuiTests binaries) are gitignored, so no temporary non-handoff byproducts required cleanup or exist in the tree.
+- No C++ source or header file was touched; existing test suites already fully cover the behavior-preservation requirement for this pure build-config change, so no new or modified CppUnit fixtures were needed, per the Planner's 'No new fixtures expected' guidance.
+
+Documentation context:
+- AGENTS.md's 'Build System' section (Linux/Make) should reflect the new shared common.mk and its role (wx-free common base, lazy WX_CXXFLAGS, which modules include it).
+- AGENTS.md's module-boundary / wx-config rule needs the Documenter-owned carve-out: src/tactical is now an approved exception permitted to consume wx-config-derived flags (via common.mk's WX_CXXFLAGS) while the five pure modules (core, strategic, ships, weapons, defenses) remain strictly forbidden from wx-config, exactly as before.
+- No behavior, test count, or runtime output changed; this is purely a build-configuration and documentation-policy update.
+
+Plan and diff context:
+- Plan: plans/phase3-build-system-ci-plan.md (Phase 3 -- Build-System Unification + Minimal CI), subtask P3-1.
+- Comparison base: implementer branch phase3-P3-1-implementer-20260712 at code commit c88719a6ca39836c8ef8cba33dc093da3a611255; diff scope is the 16 Makefiles plus the new common.mk listed above.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase3-build-system-ci/P3-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

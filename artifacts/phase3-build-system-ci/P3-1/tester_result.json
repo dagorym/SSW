@@ -1,0 +1,37 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase3-build-system-ci/P3-1/tester_report.md",
+    "artifacts/phase3-build-system-ci/P3-1/tester_result.json",
+    "artifacts/phase3-build-system-ci/P3-1/documenter_prompt.txt"
+  ],
+  "branch_name": "phase3-P3-1-tester-20260712",
+  "commands_run": [
+    "make all_clean",
+    "make",
+    "(cd tests && make && ./SSWTests)",
+    "(cd tests/tactical && make && ./TacticalTests)",
+    "(cd tests/gui && make && xvfb-run -a ./GuiTests)",
+    "make COVERAGE=1 tests",
+    "grep -n \"gtk3-unicode-static\" src/tactical/Makefile",
+    "grep -n \"WX_CXXFLAGS|wx-config\" src/tactical/Makefile",
+    "grep -rn \"wx-config|WX_CXXFLAGS\" src/{core,strategic,ships,weapons,defenses}/Makefile",
+    "grep -n \"gcov\" src/defenses/Makefile common.mk",
+    "grep -n \"src/include\" tests/core/Makefile",
+    "grep -rln \"rm  -f*.gcov\" src tests common.mk",
+    "rm -f src/core/FPoint.o && make -C src/core -n FPoint.o",
+    "grep -l \"include ../../common.mk\" (10 expected Makefiles)"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "OK (75 tests)",
+    "SSWTests": "OK (245 tests)",
+    "TacticalTests": "OK (253 tests)",
+    "clean_full_build": "exit 0, no errors",
+    "coverage_opt_in_build": "exit 0, -fprofile-arcs -ftest-coverage present on compile/link lines"
+  },
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P3-1",
+  "test_commit_hash": "No Changes Made",
+  "test_files_changed": [],
+  "unmet_acceptance_criteria": []
+}
