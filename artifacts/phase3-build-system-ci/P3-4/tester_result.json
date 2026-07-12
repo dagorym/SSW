@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase3-build-system-ci/P3-4/tester_report.md",
+    "artifacts/phase3-build-system-ci/P3-4/tester_result.json",
+    "artifacts/phase3-build-system-ci/P3-4/documenter_prompt.txt"
+  ],
+  "branch_name": "phase3-P3-4-tester-20260712",
+  "commands_run": [
+    "python3 p3_4_yaml_check.py -- behavioral structural check: yaml.safe_load(.github/workflows/ci.yml) into a real parsed dict, then asserts on the parsed structure (trigger branches, job count/runner, presence of apt/wx/make/make-check run steps, permissions blocks, SHA-pin regex match on parsed `uses:` values, no `secrets.` substring in raw source) -- 17/17 checks pass",
+    "curl -s -o /dev/null -w 'HTTP %{http_code}' -L https://github.com/actions/checkout/commit/11bd71901bbe5b1630ceea73d27597364c9af683 -- HTTP 200",
+    "curl -s -o /dev/null -w 'HTTP %{http_code}' -L https://github.com/actions/cache/commit/1bd1e32a3bdc45362d1e726936510720a7c30a57 -- HTTP 200",
+    "curl -s -o /dev/null -w 'HTTP %{http_code}' -L https://github.com/wxWidgets/wxWidgets/releases/download/v3.3.2/wxWidgets-3.3.2.tar.bz2 -- HTTP 200",
+    "Read repo-root Makefile: confirmed `all` target (src+tests) and `check` target (depends on all; runs SSWTests, tactical/TacticalTests, gui/GuiTests under xvfb-run -a) match the workflow's bare `make` and `make check` steps exactly -- no CI-only divergent path",
+    "grep -rn wx-config src tests common.mk -- confirmed every module Makefile and common.mk resolves wx flags via `wx-config --cxxflags`/`--libs` on PATH, so the workflow's PATH-only wx provisioning (append ${WX_PREFIX}/bin to GITHUB_PATH) is sufficient",
+    "wx-config --libs (local dev install) -- confirmed local wx install links static .a archives, corroborating the workflow's --disable-shared rationale"
+  ],
+  "pass_fail_totals": {
+    "reachability_checks_failed": 0,
+    "reachability_checks_passed": 3,
+    "structural_checks_failed": 0,
+    "structural_checks_passed": 17
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": "P3-4",
+  "test_commit_hash": "No Changes Made",
+  "test_files_changed": [],
+  "unmet_acceptance_criteria": []
+}
