@@ -1,0 +1,68 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented the P2-6 hardening of the strategic Save/Open file-dialog paths (reviewer follow-up F4 / roadmap H15). FMainFrame::onSave() and onOpen() now check wxFileDialog::ShowModal() and treat Cancel/non-OK as a no-op (no ofstream/ifstream opened, no FGame created, no FGame::save()/load() called), and use the dialog's full GetPath() instead of the cwd-dependent GetFilename() on a confirmed OK. onOpen()'s existing post-load menu-enable/turn-state logic is preserved unchanged on the success path. Annotated the H15 row in doc/synthesized-roadmap.md as RESOLVED (P2-6), mirroring the Phase 1 C1-C6 annotation pattern; confirmed the Implementer's onSave()/onOpen() Doxygen headers already accurately document the Cancel-is-a-no-op / GetPath() behavior (no change needed); no user-facing docs required changes per the plan.
+
+Acceptance criteria to verify:
+- Cancelling Save leaves the filesystem untouched and does not call FGame::save. -- validated PASS by Tester (testMainFrameOnSaveCancelLeavesFilesystemUntouched); code path confirmed in src/FMainFrame.cpp onSave().
+- Confirming Save writes to the dialog's full GetPath() location. -- validated PASS by Tester (testMainFrameOnSaveConfirmWritesToDialogFullPath).
+- Cancelling Open creates no FGame and attempts no load; the frame stays consistent. -- validated PASS by Tester (testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent); this was the RED-verified case (segfault pre-fix, green post-fix).
+- Confirming Open loads from GetPath() and restores the post-load menu/turn state. -- validated PASS by Tester (testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState).
+- Repo builds clean; the GUI suite passes (OK 75). -- re-verified independently by Documenter: make exit 0, xvfb-run GuiTests OK (75 tests), tests/SSWTests OK (217 tests).
+
+Implementation branch or worktree context:
+- Implementer branch/commit: c49823c7b0a3389fa894ad9922c09dbe5052f16b (src/FMainFrame.cpp: onSave()/onOpen() Cancel-safe + GetPath(); include/FMainFrame.h: Doxygen updates).
+- Tester commit: 2961c923258c676e52c9a8faf2a96d8576f12582 (tests/gui/StrategicGuiLiveTest.cpp/.h: 4 new behavioral GUI tests + suite registration + Doxygen).
+- Documenter branch/worktree: p2rc-P2-6-documenter-20260711 (worktree /home/tstephen/repos/worktrees/p2rc-P2-6-documenter-20260711), documentation commit 31799d74423c6f846a05a5cb4e951c2b5eb88b66 (doc/synthesized-roadmap.md: H15 row annotated RESOLVED).
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/FMainFrame.cpp
+- include/FMainFrame.h
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.h
+- doc/synthesized-roadmap.md
+
+Commands executed:
+- myteam get role documenter
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <prompt> --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 37fb564b --head HEAD
+- git diff 37fb564b..HEAD -- src/FMainFrame.cpp include/FMainFrame.h
+- git diff 37fb564b..HEAD -- tests/gui/StrategicGuiLiveTest.h
+- grep -n -i F4/H15/Save/Open/GetFilename/GetPath doc/synthesized-roadmap.md
+- make (repo root)
+- make -C tests/gui
+- xvfb-run -a tests/gui/GuiTests
+- env -C tests ./SSWTests
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --phase docs
+- git add doc/synthesized-roadmap.md
+- git commit -F <doc commit message file>
+
+Final test outcomes:
+- make (repo root): exit 0, clean build of SSW, BattleSim, and all test binaries (no source changes since Tester's PASS -- only the roadmap doc line differs from Tester's tree).
+- make -C tests/gui: clean rebuild of GuiTests.
+- xvfb-run -a tests/gui/GuiTests: OK (75 tests), 0 failures, 0 errors -- matches Tester's reported 71 baseline + 4 new P2-6 behavioral tests (testMainFrameOnSaveCancelLeavesFilesystemUntouched, testMainFrameOnSaveConfirmWritesToDialogFullPath, testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent, testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState).
+- env -C tests ./SSWTests (run from tests/ so relative-path source-inspection tests resolve): OK (217 tests), 0 failures, 0 errors -- matches Tester's reported baseline.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase2-rules-correctness-followups-plan.md, subtask P2-6 (F4/H15), lines ~150-161.
+- Plan section 5 (Documentation Impact, overall): 'doc/synthesized-roadmap.md -- annotate the addressed items as RESOLVED (mirroring the C1-C6 tags): ... the reviewer follow-ups F1, F2, F4. Each item's owning subtask's Documenter adds its own annotation; since these are distinct rows/lines, the Coordinator union-merges them at integration.'
+- Comparison base: coordination base tip (Planner commit 37fb564b); diff scoped to this subtask's Implementer + Tester + Documenter commits only, not the other in-flight P2-* subtasks.
+
+Convention-file guidance:
+- AGENTS.md / CLAUDE.md Single-Source-of-Truth Rule: do not restate project facts in entry-point files; canonical facts belong in one place (here, the code Doxygen in include/FMainFrame.h, already updated by the Implementer, plus the roadmap defect-tracking table).
+- doc/rules/tactical_operations_manual.md and doc/rules/second-sathar-war-rules.md are non-editable per AGENTS.md and were not touched.
+- Roadmap annotation pattern mirrored from the Phase 1 C2/C3/C5 rows: append a bolded '**[RESOLVED -- see <TASK-ID>: <summary>; see artifacts/<path>.]**' clause to the end of the existing Detail cell rather than rewriting the original defect description.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase2-rules-correctness/P2-6
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
