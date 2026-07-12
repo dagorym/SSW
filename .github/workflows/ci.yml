@@ -1,0 +1,114 @@
+name: CI
+
+# Minimal Linux CI (roadmap Phase 3 "Now" #3 / BS4): build the repo and run
+# the full `make check` suite (SSWTests, TacticalTests, GuiTests-under-xvfb)
+# on every push/PR to master, plus manual dispatch. This workflow invokes
+# exactly the same `make` and `make check` commands documented in
+# AGENTS.md/CLAUDE.md and verified locally by P3-1/P3-3 -- there is no
+# CI-only build path.
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+# CI hygiene: read-only token, no repository secrets are referenced anywhere
+# in this workflow.
+permissions:
+  contents: read
+
+env:
+  # wxWidgets version pinned repo-wide (see AGENTS.md); bump here and in the
+  # cache key together if the pin ever changes.
+  WX_VERSION: "3.3.2"
+  WX_PREFIX: ${{ github.workspace }}/.wx-install
+
+jobs:
+  build-and-check:
+    name: Build and run make check (Ubuntu)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install C++ toolchain and non-wx build dependencies
+        # C++ toolchain, CppUnit dev, GTK3 dev (both the wx GUI backend and
+        # the direct pkg-config gtk+-3.0 flags src/tactical adds via
+        # common.mk's WX_CXXFLAGS), xvfb for the headless GUI suite, and the
+        # small utility set needed to fetch/build wxWidgets from source
+        # below (curl, ca-certificates, pkg-config, build-essential).
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libcppunit-dev \
+            libgtk-3-dev \
+            xvfb \
+            curl \
+            ca-certificates
+
+      # --- wxWidgets 3.3.2 provisioning -----------------------------------
+      # As of this workflow's authoring, the Ubuntu 24.04 ("noble") runner
+      # image's apt repositories ship libwxgtk3.2-dev (wxWidgets 3.2.x), not
+      # the 3.3.x line this repo requires (confirmed locally via
+      # `apt-cache policy libwxgtk3.2-dev` => candidate 3.2.4). No distro
+      # package for wx 3.3.2 is available on this runner, so we build
+      # wxWidgets 3.3.2 from the official upstream release tarball and cache
+      # the resulting install prefix, keyed on the wx version, so normal
+      # runs restore it instead of rebuilding wx on every job. If a future
+      # runner image ships wx 3.3.x via apt, this block can be replaced with
+      # `apt-get install libwxgtk3.3-dev` (or equivalent) -- the rest of the
+      # job (make / make check) does not change either way, since it only
+      # depends on `wx-config` being on PATH.
+      - name: Cache wxWidgets ${{ env.WX_VERSION }} build
+        id: wx-cache
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: ${{ env.WX_PREFIX }}
+          key: wx-${{ env.WX_VERSION }}-${{ runner.os }}-static-v1
+
+      - name: Build and install wxWidgets ${{ env.WX_VERSION }} from source
+        if: steps.wx-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o /tmp/wxWidgets-${WX_VERSION}.tar.bz2 \
+            "https://github.com/wxWidgets/wxWidgets/releases/download/v${WX_VERSION}/wxWidgets-${WX_VERSION}.tar.bz2"
+          mkdir -p /tmp/wx-src
+          tar -xjf /tmp/wxWidgets-${WX_VERSION}.tar.bz2 -C /tmp/wx-src --strip-components=1
+          cd /tmp/wx-src
+          # Static build (matches this repo's locally-verified dev setup,
+          # which links wx as .a archives) and builtin third-party image
+          # libs so the build is reproducible regardless of what the runner
+          # image happens to have installed.
+          ./configure \
+            --prefix="${WX_PREFIX}" \
+            --with-gtk=3 \
+            --disable-shared \
+            --disable-tests \
+            --with-libpng=builtin \
+            --with-libjpeg=builtin \
+            --with-libtiff=builtin \
+            --with-zlib=builtin \
+            --with-expat=builtin
+          make -j"$(nproc)"
+          make install
+
+      - name: Add wxWidgets wx-config to PATH
+        run: echo "${WX_PREFIX}/bin" >> "$GITHUB_PATH"
+
+      - name: Verify wx-config resolves the pinned version
+        run: |
+          wx-config --version
+          wx-config --cxxflags
+
+      - name: Build (make)
+        run: make
+
+      - name: Run make check (SSWTests, TacticalTests, GuiTests under xvfb)
+        run: make check
