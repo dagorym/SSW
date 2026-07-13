@@ -1,0 +1,58 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Resolve finding H9: bind all FBattleDisplay button click handlers exactly once at construction and drive Show/Enable/turn-panel position per phase from a new non-paint FBattleDisplay::updateForPhase(), removing the m_first paint-time connect/show/hide machinery. Wire updateForPhase() into FBattleScreen::setState, setPhase, and onSize (via the shared reDraw() seam).
+
+Modified files:
+- include/tactical/FBattleDisplay.h
+- src/tactical/FBattleDisplay.cpp
+- include/tactical/FBattleScreen.h
+- src/tactical/FBattleScreen.cpp
+
+Acceptance criteria to validate (from Planner):
+- No m_first anywhere; all 9 button click handlers (7 phase + 2 turn) bound once in the ctor; no button Connect/Disconnect in the paint/draw path.
+- A new public non-paint FBattleDisplay::updateForPhase() exists (no drawing, no DC) and is wired into FBattleScreen::setState, setPhase, and onSize.
+- Per-phase parity: exactly the correct Done/Set-Speed button shown+enabled per phase, all others hidden; clicking a phase button routes to the same handler and same model effect as before (Set Speed advances setup; Movement Done finalizes movement; Defensive/Offensive Fire Done and Mine/Seeker Placement + Seeker Activation Done complete their phases; Turn Left/Right apply the end-of-move facing via FBattleScreen::applyEndOfMoveTurn(+/-1)).
+- TMF-05 turn-button invariants preserved (shown/enabled only in PH_MOVE with a ship selected and min-move satisfied; hidden outside PH_MOVE or when state != BS_Battle); TMF-06 Done-button dialog-suppression unchanged.
+- Full Doxygen header on updateForPhase(); Last Modified + @author (= model (reasoning level)) updated on every function whose body changed, per AGENTS.md.
+
+Create test files in:
+- Behavioral GUI coverage: tests/gui/TacticalGuiLiveTest.{h,cpp} (registered in tests/gui/GuiTests.cpp) - drive real phase transitions via setState/setPhase + offscreen wxMemoryDC paint and assert observed IsShown()/IsEnabled()/model state.
+- Tactical model / source-contract coverage: tests/tactical/* (registered in tests/tactical/TacticalTests.cpp). The 6 source-inspection tests in tests/tactical/FTacticalBattleDisplayFireFlowTest.{h,cpp} that assert the removed old paint-time button literals must be updated to reflect the new bind-once + updateForPhase() structure (see expected failures below).
+- Per AGENTS.md behavioral-verification policy: source-string inspection may only supplement, never substitute, behavioral assertions.
+
+Implementation context for testing:
+- H9 core change is in FBattleDisplay: the bool m_first member was removed from include/tactical/FBattleDisplay.h and every use site in src/tactical/FBattleDisplay.cpp.
+- All 7 phase-button click handlers (m_button1 onSetSpeed, m_buttonMoveDone onMoveDone, m_buttonDefensiveFireDone onDefensiveFireDone, m_buttonOffensiveFireDone onOffensiveFireDone, m_buttonMinePlacementDone onMinePlacementDone, m_buttonSeekerPlacementDone onSeekerPlacementDone, m_buttonSeekerActivationDone onSeekerActivationDone) plus both turn-button handlers (m_buttonTurnLeft onTurnLeft, m_buttonTurnRight onTurnRight) are now Connect()ed exactly once in the FBattleDisplay constructor (src/tactical/FBattleDisplay.cpp ~lines 148-166). Zero Disconnect() calls remain anywhere.
+- New public non-paint method FBattleDisplay::updateForPhase() (src/tactical/FBattleDisplay.cpp, defined just before draw()) computes Show()/Hide()+Enable() for each of the 7 phase buttons and the turn panel from FBattleScreen::getState()/getPhase()/getControlState()/getShip()/isMoveComplete()/canApplyEndOfMoveTurnLeft()/canApplyEndOfMoveTurnRight(). It ends with Layout(); it never draws and never constructs a DC.
+- Turn-panel POSITION (SetPosition/SetSize) still happens in drawMoveShip() because it needs DC-based wrapped-text-width measurement; but the panel's Show/Hide/Enable now live only in updateForPhase(). draw() no longer contains the two TMF-05 Disconnect+Hide guard blocks.
+- The on*FireDone handlers retain an immediate m_button...->Enable(false)/Hide() double-click guard before the (possibly modal) damage-summary dialog; the final settled state comes from updateForPhase() via completeDefensive/OffensiveFirePhase()'s reDraw(). This preserves TMF-06 (dialog shown only when summary.weaponsFired > 0).
+- FBattleScreen wiring: reDraw() (include/tactical/FBattleScreen.h) now calls m_display->updateForPhase() before refreshing map+display; setState() and setPhase() (src/tactical/FBattleScreen.cpp) now delegate their refresh to reDraw() instead of calling m_map->Refresh()/m_display->Refresh() directly; onSize() calls m_display->updateForPhase() directly after reflowLowerPanelLayout(). onSetSpeed() adds a final m_parent->reDraw() so the ship-cleared/mine-placement-entered state is reflected after its setState/setPhase/setShip sequence.
+- Because reDraw() is the shared seam used throughout FBattleScreen (ship/weapon/defense selection, all phase-completion helpers), updateForPhase() now fires on every model-visible transition, so per-phase button state is correct independent of the next paint.
+- Doxygen: full header block added to updateForPhase() (FBattleDisplay.h); Last Modified + @author updated on FBattleDisplay ctor, draw, drawMoveShip, drawDefensiveFire, drawAttackFire, drawPlaceMines, drawPlaceSeekers, drawSeekerActivation, on* handlers, and FBattleScreen setState/setPhase/onSize/reDraw plus both file-level headers.
+
+Suggested test command(s):
+- make (repo root) - full build of both executables and top-level test targets: PASS (exit 0, no warnings)
+- cd tests/gui && make && xvfb-run -a ./GuiTests - PASS: OK (75 tests), including TMF-05 (TMF05-turn-hidden/enable/click) and TMF-06 (TMFAC2 defensive-skip/offensive-skip)
+- cd tests/tactical && make && ./TacticalTests - 247/253 pass; 6 source-inspection failures in FTacticalBattleDisplayFireFlowTest (see expected failures)
+- Recommended full gate to re-run after Tester updates the source-contract tests: make check (repo root)
+
+Existing validations expected to fail only because approved behavior changed:
+- tests/tactical/FTacticalBattleDisplayFireFlowTest::testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation - asserts onMoveDone() body contains 'm_buttonMoveDone->Disconnect(', 'm_buttonMoveDone->Hide();', 'm_first=true;', and Hide after completeMovePhase(). H9 removed all of these; the button is now hidden by updateForPhase() via completeMovePhase()->reDraw(). Tester must rewrite this as a behavioral test (drive PH_MOVE -> Movement Done click -> assert button IsShown()==false and phase advanced).
+- tests/tactical/FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange - asserts drawMoveShip/drawDefensiveFire/drawAttackFire/drawPlaceMines bodies each contain 'm_button...->Show();' before 'Layout();'. H9 moved all Show() calls to updateForPhase(). Tester must assert observed IsShown() after setPhase/setState + paint, not the source literal.
+- tests/tactical/FTacticalBattleDisplayFireFlowTest::testActionButtonHidePathsRelayoutAfterVisibilityChange - asserts on*Done() bodies contain 'm_button...->Hide();' before 'Layout();'. Move/Mine Done handlers no longer Hide inline (updateForPhase() hides via reDraw()); the two fire-Done handlers keep an intentional double-click-guard Hide(). Tester must assert observed IsShown()==false after the completion handler runs.
+- tests/tactical/FTacticalBattleDisplayFireFlowTest::testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern - asserts drawSeekerActivation()/onSeekerActivationDone() contain the old Connect/Show/Disconnect/Hide pattern. H9 moved bind to ctor and Show/Hide to updateForPhase(). Tester must assert observed shown/hidden state across PH_SEEKER_ACTIVATION entry/exit.
+- tests/tactical/FTacticalBattleDisplayFireFlowTest::testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter - fails only on the trailing 'm_buttonSeekerPlacementDone->Show();' literal assertion; the seeker-specific prompt/SM-filter assertions still hold. Tester should keep the prompt/filter behavioral checks and replace the Show() literal check with an observed IsShown() assertion in BS_PlaceSeekers.
+- tests/tactical/FTacticalBattleDisplayFireFlowTest::testMinePhaseUsesExactPromptTextAndMFilter - fails only on the trailing 'm_buttonMinePlacementDone->Show();' literal assertion; the mine prompt/M-filter assertions still hold. Same remediation as the seeker case for BS_PlaceMines.
+- NOTE: All 6 are source-string-inspection tests only. Behavioral acceptance (TMF-05/TMF-06 in tests/gui/TacticalGuiLiveTest) is green. Per AGENTS.md these source-contract tests must be re-authored as behavioral tests (real setState/setPhase transitions + offscreen wxMemoryDC paint asserting IsShown()/IsEnabled()/model state). Do NOT restore the removed paint-time button lifecycle to satisfy them.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

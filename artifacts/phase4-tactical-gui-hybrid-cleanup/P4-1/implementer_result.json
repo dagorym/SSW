@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-1/implementer_report.md",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-1/tester_prompt.txt",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-1/implementer_result.json"
+  ],
+  "branch_name": "phase4-P4-1-implementer-20260712",
+  "changed_files": [
+    "include/tactical/FBattleDisplay.h",
+    "src/tactical/FBattleDisplay.cpp",
+    "include/tactical/FBattleScreen.h",
+    "src/tactical/FBattleScreen.cpp"
+  ],
+  "code_commit_hash": "bb3ebfa514cb9bc9b749e99024bf30b0af3469de",
+  "pass_label": null,
+  "status": "success",
+  "task_id": "P4-1",
+  "validation_commands": [
+    "make (repo root) - full build of both executables and top-level test targets: PASS (exit 0, no warnings)",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests - PASS: OK (75 tests), including TMF-05 (TMF05-turn-hidden/enable/click) and TMF-06 (TMFAC2 defensive-skip/offensive-skip)",
+    "cd tests/tactical && make && ./TacticalTests - 247/253 pass; 6 source-inspection failures in FTacticalBattleDisplayFireFlowTest (see expected failures)",
+    "Recommended full gate to re-run after Tester updates the source-contract tests: make check (repo root)"
+  ],
+  "validation_outcome": "Build PASS (make, exit 0). Behavioral acceptance criteria PASS: GuiTests OK (75 tests) with TMF-05 and TMF-06 green. TacticalTests: 247/253 pass; the 6 failures are all pure source-inspection (assertContains on function-body literals) tests in FTacticalBattleDisplayFireFlowTest that assert the intentionally-removed old paint-time button Connect/Show/Hide/Disconnect and m_first literals. Classified per validation-triage as EXPECTED CONSEQUENCES of the approved H9 structural change (plan states only TMF-05/TMF-06 must stay green; P4-1 allowed files exclude test files). These require Tester-owned test updates, not an implementation fix."
+}
