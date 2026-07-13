@@ -19,6 +19,7 @@
 #include <wx/window.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -4729,6 +4730,160 @@ void TacticalGuiLiveTest::testMinePlacementButtonShownInPlaceMinesHiddenAfterCom
 	m_harness.pumpEvents(3);
 	m_harness.cleanupOrphanTopLevels(10);
 	std::cerr << "H9:mine-button:done" << std::endl;
+}
+
+void TacticalGuiLiveTest::testShipAndPlanetIconsRenderThroughCallerSuppliedDC() {
+	// H7 AC5 direct behavioral coverage (regression class this remediation targets).
+	//
+	// Before H7, FBattleBoard::drawCenteredOnHex() constructed its own throwaway
+	// wxClientDC(this) instead of drawing onto the dc passed in by draw(dc). That meant
+	// ships, the planet, and seeker icons never actually landed in a caller-supplied
+	// offscreen wxDC (e.g. a wxMemoryDC over a wxBitmap) -- only a live on-screen
+	// wxClientDC received them, while the rest of the scene (grid lines drawn directly
+	// on the passed-in dc by drawGrid()) rendered correctly through that same caller dc.
+	// A test that only inspects source text (assertContains "wxDC &dc" in a signature)
+	// cannot catch a regression that reintroduces an internal wxClientDC inside the
+	// function body while keeping the signature unchanged.
+	//
+	// This test drives the exact same call FBattleBoard::onPaint() makes --
+	// board->draw(dc) -- against a wxMemoryDC/wxBitmap that this test owns, places a
+	// ship and a planet at known hex coordinates, and asserts that the offscreen bitmap
+	// actually changed (in the expected hex-centered pixel regions) compared to a
+	// baseline captured before placement. If drawCenteredOnHex were reverted to an
+	// internal wxClientDC, the ship/planet icons would never reach this offscreen
+	// bitmap and the "after" image would be pixel-identical to the baseline in those
+	// regions, failing the assertions below.
+	std::cerr << "H7:ship-planet-dc:start" << std::endl;
+
+	FFleet * attackFleet = new FFleet();
+	FFleet * defendFleet = new FFleet();
+	FVehicle * attacker = createShip("Destroyer");
+	FVehicle * defender = createShip("Frigate");
+	CPPUNIT_ASSERT(attacker != NULL && defender != NULL);
+	attackFleet->addShip(attacker);
+	defendFleet->addShip(defender);
+	FleetList attackFleets;
+	FleetList defendFleets;
+	attackFleets.push_back(attackFleet);
+	defendFleets.push_back(defendFleet);
+
+	TestableBattleScreen * screen =
+		new TestableBattleScreen("H7 Ship/Planet Render Through Caller DC");
+	// planet=true so setupFleets() also loads the planet image list onto the board,
+	// letting this test exercise both the ship and the planet path through
+	// drawCenteredOnHex(dc, ...).
+	screen->setupFleets(&attackFleets, &defendFleets, true, NULL);
+	screen->Show();
+	m_harness.pumpEvents(2);
+
+	FBattleBoard * board = findFirstBattleBoard(screen);
+	CPPUNIT_ASSERT_MESSAGE("FBattleBoard must exist.", board != NULL);
+	board->Scroll(0, 0);
+
+	// --- Baseline: draw before anything is placed (planetChoice defaults to -1 and no
+	// ships occupy any hex, so drawShips()/the planet branch in draw() draw nothing). ---
+	wxImage baseline;
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+		baseline = bmp.ConvertToImage();
+	}
+
+	// --- Place the planet (production flow: toggle control on, then placePlanet()). ---
+	const FPoint planetHex(30, 14);
+	CPPUNIT_ASSERT_MESSAGE(
+		"Screen must start in BS_SetupPlanet after setupFleets(planet=true).",
+		screen->getState() == BS_SetupPlanet);
+	screen->toggleControlState();
+	CPPUNIT_ASSERT_MESSAGE("placePlanet() must succeed in BS_SetupPlanet with control enabled.",
+		screen->placePlanet(planetHex));
+	screen->setPlanet(0);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Planet position X must be recorded.",
+		planetHex.getX(), screen->getPlanetPos().getX());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Planet position Y must be recorded.",
+		planetHex.getY(), screen->getPlanetPos().getY());
+	CPPUNIT_ASSERT_EQUAL_MESSAGE("Planet image choice must be recorded.",
+		0, screen->getPlanetChoice());
+
+	// --- Place a ship at a known hex. placeShip() succeeds in either BS_SetupDefendFleet
+	// or BS_SetupAttackFleet, whichever placePlanet()'s internal setState() landed on. ---
+	CPPUNIT_ASSERT_MESSAGE(
+		"placePlanet() must leave state in a ship-placement-eligible state.",
+		screen->getState() == BS_SetupDefendFleet || screen->getState() == BS_SetupAttackFleet);
+	const FPoint shipHex(10, 10);
+	screen->setShip(attacker);
+	screen->toggleControlState();
+	CPPUNIT_ASSERT_MESSAGE("placeShip() must succeed at the chosen hex.",
+		screen->placeShip(shipHex));
+
+	// --- After: draw again with the ship and planet placed. ---
+	wxImage afterPlacement;
+	{
+		wxBitmap bmp(2000, 1500);
+		wxMemoryDC dc;
+		dc.SelectObject(bmp);
+		board->draw(dc);
+		dc.SelectObject(wxNullBitmap);
+		afterPlacement = bmp.ConvertToImage();
+	}
+
+	screen->Destroy();
+	m_harness.pumpEvents(5);
+	m_harness.cleanupOrphanTopLevels(10);
+
+	// Expected hex-center pixel coordinates, computed with the same formula
+	// FBattleBoard::computeCenters() uses at the default scale (m_trim=50, m_d=25,
+	// m_a=m_d/sqrt(3)); board->Scroll(0,0) makes CalcScrolledPosition() an identity
+	// transform, matching the approach already relied on by
+	// testSeekerPathRendersInPHMoveWithMovementPath for hex (5,5)/(5,7).
+	const double trim = 50.0;
+	const double d = 25.0;
+	const double a = d / std::sqrt(3.0);
+	const int shipCX = static_cast<int>(trim + d + 2.0 * d * shipHex.getX() + d * (shipHex.getY() % 2));
+	const int shipCY = static_cast<int>(trim + 2.0 * a + 3.0 * a * shipHex.getY());
+	const int planetCX = static_cast<int>(trim + d + 2.0 * d * planetHex.getX() + d * (planetHex.getY() % 2));
+	const int planetCY = static_cast<int>(trim + 2.0 * a + 3.0 * a * planetHex.getY());
+
+	// Count pixels that differ between baseline and after-placement within a tight box
+	// (icon size is ~50x50 at default scale) centered on each expected hex position.
+	struct RegionDiff {
+		static int count(const wxImage & imgA, const wxImage & imgB, int x0, int x1, int y0, int y1) {
+			const int mxX = std::min(std::min(imgA.GetWidth(), imgB.GetWidth()) - 1, x1);
+			const int mxY = std::min(std::min(imgA.GetHeight(), imgB.GetHeight()) - 1, y1);
+			int c = 0;
+			for (int py = std::max(0, y0); py <= mxY; ++py) {
+				for (int px = std::max(0, x0); px <= mxX; ++px) {
+					if (imgA.GetRed(px, py) != imgB.GetRed(px, py)
+						|| imgA.GetGreen(px, py) != imgB.GetGreen(px, py)
+						|| imgA.GetBlue(px, py) != imgB.GetBlue(px, py)) {
+						++c;
+					}
+				}
+			}
+			return c;
+		}
+	};
+
+	const int shipDiff = RegionDiff::count(baseline, afterPlacement,
+		shipCX - 25, shipCX + 25, shipCY - 25, shipCY + 25);
+	const int planetDiff = RegionDiff::count(baseline, afterPlacement,
+		planetCX - 25, planetCX + 25, planetCY - 25, planetCY + 25);
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"Ship icon must render into the caller-supplied offscreen dc at the ship's hex. "
+		"(Regression check: an internal wxClientDC in drawCenteredOnHex would leave this "
+		"region pixel-identical to the pre-placement baseline.)",
+		shipDiff > 50);
+	CPPUNIT_ASSERT_MESSAGE(
+		"Planet icon must render into the caller-supplied offscreen dc at the planet's hex. "
+		"(Regression check: an internal wxClientDC in drawCenteredOnHex would leave this "
+		"region pixel-identical to the pre-placement baseline.)",
+		planetDiff > 50);
+
+	std::cerr << "H7:ship-planet-dc:done" << std::endl;
 }
 
 }

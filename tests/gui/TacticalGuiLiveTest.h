@@ -66,6 +66,7 @@ CPPUNIT_TEST( testUpdateForPhaseReSyncsButtonStateOnResizeViaOnSize );
 CPPUNIT_TEST( testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility );
 CPPUNIT_TEST( testSeekerButtonsShownPerStateAndHiddenAfterCompletionViaUpdateForPhase );
 CPPUNIT_TEST( testMinePlacementButtonShownInPlaceMinesHiddenAfterCompletionViaUpdateForPhase );
+CPPUNIT_TEST( testShipAndPlanetIconsRenderThroughCallerSuppliedDC );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -695,6 +696,28 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jul 12, 2026
 	 */
 	void testMinePlacementButtonShownInPlaceMinesHiddenAfterCompletionViaUpdateForPhase();
+
+	/**
+	 * @brief Behavioral (H7 AC5): ship and planet icons render into the caller-supplied
+	 * offscreen wxDC passed to FBattleBoard::draw(dc), the same call path onPaint()
+	 * uses via wxAutoBufferedPaintDC.
+	 *
+	 * Prior to H7, FBattleBoard::drawCenteredOnHex() constructed its own internal
+	 * wxClientDC(this), so ship/planet icons were drawn onto the live window and never
+	 * appeared in a caller-supplied offscreen wxDC even though the rest of the scene
+	 * (grid lines) rendered correctly through that dc. This test captures a baseline
+	 * offscreen render with no ship/planet placed, places a ship and a planet at known
+	 * hex coordinates, renders again through a fresh offscreen wxMemoryDC/wxBitmap, and
+	 * asserts pixels actually changed in the expected hex-centered regions of that
+	 * offscreen bitmap. A reintroduced internal wxClientDC in drawCenteredOnHex would
+	 * leave the offscreen "after" bitmap identical to the baseline in those regions,
+	 * failing this test.
+	 *
+	 * @author claude-sonnet-5 (medium)
+	 * @date Created: Jul 12, 2026
+	 * @date Last Modified: Jul 12, 2026
+	 */
+	void testShipAndPlanetIconsRenderThroughCallerSuppliedDC();
 };
 
 }
