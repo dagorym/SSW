@@ -443,7 +443,6 @@ VehicleList FBattleScreen::getShipList(unsigned int id) const{
 }
 
 void FBattleScreen::setScale(double factor) {
-//	std::cerr<< "calling map setScale()" << std::endl;
 	m_map->setScale(factor);
 }
 
@@ -556,11 +555,8 @@ void FBattleScreen::toggleMovingPlayer() {
 }
 
 void FBattleScreen::setWeapon(FWeapon * w) {
-//	if (w!=NULL) std::cerr << "Setting current weapon to " << w->getLongName() << std::endl;
 	m_tacticalGame->setWeapon(w);
-//	std::cerr << "computing weapon range" << std::endl;
 	m_tacticalGame->computeWeaponRange();
-//	std::cerr << "range computed." << std::endl;
 }
 
 FWeapon * FBattleScreen::getWeapon() {

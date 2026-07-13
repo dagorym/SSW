@@ -195,10 +195,8 @@ void SystemDialogGUI::onMoveFleet( wxCommandEvent& event ){
 			           + "press Ok";
 		wxSingleChoiceDialog d(m_parent,msg,"Change Fleet Orders",count,l);
 		d.ShowModal();
-//		std::cerr << "Selected item:  " << d.GetSelection() << std::endl;
 		switch (d.GetSelection()){
 		case 0:
-//			std::cerr << "Calling cancelJump()" << std::endl;
 			m_fleet->cancelJump();
 			break;
 		case 1:

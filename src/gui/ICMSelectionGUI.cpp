@@ -187,7 +187,6 @@ void ICMSelectionGUI::updateICMCount( wxSpinEvent& event ){
 	unsigned int shipRow = static_cast<wxWindow *>(event.GetEventObject())->GetId();
 	// Assign new count to ICMData for this ship
 	int ICMs = m_ICMsApplied[shipRow]->GetValue();
-//	std::cerr << "ICM count of spin control = " << ICMs << std::endl;
 	unsigned int shipID = (*(m_currentRowData->vehicles))[shipRow]->getID();
 	m_shipICMData[shipID]->setICMsAllocatedToWeapon(m_currentRowData->weapon,ICMs);
 	// add up all ICM's allocated to this weapon
@@ -229,12 +228,9 @@ void ICMSelectionGUI::finalizeAssignments( wxCommandEvent& event ){
 	// reduce the ships' ICMs by number expended
 	std::map<unsigned int,FVehicle *>::iterator vItr = shipList.begin();
 	for (unsigned int i=0; i<shipList.size(); i++){
-//		std::cerr << vItr->second->getName() << ":  ";
 		FDefense * d = vItr->second->getDefense(vItr->second->hasDefense(FDefense::ICM));
 		int expendedICMs= m_shipICMData[vItr->first]->getAllocatedICMs();
-//		std::cerr << "expendedICMs = " << expendedICMs << " current ammo = " << d->getAmmo();
 		d->setCurrentAmmo(d->getAmmo()-expendedICMs);
-//		std::cerr << " updated ammo = " << d->getAmmo() << std::endl;
 		vItr++;
 	}
 

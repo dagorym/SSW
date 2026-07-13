@@ -159,7 +159,6 @@ FGameConfig::FGameConfig(){
 	m_executablePath = ensureTrailingSeparator(path);
 	m_basePath = path.substr(0, (path.find_last_of('\\')) + 1);
 #endif
-//	std::cerr << "The path returned was " << m_basePath << std::endl;
 
 }
 

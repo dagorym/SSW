@@ -162,9 +162,9 @@ public:
    *
    * @param event The wxWidget window event that triggered the function call
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  May 25, 2005
-   * @date Last Modified:  Jan 28, 2008
+   * @date Last Modified:  Jul 12, 2026
    */
   void onShowPlayers(wxCommandEvent& event);
 

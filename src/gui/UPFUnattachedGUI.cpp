@@ -188,7 +188,6 @@ void UPFUnattachedGUI::onPickFleet( wxCommandEvent& event ){
 	std::string fleet = std::string(m_choice1->GetStringSelection().c_str());
 	if (fleet == "-- Select a Fleet --"){
 		if (m_curFleet!=NULL && m_curFleet->getShipCount()>0 ){
-//			std::cerr << "Call 1" << std::endl;
 			clearFleet();
 		}
 		m_system = NULL;
@@ -213,7 +212,6 @@ void UPFUnattachedGUI::onPickFleet( wxCommandEvent& event ){
 			}
 			if (m_curFleet!=NULL && m_curFleet->getShipCount()>0
 					&& m_curFleet != m_newFleet ){
-//				std::cerr << "Call 3" << std::endl;
 				clearFleet();
 			}
 			m_curFleet = m_newFleet;
@@ -240,13 +238,10 @@ void UPFUnattachedGUI::onPickFleet( wxCommandEvent& event ){
 				m_listBox2->Append((*sItr)->getName());
 			}
 		} else {
-//			std::cerr << "Picked an existing Fleet" << std::endl;
 			if (m_curFleet != NULL && m_curFleet->getShipCount()>0
 					&& m_curFleet != m_player->getFleet(fleet)){
-//				std::cerr << "Call 2" << std::endl;
 				clearFleet();
 			}
-//			std::cerr << "Returned to onSelectFleet()" << std::endl;
 			if(m_listBox2->IsEnabled() && !(m_listBox2->IsEmpty())){
 				m_listBox2->Clear();
 			}
@@ -280,9 +275,7 @@ void UPFUnattachedGUI::onAddShip( wxCommandEvent& event ){
 		m_curFleet->addShip((*m_unattached)[sel[i]]);
 	}
 	for (int i = count - 1 ; i>=0; i--){
-//		std::cerr << "Removing " << (*m_unattached)[sel[i]]->getName() << std::endl;
 		m_unattached->erase(m_unattached->begin()+sel[i]);
-//		std::cerr << "Size of unattached vector is now "  << m_unattached->size() << std::endl;
 	}
 //	std::cout << "Ships left:  " << m_unattached->size() << std::endl;
 	redrawListBoxes();
@@ -291,7 +284,6 @@ void UPFUnattachedGUI::onAddShip( wxCommandEvent& event ){
 }
 
 void UPFUnattachedGUI::clearFleet(){
-//	std::cerr << "Entering clearFleeet()" << std::endl;
 	VehicleList sList = m_curFleet->getShipList();
 	VehicleList::iterator itr;
 	unsigned int i=0;
@@ -302,7 +294,6 @@ void UPFUnattachedGUI::clearFleet(){
 			m_curFleet->removeShip((*itr)->getID());
 		}
 	}
-//	std::cerr << "unattached ship list has " << m_unattached.size() << " ships" << std::endl;
 	if(!m_listBox1->IsEmpty()){
 		m_listBox1->Clear();
 	}
@@ -313,12 +304,9 @@ void UPFUnattachedGUI::clearFleet(){
 }
 
 void UPFUnattachedGUI::onCheckShip( wxMouseEvent& event ){
-//	std::cerr << "Entered onCheckShip()"<< std::endl;
 	wxArrayInt sel;
 	int count = m_listBox2->GetSelections(sel);
-//	std::cerr << "There were " << count << " selections" << std::endl;
 	for (int i=0; i < count; i++){
-//		std::cerr << "Selected entry " << sel[i] << std::endl;
 		if ((unsigned int)sel[i] >= m_origSize){
 			m_button2->Enable(true);
 		} else {
@@ -372,7 +360,6 @@ void UPFUnattachedGUI::onSelectSystem( wxCommandEvent& event ){
 	std::string sys = std::string(m_choice2->GetStringSelection().c_str());
 	if (sys != "-- Select a System --"){
 		m_system = m_map->getSystem(sys);
-//		std::cerr << "System set to " << m_system->getName() << std::endl;
 	}
 	event.Skip();
 }
@@ -404,7 +391,6 @@ void UPFUnattachedGUI::onUpdateFleet( wxCommandEvent& event ){
 				return;
 			} else { // set the system for the fleet;
 				m_curFleet->setName(m_fleetName);
-//				std::cerr << "Creating fleet " << m_curFleet->getName() << std::endl;
 				m_curFleet->setLocation(m_system,false);
 				m_curFleet->setOwner(m_player->getID());
 				m_player->addFleet(m_curFleet);
@@ -414,7 +400,6 @@ void UPFUnattachedGUI::onUpdateFleet( wxCommandEvent& event ){
 				m_setFleetCount++;
 			}
 		}
-//		std::cerr << "Updating fleet " << m_curFleet->getName() << std::endl;
 		m_system = NULL;
 		m_curFleet = NULL;
 		m_origSize = 0;

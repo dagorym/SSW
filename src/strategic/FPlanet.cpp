@@ -53,7 +53,6 @@ const int FPlanet::save(std::ostream &os) const{
 }
 
 int FPlanet::load(std::istream &is){
-//	std::cerr << "Entering FPlanet::load" << std::endl;
 	read(is,m_ID);
 	readString(is,m_name);
 	int stationCount;

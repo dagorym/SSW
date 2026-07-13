@@ -86,22 +86,16 @@ TransferShipsGUI::TransferShipsGUI( FPlayer * player, FFleet * fleet, FSystem * 
 			}
 		}
 		for (fItr = m_fleetList.begin(); fItr < m_fleetList.end(); fItr++){
-//			std::cerr << "Adding a list of ships" << std::endl;
 			m_shipLists.push_back((*fItr)->getShipList());
 			m_nameList.push_back((*fItr)->getName());
 		}
 	}
 	m_origFleetCount = m_shipLists.size();
-//	std::cerr << "The usable fleet list has " << m_fleetList.size() << " fleets" << std::endl;
-//	std::cerr << "There are " << m_shipLists.size() << " ship lists as well" << std::endl;
-//	if(m_shipLists.size()>0){
-//		std::cerr << "The first list has " << m_shipLists[0].size() << " ships" << std::endl;
-//	}
 
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
 
-	m_staticText1 = new wxStaticText( this, wxID_ANY, wxT("Select the fleet you woud like to transfer ships to/from in the drop down list.  To create a new fleet, select 'New Fleet'."), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText1 = new wxStaticText( this, wxID_ANY, wxT("Select the fleet you would like to transfer ships to/from in the drop down list.  To create a new fleet, select 'New Fleet'."), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText1->Wrap( 500 );
 	bSizer1->Add( m_staticText1, 0, wxALL, 5 );
 
@@ -461,7 +455,6 @@ void TransferShipsGUI::onDone( wxCommandEvent& event ){
 }
 
 void TransferShipsGUI::updateFleet(FFleet * f, VehicleList & sl) {
-//	std::cerr << "Working on fleet " << f->getName() << std::endl;
 	const VehicleList *sList = &(f->getShipList());
 	VehicleList::iterator i1;
 	VehicleList::const_iterator i2 ;
@@ -475,7 +468,6 @@ void TransferShipsGUI::updateFleet(FFleet * f, VehicleList & sl) {
 			}
 		}
 		if (!exists){  // if the ship has been removed
-//			std::cerr << "Removing Ship " << (*i2)->getName() << std::endl;
 //			f->removeShip((*i2)->getID()); // remove it from the list
 //			i2--;
 			oldShips.push_back((*i2)->getID());
@@ -486,7 +478,6 @@ void TransferShipsGUI::updateFleet(FFleet * f, VehicleList & sl) {
 	}
 	for( i1 = sl.begin(); i1 < sl.end(); i1++){ // loop over the ships in the new fleet list
 		if (f->getShip((*i1)->getID())==NULL) {  // if the ship isn't in the original list
-//			std::cerr << "Adding ship " << (*i1)->getName() << std::endl;
 			f->addShip(*i1);  // add the new ship to the real original fleet
 		}
 	}
@@ -505,8 +496,6 @@ bool TransferShipsGUI::checkFighters(VehicleList & sl){
 			carrierCount++;
 		}
 	}
-//	std::cerr << " has " << fighterCount << " fighters "
-//	          << "and " << carrierCount << " Carriers" << std::endl;
 	if (fighterCount > carrierCount*8){
 		std::ostringstream os;
 		os << "Fleet does not have enough Assault\n"

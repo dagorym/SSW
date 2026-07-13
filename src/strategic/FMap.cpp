@@ -306,8 +306,6 @@ FJumpRoute * FMap::getJumpRoute(unsigned int id){
 	std::vector<FJumpRoute *>::iterator itr;
 	std::string sName,eName;
 	for(itr = m_jumps.begin(); itr < m_jumps.end();itr++){
-//		std::cerr << (*itr)->getID() << " " (*itr)->getStart()->getName() << " "
-//		          << (*itr)->getEnd()->getName() << std::endl;
 		if((*itr)->getID()==id){
 			return (*itr);
 		}
@@ -334,7 +332,6 @@ const int FMap::save(std::ostream &os) const{
 }
 
 int FMap::load(std::istream &is){
-//	std::cerr << "Entering FMap::load" << std::endl;
 	read(is,m_maxCoord);
 	size_t sysCount,jumpCount;
 	read(is,sysCount);

@@ -117,7 +117,6 @@ const int FJumpRoute::save(std::ostream &os) const{
 }
 
 int FJumpRoute::load(std::istream &is){
-//	std::cerr << "Entering FJumpRoute::load" << std::endl;
 	read(is,m_ID);
 	read(is,m_length);
 	unsigned int start,end;

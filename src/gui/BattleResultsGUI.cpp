@@ -32,7 +32,7 @@ BattleResultsGUI::BattleResultsGUI( wxWindow* parent, FleetList fleets, FVehicle
 //		+ " ships in the selected fleet will be removed.\n     Once you have updated all the fleet"
 //		+ " simply press the 'Done' button to resume the game.";
 	msg+= std::string("\n\nNOTE:  All actions in this dialog take immediate effect.  Marking a ship")
-		+ " destoryed removes it from the game and pressing the 'Update Ship Statisitics'"
+		+ " destroyed removes it from the game and pressing the 'Update Ship Statistics'"
 		+ " button puts those changes into effect immediately.";
 
 	m_staticText1 = new wxStaticText( this, wxID_ANY, msg, wxDefaultPosition, wxDefaultSize, 0 );
@@ -463,7 +463,6 @@ void BattleResultsGUI::onAllDestroyed( wxCommandEvent& event ){
 	int fleetID = m_choice1->GetSelection(); // which fleet are we dealing with
 	if(fleetID==(int)(1+m_fleets.size())){ // this will only occur if there is a station
 		*m_stationStatus = false;			// set the pointer to null
-//		std::cerr << "BattleResultsGUI:: the station is history!" << std::endl;
 	} else {  // we can't get here unless a fleet was actually selected
 		// first let's remove the fleet from the system it is in and get a pointer to it
 		FMap &map = FMap::getMap();
@@ -476,7 +475,6 @@ void BattleResultsGUI::onAllDestroyed( wxCommandEvent& event ){
 		// next move the ships to the dead ship list
 		VehicleList s = f->getShipList();
 		while (s.size() > 0 ){
-//			std::cerr << "deleting " << (*(s.begin()))->getName() << std::endl;
 			player->addDestroyedShip(f->removeShip((*(s.begin()))->getID()));
 			s.erase(s.begin());
 		}
@@ -495,7 +493,6 @@ void BattleResultsGUI::onSelectShip( wxCommandEvent& event ){
 	bool on = false;
 	m_button3->Enable(true);
 	if (count == 1){  // Populate the ship details section and activate it
-//		std::cerr << "One ship selected" << std::endl;
 		on = true;
 		if (m_curFleet == NULL){ // we are dealing with the station
 			m_curShip = m_station;
@@ -515,10 +512,8 @@ void BattleResultsGUI::onSelectShip( wxCommandEvent& event ){
 	} else {
 		m_curShip=NULL;
 		if (count == 0) {
-//			std::cerr << "Nothing is selected" << std::endl;
 			m_button3->Enable(false);
 		} else {
-//			std::cerr << "Multiple ships selected" << std::endl;
 		}
 		m_staticText3->SetLabel("/");
 		m_staticText6->SetLabel("/");
@@ -576,7 +571,6 @@ void BattleResultsGUI::onDestroyShips( wxCommandEvent& event ){
 			FPlayer * player = game.getPlayer(m_curFleet->getOwner());
 			// we will run the removal backwards so we can delete them from the list box at the same time
 			for (int i = count -1; i >= 0; i--){
-//				std::cerr << "deleting " << s[sel[i]]->getName() << std::endl;
 				player->addDestroyedShip(m_curFleet->removeShip(s[sel[i]]->getID()));
 				m_listBox1->Deselect(sel[i]);
 				m_listBox1->Delete(sel[i]);
@@ -596,9 +590,6 @@ void BattleResultsGUI::onKeyUp( wxKeyEvent& event ){
 //	c->Clear();
 //	c->SetValue(txt);
 	m_button4->Enable(true);
-//	if (test){
-//		std::cerr << "Style updated" << std::endl;
-//	}
 	event.Skip();
 }
 

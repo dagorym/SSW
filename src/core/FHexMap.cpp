@@ -62,7 +62,6 @@ int FHexMap::computeHeading(FPoint s, FPoint d){
 	if (angle<0) { angle += 360.; }
 	int ang = (int)floor(angle+30);
 	if (ang>=360) { ang -= 360; }
-//	std::cerr << "angle = " << angle << "  ang = " << ang << "  heading = " << ang/60 << std::endl;
 	return (ang/60);
 }
 

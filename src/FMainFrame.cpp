@@ -185,7 +185,6 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 }
 
 void FMainFrame::onShowPlayers(wxCommandEvent& WXUNUSED(event)) {
-	std::cerr << "Entered onShowPlayers()" << std::endl;
 	if(m_game!=NULL){
 		m_game->showPlayers();
 	} else {

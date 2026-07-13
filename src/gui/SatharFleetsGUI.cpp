@@ -38,7 +38,7 @@ SatharFleetsGUI::SatharFleetsGUI( wxWindow* parent, FPlayer * player, FMap * map
 					+ "no more than half of the Sathar ships placed at any time "
 					+ "can start in a single start circle.";
 	if (setup){
-		txt+= "  You must place at least 20 captial ships on the board to start the game.";
+		txt+= "  You must place at least 20 capital ships on the board to start the game.";
 	}
 	m_staticText1 = new wxStaticText( this, wxID_ANY, txt, wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText1->Wrap( 450 );
@@ -201,7 +201,6 @@ void SatharFleetsGUI::onPickFleet( wxCommandEvent& event ){
 	std::string fleet = std::string(m_choice1->GetStringSelection().c_str());
 	if (fleet == "-- Select a Fleet --"){
 		if (m_curFleet!=NULL && m_curFleet->getShipCount()>0 ){
-//			std::cerr << "Call 1" << std::endl;
 			clearFleet();
 		}
 		m_system = NULL;
@@ -226,7 +225,6 @@ void SatharFleetsGUI::onPickFleet( wxCommandEvent& event ){
 			}
 			if (m_curFleet!=NULL && m_curFleet->getShipCount()>0
 					&& m_curFleet != m_newFleet ){
-//				std::cerr << "Call 3" << std::endl;
 				clearFleet();
 			}
 			m_curFleet = m_newFleet;
@@ -246,13 +244,10 @@ void SatharFleetsGUI::onPickFleet( wxCommandEvent& event ){
 				m_listBox2->Append((*sItr)->getName());
 			}
 		} else {
-//			std::cerr << "Picked an existing Fleet" << std::endl;
 			if (m_curFleet != NULL && m_curFleet->getShipCount()>0
 					&& m_curFleet != m_player->getFleet(fleet)){
-//				std::cerr << "Call 2" << std::endl;
 				clearFleet();
 			}
-//			std::cerr << "Returned to onSelectFleet()" << std::endl;
 			if(m_listBox2->IsEnabled() && !(m_listBox2->IsEmpty())){
 				m_listBox2->Clear();
 			}
@@ -294,7 +289,6 @@ void SatharFleetsGUI::onAddShip( wxCommandEvent& event ){
 }
 
 void SatharFleetsGUI::clearFleet(){
-//	std::cerr << "Entering clearFleeet()" << std::endl;
 	VehicleList sList = m_curFleet->getShipList();
 	VehicleList::iterator itr;
 	unsigned int i=0;
@@ -305,7 +299,6 @@ void SatharFleetsGUI::clearFleet(){
 			m_curFleet->removeShip((*itr)->getID());
 		}
 	}
-//	std::cerr << "unattached ship list has " << m_unattached.size() << " ships" << std::endl;
 	if(!m_listBox1->IsEmpty()){
 		m_listBox1->Clear();
 	}
@@ -316,12 +309,9 @@ void SatharFleetsGUI::clearFleet(){
 }
 
 void SatharFleetsGUI::onCheckShip( wxMouseEvent& event ){
-//	std::cerr << "Entered onCheckShip()"<< std::endl;
 	wxArrayInt sel;
 	int count = m_listBox2->GetSelections(sel);
-//	std::cerr << "There were " << count << " selections" << std::endl;
 	for (int i=0; i < count; i++){
-//		std::cerr << "Selected entry " << sel[i] << std::endl;
 		if ((unsigned int)sel[i] >= m_origSize){
 			m_button2->Enable(true);
 		} else {
@@ -375,7 +365,6 @@ void SatharFleetsGUI::onSelectSystem( wxCommandEvent& event ){
 	std::string sys = std::string(m_choice2->GetStringSelection().c_str());
 	if (sys != "-- Select a System --"){
 		m_system = m_map->getSystem(sys);
-//		std::cerr << "System set to " << m_system->getName() << std::endl;
 	}
 	event.Skip();
 }
@@ -415,28 +404,17 @@ void SatharFleetsGUI::onUpdateFleet( wxCommandEvent& event ){
 				return;
 			} else { // set the system for the fleet;
 				m_curFleet->setName(m_fleetName);
-//				std::cerr << "Creating fleet " << m_curFleet->getName() << std::endl;
 				m_curFleet->setOwner(m_player->getID());
 				m_player->addFleet(m_curFleet);
 				m_system->addFleet(m_curFleet);
 				m_choice1->Append(m_curFleet->getName());
-//				std::cerr << m_player->getName() << std::endl;
-//				std::cerr << m_player->getFleetIconName() << std::endl;
 				m_curFleet->setIcon(m_player->getFleetIconName());
 				m_setFleetCount = m_curFleet->getID();
 				// Now we need to set the initial orders
 				// get the system we can jump to (since we are calling from a SSC this will only return one system)
 				std::vector<std::string> systems = m_map->getConnectedSystems(m_system->getName(),m_player->getID(),m_curFleet);
-//				if (systems.size()==0){
-//					std::cerr << "Didn't get the correct system" << std::endl;
-//				} else {
-//					std::cerr << "Destination is " << systems[0] << std::endl;
-//				}
 				unsigned int destID = m_map->getSystem(systems[0])->getID();
 				FJumpRoute *j = m_map->getJumpRoute(m_system->getName(),systems[0]);
-//				if (j == NULL) {
-//					std::cerr << "Jump route is null" << std::endl;
-//				}
 				const FSystem *s,*e;
 				if(j->getEnd()->getID() == destID){
 					s=j->getStart();
@@ -450,18 +428,14 @@ void SatharFleetsGUI::onUpdateFleet( wxCommandEvent& event ){
 //				m_curFleet->setIcon(m_player->getFleetIconName());
 			}
 		}
-//		std::cerr << origCapitalShipCount << " " << captialShipCount << " " << m_totalShips << std::endl;
 		m_totalShips += captialShipCount-origCapitalShipCount;
 		if (captialShipCount > m_largestFleet){
 			m_largestFleet = captialShipCount;
 		}
 
 		m_window->Refresh();
-//		std::cerr << m_curFleet->getIconName() << std::endl;
-//		std::cerr << m_curFleet->getIcon()->IsOk() << std::endl;
 //		m_window->Update();
 
-//		std::cerr << "Updating fleet " << m_curFleet->getName() << std::endl;
 		// reset the dialog box
 		m_system = NULL;
 		m_curFleet = NULL;
@@ -503,9 +477,7 @@ void SatharFleetsGUI::onCancel( wxCommandEvent& event){
 	}
 	// now clear out any new fleets created during this instansiation of the the dialog
 	FleetList * list = &(m_player->getFleetList());
-//	std::cerr << "There are " << list->size() << " fleets to check" << std::endl;
 	for (FleetList::iterator itr = list->begin(); itr < list->end(); itr++){
-//		std::cerr << "Checking fleet " << (*itr)->getName() << std::endl;
 		if ((*itr)->getID()>m_origMaxFleetID){  // this was a new fleet from this dialog
 			m_origSize = 0;              // set this to 0 so all the ships are removed
 			m_curFleet = *itr;           // make the current fleet pointer point at the fleet to clear

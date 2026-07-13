@@ -27,29 +27,22 @@ FPlayer::FPlayer(){
 // See FPlayer::~FPlayer() Doxygen block in FPlayer.h for the ownership
 // contract this destructor implements (m_fleets, m_unattached, m_destroyed).
 FPlayer::~FPlayer(){
-//	std::cerr << "Entering FPlayer destructor" << std::endl;
-//	std::cerr << "There are " << m_fleets.size() << " fleets to remove" << std::endl;
 	if (m_fleets.size() >0 ) {  // delete the fleets
 		for (unsigned int i = 0; i<m_fleets.size(); i++) {
-//			std::cerr << "Deleting fleet " << i << std::endl;
 			delete m_fleets[i];
 		}
 		m_fleets.clear();
 	} else {
 		m_fleets.clear();
 	}
-//	std::cerr << "There are " << m_unattached.size() << " ships to remove" << std::endl;
 	if (m_unattached.size() > 0){
-//		std::cerr << "Deleting unattached ships" << std::endl;
 		for (unsigned int i = 0; i < m_unattached.size(); i++) {
-//			std::cerr << "Deleting ship " << i << std::endl;
 			delete m_unattached[i];
 		}
 		m_unattached.clear();
 	} else {
 		m_unattached.clear();
 	}
-//	std::cerr << "There are " << m_destroyed.size() << " destroyed ships to remove" << std::endl;
 	// FPlayer is the sole owner of ships in m_destroyed (see addDestroyedShip()); they were
 	// already removed -- not deleted -- from their owning fleet/unattached list by the caller
 	// before being handed off here, so freeing them now cannot double-delete a ship still held
@@ -66,7 +59,6 @@ FPlayer::~FPlayer(){
 	if (m_classCount==0){  // if all players have been deleted
 		m_nextID=1;  // reset the id counter
 	}
-//	std::cerr << "Leaving Player destructor" << std::endl;
 }
 
 FFleet * FPlayer::getFleet(std::string name) const {
@@ -129,7 +121,6 @@ const int FPlayer::save(std::ostream &os) const{
 }
 
 int FPlayer::load(std::istream &is){
-//	std::cerr << "Entering FPlayer::load" << std::endl;
 	read(is,m_ID);
 	readString(is,m_name);
 	readString(is,m_iconName);

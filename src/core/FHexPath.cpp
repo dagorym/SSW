@@ -53,7 +53,6 @@ bool FHexPath::isPointOnPath(FPoint point){
 }
 
 FPoint FHexPath::endPoint(){
-//	std::cerr << "The current endpoint is (" << m_hexList.back().getX() << ", " << m_hexList.back().getY() << ")" << std::endl;
 	return m_hexList.back();
 }
 

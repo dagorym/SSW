@@ -155,7 +155,6 @@ FVehicle::FVehicle(){
 }
 
 FVehicle::~FVehicle(){
-//	std::cerr << "Deleting " << m_name << std::endl;
 	for (unsigned int i=0; i< m_weapons.size(); i++){  // delete weapons
 		delete m_weapons[i];
 	}
@@ -201,7 +200,6 @@ void FVehicle::setIcon(std::string icon) {
 }
 
 int FVehicle::load(std::istream &is) {
-//	std::cerr << "Entering FVehicle::load" << std::endl;
 	read(is,m_ID);
 	readString(is,m_name);
 	readString(is,m_iconName);
@@ -455,7 +453,6 @@ int FVehicle::resolveToHitModifier(FWeapon::Weapon w){
 
 unsigned int FVehicle::hasDefense(FDefense::Defense d){
 	for (unsigned int i = 0; i< m_defenses.size(); i++){
-//		std::cerr << "checking defense " << i << " = " << m_defenses[i]->getName() << std::endl;
 		if (m_defenses[i]->getType()==d) {
 			return i;
 		}

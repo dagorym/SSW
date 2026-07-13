@@ -61,13 +61,11 @@ void WXPlayerDisplay::drawFleets(wxDC &dc, FPlayer *player){
 				float dx = (map->getSystem(start)->getCoord(0)-map->getSystem(end)->getCoord(0));
 				float dy = (map->getSystem(start)->getCoord(1)-map->getSystem(end)->getCoord(1));
 				float frac = 0;
-//				std::cerr << "Fraction is " << frac << std::endl;
 				if ((*itr)->getTransitTime()==j->getLength()){ // we only need to offset when we assign the jump
 					frac = 0.1;
 				}
 				wxCoord x = (wxCoord)(((*itr)->getCoord(0)-0.5-frac*dx) * scale);
 				wxCoord y = (wxCoord)(((*itr)->getCoord(1)-0.5-frac*dy) * scale);
-//				std::cerr << "x = " << x << "  y = " << y << std::endl;
 				dc.DrawBitmap(b,x,y);
 			} else {  // it's in a system
 				double xoffset = -0.2*scale;

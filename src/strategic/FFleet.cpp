@@ -40,7 +40,6 @@ FFleet::FFleet() {
 }
 
 FFleet::~FFleet() {
-//	std::cerr << "In fleet " << m_name << ", there are " << m_ships.size() << " ships" << std::endl;
 	for (unsigned int i = 0; i < m_ships.size(); i++){
 		delete m_ships[i];
 	}
@@ -111,7 +110,6 @@ int FFleet::decTransitTime(){
 		int change = before-m_transitTime;
 		m_pos[0]+=m_dx*change;
 		m_pos[1]+=m_dy*change;
-//		std::cerr << "Change is " << change << "  New position is " << m_pos[0] << ", " << m_pos[1] << std::endl;
 	}
 	return (int)m_transitTime;
 }
@@ -144,7 +142,6 @@ const int FFleet::save(std::ostream &os) const {
 }
 
 int FFleet::load(std::istream &is){
-//	std::cerr << "Entering FFleet::load" << std::endl;
 	read(is,m_ID);
 	readString(is, m_name);
 	read(is,m_owner);
@@ -203,7 +200,6 @@ void FFleet::setJumpRoute(int i, const FSystem * s, const FSystem * e, unsigned 
 	m_jumpLength = length;
 	m_dx = (e->getCoord(0)-s->getCoord(0))/(float)length;
 	m_dy = (e->getCoord(1)-s->getCoord(1))/(float)length;
-//	std::cerr << "dx = " << m_dx << "  dy = " << m_dy << std::endl;
 }
 
 int FFleet::getMaxSpeed(){

@@ -87,7 +87,6 @@ const int FSystem::save(std::ostream &os) const{
 }
 
 int FSystem::load(std::istream &is){
-//	std::cerr << "Entering FSystem::load" << std::endl;
 	read(is,m_ID);
 	readString(is,m_name);
 	read(is,m_owner);

@@ -74,7 +74,6 @@ FGame::~FGame(){
 	// delete the players
 	if (m_players.size()>0) {
 		for(unsigned int i=0; i< m_players.size();i++){
-//			std::cerr << "deleting player " << i << std::endl;
 			delete m_players[i];
 		}
 	}
@@ -531,7 +530,6 @@ bool FGame::placeNova(){
 			return false;
 			break;
 		}
-//		std::cerr << "SF Nova being placed in " << system << std::endl;
 		fPtr = m_players[0]->getFleet("Strike Force Nova");
 		fPtr->setLocation(m_universe->getSystem(system),false);
 		m_universe->getSystem(system)->addFleet(fPtr);
@@ -564,8 +562,6 @@ void FGame::moveFleets(FPlayer * p){
 	FleetList fleets = p->getFleetList();
 	for (unsigned int i = 0; i< fleets.size(); i++){
 		if (fleets[i]->getInTransit()){  // fleet is on the move
-//			std::cerr << fleets[i]->getName() << " is on the move.  Tranisit time is "
-//						<< fleets[i]->getTransitTime() << std::endl;
 			int time = fleets[i]->decTransitTime();
 			if (time == -1){  // we failed the jump
 				std::string msg = "The fleet " + fleets[i]->getName()
@@ -581,7 +577,6 @@ void FGame::moveFleets(FPlayer * p){
 				delete f;  // ships are gone
 				continue;// and skip over the rest of the code this time through the loop
 			}
-//			std::cerr << "New transit time is " << fleets[i]->getTransitTime() << std::endl;
 			if (fleets[i]->getJumpRoute() == FFleet::NO_ROUTE || fleets[i]->getDestination() == FFleet::NO_DESTINATION) {
 				continue;
 			}
@@ -626,7 +621,6 @@ const int FGame::save(std::ostream &os) const {
 }
 
 int FGame::load(std::istream &is){
-//	std::cerr << "Entering FGame::load" << std::endl;
 	read(is,m_gui);
 	read(is,m_round);
 	read(is,m_currentPlayer);
@@ -641,18 +635,14 @@ int FGame::load(std::istream &is){
 	m_universe->load(is);
 	size_t pCount;
 	read(is,pCount);
-//	std::cerr << "There are " << pCount << " players" << std::endl;
 	for (unsigned int i = 0; i < pCount; i++){
 		FPlayer *p = new FPlayer;
 		p->load(is);
 		// we need to place the fleets into their respective systems
 		FleetList fList = p->getFleetList();
-//		std::cerr << "fList has " << fList.size() << " entries for player " << p->getID() << std::endl;
 		for (FleetList::iterator f = fList.begin(); f < fList.end(); f++){
 			FSystem *s = m_universe->getSystem((*f)->getLocation());
-//			std::cerr << (*f)->getName() << std::endl;
 			if (s != NULL){
-//				std::cerr << s->getName() << std::endl;
 				s->addFleet((*f));
 			}
 		}
@@ -1178,14 +1168,11 @@ void FGame::resolveCombat(std::string sysName){
 	FSystem *sys = m_universe->getSystem(sysName);
 	FleetList allFleets, upfList, satharList;
 	allFleets = sys->getFleetList();
-//	std::cerr << "allFleets list has " << allFleets.size() << " entries" << std::endl;
 	for(FleetList::iterator itr = allFleets.begin(); itr < allFleets.end(); itr++){
-//		std::cerr << "Processing " << (*itr)->getName() << "  " << (*itr)->getOwner() << std::endl;
 		if ((*itr)->getOwner() == m_players[0]->getID()){
 			upfList.push_back(*itr);
 		} else {
 			satharList.push_back(*itr);
-//			std::cerr << "Adding " << (*itr)->getName() << " to list" << std::endl;
 		}
 	}
 	// okay now pop up a dialog showing the fleets and giving the Sathar the option to attack.

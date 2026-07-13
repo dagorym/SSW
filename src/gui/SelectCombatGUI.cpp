@@ -25,8 +25,6 @@ SelectCombatGUI::SelectCombatGUI( wxWindow* parent, FSystem * sys, FleetList def
 	m_attackerList = attacker;
 	m_playerList = pList;
 	m_satharAttacking = satharAttacking;
-//	std::cerr << "There are " << m_attackerList.size() << " attacking fleets" << std::endl;
-//	std::cerr << "There are " << m_defenderList.size() << " defending fleets" << std::endl;
 
 	wxBoxSizer* bSizer1;
 	bSizer1 = new wxBoxSizer( wxVERTICAL );
@@ -57,7 +55,6 @@ SelectCombatGUI::SelectCombatGUI( wxWindow* parent, FSystem * sys, FleetList def
 
 	wxStaticBoxSizer* sbSizer1;
 	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Attacking Fleets") ), wxVERTICAL );
-//	std::cerr << "The attacker list has " << attacker.size() << " entries." << std::endl;
 
 	m_listBox1 = new wxListBox( sbSizer1->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_EXTENDED|wxLB_NEEDED_SB );
 	for (FleetList::iterator itr = attacker.begin(); itr < attacker.end(); itr++){
@@ -229,7 +226,6 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 			planet = (selection == 2) ? 1 : 0;
 		}
 	}
-//	std::cerr << "Attacking planet " << planet << std::endl;
 	wxArrayInt aFleets,dFleets;
 	int combatLocation = 0;  // location of the combat 0=around planet, 1=deep space
 	if (m_defenderList.size() > 0) {  // There are fleets in the system
@@ -242,36 +238,27 @@ void SelectCombatGUI::onAttack( wxCommandEvent& event ){
 			combatLocation = 1;
 		}
 	}
-//	std::cerr << "The battle location is " << combatLocation << std::endl;
 	// remove fleets used in the battle from the lists and put them in a temporary list
 	FleetList battleList,aList,dList;
 	m_listBox1->GetSelections(aFleets);
-//	std::cerr << "The number of selected attacking fleets is " << aFleets.GetCount() << std::endl;
 	for (int i = aFleets.GetCount()-1; i >= 0; i--){
-//		std::cerr << "i = " << i << "  aFleets[i] = " << aFleets[i] << std::endl;
 		battleList.push_back(*(m_attackerList.begin()+aFleets[i]));
-		std::cerr << "Adding Fleet " << (*(m_attackerList.begin()+aFleets[i]))->getName() << std::endl;;
 		aList.push_back(*(m_attackerList.begin()+aFleets[i]));
 		m_attackerList.erase((m_attackerList.begin()+aFleets[i]));
 	}
-//	std::cerr << "The number of selected defending fleets is " << dFleets.GetCount() << std::endl;
 	if (dFleets.GetCount()>0){
 		for (int i = dFleets.GetCount() - 1; i >= 0; i--){
 			battleList.push_back(*(m_defenderList.begin()+dFleets[i]));
-			std::cerr << "Adding Fleet " << (*(m_defenderList.begin()+dFleets[i]))->getName() << std::endl;
 			dList.push_back(*(m_defenderList.begin()+dFleets[i]));
 			m_defenderList.erase((m_defenderList.begin()+dFleets[i]));
 		}
 	}
-//	std::cerr << "Setting station pointer  combatLocation has value of " << combatLocation << std::endl;
 	//Set a pointer to the station if it is involved (NULL if not)
 	FVehicle * station = NULL;
 	if (!combatLocation){
 		station = m_system->getPlanetList()[planet]->getStation();
-//		std::cerr << "Setting sataion pointer value to " << station << std::endl;
 	}
 	// update status of fleets or go to the combat game
-//	std::cerr << "Calling SelectResolutionGUI" << std::endl;
 	SelectResolutionGUI d2(this,battleList,m_system->getName(),station);
 	int result = d2.ShowModal();
 	if (result){
