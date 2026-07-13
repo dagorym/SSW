@@ -1,0 +1,24 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3/verifier_report.md",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase4-P4-3-verifier-20260712",
+  "documentation_accuracy_summary": [
+    "Accurate. doc/synthesized-roadmap.md marks BOTH the 3.6 dead-code bullet RESOLVED (P4-3) and Part III 'Now' item #4 RESOLVED (H9 via P4-1, H7 via P4-2, dead-code via P4-3); the H9 (line 127) and H7 (line 125) rows were already marked RESOLVED by the prior P4-1/P4-2 stages, so all four Phase-4 roadmap annotations are now complete.",
+    "doc/DesignNotes.md has an accurate P4-3 validation-log entry: it correctly describes the deletion, the ~120 commented-out plus 3 live std::cerr removals across 21 files, the 4 typo corrections and their locations, the intentionally-out-of-scope captialShipCount identifier and comment-only misspellings, the onShowPlayers Doxygen update, the green make check results, and the pre-existing flaky-test NOTE.",
+    "AGENTS.md and doc/test-contracts.md are correctly unchanged (verified via git diff -- empty); the P4-3 diff makes no API/signature/logic/build/module-boundary/test-contract change. doc/rules/tactical_operations_manual.md is untouched, honoring the AGENTS.md non-negotiable constraint."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "P4-3 dead-code/debug/typo cleanup verification",
+  "status": "complete",
+  "task_id": "P4-3",
+  "test_sufficiency_summary": [
+    "Sufficient. The Planner explicitly waived new tests for this behavior-neutral cleanup (no new or changed runtime behavior to cover); the existing full suite is the no-regression guard. This is consistent with the AGENTS.md Behavioral Verification policy, which requires new behavioral tests only for new/changed behavior.",
+    "Independent make check from a clean tree (make all_clean then make check) passed fully GREEN: SSWTests OK (245), TacticalTests OK (253), GuiTests OK (81) under xvfb-run, exit code 0 -- matching the reported counts exactly.",
+    "Both SSW and BattleSim executables linked with no dangling reference to the deleted FMainBattleSimFrame.cpp."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
