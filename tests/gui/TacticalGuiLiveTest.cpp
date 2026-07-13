@@ -2592,13 +2592,37 @@ void TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath() {
 		}
 	};
 
+	// H7: after threading the paint DC through drawSeekerMissiles(), the seeker icon at
+	// hex (5,7) (pixel center (350,381)) now correctly renders on every dc it is passed,
+	// including the PH_ATTACK_FIRE committed-active-seeker branch. Its bounding box overlaps
+	// the path band below, so a generic pixel-diff count is no longer sufficient to isolate
+	// drawSeekerPaths() output from drawSeekerMissiles() icon output in that phase. Count
+	// exact cyan (#00CCCC) path pixels instead so the PH_ATTACK_FIRE gate reflects only
+	// whether drawSeekerPaths() drew a line, not whether the (correctly rendered) icon
+	// happens to occupy the same band. (The seeker icon asset contains no near-cyan pixels,
+	// so this check does not false-positive on the icon itself.)
+	struct CyanPixelCount {
+		static int count(const wxImage & img, int x0, int x1, int y0, int y1) {
+			const int mxX = std::min(img.GetWidth() - 1, x1);
+			const int mxY = std::min(img.GetHeight() - 1, y1);
+			int c = 0;
+			for (int py = std::max(0, y0); py <= mxY; ++py)
+				for (int px = std::max(0, x0); px <= mxX; ++px)
+					if (img.GetRed(px,py) < 80 && img.GetGreen(px,py) >= 150 && img.GetBlue(px,py) >= 150)
+						++c;
+			return c;
+		}
+	};
+
 	// Path band: x=[344..356], y=[290..385].
 	// drawSeekerPaths draws at x=350, y=295..381 (within this band).
 	// drawSeekerMoveCountOverlay draws at x=360,y=360 (OUTSIDE this band).
 	// So changes IN the band come only from drawSeekerPaths.
 	const int pathBandDiffPHMove     = RegionDiff::count(baselinePHMove, afterSeedPHMove,     344, 356, 290, 385);
 	const int pathBandDiffPHSeekerAct= RegionDiff::count(baselinePHMove, afterSeedPHSeekerAct,344, 356, 290, 385);
-	const int pathBandDiffPHAttackFire=RegionDiff::count(baselinePHMove, afterSeedPHAttackFire,344, 356, 290, 385);
+	// PH_ATTACK_FIRE gate: cyan-pixel presence (not generic diff) isolates drawSeekerPaths()
+	// output from the seeker icon that now also legitimately renders in this band (see above).
+	const int pathBandDiffPHAttackFire=CyanPixelCount::count(afterSeedPHAttackFire, 344, 356, 290, 385);
 
 	// Also check full-image diff to confirm seeder produced overall output.
 	const int fullDiffPHMove = RegionDiff::count(baselinePHMove, afterSeedPHMove, 0, 1999, 0, 1499);
@@ -2621,10 +2645,13 @@ void TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath() {
 		"seeker path line. drawSeekerPaths() must run in PH_SEEKER_ACTIVATION.",
 		pathBandDiffPHSeekerAct > 0);
 
-	// AC1 gate: PH_ATTACK_FIRE must have ZERO path band diffs.
-	// The count label (at x=360) is outside the band so it does not interfere.
+	// AC1 gate: PH_ATTACK_FIRE must have ZERO cyan path pixels in the band.
+	// The count label (at x=360) is outside the band so it does not interfere. H7: the
+	// seeker icon legitimately renders in this band during PH_ATTACK_FIRE now (correct
+	// behavior), so the gate counts cyan path pixels specifically rather than any pixel
+	// diff, to isolate drawSeekerPaths() output from drawSeekerMissiles() icon output.
 	CPPUNIT_ASSERT_EQUAL_MESSAGE(
-		"SMFR-05 AC1 gate: FBattleBoard::draw() in PH_ATTACK_FIRE must NOT draw a path "
+		"SMFR-05 AC1 gate: FBattleBoard::draw() in PH_ATTACK_FIRE must NOT draw a cyan path "
 		"line in the path band (drawSeekerPaths not called in PH_ATTACK_FIRE).",
 		0, pathBandDiffPHAttackFire);
 

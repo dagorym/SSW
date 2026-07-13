@@ -69,7 +69,7 @@ const std::string body = extractFunctionBody(source, "void FBattleBoard::draw(wx
 assertContains(body, "drawGrid(dc);");
 assertContains(body, "const FPoint & planetPos = m_parent->getPlanetPos();");
 assertContains(body, "const int planetChoice = m_parent->getPlanetChoice();");
-assertContains(body, "drawShips();");
+assertContains(body, "drawShips(dc);");
 assertContains(body, "if (m_parent->getState() == BS_Battle) {");
 assertContains(body, "drawRoute(dc);");
 assertContains(body, "if (m_parent->getState() == BS_PlaceMines || m_parent->getState() == BS_PlaceSeekers) {");
@@ -83,7 +83,7 @@ void FTacticalBattleBoardRendererDelegationTest::testOverlayDrawingUsesModelStat
 // AC: route/range/mine overlays are sourced from model state accessors, not board-owned mechanics data.
 const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
 
-const std::string shipsBody = extractFunctionBody(source, "void FBattleBoard::drawShips()");
+const std::string shipsBody = extractFunctionBody(source, "void FBattleBoard::drawShips(wxDC &dc)");
 assertContains(shipsBody, "const VehicleList & ships = m_parent->getHexOccupants(hex);");
 
 const std::string routeBody = extractFunctionBody(source, "void FBattleBoard::drawRoute(wxDC &dc)");
@@ -113,7 +113,7 @@ void FTacticalBattleBoardRendererDelegationTest::testDrawShipsUsesTemporaryFacin
 // AC: selected stopped mover in PH_MOVE draws with temporary facing while retaining normal heading fallback.
 const std::string source = readFile(repoFile("src/tactical/FBattleBoard.cpp"));
 const std::string helperBody = extractFunctionBody(source, "int getRenderedHeadingForShip(FBattleScreen * parent, FVehicle * ship)");
-const std::string drawShipsBody = extractFunctionBody(source, "void FBattleBoard::drawShips()");
+const std::string drawShipsBody = extractFunctionBody(source, "void FBattleBoard::drawShips(wxDC &dc)");
 
 assertContains(helperBody, "if (parent->getPhase() != PH_MOVE || parent->getShip() == NULL");
 assertContains(helperBody, "|| ship->getOwner() != parent->getMovingPlayerID()) {");
@@ -124,7 +124,7 @@ assertContains(helperBody, "&& turnData.curHeading != ship->getHeading()) {");
 assertContains(helperBody, "return turnData.curHeading;");
 assertContains(helperBody, "return ship->getHeading();");
 
-assertContains(drawShipsBody, "drawCenteredOnHex(*icon,hex,getRenderedHeadingForShip(m_parent, *itr));");
+assertContains(drawShipsBody, "drawCenteredOnHex(dc, *icon,hex,getRenderedHeadingForShip(m_parent, *itr));");
 }
 
 void FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules() {
@@ -140,16 +140,16 @@ assertContains(seekerBody, "if (m_parent->getPhase() == PH_SEEKER_ACTIVATION) {"
 // SMC-02 AC4: inactive stacks remain clickable during activation.
 assertContains(seekerBody, "const std::vector<FPoint> inactiveHexes = m_parent->getInactiveSeekerActivationHexes();");
 assertContains(seekerBody, "if (!m_parent->isHexInBounds(*itr)) {");
-assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, *itr);");
+assertContains(seekerBody, "drawCenteredOnHex(dc, *m_seekerMissileIcon, *itr);");
 // SMC-02 AC4: active seekers for the moving player are also drawn during activation so activations are visible on the board.
 assertContains(seekerBody, "m_parent->getActiveSeekersByMovingPlayer()");
-assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, itr->hex, itr->heading);");
+assertContains(seekerBody, "drawCenteredOnHex(dc, *m_seekerMissileIcon, itr->hex, itr->heading);");
 assertContains(seekerBody, "return;");
 // Battle-mode rendering: only active seekers, per-hex query.
 assertContains(seekerBody, "const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);");
 assertContains(seekerBody, "if (!activeSeekers.empty()) {");
 // SMC-07: active seeker icon is rotated by its current heading (heading * pi/3 radians).
-assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, hex, activeSeekers[0].heading)");
+assertContains(seekerBody, "drawCenteredOnHex(dc, *m_seekerMissileIcon, hex, activeSeekers[0].heading)");
 CPPUNIT_ASSERT(seekerBody.find("getSeekerMissilesAtHex(hex, false)") == std::string::npos);
 }
 
@@ -231,8 +231,8 @@ const std::string seekerBody = extractFunctionBody(source, "void FBattleBoard::d
 assertContains(seekerBody, "if (m_parent->getPhase() == PH_ATTACK_FIRE) {");
 assertContains(seekerBody, "m_parent->getAllPendingOffensiveFireSeekerHexes()");
 
-// AC1: each in-bounds pending hex is drawn without rotation via drawCenteredOnHex(*m_seekerMissileIcon, *itr)
-assertContains(seekerBody, "drawCenteredOnHex(*m_seekerMissileIcon, *itr);");
+// AC1: each in-bounds pending hex is drawn without rotation via drawCenteredOnHex(dc, *m_seekerMissileIcon, *itr)
+assertContains(seekerBody, "drawCenteredOnHex(dc, *m_seekerMissileIcon, *itr);");
 
 // AC2: after pending hexes, committed active seekers are also drawn with heading rotation
 // so the existing active-seeker visual is preserved during PH_ATTACK_FIRE
