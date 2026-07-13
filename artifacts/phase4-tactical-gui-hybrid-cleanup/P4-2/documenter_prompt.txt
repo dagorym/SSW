@@ -1,0 +1,62 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Remediation pass-2 for finding H7: Verifier pass-1 confirmed the H7 implementation (single buffered paint DC through FBattleBoard/FGamePanel, no wxClientDC) was correct and make check was fully green, but issued one BLOCKING finding: acceptance criterion 5 (ships, seeker missiles, and centered images render at correct hex positions through the newly-threaded wxDC&) was backed only by source-text assertContains() literal updates plus manual diff review, with no test that would fail if drawCenteredOnHex reverted to an internal wxClientDC. This pass adds a direct behavioral offscreen-wxDC test closing that gap.
+
+Acceptance criteria validated:
+- drawCenteredOnHex draws on a passed-in wxDC&; no wxClientDC in FBattleBoard.cpp. (unchanged from pass-1; reconfirmed by diff and by the regression sanity check in this pass)
+- FBattleBoard::onPaint uses wxAutoBufferedPaintDC with SetBackgroundStyle(wxBG_STYLE_PAINT); whole scene renders in one pass through that DC. (unchanged from pass-1)
+- FGamePanel::onPaint uses a paint DC on all platforms; dead comment block removed. (unchanged from pass-1)
+- Ships, seeker missiles, and centered images render at correct hex positions and rotations; no scene element dropped or mis-clipped vs pre-refactor. NOW covered by a direct behavioral test (testShipAndPlanetIconsRenderThroughCallerSuppliedDC) in addition to the pass-1 source-contract updates -- this closes the pass-1 BLOCKING finding.
+- Doxygen Last Modified + @author updated on every changed function; @param dc added for new wxDC& parameters. (unchanged from pass-1)
+
+Implementation branch or worktree context:
+- Branch phase4-P4-2-tester-20260712, worktree /home/tstephen/repos/worktrees/phase4-P4-2-tester-20260712.
+- Implementer commit b3ee8cee (P4-2: Resolve H7 by threading a single buffered paint DC through FBattleBoard) is unchanged this pass.
+- Pass-1 Tester commit 79e425bb and pass-1 Documenter/Verifier commits are preserved; this pass adds only a new Tester commit a2161ae1 on top of the existing branch history (which includes 725ba50e archiving pass-1 artifacts under history/pass-1/).
+- Verifier pass-1 report: artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/history/pass-1/verifier_report.md (CONDITIONAL PASS with the single BLOCKING finding this pass resolves).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+- include/FGamePanel.h
+- src/FGamePanel.cpp
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+- tests/gui/TacticalGuiLiveTest.h
+
+Test commit:
+- a2161ae1
+
+Commands executed:
+- make -C tests/gui (build GuiTests with the new test)
+- xvfb-run -a tests/gui/GuiTests (run 3x to confirm no flakiness)
+- make check (repo root full gate)
+- Manual regression sanity check: temporarily reintroduced an internal wxClientDC in FBattleBoard::drawCenteredOnHex, rebuilt tests/gui, reran GuiTests and confirmed testShipAndPlanetIconsRenderThroughCallerSuppliedDC fails (shipDiff > 50 assertion fails); reverted the change (verified zero diff against committed src/tactical/FBattleBoard.cpp) and reran make check to confirm green again
+
+Final test outcomes:
+- SSWTests: 245/245 PASS (unchanged from pass-1)
+- TacticalTests: 253/253 PASS (unchanged from pass-1; the 5 pass-1 FTacticalBattleBoardRendererDelegationTest literal updates remain in place, unmodified this pass)
+- GuiTests: 81/81 PASS (80 pass-1 tests plus 1 new test: testShipAndPlanetIconsRenderThroughCallerSuppliedDC); the pass-1 cyan-pixel narrowing in testSeekerPathRendersInPHMoveWithMovementPath remains in place, unmodified this pass
+- New test testShipAndPlanetIconsRenderThroughCallerSuppliedDC: places a ship (via FBattleScreen::placeShip) and a planet (via FBattleScreen::placePlanet + setPlanet) at known hex coordinates, calls FBattleBoard::draw(dc) directly against a test-owned wxMemoryDC/wxBitmap (the same call onPaint's wxAutoBufferedPaintDC path makes), and asserts pixels changed in the expected hex-centered regions versus a pre-placement baseline captured in the same offscreen bitmap type
+- Regression sanity check confirmed the new test is load-bearing: reintroducing an internal wxClientDC(this) in FBattleBoard::drawCenteredOnHex (the exact H7 regression class) causes testShipAndPlanetIconsRenderThroughCallerSuppliedDC to fail with 'shipDiff > 50' assertion failure, while all other 80 GuiTests still pass; reverting restores the fully green 81/81 GuiTests state
+
+Documentation context:
+- Documenter pass-1 already produced doc/ updates for H7 (commit eb611452: P4-2: Document H7 single buffered-paint-DC FBattleBoard/FGamePanel rendering); this pass only adds test coverage and does not change the implementation, so no further doc/ narrative changes are expected -- Documenter should confirm the existing H7 documentation still matches (it does, since no implementation files changed this pass) and note the new behavioral test in the test-catalog if doc/test-contracts.md tracks TacticalGuiLiveTest entries.
+- AGENTS.md Contributor Notes already describe FBattleBoard/FBattleDisplay ownership rules and were not touched by this remediation pass; no AGENTS.md edits expected.
+- This is pass-2 of at most 2 remediation passes per the Verifier's remediation preamble; Documenter/Verifier should treat this as closing the sole BLOCKING finding from the pass-1 verifier_report.md.
+
+Plan and diff context:
+- Plan: plans/phase4-tactical-gui-hybrid-cleanup-plan.md (Phase 4 Tactical GUI Hybrid Cleanup, H9/H7 + dead-code).
+- Comparison base for this subtask's diff: commit 2896eef8 (pre-H7) vs b3ee8cee (H7 implementer commit) vs a2161ae1 (this pass's tester commit, current HEAD). No implementation files changed in this pass; only test files.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

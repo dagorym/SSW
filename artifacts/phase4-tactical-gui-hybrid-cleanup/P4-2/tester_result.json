@@ -1,0 +1,28 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/tester_report.md",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/tester_result.json",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/documenter_prompt.txt"
+  ],
+  "branch_name": "phase4-P4-2-tester-20260712",
+  "commands_run": [
+    "make -C tests/gui (build GuiTests with the new test)",
+    "xvfb-run -a tests/gui/GuiTests (run 3x to confirm no flakiness)",
+    "make check (repo root full gate)",
+    "Manual regression sanity check: temporarily reintroduced an internal wxClientDC in FBattleBoard::drawCenteredOnHex, rebuilt tests/gui, reran GuiTests and confirmed testShipAndPlanetIconsRenderThroughCallerSuppliedDC fails (shipDiff > 50 assertion fails); reverted the change (verified zero diff against committed src/tactical/FBattleBoard.cpp) and reran make check to confirm green again"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "81/81",
+    "SSWTests": "245/245",
+    "TacticalTests": "253/253"
+  },
+  "pass_label": "pass-2",
+  "status": "success",
+  "task_id": "P4-2",
+  "test_commit_hash": "a2161ae1",
+  "test_files_changed": [
+    "tests/gui/TacticalGuiLiveTest.cpp",
+    "tests/gui/TacticalGuiLiveTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}
