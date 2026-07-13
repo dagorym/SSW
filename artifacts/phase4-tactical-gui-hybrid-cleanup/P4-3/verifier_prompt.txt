@@ -1,0 +1,84 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Remove dead code and debug output and fix user-visible string typos across the strategic/ships/core/gui/tactical modules, with no behavior change beyond removed debug output and corrected on-screen text. This is subtask P4-3, the final subtask of Phase 4 Tactical GUI Hybrid Cleanup (H9/P4-1 and H7/P4-2 already complete and merged).
+
+Acceptance criteria to verify:
+- src/FMainBattleSimFrame.cpp deleted; build links with no dangling reference.
+- BattleSim.cpp ghost block removed; all commented-out std::cerr in the allowed files removed; the live debug-trace std::cerr sites removed; the display-string typos corrected.
+- Project compiles; make check passes (SSWTests 245, TacticalTests 253, GuiTests 81); only behavior change is removed debug output and corrected on-screen text; no signature or logic change.
+- Update Last Modified + @author on any function header whose body meaningfully changed (include/FMainFrame.h onShowPlayers).
+
+Implementation branch or worktree context:
+- Branch phase4-P4-3-documenter-20260712, forked from Tester branch phase4-P4-3-tester-20260712.
+- Implementer code commit under test: 35bc7411 (base for the diff: 84b9d7c7). Tester made no code changes (test commit hash: No Changes Made).
+- Documentation commit added in this pass: adba0d70 (doc/synthesized-roadmap.md + doc/DesignNotes.md only).
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/FMainBattleSimFrame.cpp (deleted)
+- src/BattleSim.cpp
+- src/FMainFrame.cpp
+- include/FMainFrame.h
+- src/gui/SelectCombatGUI.cpp
+- src/gui/BattleResultsGUI.cpp
+- src/gui/TransferShipsGUI.cpp
+- src/gui/SatharFleetsGUI.cpp
+- src/gui/UPFUnattachedGUI.cpp
+- src/strategic/FGame.cpp
+- src/strategic/FPlayer.cpp
+- src/strategic/FFleet.cpp
+- src/strategic/FMap.cpp
+- src/strategic/FSystem.cpp
+- src/strategic/FPlanet.cpp
+- src/strategic/FJumpRoute.cpp
+- src/gui/ICMSelectionGUI.cpp
+- src/gui/SystemDialogGUI.cpp
+- src/gui/WXPlayerDisplay.cpp
+- src/gui/WXMapDisplay.cpp
+- src/ships/FVehicle.cpp
+- src/core/FHexPath.cpp
+- src/core/FHexMap.cpp
+- src/core/FGameConfig.cpp
+- src/tactical/FBattleScreen.cpp
+- doc/synthesized-roadmap.md (Documenter)
+- doc/DesignNotes.md (Documenter)
+
+Commands executed:
+- git -C <worktree> diff --stat 84b9d7c7..35bc7411
+- git -C <worktree> diff 84b9d7c7..35bc7411 -- include/FMainFrame.h src/FMainFrame.cpp src/gui/BattleResultsGUI.cpp src/gui/TransferShipsGUI.cpp src/gui/SatharFleetsGUI.cpp
+- grep -n H9|H7 doc/synthesized-roadmap.md
+- grep -rn FMainBattleSimFrame plans/ doc/ (scope check for stale references outside the roadmap)
+- grep -n FMainBattleSimFrame|std::cerr|destoryed|Statisitics|woud|captial AGENTS.md doc/test-contracts.md (confirmed no edits needed)
+- git -C <worktree> add doc/DesignNotes.md doc/synthesized-roadmap.md
+- git -C <worktree> commit -F <doc commit message file>
+
+Final test outcomes:
+- No code changes made in this Documenter pass; documentation-only edits to doc/synthesized-roadmap.md and doc/DesignNotes.md.
+- Tester's final make check run (inherited, unchanged): fully GREEN -- SSWTests OK (245), TacticalTests OK (253), GuiTests OK (81), exit code 0.
+- Confirmed via diff inspection that the underlying code diff (84b9d7c7..35bc7411) is pure comment/dead-code/display-string edits with no signature or logic change, matching the documentation added.
+- Pre-existing, unrelated flaky-test observation from Tester (2 dice-driven FGameTest combat-cleanup tests, unseeded RNG, ~1-in-9 fail rate) is noted in the new doc/DesignNotes.md entry as a repository-level risk, not a P4-3 regression.
+
+Plan or evaluation context guidance:
+- plans/phase4-tactical-gui-hybrid-cleanup-plan.md, subtask P4-3 (see the plan's Overall Documentation Impact section, ~line 312, for the roadmap close-out items).
+- This is the final subtask of Phase 4 Tactical GUI Hybrid Cleanup; H9 (P4-1) and H7 (P4-2) are already resolved and merged.
+
+Convention-file guidance:
+- AGENTS.md Single-Source-of-Truth Rule: project facts belong in exactly one canonical location; do not duplicate into entry-point files.
+- AGENTS.md Testing section: Behavioral Verification Is Mandatory -- not applicable here since the Planner waived new tests for this behavior-neutral dead-code/debug/typo subtask (no new/changed behavior to cover).
+- Non-negotiable constraint: doc/rules/tactical_operations_manual.md must never be edited -- not touched in this pass.
+- Function-header Doxygen convention (CLAUDE.md/AGENTS.md): Last Modified + @author must be updated on any function header whose body meaningfully changed -- verified already applied by the Implementer to include/FMainFrame.h::onShowPlayers; no further header updates were needed since all other edits were pure comment/string-line deletions with no per-function header.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+- doc/DesignNotes.md
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
