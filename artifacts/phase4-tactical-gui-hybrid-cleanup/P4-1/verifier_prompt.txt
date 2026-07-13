@@ -1,0 +1,80 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- H9 (Phase 4 Tactical GUI Hybrid Cleanup, subtask P4-1): bind every FBattleDisplay phase Done/Set-Speed and turn-button click handler exactly once at construction and drive Show()/Enable()/turn-panel state purely from a new non-paint FBattleDisplay::updateForPhase() seam invoked from FBattleScreen::setState()/setPhase()/onSize()/reDraw(), removing the m_first paint-time connect/show/hide lifecycle. Tester added 5 behavioral GUI tests in TacticalGuiLiveTest and re-authored the 6 stale source-inspection tests in FTacticalBattleDisplayFireFlowTest as H9 structural supplements pointing at that behavioral coverage. Documenter reviewed the Doxygen headers already updated by Implementer/Tester, updated AGENTS.md Contributor Notes, doc/synthesized-roadmap.md (H9 marked RESOLVED), and doc/DesignNotes.md (new validation-log entry).
+
+Acceptance criteria to verify:
+- No m_first anywhere (member + assignments removed from src and header); all 9 button click handlers (7 phase + 2 turn) bound once in the ctor; no button Connect/Disconnect in the paint/draw path -- verified by re-authored source-contract tests in FTacticalBattleDisplayFireFlowTest and behaviorally via bind-once click routing in TacticalGuiLiveTest.
+- A new public non-paint FBattleDisplay::updateForPhase() exists (no drawing, no DC) and is wired into FBattleScreen::setState, setPhase, and onSize -- behaviorally verified: testUpdateForPhaseShowsExactlyCorrectPhaseButtonWithoutPaint (setState/setPhase, no paint) and testUpdateForPhaseReSyncsButtonStateOnResizeViaOnSize (onSize path).
+- Per-phase parity: exactly the correct Done/Set-Speed button shown+enabled per phase, all others hidden; clicking a phase button routes to the same handler and same model effect as before -- behaviorally verified across all 7 phase scenarios (parity test) and the Move->Defensive->Offensive click round, plus Seeker Placement/Activation and Mine Placement completion tests asserting model transitions (PH_/BS_ values) and observed IsShown()/IsEnabled().
+- TMF-05 turn-button invariants preserved (existing 3 TMF-05 GUI tests still green) and TMF-06 Done-button dialog-suppression unchanged (testDefensive/OffensiveFireDoneSkipsDialogWhenNoWeaponsFired still green; new fire-Done click round uses empty game weaponsFired==0 with no dialog).
+- Doxygen headers on the new updateForPhase() and on every function whose body changed were reviewed in the implementer diff (Last Modified + @author updated); tester added full Doxygen headers to the 5 new GUI test methods.
+- Documentation criterion (this stage): AGENTS.md Contributor Notes, doc/synthesized-roadmap.md (H9 row), and doc/DesignNotes.md accurately reflect the implemented bind-once + updateForPhase() behavior with no stale statements about the removed m_first lifecycle, and doc/test-contracts.md is confirmed to need no changes.
+
+Implementation branch or worktree context:
+- Coordinator-provided worktree references (from the Tester handoff): Implementer/Tester worktree /home/tstephen/repos/worktrees/phase4-P4-1-tester-20260712, branch phase4-P4-1-tester-20260712.
+- Documenter worktree: /home/tstephen/repos/worktrees/phase4-P4-1-documenter-20260712, branch phase4-P4-1-documenter-20260712 (branched from the Tester branch; already contained the Implementer and Tester commits at session start).
+- Implementer commit under test: bb3ebfa5 (P4-1: H9 bind-once FBattleDisplay buttons + non-paint updateForPhase()).
+- Tester test commit: 372b3210 (P4-1: Tester behavioral coverage for H9 bind-once + updateForPhase()).
+- Prior artifact/handoff commits already on this branch: afe80edf (Implementer artifacts and Tester handoff), 47f18948 (Tester artifacts and Documenter handoff).
+- Documentation commit created by this Documenter pass: a372cd9c.
+- Planner baseline used for the diff comparison: 70637a7e (Planner: Phase 4 Tactical GUI Hybrid Cleanup plan).
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/tactical/FBattleDisplay.h (Implementer: removed m_first; added updateForPhase() declaration + Doxygen; updated draw*/handler Doxygen headers)
+- src/tactical/FBattleDisplay.cpp (Implementer: bind-once handlers in ctor; new updateForPhase() implementation; draw*/handlers no longer manage button lifecycle)
+- include/tactical/FBattleScreen.h (Implementer: reDraw() now calls updateForPhase(); setState/setPhase/onSize Doxygen updated)
+- src/tactical/FBattleScreen.cpp (Implementer: setState/setPhase delegate to reDraw(); onSize calls updateForPhase(); onSetSpeed final reDraw())
+- tests/gui/TacticalGuiLiveTest.cpp (Tester: 5 new H9 behavioral tests + helpers)
+- tests/gui/TacticalGuiLiveTest.h (Tester: registered + documented the 5 new tests)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp (Tester: re-authored 6 source-contract tests for H9 structure)
+- tests/tactical/FTacticalBattleDisplayFireFlowTest.h (Tester: renamed/re-documented 4 tests, kept 2 under existing names)
+- AGENTS.md (Documenter: added FBattleDisplay bind-once + updateForPhase() Contributor Notes bullet)
+- doc/DesignNotes.md (Documenter: appended H9/P4-1 validation-log entry)
+- doc/synthesized-roadmap.md (Documenter: marked finding H9's table row RESOLVED referencing artifacts/phase4-tactical-gui-hybrid-cleanup/P4-1)
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start / documenter/preflight / documenter/diff-review / documenter/agents-guidance / documenter/doc-editing / artifact-paths / documenter/commit-flow / documenter/artifact-writing / documenter/verifier-handoff / handoff-prompt-contract
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <task> --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 70637a7e --head HEAD
+- git diff 70637a7e HEAD -- include/tactical/FBattleDisplay.h src/tactical/FBattleDisplay.cpp include/tactical/FBattleScreen.h src/tactical/FBattleScreen.cpp tests/gui/TacticalGuiLiveTest.h tests/tactical/FTacticalBattleDisplayFireFlowTest.h tests/tactical/FTacticalBattleDisplayFireFlowTest.cpp
+- grep -n H9 doc/test-contracts.md AGENTS.md doc/synthesized-roadmap.md doc/DesignNotes.md
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root <worktree> --phase docs (heuristic false-positive on AGENTS.md/doc/*.md paths for this repo's doc/ singular convention; reconciled against precedent commit b1e530ee which edited the same two files in a prior Documenter pass)
+- git add AGENTS.md doc/DesignNotes.md doc/synthesized-roadmap.md
+- git commit -F <doc_commit_msg.txt> (documentation-only commit a372cd9c)
+
+Final test outcomes:
+- No executable behavior or test behavior was changed in this Documenter pass; only documentation/comment files were edited (AGENTS.md, doc/DesignNotes.md, doc/synthesized-roadmap.md).
+- Tester's reported final test outcomes (inherited, not re-run by Documenter): make (repo root) full build PASS, exit 0, no warnings; cd tests/gui && make && xvfb-run -a ./GuiTests PASS: OK (80 tests); cd tests/tactical && make && ./TacticalTests PASS: OK (253 tests); make check (repo root) PASS: SSWTests OK (245), TacticalTests OK (253), GuiTests OK (80).
+- Verified via `git status` that only the three documentation files are modified relative to the Tester's HEAD; no src/include/tests files were touched by the Documenter.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase4-tactical-gui-hybrid-cleanup-plan.md, subtask P4-1 (finding H9), lines ~112-176.
+- Plan's Documentation Impact for P4-1 (line ~169): AGENTS.md Contributor Notes bullet on FBattleDisplay (bind-once + updateForPhase() lifecycle contract; button Connect/Show no longer in paint) -- done; possibly doc/DesignNotes.md -- done (new validation-log entry); doc/test-contracts.md only if a TMF contract's wording changes -- confirmed not needed (no TMF-05/TMF-06 wording changed; the renamed FireFlow test names are not referenced by name in that catalog).
+- Plan's Overall Documentation Impact section (line ~312) also calls for marking doc/synthesized-roadmap.md Phase 4 'Now' item #4 and findings H7/H9 RESOLVED once the full phase completes; since only P4-1 (H9) is complete and P4-2 (H7)/P4-3 (dead-code) are not, this Documenter pass marks only the H9 table row RESOLVED and leaves item #4 and the H7 row untouched for a later documentation pass once P4-2/P4-3 land.
+- Comparison base for the P4-1 diff: 70637a7e (Planner: Phase 4 Tactical GUI Hybrid Cleanup plan) vs HEAD.
+
+Convention-file guidance:
+- AGENTS.md Function Comments section: Doxygen file headers and full header blocks are mandatory on changed functions/classes with @author and Last Modified updated; verified already satisfied by the Implementer diff (updateForPhase(), constructor, onTurnLeft/Right, drawMoveShip/drawAttackFire/drawPlaceMines/drawPlaceSeekers/drawSeekerActivation, reDraw(), setPhase(), onSize()) and by the Tester diff (5 new TacticalGuiLiveTest methods each have full Doxygen headers with @author claude-opus-4-8 (medium)).
+- AGENTS.md Testing section (Behavioral Verification Is Mandatory): source-contract-only tests may never be the sole verification of a behavior; each re-authored FTacticalBattleDisplayFireFlowTest case now explicitly cites its authoritative behavioral TacticalGuiLiveTest counterpart in its Doxygen/comment, satisfying this rule.
+- AGENTS.md Single-Source-of-Truth Rule: canonical facts stay in AGENTS.md/doc/, not duplicated into CLAUDE.md; no CLAUDE.md changes were made.
+- doc/rules/tactical_operations_manual.md is non-editable per AGENTS.md's Non-negotiable Constraints; not touched.
+- doc/test-contracts.md is the catalog for detailed per-test source-contract entries (SMC-*, SMF-*, SMFR-*, PGS-*, TSM-*, SMRIV-*, SMRV-*, SMRVI-*, TMF-*); it documents families rather than individual FTacticalBattleDisplayFireFlowTest method names for this area, so the 4 renamed/2-updated test names required no catalog edit.
+- Diff-first-editing: all three documentation edits are minimal, targeted insertions (one new bullet in an existing list, one table-row annotation, one appended validation-log entry) with no unrelated rewrites.
+
+Updated documentation files:
+- AGENTS.md
+- doc/DesignNotes.md
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-1
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
