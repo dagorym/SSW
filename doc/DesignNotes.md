@@ -1772,3 +1772,60 @@ make check
 
 Results: full build PASS with no warnings; `OK (80 tests)` GUI; `OK (253 tests)` tactical;
 `make check` PASS overall (`SSWTests OK (245)`, `TacticalTests OK (253)`, `GuiTests OK (80)`).
+
+H7 (Phase 4 Tactical GUI Hybrid Cleanup, subtask P4-2) removes the mixed-DC paint path in
+`FBattleBoard` and `FGamePanel`. Before this change, `FBattleBoard::onPaint()` constructed a
+plain `wxPaintDC` and passed it into `draw(wxDC&)`, which drew the grid, routes, ranges,
+targets, and mine overlays through that DC — but `drawShips()` and `drawCenteredOnHex(wxImage,
+FPoint, int)` took no DC parameter at all and instead constructed a throwaway `wxClientDC`
+internally for every ship, the planet image, and every seeker missile icon drawn via
+`drawSeekerMissiles(wxDC&)` (whose `dc` parameter was unused, marked `(void)dc;`). Two
+incompatible device contexts therefore drew into the same window in the same repaint: the real
+paint DC for static/overlay elements, and a separate client DC (constructed outside any paint
+event) for every ship and seeker sprite. `wxClientDC` painting outside `wxEVT_PAINT` is
+unsupported or silently ignored on wxGTK3-Wayland and wxOSX, has an undefined z-order relative
+to the paint DC's contents, and bypasses the update-region clip — the single biggest
+portability landmine flagged in the tactical GUI hybrid-cleanup review.
+
+The fix threads a single device context from `onPaint()` down through every drawing call.
+`FBattleBoard`'s constructor now calls `SetBackgroundStyle(wxBG_STYLE_PAINT)`, which makes it
+valid for `onPaint()` to construct a `wxAutoBufferedPaintDC` (an off-screen bitmap buffer
+that is blitted to the screen once, eliminating flicker as a side benefit). That single `dc` is
+passed to `draw(wxDC&)`, which now calls `drawShips(wxDC&)` (previously `drawShips()`) and
+`drawCenteredOnHex(wxDC&, wxImage, FPoint, int)` (previously `drawCenteredOnHex(wxImage,
+FPoint, int)`, which owned its own `wxClientDC`) for the planet image and every ship icon;
+`drawSeekerMissiles(wxDC&)`'s previously-unused `dc` parameter is now threaded into all six of
+its `drawCenteredOnHex(...)` call sites (inactive and active seekers, both in the activation
+and battle-phase branches). No `wxClientDC` remains anywhere in `src/tactical/FBattleBoard.cpp`.
+`FGamePanel::onPaint()` had a separate, unrelated instance of the same class of bug: an
+`#ifdef LINUX` branch constructed a `wxClientDC` on Linux while non-Linux platforms used a
+`wxPaintDc`; this was collapsed to a single `wxPaintDC` on all platforms, and a trailing block
+of commented-out `dc.SetBackground()`/`dc.Clear()`/`dc.DrawRectangle()` dead code was deleted.
+
+Tester coverage: the 5 pre-existing source-contract assertions in
+`FTacticalBattleBoardRendererDelegationTest` that quoted the old no-DC `drawShips()` and
+`drawCenteredOnHex(*icon, hex, ...)` literals were updated to the new dc-threaded
+`drawShips(wxDC &dc)` / `drawCenteredOnHex(dc, *icon, hex, ...)` signatures — an approved
+behavior change (the fix), not a regression, so the literal updates are the correct response
+rather than a sign the tests were weakened. Separately,
+`TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath`'s `PH_ATTACK_FIRE` gate was
+narrowed from a generic any-pixel-diff check to counting cyan (`#00CCCC`) path pixels, because
+the seeker icon itself now correctly renders through the same buffered DC in `PH_ATTACK_FIRE`
+(previously it silently failed to render there via the bypassed `wxClientDC` path) and its
+bounding box overlaps the pixel band the old generic diff assertion was inspecting; counting
+the path's distinctive cyan color isolates `drawSeekerPaths()`'s output from the (now correctly
+rendered) seeker sprite in the same region.
+
+Validation commands:
+
+```bash
+make all_clean
+make -j4
+make check
+cd tests/gui && make && xvfb-run -a ./GuiTests
+cd tests/tactical && make && ./TacticalTests
+```
+
+Results: full clean build PASS; `SSWTests OK (245 tests)`; `TacticalTests OK (253 tests)`
+(the 5 updated dc-threaded-signature assertions now pass); `GuiTests OK (80 tests)` (the
+narrowed cyan-pixel-count assertion in `testSeekerPathRendersInPHMoveWithMovementPath` passes).
