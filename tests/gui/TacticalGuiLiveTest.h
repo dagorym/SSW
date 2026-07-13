@@ -61,6 +61,11 @@ CPPUNIT_TEST( testTurnPanelCaptionRendersAboveButtons );
 CPPUNIT_TEST( testTurnPanelHeightExpandsToContainCaptionAndButtonsWithoutClipping );
 CPPUNIT_TEST( testDefensiveFireDoneSkipsDialogWhenNoWeaponsFired );
 CPPUNIT_TEST( testOffensiveFireDoneSkipsDialogWhenNoWeaponsFired );
+CPPUNIT_TEST( testUpdateForPhaseShowsExactlyCorrectPhaseButtonWithoutPaint );
+CPPUNIT_TEST( testUpdateForPhaseReSyncsButtonStateOnResizeViaOnSize );
+CPPUNIT_TEST( testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility );
+CPPUNIT_TEST( testSeekerButtonsShownPerStateAndHiddenAfterCompletionViaUpdateForPhase );
+CPPUNIT_TEST( testMinePlacementButtonShownInPlaceMinesHiddenAfterCompletionViaUpdateForPhase );
 CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -614,6 +619,82 @@ void testMinePlacementDoneButtonLabelReflectsOrdnanceTypes();
 	 * @date Last Modified: Jun 30, 2026
 	 */
 	void testOffensiveFireDoneSkipsDialogWhenNoWeaponsFired();
+
+	/**
+	 * @brief Behavioral (H9): exactly the correct phase Done/Set-Speed button is shown and
+	 * enabled per state/phase and all others hidden, driven by updateForPhase() via
+	 * setState()/setPhase()/reDraw() with no paint.
+	 *
+	 * Iterates the seven phase scenarios (Set Speed, Movement Done, Defensive/Offensive
+	 * Fire Done, Seeker Activation Done, Mine/Seeker Placement Done); for each it asserts
+	 * exactly one button IsShown() and the shown one IsEnabled() without ever calling
+	 * draw(), proving the H9 non-paint updateForPhase() seam owns per-phase button state.
+	 *
+	 * @author claude-opus-4-8 (medium)
+	 * @date Created: Jul 12, 2026
+	 * @date Last Modified: Jul 12, 2026
+	 */
+	void testUpdateForPhaseShowsExactlyCorrectPhaseButtonWithoutPaint();
+
+	/**
+	 * @brief Behavioral (H9): FBattleScreen::onSize() re-syncs phase-driven button state
+	 * through updateForPhase().
+	 *
+	 * Forces the Defensive Fire Done button hidden out-of-band while the model is in
+	 * PH_DEFENSE_FIRE, then triggers a resize (SendSizeEvent) with no setState/setPhase/
+	 * reDraw in between and asserts onSize() re-showed the button via updateForPhase().
+	 *
+	 * @author claude-opus-4-8 (medium)
+	 * @date Created: Jul 12, 2026
+	 * @date Last Modified: Jul 12, 2026
+	 */
+	void testUpdateForPhaseReSyncsButtonStateOnResizeViaOnSize();
+
+	/**
+	 * @brief Behavioral (H9): clicking each phase Done button routes to the same model
+	 * effect as before and drives per-phase button visibility via updateForPhase().
+	 *
+	 * Drives a full Movement Done -> Defensive Fire Done -> Offensive Fire Done round in
+	 * an empty game and asserts the model phase advances (PH_MOVE -> PH_DEFENSE_FIRE ->
+	 * PH_ATTACK_FIRE -> PH_MOVE) and each outgoing button hides while the next shows,
+	 * with no manual paint. Behavioral replacement for the removed source-inspection
+	 * move/hide button-lifecycle contracts.
+	 *
+	 * @author claude-opus-4-8 (medium)
+	 * @date Created: Jul 12, 2026
+	 * @date Last Modified: Jul 12, 2026
+	 */
+	void testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility();
+
+	/**
+	 * @brief Behavioral (H9): Seeker Placement Done and Seeker Activation Done are shown
+	 * per state/phase and hidden after their completion handler runs, via updateForPhase().
+	 *
+	 * Drives BS_PlaceSeekers (placement) and PH_SEEKER_ACTIVATION (activation) entry,
+	 * asserts each button shown+enabled, clicks it, and asserts the model advanced and the
+	 * button hid via the completion handler's reDraw()->updateForPhase(). Behavioral
+	 * replacement for the removed seeker button connect/show/disconnect/hide contract.
+	 *
+	 * @author claude-opus-4-8 (medium)
+	 * @date Created: Jul 12, 2026
+	 * @date Last Modified: Jul 12, 2026
+	 */
+	void testSeekerButtonsShownPerStateAndHiddenAfterCompletionViaUpdateForPhase();
+
+	/**
+	 * @brief Behavioral (H9): Mine Placement Done is shown in BS_PlaceMines and hidden
+	 * after completion, via updateForPhase().
+	 *
+	 * Asserts the mine button shown+enabled in BS_PlaceMines with Seeker Placement Done
+	 * hidden, then clicks it and asserts the state advanced and the button hid through
+	 * completeMinePlacement()'s reDraw()->updateForPhase(). Behavioral replacement for the
+	 * removed mine-phase Show()-literal source contract.
+	 *
+	 * @author claude-opus-4-8 (medium)
+	 * @date Created: Jul 12, 2026
+	 * @date Last Modified: Jul 12, 2026
+	 */
+	void testMinePlacementButtonShownInPlaceMinesHiddenAfterCompletionViaUpdateForPhase();
 };
 
 }

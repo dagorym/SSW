@@ -549,15 +549,41 @@ assertContains(body, "m_parent->completeMovePhase();");
 assertNotContains(body, "m_parent->setPhase(PH_FINALIZE_MOVE);");
 }
 
-void FTacticalBattleDisplayFireFlowTest::testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation() {
-// AC: move-done callback still handles UI button teardown while progressing phase flow.
+void FTacticalBattleDisplayFireFlowTest::testMoveDoneBindsOnceInCtorAndDelegatesWithoutPaintLifecycle() {
+// H9 source-contract supplement: the Movement Done click handler is bound exactly once at
+// construction and onMoveDone() only delegates to completeMovePhase() -- it no longer
+// Disconnect()s, Hide()s, or resets any m_first flag. The button's hide-on-completion
+// behavior is driven by updateForPhase() via completeMovePhase()'s reDraw().
+//
+// Authoritative BEHAVIORAL coverage (drive PH_MOVE -> Movement Done click -> button hidden +
+// phase advanced) lives in TacticalGuiLiveTest::
+// testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility. This test only locks the H9
+// bind-once + no-paint-lifecycle code shape; it does not substitute for that behavioral test.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string ctorBody = extractFunctionBody(
+source,
+"FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString &name)");
 const std::string body = extractFunctionBody(source, "void FBattleDisplay::onMoveDone( wxCommandEvent& event )");
 
-assertContains(body, "m_buttonMoveDone->Disconnect(");
-assertContains(body, "m_buttonMoveDone->Hide();");
-assertContains(body, "m_first=true;");
-assertBefore(body, "m_parent->completeMovePhase();", "m_buttonMoveDone->Hide();");
+// Bound exactly once in the constructor.
+assertContains(ctorBody, "m_buttonMoveDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );");
+CPPUNIT_ASSERT_EQUAL(1u, countOccurrences(source, "wxCommandEventHandler( FBattleDisplay::onMoveDone )"));
+
+// Handler only delegates; no paint-time teardown remains.
+assertContains(body, "m_parent->completeMovePhase();");
+assertNotContains(body, "m_buttonMoveDone->Disconnect(");
+assertNotContains(body, "m_buttonMoveDone->Hide();");
+assertNotContains(body, "m_first");
+
+// H9 removal invariant: the m_first member and every assignment to it are gone from
+// the source (only H9 changelog comment text may still mention the removal).
+assertNotContains(source, "bool m_first");
+assertNotContains(source, "m_first =");
+assertNotContains(source, "m_first=");
+
+// The member declaration is also removed from the header.
+const std::string header = readFile(repoFile("include/tactical/FBattleDisplay.h"));
+assertNotContains(header, "bool m_first");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases() {
@@ -680,38 +706,67 @@ assertContains(drawBody, "const int pendingLMargin = leftOffset + attackTextW + 
 assertContains(drawBody, "drawOffensiveSeekerPendingRows(dc, pendingLMargin, getActionPromptLineY(0), 10);");
 }
 
-void FTacticalBattleDisplayFireFlowTest::testActionButtonShowPathsRelayoutAfterVisibilityChange() {
+void FTacticalBattleDisplayFireFlowTest::testActionButtonShowStateOwnedByUpdateForPhaseNotDrawPaths() {
+// H9 source-contract supplement: the per-phase Show()/Enable() lifecycle of the action
+// buttons now lives exclusively in the non-paint updateForPhase() method; the draw*()
+// methods only render prompt text and never Show() their button. This locks that the
+// paint-time Show() calls were removed and that updateForPhase() owns the visibility.
+//
+// Authoritative BEHAVIORAL coverage (correct button shown per phase, observed via
+// IsShown()) lives in TacticalGuiLiveTest::
+// testUpdateForPhaseShowsExactlyCorrectPhaseButtonWithoutPaint.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string updateBody = extractFunctionBody(source, "void FBattleDisplay::updateForPhase()");
 const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::drawMoveShip(wxDC &dc)");
 const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::drawDefensiveFire(wxDC &dc)");
 const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::drawAttackFire(wxDC &dc)");
 const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::drawPlaceMines(wxDC &dc)");
 
-assertContains(moveBody, "m_buttonMoveDone->Show();");
-assertBefore(moveBody, "m_buttonMoveDone->Show();", "Layout();");
-assertContains(defenseBody, "m_buttonDefensiveFireDone->Show();");
-assertBefore(defenseBody, "m_buttonDefensiveFireDone->Show();", "Layout();");
-assertContains(attackBody, "m_buttonOffensiveFireDone->Show();");
-assertBefore(attackBody, "m_buttonOffensiveFireDone->Show();", "Layout();");
-assertContains(minesBody, "m_buttonMinePlacementDone->Show();");
-assertBefore(minesBody, "m_buttonMinePlacementDone->Show();", "Layout();");
+// draw*() paint methods no longer Show() any action button.
+assertNotContains(moveBody, "m_buttonMoveDone->Show(");
+assertNotContains(defenseBody, "m_buttonDefensiveFireDone->Show(");
+assertNotContains(attackBody, "m_buttonOffensiveFireDone->Show(");
+assertNotContains(minesBody, "m_buttonMinePlacementDone->Show(");
+
+// updateForPhase() owns per-phase Show(bool) and ends with a single relayout.
+assertContains(updateBody, "m_buttonMoveDone->Show(showMoveDone);");
+assertContains(updateBody, "m_buttonDefensiveFireDone->Show(showDefensiveFireDone);");
+assertContains(updateBody, "m_buttonOffensiveFireDone->Show(showOffensiveFireDone);");
+assertContains(updateBody, "m_buttonMinePlacementDone->Show(showMinePlacementDone);");
+assertBefore(updateBody, "m_buttonMoveDone->Show(showMoveDone);", "Layout();");
 }
 
-void FTacticalBattleDisplayFireFlowTest::testActionButtonHidePathsRelayoutAfterVisibilityChange() {
+void FTacticalBattleDisplayFireFlowTest::testActionButtonHideStateOwnedByUpdateForPhaseNotHandlers() {
+// H9 source-contract supplement: the Move and Mine completion handlers no longer Hide()
+// their button inline -- updateForPhase() hides them via the completion path's reDraw().
+// The two fire-Done handlers intentionally retain an immediate Enable(false)/Hide()
+// double-click guard before the (possibly modal) damage-summary dialog; the settled state
+// still comes from updateForPhase().
+//
+// Authoritative BEHAVIORAL coverage (button hidden after the completion handler runs,
+// observed via IsShown()==false) lives in TacticalGuiLiveTest::
+// testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility and the mine/seeker H9
+// tests.
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
+const std::string updateBody = extractFunctionBody(source, "void FBattleDisplay::updateForPhase()");
 const std::string moveBody = extractFunctionBody(source, "void FBattleDisplay::onMoveDone( wxCommandEvent& event )");
 const std::string defenseBody = extractFunctionBody(source, "void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event )");
 const std::string attackBody = extractFunctionBody(source, "void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event )");
 const std::string minesBody = extractFunctionBody(source, "void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event )");
 
-assertContains(moveBody, "m_buttonMoveDone->Hide();");
-assertBefore(moveBody, "m_buttonMoveDone->Hide();", "Layout();");
+// Move/Mine completion handlers do not Hide() inline anymore.
+assertNotContains(moveBody, "m_buttonMoveDone->Hide();");
+assertNotContains(minesBody, "m_buttonMinePlacementDone->Hide();");
+
+// Fire-Done handlers retain the intentional double-click-guard Hide() (TMF-06 preserved).
 assertContains(defenseBody, "m_buttonDefensiveFireDone->Hide();");
-assertBefore(defenseBody, "m_buttonDefensiveFireDone->Hide();", "Layout();");
 assertContains(attackBody, "m_buttonOffensiveFireDone->Hide();");
-assertBefore(attackBody, "m_buttonOffensiveFireDone->Hide();", "Layout();");
-assertContains(minesBody, "m_buttonMinePlacementDone->Hide();");
-assertBefore(minesBody, "m_buttonMinePlacementDone->Hide();", "Layout();");
+assertContains(defenseBody, "m_buttonDefensiveFireDone->Enable(false);");
+assertContains(attackBody, "m_buttonOffensiveFireDone->Enable(false);");
+
+// updateForPhase() drives the settled hide via Show(false) for the non-current phases.
+assertContains(updateBody, "m_buttonMoveDone->Show(showMoveDone);");
+assertContains(updateBody, "m_buttonMinePlacementDone->Show(showMinePlacementDone);");
 }
 
 void FTacticalBattleDisplayFireFlowTest::testSeekerActivationDrawAndClickFlowUseActivationPhaseRouting() {
@@ -769,7 +824,7 @@ assertContains(body, "m_seekerActivationRegions.push_back(wxRect(");
 assertContains(body, "m_seekerActivationSeekerIDs.push_back(seeker.seekerID);");
 }
 
-void FTacticalBattleDisplayFireFlowTest::testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern() {
+void FTacticalBattleDisplayFireFlowTest::testSeekerActivationButtonBoundOnceAndDrivenByUpdateForPhase() {
 const std::string source = readFile(repoFile("src/tactical/FBattleDisplay.cpp"));
 const std::string ctorBody = extractFunctionBody(
 source,
@@ -777,18 +832,31 @@ source,
 const std::string drawBody = extractFunctionBody(source, "void FBattleDisplay::drawSeekerActivation(wxDC &dc)");
 const std::string doneBody = extractFunctionBody(source, "void FBattleDisplay::onSeekerActivationDone( wxCommandEvent& event )");
 
+const std::string updateBody = extractFunctionBody(source, "void FBattleDisplay::updateForPhase()");
+
+// Created and hidden at startup, and bound exactly once in the constructor (H9).
 assertContains(ctorBody, "m_buttonSeekerActivationDone = new wxButton( this, wxID_ANY, wxT(\"Seeker Activation Done\"), wxDefaultPosition, wxDefaultSize, 0 );");
 assertContains(ctorBody, "actionSizer->Add(m_buttonSeekerActivationDone, 0, wxALIGN_CENTER_VERTICAL);");
 assertContains(ctorBody, "m_buttonSeekerActivationDone->Hide();");
-assertContains(drawBody, "m_buttonSeekerActivationDone->Connect(");
-assertContains(drawBody, "wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),");
-assertContains(drawBody, "m_buttonSeekerActivationDone->Show();");
-assertBefore(drawBody, "m_buttonSeekerActivationDone->Show();", "Layout();");
-assertContains(doneBody, "m_buttonSeekerActivationDone->Disconnect(");
-assertContains(doneBody, "m_buttonSeekerActivationDone->Hide();");
-assertBefore(doneBody, "m_buttonSeekerActivationDone->Hide();", "Layout();");
+assertContains(ctorBody, "m_buttonSeekerActivationDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerActivationDone ), NULL, this );");
+CPPUNIT_ASSERT_EQUAL(1u, countOccurrences(source, "wxCommandEventHandler( FBattleDisplay::onSeekerActivationDone )"));
+
+// The paint method no longer Connects/Shows the button.
+assertNotContains(drawBody, "m_buttonSeekerActivationDone->Connect(");
+assertNotContains(drawBody, "m_buttonSeekerActivationDone->Show(");
+
+// updateForPhase() owns Show()/Enable() for the activation button.
+assertContains(updateBody, "m_buttonSeekerActivationDone->Show(showSeekerActivationDone);");
+
+// The completion handler only delegates; no Disconnect/Hide/m_first remains.
 assertContains(doneBody, "m_parent->completeSeekerActivationPhase();");
-assertContains(doneBody, "m_first = true;");
+assertNotContains(doneBody, "m_buttonSeekerActivationDone->Disconnect(");
+assertNotContains(doneBody, "m_buttonSeekerActivationDone->Hide();");
+assertNotContains(doneBody, "m_first");
+
+// Authoritative BEHAVIORAL coverage (button shown in PH_SEEKER_ACTIVATION, hidden after
+// completion, observed via IsShown()) lives in TacticalGuiLiveTest::
+// testSeekerButtonsShownPerStateAndHiddenAfterCompletionViaUpdateForPhase.
 }
 
 void FTacticalBattleDisplayFireFlowTest::testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit() {
@@ -1195,14 +1263,20 @@ assertContains(seekersBody, "if (source.weaponType != FWeapon::SM)");
 assertContains(seekersBody, "int y = getActionPromptLineY(0);");
 assertNotContains(seekersBody, "int y = getActionButtonRowBottom();");
 
-// Show m_buttonSeekerPlacementDone on first draw.
-assertContains(seekersBody, "m_buttonSeekerPlacementDone->Show();");
+// H9: drawPlaceSeekers() no longer Show()s the placement button; updateForPhase() owns it.
+// (The seeker-specific prompt/filter/y-anchor assertions above still hold post-H9.)
+const std::string updateBody = extractFunctionBody(source, "void FBattleDisplay::updateForPhase()");
+assertNotContains(seekersBody, "m_buttonSeekerPlacementDone->Show(");
+assertContains(updateBody, "m_buttonSeekerPlacementDone->Show(showSeekerPlacementDone);");
 
-// onSeekerPlacementDone must disconnect, hide, call completeSeekerPlacement(), and reset m_first.
-assertContains(onDoneBody, "m_buttonSeekerPlacementDone->Disconnect(");
-assertContains(onDoneBody, "m_buttonSeekerPlacementDone->Hide();");
+// H9: onSeekerPlacementDone() only delegates -- no Disconnect/Hide/m_first remains.
 assertContains(onDoneBody, "m_parent->completeSeekerPlacement();");
-assertContains(onDoneBody, "m_first = true;");
+assertNotContains(onDoneBody, "m_buttonSeekerPlacementDone->Disconnect(");
+assertNotContains(onDoneBody, "m_buttonSeekerPlacementDone->Hide();");
+assertNotContains(onDoneBody, "m_first");
+
+// Authoritative BEHAVIORAL coverage of the seeker placement button visibility lives in
+// TacticalGuiLiveTest::testSeekerButtonsShownPerStateAndHiddenAfterCompletionViaUpdateForPhase.
 }
 
 void FTacticalBattleDisplayFireFlowTest::testMinePhaseUsesExactPromptTextAndMFilter() {
@@ -1224,9 +1298,14 @@ assertContains(minesBody, "if (source.weaponType != FWeapon::M)");
 // No combined "Weapon Placement Done" label must exist anywhere in the source.
 assertNotContains(source, "Weapon Placement Done");
 
-// Mine done button uses fixed label "Mine Placement Done" set in constructor,
-// confirmed via constructor; the drawPlaceMines path shows m_buttonMinePlacementDone.
-assertContains(minesBody, "m_buttonMinePlacementDone->Show();");
+// H9: drawPlaceMines() no longer Show()s the mine button; updateForPhase() owns it.
+// (The mine-specific prompt/filter assertions above still hold post-H9.)
+const std::string updateBody = extractFunctionBody(source, "void FBattleDisplay::updateForPhase()");
+assertNotContains(minesBody, "m_buttonMinePlacementDone->Show(");
+assertContains(updateBody, "m_buttonMinePlacementDone->Show(showMinePlacementDone);");
+
+// Authoritative BEHAVIORAL coverage of the mine placement button visibility lives in
+// TacticalGuiLiveTest::testMinePlacementButtonShownInPlaceMinesHiddenAfterCompletionViaUpdateForPhase.
 }
 
 void FTacticalBattleDisplayFireFlowTest::testGetActionButtonRowBottomIncludesSeekerPlacementDoneButton() {

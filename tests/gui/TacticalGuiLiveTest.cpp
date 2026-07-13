@@ -3794,6 +3794,43 @@ void TacticalGuiLiveTest::testSeekerActivationRowTextShowsPositionAndMarginIsDyn
 }
 
 // ---------------------------------------------------------------------------
+// H9: bind-once button handlers + non-paint updateForPhase() coverage
+// ---------------------------------------------------------------------------
+
+// H9 helper: create a plain FBattleScreen with no fleet setup so per-phase
+// button visibility/enable state can be driven purely through
+// setState()/setPhase()/reDraw() (which invoke FBattleDisplay::updateForPhase())
+// without needing a full placement flow. Caller owns the screen (Destroy() it).
+static FBattleScreen * makePlainBattleScreen(WXGuiTestHarness & harness, const wxString & title) {
+	FBattleScreen * screen = new FBattleScreen(title);
+	screen->Show();
+	harness.pumpEvents(3);
+	return screen;
+}
+
+// H9 helper: the labels of the seven phase Done/Set-Speed buttons whose
+// show/enable lifecycle updateForPhase() now owns exclusively.
+static const char * const kH9PhaseButtonLabels[] = {
+	"Set Speed",
+	"Movement Done",
+	"Defensive Fire Done",
+	"Offensive Fire Done",
+	"Mine Placement Done",
+	"Seeker Placement Done",
+	"Seeker Activation Done"
+};
+
+// H9 helper: dispatch a real button-click command through the button's own
+// event handler so the bound (ctor-connected) on*() handler runs, exactly as a
+// live click would. Works even when the button is disabled.
+static void fireButtonClick(wxButton * button) {
+	CPPUNIT_ASSERT(button != NULL);
+	wxCommandEvent evt(wxEVT_COMMAND_BUTTON_CLICKED, button->GetId());
+	evt.SetEventObject(button);
+	button->GetEventHandler()->ProcessEvent(evt);
+}
+
+// ---------------------------------------------------------------------------
 // TMF-05: Turn Left / Turn Right button panel tests
 // ---------------------------------------------------------------------------
 
@@ -4422,6 +4459,249 @@ void TacticalGuiLiveTest::testOffensiveFireDoneSkipsDialogWhenNoWeaponsFired() {
 	m_harness.pumpEvents(5);
 	m_harness.cleanupOrphanTopLevels(10);
 	std::cerr << "TMFAC2:offensive-skip:done" << std::endl;
+}
+
+void TacticalGuiLiveTest::testUpdateForPhaseShowsExactlyCorrectPhaseButtonWithoutPaint() {
+	// H9 AC (per-phase parity + updateForPhase() wired into setState()/setPhase()):
+	// For each state/phase, exactly one of the seven phase Done/Set-Speed buttons must
+	// be shown-and-enabled and all six others hidden, driven purely by
+	// FBattleDisplay::updateForPhase() via reDraw() from setState()/setPhase() —
+	// WITHOUT any paint (no draw()/wxMemoryDC), proving the button state is correct
+	// independent of the next paint (the core H9 behavior).
+	std::cerr << "H9:parity:start" << std::endl;
+	struct Scenario {
+		int state;
+		int phase;
+		const char * shownLabel;
+	} scenarios[] = {
+		{BS_SetupDefendFleet, PH_SET_SPEED, "Set Speed"},
+		{BS_Battle, PH_MOVE, "Movement Done"},
+		{BS_Battle, PH_DEFENSE_FIRE, "Defensive Fire Done"},
+		{BS_Battle, PH_ATTACK_FIRE, "Offensive Fire Done"},
+		{BS_Battle, PH_SEEKER_ACTIVATION, "Seeker Activation Done"},
+		{BS_PlaceMines, PH_NONE, "Mine Placement Done"},
+		{BS_PlaceSeekers, PH_NONE, "Seeker Placement Done"}
+	};
+
+	for (unsigned int i = 0; i < sizeof(scenarios) / sizeof(scenarios[0]); ++i) {
+		FBattleScreen * screen = makePlainBattleScreen(m_harness, wxT("H9 Per-Phase Parity"));
+		screen->setState(scenarios[i].state);
+		screen->setPhase(scenarios[i].phase);
+		// moveComplete governs Move/Defensive/Offensive Done enable in updateForPhase();
+		// set it true then reDraw() so the shown button is also enabled. reDraw() runs
+		// updateForPhase() synchronously; no draw() is invoked here.
+		screen->setMoveComplete(true);
+		screen->reDraw();
+
+		for (unsigned int b = 0; b < sizeof(kH9PhaseButtonLabels) / sizeof(kH9PhaseButtonLabels[0]); ++b) {
+			const std::string label(kH9PhaseButtonLabels[b]);
+			wxButton * button = findButtonByLabel(screen, wxString(label.c_str()));
+			CPPUNIT_ASSERT_MESSAGE(std::string("phase button not found: ") + label, button != NULL);
+			const bool expectShown = (label == scenarios[i].shownLabel);
+			CPPUNIT_ASSERT_EQUAL_MESSAGE(
+				std::string("H9 parity: button '") + label + "' visibility wrong for phase showing '"
+					+ scenarios[i].shownLabel + "'",
+				expectShown, button->IsShown());
+		}
+		wxButton * shownButton = findButtonByLabel(screen, wxString(scenarios[i].shownLabel));
+		CPPUNIT_ASSERT(shownButton != NULL);
+		CPPUNIT_ASSERT_MESSAGE(
+			std::string("H9 parity: the shown phase button must be enabled: ") + scenarios[i].shownLabel,
+			shownButton->IsEnabled());
+
+		screen->Destroy();
+		m_harness.pumpEvents(3);
+	}
+	m_harness.cleanupOrphanTopLevels(10);
+	std::cerr << "H9:parity:done" << std::endl;
+}
+
+void TacticalGuiLiveTest::testUpdateForPhaseReSyncsButtonStateOnResizeViaOnSize() {
+	// H9 AC: FBattleScreen::onSize() invokes updateForPhase() so phase-driven button
+	// state stays correct across a resize, independent of the next paint. Drive the
+	// display into PH_DEFENSE_FIRE, force the Done button out of sync out-of-band, then
+	// trigger a resize with NO setState/setPhase/reDraw in between and assert onSize()
+	// re-asserted the correct visibility through updateForPhase().
+	std::cerr << "H9:onsize:start" << std::endl;
+	FBattleScreen * screen = makePlainBattleScreen(m_harness, wxT("H9 onSize Resync"));
+	screen->setState(BS_Battle);
+	screen->setPhase(PH_DEFENSE_FIRE);
+	screen->setMoveComplete(true);
+	screen->reDraw();
+
+	wxButton * defensive = findButtonByLabel(screen, wxT("Defensive Fire Done"));
+	CPPUNIT_ASSERT(defensive != NULL);
+	CPPUNIT_ASSERT(defensive->IsShown());
+
+	// Force the button hidden out-of-band (no model change), so only onSize()->
+	// updateForPhase() can restore it.
+	defensive->Hide();
+	CPPUNIT_ASSERT(!defensive->IsShown());
+
+	screen->SendSizeEvent();
+	m_harness.pumpEvents(3);
+
+	CPPUNIT_ASSERT_MESSAGE(
+		"H9: onSize() must re-sync Defensive Fire Done visibility via updateForPhase()",
+		defensive->IsShown());
+
+	screen->Destroy();
+	m_harness.pumpEvents(3);
+	m_harness.cleanupOrphanTopLevels(10);
+	std::cerr << "H9:onsize:done" << std::endl;
+}
+
+void TacticalGuiLiveTest::testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility() {
+	// H9 AC (click routes to same handler/model effect; updateForPhase() fires on every
+	// transition): drive a full Move -> Defensive -> Offensive round by clicking each
+	// Done button and assert (a) the model phase advanced exactly as the pre-H9 handlers
+	// did and (b) the outgoing button hid and the next button showed, all via
+	// updateForPhase() through each complete*()'s reDraw() — with no manual paint.
+	//
+	// This is the behavioral replacement for the former source-inspection tests
+	// testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation and
+	// testActionButtonHidePathsRelayoutAfterVisibilityChange.
+	std::cerr << "H9:done-clicks:start" << std::endl;
+	FBattleScreen * screen = makePlainBattleScreen(m_harness, wxT("H9 Done-Button Routing"));
+	screen->setState(BS_Battle);
+	screen->setPhase(PH_MOVE);
+	screen->setMoveComplete(true);
+	screen->reDraw();
+
+	wxButton * move = findButtonByLabel(screen, wxT("Movement Done"));
+	wxButton * defensive = findButtonByLabel(screen, wxT("Defensive Fire Done"));
+	wxButton * offensive = findButtonByLabel(screen, wxT("Offensive Fire Done"));
+	CPPUNIT_ASSERT(move != NULL && defensive != NULL && offensive != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Movement Done shown in PH_MOVE", move->IsShown());
+	CPPUNIT_ASSERT_MESSAGE("Movement Done enabled when move complete", move->IsEnabled());
+	CPPUNIT_ASSERT_MESSAGE("Defensive Fire Done hidden in PH_MOVE", !defensive->IsShown());
+
+	// Movement Done -> onMoveDone() -> completeMovePhase() -> PH_DEFENSE_FIRE.
+	fireButtonClick(move);
+	m_harness.pumpEvents(2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"Movement Done click must advance model to PH_DEFENSE_FIRE",
+		static_cast<int>(PH_DEFENSE_FIRE), static_cast<int>(screen->getPhase()));
+	CPPUNIT_ASSERT_MESSAGE("Movement Done hidden after click via updateForPhase()", !move->IsShown());
+	CPPUNIT_ASSERT_MESSAGE("Defensive Fire Done shown after move completes", defensive->IsShown());
+
+	// Defensive Fire Done -> onDefensiveFireDone() -> completeDefensiveFirePhase() -> PH_ATTACK_FIRE.
+	// Empty game => weaponsFired == 0 => no damage dialog (TMF-06 guard preserved).
+	fireButtonClick(defensive);
+	m_harness.pumpEvents(2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"Defensive Fire Done click must advance model to PH_ATTACK_FIRE",
+		static_cast<int>(PH_ATTACK_FIRE), static_cast<int>(screen->getPhase()));
+	CPPUNIT_ASSERT_MESSAGE("Defensive Fire Done hidden after click", !defensive->IsShown());
+	CPPUNIT_ASSERT_MESSAGE("Offensive Fire Done shown in PH_ATTACK_FIRE", offensive->IsShown());
+
+	// Offensive Fire Done -> onOffensiveFireDone() -> completeOffensiveFirePhase() -> PH_MOVE.
+	fireButtonClick(offensive);
+	m_harness.pumpEvents(2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"Offensive Fire Done click must return model to PH_MOVE",
+		static_cast<int>(PH_MOVE), static_cast<int>(screen->getPhase()));
+	CPPUNIT_ASSERT_MESSAGE("Offensive Fire Done hidden after click", !offensive->IsShown());
+	CPPUNIT_ASSERT_MESSAGE("Movement Done shown again after returning to PH_MOVE", move->IsShown());
+
+	screen->Destroy();
+	m_harness.pumpEvents(3);
+	m_harness.cleanupOrphanTopLevels(10);
+	std::cerr << "H9:done-clicks:done" << std::endl;
+}
+
+void TacticalGuiLiveTest::testSeekerButtonsShownPerStateAndHiddenAfterCompletionViaUpdateForPhase() {
+	// H9 AC: Seeker Placement Done (BS_PlaceSeekers) and Seeker Activation Done
+	// (PH_SEEKER_ACTIVATION) are shown by updateForPhase() on entry and hidden after
+	// their completion handler runs (whose reDraw() re-runs updateForPhase()), while
+	// their click routes to the same model effect as before.
+	//
+	// Behavioral replacement for the former source-inspection tests
+	// testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern and the
+	// Show()-literal portion of testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter.
+	std::cerr << "H9:seeker-buttons:start" << std::endl;
+
+	// --- Seeker placement (BS_PlaceSeekers) ---
+	FBattleScreen * placeScreen = makePlainBattleScreen(m_harness, wxT("H9 Seeker Placement"));
+	placeScreen->setState(BS_PlaceSeekers);
+	placeScreen->setPhase(PH_NONE);
+	placeScreen->reDraw();
+
+	wxButton * seekerPlace = findButtonByLabel(placeScreen, wxT("Seeker Placement Done"));
+	CPPUNIT_ASSERT(seekerPlace != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Seeker Placement Done shown in BS_PlaceSeekers", seekerPlace->IsShown());
+	CPPUNIT_ASSERT_MESSAGE("Seeker Placement Done enabled in BS_PlaceSeekers", seekerPlace->IsEnabled());
+
+	fireButtonClick(seekerPlace);
+	m_harness.pumpEvents(2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"Seeker Placement Done click must advance state to BS_SetupAttackFleet",
+		static_cast<int>(BS_SetupAttackFleet), static_cast<int>(placeScreen->getState()));
+	CPPUNIT_ASSERT_MESSAGE(
+		"Seeker Placement Done hidden after completion via updateForPhase()",
+		!seekerPlace->IsShown());
+
+	placeScreen->Destroy();
+	m_harness.pumpEvents(3);
+
+	// --- Seeker activation (BS_Battle / PH_SEEKER_ACTIVATION) ---
+	FBattleScreen * activationScreen = makePlainBattleScreen(m_harness, wxT("H9 Seeker Activation"));
+	activationScreen->setState(BS_Battle);
+	activationScreen->setPhase(PH_SEEKER_ACTIVATION);
+	activationScreen->reDraw();
+
+	wxButton * seekerActivation = findButtonByLabel(activationScreen, wxT("Seeker Activation Done"));
+	CPPUNIT_ASSERT(seekerActivation != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Seeker Activation Done shown in PH_SEEKER_ACTIVATION", seekerActivation->IsShown());
+	CPPUNIT_ASSERT_MESSAGE("Seeker Activation Done enabled in PH_SEEKER_ACTIVATION", seekerActivation->IsEnabled());
+
+	fireButtonClick(seekerActivation);
+	m_harness.pumpEvents(2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"Seeker Activation Done click must advance model to PH_MOVE",
+		static_cast<int>(PH_MOVE), static_cast<int>(activationScreen->getPhase()));
+	CPPUNIT_ASSERT_MESSAGE(
+		"Seeker Activation Done hidden after completion via updateForPhase()",
+		!seekerActivation->IsShown());
+
+	activationScreen->Destroy();
+	m_harness.pumpEvents(3);
+	m_harness.cleanupOrphanTopLevels(10);
+	std::cerr << "H9:seeker-buttons:done" << std::endl;
+}
+
+void TacticalGuiLiveTest::testMinePlacementButtonShownInPlaceMinesHiddenAfterCompletionViaUpdateForPhase() {
+	// H9 AC: Mine Placement Done is shown by updateForPhase() in BS_PlaceMines and
+	// hidden after onMinePlacementDone() -> completeMinePlacement()'s reDraw() advances
+	// the state. Behavioral replacement for the Show()-literal portion of
+	// testMinePhaseUsesExactPromptTextAndMFilter and
+	// testActionButtonShowPathsRelayoutAfterVisibilityChange (mine path).
+	std::cerr << "H9:mine-button:start" << std::endl;
+	FBattleScreen * screen = makePlainBattleScreen(m_harness, wxT("H9 Mine Placement"));
+	screen->setState(BS_PlaceMines);
+	screen->setPhase(PH_NONE);
+	screen->reDraw();
+
+	wxButton * mine = findButtonByLabel(screen, wxT("Mine Placement Done"));
+	wxButton * seekerPlace = findButtonByLabel(screen, wxT("Seeker Placement Done"));
+	CPPUNIT_ASSERT(mine != NULL && seekerPlace != NULL);
+	CPPUNIT_ASSERT_MESSAGE("Mine Placement Done shown in BS_PlaceMines", mine->IsShown());
+	CPPUNIT_ASSERT_MESSAGE("Mine Placement Done enabled in BS_PlaceMines", mine->IsEnabled());
+	CPPUNIT_ASSERT_MESSAGE("Seeker Placement Done hidden in BS_PlaceMines", !seekerPlace->IsShown());
+
+	fireButtonClick(mine);
+	m_harness.pumpEvents(2);
+	CPPUNIT_ASSERT_EQUAL_MESSAGE(
+		"Mine Placement Done click must advance state out of BS_PlaceMines (to BS_SetupAttackFleet)",
+		static_cast<int>(BS_SetupAttackFleet), static_cast<int>(screen->getState()));
+	CPPUNIT_ASSERT_MESSAGE(
+		"Mine Placement Done hidden after completion via updateForPhase()",
+		!mine->IsShown());
+
+	screen->Destroy();
+	m_harness.pumpEvents(3);
+	m_harness.cleanupOrphanTopLevels(10);
+	std::cerr << "H9:mine-button:done" << std::endl;
 }
 
 }

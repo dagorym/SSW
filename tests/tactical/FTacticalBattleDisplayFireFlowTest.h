@@ -38,15 +38,15 @@ CPPUNIT_TEST( testMinePlacementDisplayUsesModelShipList );
 CPPUNIT_TEST( testSetupPlacementBoardUsesSourceSpecificOrdnanceRendering );
 CPPUNIT_TEST( testDisplayClickFlowUsesModelForwardingApis );
 CPPUNIT_TEST( testMoveDoneDelegatesToBattleScreenCompleteMovePhase );
-CPPUNIT_TEST( testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation );
+CPPUNIT_TEST( testMoveDoneBindsOnceInCtorAndDelegatesWithoutPaintLifecycle );
 CPPUNIT_TEST( testMovePromptDifferentiatesStoppedFacingNormalAndNoShipCases );
 CPPUNIT_TEST( testActionPromptSpacingContractConstantsAndHelpersDefined );
 CPPUNIT_TEST( testActionPromptSpacingContractAppliedAcrossActionPhases );
-CPPUNIT_TEST( testActionButtonShowPathsRelayoutAfterVisibilityChange );
-CPPUNIT_TEST( testActionButtonHidePathsRelayoutAfterVisibilityChange );
+CPPUNIT_TEST( testActionButtonShowStateOwnedByUpdateForPhaseNotDrawPaths );
+CPPUNIT_TEST( testActionButtonHideStateOwnedByUpdateForPhaseNotHandlers );
 CPPUNIT_TEST( testSeekerActivationDrawAndClickFlowUseActivationPhaseRouting );
 CPPUNIT_TEST( testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker );
-CPPUNIT_TEST( testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern );
+CPPUNIT_TEST( testSeekerActivationButtonBoundOnceAndDrivenByUpdateForPhase );
 CPPUNIT_TEST( testOffensiveSeekerDeploymentRuntimeFlowSupportsPendingRecallAndCommit );
 CPPUNIT_TEST( testLowerPanelLayoutStateDefinesSharedPromptStatsAndHeightFields );
 CPPUNIT_TEST( testLowerPanelLayoutStatePersistsSplitUntilGeometryInvalidatesIt );
@@ -234,15 +234,17 @@ void testDisplayClickFlowUsesModelForwardingApis();
  */
 void testMoveDoneDelegatesToBattleScreenCompleteMovePhase();
 /**
- * @brief Verifies move Done Disconnects And Hides Move Button Around Delegation.
+ * @brief H9 source-contract supplement: onMoveDone is bound once in the ctor and only
+ * delegates to completeMovePhase(), with no paint-time Disconnect/Hide/m_first lifecycle.
  *
- * Exercises the tactical regression behavior covered by this fixture case.
+ * Supplements the authoritative behavioral coverage in
+ * TacticalGuiLiveTest::testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), claude-opus-4-8 (medium)
  * @date Created: Apr 02, 2026
- * @date Last Modified: Apr 02, 2026
+ * @date Last Modified: Jul 12, 2026
  */
-void testMoveDoneDisconnectsAndHidesMoveButtonAroundDelegation();
+void testMoveDoneBindsOnceInCtorAndDelegatesWithoutPaintLifecycle();
 /**
  * @brief Verifies move Prompt Differentiates Stopped Facing Normal And No Ship Cases.
  *
@@ -276,25 +278,30 @@ void testActionPromptSpacingContractConstantsAndHelpersDefined();
  */
 void testActionPromptSpacingContractAppliedAcrossActionPhases();
 /**
- * @brief Verifies action Button Show Paths Relayout After Visibility Change.
+ * @brief H9 source-contract supplement: action-button Show()/Enable() state lives in
+ * updateForPhase(), not in the draw*() paint methods.
  *
- * Exercises the tactical regression behavior covered by this fixture case.
+ * Supplements the authoritative behavioral coverage in
+ * TacticalGuiLiveTest::testUpdateForPhaseShowsExactlyCorrectPhaseButtonWithoutPaint.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), claude-opus-4-8 (medium)
  * @date Created: Apr 08, 2026
- * @date Last Modified: Apr 08, 2026
+ * @date Last Modified: Jul 12, 2026
  */
-void testActionButtonShowPathsRelayoutAfterVisibilityChange();
+void testActionButtonShowStateOwnedByUpdateForPhaseNotDrawPaths();
 /**
- * @brief Verifies action Button Hide Paths Relayout After Visibility Change.
+ * @brief H9 source-contract supplement: Move/Mine completion handlers no longer Hide()
+ * inline (updateForPhase() hides them), while the two fire-Done handlers keep their
+ * intentional double-click-guard Enable(false)/Hide().
  *
- * Exercises the tactical regression behavior covered by this fixture case.
+ * Supplements the authoritative behavioral coverage in
+ * TacticalGuiLiveTest::testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility.
  *
- * @author gpt-5.3-codex (medium)
+ * @author gpt-5.3-codex (medium), claude-opus-4-8 (medium)
  * @date Created: Apr 08, 2026
- * @date Last Modified: Apr 08, 2026
+ * @date Last Modified: Jul 12, 2026
  */
-void testActionButtonHidePathsRelayoutAfterVisibilityChange();
+void testActionButtonHideStateOwnedByUpdateForPhaseNotHandlers();
 /**
  * @brief Verifies seeker activation lower-panel draw/click flow routes through activation-specific handlers.
  *
@@ -316,15 +323,18 @@ void testSeekerActivationDrawAndClickFlowUseActivationPhaseRouting();
  */
 void testSeekerActivationPanelListsInstructionAndOneRowPerInactiveSeeker();
 /**
- * @brief Verifies seeker activation done button follows the standard connect/show/hide/disconnect/relayout contract.
+ * @brief H9 source-contract supplement: the Seeker Activation Done button is created/hidden
+ * and bound once in the ctor, its Show()/Enable() lives in updateForPhase(), and
+ * onSeekerActivationDone() only delegates (no Disconnect/Hide/m_first).
  *
- * Exercises the tactical regression behavior covered by this fixture case.
+ * Supplements the authoritative behavioral coverage in TacticalGuiLiveTest::
+ * testSeekerButtonsShownPerStateAndHiddenAfterCompletionViaUpdateForPhase.
  *
- * @author gpt-5.4 (high)
+ * @author gpt-5.4 (high), claude-opus-4-8 (medium)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: Jul 12, 2026
  */
-void testSeekerActivationButtonUsesShowHideDisconnectAndRelayoutPattern();
+void testSeekerActivationButtonBoundOnceAndDrivenByUpdateForPhase();
 /**
  * @brief Verifies offensive-fire seeker deployment supports pending placement, recall, and commit.
  *
