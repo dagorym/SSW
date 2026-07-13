@@ -1,0 +1,45 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3/implementer_report.md",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3/tester_prompt.txt",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3/implementer_result.json"
+  ],
+  "branch_name": "phase4-P4-3-implementer-20260712",
+  "changed_files": [
+    "src/FMainBattleSimFrame.cpp (deleted)",
+    "src/BattleSim.cpp",
+    "src/FMainFrame.cpp",
+    "include/FMainFrame.h",
+    "src/gui/SelectCombatGUI.cpp",
+    "src/gui/BattleResultsGUI.cpp",
+    "src/gui/TransferShipsGUI.cpp",
+    "src/gui/SatharFleetsGUI.cpp",
+    "src/gui/UPFUnattachedGUI.cpp",
+    "src/strategic/FGame.cpp",
+    "src/strategic/FPlayer.cpp",
+    "src/strategic/FFleet.cpp",
+    "src/strategic/FMap.cpp",
+    "src/strategic/FSystem.cpp",
+    "src/strategic/FPlanet.cpp",
+    "src/strategic/FJumpRoute.cpp",
+    "src/gui/ICMSelectionGUI.cpp",
+    "src/gui/SystemDialogGUI.cpp",
+    "src/gui/WXPlayerDisplay.cpp",
+    "src/gui/WXMapDisplay.cpp",
+    "src/ships/FVehicle.cpp",
+    "src/core/FHexPath.cpp",
+    "src/core/FHexMap.cpp",
+    "src/core/FGameConfig.cpp",
+    "src/tactical/FBattleScreen.cpp"
+  ],
+  "code_commit_hash": "35bc7411",
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P4-3",
+  "validation_commands": [
+    "make all_clean",
+    "make -j4 (builds SSW and BattleSim)",
+    "make check (SSWTests, TacticalTests, GuiTests under xvfb-run)"
+  ],
+  "validation_outcome": "All validations passed. make and make check both succeeded with zero errors. SSWTests: OK (245 tests). TacticalTests: OK (253 tests). GuiTests: OK (81 tests). Both SSW and BattleSim executables linked successfully with no dangling references to the deleted FMainBattleSimFrame.cpp."
+}
