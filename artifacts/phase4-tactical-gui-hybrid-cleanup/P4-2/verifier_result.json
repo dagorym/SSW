@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/verifier_report.md",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/verifier_result.json"
+  ],
+  "blocking_finding_count": 1,
+  "branch_name": "phase4-P4-2-verifier-20260712",
+  "documentation_accuracy_summary": [
+    "AGENTS.md's extended FBattleBoard Contributor Notes bullet accurately describes the wxAutoBufferedPaintDC + SetBackgroundStyle(wxBG_STYLE_PAINT) mechanism, the onPaint->draw->drawShips->drawCenteredOnHex/drawSeekerMissiles threading, and the FGamePanel::onPaint single-wxPaintDC change; matches the code exactly.",
+    "doc/DesignNotes.md's new H7/P4-2 validation-log entry accurately describes the before/after mixed-DC vs single-buffered-DC behavior, correctly explains why the Tester's literal updates and cyan-pixel narrowing were necessary, and lists validation commands/results matching this verifier's independently reproduced make check results.",
+    "doc/synthesized-roadmap.md correctly marks only finding H7's row RESOLVED (referencing artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2) while leaving Part III 'Now' item #4 and the section 3.6 dead-code bullet unresolved, matching the plan's Overall Documentation Impact sequencing guidance (those two items bundle P4-3 work not yet landed).",
+    "doc/test-contracts.md was confirmed unmodified and does not need changes: it does not quote the specific drawShips()/drawCenteredOnHex(...) call-site literals the Tester updated.",
+    "doc/rules/tactical_operations_manual.md was confirmed untouched by `git diff 2896eef8 HEAD -- doc/rules/tactical_operations_manual.md` (no output), consistent with AGENTS.md's non-negotiable constraint that this file must never be edited."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "P4-2 H7 buffered paint DC",
+  "status": "success",
+  "task_id": "phase4-tactical-gui-hybrid-cleanup/P4-2",
+  "test_sufficiency_summary": [
+    "Independently re-ran `make all_clean` then `make -C <worktree> -j4 check` from a clean tree: full build PASS with no new warnings (the only two warnings present are pre-existing FJumpRoute.cpp int-to-pointer-cast warnings, unrelated to this change); `make check` PASS with SSWTests OK (245 tests), TacticalTests OK (253 tests), GuiTests OK (80 tests) -- matching the Tester/Documenter's reported totals exactly.",
+    "The 5 updated FTacticalBattleBoardRendererDelegationTest.cpp literals are source-contract supplements tracking an approved, correctly-implemented signature change (drawShips(wxDC&), drawCenteredOnHex(wxDC&, ...)) -- appropriate as a supplement, per AGENTS.md, but not sufficient as the sole coverage of the underlying rendering-correctness claim.",
+    "The narrowed cyan-pixel-count gate in TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath was independently verified sound: extracted icons/SeekerMissile.png's full pixel data via ImageMagick and confirmed it contains zero near-cyan (R<80,G>=150,B>=150) pixels, so the narrowed assertion cannot false-positive on the seeker icon itself and still correctly fails if drawSeekerPaths() were ever mistakenly invoked in PH_ATTACK_FIRE.",
+    "Gap (BLOCKING, see findings): no direct behavioral pixel test proves ships or the planet's centered image render through the caller-supplied dc post-fix; that claim rests on source-contract literal matches and manual diff review only, which AGENTS.md's Behavioral Verification Is Mandatory policy and the verifier's own constraints do not allow as sole backing for a behavioral acceptance criterion."
+  ],
+  "verdict": "CONDITIONAL PASS",
+  "warning_finding_count": 0
+}
