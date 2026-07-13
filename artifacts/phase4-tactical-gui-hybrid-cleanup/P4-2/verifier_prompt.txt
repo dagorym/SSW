@@ -1,0 +1,80 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- H7 (Phase 4 Tactical GUI Hybrid Cleanup, subtask P4-2): render the entire tactical scene through a single buffered paint DC and eliminate throwaway wxClientDC usage in the paint path, in both FBattleBoard and FGamePanel. FBattleBoard::onPaint constructs a wxAutoBufferedPaintDC (valid via SetBackgroundStyle(wxBG_STYLE_PAINT) in the ctor) and threads it through draw(wxDC&) -> drawShips(wxDC&) -> drawCenteredOnHex(wxDC&, ...) and drawSeekerMissiles(wxDC&); FGamePanel::onPaint uses a single wxPaintDC on all platforms with the dead Linux-only wxClientDC branch and trailing commented-out draw block removed. Tester updated the 5 stale source-contract literals in FTacticalBattleBoardRendererDelegationTest to the new dc-threaded signatures and narrowed TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath's PH_ATTACK_FIRE gate to a cyan-pixel-count assertion. Documenter reviewed the Doxygen headers already updated by the Implementer, updated AGENTS.md's FBattleBoard Contributor Notes bullet, doc/synthesized-roadmap.md (H7 marked RESOLVED), and doc/DesignNotes.md (new validation-log entry).
+
+Acceptance criteria to verify:
+- drawCenteredOnHex draws on a passed-in wxDC&; no wxClientDC in FBattleBoard.cpp -- verified by direct diff inspection of b3ee8cee and the 5 re-authored source-contract assertions in FTacticalBattleBoardRendererDelegationTest.
+- FBattleBoard::onPaint uses wxAutoBufferedPaintDC with SetBackgroundStyle(wxBG_STYLE_PAINT); whole scene renders in one pass through that DC -- verified by direct diff inspection (ctor sets wxBG_STYLE_PAINT; onPaint constructs wxAutoBufferedPaintDC and calls draw(dc)).
+- FGamePanel::onPaint uses a paint DC on all platforms; dead comment block removed -- verified by direct diff inspection (single wxPaintDC, no #ifdef LINUX branch, trailing commented-out dc.SetBackground()/Clear()/DrawRectangle() block deleted).
+- Ships, seeker missiles, and centered images render at correct hex positions and rotations; no scene element dropped or mis-clipped vs pre-refactor -- verified by full make check pass (245/253/80) plus the narrowed cyan-pixel TacticalGuiLiveTest assertion confirming the seeker path overlay renders correctly alongside the now-correctly-rendered seeker icon.
+- Doxygen Last Modified + @author updated on every changed function; @param dc added for new wxDC& parameters -- verified by direct diff inspection of include/tactical/FBattleBoard.h and include/FGamePanel.h (onPaint, draw, drawShips, drawCenteredOnHex, drawSeekerMissiles, FGamePanel::onPaint all updated).
+- Documentation criterion (this stage): AGENTS.md's FBattleBoard Contributor Notes bullet, doc/synthesized-roadmap.md (H7 row), and doc/DesignNotes.md accurately reflect the implemented single-buffered-paint-DC behavior with no stale statements about the removed wxClientDC paint path, and doc/test-contracts.md is confirmed to need no changes.
+
+Implementation branch or worktree context:
+- Coordinator-provided worktree references: Implementer/Tester worktree /home/tstephen/repos/worktrees/phase4-P4-2-tester-20260712, branch phase4-P4-2-tester-20260712.
+- Documenter worktree: /home/tstephen/repos/worktrees/phase4-P4-2-documenter-20260712, branch phase4-P4-2-documenter-20260712 (already contained the Implementer and Tester commits at session start).
+- Implementer commit under test: b3ee8cee (P4-2: Resolve H7 by threading a single buffered paint DC through FBattleBoard), diffed against pre-fix commit 2896eef8.
+- Tester test commit: 79e425bb (P4-2: Tester coverage update for H7 buffered paint DC).
+- Prior artifact/handoff commits already on this branch: 9c1acca8 (Implementer artifacts and Tester handoff), 6603126a (Tester artifacts and Documenter handoff).
+- Documentation commit created by this Documenter pass: eb611452.
+- Comparison base used for the diff review: 2896eef8 vs HEAD.
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/tactical/FBattleBoard.h (Implementer: drawCenteredOnHex/drawShips take wxDC&; Doxygen Last Modified/@author/@param updated on onPaint/draw/drawShips/drawCenteredOnHex/drawSeekerMissiles)
+- src/tactical/FBattleBoard.cpp (Implementer: FBattleBoard ctor sets SetBackgroundStyle(wxBG_STYLE_PAINT); onPaint constructs wxAutoBufferedPaintDC; draw()/drawShips()/drawCenteredOnHex()/drawSeekerMissiles() thread dc through; no wxClientDC remains)
+- include/FGamePanel.h (Implementer: onPaint Doxygen Last Modified/@author updated to note single wxPaintDC on all platforms)
+- src/FGamePanel.cpp (Implementer: onPaint collapsed to single wxPaintDC on all platforms; #ifdef LINUX wxClientDC branch and trailing commented-out draw block removed)
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp (Tester: 5 source-contract literals updated to dc-threaded drawShips(wxDC&)/drawCenteredOnHex(wxDC&, ...) signatures)
+- tests/gui/TacticalGuiLiveTest.cpp (Tester: testSeekerPathRendersInPHMoveWithMovementPath's PH_ATTACK_FIRE gate narrowed to a cyan #00CCCC path-pixel count)
+- AGENTS.md (Documenter: extended the FBattleBoard Contributor Notes bullet with the H7 single-buffered-paint-DC rendering contract)
+- doc/DesignNotes.md (Documenter: appended H7/P4-2 validation-log entry)
+- doc/synthesized-roadmap.md (Documenter: marked finding H7's table row RESOLVED referencing artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2)
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start / documenter/preflight / documenter/diff-review / documenter/agents-guidance / documenter/doc-editing / artifact-paths / documenter/commit-flow / documenter/artifact-writing / documenter/verifier-handoff / handoff-prompt-contract
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <task> --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 2896eef8 --head HEAD
+- python3 .myteam/documenter/agents-guidance/detect_guidance_targets.py --input <analyze_doc_impact.json>
+- git show b3ee8cee -- include/tactical/FBattleBoard.h src/tactical/FBattleBoard.cpp include/FGamePanel.h src/FGamePanel.cpp
+- git show 79e425bb -- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp tests/gui/TacticalGuiLiveTest.cpp
+- grep -n FTacticalBattleBoardRendererDelegationTest / drawCenteredOnHex / drawShips / wxClientDC / onPaint doc/test-contracts.md
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root <worktree> --phase docs (heuristic false-positive on AGENTS.md/doc/*.md paths for this repo's doc/ singular convention; reconciled against precedent commits b1e530ee and a372cd9c which edited the same files in prior Documenter passes)
+- git add AGENTS.md doc/DesignNotes.md doc/synthesized-roadmap.md
+- git commit -F <doc_commit_msg.txt> (documentation-only commit eb611452)
+
+Final test outcomes:
+- No executable behavior or test behavior was changed in this Documenter pass; only documentation files were edited (AGENTS.md, doc/DesignNotes.md, doc/synthesized-roadmap.md).
+- Tester's reported final test outcomes (inherited, not re-run by Documenter): make all_clean; make -j4 full build PASS; make check PASS (SSWTests 245/245, TacticalTests 253/253, GuiTests 80/80); cd tests/gui && make && xvfb-run -a ./GuiTests PASS: 80/80; cd tests/tactical && make && ./TacticalTests PASS: 253/253 (the 5 updated dc-threaded-signature source-contract assertions and the narrowed cyan-pixel TacticalGuiLiveTest assertion all pass).
+- Verified via `git status` that only the three documentation files are modified relative to the Tester's HEAD; no src/include/tests files were touched by the Documenter.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase4-tactical-gui-hybrid-cleanup-plan.md, subtask P4-2 (finding H7), lines ~178-227.
+- Plan's Documentation Impact for P4-2 (line ~222): AGENTS.md note on the single-buffered-paint-DC rendering contract for FBattleBoard and that FGamePanel::onPaint uses a paint DC on all platforms -- done; possibly doc/DesignNotes.md rendering notes -- done (new validation-log entry).
+- Plan's Overall Documentation Impact section (line ~312) calls for marking doc/synthesized-roadmap.md Phase 4 'Now' item #4, finding H7, finding H9, and the §3.6 dead-code bullet RESOLVED once the full phase completes; since P4-1 (H9) is already resolved and this pass resolves P4-2 (H7) but P4-3 (dead-code) is not yet complete, this Documenter pass marks only the H7 table row RESOLVED and leaves item #4 and the §3.6 bullet untouched for a later documentation pass once P4-3 lands.
+- Comparison base for the P4-2 diff: 2896eef8 (pre-H7 commit) vs HEAD.
+
+Convention-file guidance:
+- AGENTS.md Function Comments section: Doxygen file headers and full header blocks are mandatory on changed functions/classes with @author and Last Modified updated; verified already satisfied by the Implementer diff (onPaint, draw, drawShips, drawCenteredOnHex, drawSeekerMissiles in FBattleBoard.h; FGamePanel::onPaint in FGamePanel.h), each with updated Last Modified dates, @author lists appending claude-sonnet-4-6 (medium), and new @param dc entries where a wxDC& parameter was added.
+- AGENTS.md Testing section (Behavioral Verification Is Mandatory): the Tester's literal updates in FTacticalBattleBoardRendererDelegationTest are source-contract supplements tracking an approved signature change (not the sole verification of the H7 behavior); the behavioral GUI suite (TacticalGuiLiveTest, offscreen wxMemoryDC pixel assertions) remains the authoritative behavioral coverage for the rendering fix, satisfying this rule.
+- AGENTS.md Single-Source-of-Truth Rule: canonical facts stay in AGENTS.md/doc/, not duplicated into CLAUDE.md; no CLAUDE.md changes were made.
+- doc/rules/tactical_operations_manual.md is non-editable per AGENTS.md's Non-negotiable Constraints; not touched.
+- doc/test-contracts.md is the catalog for detailed per-test source-contract entries (SMC-*, SMF-*, SMFR-*, PGS-*, TSM-*, SMRIV-*, SMRV-*, SMRVI-*, TMF-*); grepped and confirmed it does not quote the specific drawShips()/drawCenteredOnHex(...) call-site literals the Tester updated, so no catalog edit was required.
+- Diff-first-editing: all three documentation edits are minimal, targeted insertions (one bullet extension, one table-row annotation, one appended validation-log entry) with no unrelated rewrites.
+
+Updated documentation files:
+- AGENTS.md
+- doc/DesignNotes.md
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
