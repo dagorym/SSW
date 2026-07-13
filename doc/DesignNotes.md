@@ -1701,3 +1701,74 @@ cd tests/gui && make && xvfb-run -a ./GuiTests
 ```
 
 Results: `OK (222 tests)` tactical; GUI pre-existing 10 failures unrelated to PGS-04.
+
+H9 (Phase 4 Tactical GUI Hybrid Cleanup, subtask P4-1) removes the `m_first`-gated
+paint-time button lifecycle from `FBattleDisplay`. Before this change, each of the seven
+phase Done/Set-Speed buttons (`m_button1`, `m_buttonMoveDone`, `m_buttonDefensiveFireDone`,
+`m_buttonOffensiveFireDone`, `m_buttonMinePlacementDone`, `m_buttonSeekerPlacementDone`,
+`m_buttonSeekerActivationDone`) and the two turn buttons (`m_buttonTurnLeft`,
+`m_buttonTurnRight`) had their click handlers `Connect()`ed and `Show()`n the first time
+their phase's `draw*()` method ran (gated by `m_first`), then `Disconnect()`ed and `Hide()`n
+by that phase's own Done handler. Any phase transition that bypassed the matching Done
+handler (several model-driven transitions do) left the next phase's button never
+connected or shown — a silent soft-lock with no crash and no test failure, since the old
+source-contract tests only asserted the paint-time connect/show pattern existed, not that
+it was reachable from every transition.
+
+The fix binds every one of those nine click handlers exactly once in the
+`FBattleDisplay` constructor and introduces a new public, non-paint
+`FBattleDisplay::updateForPhase()` method. `updateForPhase()` reads
+`FBattleScreen::getState()`/`getPhase()` plus model queries (`isMoveComplete()`,
+`canApplyEndOfMoveTurnLeft()`/`canApplyEndOfMoveTurnRight()`, whether a ship is selected)
+and sets exactly the correct button's `Show(true)`/`Enable(...)` while every other phase
+button gets `Show(false)`; it performs no drawing and creates no `wxDC`. `draw()` and every
+`draw*()` method were stripped of all `Connect()`/`Disconnect()`/`Show()`/`Hide()` calls on
+these controls — they now only render prompt text and (for `drawMoveShip()`) reposition the
+turn panel using DC-based text measurement. `FBattleScreen::reDraw()` now calls
+`m_display->updateForPhase()` before refreshing the map/display; `setState()` and
+`setPhase()` were changed to delegate to `reDraw()` instead of calling `m_map->Refresh()`/
+`m_display->Refresh()` directly, and `onSize()` calls `updateForPhase()` directly in
+addition to `reflowLowerPanelLayout()`. Button state is therefore correct immediately after
+any state/phase/resize transition, independent of whether or when the next paint occurs.
+The immediate `Enable(false)`/`Hide()` double-click guard in `onDefensiveFireDone()`/
+`onOffensiveFireDone()` (ahead of the modal damage-summary dialog, TMF-06) is unchanged;
+the settled post-dialog state is still resynced by `updateForPhase()` via that handler's
+`reDraw()`.
+
+Five new behavioral GUI tests were added to `TacticalGuiLiveTest`:
+`testUpdateForPhaseShowsExactlyCorrectPhaseButtonWithoutPaint` drives all seven phase
+scenarios and asserts exactly one button is shown+enabled with no call to `draw()`;
+`testUpdateForPhaseReSyncsButtonStateOnResizeViaOnSize` forces a button hidden out-of-band
+and asserts `onSize()`'s `SendSizeEvent` resyncs it via `updateForPhase()`;
+`testPhaseDoneButtonClicksAdvanceModelPhaseAndButtonVisibility` drives a full
+Movement Done → Defensive Fire Done → Offensive Fire Done click round in an empty game and
+asserts the model phase advances and button visibility flips at each step with no manual
+paint; `testSeekerButtonsShownPerStateAndHiddenAfterCompletionViaUpdateForPhase` and
+`testMinePlacementButtonShownInPlaceMinesHiddenAfterCompletionViaUpdateForPhase` cover the
+seeker placement/activation and mine placement completion paths the same way. The existing
+TMF-05 turn-button tests and TMF-06 dialog-suppression tests continue to pass unchanged. Six
+source-contract tests in `FTacticalBattleDisplayFireFlowTest` that had asserted the old
+paint-time connect/show/hide/`m_first` pattern (and were therefore failing against the H9
+implementation) were re-authored as H9 structural supplements — four renamed
+(`testMoveDoneBindsOnceInCtorAndDelegatesWithoutPaintLifecycle`,
+`testActionButtonShowStateOwnedByUpdateForPhaseNotDrawPaths`,
+`testActionButtonHideStateOwnedByUpdateForPhaseNotHandlers`,
+`testSeekerActivationButtonBoundOnceAndDrivenByUpdateForPhase`) and two kept under their
+existing names with only the stale `Show()`-literal assertion updated
+(`testDrawPlaceSeekersUsesSeekerSpecificPromptsAndSMFilter`,
+`testMinePhaseUsesExactPromptTextAndMFilter`); each now asserts the bind-once/no-paint-
+lifecycle shape and explicitly points to its authoritative behavioral test in
+`TacticalGuiLiveTest`, per this repository's rule that source-inspection assertions may only
+supplement, never substitute for, behavioral coverage.
+
+Validation commands:
+
+```bash
+make
+cd tests/gui && make && xvfb-run -a ./GuiTests
+cd tests/tactical && make && ./TacticalTests
+make check
+```
+
+Results: full build PASS with no warnings; `OK (80 tests)` GUI; `OK (253 tests)` tactical;
+`make check` PASS overall (`SSWTests OK (245)`, `TacticalTests OK (253)`, `GuiTests OK (80)`).
