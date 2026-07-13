@@ -1,0 +1,57 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Resolve finding H7: render the entire tactical scene through a single buffered paint DC and eliminate throwaway wxClientDC usage in the paint path, in both FBattleBoard and FGamePanel.
+
+Modified files:
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+- include/FGamePanel.h
+- src/FGamePanel.cpp
+
+Acceptance criteria to validate (from Planner):
+- drawCenteredOnHex draws on a passed-in wxDC&; no wxClientDC in FBattleBoard.cpp.
+- FBattleBoard::onPaint uses wxAutoBufferedPaintDC with SetBackgroundStyle(wxBG_STYLE_PAINT); whole scene renders in one pass through that DC.
+- FGamePanel::onPaint uses a paint DC on all platforms; dead comment block removed.
+- Ships, seeker missiles, and centered images render at correct hex positions and rotations; no scene element dropped or mis-clipped vs pre-refactor.
+- Update Last Modified + @author on every changed function; add @param for any new wxDC& parameters, per AGENTS.md.
+
+Create test files in:
+- Behavioral GUI coverage: tests/gui/TacticalGuiLiveTest.{h,cpp} (registered in tests/gui/GuiTests.cpp) - offscreen wxMemoryDC paint assertions for FBattleBoard scene rendering.
+- Tactical model / source-contract coverage: tests/tactical/FTacticalBattleBoardRendererDelegationTest.{h,cpp} (registered in tests/tactical/TacticalTests.cpp) - the 5 source-inspection assertions tied to the old drawShips()/drawCenteredOnHex(...) literal signatures must be updated to the new dc-threaded signatures (see expected failures below).
+- Per AGENTS.md behavioral-verification policy: source-string inspection may only supplement, never substitute, behavioral assertions.
+
+Implementation context for testing:
+- FBattleBoard::onPaint (src/tactical/FBattleBoard.cpp) now constructs a wxAutoBufferedPaintDC dc(this) instead of wxPaintDC, and the constructor calls this->SetBackgroundStyle(wxBG_STYLE_PAINT) so the buffered DC is valid; #include <wx/dcbuffer.h> was added.
+- drawCenteredOnHex(wxImage img, FPoint p, int rot) is now drawCenteredOnHex(wxDC &dc, wxImage img, FPoint p, int rot = 0); the internal wxClientDC dc(this) line was deleted and every call site now passes the caller's dc as the first argument. No wxClientDC remains anywhere in FBattleBoard.cpp.
+- drawShips() is now drawShips(wxDC &dc); draw(wxDC &dc) calls drawShips(dc) and drawCenteredOnHex(dc, m_planetImages[planetChoice], planetPos) instead of the no-arg/no-dc forms, so the planet image and every ship icon render through the same DC as the rest of the scene.
+- drawSeekerMissiles(wxDC &dc) previously had an unused '(void)dc;' and called drawCenteredOnHex(*m_seekerMissileIcon, ...) without a dc (which silently drew to a throwaway wxClientDC(this) targeting the real window, bypassing whatever DC draw() was actually called with). The '(void)dc;' line was removed and all 5 drawCenteredOnHex call sites inside drawSeekerMissiles now pass dc through explicitly (PH_SEEKER_ACTIVATION inactive+active branches, PH_ATTACK_FIRE pending+committed branches, and the default active-seeker branch).
+- Net effect: onPaint(wxAutoBufferedPaintDC) -> draw(dc) -> {drawGrid(dc), drawCenteredOnHex(dc,...) for the planet, drawShips(dc) -> drawCenteredOnHex(dc,...) per ship, drawSeekerMissiles(dc) -> drawCenteredOnHex(dc,...) per seeker, drawRoute/drawSeekerPaths/drawSeekerMoveCountOverlay/drawTriggeredMineHexes/drawPlacementOrdnanceHexes/drawWeaponRange/drawTarget/drawMinedHexes(dc)} - every scene element renders through the single caller-supplied DC in one pass; ships and seekers no longer bypass the update-region clip/z-order via a separate wxClientDC.
+- FGamePanel::onPaint (src/FGamePanel.cpp) now uses a single 'wxPaintDC dc(this);' on all platforms; the '#ifdef LINUX / wxClientDC / #else / wxPaintDC / #endif' branch and the trailing dead commented-out draw block (dc.SetBackground/Clear/SetPen/SetBrush/DrawRectangle) were both deleted. SetClientSize(m_parent->GetClientSize()) is retained.
+- Doxygen: full header blocks added/updated on FBattleBoard::draw, ::onPaint, ::drawCenteredOnHex, ::drawShips, ::drawSeekerMissiles (Last Modified + @author, @param dc added where new), plus the FBattleBoard.h file-level and class-level headers. FGamePanel::onPaint doc comment and the FGamePanel class doc comment were updated (Last Modified + @author) to reflect the removed platform branch.
+- A real behavioral consequence of this fix (not a defect): seeker icons now correctly render through the same DC as the rest of the scene in every phase where drawSeekerMissiles() draws them, including PH_ATTACK_FIRE's committed-active-seeker branch. Previously that branch's drawCenteredOnHex call silently drew to a throwaway wxClientDC targeting the real on-screen window, so an offscreen wxMemoryDC used by a test never saw the seeker icon there. See the GuiTests expected-failure note below.
+
+Suggested test command(s):
+- make -C <repo root> all_clean; make -C <repo root> -j4 -- PASS, no errors (SSW, BattleSim, SSWTests, TacticalTests, GuiTests all link)
+- make -C <repo root> check -- SSWTests: 245/245 PASS. TacticalTests: 248/253 PASS (5 source-inspection failures in FTacticalBattleBoardRendererDelegationTest, see expected failures). make check stops at the first failing suite so GuiTests was run separately.
+- cd tests/gui && make && xvfb-run -a ./GuiTests -- 79/80 PASS (1 failure, see expected failures)
+- cd tests/tactical && make && ./TacticalTests -- 248/253 PASS (see expected failures)
+
+Existing validations expected to fail only because approved behavior changed:
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest::testDrawUsesBattleScreenModelAccessors - asserts body contains literal 'drawShips();'. H7 changed the call to 'drawShips(dc);'. Tester must update the literal to match the new signature (this remains a source-contract test; the assertion is only checking delegation wiring, not device-context behavior).
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest::testOverlayDrawingUsesModelStateAccessors - asserts extractFunctionBody(source, 'void FBattleBoard::drawShips()') finds a matching signature. H7 changed the signature to 'void FBattleBoard::drawShips(wxDC &dc)'. Tester must update the signature literal used to extract the function body.
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest::testDrawShipsUsesTemporaryFacingForStoppedSelectedMover - same 'void FBattleBoard::drawShips()' signature-extraction failure as above, plus asserts body contains 'drawCenteredOnHex(*icon,hex,getRenderedHeadingForShip(m_parent, *itr));' which is now 'drawCenteredOnHex(dc, *icon,hex,getRenderedHeadingForShip(m_parent, *itr));'. Tester must update both literals.
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMissilesUsesActivationAndBattleVisibilityRules - asserts body contains 'drawCenteredOnHex(*m_seekerMissileIcon, *itr);' and 'drawCenteredOnHex(*m_seekerMissileIcon, itr->hex, itr->heading);'. Both now have 'dc, ' prepended as the first argument. Tester must update these literals (and the analogous ones checked by the sibling test below).
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest::testDrawSeekerMissilesPendingOffensiveFireBranch - asserts body contains 'drawCenteredOnHex(*m_seekerMissileIcon, *itr);' in the PH_ATTACK_FIRE branch, now 'drawCenteredOnHex(dc, *m_seekerMissileIcon, *itr);'. Tester must update the literal.
+- tests/gui/TacticalGuiLiveTest::testSeekerPathRendersInPHMoveWithMovementPath (SMFR-05 AC1 gate) - fails with Expected: 0, Actual: 390 on the PH_ATTACK_FIRE path-band pixel-diff assertion. Root cause: the test's 'path-only' pixel band (x=[344,356], y=[290,385]) overlaps the bounding box of the seeker icon drawn at hex(5,7) (pixel center (350,381)); pre-fix, that icon's drawCenteredOnHex call used an internal wxClientDC(this) that drew to the real window and never touched the offscreen wxMemoryDC bitmap the test compares, so the band appeared path-only by accident of the bug. Post-fix, the icon correctly renders on the same passed-in dc in every phase drawSeekerMissiles is called (including PH_ATTACK_FIRE's committed-active-seeker branch), so the band now also picks up the icon's pixels. This is exactly the acceptance criterion 'Ships, seeker missiles, and centered images render at correct hex positions and rotations' being satisfied where it previously was not. Tester should narrow the pixel band to exclude the seeker icon's bounding box (icon is ~m_size square, i.e. ~50px, centered on hex (5,7) at (350,381)), or change the assertion to check specifically for cyan (#00CCCC) path pixels rather than any pixel diff, so the test isolates drawSeekerPaths() output from drawSeekerMissiles() output. Do not restore any wxClientDC bypass to make this test pass as originally written.
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/implementer_report.md",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/tester_prompt.txt",
+    "artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/implementer_result.json"
+  ],
+  "branch_name": "phase4-P4-2-implementer-20260712",
+  "changed_files": [
+    "include/tactical/FBattleBoard.h",
+    "src/tactical/FBattleBoard.cpp",
+    "include/FGamePanel.h",
+    "src/FGamePanel.cpp"
+  ],
+  "code_commit_hash": "b3ee8cee9a0933111016321faca17499e4dab728",
+  "pass_label": null,
+  "status": "success",
+  "task_id": "P4-2",
+  "validation_commands": [
+    "make -C <repo root> all_clean; make -C <repo root> -j4 -- PASS, no errors (SSW, BattleSim, SSWTests, TacticalTests, GuiTests all link)",
+    "make -C <repo root> check -- SSWTests: 245/245 PASS. TacticalTests: 248/253 PASS (5 source-inspection failures in FTacticalBattleBoardRendererDelegationTest, see expected failures). make check stops at the first failing suite so GuiTests was run separately.",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests -- 79/80 PASS (1 failure, see expected failures)",
+    "cd tests/tactical && make && ./TacticalTests -- 248/253 PASS (see expected failures)"
+  ],
+  "validation_outcome": "Build PASS (make -j4, exit 0, no errors touching FBattleBoard.cpp/.h or FGamePanel.cpp/.h). SSWTests: 245/245 PASS. GuiTests: 79/80 PASS -- the sole failure (testSeekerPathRendersInPHMoveWithMovementPath, tests/gui/TacticalGuiLiveTest.cpp) is an EXPECTED CONSEQUENCE of the approved H7 fix: it seeds a seeker at hex(5,7) (pixel center (350,381)) and asserts zero pixel diff in a 'path-only' band x=[344,356] y=[290,385] during PH_ATTACK_FIRE; that band overlaps the seeker icon's own ~50px bounding box, and the icon (correctly) now renders on the same offscreen wxMemoryDC in every phase (including PH_ATTACK_FIRE's committed-active-seeker branch) instead of silently leaking to a throwaway wxClientDC targeting the real window as it did pre-fix. The exact 390-pixel diff matches the icon/band overlap area, not a path line. TacticalTests: 248/253 PASS -- the 5 failures in FTacticalBattleBoardRendererDelegationTest are pure source-inspection (assertContains on function-body literals) checks for the pre-refactor exact signatures ('drawShips();', 'void FBattleBoard::drawShips()', 'drawCenteredOnHex(*m_seekerMissileIcon, *itr);') that the approved H7 acceptance criteria explicitly require changing to the dc-threaded forms. Per validation-triage these 6 total failures (5 tactical + 1 gui) are classified as expected consequences of the approved behavior change, not regressions; P4-2 allowed files exclude test files so they were not edited."
+}
