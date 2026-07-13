@@ -1,0 +1,60 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Resolve finding H7: render the entire tactical scene through a single buffered paint DC and eliminate throwaway wxClientDC usage in the paint path, in both FBattleBoard and FGamePanel.
+
+Acceptance criteria validated:
+- drawCenteredOnHex draws on a passed-in wxDC&; no wxClientDC in FBattleBoard.cpp.
+- FBattleBoard::onPaint uses wxAutoBufferedPaintDC with SetBackgroundStyle(wxBG_STYLE_PAINT); whole scene renders in one pass through that DC.
+- FGamePanel::onPaint uses a paint DC on all platforms; dead comment block removed.
+- Ships, seeker missiles, and centered images render at correct hex positions and rotations; no scene element dropped or mis-clipped vs pre-refactor.
+- Doxygen Last Modified + @author updated on every changed function; @param dc added for new wxDC& parameters.
+
+Implementation branch or worktree context:
+- Branch phase4-P4-2-tester-20260712, worktree /home/tstephen/repos/worktrees/phase4-P4-2-tester-20260712.
+- Implementer commit b3ee8cee (P4-2: Resolve H7 by threading a single buffered paint DC through FBattleBoard), diffed against pre-fix commit 2896eef8.
+- Tester commit 79e425bb (P4-2: Tester coverage update for H7 buffered paint DC).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/tactical/FBattleBoard.h
+- src/tactical/FBattleBoard.cpp
+- include/FGamePanel.h
+- src/FGamePanel.cpp
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp
+- tests/gui/TacticalGuiLiveTest.cpp
+
+Test commit:
+- 79e425bb
+
+Commands executed:
+- make all_clean
+- make -j4
+- make check
+- cd tests/gui && make && xvfb-run -a ./GuiTests
+- cd tests/tactical && make && ./TacticalTests
+
+Final test outcomes:
+- SSWTests: 245/245 PASS
+- TacticalTests: 253/253 PASS (all 5 previously source-inspection-broken assertions in FTacticalBattleBoardRendererDelegationTest updated to the new dc-threaded drawShips(wxDC&)/drawCenteredOnHex(wxDC&, ...) signatures and now pass)
+- GuiTests: 80/80 PASS (testSeekerPathRendersInPHMoveWithMovementPath's PH_ATTACK_FIRE gate updated to count cyan (#00CCCC) path pixels instead of generic pixel diff, isolating drawSeekerPaths() output from the now-correctly-rendered seeker icon in the same pixel band; passes)
+- All 5 acceptance criteria confirmed by direct diff review of implementer commit b3ee8cee: no wxClientDC remains in FBattleBoard.cpp; FBattleBoard::onPaint uses wxAutoBufferedPaintDC with SetBackgroundStyle(wxBG_STYLE_PAINT) set in the constructor; FGamePanel::onPaint uses a single wxPaintDC on all platforms with the dead LINUX branch and commented-out draw block removed; Doxygen Last Modified/@author/@param blocks updated on every changed function.
+
+Documentation context:
+- doc/test-contracts.md documents the tactical test source-contract catalog (SMC-*, SMF-*, SMFR-*, etc.); no new contract IDs were introduced by H7, but if that catalog quotes the old no-dc drawShips()/drawCenteredOnHex(...) signatures anywhere, those quotes should be reconciled with the new dc-threaded signatures.
+- AGENTS.md Contributor Notes already describe FBattleBoard/FBattleDisplay ownership rules; H7 only changes the DC-threading mechanism within existing draw delegation (no new architectural rule), so likely no AGENTS.md edits are needed, but Documenter should confirm.
+- Doxygen comments in include/tactical/FBattleBoard.h and include/FGamePanel.h were already updated by the Implementer (Last Modified/@author/@param); Documenter should verify these render correctly via `make docs` if doc generation is in scope for this task.
+
+Plan and diff context:
+- Plan: plans/phase4-tactical-gui-hybrid-cleanup-plan.md (Phase 4 Tactical GUI Hybrid Cleanup, H9/H7 + dead-code).
+- Comparison base for this subtask's diff: commit 2896eef8 (pre-H7) vs b3ee8cee (H7 implementer commit) vs 79e425bb (tester commit, current HEAD).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
