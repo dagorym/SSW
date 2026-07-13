@@ -17,17 +17,8 @@ FGamePanel::~FGamePanel()
 
 void FGamePanel::onPaint(wxPaintEvent & event) {
 	SetClientSize(m_parent->GetClientSize());
-#ifdef LINUX
-	wxClientDC dc(this);
-#else
 	wxPaintDC dc(this);
-#endif
 	if (m_game != NULL) {
 		m_gameDisplay.draw(dc, *m_game);
 	}
-	//dc.SetBackground(*wxBLACK);
-	//dc.Clear();
-	//dc.SetPen(*wxRED);
-	//dc.SetBrush(*wxBLUE_BRUSH);
-	//dc.DrawRectangle(10, 10, 100, 100);
 }

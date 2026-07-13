@@ -22,9 +22,9 @@ using namespace Frontier;
  * library not having consistent behavior with drawing and
  * refreshing frames on Windows & Linux.
  *
- * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @author Tom Stephens, gpt-5.3-codex (medium), claude-sonnet-4-6 (medium)
  * @date Created: Jan 31, 2018
- * @date Last Modified: Mar 28, 2026
+ * @date Last Modified: Jul 12, 2026
  */
 class FGamePanel : public wxPanel
 {
@@ -53,13 +53,15 @@ public:
 	 * @brief Method to handle the onPaint events
 	 *
 	 * This method redraws the map as needed on wxEVT_PAINT events through the
-	 * shared WXGameDisplay renderer.
+	 * shared WXGameDisplay renderer. Uses a single wxPaintDC on all platforms
+	 * (H7): the prior Linux-only wxClientDC branch is removed so the paint
+	 * path is uniform and respects the update-region clip.
 	 *
 	 * @param event The window event to handle
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium)
 	 * @date Created:  Jan 31, 2018
-	 * @date Last Modified:  Mar 28, 2026
+	 * @date Last Modified:  Jul 12, 2026
 	 */
 	void onPaint(wxPaintEvent & event);
 

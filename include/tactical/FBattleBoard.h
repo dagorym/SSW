@@ -3,7 +3,7 @@
  * @brief Header file for BattleBoard class
  * @author Tom Stephens, claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jul 12, 2026
  *
  */
 
@@ -31,9 +31,9 @@ class FBattleScreen;
  * exact source ship/weapon slot selected in the lower display panel, even when
  * the setup list grows beyond the legacy 12-color seed palette.
  *
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: Jul 11, 2008
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jul 12, 2026
  */
 class FBattleBoard : public wxScrolledWindow
 {
@@ -46,15 +46,33 @@ FBattleBoard(wxWindow * parent, wxWindowID id = wxID_ANY, const wxPoint& pos = w
  *
  * Setup placement draws source-colored ordnance markers, seeker activation
  * draws only inactive seekers for the moving player, and normal battle phases
- * draw only active seekers.
+ * draw only active seekers. H7: the entire scene (grid, planet, ships,
+ * seekers, routes, ranges, targets, mines, and overlays) renders through the
+ * single @p dc passed down from onPaint(), including ships which previously
+ * bypassed it via an internal wxClientDC in drawCenteredOnHex().
  *
  * @param dc Device context used for tactical board drawing.
  *
- * @author Tom Stephens, gpt-5.4 (high)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
  * @date Created: May 25, 2026
- * @date Last Modified: May 25, 2026
+ * @date Last Modified: Jul 12, 2026
  */
 void draw(wxDC &dc);
+/**
+ * @brief Handle wxEVT_PAINT by rendering the whole tactical scene once.
+ *
+ * H7: constructs a single wxAutoBufferedPaintDC (valid because the
+ * constructor sets wxBG_STYLE_PAINT) and passes it to draw(wxDC&) so every
+ * scene element renders through one buffered device context in one pass,
+ * respecting the update-region clip and correct z-order instead of drawing
+ * ships through a separate throwaway wxClientDC.
+ *
+ * @param event Paint event triggering the redraw.
+ *
+ * @author Tom Stephens, claude-sonnet-4-6 (medium)
+ * @date Created: Jul 11, 2008
+ * @date Last Modified: Jul 12, 2026
+ */
 void onPaint(wxPaintEvent & event);
 /**
  * @brief Handle tactical-board clicks for setup, battle, and seeker activation.
@@ -97,8 +115,38 @@ void drawGrid(wxDC &dc);
 void setConstants(double scale);
 void computeCenters();
 bool getHex(int x, int y, int &a, int &b);
-void drawCenteredOnHex(wxImage img, FPoint p, int rot = 0);
-void drawShips();
+/**
+ * @brief Draw a (optionally rotated) image centered on a hex, on the caller's DC.
+ *
+ * H7: draws directly onto the caller-supplied device context instead of
+ * constructing an internal throwaway wxClientDC, so callers driven from
+ * onPaint() render through the single buffered paint DC for the whole scene
+ * (correct z-order, clipping, and no double-buffering conflicts).
+ *
+ * @param dc Device context to draw the image onto.
+ * @param img Source image to scale, optionally rotate, and draw.
+ * @param p Hex coordinate to center the image on.
+ * @param rot Rotation step (multiples of 60 degrees); 0 = no rotation.
+ *
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
+ * @date Created: Jul 11, 2008
+ * @date Last Modified: Jul 12, 2026
+ */
+void drawCenteredOnHex(wxDC &dc, wxImage img, FPoint p, int rot = 0);
+/**
+ * @brief Draw all ships occupying tactical hexes onto the caller's DC.
+ *
+ * H7: threads the paint DC from onPaint() -> draw(wxDC&) -> drawShips(wxDC&)
+ * -> drawCenteredOnHex(wxDC&, ...) so ships render in the same buffered pass
+ * as the rest of the scene instead of via a throwaway wxClientDC.
+ *
+ * @param dc Device context used for tactical board drawing.
+ *
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @date Created: Jul 11, 2008
+ * @date Last Modified: Jul 12, 2026
+ */
+void drawShips(wxDC &dc);
 void drawRoute(wxDC &dc);
 void drawRouteHexes(wxDC &dc, const std::vector<FPoint> & list, int count);
 void drawMovedHexes(wxDC &dc, PointList list, bool current=false);
@@ -140,12 +188,15 @@ void drawTriggeredMineHexes(wxDC &dc);
  * battle phases, only active seekers are shown with their icon rotated to
  * match their current heading. The icon is loaded through the shared
  * asset-resolution policy used elsewhere in the tactical wx surfaces.
+ * H7: @p dc is now threaded through to every drawCenteredOnHex(...) call in
+ * this function instead of being unused, so seeker icons render on the
+ * caller's (buffered paint) device context.
  *
  * @param dc Device context used for tactical board drawing.
  *
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created: May 25, 2026
- * @date Last Modified: May 30, 2026
+ * @date Last Modified: Jul 12, 2026
  */
 void drawSeekerMissiles(wxDC &dc);
 /**

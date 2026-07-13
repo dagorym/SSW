@@ -3,7 +3,7 @@
  * @brief Implementation file for BattleBoard class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jun 19, 2026
+ * @date Last Modified: Jul 12, 2026
  *
  */
 
@@ -11,6 +11,7 @@
 #include "tactical/FBattleScreen.h"
 #include "gui/WXIconCache.h"
 #include "core/FGameConfig.h"
+#include <wx/dcbuffer.h>
 #include <cmath>
 #include <map>
 #include <sstream>
@@ -73,6 +74,9 @@ SetScrollRate( (int)(2*m_d), (int)(3*m_a) );
 SetVirtualSize(m_width,m_height);
 wxColour black(wxT("#000000"));
 SetBackgroundColour(black);
+// H7: buffered painting owns the background fill via drawGrid()'s dc.Clear();
+// wxBG_STYLE_PAINT is required for wxAutoBufferedPaintDC to be valid in onPaint().
+this->SetBackgroundStyle(wxBG_STYLE_PAINT);
 
 this->Connect(wxEVT_PAINT, wxPaintEventHandler(FBattleBoard::onPaint));
 this->Connect( wxEVT_LEFT_UP, wxMouseEventHandler(FBattleBoard::onLeftUp ),NULL,this);
@@ -100,10 +104,10 @@ const int planetChoice = m_parent->getPlanetChoice();
 if (planetPos.getX() >= 0 && planetPos.getY() >= 0
 && planetChoice >= 0
 && (unsigned int)planetChoice < m_planetImages.size()) {
-drawCenteredOnHex(m_planetImages[planetChoice], planetPos);
+drawCenteredOnHex(dc, m_planetImages[planetChoice], planetPos);
 }
 
-drawShips();
+drawShips(dc);
 if (m_parent->getState() == BS_Battle) {
 drawSeekerMissiles(dc);
 drawRoute(dc);
@@ -132,7 +136,10 @@ drawMinedHexes(dc);
 }
 
 void FBattleBoard::onPaint(wxPaintEvent & event){
-wxPaintDC dc(this);
+// H7: a single buffered paint DC renders the entire scene (grid, planet,
+// ships, seekers, routes, ranges, targets, mines, overlays) in one pass;
+// SetBackgroundStyle(wxBG_STYLE_PAINT) in the constructor makes this valid.
+wxAutoBufferedPaintDC dc(this);
 draw(dc);
 }
 
@@ -245,8 +252,7 @@ return false;
 return true;
 }
 
-void FBattleBoard::drawCenteredOnHex(wxImage img, FPoint p, int rot){
-wxClientDC dc(this);
+void FBattleBoard::drawCenteredOnHex(wxDC &dc, wxImage img, FPoint p, int rot){
 img = img.Scale(m_size,m_size);
 if (rot) {
 if (!(img.HasAlpha())){img.InitAlpha();}
@@ -266,7 +272,7 @@ computeCenters();
 Refresh();
 }
 
-void FBattleBoard::drawShips(){
+void FBattleBoard::drawShips(wxDC &dc){
 for (int i=0; i<m_nCol; i++){
 for (int j=0; j<m_nRow; j++){
 const FPoint hex(i,j);
@@ -278,7 +284,7 @@ icon = &WXIconCache::instance().get((*itr)->getIconName());
 } else {
 icon = m_maskingScreenIcon;
 }
-drawCenteredOnHex(*icon,hex,getRenderedHeadingForShip(m_parent, *itr));
+drawCenteredOnHex(dc, *icon,hex,getRenderedHeadingForShip(m_parent, *itr));
 }
 }
 }
@@ -473,7 +479,6 @@ drawShadedHex(dc, green, m_hexCenters[itr->getX()][itr->getY()]);
 }
 
 void FBattleBoard::drawSeekerMissiles(wxDC &dc){
-	(void)dc;
 	if (m_seekerMissileIcon == NULL || !m_seekerMissileIcon->IsOk()) {
 		return;
 	}
@@ -485,7 +490,7 @@ void FBattleBoard::drawSeekerMissiles(wxDC &dc){
 			if (!m_parent->isHexInBounds(*itr)) {
 				continue;
 			}
-			drawCenteredOnHex(*m_seekerMissileIcon, *itr);
+			drawCenteredOnHex(dc, *m_seekerMissileIcon, *itr);
 		}
 		// Also draw active seekers so activated ones are visible on the board.
 		const std::vector<FTacticalSeekerMissileState> activeSeekersForPlayer = m_parent->getActiveSeekersByMovingPlayer();
@@ -494,7 +499,7 @@ void FBattleBoard::drawSeekerMissiles(wxDC &dc){
 			if (!m_parent->isHexInBounds(itr->hex)) {
 				continue;
 			}
-			drawCenteredOnHex(*m_seekerMissileIcon, itr->hex, itr->heading);
+			drawCenteredOnHex(dc, *m_seekerMissileIcon, itr->hex, itr->heading);
 		}
 		return;
 	}
@@ -508,7 +513,7 @@ void FBattleBoard::drawSeekerMissiles(wxDC &dc){
 			if (!m_parent->isHexInBounds(*itr)) {
 				continue;
 			}
-			drawCenteredOnHex(*m_seekerMissileIcon, *itr);
+			drawCenteredOnHex(dc, *m_seekerMissileIcon, *itr);
 		}
 		// Also draw committed active seekers from previous turns (no rotation
 		// needed for pending; active seekers retain their heading).
@@ -517,7 +522,7 @@ void FBattleBoard::drawSeekerMissiles(wxDC &dc){
 				const FPoint hex(i,j);
 				const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);
 				if (!activeSeekers.empty()) {
-					drawCenteredOnHex(*m_seekerMissileIcon, hex, activeSeekers[0].heading);
+					drawCenteredOnHex(dc, *m_seekerMissileIcon, hex, activeSeekers[0].heading);
 				}
 			}
 		}
@@ -529,7 +534,7 @@ void FBattleBoard::drawSeekerMissiles(wxDC &dc){
 			const FPoint hex(i,j);
 			const std::vector<FTacticalSeekerMissileState> activeSeekers = m_parent->getSeekerMissilesAtHex(hex, true);
 			if (!activeSeekers.empty()) {
-				drawCenteredOnHex(*m_seekerMissileIcon, hex, activeSeekers[0].heading);
+				drawCenteredOnHex(dc, *m_seekerMissileIcon, hex, activeSeekers[0].heading);
 			}
 		}
 	}
