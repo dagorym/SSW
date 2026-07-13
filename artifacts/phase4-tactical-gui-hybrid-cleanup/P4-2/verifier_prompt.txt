@@ -1,0 +1,71 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Remediation pass-2 for finding H7: Verifier pass-1 confirmed the H7 implementation (single buffered paint DC through FBattleBoard/FGamePanel, no wxClientDC) was correct and make check was fully green, but issued one BLOCKING finding: acceptance criterion 5 (ships, seeker missiles, and centered images render at correct hex positions through the newly-threaded wxDC&) was backed only by source-text assertContains() literal updates plus manual diff review, with no test that would fail if drawCenteredOnHex reverted to an internal wxClientDC. This pass adds a direct behavioral offscreen-wxDC test (TacticalGuiLiveTest::testShipAndPlanetIconsRenderThroughCallerSuppliedDC) closing that gap; no implementation files changed.
+
+Acceptance criteria to verify:
+- drawCenteredOnHex draws on a passed-in wxDC&; no wxClientDC in FBattleBoard.cpp (unchanged from pass-1; reconfirmed by diff and by this pass's regression sanity check).
+- FBattleBoard::onPaint uses wxAutoBufferedPaintDC with SetBackgroundStyle(wxBG_STYLE_PAINT); whole scene renders in one pass through that DC (unchanged from pass-1).
+- FGamePanel::onPaint uses a paint DC on all platforms; dead comment block removed (unchanged from pass-1).
+- Ships, seeker missiles, and centered images render at correct hex positions and rotations; no scene element dropped or mis-clipped vs pre-refactor -- now covered by a direct behavioral test (testShipAndPlanetIconsRenderThroughCallerSuppliedDC) in addition to the pass-1 source-contract updates, closing the pass-1 BLOCKING finding.
+- Doxygen Last Modified + @author updated on every changed function; @param dc added for new wxDC& parameters (unchanged from pass-1).
+
+Implementation branch or worktree context:
+- Branch phase4-P4-2-tester-20260712 was the Tester's working branch for this pass; this documenter worktree (phase4-P4-2-documenter-20260712) is branched from it.
+- Implementer commit b3ee8cee (P4-2: Resolve H7 by threading a single buffered paint DC through FBattleBoard) is unchanged this pass -- no implementation files were touched in pass-2.
+- Pass-1 Tester commit 79e425bb and pass-1 Documenter (eb611452) / Verifier commits are preserved under artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/history/pass-1/ (archived by commit 725ba50e).
+- Pass-2 Tester commit a2161ae1 adds tests/gui/TacticalGuiLiveTest.cpp and tests/gui/TacticalGuiLiveTest.h changes only (the new behavioral test testShipAndPlanetIconsRenderThroughCallerSuppliedDC), registered in the CPPUNIT_TEST_SUITE list.
+- Pass-2 Documenter commit 6f4ca370 (this pass) appends a validation-log addendum to doc/DesignNotes.md's existing H7 entry and updates the H7 RESOLVED row in doc/synthesized-roadmap.md to mention the new behavioral test; no AGENTS.md or doc/test-contracts.md changes were made -- see rationale below.
+- Verifier pass-1 report: artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2/history/pass-1/verifier_report.md (CONDITIONAL PASS with the single BLOCKING finding this pass resolves).
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/tactical/FBattleBoard.cpp (Implementer, unchanged this pass -- commit b3ee8cee)
+- include/tactical/FBattleBoard.h (Implementer, unchanged this pass -- commit b3ee8cee)
+- src/FGamePanel.cpp (Implementer, unchanged this pass -- commit b3ee8cee)
+- include/FGamePanel.h (Implementer, unchanged this pass -- commit b3ee8cee)
+- tests/tactical/FTacticalBattleBoardRendererDelegationTest.cpp (pass-1 Tester, unchanged this pass -- commit 79e425bb)
+- tests/gui/TacticalGuiLiveTest.cpp (pass-2 Tester -- commit a2161ae1: new behavioral test testShipAndPlanetIconsRenderThroughCallerSuppliedDC)
+- tests/gui/TacticalGuiLiveTest.h (pass-2 Tester -- commit a2161ae1: CPPUNIT_TEST registration + Doxygen block for the new test)
+- doc/DesignNotes.md (pass-2 Documenter -- commit 6f4ca370: H7 validation-log addendum)
+- doc/synthesized-roadmap.md (pass-2 Documenter -- commit 6f4ca370: H7 RESOLVED row updated)
+- AGENTS.md (pass-1 Documenter only -- commit eb611452; not touched this pass, independently reconfirmed still accurate)
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start / repository-inference / artifact-paths / diff-first-editing / two-commit-artifact-flow / handoff-prompt-contract
+- myteam get skill documenter/preflight, documenter/diff-review, documenter/agents-guidance, documenter/doc-editing, documenter/artifact-writing, documenter/verifier-handoff, documenter/commit-flow
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <handoff text> --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 2896eef8 --head HEAD
+- git show a2161ae1 --stat / git show a2161ae1 -- tests/gui/TacticalGuiLiveTest.cpp / tests/gui/TacticalGuiLiveTest.h
+- git show eb611452 (reviewed pass-1 documenter diff for consistency)
+- grep -n 'TacticalGuiLiveTest' doc/test-contracts.md and grep -n 'H7|buffered|wxClientDC|drawCenteredOnHex' doc/test-contracts.md (confirmed no H7-specific code entry exists; consistent with pass-1 Verifier's explicit finding that test-contracts.md needs no changes)
+- python3 .myteam/documenter/agents-guidance/detect_guidance_targets.py (confirmed changed test files classify as non-guidance; no AGENTS.md bootstrap/runtime review required)
+- python3 .myteam/documenter/agents-guidance/scan_in_code_doc_requirements.py --root <worktree> (confirmed Doxygen author/date/param requirements; verified already satisfied by the Tester's added doc block in TacticalGuiLiveTest.h)
+- git diff --stat / git diff --name-only (confirmed only doc/DesignNotes.md and doc/synthesized-roadmap.md changed)
+- git add doc/DesignNotes.md doc/synthesized-roadmap.md; git commit -F <message file> (documentation commit 6f4ca370)
+
+Final test outcomes:
+- SSWTests: 245/245 PASS; TacticalTests: 253/253 PASS; GuiTests: 81/81 PASS (80 pass-1 tests plus 1 new test testShipAndPlanetIconsRenderThroughCallerSuppliedDC) -- as reported by the Tester; documentation changes in this pass are narrative-only and were not expected to and did not require re-running the suites (no executable files changed).
+
+Plan or evaluation context guidance:
+- plans/phase4-tactical-gui-hybrid-cleanup-plan.md, subtask P4-2 (finding H7). Plan's Overall Documentation Impact section only expects H7's roadmap row RESOLVED at this stage; Part III 'Now' item #4 and the section 3.6 dead-code bullet remain deferred to P4-3, per pass-1 precedent, and were not touched this pass.
+
+Convention-file guidance:
+- AGENTS.md (Function Comments Doxygen policy; Testing / Behavioral Verification Is Mandatory; Non-negotiable Constraints re: doc/rules/tactical_operations_manual.md)
+- CLAUDE.md (pointer only, defers to AGENTS.md)
+- plans/phase4-tactical-gui-hybrid-cleanup-plan.md (subtask P4-2 acceptance criteria and Overall Documentation Impact)
+
+Updated documentation files:
+- doc/DesignNotes.md
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
