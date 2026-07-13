@@ -432,7 +432,17 @@ the root cause of C4 and the retreat-condition validation bug).
   flags) is the natural fill-in.
 - Dead: `src/FMainBattleSimFrame.cpp` (0 bytes, no header, not in the Makefile) plus its
   ghost comment block in `BattleSim.cpp`. ~120 commented-out `std::cerr` lines and two live
-  ones. User-visible typos: "destoryed", "Statisitics", "woud", "captial".
+  ones. User-visible typos: "destoryed", "Statisitics", "woud", "captial". ***RESOLVED***
+  (P4-3, `artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3`): `src/FMainBattleSimFrame.cpp`
+  deleted (build links clean, no dangling reference) and its `BattleSim.cpp` ghost
+  event-table comment block removed; ~120 commented-out `std::cerr` lines plus 3 live
+  `std::cerr` debug-trace statements (`FMainFrame::onShowPlayers`, two in
+  `SelectCombatGUI::onAttack`) removed across 21 files; the 4 user-visible display-string
+  typos corrected ("destroyed", "Statistics", "would", "capital") in `BattleResultsGUI.cpp`,
+  `TransferShipsGUI.cpp`, and `SatharFleetsGUI.cpp`. Behavior-neutral: `make check` remained
+  fully green (`SSWTests OK (245)`, `TacticalTests OK (253)`, `GuiTests OK (81)`) and the diff
+  is comment/dead-code/display-string only, with no signature or logic change; see
+  `artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3`.
 - Per-paint `wxImage::Scale` for every fleet icon (`WXPlayerDisplay.cpp:38`) — a
   scaled-bitmap cache keyed on (filename, size) in `WXIconCache` fixes both strategic and
   tactical layers.
@@ -699,7 +709,14 @@ A pragmatic sequencing that front-loads correctness and de-risks the bigger refa
    function), S2/S3 (loss-counter filters), retreat-condition validation.
 3. `make check` target + minimal CI; pin `-std=c++17` both platforms; common.mk. **[RESOLVED — see Phase 3 P3-1/P3-2/P3-3/P3-4 (`artifacts/phase3-build-system-ci/`): a repo-root `common.mk` now backs the six non-GUI src Makefiles and the four simple test-lib Makefiles; `-std=c++17` is pinned on every Linux compile (via `common.mk` or inline in the wx-heavy/orchestration Makefiles) and on Windows (`<LanguageStandard>stdcpp17</LanguageStandard>` in `SSW.Common.props`); `src/tactical`'s wx include flags now derive from `wx-config` via `common.mk`'s lazy `WX_CXXFLAGS`, retiring the machine-specific hardcoded `gtk3-unicode-static-3.3` path (§3.5's "cheap win"); and the repo-root `make check` target builds everything and runs all three suites (`SSWTests`, `TacticalTests`, `GuiTests` under `xvfb-run`), propagating failure on any suite; and the minimal CI workflow (P3-4, `.github/workflows/ci.yml`) now runs that same `make`/`make check` path on `ubuntu-24.04` for every push/PR to `master` (plus manual dispatch), provisioning wxWidgets 3.3.2 from source with an `actions/cache` step since the runner's apt repositories only ship wx 3.2.4. Deliberately still deferred: the Windows `<ConformanceMode>` flip, the `FBattleScreen`/`FBattleBoard`/`FBattleDisplay`→`src/gui` relocation, and CMake adoption.]**
 4. Bind-once buttons + `updateForPhase()` in `FBattleDisplay`; paint-DC fix in
-   `FBattleBoard`; delete dead files/commented-out code.
+   `FBattleBoard`; delete dead files/commented-out code. **[RESOLVED — see Phase 4 Tactical
+   GUI Hybrid Cleanup (`artifacts/phase4-tactical-gui-hybrid-cleanup/`): P4-1 resolved finding
+   H9 (bind-once button handlers plus non-paint `updateForPhase()`), P4-2 resolved finding H7
+   (single buffered paint DC threaded through `FBattleBoard`/`FGamePanel`, no `wxClientDC`),
+   and P4-3 deleted the dead `src/FMainBattleSimFrame.cpp` and its `BattleSim.cpp` ghost
+   block, removed ~120 commented-out plus 3 live `std::cerr` debug sites, and fixed the 4
+   user-visible display-string typos — see `artifacts/phase4-tactical-gui-hybrid-cleanup/P4-1`,
+   `.../P4-2`, and `.../P4-3` respectively.]**
 
 **Next (structural, sequenced):**
 

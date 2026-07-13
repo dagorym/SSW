@@ -1857,3 +1857,45 @@ make check
 
 Results: `GuiTests OK (81 tests)` (80 pass-1 tests plus the new behavioral DC test);
 `make check` PASS overall (`SSWTests OK (245)`, `TacticalTests OK (253)`, `GuiTests OK (81)`).
+
+P4-3 (Phase 4 Tactical GUI Hybrid Cleanup, subtask P4-3, the final subtask of Phase 4) is a
+behavior-neutral dead-code, debug-output, and typo cleanup across the strategic/ships/core/
+gui/tactical modules. It deletes the empty (0-byte), unreferenced `src/FMainBattleSimFrame.cpp`
+and removes the matching commented-out `FMainBattleSimFrame` event-table ghost block from
+`src/BattleSim.cpp` (the real `BattleSimFrame` `EVT_MENU(ID_Quit,...)` entry is preserved); both
+`SSW` and `BattleSim` link cleanly with no dangling reference. It removes roughly 120
+commented-out `std::cerr` debug lines plus 3 live `std::cerr` debug-trace statements
+(`FMainFrame::onShowPlayers`; two in `SelectCombatGUI::onAttack`) across 21 `.cpp` files
+spanning `strategic`, `ships`, `core`, `gui`, and `tactical` (`src/tactical/FBattleScreen.cpp`
+was commented-`std::cerr` removal only). It also corrects 4 user-visible on-screen dialog-text
+typos: `BattleResultsGUI.cpp`'s NOTE text changes "destoryed" to "destroyed" and "Update Ship
+Statisitics" to "Update Ship Statistics"; `TransferShipsGUI.cpp`'s fleet-selection prompt
+changes "woud" to "would"; `SatharFleetsGUI.cpp`'s setup instructions change "captial ships" to
+"capital ships". The internal identifier `captialShipCount` and comment-only/dead-code
+occurrences of the same misspellings were intentionally left unchanged (out of scope per the
+plan). `include/FMainFrame.h`'s `onShowPlayers` Doxygen header is the only in-code documentation
+update, since its body's live `std::cerr` was removed; its `@author` gained "Claude Sonnet 5
+(medium)" and its Last Modified date became Jul 12, 2026. No function signature, logic, build,
+module-boundary, or test-contract change occurred anywhere in the diff.
+
+Validation commands:
+
+```bash
+make all_clean
+make check
+```
+
+Results: `make check` fully GREEN (`SSWTests OK (245)`, `TacticalTests OK (253)`,
+`GuiTests OK (81)`), exit code 0; the diff (`84b9d7c7..35bc7411`) is pure comment/dead-code/
+display-string edits confirmed line-by-line to carry no signature or logic change. A
+pre-existing, unrelated flakiness was observed in two dice-driven `FGameTest` combat-cleanup
+tests (`testCleanUpShipsUpdatesLossCountersWithoutInflation`,
+`testCleanUpShipsExcludesSatharFightersFromTendaySatharCounter`, unseeded RNG, roughly a
+1-in-9 fail rate); the P4-3 diff to `src/strategic/FGame.cpp` is comment-only, touches no
+`cleanUpShips`/loss-counter logic, and touches no test files, so it is not the cause — this is
+a repository-level test-determinism risk noted for separate follow-up, not a P4-3 regression.
+
+This completes Phase 4 Tactical GUI Hybrid Cleanup: finding H9 (P4-1), finding H7 (P4-2), and
+the dead-code/debug-output/typo cleanup (P4-3) are all resolved and merged; see
+`doc/synthesized-roadmap.md`'s H9/H7 rows, the §3.6 dead-code bullet, and Part III "Now" item 4
+for the corresponding roadmap RESOLVED annotations.
