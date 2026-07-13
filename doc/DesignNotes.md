@@ -1829,3 +1829,31 @@ cd tests/tactical && make && ./TacticalTests
 Results: full clean build PASS; `SSWTests OK (245 tests)`; `TacticalTests OK (253 tests)`
 (the 5 updated dc-threaded-signature assertions now pass); `GuiTests OK (80 tests)` (the
 narrowed cyan-pixel-count assertion in `testSeekerPathRendersInPHMoveWithMovementPath` passes).
+
+H7 pass-2 remediation (still subtask P4-2): Verifier pass-1 issued one BLOCKING finding on the
+validation above: acceptance criterion 5 (ships, the planet image, and seeker missiles render
+at correct hex positions through the newly-threaded `wxDC&`) was backed only by the 5
+source-contract literal updates in `FTacticalBattleBoardRendererDelegationTest` plus manual diff
+review, with no test that would actually fail if `drawCenteredOnHex` reverted to an internal
+`wxClientDC`. The Tester closed this gap by adding
+`TacticalGuiLiveTest::testShipAndPlanetIconsRenderThroughCallerSuppliedDC`: it places a ship and
+a planet at known hexes, calls `FBattleBoard::draw(dc)` directly against a test-owned
+`wxMemoryDC`/`wxBitmap` (the same call `onPaint()`'s `wxAutoBufferedPaintDC` path makes), and
+asserts pixels actually changed in the expected hex-centered regions versus a pre-placement
+baseline captured in the same offscreen bitmap type. A manual regression sanity check confirmed
+the test is load-bearing: reintroducing an internal `wxClientDC(this)` in
+`FBattleBoard::drawCenteredOnHex` causes this new test to fail while the other 80 `GuiTests`
+still pass; reverting restores the fully green `81/81` `GuiTests` state. No implementation files
+changed in this pass — see `artifacts/phase4-tactical-gui-hybrid-cleanup/P4-2` (pass-2) for the
+Tester/Documenter/Verifier record.
+
+Validation commands (pass-2, test-only change):
+
+```bash
+make -C tests/gui
+xvfb-run -a tests/gui/GuiTests
+make check
+```
+
+Results: `GuiTests OK (81 tests)` (80 pass-1 tests plus the new behavioral DC test);
+`make check` PASS overall (`SSWTests OK (245)`, `TacticalTests OK (253)`, `GuiTests OK (81)`).
