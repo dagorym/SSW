@@ -1,0 +1,85 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Remove dead code and debug output and fix user-visible string typos across the strategic/ships/core/gui/tactical modules, with no behavior change beyond removed debug output and corrected on-screen text.
+
+Acceptance criteria validated:
+- src/FMainBattleSimFrame.cpp deleted; build still links with no dangling reference. -- VALIDATED (file absent; zero references anywhere; SSW + BattleSim link clean).
+- BattleSim.cpp ghost block removed; all commented-out std::cerr in the allowed files removed; the live debug-trace std::cerr sites removed; the display-string typos corrected. -- VALIDATED via grep (0 commented + 0 live std::cerr in the 21 files) and confirmed corrected strings.
+- Project compiles; make check passes; only behavior change is removed debug output and corrected on-screen text; no signature or logic change. -- VALIDATED (green make check; diff is comment/dead-code/string-only).
+- Update Last Modified + @author on any function header whose body is meaningfully changed. -- VALIDATED (include/FMainFrame.h onShowPlayers header updated; other edits were pure comment/string deletions).
+
+Implementation branch or worktree context:
+- Implementation branch/worktree: phase4-P4-3-tester-20260712 at /home/tstephen/repos/worktrees/phase4-P4-3-tester-20260712.
+- Implementer code commit under test: 35bc7411 (parent/base for the diff: 84b9d7c7).
+- Deleted empty (0-byte) unreferenced src/FMainBattleSimFrame.cpp; removed the FMainBattleSimFrame commented event-table ghost block in src/BattleSim.cpp (BattleSimFrame EVT_MENU(ID_Quit,...) kept).
+- Removed ~120 commented-out std::cerr debug lines plus 3 live std::cerr debug-trace statements (FMainFrame::onShowPlayers; two in SelectCombatGUI::onAttack) across 21 allowed .cpp files; FBattleScreen.cpp was commented-cerr removal only (setScale/setWeapon).
+- Fixed 4 user-visible display-string typos: BattleResultsGUI.cpp ('destoryed'->'destroyed', 'Statisitics'->'Statistics'), TransferShipsGUI.cpp ('woud'->'would'), SatharFleetsGUI.cpp ('captial'->'capital'). Out-of-scope occurrences (a dead commented msg+= block in BattleResultsGUI.cpp, a code comment in SelectCombatGUI.cpp, the internal identifier captialShipCount) were intentionally left unchanged.
+- include/FMainFrame.h is the only header touched: onShowPlayers Doxygen @author/@date updated because its body's live std::cerr was removed.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/FMainBattleSimFrame.cpp (deleted)
+- src/BattleSim.cpp
+- src/FMainFrame.cpp
+- include/FMainFrame.h
+- src/gui/SelectCombatGUI.cpp
+- src/gui/BattleResultsGUI.cpp
+- src/gui/TransferShipsGUI.cpp
+- src/gui/SatharFleetsGUI.cpp
+- src/gui/UPFUnattachedGUI.cpp
+- src/strategic/FGame.cpp
+- src/strategic/FPlayer.cpp
+- src/strategic/FFleet.cpp
+- src/strategic/FMap.cpp
+- src/strategic/FSystem.cpp
+- src/strategic/FPlanet.cpp
+- src/strategic/FJumpRoute.cpp
+- src/gui/ICMSelectionGUI.cpp
+- src/gui/SystemDialogGUI.cpp
+- src/gui/WXPlayerDisplay.cpp
+- src/gui/WXMapDisplay.cpp
+- src/ships/FVehicle.cpp
+- src/core/FHexPath.cpp
+- src/core/FHexMap.cpp
+- src/core/FGameConfig.cpp
+- src/tactical/FBattleScreen.cpp
+
+Test commit:
+- No Changes Made
+
+Commands executed:
+- make all_clean
+- make check (build all + SSWTests, TacticalTests, GuiTests under xvfb-run) -- full green run: exit 0
+- tests/SSWTests re-run x9 (flakiness characterization of pre-existing FGameTest combat tests)
+- grep verification of deleted file, removed std::cerr (commented + live), and corrected display strings
+- git diff --stat 84b9d7c7..35bc7411 (change-scope confirmation)
+
+Final test outcomes:
+- make check final run is fully GREEN: SSWTests OK (245), TacticalTests OK (253), GuiTests OK (81) under xvfb-run, exit code 0.
+- AC1 PASS: src/FMainBattleSimFrame.cpp is deleted; grep across Makefiles/common.mk/SSW.sln/vcxproj/*.cpp/*.h finds zero references to FMainBattleSimFrame; both SSW and BattleSim link cleanly (no dangling reference).
+- AC2 PASS: BattleSim.cpp FMainBattleSimFrame event-table ghost block removed (BattleSimFrame EVT_MENU(ID_Quit,...) preserved); zero commented-out '//...std::cerr' lines remain in the 21 allowed .cpp files; zero live std::cerr remain in those files (the 3 live debug-trace sites in FMainFrame.cpp onShowPlayers and SelectCombatGUI.cpp onAttack are gone); the 4 user-visible typos corrected: 'destroyed' + 'Update Ship Statistics' (BattleResultsGUI.cpp NOTE text), 'would' (TransferShipsGUI.cpp prompt), 'capital ships' (SatharFleetsGUI.cpp setup text). Note: the prompt/planner phrasing '4 live debug-trace sites' resolves to 3 statements (FMainFrame onShowPlayers + 2 in SelectCombatGUI onAttack); all uncommented std::cerr are removed, so the criterion is fully met either way.
+- AC3 PASS: project compiles and make check passes green; the diff (git diff 84b9d7c7..35bc7411) is pure comment/dead-code/display-string edits -- no function signature or logic change in any of the 25 touched paths (verified line-by-line).
+- AC4 PASS: only include/FMainFrame.h has a per-function Doxygen header on a body that meaningfully changed (onShowPlayers lost its live std::cerr); its @author gained 'Claude Sonnet 5 (medium)' and Last Modified became Jul 12, 2026. All other edits were commented-line/string deletions in generated wxFormBuilder files or functions without per-function headers, consistent with the AGENTS.md allowance that pure comment/string-line deletions may update the header author/date.
+- OBSERVATION (pre-existing flaky tests, NOT caused by P4-3): the FIRST make check run reported 2 SSWTests failures -- FGameTest::testCleanUpShipsUpdatesLossCountersWithoutInflation (line 512) and FGameTest::testCleanUpShipsExcludesSatharFightersFromTendaySatharCounter (line 904). These exercise endSatharTurn()/endUPFTurn() combat-cleanup with dice-driven, unseeded RNG. Re-running SSWTests 9 times produced 8 passes / 1 failure earlier -- i.e. non-deterministic. The P4-3 diff to src/strategic/FGame.cpp is provably comment-only: it does not touch cleanUpShips or loss-counter logic (grep of the FGame.cpp diff for cleanUpShips/lost/counter/fighter returns nothing) and touches NO test files (git diff --stat of tests/ is empty). The flakiness is a pre-existing test-suite non-determinism unrelated to and not introduced by this behavior-neutral subtask. Flagged for Verifier/Coordinator awareness as a repository-level risk to consider separately from P4-3.
+
+Documentation context:
+- Behavior-neutral cleanup subtask: removed dead code and debug output; only user-facing change is 4 corrected on-screen dialog strings (BattleResults NOTE text, TransferShips prompt, SatharFleets setup instructions). No API, signature, or logic change -- likely no change needed to UsersGuide/DesignNotes beyond optionally noting the corrected wording.
+- AGENTS.md / CLAUDE.md need no update: no build-system, module-boundary, architecture, or test-contract change occurred.
+- The deleted src/FMainBattleSimFrame.cpp was never referenced by any Makefile or VS project, so no build documentation references it.
+- Pre-existing FGameTest combat-cleanup flakiness (see tester_report Final test outcomes) is a repository-level test-determinism note, not a P4-3 documentation item.
+
+Plan and diff context:
+- Plan: plans/phase4-tactical-gui-hybrid-cleanup-plan.md (subtask P4-3).
+- Comparison base: git diff 84b9d7c7..35bc7411 on branch phase4-P4-3-tester-20260712 (assumption: 84b9d7c7 is the P4-2 completion commit that immediately precedes the P4-3 implementer commit 35bc7411).
+- Shared artifact directory for this subtask: artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase4-tactical-gui-hybrid-cleanup/P4-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
