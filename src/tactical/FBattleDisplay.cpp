@@ -3,11 +3,18 @@
  * @brief Implementation file for BattleDispaly class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jul 03, 2026 (TMFR-03: drawMoveShip() Turn-panel placement now uses
+ * @date Last Modified:  Jul 12, 2026 (H9: removed the m_first paint-time button lifecycle.
+ * All seven phase Done/Set-Speed buttons and both turn buttons now bind their click handlers
+ * exactly once in the constructor; the new non-paint updateForPhase() is the single seam that
+ * drives each button's Show()/Enable() and the turn-panel visibility from FBattleScreen's
+ * state/phase and model queries. draw()/draw*() methods no longer Connect(), Disconnect(),
+ * Show(), Hide(), or Enable() any of these controls.)
+ *
+ * TMFR-03: drawMoveShip() Turn-panel placement now uses
  * measureWrappedActionPromptWidth() wrapped line widths instead of the unwrapped instruction
  * extent so the panel is visible at the default window size; buildMovePromptText() splits the
  * long move-phase instruction onto detailPromptTwo/detailPromptThree; a short caption is drawn
- * above the Turn Left/Turn Right buttons and requestedDisplayHeight grows to fit it)
+ * above the Turn Left/Turn Right buttons and requestedDisplayHeight grows to fit it.
  *
  * SMRIV-01: drawPlaceMines() now anchors source-selection rows to the top of the
  * bottom panel (right column, starting at getActionPromptLineY(0)) and wraps the
@@ -46,9 +53,10 @@
  * mirroring the SMRV-01 (round5) attack-phase approach.
  * TMF-05: Added Turn Left / Turn Right wxButton controls in a dedicated child panel
  * (m_turnButtonPanel) positioned in the middle column at the top of the lower panel,
- * to the right of Movement Done and left of the ship-stats column. drawMoveShip()
+ * to the right of Movement Done and left of the ship-stats column. updateForPhase()
  * shows/hides the panel and enables each button based on canApplyEndOfMoveTurnLeft()
- * and canApplyEndOfMoveTurnRight(). onTurnLeft()/onTurnRight() forward to
+ * and canApplyEndOfMoveTurnRight(); drawMoveShip() only repositions the panel using
+ * DC-based text measurement. onTurnLeft()/onTurnRight() forward to
  * FBattleScreen::applyEndOfMoveTurn(+1/-1).
  */
 
@@ -102,7 +110,6 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 
 	m_parent = (FBattleScreen *)parent;
 	m_loaded = false;
-	m_first = true;
 	m_lowerPanelLayoutState.mode = LOWER_PANEL_LAYOUT_RIGHT_SPLIT;
 	m_lowerPanelLayoutState.shipStatsLeftMargin = 300;
 	m_lowerPanelLayoutState.shipStatsTop = BORDER;
@@ -133,13 +140,31 @@ FBattleDisplay::FBattleDisplay(wxWindow * parent, wxWindowID id, const wxPoint& 
 	m_buttonSeekerPlacementDone = new wxButton( this, wxID_ANY, wxT("Seeker Placement Done"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonSeekerActivationDone = new wxButton( this, wxID_ANY, wxT("Seeker Activation Done"), wxDefaultPosition, wxDefaultSize, 0 );
 
+	// H9: bind every phase-button click handler exactly once at construction time.
+	// FBattleDisplay::updateForPhase() (invoked from FBattleScreen's setState()/
+	// setPhase()/onSize()/reDraw() seams) is now the single non-paint place that
+	// drives Show()/Hide()/Enable() for these controls, so no draw*() method
+	// connects, disconnects, shows, or hides them any longer.
+	m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSetSpeed ), NULL, this );
+	m_buttonMoveDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
+	m_buttonDefensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
+	m_buttonOffensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
+	m_buttonMinePlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
+	m_buttonSeekerPlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerPlacementDone ), NULL, this );
+	m_buttonSeekerActivationDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerActivationDone ), NULL, this );
+
 	// TMF-05: Turn Left / Turn Right panel positioned to the right of Movement Done.
-	// The panel is created as a free-floating child (not in the root sizer) and
-	// positioned absolutely in drawMoveShip() each time the phase is drawn.
+	// The panel is created as a free-floating child (not in the root sizer); its
+	// position is recomputed in drawMoveShip() (needs a DC for text measurement)
+	// while Show()/Enable() state is driven purely by updateForPhase() (H9).
 	m_turnButtonPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
 	m_turnButtonPanel->SetBackgroundColour(wxColour(wxT("#000000")));
 	m_buttonTurnLeft = new wxButton( m_turnButtonPanel, wxID_ANY, wxT("Turn Left"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_buttonTurnRight = new wxButton( m_turnButtonPanel, wxID_ANY, wxT("Turn Right"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_buttonTurnLeft->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+		wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
+	m_buttonTurnRight->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
+		wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
 	wxBoxSizer * turnSizer = new wxBoxSizer(wxHORIZONTAL);
 	turnSizer->Add(m_buttonTurnLeft, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, BORDER);
 	turnSizer->Add(m_buttonTurnRight, 0, wxALIGN_CENTER_VERTICAL);
@@ -728,18 +753,83 @@ void FBattleDisplay::applyRequestedDisplayHeight(){
 	}
 }
 
+void FBattleDisplay::updateForPhase(){
+	const int state = m_parent->getState();
+	const int phase = m_parent->getPhase();
+	const bool inBattle = (state == BS_Battle);
+
+	// Set Speed control (drawGetSpeed): shown during ship-setup speed entry.
+	const bool showSpeed = (state == BS_SetupDefendFleet || state == BS_SetupAttackFleet)
+		&& !m_parent->getControlState() && phase != PH_NONE;
+	m_spinCtrl1->Show(showSpeed);
+	m_button1->Show(showSpeed);
+	if (showSpeed){
+		m_button1->Enable(true);
+	}
+
+	// Movement Done (drawMoveShip)
+	const bool showMoveDone = inBattle && phase == PH_MOVE;
+	m_buttonMoveDone->Show(showMoveDone);
+	if (showMoveDone){
+		m_buttonMoveDone->Enable(m_parent->isMoveComplete());
+	}
+
+	// Defensive Fire Done (drawDefensiveFire)
+	const bool showDefensiveFireDone = inBattle && phase == PH_DEFENSE_FIRE;
+	m_buttonDefensiveFireDone->Show(showDefensiveFireDone);
+	if (showDefensiveFireDone){
+		m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
+	}
+
+	// Offensive Fire Done (drawAttackFire)
+	const bool showOffensiveFireDone = inBattle && phase == PH_ATTACK_FIRE;
+	m_buttonOffensiveFireDone->Show(showOffensiveFireDone);
+	if (showOffensiveFireDone){
+		m_buttonOffensiveFireDone->Enable(m_parent->isMoveComplete());
+	}
+
+	// Mine Placement Done (drawPlaceMines)
+	const bool showMinePlacementDone = (state == BS_PlaceMines);
+	m_buttonMinePlacementDone->Show(showMinePlacementDone);
+	if (showMinePlacementDone){
+		m_buttonMinePlacementDone->Enable(true);
+	}
+
+	// Seeker Placement Done (drawPlaceSeekers)
+	const bool showSeekerPlacementDone = (state == BS_PlaceSeekers);
+	m_buttonSeekerPlacementDone->Show(showSeekerPlacementDone);
+	if (showSeekerPlacementDone){
+		m_buttonSeekerPlacementDone->Enable(true);
+	}
+
+	// Seeker Activation Done (drawSeekerActivation)
+	const bool showSeekerActivationDone = inBattle && phase == PH_SEEKER_ACTIVATION;
+	m_buttonSeekerActivationDone->Show(showSeekerActivationDone);
+	if (showSeekerActivationDone){
+		m_buttonSeekerActivationDone->Enable(true);
+	}
+
+	// TMF-05: end-of-move Turn Left / Turn Right panel — shown only in PH_MOVE
+	// with a ship selected; enable states mirror the model's per-direction
+	// budget check (canApplyEndOfMoveTurnLeft()/Right() folds in the
+	// "minimum move satisfied" and "no ship selected" rules).
+	const bool showTurnPanel = inBattle && phase == PH_MOVE && m_parent->getShip() != NULL;
+	m_turnButtonPanel->Show(showTurnPanel);
+	if (showTurnPanel){
+		m_buttonTurnLeft->Enable(m_parent->canApplyEndOfMoveTurnLeft());
+		m_buttonTurnRight->Enable(m_parent->canApplyEndOfMoveTurnRight());
+	}
+
+	Layout();
+}
+
 void FBattleDisplay::draw(wxDC &dc){
 //	wxBitmap b("icons/ufo.png");
 //	dc.DrawBitmap(b, 5, 5);
 	wxColour black(wxT("#000000"));// black
-	// TMF-05: non-battle states never need the turn panel; hide it here if shown.
-	if (m_parent->getState() != BS_Battle && m_turnButtonPanel->IsShown()) {
-		m_buttonTurnLeft->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-			wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
-		m_buttonTurnRight->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-			wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
-		m_turnButtonPanel->Hide();
-	}
+	// H9: turn-panel visibility/enable state is driven exclusively by
+	// updateForPhase() (called from FBattleScreen's state/phase/resize/reDraw
+	// seams), never from this paint method.
 	m_weaponRegions.clear();
 	m_defenseRegions.clear();
 	m_pendingSeekerRecallRegions.clear();
@@ -790,14 +880,6 @@ void FBattleDisplay::draw(wxDC &dc){
 		drawPlaceSeekers(dc);
 		break;
 	case BS_Battle: {
-		// TMF-05: hide the Turn panel whenever we leave the move phase.
-		if (m_parent->getPhase() != PH_MOVE && m_turnButtonPanel->IsShown()) {
-			m_buttonTurnLeft->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-				wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
-			m_buttonTurnRight->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-				wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
-			m_turnButtonPanel->Hide();
-		}
 		switch (m_parent->getPhase()){
 		case PH_SEEKER_ACTIVATION:
 			drawSeekerActivation(dc);
@@ -1020,15 +1102,8 @@ void FBattleDisplay::makeShipChoice(wxMouseEvent & event){
 
 void FBattleDisplay::drawGetSpeed(wxDC &dc){
 	wxColour white(wxT("#FFFFFF"));
-	if (m_first){
-		m_spinCtrl1->Show();
-		m_button1->Show();
-		// Connect Events
-		m_button1->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSetSpeed ), NULL, this );
-		m_first = false;
-		Layout();
-	}
-
+	// H9: m_spinCtrl1/m_button1 Show()/Connect() lifecycle now lives in
+	// updateForPhase(); this method only renders the prompt text.
 	dc.SetTextForeground(white);
 	dc.SetFont(wxFont(10,wxFONTFAMILY_SWISS,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
 	std::string txt = "Please choose an initial speed for the ship.";
@@ -1039,15 +1114,10 @@ void FBattleDisplay::drawGetSpeed(wxDC &dc){
 }
 
 void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
-	// disconnect the button
-	m_button1->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSetSpeed ), NULL, this );
+	// H9: handler stays bound for the panel's lifetime; hiding the set-speed
+	// controls happens via updateForPhase() once setPhase()/setState() below
+	// transition away from the speed-entry phase/state.
 	m_parent->getShip()->setSpeed(m_spinCtrl1->GetValue());
-	// Hid the set speed controls
-	m_spinCtrl1->Hide();
-	m_button1->Hide();
-	Layout();
-
-	m_first = true;
 	m_parent->setPhase(PH_NONE);
 	bool enteredMinePlacement = false;
 	if(m_parent->getDone()){
@@ -1067,6 +1137,12 @@ void FBattleDisplay::onSetSpeed( wxCommandEvent& event ){
 	if (!enteredMinePlacement) {
 		m_parent->setShip(NULL);
 	}
+	// H9: FBattleScreen::setShip() does not itself trigger updateForPhase();
+	// force a final refresh so the turn panel and Done buttons reflect the
+	// ship-cleared (or mine-placement-entered) state above instead of the
+	// intermediate snapshot captured by the setState()/setPhase() calls earlier
+	// in this handler.
+	m_parent->reDraw();
 	event.Skip();
 }
 
@@ -1154,15 +1230,10 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 			dc.DrawText("",leftOffset,getActionPromptLineY(i));
 		}
 	}
-		m_buttonMoveDone->Enable(m_parent->isMoveComplete());
-		if (m_first){
-		m_buttonMoveDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
-		m_buttonMoveDone->Show();
-		Layout();
-		m_first=false;
-	}
+	// H9: m_buttonMoveDone's Show()/Enable() lifecycle now lives entirely in
+	// updateForPhase(); this method only positions the Turn panel below.
 
-	// TMF-05/TMFR-03: Position and show the Turn Left / Turn Right panel, with a
+	// TMF-05/TMFR-03: Position the Turn Left / Turn Right panel, with a
 	// short caption drawn above the buttons.
 	// The panel is placed in the middle column: to the right of Movement Done and
 	// the left instruction text, and to the left of the ship-stats column.
@@ -1224,26 +1295,16 @@ void FBattleDisplay::drawMoveShip(wxDC &dc){
 			applyRequestedDisplayHeight();
 		}
 
-		// Only show when the block fits left of the ship-stats column.
+		// H9: only position the panel and draw its caption here when the block fits
+		// left of the ship-stats column; Show()/Hide()/Enable() of the panel and its
+		// buttons are driven exclusively by updateForPhase(), not by this paint-time
+		// fit check.
 		if (panelX + blockWidth + 2*BORDER <= statsLeft) {
 			for (int i = 0; i < TURN_CAPTION_LINE_COUNT; i++){
 				dc.DrawText(TURN_CAPTION_LINES[i], panelX, captionY + i * captionLineHeight);
 			}
 			m_turnButtonPanel->SetPosition(wxPoint(panelX, panelY));
 			m_turnButtonPanel->SetSize(m_turnButtonPanel->GetBestSize());
-			const bool canLeft = m_parent->canApplyEndOfMoveTurnLeft();
-			const bool canRight = m_parent->canApplyEndOfMoveTurnRight();
-			m_buttonTurnLeft->Enable(canLeft);
-			m_buttonTurnRight->Enable(canRight);
-			if (!m_turnButtonPanel->IsShown()) {
-				m_buttonTurnLeft->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-					wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
-				m_buttonTurnRight->Connect(wxEVT_COMMAND_BUTTON_CLICKED,
-					wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
-				m_turnButtonPanel->Show();
-			}
-		} else {
-			m_turnButtonPanel->Hide();
 		}
 	}
 
@@ -1355,21 +1416,11 @@ std::string FBattleDisplay::getHeadingStr(){
 }
 
 void FBattleDisplay::onMoveDone( wxCommandEvent& event ){
-	// disconnect the button
-	m_buttonMoveDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMoveDone ), NULL, this );
+	// H9: handler stays bound; completeMovePhase()'s reDraw() invokes
+	// updateForPhase() which hides Movement Done and the turn panel once the
+	// phase advances away from PH_MOVE.
 //	std::cerr << "Movement Completed" << std::endl;
 	m_parent->completeMovePhase();
-	m_buttonMoveDone->Hide();
-	// TMF-05: hide the turn button panel with Movement Done
-	if (m_turnButtonPanel->IsShown()) {
-		m_buttonTurnLeft->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-			wxCommandEventHandler(FBattleDisplay::onTurnLeft), NULL, this);
-		m_buttonTurnRight->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED,
-			wxCommandEventHandler(FBattleDisplay::onTurnRight), NULL, this);
-		m_turnButtonPanel->Hide();
-	}
-	Layout();
-	m_first=true;
 }
 
 void FBattleDisplay::onTurnLeft( wxCommandEvent& event ){
@@ -1392,14 +1443,8 @@ void FBattleDisplay::drawDefensiveFire(wxDC &dc){
 	dc.DrawText("declare defensive fire.",leftOffset,getActionPromptLineY(1));
 	os.str("Please select a ship to fire weapons.");
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
-	m_buttonDefensiveFireDone->Enable(m_parent->isMoveComplete());
-	if (m_first){
-		m_buttonDefensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
-		m_buttonDefensiveFireDone->Show();
-		Layout();
-		m_first=false;
-	}
-
+	// H9: m_buttonDefensiveFireDone's Show()/Enable() lifecycle now lives
+	// entirely in updateForPhase(); this method only renders the prompt text.
 }
 
 void FBattleDisplay::drawAttackFire(wxDC &dc){
@@ -1417,19 +1462,15 @@ void FBattleDisplay::drawAttackFire(wxDC &dc){
 		os.str("Please select a ship to fire weapons.");
 	}
 	dc.DrawText(os.str(),leftOffset,getActionPromptLineY(2));
-	m_buttonOffensiveFireDone->Enable(m_parent->isMoveComplete());
-	if (m_first){
-		m_buttonOffensiveFireDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
-		m_buttonOffensiveFireDone->Show();
-		Layout();
-		m_first=false;
-	}
-
+	// H9: m_buttonOffensiveFireDone's Show()/Enable() lifecycle now lives
+	// entirely in updateForPhase(); this method only renders the prompt text.
 }
 
 void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
-	// disconnect the button
-	m_buttonDefensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onDefensiveFireDone ), NULL, this );
+	// H9: handler stays bound; the immediate Enable(false)/Hide() below guards
+	// against a double click while the (possibly modal) damage summary dialog
+	// is shown. completeDefensiveFirePhase()'s reDraw() invokes updateForPhase()
+	// once the phase actually advances, settling the final button state.
 	m_buttonDefensiveFireDone->Enable(false);
 	m_buttonDefensiveFireDone->Hide();
 	Layout();
@@ -1444,12 +1485,13 @@ void FBattleDisplay::onDefensiveFireDone( wxCommandEvent& event ){
 	}
 	m_parent->clearDestroyedShips();
 	m_parent->completeDefensiveFirePhase();
-	m_first=true;
 }
 
 void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
-	// disconnect the button
-	m_buttonOffensiveFireDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onOffensiveFireDone ), NULL, this );
+	// H9: handler stays bound; the immediate Enable(false)/Hide() below guards
+	// against a double click while the (possibly modal) damage summary dialog
+	// is shown. completeOffensiveFirePhase()'s reDraw() invokes updateForPhase()
+	// once the phase actually advances, settling the final button state.
 	m_buttonOffensiveFireDone->Enable(false);
 	m_buttonOffensiveFireDone->Hide();
 	Layout();
@@ -1463,7 +1505,6 @@ void FBattleDisplay::onOffensiveFireDone( wxCommandEvent& event ){
 	}
 	m_parent->clearDestroyedShips();
 	m_parent->completeOffensiveFirePhase();
-	m_first=true;
 }
 
 void FBattleDisplay::drawWeaponList(wxDC &dc, int lMargin, int tMargin, int textSize){
@@ -1615,24 +1656,15 @@ void FBattleDisplay::drawOtherStatus(wxDC &dc, int lMargin, int tMargin, int tex
 }
 
 void FBattleDisplay::onMinePlacementDone( wxCommandEvent& event ){
-	// disconnect the button
-	m_buttonMinePlacementDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
-	m_buttonMinePlacementDone->Hide();
-	Layout();
+	// H9: handler stays bound; completeMinePlacement()'s reDraw() invokes
+	// updateForPhase() which hides this button once the state advances.
 	m_parent->completeMinePlacement();
-	m_first=true;
 }
 
 void FBattleDisplay::onSeekerActivationDone( wxCommandEvent& event ){
-	m_buttonSeekerActivationDone->Disconnect(
-		wxEVT_COMMAND_BUTTON_CLICKED,
-		wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),
-		NULL,
-		this);
-	m_buttonSeekerActivationDone->Hide();
-	Layout();
+	// H9: handler stays bound; completeSeekerActivationPhase()'s reDraw()
+	// invokes updateForPhase() which hides this button once the phase advances.
 	m_parent->completeSeekerActivationPhase();
-	m_first = true;
 }
 
 void FBattleDisplay::drawPlaceMines(wxDC &dc){
@@ -1707,14 +1739,8 @@ void FBattleDisplay::drawPlaceMines(wxDC &dc){
 		applyRequestedDisplayHeight();
 	}
 
-	// Show the mine placement done button with its fixed label.
-	m_buttonMinePlacementDone->Enable(true);
-	if (m_first){
-		m_buttonMinePlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onMinePlacementDone ), NULL, this );
-		m_buttonMinePlacementDone->Show();
-		Layout();
-		m_first = false;
-	}
+	// H9: m_buttonMinePlacementDone's Show()/Enable() lifecycle now lives
+	// entirely in updateForPhase(); this method only renders the source rows.
 }
 
 void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
@@ -1844,22 +1870,14 @@ void FBattleDisplay::drawPlaceSeekers(wxDC &dc){
 		applyRequestedDisplayHeight();
 	}
 
-	// Show the seeker placement done button with its fixed label.
-	m_buttonSeekerPlacementDone->Enable(true);
-	if (m_first){
-		m_buttonSeekerPlacementDone->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerPlacementDone ), NULL, this );
-		m_buttonSeekerPlacementDone->Show();
-		Layout();
-		m_first = false;
-	}
+	// H9: m_buttonSeekerPlacementDone's Show()/Enable() lifecycle now lives
+	// entirely in updateForPhase(); this method only renders the source rows.
 }
 
 void FBattleDisplay::onSeekerPlacementDone( wxCommandEvent& event ){
-	m_buttonSeekerPlacementDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( FBattleDisplay::onSeekerPlacementDone ), NULL, this );
-	m_buttonSeekerPlacementDone->Hide();
-	Layout();
+	// H9: handler stays bound; completeSeekerPlacement()'s reDraw() invokes
+	// updateForPhase() which hides this button once the state advances.
 	m_parent->completeSeekerPlacement();
-	m_first = true;
 }
 
 void FBattleDisplay::drawSeekerActivation(wxDC &dc){
@@ -1937,17 +1955,8 @@ void FBattleDisplay::drawSeekerActivation(wxDC &dc){
 		applyRequestedDisplayHeight();
 	}
 
-	m_buttonSeekerActivationDone->Enable(true);
-	if (m_first){
-		m_buttonSeekerActivationDone->Connect(
-			wxEVT_COMMAND_BUTTON_CLICKED,
-			wxCommandEventHandler(FBattleDisplay::onSeekerActivationDone),
-			NULL,
-			this);
-		m_buttonSeekerActivationDone->Show();
-		Layout();
-		m_first=false;
-	}
+	// H9: m_buttonSeekerActivationDone's Show()/Enable() lifecycle now lives
+	// entirely in updateForPhase(); this method only renders the activation rows.
 }
 
 void FBattleDisplay::drawOffensiveSeekerPendingRows(wxDC &dc, int lMargin, int startY, int textSize){

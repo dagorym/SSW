@@ -3,10 +3,9 @@
  * @brief Header file for BattleDisplay class
  * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-5 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jul 03, 2026 (TMFR-03: buildMovePromptText() gains detailPromptThree so the
- * long move-phase instruction wraps onto two shorter lines instead of one long one; added
- * measureWrappedActionPromptWidth() so the Turn-panel placement in drawMoveShip() is computed
- * from actual wrapped line widths instead of the unwrapped instruction extent)
+ * @date Last Modified: Jul 12, 2026 (H9: removed m_first paint-time button lifecycle; all
+ * phase/turn button click handlers now bind exactly once at construction and the new
+ * updateForPhase() non-paint method drives Show()/Hide()/Enable() and the turn-panel state)
  *
  */
 
@@ -28,9 +27,9 @@ class FBattleScreen;
  * This class implements the lower tactical display panel used for combat
  * prompts, ship status, setup placement controls, and seeker-activation UI.
  *
- * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium)
+ * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jun 22, 2026 (PGS-02: applyRequestedDisplayHeight now notifies parent via SendSizeEvent)
+ * @date Last Modified:  Jul 12, 2026 (H9: bind-once button handlers + non-paint updateForPhase())
  */
 class FBattleDisplay : public wxPanel
 {
@@ -38,9 +37,13 @@ public:
 	/**
 	 * @brief FBattleDisplay constructor
 	 *
-	 * @author Tom Stephens
+	 * H9: binds every phase Done/Set-Speed button's and both turn buttons'
+	 * click handlers exactly once here; see updateForPhase() for the non-paint
+	 * seam that subsequently drives their Show()/Enable() state.
+	 *
+	 * @author Tom Stephens, claude-sonnet-5 (medium)
 	 * @date Created:  Jul 11, 2008
-	 * @date Last Modified:  Jul 19, 2008
+	 * @date Last Modified:  Jul 12, 2026
 	 */
 	FBattleDisplay(wxWindow * parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxSUNKEN_BORDER|wxTAB_TRAVERSAL , const wxString &name = "BattleDisplay" );
 	/// Default destructor
@@ -51,13 +54,15 @@ public:
 	 *
 	 * This includes the existing movement/fire/setup prompts plus the seeker
 	 * activation instructions, per-seeker activation rows, and completion button
-	 * during `PH_SEEKER_ACTIVATION`.
+	 * during `PH_SEEKER_ACTIVATION`. H9: no longer Connects/Disconnects/Shows/Hides
+	 * any phase or turn button; that lifecycle is driven exclusively by
+	 * updateForPhase(), called from FBattleScreen's state/phase/resize/reDraw seams.
 	 *
 	 * @param dc Device context used for lower-panel drawing.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-5 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void draw(wxDC &dc);
 	void onPaint(wxPaintEvent & event);
@@ -89,6 +94,32 @@ public:
 	 */
 	void reflowLowerPanelLayout();
 
+	/**
+	 * @brief Synchronize phase-driven button/panel Show, Enable, and turn-panel
+	 * position purely from current FBattleScreen state/phase and model queries (H9).
+	 *
+	 * Replaces the previous `m_first`-gated paint-time Connect()/Show()/Hide()
+	 * machinery. Every phase button's (`m_button1`, `m_buttonMoveDone`,
+	 * `m_buttonDefensiveFireDone`, `m_buttonOffensiveFireDone`,
+	 * `m_buttonMinePlacementDone`, `m_buttonSeekerPlacementDone`,
+	 * `m_buttonSeekerActivationDone`) and both turn buttons' (`m_buttonTurnLeft`,
+	 * `m_buttonTurnRight`) click handlers are bound exactly once at construction;
+	 * this method is the single non-paint seam that decides which button is
+	 * shown/enabled for the current `FBattleScreen::getState()`/`getPhase()` and
+	 * whether the end-of-move Turn Left/Turn Right panel (`m_turnButtonPanel`) is
+	 * shown, mirroring `canApplyEndOfMoveTurnLeft()`/`canApplyEndOfMoveTurnRight()`
+	 * for the button enable states. It performs no drawing and creates no `wxDC`.
+	 * Callers are `FBattleScreen::setState()`, `FBattleScreen::setPhase()`,
+	 * `FBattleScreen::onSize()`, and the shared `FBattleScreen::reDraw()` helper
+	 * used by ship/weapon/defense selection and phase-completion methods; it is
+	 * never invoked from `draw()` or any `draw*()` method.
+	 *
+	 * @author claude-sonnet-5 (medium)
+	 * @date Created: Jul 12, 2026
+	 * @date Last Modified: Jul 12, 2026
+	 */
+	void updateForPhase();
+
 	/// Set the list of planet images
 	void setImageList(ImageList l) { m_imageList = l;}
 
@@ -107,8 +138,6 @@ protected:
 	wxSpinCtrl* m_spinCtrl1;
 	/// generic button control
 	wxButton* m_button1;
-	/// flag for marking first time through a loop
-	bool m_first;
 	/// button for signaling completion of movement phase
 	wxButton* m_buttonMoveDone;
 	/// button for signaling completion of movement phase
@@ -220,10 +249,10 @@ protected:
 		int height;
 	};
 
-	/// Event handler for setting the ship's speed; skips setShip(NULL) when beginMinePlacement() succeeds so m_curShip remains valid for the first mine board click
+	/// Event handler for setting the ship's speed; skips setShip(NULL) when beginMinePlacement() succeeds so m_curShip remains valid for the first mine board click. H9: handler stays bound for the panel's lifetime; hiding the speed controls is driven by updateForPhase() via the setPhase()/setState() calls below.
 	void onSetSpeed( wxCommandEvent& event );
 
-	/// event handler for movement complete button
+	/// event handler for movement complete button. H9: handler stays bound; hiding the button and the turn panel is driven by updateForPhase() via completeMovePhase()'s reDraw().
 	void onMoveDone( wxCommandEvent& event );
 
 	/**
@@ -231,58 +260,64 @@ protected:
 	 *
 	 * Calls applyEndOfMoveTurn(+1) on the parent battle screen, which applies a
 	 * one-hexside left rotation to the active ship as a pending uncommitted change.
+	 * H9: bound exactly once at construction; enable state is driven by
+	 * updateForPhase() rather than by any draw*() method.
 	 *
 	 * @param event Button-click event.
 	 *
-	 * @author claude-sonnet-4-6 (medium)
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
 	 * @date Created: Jun 30, 2026
-	 * @date Last Modified: Jun 30, 2026
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void onTurnLeft( wxCommandEvent& event );
 
 	/**
 	 * @brief Handle Turn Right button click for end-of-move facing change (TMF-05).
 	 *
-	 * Calls applyEndOfMoveTurn(-1) on the parent battle screen.
+	 * Calls applyEndOfMoveTurn(-1) on the parent battle screen. H9: bound
+	 * exactly once at construction; enable state is driven by updateForPhase()
+	 * rather than by any draw*() method.
 	 *
 	 * @param event Button-click event.
 	 *
-	 * @author claude-sonnet-4-6 (medium)
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
 	 * @date Created: Jun 30, 2026
-	 * @date Last Modified: Jun 30, 2026
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void onTurnRight( wxCommandEvent& event );
 
-	/// event handler for defensive fire complete button; shows damage summary only when weaponsFired > 0
+	/// event handler for defensive fire complete button; shows damage summary only when weaponsFired > 0. H9: handler stays bound; the immediate Enable(false)/Hide() guard against a double click before the modal summary dialog is retained, with the final per-phase state settled by updateForPhase() via completeDefensiveFirePhase()'s reDraw().
 	void onDefensiveFireDone( wxCommandEvent& event );
 
-	/// event handler for mine placement complete button
+	/// event handler for mine placement complete button. H9: handler stays bound; hiding the button is driven by updateForPhase() via completeMinePlacement()'s reDraw().
 	void onMinePlacementDone( wxCommandEvent& event );
 
 	/**
 	 * @brief Finish the seeker-missile placement phase and advance to attacker setup.
 	 *
-	 * Hides and disconnects the seeker placement done button, then delegates
-	 * completion to `FBattleScreen::completeSeekerPlacement()`.
+	 * Delegates completion to `FBattleScreen::completeSeekerPlacement()`, whose
+	 * `reDraw()` invokes `updateForPhase()` to hide the seeker placement done
+	 * button (H9); the handler itself stays bound for the panel's lifetime.
 	 *
 	 * @param event Button-click event from the seeker placement completion control.
 	 *
-	 * @author claude-sonnet-4-6 (medium)
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
 	 * @date Created: Jun 02, 2026
-	 * @date Last Modified: Jun 02, 2026
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void onSeekerPlacementDone( wxCommandEvent& event );
 	/**
 	 * @brief Finish the visible seeker-activation stop and return to movement flow.
 	 *
-	 * Hides and disconnects the button using the existing tactical action-button
-	 * lifecycle, then delegates completion to `FBattleScreen`.
+	 * Delegates completion to `FBattleScreen::completeSeekerActivationPhase()`,
+	 * whose `reDraw()` invokes `updateForPhase()` to hide the seeker activation
+	 * done button (H9); the handler itself stays bound for the panel's lifetime.
 	 *
 	 * @param event Button-click event from the activation completion control.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-5 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void onSeekerActivationDone( wxCommandEvent& event );
 
@@ -436,7 +471,7 @@ protected:
 	bool setStationRotation(wxMouseEvent &event);
 
 	/**
-	 * @brief Draw prompt to select ship to move and the end-of-move Turn Left/Right panel.
+	 * @brief Draw the move-phase prompt and position the end-of-move Turn Left/Right panel.
 	 *
 	 * TMFR-03: the Turn-panel's left edge (`lMargin`) is computed from
 	 * `measureWrappedActionPromptWidth()` (actual wrapped instruction line widths)
@@ -449,11 +484,19 @@ protected:
 	 * reapplied via `applyRequestedDisplayHeight()`) when the caption plus button row
 	 * would otherwise be clipped.
 	 *
+	 * H9: this method only computes and applies the panel's on-screen position
+	 * (`SetPosition()`/`SetSize()`, which need the DC-based text-width measurement
+	 * above) and draws the caption when the block fits left of the ship-stats
+	 * column. It no longer Connects/Disconnects/Shows/Hides/Enables the Movement
+	 * Done button or the turn panel/buttons — that lifecycle is driven exclusively
+	 * by `updateForPhase()`.
+	 *
 	 * @param dc The device context to draw on.
 	 *
 	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
 	 * @date Created: Jul 11, 2008
-	 * @date Last Modified: Jul 03, 2026 (TMFR-03: fix Turn-panel placement math and add caption)
+	 * @date Last Modified: Jul 12, 2026 (H9: remove Connect/Disconnect/Show/Hide/Enable of
+	 * Movement Done and the turn panel; moved to updateForPhase())
 	 */
 	void drawMoveShip(wxDC &dc);
 
@@ -463,7 +506,7 @@ protected:
 	/// returns a string giving the heading direction
 	std::string getHeadingStr();
 
-	/// Draws prompt to select ship to fire defensive shots
+	/// Draws prompt to select ship to fire defensive shots. H9: m_buttonDefensiveFireDone's Show()/Enable() lifecycle now lives entirely in updateForPhase(); this method only renders the prompt text.
 	void drawDefensiveFire(wxDC &dc);
 
 	/**
@@ -472,13 +515,14 @@ protected:
 	 * Normal offensive fire still prompts for ship and weapon targeting, but when
 	 * an `SM` launcher is selected this prompt switches to seeker deployment
 	 * instructions and the lower panel adds grouped pending recall rows for that
-	 * launcher.
+	 * launcher. H9: m_buttonOffensiveFireDone's Show()/Enable() lifecycle now
+	 * lives entirely in updateForPhase(); this method only renders the prompt.
 	 *
 	 * @param dc The device context to draw on.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-5 (medium)
 	 * @date Created: Apr 15, 2009
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void drawAttackFire(wxDC &dc);
 	/**
@@ -582,7 +626,7 @@ protected:
 	 */
 	void checkDefenseSelection(wxMouseEvent &event);
 
-	/// event handler for offensive fire complete button; shows damage summary only when weaponsFired > 0
+	/// event handler for offensive fire complete button; shows damage summary only when weaponsFired > 0. H9: handler stays bound; the immediate Enable(false)/Hide() guard against a double click before the modal summary dialog is retained, with the final per-phase state settled by updateForPhase() via completeOffensiveFirePhase()'s reDraw().
 	void onOffensiveFireDone( wxCommandEvent& event );
 
 	/**
@@ -620,11 +664,12 @@ protected:
 	 *
 	 * If the rendered source rows extend below the current `requestedDisplayHeight`,
 	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
-	 * remain fully visible.
+	 * remain fully visible. H9: m_buttonMinePlacementDone's Show()/Enable()
+	 * lifecycle now lives entirely in updateForPhase(); this method only renders.
 	 *
-	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium)
+	 * @author Tom Stephens, claude-sonnet-4-6 (medium), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
 	 * @date Created:  Feb 22, 2011
-	 * @date Last Modified:  Jun 23, 2026
+	 * @date Last Modified:  Jul 12, 2026
 	 */
 	void drawPlaceMines(wxDC &dc);
 
@@ -645,10 +690,12 @@ protected:
 	 * If the rendered source rows or recall rows extend below the current
 	 * `requestedDisplayHeight`, the height is expanded and
 	 * `applyRequestedDisplayHeight()` is called so rows remain fully visible.
+	 * H9: m_buttonSeekerPlacementDone's Show()/Enable() lifecycle now lives
+	 * entirely in updateForPhase(); this method only renders.
 	 *
-	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @author claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
 	 * @date Created: Jun 02, 2026
-	 * @date Last Modified: Jun 23, 2026
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void drawPlaceSeekers(wxDC &dc);
 
@@ -671,11 +718,12 @@ protected:
 	 *
 	 * If the activation rows extend below the current `requestedDisplayHeight`,
 	 * the height is expanded and `applyRequestedDisplayHeight()` is called so rows
-	 * remain fully visible.
+	 * remain fully visible. H9: m_buttonSeekerActivationDone's Show()/Enable()
+	 * lifecycle now lives entirely in updateForPhase(); this method only renders.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-4-6 (medium), claude-sonnet-5 (medium)
 	 * @date Created: May 25, 2026
-	 * @date Last Modified: Jun 30, 2026 (TMF-01: use SEEKER_ACTIVATION_*_INSTRUCTION constants instead of inline literals)
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void drawSeekerActivation(wxDC &dc);
 

@@ -3,7 +3,9 @@
  * @brief Implementation file for BattleScreen class
  * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.4 (high), claude-sonnet-4-6 (standard), claude-opus-4-8 (medium), claude-sonnet-5 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified:  Jul 03, 2026
+ * @date Last Modified:  Jul 12, 2026 (H9: setState()/setPhase() now delegate to reDraw(), which
+ * also invokes FBattleDisplay::updateForPhase(); onSize() invokes it directly too, so phase-driven
+ * button/turn-panel state no longer depends on the next paint)
  *
  */
 
@@ -354,6 +356,9 @@ void FBattleScreen::applyLayoutPolicy() {
 void FBattleScreen::onSize(wxSizeEvent & event) {
 	if (m_display != NULL) {
 		m_display->reflowLowerPanelLayout();
+		// H9: resync phase-driven button/turn-panel state on resize, independent
+		// of the next paint.
+		m_display->updateForPhase();
 	}
 	applyLayoutPolicy();
 	event.Skip();
@@ -424,8 +429,9 @@ FVehicle * FBattleScreen::getStation() const {
 
 void FBattleScreen::setState(int s) {
 	m_tacticalGame->setState(s);
-	m_map->Refresh();
-	m_display->Refresh();
+	// H9: reDraw() also invokes FBattleDisplay::updateForPhase() to resync
+	// phase-driven button/turn-panel state.
+	reDraw();
 }
 
 VehicleList FBattleScreen::getShipList() const{
@@ -492,8 +498,9 @@ void FBattleScreen::setPhase(int p){
 			m_tacticalGame->resetMovementState();
 		}
 	}
-	m_map->Refresh();
-	m_display->Refresh();
+	// H9: reDraw() also invokes FBattleDisplay::updateForPhase() to resync
+	// phase-driven button/turn-panel state.
+	reDraw();
 }
 
 void FBattleScreen::beginTacticalReport(const FTacticalCombatReportContext & context) {

@@ -3,7 +3,9 @@
  * @brief Header file for BattleScreen class
  * @author Tom Stephens, Claude Sonnet 4.6 (medium), gpt-5.3-codex (standard), gpt-5.4 (high), claude-sonnet-4-6 (medium), claude-opus-4-8 (medium), claude-sonnet-5 (medium)
  * @date Created:  Jul 11, 2008
- * @date Last Modified: Jul 03, 2026
+ * @date Last Modified: Jul 12, 2026 (H9: reDraw() now also invokes FBattleDisplay::updateForPhase();
+ * setState()/setPhase()/onSize() drive this seam so phase/turn button state stays correct
+ * independent of paint)
  *
  */
 
@@ -154,7 +156,7 @@ public:
 
 	/// get the battle board state
 	const int & getState() const;
-	/// set the battle board state
+	/// set the battle board state. Delegates to reDraw(), which also invokes FBattleDisplay::updateForPhase() (H9).
 	void setState(int s);
 	/// toggle the control state
 	void toggleControlState();
@@ -197,17 +199,31 @@ public:
 	 *
 	 * Requests for `PH_MOVE` preserve source compatibility for legacy callers
 	 * while allowing `FTacticalGame` to insert the new seeker-activation prephase
-	 * before movement when required.
+	 * before movement when required. Delegates to `reDraw()`, which now also
+	 * invokes `FBattleDisplay::updateForPhase()` (H9).
 	 *
 	 * @param p Requested tactical phase constant.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-5 (medium)
 	 * @date Created: Jul 11, 2008
-	 * @date Last Modified: May 25, 2026
+	 * @date Last Modified: Jul 12, 2026
 	 */
 	void setPhase(int p);
-	/// redraw the screen
-	void reDraw() { m_map->Refresh(); m_display->Refresh(); }
+	/**
+	 * @brief Refresh the map/display and resync phase-driven button state (H9).
+	 *
+	 * Calls `FBattleDisplay::updateForPhase()` before refreshing so the seven
+	 * phase Done/Set-Speed buttons and the end-of-move Turn Left/Turn Right
+	 * panel reflect the current state/phase/model queries independent of when
+	 * the next paint happens; then refreshes the map and display for rendering.
+	 * This is the shared redraw seam used by ship/weapon/defense selection and
+	 * phase-completion helpers throughout this class.
+	 *
+	 * @author Tom Stephens, claude-sonnet-5 (medium)
+	 * @date Created: Jul 11, 2008
+	 * @date Last Modified: Jul 12, 2026
+	 */
+	void reDraw() { m_display->updateForPhase(); m_map->Refresh(); m_display->Refresh(); }
 	/// returns the ID of the attacking player
 	const unsigned int & getAttackerID() const;
 	/// returns the ID of the defending player
@@ -669,11 +685,15 @@ protected:
 	/**
 	 * @brief Recompute tactical screen layout policy on resize.
 	 *
+	 * Also invokes `FBattleDisplay::updateForPhase()` (H9) so phase-driven
+	 * button/turn-panel state stays correct across resize, independent of the
+	 * next paint.
+	 *
 	 * @param event wxWidgets size event raised by top-level resizing.
 	 *
-	 * @author Tom Stephens, gpt-5.4 (high)
+	 * @author Tom Stephens, gpt-5.4 (high), claude-sonnet-5 (medium)
 	 * @date Created:  May 16, 2026
-	 * @date Last Modified:  May 16, 2026
+	 * @date Last Modified:  Jul 12, 2026
 	 */
 	void onSize(wxSizeEvent & event);
 
