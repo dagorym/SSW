@@ -11,6 +11,19 @@ PROMPT_PREFIX = "Your role is 'implementer'. Your task is as follows:"
 STABLE_ID_PATTERN = re.compile(r"\b[A-Za-z]+-\d+\b")
 SECURITY_MARKER = re.compile(r"(?im)^\s*security review:\s*required\b")
 
+# A subtask section heading looks like `### FU3-1 — <title>`: a stable id token
+# followed by a title separator. Prompt-block headings (`### FU3-1 prompt`) and
+# bare reference headings (`### PF-1`) are intentionally NOT subtasks, and
+# cross-references in prose/tables (`D-5`, `C-7`, `axis-2`) must not be counted.
+SUBTASK_HEADING_RE = re.compile(r"^#{2,4}\s+([A-Za-z][A-Za-z0-9]*-\d+)\b(.*)$")
+SUBTASK_TITLE_SEPARATORS = ("—", "–", "-", ":")  # em dash, en dash, hyphen, colon
+
+# A prompt block sits under a `### <ID> prompt` heading. Keying prompts to the
+# nearest preceding such heading is deterministic and immune to cross-reference
+# ids appearing inside a prompt body (which broke substring-based association,
+# mis-targeting the Security stage).
+PROMPT_HEADING_RE = re.compile(r"(?m)^#{2,4}\s+([A-Za-z][A-Za-z0-9]*-\d+)\s+prompt\s*$")
+
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -39,7 +52,25 @@ def extract_output_artifact_path(text: str) -> str | None:
 
 
 def extract_subtask_ids(text: str) -> list[str]:
-    return list(dict.fromkeys(STABLE_ID_PATTERN.findall(text)))
+    """Extract subtask identifiers from subtask *section headings* only.
+
+    Anchoring on `### <ID> — <title>` headings excludes cross-references in
+    prose/tables (``D-5``, ``C-7``, ``axis-2``), prompt-block headings
+    (``### FU3-1 prompt``), and bare reference headings (``### PF-1``). If no
+    conforming subtask heading is found, fall back to the legacy whole-text scan
+    so a differently-formatted plan is not misreported as having no subtasks.
+    """
+    ids: list[str] = []
+    for line in text.splitlines():
+        match = SUBTASK_HEADING_RE.match(line)
+        if not match:
+            continue
+        remainder = match.group(2).lstrip()
+        if remainder[:1] in SUBTASK_TITLE_SEPARATORS:
+            ids.append(match.group(1))
+    if not ids:
+        ids = STABLE_ID_PATTERN.findall(text)
+    return list(dict.fromkeys(ids))
 
 
 def extract_dependency_lines(text: str) -> list[str]:
@@ -62,90 +93,50 @@ def split_prompt_blocks(text: str) -> list[str]:
     blocks: list[str] = []
     for index, start in enumerate(indices):
         end = indices[index + 1] if index + 1 < len(indices) else len(text)
-        block = text[start:end].strip()
-        # Trim anything from the next ATX heading onward. Each prompt block is
-        # terminated by the following subtask's "### <ID> Prompt" header (level 3)
-        # or by a "## <Section>" header (level 2). The previous pattern only
-        # matched level-2 headers, so the trailing "### <next-ID> Prompt" line was
-        # left in the block and leaked the next subtask's id into this block's id
-        # match (mis-associating prompts and dropping the final subtask). Match
-        # level-2-or-deeper headers so the trailing prompt header is removed.
-        block = re.split(r"\n#{2,6} [^\n]+", block, maxsplit=1)[0].strip()
+        block = text[start:end]
+        # Prompts are wrapped in ``` fences; the body ends at its closing fence.
+        # Truncate there so the next `### <ID> prompt` heading and fence markers
+        # do not bleed into this prompt body.
+        block = re.split(r"(?m)^\s*```\s*$", block, maxsplit=1)[0]
+        # Fallback for an unfenced prompt: stop at the next level-2 section.
+        block = re.split(r"\n## [^\n]+", block, maxsplit=1)[0].strip()
         blocks.append(block)
     return blocks
 
 
-ARTIFACT_OWNER_PATTERN = re.compile(r"artifacts/[^\s`]+?/([A-Za-z]+-\d+)(?:/|`|\s|$)")
+def associate_prompts(text: str, subtask_ids: list[str], prompt_blocks: list[str]) -> dict[str, str]:
+    """Key each fenced prompt block to its subtask id.
 
-
-def owner_id_for_block(block: str, subtask_ids: list[str]) -> str | None:
-    """Return the subtask id that owns a prompt block.
-
-    A prompt's owning subtask is the one whose shared artifact directory the
-    prompt writes to (``artifacts/<plan>/<ID>/``). Using that path as the
-    association signal — instead of "any subtask id mentioned in the block" —
-    prevents a prompt body that legitimately cross-references another subtask
-    (e.g. a forward dependency note "see SMF-09") from stealing that other
-    subtask's prompt slot.
+    The plan places every prompt under a `### <ID> prompt` heading, so map each
+    prompt to the id of the nearest preceding such heading — deterministic and
+    immune to cross-reference ids inside a prompt body. Fall back to positional
+    pairing with ``subtask_ids`` only when a prompt has no preceding heading.
     """
-    for match in ARTIFACT_OWNER_PATTERN.finditer(block):
-        candidate = match.group(1)
-        if candidate in subtask_ids:
-            return candidate
-    return None
-
-
-def associate_prompts(subtask_ids: list[str], prompt_blocks: list[str]) -> dict[str, str]:
+    heading_ids = [(match.start(), match.group(1)) for match in PROMPT_HEADING_RE.finditer(text)]
+    prefix_starts = [match.start() for match in re.finditer(re.escape(PROMPT_PREFIX), text)]
+    fallback_ids = list(subtask_ids)
     by_id: dict[str, str] = {}
-    remaining_ids = list(subtask_ids)
 
-    for block in prompt_blocks:
-        # Prefer the block's artifact-path owner so cross-references in the body
-        # cannot mis-associate the block to a different subtask.
-        owner = owner_id_for_block(block, subtask_ids)
-        if owner is not None and owner not in by_id:
-            by_id[owner] = block
-            if owner in remaining_ids:
-                remaining_ids.remove(owner)
-            continue
-        # Fallback for plans whose prompts do not carry an artifact-path owner:
-        # match any not-yet-assigned id present in the block, else assign the
-        # next remaining id positionally.
-        block_ids = [subtask_id for subtask_id in remaining_ids if subtask_id in block]
-        if block_ids:
-            by_id[block_ids[0]] = block
-            remaining_ids.remove(block_ids[0])
-            continue
-        if remaining_ids:
-            by_id[remaining_ids.pop(0)] = block
+    for block, start in zip(prompt_blocks, prefix_starts):
+        heading_id = None
+        for heading_start, candidate in heading_ids:
+            if heading_start < start:
+                heading_id = candidate
+            else:
+                break
+        if heading_id is None:
+            heading_id = fallback_ids.pop(0) if fallback_ids else f"subtask-{len(by_id) + 1}"
+        by_id[heading_id] = block
 
     return by_id
 
 
-def order_subtask_ids(all_ids: list[str], prompts_by_subtask: dict[str, str]) -> list[str]:
-    """Order subtask ids by their implementer-prompt position in the document.
-
-    ``prompts_by_subtask`` is built in prompt-block order, so its keys already
-    follow the plan's subtask sequence. Ordering by those keys avoids the
-    misordering that arises when an id is first mentioned out of sequence in
-    overview prose (e.g. a "PGS-01 ... PGS-04" summary line that would otherwise
-    place PGS-04 second). Any ids without a prompt block keep their first-seen
-    order, appended after the prompt-backed ids.
-    """
-    ordered = list(prompts_by_subtask.keys())
-    for subtask_id in all_ids:
-        if subtask_id not in ordered:
-            ordered.append(subtask_id)
-    return ordered
-
-
 def build_result(plan_path: Path) -> dict[str, object]:
     text = read_text(plan_path)
-    all_ids = extract_subtask_ids(text)
+    subtask_ids = extract_subtask_ids(text)
     dependency_lines = extract_dependency_lines(text)
     prompt_blocks = split_prompt_blocks(text)
-    prompts_by_subtask = associate_prompts(all_ids, prompt_blocks)
-    subtask_ids = order_subtask_ids(all_ids, prompts_by_subtask)
+    prompts_by_subtask = associate_prompts(text, subtask_ids, prompt_blocks)
     security_required = [
         subtask_id
         for subtask_id, block in prompts_by_subtask.items()
