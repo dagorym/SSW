@@ -1,0 +1,64 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Verified and refreshed documentation for the P5-2 FVehicle save/load wire hardening (H2 active-defense persistence, H3 next-ID advance, fixed-width uint32 IDs/counts, and factory null-check/abort behavior on unknown weapon/defense wire types), confirming the Implementer's FVehicle.h/.cpp Doxygen updates stay accurate against the Tester's final behavioral coverage in tests/ships/FVehicleTest.cpp/.h, and correcting stale H2/H3 status references in doc/deferred-tasks.md and doc/synthesized-roadmap.md.
+
+Acceptance criteria to verify:
+- A vehicle with weapons and defenses round-trips through save->load with all weapons, defenses, and HP/MR/ADF/DCR/heading/speed/flags preserved -- testSerializeRoundTripsWeaponsDefensesAndState.
+- A vehicle saved with a non-default active defense (Masking Screen raised) reloads with the same defense reported by getCurrentDefense(), with consistent masking-screen/turn-count/ammo state -- testLoadRestoresActiveDefenseSelectionAcrossSaveLoad.
+- FVehicle::load returns nonzero (no NULL deref) on an unknown weapon or defense type -- testLoadReturnsNonzeroOnUnknownWeaponType, testLoadReturnsNonzeroOnUnknownDefenseType.
+- After loading a vehicle with a given m_ID, a newly constructed vehicle receives an ID strictly greater than every loaded ID -- testLoadAdvancesNextIDPastLoadedID.
+- Vehicle wire counts/IDs are fixed-width little-endian uint32_t -- covered structurally by the implementation and exercised behaviorally by every new round-trip/hand-crafted-stream test via the shared writeU32/readU32 helpers.
+- The build is clean; ship/weapon/defense modules remain wx-free -- make -C src/ships and the top-level make both completed without wx-config/WX_CXXFLAGS usage in those Makefiles and without warnings/errors.
+- Documentation accurately reflects the shipped H2/H3/factory-null-check behavior, and no stale deferred-tasks/roadmap entries misstate H2 or H3 as still fully open.
+
+Implementation branch or worktree context:
+- Implementer commit eb930e4b 'P5-2: Harden FVehicle save/load wire layer (H2, H3, factory null-checks)' on branch phase5-P5-2-tester-20260717 (originating worktree /home/tstephen/repos/worktrees/phase5-P5-2-tester-20260717), based on P5-1 Verifier-passed commit 1bb99cec.
+- Tester commit 46f81017747d8f651d698f4cc55ca7eee36bc831 'P5-2: Tester coverage for vehicle save/load wire hardening (H2, H3)', same branch.
+- Documenter commit 3ee35c35d0d9241e2b2dce8fc435bbeab2e4a55a 'P5-2: Documenter -- sync deferred-tasks/roadmap with resolved H2, partial H3' on branch phase5-P5-2-documenter-20260717 (worktree /home/tstephen/repos/worktrees/phase5-P5-2-documenter-20260717), documentation-only (no product/test behavior changed).
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/ships/FVehicle.h
+- src/ships/FVehicle.cpp
+- tests/ships/FVehicleTest.cpp
+- tests/ships/FVehicleTest.h
+- doc/deferred-tasks.md
+- doc/synthesized-roadmap.md
+
+Commands executed:
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input artifacts/phase5-save-format-hardening/P5-2/documenter_prompt.txt --repo-root .
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base 1bb99cec --head HEAD
+- git diff 1bb99cec..HEAD -- include/ships/FVehicle.h src/ships/FVehicle.cpp doc/deferred-tasks.md
+- make -C src/ships
+
+Final test outcomes:
+- Documentation-only change (doc/deferred-tasks.md, doc/synthesized-roadmap.md); no product, test, or build behavior was modified.
+- Confirmed FVehicle.h/.cpp Doxygen blocks (already updated by the Implementer) accurately describe the fixed-width ID/count fields, the H2 active-defense index, the H3 next-ID advance, and the factory null-check/abort contract, cross-checked against the Tester's final behavioral tests: testSerializeRoundTripsWeaponsDefensesAndState, testLoadRestoresActiveDefenseSelectionAcrossSaveLoad, testLoadReturnsNonzeroOnUnknownWeaponType, testLoadReturnsNonzeroOnUnknownDefenseType, testLoadAdvancesNextIDPastLoadedID.
+- make -C src/ships: clean build, no warnings/errors (sanity check after doc-only edits; no ships module source was touched).
+- Reused the Tester's reported suite outcomes as the current baseline (not re-run, since no executable behavior changed): SSWTests 263/263, TacticalTests 253/253, GuiTests 81/81 (xvfb-run), make check exit code 0.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase5-save-format-hardening-plan.md, subtask P5-2 (Vehicle / weapon / defense save-load hardening: H2, H3, factory null-checks). Security review: required for this subtask per the plan.
+- Diff base for review: commit 1bb99cec (P5-1 Verifier PASS) versus this branch's HEAD (commit 3ee35c35), covering include/ships/FVehicle.h, src/ships/FVehicle.cpp, tests/ships/FVehicleTest.cpp, tests/ships/FVehicleTest.h, doc/deferred-tasks.md, doc/synthesized-roadmap.md.
+- Plan's Documentation Impact note for P5-2: 'Update FVehicle::save/load (and any touched weapon/defense save/load) Doxygen headers for the active-defense persistence, the ID-counter restore, factory null-check behavior, and fixed-width fields. When H2 is delivered, mark the H2 entry in doc/deferred-tasks.md resolved/removed.' The Implementer already removed the H2 entry from doc/deferred-tasks.md and updated the FVehicle.h/.cpp Doxygen blocks; this Documenter pass verified both are accurate against final test coverage and additionally corrected now-stale H2/H3 cross-references left behind in doc/deferred-tasks.md's F2-serialization entry and in doc/synthesized-roadmap.md's confirmed-defects table (H2/H3/C3 rows).
+
+Convention-file guidance:
+- AGENTS.md Doxygen policy: function/class header comment blocks require @author (comma-separated, never removing prior authors) and @date Last Modified fields updated on change; verified the Implementer's FVehicle.h/.cpp edits already comply (author list includes Tom Stephens, Claude Sonnet 5 (medium); Last Modified updated to Jul 17, 2026).
+- AGENTS.md Single-Source-of-Truth rule: project facts belong in exactly one canonical location; followed by not duplicating the FVehicle wire-format description into doc/DesignNotes.md when the FVehicle.h Doxygen blocks already own that fact, consistent with how P5-1 documented FSaveFormat.h's primitives in-header rather than in DesignNotes.md.
+- doc/deferred-tasks.md's own convention: 'An entry stays in this file until the deferred work is completed (at which point it should be removed or marked resolved by the plan that closes it).' The Implementer's outright removal of the H2 entry (rather than an inline resolved-marker) matches this file's established pattern for fully-closed items.
+- doc/synthesized-roadmap.md's own convention (seen in C1/C2/C4/C5/C6/H7/H9/H15/T2/T3): resolved confirmed-defect rows get a '-- ***RESOLVED***' marker in the header cell plus a bracketed '[RESOLVED -- see ...]' sentence in the Detail cell pointing at the closing artifact directory; applied that same convention to H2 (fully resolved) and added a partial-resolution bracketed note to H3 (FVehicle instance only; FFleet/FPlayer/FSystem/FJumpRoute instances remain open per P5-3/P5-4).
+
+Updated documentation files:
+- doc/deferred-tasks.md
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-2
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
