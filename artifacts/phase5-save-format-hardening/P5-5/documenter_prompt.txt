@@ -1,0 +1,70 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validate the P5-5 versioned save-file header (kSaveMagic/kSaveFormatVersion) added to FGame::save/load, the fixed-width little-endian encoding of FGame's own counts/IDs (m_currentPlayer + player count), the aggregated FGame::load() error propagation across every header field, m_universe->load(), and each player->load() (reported via IStrategicUI::showMessage with a std::cout fallback and a nonzero return on any failure), and the FMainFrame::onOpen() abort/preserve/report loader UX that tears a freshly-created failed game back down via resetGame() without enabling turn/menu items.
+
+Acceptance criteria validated:
+- FGame::save emits the magic + version header before any game data; a valid current-version full-game save->load round-trip restores round, current player, retreat condition, loss counters, the map, and all players (with fleets/ships). Verified by testSaveEmitsMagicAndVersionHeaderBeforeGameData (decodes first 8 bytes LE == kSaveMagic then kSaveFormatVersion) and testFullRoundTripRestoresRoundCurrentPlayerRetreatConditionLossCountersMapAndPlayers (init->mutate->save->load into a fresh singleton restores round/current player/player+fleet+ship identity; byte-for-byte re-save equality proves retreat condition, loss counters, and map data with no public getters round-trip faithfully).
+- FGame::load returns nonzero and reports via the installed IStrategicUI (verifiable with a mock IStrategicUI) for each of: wrong magic, unsupported version, truncated stream, and unknown factory type -- leaving no partially-constructed game as the live singleton. Verified by testLoadWrongMagicReturnsNonzeroAndReportsExactlyOnce, testLoadUnsupportedVersionReturnsNonzeroAndReportsExactlyOnce, testLoadTruncatedStreamReturnsNonzeroAndReportsExactlyOnce, and testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExactlyOnce -- each corrupts a real save stream and asserts rc != 0 with exactly one showMessage() call on a counting mock IStrategicUI.
+- FMainFrame::onOpen does not enable turn/menu items and returns to the no-game state when load fails or the file cannot be opened; the success path is unchanged. Verified by StrategicGuiLiveTest::testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled (corrupt file -> onOpen() -> every game-dependent menu item stays disabled, proving resetGame() ran and no items were enabled); the pre-existing testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState continues to pass, confirming the success path is unchanged.
+- FGame header counts/IDs are fixed-width little-endian uint32_t. Verified via the LE byte-decode assertions in testSaveEmitsMagicAndVersionHeaderBeforeGameData plus the byte-for-byte re-save equality in the round-trip test (the header and m_currentPlayer/player-count fields survive a portable-format round trip).
+- make check is green across all three suites (SSWTests 289, TacticalTests 253, GuiTests 82), exit code 0.
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/phase5-P5-5-tester-20260717 on branch phase5-P5-5-tester-20260717 (base branch phase5).
+- Implementer commit d9c268da (source) + 7380fa3d (implementer artifacts); tester test commit a68aee3f layered on top.
+- Comparison base for the implementation diff: the parent of d9c268da (implementer's pre-change tree).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/strategic/FGame.h (implementer: save/load doc updates, new private reportLoadError() declaration)
+- src/strategic/FGame.cpp (implementer: writeU32 header + fixed-width counts/IDs in save(); magic/version validation, aggregated per-field/nested-load error checks, reportLoadError() definition in load())
+- src/FMainFrame.cpp (implementer: onOpen() is_open()/load()-return-code guard wrapping the post-load menu-enable block in an else branch, resetGame() on failure)
+- include/FMainFrame.h (implementer: onOpen() doc update)
+- tests/strategic/FGameTest.cpp (implementer: readLossCounters() helper skips the new 8-byte magic+version header; no assertions changed)
+- tests/strategic/FGameSaveFormatTest.cpp (tester: new behavioral coverage, 7 cases)
+- tests/strategic/FGameSaveFormatTest.h (tester: new fixture header)
+- tests/SSWTests.cpp (tester: registers FGameSaveFormatTest)
+- tests/gui/StrategicGuiLiveTest.cpp (tester: new failed-load onOpen test + writeCorruptSaveFile helper)
+- tests/gui/StrategicGuiLiveTest.h (tester: new test declaration in the suite)
+
+Test commit:
+- a68aee3f22d732dfd99f3f4a65f3061470963dcf
+
+Commands executed:
+- cd src/strategic && make (module library build)
+- cd tests && make (top-level SSWTests + libs build)
+- cd tests && ./SSWTests (289 tests OK)
+- cd tests/gui && make && xvfb-run -a ./GuiTests (82 tests OK)
+- make check (repo root; SSWTests 289, TacticalTests 253, GuiTests 82; exit code 0)
+
+Final test outcomes:
+- All P5-5 acceptance criteria are backed by behavioral tests that construct real FGame state, drive real save()/load() byte streams and the real FMainFrame::onOpen() flow, and assert on observed runtime results (return codes, mutated singleton state, mock IStrategicUI showMessage() call counts, and live wx menu-item enabled state).
+- SSWTests: 289 tests OK (up from 282; +7 FGameSaveFormatTest cases).
+- TacticalTests: 253 tests OK (unchanged).
+- GuiTests: 82 tests OK (up from 81; +1 onOpen failed-load case).
+- make check exit code 0 across all three suites.
+- Test-authoring note: the truncated-stream case cuts right after the 8-byte header so it exercises only FGame::load()'s own explicitly-checked header reads. A deeper cut lands in FPlayer::load()'s fleet loop, which does NOT check FFleet::load()'s return value (a pre-existing gap outside P5-5's file list) -- a latent robustness gap the Documenter/Verifier may wish to note but not a P5-5 defect.
+- Test-authoring note: the GUI failed-load frame is deliberately not shown because a spontaneous FGamePanel repaint during WXStrategicUI::showMessage()'s nested modal loop dereferences a still-NULL FMap singleton (FGamePanel::onPaint -> WXGameDisplay::draw -> WXMapDisplay::getScale -> FMap::getMaxSize() with this=0x0) and crashes the process. That is a pre-existing FGamePanel/WXMapDisplay null-map paint fragility unrelated to P5-5 and outside its file list; it is avoided (not fixed) in the test.
+
+Documentation context:
+- AGENTS.md already documents the versioned save-file header (FSaveFormat.h kSaveMagic/kSaveFormatVersion) and the fixed-width writeU32/readU32 convention from P5-1; P5-5 extends that convention to FGame's own header and adds the load-error propagation + onOpen loader UX.
+- The strategic core-tests bullet in AGENTS.md (tests/core/* / tests/strategic/*) may warrant a mention of the new FGameSaveFormatTest fixture and its malformed-input load-rejection coverage.
+- The FMainFrame::onOpen() abort/preserve/report behavior on a failed/unopenable load (reuse of resetGame(), no turn/menu items enabled) is now behaviorally confirmed and is a candidate for the Contributor Notes / strategic loader description.
+- Confirmed behavior changes: FGame::load() now returns nonzero and reports via IStrategicUI (or std::cout fallback) on wrong magic, unsupported version, truncated stream, or unknown factory type, and leaves no partial game as the live singleton; FGame::save() emits kSaveMagic + kSaveFormatVersion before any game data and encodes m_currentPlayer + player count as fixed-width LE uint32_t.
+
+Plan and diff context:
+- Plan: plans/phase5-save-format-hardening-plan.md (subtask P5-5).
+- Shared artifact directory: artifacts/phase5-save-format-hardening/P5-5.
+- Comparison base for documentation diff review: implementer source commit d9c268da and tester test commit a68aee3f, both on branch phase5-P5-5-tester-20260717 (assumption: compare against the merge base with phase5).
+- Prior phase-5 subtask artifacts (P5-1..P5-4) under artifacts/phase5-save-format-hardening/ are the format/style reference for the documenter's deliverables.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-5
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

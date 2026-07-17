@@ -1,0 +1,33 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-5/tester_report.md",
+    "artifacts/phase5-save-format-hardening/P5-5/tester_result.json",
+    "artifacts/phase5-save-format-hardening/P5-5/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-P5-5-tester-20260717",
+  "commands_run": [
+    "cd src/strategic && make (module library build)",
+    "cd tests && make (top-level SSWTests + libs build)",
+    "cd tests && ./SSWTests (289 tests OK)",
+    "cd tests/gui && make && xvfb-run -a ./GuiTests (82 tests OK)",
+    "make check (repo root; SSWTests 289, TacticalTests 253, GuiTests 82; exit code 0)"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "82 passed, 0 failed",
+    "SSWTests": "289 passed, 0 failed",
+    "TacticalTests": "253 passed, 0 failed",
+    "make_check_exit_code": "0"
+  },
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "P5-5",
+  "test_commit_hash": "a68aee3f22d732dfd99f3f4a65f3061470963dcf",
+  "test_files_changed": [
+    "tests/strategic/FGameSaveFormatTest.cpp (new)",
+    "tests/strategic/FGameSaveFormatTest.h (new)",
+    "tests/SSWTests.cpp (registers FGameSaveFormatTest)",
+    "tests/gui/StrategicGuiLiveTest.cpp (new failed-load onOpen test + writeCorruptSaveFile helper)",
+    "tests/gui/StrategicGuiLiveTest.h (new test declaration)"
+  ],
+  "unmet_acceptance_criteria": []
+}
