@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-4/verifier_report.md",
+    "artifacts/phase5-save-format-hardening/P5-4/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-P5-4-verifier-20260717",
+  "documentation_accuracy_summary": [
+    "SUFFICIENT and unchanged, confirmed correct to leave unchanged. `git diff d0bb61a0..f3e36e47 -- AGENTS.md doc/` produces no output: neither AGENTS.md nor doc/synthesized-roadmap.md was touched by this remediation pass, and none needed to be -- the rewritten test only makes an already-implemented, already-documented H3 guard behavior verifiably non-vacuous; it does not change what is true about FSystem::load's behavior, the wire format, or any acceptance-criteria outcome that the pass-1 Documenter already recorded (commit 86f86935).",
+    "The pass-1 Verifier's documentation accuracy assessment (AGENTS.md's FSaveFormat.h migration-status bullet, doc/synthesized-roadmap.md's H3/pointer-mask narrative-finding annotation, and the six changed FSystem/FJumpRoute/FMap files' Doxygen headers) still applies unmodified and was spot-checked again in this pass (src/strategic/FSystem.cpp:1-8 file header and the H3 inline comment at lines 112-118 remain accurate and were re-read directly during the guard-disable/restore verification).",
+    "The plan's guidance that the roadmap/deferred-tasks 'RESOLVED' mark for H3 is deferred to P5-5 (phase aggregation) is correctly still not added in this pass.",
+    "doc/rules/tactical_operations_manual.md confirmed untouched (non-negotiable constraint respected; not in scope for this test-only strategic-module remediation).",
+    "The rewritten test carries an in-source comment block (tests/strategic/FSystemTest.cpp:108-130) explaining why the hand-crafted buffer is required for non-vacuity and stating the guard-disable/restore proof, which is accurate (independently reproduced in this pass) and adequate operational guidance for future maintainers."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "pass-2 (final, remediation)",
+  "status": "success",
+  "task_id": "P5-4",
+  "test_sufficiency_summary": [
+    "SUFFICIENT. The pass-1 BLOCKING finding is confirmed genuinely resolved by an INDEPENDENT re-run of the guard-disable check performed directly in this pass (not merely re-reading the Tester's/Security's claims): the H3 guard block (src/strategic/FSystem.cpp:116-118, the `if (m_ID > static_cast<unsigned int>(m_nextID)) { m_nextID = static_cast<int>(m_ID); }` block) was temporarily commented out, src/strategic and tests/ were rebuilt, and ./SSWTests from tests/ produced exactly ONE failure among all 269 tests: FrontierTests::FSystemTest::testLoadAdvancesNextIdPastLoadedID at line 153, assertion `s3.getID() > 5000000u` failed. The guard was then restored verbatim (confirmed via `git diff src/strategic/FSystem.cpp` producing an empty diff), src/strategic and tests/ were rebuilt again, and ./SSWTests reported OK (269 tests, 0 failures), including the target test. TacticalTests (253 OK) was also re-run after guard restoration to confirm no incidental disruption from the rebuild cycle.",
+    "Verified the hand-crafted wire buffer's field order and byte layout directly against the real implementation (not by trusting the test's comments): read src/strategic/FSystem.cpp:72-90 (save()) and confirmed the field order is ID(writeU32) -> name(writeString: writeU32 length + bytes) -> owner(writeU32) -> coords(write, float[3] = 12 bytes) -> planet count(writeU32), and read src/core/FPObject.cpp:44-56 (writeString/readString) confirming a zero-length name encodes as a single 4-byte zero writeU32 field with no trailing bytes -- exactly matching the test's appendU32LE(buf, 0u) for the name-length field. The test's hand-crafted buffer is therefore a faithful, non-assumption-laden replica of what FSystem::load actually consumes.",
+    "Independently re-ran the full three-suite matrix synchronously from a clean guard-restored state: SSWTests 269 OK (0 failures), TacticalTests 253 OK (0 failures), GuiTests 81 OK (0 failures, under xvfb-run) -- all three counts match the Tester's, Documenter's, and Security stage's reported totals exactly, with no discrepancy.",
+    "Confirmed via `git diff d0bb61a0..f3e36e47 -- src include` (empty output) and `git status` (clean) after the guard-disable/restore cycle that zero implementation source changed across this remediation pass and that no stray edits were left in the working tree.",
+    "The other 10 P5-4 behavioral tests (AC1 full-map round trip, AC2 parts 1-2 for IDs above 65535, AC3 unknown-system-ID abort, AC4 for FJumpRoute, remaining AC5 wire-width supplements, and the load()-truncation-propagation supplements for both FSystem and FJumpRoute) were left untouched by this remediation and are confirmed still passing as part of the full 269-test SSWTests run.",
+    "This satisfies AGENTS.md's mandatory Behavioral Verification policy for AC4-for-FSystem: the test now constructs a real object, drives load() on a real stream, and asserts an observed runtime result (a subsequently constructed object's ID) that provably depends on the guard under test actually firing -- not source-text or source-structure inspection."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
