@@ -32,9 +32,9 @@ class FSystem;
  * cache any wxImage state; icon identity is stored as a filename string and
  * retrieved via getIconName().
  *
- * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created:  Jan 14, 2005
- * @date Last Modified:  Mar 28, 2026
+ * @date Last Modified:  Jul 17, 2026
  */
 class FFleet : public Frontier::FPObject {
 public:
@@ -233,13 +233,16 @@ public:
    * @brief Method to save the fleet data
    *
    * This method implements the FPObject base class virtual write method to
-   * save all the fleet's data
+   * save all the fleet's data. The fleet ID, owner ID, location/destination/
+   * jump-route system IDs, and the ship-list count are written via the
+   * fixed-width little-endian writeU32() helper; each ship is delegated to
+   * its own save().
    *
    * @param os The output stream to write to
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Mar 06, 2008
-   * @date Last Modified:  Mar 14, 2008
+   * @date Last Modified:  Jul 17, 2026
    */
   const virtual int save(std::ostream &os) const;
 
@@ -248,16 +251,25 @@ public:
 	 *
 	 * This method is the inverse of the save method.  It reads the data for
 	 * the class from the designated input stream and reconstructs the fleet's
-	 * ships via createShip().  Legacy save files that encoded "no route" as 0
-	 * for m_jumpRouteID are normalized to the current NO_ROUTE sentinel on
-	 * load.  This method returns 0 if everything is okay and a positive
-	 * integer error code if there is a failure.
+	 * ships via createShip(). The fleet ID, owner ID, location/destination/
+	 * jump-route system IDs, and the ship-list count are read via the
+	 * fixed-width little-endian readU32() helper. After restoring the fleet
+	 * ID, the static m_nextID counter is advanced past it (H3) so a
+	 * freshly-constructed fleet never reuses an ID restored from a save file.
+	 * H4: the legacy normalization that rewrote a loaded m_jumpRouteID of 0 to
+	 * the NO_ROUTE sentinel has been removed -- jump route ID 0 is a valid,
+	 * distinct route ID and is now preserved exactly as saved; only the
+	 * distinguished NO_ROUTE sentinel value itself means "not on a route".
+	 * Each ship-list entry's type tag is resolved via createShip(); an
+	 * unknown/NULL type aborts the load by returning nonzero without
+	 * dereferencing the NULL result. This method returns 0 if everything is
+	 * okay and a positive integer error code if there is a failure.
 	 *
 	 * @param is The input stream to read from
 	 *
-	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Mar 24, 2026
+	 * @date Last Modified:  Jul 17, 2026
 	 */
 	virtual int load(std::istream &is);
 
