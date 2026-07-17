@@ -43,6 +43,11 @@ class FVehicleTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST( testDisastrousFireFallsBackToHullWhenNoBundledEffectCanApply );
 	CPPUNIT_TEST( testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload );
 	CPPUNIT_TEST( testLoadedVehicleSurvivesWeaponFireViaCurrentDefense );
+	CPPUNIT_TEST( testSerializeRoundTripsWeaponsDefensesAndState );
+	CPPUNIT_TEST( testLoadRestoresActiveDefenseSelectionAcrossSaveLoad );
+	CPPUNIT_TEST( testLoadAdvancesNextIDPastLoadedID );
+	CPPUNIT_TEST( testLoadReturnsNonzeroOnUnknownWeaponType );
+	CPPUNIT_TEST( testLoadReturnsNonzeroOnUnknownDefenseType );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -228,6 +233,65 @@ public:
 	 * @date Last Modified: Jul 11, 2026
 	 */
 	void testLoadedVehicleSurvivesWeaponFireViaCurrentDefense();
+
+	/**
+	 * @brief Verifies P5-2: a vehicle with multiple weapons and defenses
+	 * round-trips through save()->load() (via std::stringstream) with all
+	 * weapons (type/ammo/damage state), defenses (type/ammo/damage state),
+	 * and HP/MR/ADF/DCR/heading/speed/owner/flag state preserved exactly.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 17, 2026
+	 * @date Last Modified: Jul 17, 2026
+	 */
+	void testSerializeRoundTripsWeaponsDefensesAndState();
+
+	/**
+	 * @brief Verifies P5-2 H2: a vehicle saved with a non-default active
+	 * defense (Masking Screen raised via setCurrentDefense(...)) reloads with
+	 * the same defense reported by getCurrentDefense(), with the
+	 * masking-screen turn count and ammo state consistent (not re-applied or
+	 * reset) across the round trip.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 17, 2026
+	 * @date Last Modified: Jul 17, 2026
+	 */
+	void testLoadRestoresActiveDefenseSelectionAcrossSaveLoad();
+
+	/**
+	 * @brief Verifies P5-2 H3: after load() reads a vehicle with a large
+	 * m_ID, a subsequently default-constructed FVehicle receives an ID
+	 * strictly greater than the loaded ID (the static m_nextID counter is
+	 * advanced past any loaded ID).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 17, 2026
+	 * @date Last Modified: Jul 17, 2026
+	 */
+	void testLoadAdvancesNextIDPastLoadedID();
+
+	/**
+	 * @brief Verifies P5-2: FVehicle::load() returns nonzero (without a NULL
+	 * dereference/crash) when the wire stream encodes an unrecognized weapon
+	 * type tag that createWeapon(...) cannot resolve.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 17, 2026
+	 * @date Last Modified: Jul 17, 2026
+	 */
+	void testLoadReturnsNonzeroOnUnknownWeaponType();
+
+	/**
+	 * @brief Verifies P5-2: FVehicle::load() returns nonzero (without a NULL
+	 * dereference/crash) when the wire stream encodes an unrecognized defense
+	 * type tag that createDefense(...) cannot resolve.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 17, 2026
+	 * @date Last Modified: Jul 17, 2026
+	 */
+	void testLoadReturnsNonzeroOnUnknownDefenseType();
 };
 
 }

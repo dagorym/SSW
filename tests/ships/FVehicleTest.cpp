@@ -6,8 +6,11 @@
  */
 
 #include "FVehicleTest.h"
+#include "ships/FArmedStation.h"
 #include <cstdlib>
 #include <cstdio>
+#include <sstream>
+#include <cstdint>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -46,6 +49,13 @@ public:
 		FDefense *defense = createDefense(type);
 		m_defenses.push_back(defense);
 		m_currentDefense = defense;
+	}
+
+	// Appends a second (or later) live defense without clearing the existing
+	// list, so P5-2 round-trip coverage can exercise multi-defense save/load
+	// without disturbing whichever defense addDefense() already installed.
+	void appendDefense(FDefense::Defense type) {
+		m_defenses.push_back(createDefense(type));
 	}
 
 	int applyWeaponDamage(int *wList, FTacticalDamageResolution *result) {
@@ -638,6 +648,220 @@ void FVehicleTest::testLoadedVehicleSurvivesWeaponFireViaCurrentDefense() {
 	// Post-fire access confirms getCurrentDefense() still resolves to a live object.
 	CPPUNIT_ASSERT(target.getCurrentDefense() != NULL);
 	CPPUNIT_ASSERT(target.getCurrentDefense()->getType() == FDefense::NONE);
+}
+
+void FVehicleTest::testSerializeRoundTripsWeaponsDefensesAndState() {
+	// AC (P5-2/a): a vehicle with weapons and defenses round-trips through
+	// save->load with all weapons, defenses, and
+	// HP/MR/ADF/DCR/heading/speed/flags preserved.
+	FVehicleDamageHarness source;
+	source.configureStats(/*hp*/18, /*adf*/5, /*mr*/4, /*dcr*/14);
+
+	source.addWeapon(FWeapon::LB);
+	source.addWeapon(FWeapon::RB);
+	source.getWeapon(1)->setMaxAmmo(4);
+	source.getWeapon(1)->setCurrentAmmo(2);
+	source.getWeapon(1)->setDamageStatus(true);
+
+	source.addDefense(FDefense::RH);
+	source.appendDefense(FDefense::PS);
+	source.getDefense(1)->setMaxAmmo(5);
+	source.getDefense(1)->setCurrentAmmo(3);
+	source.getDefense(1)->setDamageStatus(true);
+
+	source.setSpeed(7);
+	source.setHeading(3);
+	source.setOwner(9);
+	source.setPowerSystemDamaged(true);
+	source.setCombatControlDamaged(true);
+	source.setOnFire(true);
+	source.setNavControlError(-1);
+
+	std::stringstream stream;
+	source.save(stream);
+
+	FVehicle target;
+	std::string type;
+	readString(stream, type);
+	int rc = target.load(stream);
+
+	CPPUNIT_ASSERT(rc == 0);
+
+	CPPUNIT_ASSERT(target.getWeaponCount() == 2);
+	CPPUNIT_ASSERT(target.getWeapon(0) != NULL);
+	CPPUNIT_ASSERT(target.getWeapon(0)->getType() == FWeapon::LB);
+	CPPUNIT_ASSERT(target.getWeapon(1) != NULL);
+	CPPUNIT_ASSERT(target.getWeapon(1)->getType() == FWeapon::RB);
+	CPPUNIT_ASSERT(target.getWeapon(1)->getMaxAmmo() == 4);
+	CPPUNIT_ASSERT(target.getWeapon(1)->getAmmo() == 2);
+	CPPUNIT_ASSERT(target.getWeapon(1)->isDamaged());
+	CPPUNIT_ASSERT(!target.getWeapon(0)->isDamaged());
+
+	CPPUNIT_ASSERT(target.getDefenseCount() == 2);
+	CPPUNIT_ASSERT(target.getDefense(0) != NULL);
+	CPPUNIT_ASSERT(target.getDefense(0)->getType() == FDefense::RH);
+	CPPUNIT_ASSERT(target.getDefense(1) != NULL);
+	CPPUNIT_ASSERT(target.getDefense(1)->getType() == FDefense::PS);
+	CPPUNIT_ASSERT(target.getDefense(1)->getMaxAmmo() == 5);
+	CPPUNIT_ASSERT(target.getDefense(1)->getAmmo() == 3);
+	CPPUNIT_ASSERT(target.getDefense(1)->isDamaged());
+
+	CPPUNIT_ASSERT(target.getHP() == 18);
+	CPPUNIT_ASSERT(target.getMR() == 4);
+	CPPUNIT_ASSERT(target.getADF() == 5);
+	CPPUNIT_ASSERT(target.getDCR() == 14);
+	CPPUNIT_ASSERT(target.getHeading() == 3);
+	CPPUNIT_ASSERT(target.getSpeed() == 7);
+	CPPUNIT_ASSERT(target.getOwner() == 9);
+	CPPUNIT_ASSERT(target.isPowerSystemDamaged());
+	CPPUNIT_ASSERT(target.isCombatControlDamaged());
+	CPPUNIT_ASSERT(target.isOnFire());
+	CPPUNIT_ASSERT(target.getNavControlError() == -1);
+}
+
+void FVehicleTest::testLoadRestoresActiveDefenseSelectionAcrossSaveLoad() {
+	// AC (P5-2/b, H2): a vehicle saved with a non-default active defense
+	// (Masking Screen raised) reloads with the same defense reported by
+	// getCurrentDefense(), with consistent masking-screen/turn-count/ammo
+	// state (not re-applied or reset by the reload).
+	FArmedStation station;
+	// Constructor loadout is [RH(0), MS(1), ICM(2)] with RH active by default.
+	CPPUNIT_ASSERT(station.getDefense(1) != NULL);
+	CPPUNIT_ASSERT(station.getDefense(1)->getType() == FDefense::MS);
+	CPPUNIT_ASSERT(station.getCurrentDefense()->getType() != FDefense::MS);
+
+	// Raising Masking Screen via the real public API decrements ammo (2->1)
+	// and, because FArmedStation's m_type matches the station check in
+	// setCurrentDefense(), sets the masking-screen turn count to 5.
+	station.setCurrentDefense(1);
+	CPPUNIT_ASSERT(station.getCurrentDefense()->getType() == FDefense::MS);
+	int ammoAfterRaise = station.getCurrentDefense()->getAmmo();
+	int turnCountAfterRaise = station.getMSTurnCount();
+	CPPUNIT_ASSERT(ammoAfterRaise == 1);
+	CPPUNIT_ASSERT(turnCountAfterRaise == 5);
+
+	std::stringstream stream;
+	station.save(stream);
+
+	FVehicle target;
+	std::string type;
+	readString(stream, type);
+	int rc = target.load(stream);
+	CPPUNIT_ASSERT(rc == 0);
+
+	CPPUNIT_ASSERT(target.getCurrentDefense() != NULL);
+	CPPUNIT_ASSERT(target.getCurrentDefense()->getType() == FDefense::MS);
+	// State must be restored verbatim from the wire, not re-applied via
+	// setCurrentDefense()'s side effects (which would double-decrement ammo
+	// to 0 or leave the turn count unset).
+	CPPUNIT_ASSERT(target.getCurrentDefense()->getAmmo() == ammoAfterRaise);
+	CPPUNIT_ASSERT(target.getMSTurnCount() == turnCountAfterRaise);
+}
+
+void FVehicleTest::testLoadAdvancesNextIDPastLoadedID() {
+	// AC (P5-2/c, H3): after loading a vehicle with a given m_ID, a newly
+	// constructed vehicle receives an ID strictly greater than every loaded
+	// ID. Use an ID far larger than any ID this test binary could plausibly
+	// have assigned so far so the assertion is not sensitive to test order.
+	const uint32_t loadedID = 5000000u;
+
+	std::stringstream stream;
+	writeString(stream, "TestVehicle");
+	writeU32(stream, loadedID);
+	writeString(stream, "Loaded Vessel");
+	writeString(stream, "icons/ufo.png");
+	write(stream, (unsigned int)0);   // currentMR
+	write(stream, (int)0);            // currentADF
+	write(stream, (int)0);            // currentHP
+	write(stream, (int)0);            // speed
+	write(stream, (int)0);            // heading
+	writeU32(stream, (uint32_t)0);    // owner
+	write(stream, (unsigned int)0);   // currentDCR
+	write(stream, (int)0);            // maskingScreenTurnCount
+	write(stream, false);             // combatControlDamaged
+	write(stream, false);             // onFire
+	write(stream, false);             // powerSystemDamaged
+	write(stream, (int)0);            // navError
+	writeU32(stream, (uint32_t)0);    // weapon count
+	writeU32(stream, (uint32_t)0);    // defense count
+	writeU32(stream, (uint32_t)0);    // active-defense index (defenses empty; falls back to fabricated FNone)
+
+	FVehicle target;
+	std::string type;
+	readString(stream, type); // strip the type string load() does not consume itself
+	int rc = target.load(stream);
+	CPPUNIT_ASSERT(rc == 0);
+	CPPUNIT_ASSERT(target.getID() == loadedID);
+
+	FVehicle freshlyConstructed;
+	CPPUNIT_ASSERT(freshlyConstructed.getID() > loadedID);
+}
+
+void FVehicleTest::testLoadReturnsNonzeroOnUnknownWeaponType() {
+	// AC (P5-2/d): FVehicle::load() returns nonzero (no NULL deref) on an
+	// unknown weapon type. Hand-craft a stream whose single weapon entry
+	// carries an out-of-range FWeapon::Weapon tag that createWeapon(...)
+	// cannot resolve (returns NULL).
+	std::stringstream stream;
+	writeString(stream, "TestVehicle");
+	writeU32(stream, (uint32_t)1);
+	writeString(stream, "Corrupt Weapon Vessel");
+	writeString(stream, "icons/ufo.png");
+	write(stream, (unsigned int)0);
+	write(stream, (int)0);
+	write(stream, (int)0);
+	write(stream, (int)0);
+	write(stream, (int)0);
+	writeU32(stream, (uint32_t)0);
+	write(stream, (unsigned int)0);
+	write(stream, (int)0);
+	write(stream, false);
+	write(stream, false);
+	write(stream, false);
+	write(stream, (int)0);
+	writeU32(stream, (uint32_t)1); // weapon count = 1
+	FWeapon::Weapon badWeaponType = (FWeapon::Weapon)9999;
+	write(stream, badWeaponType);  // corrupt weapon type tag; no further weapon payload needed
+
+	FVehicle target;
+	std::string type;
+	readString(stream, type); // strip the type string load() does not consume itself
+	int rc = target.load(stream);
+	CPPUNIT_ASSERT(rc != 0);
+}
+
+void FVehicleTest::testLoadReturnsNonzeroOnUnknownDefenseType() {
+	// AC (P5-2/d): FVehicle::load() returns nonzero (no NULL deref) on an
+	// unknown defense type. Hand-craft a stream with zero weapons and a
+	// single defense entry carrying an out-of-range FDefense::Defense tag
+	// that createDefense(...) cannot resolve (returns NULL).
+	std::stringstream stream;
+	writeString(stream, "TestVehicle");
+	writeU32(stream, (uint32_t)1);
+	writeString(stream, "Corrupt Defense Vessel");
+	writeString(stream, "icons/ufo.png");
+	write(stream, (unsigned int)0);
+	write(stream, (int)0);
+	write(stream, (int)0);
+	write(stream, (int)0);
+	write(stream, (int)0);
+	writeU32(stream, (uint32_t)0);
+	write(stream, (unsigned int)0);
+	write(stream, (int)0);
+	write(stream, false);
+	write(stream, false);
+	write(stream, false);
+	write(stream, (int)0);
+	writeU32(stream, (uint32_t)0);  // weapon count = 0
+	writeU32(stream, (uint32_t)1);  // defense count = 1
+	FDefense::Defense badDefenseType = (FDefense::Defense)9999;
+	write(stream, badDefenseType);  // corrupt defense type tag; no further defense payload needed
+
+	FVehicle target;
+	std::string type;
+	readString(stream, type); // strip the type string load() does not consume itself
+	int rc = target.load(stream);
+	CPPUNIT_ASSERT(rc != 0);
 }
 
 const int FVehicleTest::save(std::ostream &os) const {return 0;}
