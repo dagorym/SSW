@@ -354,6 +354,12 @@ private:
   /// ~FPlayer(); see addDestroyedShip() for the full ownership contract.
   /// Serialized by save()/load() (F2-serialization) using the same
   /// type-tag + createShip() pattern as m_unattached and fleet ships.
+  /// Deliberately has no public getter (unlike m_unattached/m_fleets, see
+  /// getShipList()/getFleetList()) since FPlayer is meant to remain its sole
+  /// owner and accessor; consequently its save/load round trip cannot be
+  /// asserted directly against a fetched list and is instead verified by
+  /// re-save byte-equality against the original stream (see
+  /// FPlayerTest::testFullRoundTripPreservesUnattachedFleetsAndDestroyedShips).
   VehicleList m_destroyed;
   /// counter for number of instances of this class
   static unsigned int m_classCount;
