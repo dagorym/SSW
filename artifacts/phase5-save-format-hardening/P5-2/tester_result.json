@@ -1,0 +1,28 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-2/tester_report.md",
+    "artifacts/phase5-save-format-hardening/P5-2/tester_result.json",
+    "artifacts/phase5-save-format-hardening/P5-2/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-P5-2-tester-20260717",
+  "commands_run": [
+    "make -C src/ships",
+    "make (top-level)",
+    "make check (repo root: SSWTests, TacticalTests, GuiTests under xvfb-run)",
+    "cd tests && ./SSWTests"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "81 passed / 81 total",
+    "SSWTests": "263 passed / 263 total",
+    "TacticalTests": "253 passed / 253 total"
+  },
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P5-2",
+  "test_commit_hash": "46f81017747d8f651d698f4cc55ca7eee36bc831",
+  "test_files_changed": [
+    "tests/ships/FVehicleTest.cpp",
+    "tests/ships/FVehicleTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}

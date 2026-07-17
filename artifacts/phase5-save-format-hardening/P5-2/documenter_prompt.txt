@@ -1,0 +1,58 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Added behavioral CppUnit coverage in tests/ships/FVehicleTest.cpp/.h for the P5-2 FVehicle save/load wire hardening: fixed-width uint32 IDs/counts, H2 active-defense persistence across save/load, H3 next-ID advance past a loaded ID, and nonzero-return behavior on unknown/corrupt weapon or defense wire type tags (no NULL deref).
+
+Acceptance criteria validated:
+- A vehicle with weapons and defenses round-trips through save->load with all weapons, defenses, and HP/MR/ADF/DCR/heading/speed/flags preserved -- testSerializeRoundTripsWeaponsDefensesAndState.
+- A vehicle saved with a non-default active defense (Masking Screen raised) reloads with the same defense reported by getCurrentDefense(), with consistent masking-screen/turn-count/ammo state -- testLoadRestoresActiveDefenseSelectionAcrossSaveLoad.
+- FVehicle::load returns nonzero (no NULL deref) on an unknown weapon or defense type -- testLoadReturnsNonzeroOnUnknownWeaponType, testLoadReturnsNonzeroOnUnknownDefenseType.
+- After loading a vehicle with a given m_ID, a newly constructed vehicle receives an ID strictly greater than every loaded ID -- testLoadAdvancesNextIDPastLoadedID.
+- Vehicle wire counts/IDs are fixed-width little-endian uint32_t -- covered structurally by the existing implementation and exercised behaviorally by every new round-trip/hand-crafted-stream test, which read/write via the same writeU32/readU32 helpers FVehicle::save/load use.
+- The build is clean; ship/weapon/defense modules remain wx-free -- make -C src/ships and the top-level make both completed without wx-config/WX_CXXFLAGS usage in those Makefiles and without warnings/errors.
+
+Implementation branch or worktree context:
+- Branch: phase5-P5-2-tester-20260717 (worktree /home/tstephen/repos/worktrees/phase5-P5-2-tester-20260717), based on the P5-2 implementer commit eb930e4b 'P5-2: Harden FVehicle save/load wire layer (H2, H3, factory null-checks)'.
+- Comparison base: prior commit 1bb99cec (P5-1 Verifier PASS) / the P5-2 implementer_report.md and implementer_result.json already present under artifacts/phase5-save-format-hardening/P5-2/.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/ships/FVehicle.h
+- src/ships/FVehicle.cpp
+- doc/deferred-tasks.md
+- tests/ships/FVehicleTest.cpp
+- tests/ships/FVehicleTest.h
+
+Test commit:
+- 46f81017747d8f651d698f4cc55ca7eee36bc831
+
+Commands executed:
+- make -C src/ships
+- make (top-level)
+- make check (repo root: SSWTests, TacticalTests, GuiTests under xvfb-run)
+- cd tests && ./SSWTests
+
+Final test outcomes:
+- make -C src/ships: clean build, no warnings/errors.
+- Top-level make: clean full build of both executables plus all three test binaries, no warnings/errors related to changed files.
+- make check: SSWTests OK (263 tests), TacticalTests OK (253 tests), GuiTests OK (81 tests, xvfb-run) -- exit code 0.
+- New tests exercise: (a) full weapons+defenses+state round trip via std::stringstream save()->load(); (b) H2 -- FArmedStation raises Masking Screen via the real public setCurrentDefense(1) API, then save/load into a fresh FVehicle asserts getCurrentDefense()->getType()==FDefense::MS with consistent (not re-applied) ammo and masking-screen turn-count state; (c) H3 -- a hand-crafted stream carrying m_ID=5,000,000 is loaded, then a freshly default-constructed FVehicle is asserted to receive a strictly greater ID; (d) two tests hand-craft streams with an out-of-range FWeapon::Weapon and FDefense::Defense type tag respectively and assert FVehicle::load() returns nonzero without crashing.
+
+Documentation context:
+- doc/deferred-tasks.md already had the H2 entry removed by the Implementer per the P5-2 plan's Documentation Impact note; Documenter should confirm no other deferred-tasks entries reference the now-hardened FVehicle wire format.
+- FVehicle.h save()/load() Doxygen blocks were already updated by the Implementer to describe the fixed-width ID/count fields, H2 active-defense index, H3 next-ID advance, and factory null-check/abort contract; Documenter should verify these stay accurate against the final merged test coverage and check whether doc/DesignNotes.md or a save-format design doc needs a pointer to the new behavioral test coverage.
+- No changes were needed to FWeapon/FDefense save/load or their tests -- confirmed no wire-format gap there for this subtask.
+
+Plan and diff context:
+- Plan: plans/phase5-save-format-hardening-plan.md, subtask P5-2.
+- Diff base for review: compare this worktree branch against the P5-1 Verifier-passed commit 1bb99cec (or against master once P5-2 merges back), covering include/ships/FVehicle.h, src/ships/FVehicle.cpp, doc/deferred-tasks.md, tests/ships/FVehicleTest.cpp, tests/ships/FVehicleTest.h.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
