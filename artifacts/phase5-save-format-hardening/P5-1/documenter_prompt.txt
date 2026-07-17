@@ -1,0 +1,60 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Authored behavioral CppUnit coverage (tests/core/FPObjectSerializationTest.h/.cpp) for the P5-1 core wire-format serialization primitives: FPObject::writeU32/readU32, the hardened writeString/readString pair (64 KB kMaxSerializedStringBytes cap, embedded-NUL safety), the write<T>/read<T> templates, failed-stream error propagation, and the kSaveMagic/kSaveFormatVersion/kMaxSerializedStringBytes named constants in include/core/FSaveFormat.h. Implementation is on branch phase5-P5-1-implementer-20260717 (code commit 456c7929) and was not modified.
+
+Acceptance criteria validated:
+- readString returns nonzero and performs no allocation/payload read when the encoded length exceeds kMaxSerializedStringBytes (64 KB) or the stream is failed; verified behaviorally via stream-position (tellg) proof that trailing payload bytes are left unconsumed, plus failed-stream and truncated-payload cases.
+- A valid round-trip of a string containing an embedded '\0' reproduces the exact original bytes and length (size()==5, byte-for-byte match).
+- writeString/readString and writeU32/readU32 round-trip counts/lengths losslessly with explicit little-endian byte order, verified by inspecting the raw emitted bytes of a std::stringstream for both an arbitrary value and kSaveMagic.
+- write/read/writeString/readString (and writeU32/readU32) each return nonzero on a failed stream and 0 on success, covered for all six helpers.
+- The 64 KB cap and the magic/version values are named constants (kMaxSerializedStringBytes, kSaveFormatVersion, kSaveMagic): verified both structurally (direct value assertions) and behaviorally (their effect on wire encoding and cap enforcement) so the structural check only supplements behavioral coverage.
+
+Implementation branch or worktree context:
+- Implementer branch: phase5-P5-1-implementer-20260717, code commit 456c7929 (merged into this tester worktree/branch phase5-P5-1-tester-20260717).
+- Tester worktree: /home/tstephen/repos/worktrees/phase5-P5-1-tester-20260717
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/core/FSaveFormat.h (new, Implementer)
+- include/core/FPObject.h (Implementer)
+- src/core/FPObject.cpp (Implementer)
+- tests/core/FPObjectSerializationTest.h (new, Tester)
+- tests/core/FPObjectSerializationTest.cpp (new, Tester)
+- tests/SSWTests.cpp (Tester, registered new fixture)
+
+Test commit:
+- 483046f6
+
+Commands executed:
+- make -C src/core (clean build, no warnings; confirmed src/core/Makefile has no wx-config/WX_CXXFLAGS references)
+- cd tests && make (full top-level build, exit 0)
+- cd tests && ./SSWTests (run from tests/ so CORE_TEST_REPO_ROOT-relative fixtures resolve paths correctly)
+
+Final test outcomes:
+- SSWTests: OK (258 tests), exit code 0 -- includes 13 new FPObjectSerializationTest methods, all passing.
+- readString rejects >64KB length with nonzero return and demonstrably does not read the payload region: testReadStringRejectsOversizeLengthNoPayloadRead hand-crafts a 4-byte length prefix (131072, via writeU32) followed by 10 trailing payload bytes and asserts is.tellg()==4 after the rejected call, proving the 10 payload bytes were never consumed/read.
+- Embedded-NUL round trip verified: testWriteStringReadStringRoundTripEmbeddedNul writes std::string("ab\0cd",5), reads it back, and asserts size()==5 and byte-for-byte equality including the interior NUL.
+- Little-endian byte layout verified by inspecting raw stringstream bytes: testWriteU32LittleEndianByteLayout (0x12345678 -> bytes 0x78,0x56,0x34,0x12) and testWriteU32MagicByteLayout (kSaveMagic -> bytes 'S','S','W','1').
+- Boundary behavior verified: testReadStringBoundaryExactCapAllowed round-trips a full 65536-byte string (return 0); testReadStringBoundaryOneOverCapRejected hand-crafts a 65537 length prefix via writeU32 and asserts readString returns nonzero.
+- writeString oversize guard verified: testWriteStringOversizeGuardRejectsWrite writes a 65537-byte string, asserts nonzero return, and asserts the output stream buffer remains empty (nothing written, including the length prefix).
+- Failed-stream nonzero-return coverage for all six helpers (write<T>, read<T>, writeU32, readU32, writeString, readString) in testFailedStreamReturnsNonzeroForAllHelpers, using failbit-set ostreams, empty/exhausted istreams, and a truncated-payload istream.
+- Named constants verified behaviorally and structurally: kMaxSerializedStringBytes==65536, kSaveFormatVersion==1u, kSaveMagic==0x31575353u in testConstantsHaveExpectedValues, supplementing (not replacing) the behavioral magic-byte-layout and cap-boundary tests above.
+
+Documentation context:
+- This is the first subtask of the phase5-save-format-hardening plan (plans/phase5-save-format-hardening-plan.md) introducing the versioned, portable binary save-format primitives (kSaveMagic/kSaveFormatVersion header tag, 64 KB kMaxSerializedStringBytes cap, little-endian writeU32/readU32) that later P5-* subtasks will build on for FPObject::save/load call sites across the codebase.
+- No user-facing UsersGuide.md behavior changed yet; this subtask is purely the core serialization primitive layer plus its constants.
+
+Plan and diff context:
+- Plan path: plans/phase5-save-format-hardening-plan.md
+- Comparison base: diff phase5-P5-1-implementer-20260717 (and this tester branch) against the phase5 branch point / commit 33f0cb4b (last commit on phase5 before the P5-1 implementer/tester work began), or against master if a broader base is preferred -- label as an assumption since the exact Documenter comparison base was not specified upstream.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

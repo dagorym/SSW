@@ -1,0 +1,28 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-1/tester_report.md",
+    "artifacts/phase5-save-format-hardening/P5-1/tester_result.json",
+    "artifacts/phase5-save-format-hardening/P5-1/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-P5-1-tester-20260717",
+  "commands_run": [
+    "make -C src/core (clean build, no warnings; confirmed src/core/Makefile has no wx-config/WX_CXXFLAGS references)",
+    "cd tests && make (full top-level build, exit 0)",
+    "cd tests && ./SSWTests (run from tests/ so CORE_TEST_REPO_ROOT-relative fixtures resolve paths correctly)"
+  ],
+  "pass_fail_totals": {
+    "failed": 0,
+    "passed": 258,
+    "total": 258
+  },
+  "pass_label": null,
+  "status": "success",
+  "task_id": "P5-1",
+  "test_commit_hash": "483046f6",
+  "test_files_changed": [
+    "tests/core/FPObjectSerializationTest.h (new)",
+    "tests/core/FPObjectSerializationTest.cpp (new)",
+    "tests/SSWTests.cpp (registered new fixture)"
+  ],
+  "unmet_acceptance_criteria": []
+}
