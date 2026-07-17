@@ -7,6 +7,7 @@
 
 #include "FSystemTest.h"
 #include <cstdio>
+#include <sstream>
 
 namespace FrontierTests {
 using namespace Frontier;
@@ -83,6 +84,76 @@ void FSystemTest::testSerialize(){
 	CPPUNIT_ASSERT(s.getPlanetList().size() == s2.getPlanetList().size());
 	CPPUNIT_ASSERT(s2.getPlanet("Stephens's Rest") != NULL);
 	CPPUNIT_ASSERT(s2.getFleetList().size() == 0);
+}
+
+// P5-4 AC4: after loading a system, a subsequently constructed FSystem must
+// receive an ID strictly greater than every ID loaded so far (H3
+// non-colliding guard, respecting FSystem's pre-increment m_ID = ++m_nextID
+// allocation convention). Uses the real save()/load() round trip rather than
+// a hand-crafted stream since FSystem exposes no public ID setter.
+void FSystemTest::testLoadAdvancesNextIdPastLoadedID(){
+	FSystem s("High ID Star", 1, 2, 3, 0);
+
+	std::stringstream buf;
+	CPPUNIT_ASSERT(s.save(buf) == 0);
+
+	FSystem s2;
+	CPPUNIT_ASSERT(s2.load(buf) == 0);
+	unsigned int loadedID = s2.getID();
+	CPPUNIT_ASSERT(loadedID == s.getID());
+
+	// A freshly constructed FSystem must be allocated an ID strictly greater
+	// than the loaded one, proving m_nextID was advanced by load().
+	FSystem s3;
+	CPPUNIT_ASSERT(s3.getID() > loadedID);
+}
+
+// P5-4 AC5 (supplement): FSystem::save writes the ID as a fixed-width
+// little-endian uint32_t via writeU32, not the host's native
+// representation. This behaviorally inspects the raw bytes emitted at the
+// known ID offset (byte 0, since the ID is the first field written) rather
+// than relying on source-text inspection alone.
+void FSystemTest::testSaveWiresIdLittleEndian(){
+	FSystem s("LE Star", 0, 0, 0, 0);
+	unsigned int id = s.getID();
+
+	std::stringstream buf;
+	CPPUNIT_ASSERT(s.save(buf) == 0);
+	std::string data = buf.str();
+
+	CPPUNIT_ASSERT(data.size() >= 4);
+	unsigned char b0 = static_cast<unsigned char>(data[0]);
+	unsigned char b1 = static_cast<unsigned char>(data[1]);
+	unsigned char b2 = static_cast<unsigned char>(data[2]);
+	unsigned char b3 = static_cast<unsigned char>(data[3]);
+
+	CPPUNIT_ASSERT(b0 == (id & 0xFF));
+	CPPUNIT_ASSERT(b1 == ((id >> 8) & 0xFF));
+	CPPUNIT_ASSERT(b2 == ((id >> 16) & 0xFF));
+	CPPUNIT_ASSERT(b3 == ((id >> 24) & 0xFF));
+}
+
+// FSystem::load must propagate a stream failure (nonzero return) instead of
+// silently ignoring it. A stream truncated immediately after the owner
+// field (before the coordinate and planet-count fields) must cause load()
+// to fail rather than leave a half-populated FSystem silently accepted.
+void FSystemTest::testLoadReturnsNonzeroOnTruncatedStream(){
+	FSystem s("Truncated Star", 4, 5, 6, 2);
+
+	std::stringstream buf;
+	CPPUNIT_ASSERT(s.save(buf) == 0);
+	std::string full = buf.str();
+
+	// Keep only the ID (4 bytes), name length+bytes, and owner (4 bytes);
+	// drop the coordinate and planet-count fields entirely so load() runs
+	// out of stream data partway through.
+	CPPUNIT_ASSERT(full.size() > 16);
+	std::string truncated = full.substr(0, full.size() - 16);
+
+	std::stringstream truncBuf(truncated);
+	FSystem s2;
+	int rc = s2.load(truncBuf);
+	CPPUNIT_ASSERT(rc != 0);
 }
 
 }

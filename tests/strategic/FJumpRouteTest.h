@@ -24,6 +24,10 @@ class FJumpRouteTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testGetJumpTimeSpeed2 );
 	CPPUNIT_TEST( testGetJumpTimeSpeed3 );
 	CPPUNIT_TEST( testSerialize );
+	CPPUNIT_TEST( testLoadPreservesSystemIdAbove65535 );
+	CPPUNIT_TEST( testLoadAdvancesNextIdPastLoadedID );
+	CPPUNIT_TEST( testSaveWiresStartEndIdsLittleEndian );
+	CPPUNIT_TEST( testLoadReturnsNonzeroOnTruncatedStream );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -40,6 +44,10 @@ public:
 	void testGetJumpTimeSpeed2();
 	void testGetJumpTimeSpeed3();
 	void testSerialize();
+	void testLoadPreservesSystemIdAbove65535();
+	void testLoadAdvancesNextIdPastLoadedID();
+	void testSaveWiresStartEndIdsLittleEndian();
+	void testLoadReturnsNonzeroOnTruncatedStream();
 };
 
 }
