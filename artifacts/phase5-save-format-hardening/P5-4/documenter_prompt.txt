@@ -1,0 +1,67 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Authored behavioral test coverage for P5-4 (map/system/jump-route save-load hardening and the ID pointer-mask fix) in the save-format hardening phase, validating the implementation on branch phase5-P5-4-implementer-20260717 (code commit 89b069ab) which replaced the (FSystem*)-cast-plus-0x0000FFFFL-mask ID smuggling in FJumpRoute with real fixed-width writeU32/readU32 wire fields, made FSystem/FJumpRoute/FMap save()/load() use fixed-width little-endian counts/IDs, propagate nested load failures, and advance their static next-ID counters past loaded IDs.
+
+Acceptance criteria validated:
+- AC1: multi-system/multi-route map round-trips through save->load with every jump route's start/end resolved to the matching FSystem by name AND ID (not just non-NULL) -- FMapTest::testSerializeRoundTripAllJumpRoutesResolveByNameAndID, checked across every route in the full Frontier map
+- AC2 (part 1): FJumpRoute::load decodes start/end system IDs above 65535 with no 16-bit masking -- FJumpRouteTest::testLoadPreservesSystemIdAbove65535 (hand-crafted wire buffer, IDs 65537/131073, per repo-labeled assumption since FSystem exposes no public ID setter)
+- AC2 (part 2): FMap::load's getSystem(id) resolution path correctly resolves system IDs above 65535 end-to-end -- FMapTest::testLoadResolvesSystemIdAbove65535ViaHandCraftedStream (hand-crafted FMap wire buffer, system IDs 70005/131079)
+- AC3: FMap::load returns nonzero and leaves getJumpList() empty when a jump route references an unknown system ID -- FMapTest::testLoadRejectsJumpRouteWithUnknownSystemIdAndLeavesJumpListEmpty
+- AC4: newly constructed FSystem/FJumpRoute objects receive IDs strictly greater than every loaded ID, covering both classes' differing pre-increment/post-increment conventions directly -- FSystemTest::testLoadAdvancesNextIdPastLoadedID, FJumpRouteTest::testLoadAdvancesNextIdPastLoadedID
+- AC5 (supplement): map/system/jump-route wire counts/IDs are fixed-width little-endian uint32_t, verified by inspecting raw emitted bytes (not source-string matching) -- FSystemTest::testSaveWiresIdLittleEndian, FJumpRouteTest::testSaveWiresStartEndIdsLittleEndian, FMapTest::testSaveWiresMaxCoordAndCountsLittleEndian
+- Supplemental: load() propagates stream/nested failure (nonzero return) instead of ignoring it -- FSystemTest::testLoadReturnsNonzeroOnTruncatedStream, FJumpRouteTest::testLoadReturnsNonzeroOnTruncatedStream
+
+Implementation branch or worktree context:
+- Branch under test: phase5-P5-4-implementer-20260717 (code commit 89b069ab)
+- Tester worktree/branch: phase5-P5-4-tester-20260717
+- Modified-by-implementer files: include/strategic/FSystem.h, src/strategic/FSystem.cpp, include/strategic/FJumpRoute.h, src/strategic/FJumpRoute.cpp, include/strategic/FMap.h, src/strategic/FMap.cpp
+- No implementation code was modified by the Tester; only tests/strategic/*Test.h/.cpp were changed
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/strategic/FSystem.h
+- src/strategic/FSystem.cpp
+- include/strategic/FJumpRoute.h
+- src/strategic/FJumpRoute.cpp
+- include/strategic/FMap.h
+- src/strategic/FMap.cpp
+- tests/strategic/FSystemTest.h
+- tests/strategic/FSystemTest.cpp
+- tests/strategic/FJumpRouteTest.h
+- tests/strategic/FJumpRouteTest.cpp
+- tests/strategic/FMapTest.h
+- tests/strategic/FMapTest.cpp
+
+Test commit:
+- f2d4134f76dbc50eb325b2949b6ce418d6c65d4c
+
+Commands executed:
+- make -C src/strategic
+- cd tests && make && ./SSWTests
+- make check
+
+Final test outcomes:
+- src/strategic module builds wx-free (no wx-config/WX_CXXFLAGS in src/strategic/Makefile)
+- cd tests && make && ./SSWTests: OK (269 tests) -- 258 pre-existing + 11 new P5-4 behavioral tests, zero failures
+- make check from the worktree root: SSWTests OK (269 tests), TacticalTests OK (253 tests), GuiTests OK (81 tests) -- all green, no regressions
+- No implementation code was modified; only test files under tests/strategic/ were added to
+
+Documentation context:
+- Likely docs affected: none required updates (AGENTS.md already documents the save-format hardening constraints and test conventions; the fixed-width writeU32/readU32 helpers and FSaveFormat.h constants are already documented in-code and in AGENTS.md's Testing section)
+- Key confirmed behavior: FJumpRoute::load() now leaves m_start/m_end NULL and stores raw IDs in m_startSystemID/m_endSystemID; only FMap::load resolves them via getSystem(id)/setStart()/setEnd(), with a null-guard that aborts the load (nonzero, no push onto m_jumps) on an unknown system ID
+- Key confirmed behavior: FSystem uses pre-increment m_nextID advancement guard (m_ID > m_nextID) and FJumpRoute uses post-increment guard (m_ID >= m_nextID) after load(), matching their respective allocation conventions (++m_nextID vs m_nextID++)
+
+Plan and diff context:
+- Plan path: plans/phase5-save-format-hardening-plan.md
+- Base branch for diff/documentation context: phase5-P5-4-implementer-20260717 (code commit 89b069ab) compared against the phase5 coordination branch
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-4
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
