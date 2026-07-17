@@ -1,0 +1,58 @@
+Verifier Report
+
+Scope reviewed:
+- Combined P5-1 change chain reviewed on branch phase5-P5-1-verifier-20260717 (built on top of Implementer 456c7929, Tester 483046f6, Documenter e825cfe0, and Security c1126890, all present in branch history).
+- Implementer (456c7929): include/core/FSaveFormat.h (new) defines kSaveMagic/kSaveFormatVersion/kMaxSerializedStringBytes; include/core/FPObject.h/src/core/FPObject.cpp add FPObject::writeU32/readU32 fixed-width little-endian helpers, rewrite writeString/readString to use them with a cap-before-allocation guard and embedded-NUL-safe payload writes, and add stream-failure propagation to the write<T>/read<T> templates.
+- Tester (483046f6): new tests/core/FPObjectSerializationTest.h/.cpp (13 behavioral CppUnit methods via a test-local FPObjectSerializationHarness exposing the protected helpers) plus tests/SSWTests.cpp registration.
+- Documenter (e825cfe0): one AGENTS.md Contributor Notes bullet documenting the new include/core/FSaveFormat.h seam and current usage scope (FPObject only, pending P5-2..P5-5); no in-code Doxygen edits required (Implementer's headers already complete/accurate).
+- Security (c1126890): specialist review (required by plan for this untrusted-input-parsing subtask) -- artifacts/phase5-save-format-hardening/P5-1/security_report.md and security_result.json, outcome PASS, 0 blocking/warning findings, 3 informational NOTEs (readU32 unspecified-on-failure contract, single-string vs aggregate-allocation cap scope, minor double-buffer copy in readString) all judged non-defects and correctly scoped to later subtasks.
+- Independently re-verified: full repo-root `make all_clean` then `make` succeeded with zero warnings across all modules including src/core; `env --chdir=tests ./SSWTests` (equivalent to running from tests/ per instructions) produced OK (258 tests), 0 failures, including all 13 new FPObjectSerializationTest methods.
+
+Acceptance criteria / plan reference:
+- plans/phase5-save-format-hardening-plan.md, Section 5 P5-1 ('Core wire-format primitives & format constants', lines ~95-145) for scope/allowed-files/acceptance criteria; Section 2 (design decisions: clean break, fixed-width LE wire ints, robust helpers + boundary checks) and Section 7 (Security Notes) for the untrusted-input rationale that triggered the required Security stage.
+- Six acceptance criteria as restated in the Verifier handoff prompt (readString cap/failed-stream rejection with no payload read; embedded-NUL round-trip; little-endian byte-order proof for writeU32/kSaveMagic; nonzero-on-failure/zero-on-success for all six helpers; named constants verified both structurally and behaviorally; accurate Doxygen headers on the three touched/new files).
+
+Convention files considered:
+- AGENTS.md (Function Comments Doxygen policy; Module Boundary Rules -- core must stay wx-free; Single-Source-of-Truth Rule; Behavioral Verification Is Mandatory policy)
+- CLAUDE.md (pointer to AGENTS.md)
+- plans/phase5-save-format-hardening-plan.md (P5-1 section, allowed-files list, security-review-required flag)
+- doc/deferred-tasks.md and doc/synthesized-roadmap.md (H1 entry) -- reviewed for the Documenter's claim that these were intentionally left unmarked-resolved pending P5-2..P5-5
+
+Findings
+
+BLOCKING
+- None
+
+WARNING
+- None
+
+NOTE
+- doc/synthesized-roadmap.md:119 - The H1 roadmap row still describes FPObject.cpp as unconditionally returning 0 and readString as allocating an unchecked size -- both now literally false for the touched FPObject helpers after this subtask.
+  The Documenter's decision to leave H1/Part-III-item-5 unmarked-resolved is reasonable (the coordinated fix is not complete until P5-2..P5-5 convert other call sites and P5-5 wires up the magic/version header), and is explicitly labeled as a documented assumption rather than an omission. However the row's literal text is now stale for the specific FPObject.cpp behavior it cites. Cosmetic only -- does not affect correctness, and is squarely a call the Documenter is entitled to make mid-phase; recorded for awareness, not required to fix in this subtask.
+- tests/core/FPObjectSerializationTest.cpp:41-68 - Acceptance criterion 3 (raw-byte little-endian inspection for both writeString/readString and writeU32/readU32) is directly tested via raw-byte assertions only for writeU32 (testWriteU32LittleEndianByteLayout, testWriteU32MagicByteLayout); writeString's length-prefix encoding is proven only indirectly (round-trip correctness plus source review confirming writeString delegates to writeU32), not via a direct raw-byte assertion on a writeString-produced buffer.
+  Low risk: writeString's delegation to writeU32 (src/core/FPObject.cpp:49) is a one-line, directly-reviewed call, and the existing round-trip tests (testWriteStringReadStringRoundTripNormal/EmbeddedNul/Empty) already prove the encode/decode pair is self-consistent. A direct raw-byte assertion on a writeString buffer would close the gap fully but is not required to trust the current coverage.
+- src/core/FPObject.cpp:44-81 - writeString/readString's on-disk wire format changes for every existing caller, not just future ones: FSystem, FPlanet, FPlayer, FFleet, FVehicle, and other FPObject-derived save()/load() implementations already call the inherited writeString/readString directly (confirmed by grep), so this subtask's rewrite (4-byte writeU32-prefixed length instead of the old native-size_t length + c_str()-truncated write) changes their wire format immediately, ahead of the P5-2..P5-5 subtasks that will 'convert' those modules' count/ID fields.
+  Not a defect: this is exactly the plan's intended 'Clean break' design (plan Section 2, item 1 -- no legacy read path) and the coordinated multi-subtask rollout stays on dedicated non-master branches (per AGENTS.md Workflow Notes and the plan's coordination-base-branch rule) until P5-5 lands the magic/version gate that will cleanly reject stale-format files. Flagged only so the Coordinator/Planner keep this in mind when sequencing the merge to master -- P5-1 alone should not land on master ahead of P5-5, since intermediate states have no magic/version check to reject old saves cleanly (they would instead be silently misread). This is already implied by the plan but not explicitly called out anywhere in the P5-1 artifacts.
+
+Test sufficiency assessment:
+- SUFFICIENT and behavioral, not source-inspection-only. All 13 new FPObjectSerializationTest methods construct real std::stringstream/istringstream/ostringstream buffers, exercise the actual FPObject protected helpers through a concrete test-local subclass, and assert on observed runtime outcomes (return codes, decoded values, raw wire bytes, stream tellg position) -- satisfying the repository's mandatory behavioral-verification policy.
+- Criterion 1 (oversize/failed-stream rejection, no payload read): testReadStringRejectsOversizeLengthNoPayloadRead hand-crafts a 131072-byte length prefix followed by only 10 payload bytes and proves via tellg()==4 that no payload bytes were consumed; testReadStringBoundaryOneOverCapRejected and testFailedStreamReturnsNonzeroForAllHelpers (empty stream, truncated payload) round out failure-path coverage.
+- Criterion 2 (embedded-NUL round-trip): testWriteStringReadStringRoundTripEmbeddedNul constructs a 5-byte string with an embedded NUL, round-trips it, and asserts size()==5 plus byte-for-byte equality, directly falsifying the old c_str()-truncation bug.
+- Criterion 3 (little-endian byte order): testWriteU32LittleEndianByteLayout and testWriteU32MagicByteLayout inspect the raw bytes of a std::stringstream for an arbitrary value (0x12345678) and kSaveMagic respectively. writeString's own length-prefix byte order is covered indirectly (round-trip plus source-level delegation to writeU32) rather than by a direct raw-byte assertion -- see NOTE above.
+- Criterion 4 (nonzero-on-failure/zero-on-success for all six helpers): testFailedStreamReturnsNonzeroForAllHelpers explicitly drives write<T>, read<T>, writeU32, readU32, writeString, and readString each into a failure path and asserts nonzero; every other round-trip test asserts 0 on the corresponding success path.
+- Criterion 5 (named constants, structural + behavioral): testConstantsHaveExpectedValues pins the three constant values structurally; testReadStringBoundaryExactCapAllowed/OneOverCapRejected and testWriteStringOversizeGuardRejectsWrite prove the cap's runtime effect; testWriteU32MagicByteLayout proves kSaveMagic's wire effect -- structural checks correctly supplement, not substitute for, behavioral coverage.
+- Criterion 6 (Doxygen headers): not a test-suite concern; verified directly by reading the three touched/new files (see Documentation accuracy assessment).
+- Independently rebuilt from clean (`make all_clean` then `make`, zero warnings) and reran the full suite from tests/ per the completion-gate instructions: OK (258 tests), 0 failures -- consistent with the Tester's and Security stage's reported 258/258 (the Security stage's report of '9 failures' was explicitly attributed to running from the wrong cwd, not a real regression, and did not reproduce here).
+
+Documentation accuracy assessment:
+- In-code Doxygen: accurate and complete. include/core/FSaveFormat.h has a full file-header block plus per-constant blocks explaining the magic/version/cap rationale; include/core/FPObject.h's writeU32/readU32/writeString/readString/write<T>/read<T> blocks accurately describe the new cap-before-allocation guarantee, nonzero-on-failure contract, little-endian rationale, and embedded-NUL fix, each with correct @author (Tom Stephens retained, Claude Sonnet 5 (medium) added) and @date Created/Last Modified fields per repo convention; src/core/FPObject.cpp's file header was correctly updated (author appended, Last Modified bumped).
+- AGENTS.md Contributor Notes bullet is accurate as scoped: its 'only FPObject itself uses these primitives' claim reads in context as being about the new writeU32/readU32 helpers specifically (correct -- no other module calls them directly), and its statement that strategic/ships/weapons/defenses call sites still use the legacy write<T>/read<T> templates for counts/IDs is also correct. It does not claim writeString/readString themselves are unused elsewhere, which is important because they are NOT new exposure -- FSystem/FPlanet/FPlayer/FFleet/FVehicle already call the inherited writeString/readString, so this subtask's wire-format rewrite takes effect for those callers immediately (see NOTE finding on src/core/FPObject.cpp) rather than only once P5-2..P5-5 land; this is plan-sanctioned (clean-break design, non-master coordination branches) rather than a documentation defect, but is worth the Coordinator's attention when merging.
+- doc/deferred-tasks.md and doc/synthesized-roadmap.md's H1 entry were left unmarked-resolved, which is a defensible documented assumption given the plan's explicit multi-subtask sequencing (P5-5 is where the magic/version header is actually written/validated at the FGame::save/load boundary and old files become cleanly rejected); the H1 row's literal per-line description is now slightly stale for the FPObject.cpp behavior it cites -- see NOTE finding, not blocking.
+- No edits to doc/rules/tactical_operations_manual.md (non-negotiable constraint respected); no UsersGuide.md change, correctly deferred since no user-facing behavior changed yet (save files still use the old wire format end-to-end until P5-5 lands the magic/version gate).
+
+Artifacts written:
+- artifacts/phase5-save-format-hardening/P5-1/verifier_report.md
+- artifacts/phase5-save-format-hardening/P5-1/verifier_result.json
+
+Verdict:
+- PASS
