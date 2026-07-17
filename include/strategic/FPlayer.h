@@ -34,7 +34,7 @@ namespace Frontier
  *
  * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created:  Jan 17, 2005
- * @date Last Modified:  Jul 11, 2026
+ * @date Last Modified:  Jul 17, 2026
  */
 class FPlayer : public Frontier::FPObject
 {
@@ -193,9 +193,10 @@ public:
      * unattached list that previously held it (without deleting it -- see
      * FFleet::removeShip()) before calling this method, so the ship is
      * referenced only by m_destroyed afterward. Do not retain or free the
-     * pointer elsewhere after calling this method. m_destroyed is not
-     * currently serialized by save()/load(); that is deferred (see
-     * doc/deferred-tasks.md, item F2-serialization).
+     * pointer elsewhere after calling this method. m_destroyed is serialized
+     * by save()/load() using the same type-tag + createShip() + FVehicle::load()
+     * pattern as m_unattached and fleet ships (F2-serialization); the list is
+     * persisted and restored but not yet consumed by any rule.
      *
      * If there is a problem adding the ship to the fleet the method will
      * return a non zero error code.  Otherwise it will return a 0.
@@ -205,7 +206,7 @@ public:
      *
      * @author Tom Stephens, Claude Sonnet 5 (medium)
      * @date Created:  May 30, 2008
-     * @date Last Modified:  Jul 11, 2026
+     * @date Last Modified:  Jul 17, 2026
      */
     int addDestroyedShip( FVehicle * ship );
 
@@ -268,13 +269,15 @@ public:
    * @brief Method to save the player data
    *
    * This method implements the FPObject base class virtual write method to
-   * save all the player's data
+   * save all the player's data. Counts (unattached/fleet/destroyed-ship list
+   * sizes) and the player ID are written via the fixed-width little-endian
+   * writeU32() helper; each ship/fleet is delegated to its own save().
    *
    * @param os The output stream to write to
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Mar 05, 2008
-   * @date Last Modified:  Mar 05, 2008
+   * @date Last Modified:  Jul 17, 2026
    */
   const virtual int save(std::ostream &os) const;
 
@@ -283,17 +286,23 @@ public:
 	 *
 	 * This method is the inverse of the save method.  It reads the data for
 	 * the class from the designated input stream, restoring the player ID,
-	 * name, fleet icon file name, unattached ship list, and fleet list.
-	 * No image loading is performed during deserialization; icon images are
-	 * resolved lazily at render time.
+	 * name, fleet icon file name, unattached ship list, fleet list, and
+	 * destroyed-ship list (F2-serialization). No image loading is performed
+	 * during deserialization; icon images are resolved lazily at render time.
+	 * Counts and the player ID are read via the fixed-width little-endian
+	 * readU32() helper. After restoring the player ID, the static m_nextID
+	 * counter is advanced past it (H3) so a freshly-constructed FPlayer never
+	 * reuses an ID restored from a save file. Each ship-list entry's type tag
+	 * is resolved via createShip(); an unknown/NULL type aborts the load by
+	 * returning nonzero without dereferencing the NULL result.
 	 * This method returns 0 if everything is okay and a positive integer
 	 * error code if there is a failure.
 	 *
 	 * @param is The input stream to read from
 	 *
-	 * @author Tom Stephens, gpt-5.3-codex (medium)
+	 * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Mar 27, 2026
+	 * @date Last Modified:  Jul 17, 2026
 	 */
 	virtual int load(std::istream &is);
 
@@ -343,8 +352,14 @@ private:
   /// List of destroyed ships. FPlayer owns every ship in this list once it
   /// has been passed to addDestroyedShip() and frees them all in
   /// ~FPlayer(); see addDestroyedShip() for the full ownership contract.
-  /// Not currently serialized by save()/load() (deferred; see
-  /// doc/deferred-tasks.md, item F2-serialization).
+  /// Serialized by save()/load() (F2-serialization) using the same
+  /// type-tag + createShip() pattern as m_unattached and fleet ships.
+  /// Deliberately has no public getter (unlike m_unattached/m_fleets, see
+  /// getShipList()/getFleetList()) since FPlayer is meant to remain its sole
+  /// owner and accessor; consequently its save/load round trip cannot be
+  /// asserted directly against a fetched list and is instead verified by
+  /// re-save byte-equality against the original stream (see
+  /// FPlayerTest::testFullRoundTripPreservesUnattachedFleetsAndDestroyedShips).
   VehicleList m_destroyed;
   /// counter for number of instances of this class
   static unsigned int m_classCount;

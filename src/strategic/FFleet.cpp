@@ -1,8 +1,9 @@
 /**
  * @file FFleet.cpp
  * @brief Implementation file for FFleet class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 12, 2005
+ * @date Last Modified:  Jul 17, 2026
  *
  */
 
@@ -115,16 +116,16 @@ int FFleet::decTransitTime(){
 }
 
 const int FFleet::save(std::ostream &os) const {
-	write(os,m_ID);
+	writeU32(os,(uint32_t)m_ID);
 	writeString(os,m_name);
-	write(os,m_owner);
-	write(os,m_location);
+	writeU32(os,(uint32_t)m_owner);
+	writeU32(os,(uint32_t)m_location);
 	write(os,m_inTransit);
-	write(os,m_destination);
+	writeU32(os,(uint32_t)m_destination);
 	write(os,m_transitTime);
 	write(os,m_jumpLength);
 	write(os,m_speed);
-	write(os,m_jumpRouteID);
+	writeU32(os,(uint32_t)m_jumpRouteID);
 	writeString(os,m_iconFile);
 	write(os,m_isMilitia);
 	writeString(os,m_home);
@@ -134,7 +135,7 @@ const int FFleet::save(std::ostream &os) const {
 	write(os,m_dx);
 	write(os,m_dy);
 //	write(os,m_garrison);
-	write(os,m_ships.size());
+	writeU32(os,(uint32_t)m_ships.size());
 	for (unsigned int i = 0; i < m_ships.size(); i++){
 		m_ships[i]->save(os);
 	}
@@ -142,18 +143,37 @@ const int FFleet::save(std::ostream &os) const {
 }
 
 int FFleet::load(std::istream &is){
-	read(is,m_ID);
+	uint32_t id = 0;
+	readU32(is,id);
+	m_ID = id;
+	// H3: advance the static next-ID counter past any loaded ID so a
+	// freshly-constructed fleet never reuses an ID restored from a save
+	// file. m_nextID is signed (int); compare/assign through an unsigned
+	// view of it to avoid a signed/unsigned comparison warning.
+	if (m_ID >= (unsigned int)m_nextID){
+		m_nextID = (int)(m_ID + 1);
+	}
 	readString(is, m_name);
-	read(is,m_owner);
-	read(is,m_location);
+	uint32_t owner = 0;
+	readU32(is,owner);
+	m_owner = owner;
+	uint32_t location = 0;
+	readU32(is,location);
+	m_location = location;
 	read(is,m_inTransit);
-	read(is,m_destination);
+	uint32_t destination = 0;
+	readU32(is,destination);
+	m_destination = destination;
 	read(is,m_transitTime);
 	read(is,m_jumpLength);
 	read(is,m_speed);
-	read(is,m_jumpRouteID);
-	// Normalize legacy saves that encoded "no route" as 0 to the current sentinel.
-	if (m_jumpRouteID == 0) m_jumpRouteID = NO_ROUTE;
+	uint32_t jumpRouteID = 0;
+	readU32(is,jumpRouteID);
+	m_jumpRouteID = jumpRouteID;
+	// H4: the legacy "route 0 means no route" normalization has been
+	// removed. Jump route ID 0 is a valid, distinct route ID and is now
+	// preserved exactly as saved; only the distinguished NO_ROUTE sentinel
+	// value means "not on a route".
 	readString(is,m_iconFile);
 	read(is,m_isMilitia);
 	readString(is,m_home);
@@ -163,12 +183,17 @@ int FFleet::load(std::istream &is){
 	read(is,m_dx);
 	read(is,m_dy);
 //	read(is,m_garrison);
-	size_t sCount;
-	read(is,sCount);
-	for(unsigned int i = 0; i < sCount; i++){
+	uint32_t sCount = 0;
+	readU32(is,sCount);
+	for(uint32_t i = 0; i < sCount; i++){
 		std::string type;
 		readString(is,type);
 		FVehicle *v = createShip(type);
+		if (v == NULL){
+			// unknown/corrupt ship type on the wire: abort the load rather
+			// than dereference a NULL factory result.
+			return 1;
+		}
 		v->load(is);
 		m_ships.push_back(v);
 	}

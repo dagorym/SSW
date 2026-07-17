@@ -1,0 +1,30 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-3/verifier_report.md",
+    "artifacts/phase5-save-format-hardening/P5-3/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-P5-3-verifier-20260717",
+  "documentation_accuracy_summary": [
+    "ACCURATE. doc/deferred-tasks.md's F2-serialization entry was fully removed (grep confirms zero remaining references to F2-serialization or the old 'm_destroyed... not currently serialized' language anywhere in the file), matching the plan's Documentation Impact instruction to mark it resolved/removed.",
+    "doc/synthesized-roadmap.md's H3 row was updated to record that the FFleet/FPlayer instances of the next-ID pattern are now resolved (citing FFleetTest::testLoadAdvancesNextIDPastLoadedID and FPlayerTest::testLoadAdvancesNextIDPastLoadedID) while correctly leaving the FSystem/FJumpRoute instances open and attributed to P5-4. The H4 row was changed to '-- RESOLVED (P5-3, artifacts/phase5-save-format-hardening/P5-3)' with an inline explanation matching the actual code change (removal of the `if (m_jumpRouteID == 0) m_jumpRouteID = NO_ROUTE;` line) and a citation of FFleetTest::testJumpRouteZeroPreservedAcrossSaveLoad. The F2 risk-register bullet under Part III was updated from 'Serialization remains intentionally deferred' to describe the actual implemented type-tag + createShip() + FVehicle::load() pattern.",
+    "include/strategic/FPlayer.h and include/strategic/FFleet.h Doxygen blocks (class headers, save()/load() method blocks, the m_destroyed member comment, and the addDestroyedShip() ownership-contract comment) were all updated to describe: the fixed-width writeU32/readU32 encoding of IDs/counts, the F2 m_destroyed persistence and why it has no public accessor (with a pointer to the specific re-save-byte-equality test that verifies its round trip indirectly, satisfying the task's explicit documentation-impact requirement on this point), the H3 next-ID advance, and (FFleet only, correctly) the H4 route-0 preservation and createShip() null-check/abort contract. Verified by direct reading of both headers' current diffed content -- no stale or contradictory statements remain (e.g. no leftover 'not currently serialized' language)."
+  ],
+  "note_finding_count": 2,
+  "pass_label": "P5-3 Player/Fleet save-load hardening -- Verifier",
+  "status": "complete",
+  "task_id": "P5-3",
+  "test_sufficiency_summary": [
+    "ADEQUATE and fully behavioral. Every acceptance criterion maps to a named test that constructs real FPlayer/FFleet/FVehicle objects, serializes through a real std::stringstream, calls the real save()/load() methods, and asserts on observed runtime state or return codes -- no criterion rests on source-text/source-structure inspection, satisfying AGENTS.md's Behavioral Verification Is Mandatory policy.",
+    "Full round trip (unattached + fleet-with-ship + non-empty m_destroyed, no double-free): FPlayerTest::testFullRoundTripPreservesUnattachedFleetsAndDestroyedShips asserts unattached/fleet state field-by-field via getShipList()/getFleetList(); m_destroyed (which has no public accessor by design) is proven via re-save byte-for-byte equality against the original stream -- a sound indirect behavioral proof since the destroyed-ship save() section is a pure function of the restored m_destroyed contents. No-double-free is covered by the pre-existing, unmodified FPlayerTest::testDestroyedShipFreedExactlyOnceOnPlayerDestruction and testSurvivingFleetShipNotDoubleDeletedByDestroyedList (confirmed still present and registered in the CPPUNIT_TEST_SUITE).",
+    "Jump-route-0 preservation (H4): FFleetTest::testJumpRouteZeroPreservedAcrossSaveLoad drives the real setLocation(...) API to place a fleet in transit on route 0, round-trips through save()/load(), and asserts getJumpRoute() == 0 and != FFleet::NO_ROUTE.",
+    "Nonzero-return on unknown ship type (no NULL deref): FPlayerTest::testLoadReturnsNonzeroOnUnknownUnattachedShipType, testLoadReturnsNonzeroOnUnknownDestroyedShipType, and FFleetTest::testLoadReturnsNonzeroOnUnknownShipType each hand-craft a minimal valid wire stream with an unresolvable type tag and assert load() returns nonzero; verified createShip() (src/ships/FVehicle.cpp:364-395) does return NULL for unrecognized type strings, matching the code path under test.",
+    "Next-ID advance past loaded ID (H3): FPlayerTest::testLoadAdvancesNextIDPastLoadedID and FFleetTest::testLoadAdvancesNextIDPastLoadedID each hand-craft a stream with m_ID = 5,000,000, load it, then default-construct a fresh object and assert its ID is strictly greater than the loaded ID.",
+    "Fixed-width little-endian uint32_t wire format: not asserted by a dedicated byte-layout test, but exercised behaviorally by every new test via the shared writeU32/readU32 helpers (already covered by pre-existing FPObject-level tests) and by the multi-ship round trip below; acceptable per the task's own framing of this criterion as covered structurally plus exercised behaviorally through the round-trip tests.",
+    "Multi-ship fleet round trip: FFleetTest::testSerializeRoundTripsMultipleShipsAndFleetState covers two distinct ships' count/ID/name/HP plus fleet owner/location/destination/jump-route state.",
+    "Independently reproduced in this review: ./SSWTests run from tests/ (271/271 OK, matching Tester's reported 271) and ./TacticalTests run from tests/tactical (253/253 OK, matching Tester's reported 253); the top-level `make` and `make -C src/strategic` both completed with exit code 0, and src/strategic/Makefile was grepped directly for wx-config/WX_CXXFLAGS with zero matches, confirming the module stays wx-free.",
+    "Two low-value, non-blocking coverage gaps noted by the specialist Security stage and independently concurred with here: no test for a partial mid-population abort (proving no leak across a half-populated ship list) and no UINT32_MAX H3-wraparound test. Neither is required by the plan's acceptance criteria and neither represents a memory-safety gap."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}

@@ -1,0 +1,53 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Harden the player/fleet save-load wire layer for the save-format hardening phase (P5-3): convert all counts/sizes and object IDs in FPlayer::save/load and FFleet::save/load to the P5-1 fixed-width little-endian writeU32/readU32 helpers; null-check createShip(...) so an unknown/corrupt ship type aborts the load (nonzero) instead of dereferencing NULL; serialize and restore FPlayer::m_destroyed (F2-serialization) with the same type-tag + createShip + FVehicle::load pattern and null-check as m_unattached/fleet ships, preserving FPlayer's sole-ownership contract; remove the legacy route-0 normalization in FFleet::load (H4) so a fleet on jump route ID 0 keeps its route; and advance FPlayer::m_nextID / FFleet::m_nextID past any loaded ID (H3) so newly constructed players/fleets never collide with a restored ID.
+
+Modified files:
+- include/strategic/FPlayer.h
+- src/strategic/FPlayer.cpp
+- include/strategic/FFleet.h
+- src/strategic/FFleet.cpp
+- doc/deferred-tasks.md
+
+Acceptance criteria to validate (from Planner):
+- A player with unattached ships, fleets (each holding ships), and a non-empty m_destroyed list round-trips through save->load with all three collections restored (counts, IDs, names, and per-ship state), and no double-free/leak of m_destroyed ships.
+- A fleet saved while in transit on jump route ID 0 reloads with getJumpRoute() == 0 (route preserved, not normalized to NO_ROUTE).
+- FPlayer::load / FFleet::load return nonzero (no NULL deref) on an unknown ship type in the stream.
+- After loading players/fleets, newly constructed players/fleets receive IDs strictly greater than every loaded ID (no collision).
+- Player/fleet wire counts/IDs are fixed-width little-endian uint32_t.
+- The build is clean; strategic module remains wx-free.
+
+Create test files in:
+- tests/strategic/FPlayerTest.cpp / FPlayerTest.h -- extend the existing fixture with new CPPUNIT_TEST cases via std::stringstream save()->load() round-trips for: (a) a full player round-trip that populates m_unattached (addShip), fleets holding ships (addFleet + FFleet::addShip), AND a non-empty m_destroyed list (addDestroyedShip), saves the player, loads into a fresh FPlayer, and asserts every collection's counts / ship IDs / ship names / per-ship state are restored -- getShipList() for m_unattached, getFleetList() for fleets, and the destroyed list (exposed indirectly: assert via the ship state that survives, or add coverage that a load followed by destruction does not double-free/leak, e.g. under a leak-aware build); (b) H3 player ID-counter restore: load a stream carrying a large m_ID, then default-construct a new FPlayer and assert getID() is strictly greater than the loaded ID (note FPlayer::m_nextID starts at 1 and resets to 1 when m_classCount hits 0); (c) unknown-type nonzero return: hand-craft/corrupt an m_unattached or m_destroyed ship type tag to an unknown string and assert FPlayer::load() returns nonzero without crashing.
+- tests/strategic/FFleetTest.cpp / FFleetTest.h -- extend the existing fixture with CPPUNIT_TEST cases for: (a) H4 route-0 preservation: setLocation(...) / setJumpRoute(...) so m_jumpRouteID == 0 and m_inTransit is true, save the fleet, load into a fresh FFleet, and assert getJumpRoute() == 0 (NOT NO_ROUTE); (b) a fleet round-trip holding multiple ships asserting ship count / IDs / names / state restored and location/destination/owner IDs preserved; (c) H3 fleet ID-counter restore: load a stream carrying a large m_ID, then default-construct a new FFleet and assert getID() is strictly greater than the loaded ID (note FFleet::m_nextID is a signed int starting at 0 and resets to 0 when m_classCount hits 0); (d) unknown-type nonzero return: corrupt a ship type tag and assert FFleet::load() returns nonzero without crashing.
+- Use constructed objects and real std::stringstream round-trips (not source-string matching) for every assertion, per the repo's mandatory behavioral-verification rule.
+
+Implementation context for testing:
+- P5-1 (already merged) provides the wire helpers consumed here in include/core/FPObject.h: `const int writeU32(std::ostream&, uint32_t) const` and `int readU32(std::istream&, uint32_t&)` -- 4-byte explicit little-endian byte emission via shift/mask, returning 0 on success / nonzero on stream failure. P5-2 (already merged) hardened FVehicle::save/load the same way; FFleet/FPlayer ship lists delegate to that hardened FVehicle::load via createShip().
+- FPlayer::save (src/strategic/FPlayer.cpp): m_ID and all three list counts (m_unattached.size(), m_fleets.size(), m_destroyed.size()) are now written via writeU32 (cast to uint32_t) instead of the old raw write(os, m_ID) / write(os, size()) (previously native unsigned int / size_t, non-portable width). Each ship's own save() writes its type string first, so m_destroyed serialization needs no separate type write -- it mirrors the m_unattached loop exactly.
+- FPlayer::load: reads m_ID via readU32; immediately advances the static m_nextID with `if (m_ID >= m_nextID) { m_nextID = m_ID + 1; }` (H3). Counts read via readU32 into local uint32_t (uSize/fSize/dSize). Both ship loops (m_unattached and the new m_destroyed) readString the type tag, call createShip(type), and `if (v == NULL) return 1;` before any dereference (createShip returns NULL on an unknown type -- pre-existing factory behavior). The fleet loop is unchanged in structure (new FFleet + f->load) since createShip is not involved there. m_destroyed restoration preserves FPlayer's sole-ownership contract: the ships are owned only by m_destroyed and freed in ~FPlayer() (unchanged destructor).
+- F2-serialization: FPlayer::m_destroyed is now written after the fleet list in save() and restored after the fleet loop in load(), using the identical type-tag + createShip() + v->load() + null-check pattern as m_unattached. The list round-trips but is intentionally not yet consumed by any rule (the optional Replacements rule that would read it does not exist yet) -- that is the intended, documented state. The doc/deferred-tasks.md F2-serialization entry was removed now that the persistence is implemented.
+- FFleet::save (src/strategic/FFleet.cpp): m_ID, m_owner, m_location, m_destination, m_jumpRouteID, and m_ships.size() are now written via writeU32 (cast to uint32_t). The remaining scalar fields (m_inTransit bool, m_transitTime, m_jumpLength, m_speed unsigned ints, m_isMilitia/m_isHolding bools, m_pos[0]/m_pos[1]/m_dx/m_dy floats) keep the generic write<T> template per design decision #2 (only counts/sizes and object IDs get the fixed-width treatment; other multi-byte scalars remain portable across the two supported little-endian platforms).
+- FFleet::load: reads m_ID via readU32; advances the static m_nextID with the H3 guard. Because FFleet::m_nextID is a signed int (not unsigned like the other classes), the guard compares and assigns through an unsigned view -- `if (m_ID >= (unsigned int)m_nextID) { m_nextID = (int)(m_ID + 1); }` -- to avoid a signed/unsigned comparison warning under -Wall while preserving the same 'strictly greater than any loaded ID' semantics. m_owner/m_location/m_destination/m_jumpRouteID are read via readU32 into local uint32_t and assigned back. The ship loop reads sCount via readU32 and null-checks createShip (return 1 on NULL) before dereference.
+- H4 (route-0 removal): the line `if (m_jumpRouteID == 0) m_jumpRouteID = NO_ROUTE;` was removed from FFleet::load. Jump route ID 0 is a valid, distinct route ID (FJumpRoute IDs start at 0) and is now preserved exactly as saved. Only the distinguished NO_ROUTE sentinel value (static_cast<unsigned int>(-1)) means 'not on a route'. This is a deliberate save-format behavior change: there is no legacy read path (the clean break happens once, in this phase), so no legacy save relied on the old normalization.
+- load() return-code contract for both classes: 0 on success, 1 (nonzero) on an unknown ship type. Consistent with the codebase-wide FPObject save/load boolean-style contract (0 = ok, nonzero = failure) and with P5-2's FVehicle::load. A truncated/short stream is not given a distinct code here; dedicated aggregate error-propagation and the truncation path are P5-5's concern (FGame::load boundary).
+- Doxygen: include/strategic/FPlayer.h (class header, save()/load() blocks, addDestroyedShip() ownership contract, m_destroyed member comment) and include/strategic/FFleet.h (class header, save()/load() blocks) were updated with @date Last Modified: Jul 17, 2026 and Claude Sonnet 5 (medium) added to @author where not already present. Both .cpp file headers gained a Last Modified date and Claude Sonnet 5 (medium) in @author. The FPlayer/FFleet doc now describes the fixed-width ID/count fields, the H3 next-ID advance, the F2 m_destroyed persistence, the createShip null-check/abort contract, and (FFleet) the H4 route-0 preservation.
+
+Suggested test command(s):
+- make -C src/strategic
+- make (top-level, full repo build: both executables + SSWTests + TacticalTests + GuiTests)
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

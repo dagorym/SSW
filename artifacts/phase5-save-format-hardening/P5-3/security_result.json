@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-3/security_report.md",
+    "artifacts/phase5-save-format-hardening/P5-3/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-P5-3-security-20260717",
+  "documentation_sufficiency_summary": [
+    "ADEQUATE. Doxygen save/load headers in FPlayer.h and FFleet.h were updated to document the fixed-width writeU32/readU32 encoding of IDs and counts, the F2 serialization of m_destroyed (with its sole-ownership contract, freed in ~FPlayer()), the H3 next-ID advance, the H4 removal of the route-0->NO_ROUTE normalization, and the createShip() null-check/abort contract.",
+    "The m_destroyed member comment and ~FPlayer() destructor comment describe the ownership/no-double-free contract that keeps the aborted-load path safe.",
+    "deferred-tasks.md F2-serialization entry removed (now resolved) and synthesized-roadmap.md synced with RESOLVED annotations, keeping the deferred-work ledger accurate.",
+    "Operational note for downstream: the FPlayer/FFleet layer propagates the targeted unknown-ship-type failure as a nonzero return, but final aggregate rejection of a corrupt/truncated stream (magic/version + end-of-stream state) is documented as P5-5's responsibility -- see NOTE finding on nested error propagation."
+  ],
+  "note_finding_count": 2,
+  "outcome": "PASS",
+  "pass_label": "P5-3 Player/Fleet save-load hardening -- specialist security review",
+  "status": "complete",
+  "task_id": "P5-3",
+  "test_sufficiency_summary": [
+    "ADEQUATE for the P5-3 acceptance surface. All coverage is behavioral (constructs real FPlayer/FFleet, serializes to a stringstream, loads, and asserts on runtime state / return codes), satisfying the repository's behavioral-verification mandate.",
+    "Unknown/corrupt ship type abort covered for all three loops: FFleetTest::testLoadReturnsNonzeroOnUnknownShipType (fleet ships), FPlayerTest::testLoadReturnsNonzeroOnUnknownUnattachedShipType (m_unattached), FPlayerTest::testLoadReturnsNonzeroOnUnknownDestroyedShipType (m_destroyed) -- each asserts load() returns nonzero with no NULL deref.",
+    "F2 m_destroyed round-trip verified in FPlayerTest::testFullRoundTripPreservesUnattachedFleetsAndDestroyedShips via re-save byte equality (m_destroyed has no public accessor); unattached + fleet + fleet-ship state also asserted field-by-field. FFleetTest::testSerializeRoundTripsMultipleShipsAndFleetState covers multi-ship fleet round-trip.",
+    "H3 next-ID advance covered for both classes (FPlayerTest / FFleetTest testLoadAdvancesNextIDPastLoadedID). H4 route-0 preservation covered (FFleetTest::testJumpRouteZeroPreservedAcrossSaveLoad asserts loaded route 0 stays 0 and != NO_ROUTE).",
+    "No-double-free ownership across the m_destroyed / fleet boundary is covered by the pre-existing FPlayerTest::testSurvivingFleetShipNotDoubleDeletedByDestroyedList.",
+    "Verified locally: built tests/ and ran ./SSWTests (Run: 271, Failures: 9, Errors: 0). All 9 failures are the pre-existing FGameHeaderDependencyTest source-inspection tests failing on a worktree file-path-resolution artifact ('Expected at least one candidate file path to be readable'); they inspect FGame wx-purity, are unrelated to P5-3 (last modified in commit 0c0d1212, milestone 4), and are not security-relevant. Every FPlayerTest and FFleetTest case passed.",
+    "Minor (non-blocking) coverage gaps: no explicit test for a partial mid-population abort (some ships loaded, then an unknown type) proving no leak/double-free, and no UINT32_MAX H3-wraparound test. Both are low value -- the abort-path tests already construct and destruct the objects under normal teardown without crashing, and the wraparound case is only a uniqueness edge, not a memory hazard."
+  ],
+  "warning_finding_count": 0
+}

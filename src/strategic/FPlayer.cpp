@@ -1,8 +1,9 @@
 /**
  * @file FPlayer.cpp
  * @brief Implementation file for FPlayer class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 17, 2005
+ * @date Last Modified:  Jul 17, 2026
  *
  */
 
@@ -105,39 +106,76 @@ int FPlayer::addDestroyedShip( FVehicle * ship ){
 //}
 
 const int FPlayer::save(std::ostream &os) const{
-	write(os,m_ID);
+	writeU32(os,(uint32_t)m_ID);
 	writeString(os,m_name);
 	writeString(os,m_iconName);
 //	write(os,m_credits);
-	write(os,m_unattached.size());
+	writeU32(os,(uint32_t)m_unattached.size());
 	for (unsigned int i = 0; i < m_unattached.size(); i++){
 		m_unattached[i]->save(os);
 	}
-	write(os,m_fleets.size());
+	writeU32(os,(uint32_t)m_fleets.size());
 	for (unsigned int i = 0; i < m_fleets.size(); i++){
 		m_fleets[i]->save(os);
+	}
+	// F2-serialization: persist the destroyed-ship list using the same
+	// type-tag + FVehicle::save() pattern as m_unattached (the ship's own
+	// save() writes its type string first).
+	writeU32(os,(uint32_t)m_destroyed.size());
+	for (unsigned int i = 0; i < m_destroyed.size(); i++){
+		m_destroyed[i]->save(os);
 	}
 	return 0;
 }
 
 int FPlayer::load(std::istream &is){
-	read(is,m_ID);
+	uint32_t id = 0;
+	readU32(is,id);
+	m_ID = id;
+	// H3: advance the static next-ID counter past any loaded ID so a
+	// freshly-constructed player never reuses an ID restored from a save
+	// file.
+	if (m_ID >= m_nextID){
+		m_nextID = m_ID + 1;
+	}
 	readString(is,m_name);
 	readString(is,m_iconName);
-	size_t uSize, fSize;
-	read(is,uSize);
-	for(unsigned int i = 0; i < uSize; i++){
+	uint32_t uSize = 0, fSize = 0, dSize = 0;
+	readU32(is,uSize);
+	for(uint32_t i = 0; i < uSize; i++){
 		std::string type;
 		readString(is,type);
 		FVehicle *v = createShip(type);
+		if (v == NULL){
+			// unknown/corrupt ship type on the wire: abort the load rather
+			// than dereference a NULL factory result.
+			return 1;
+		}
 		v->load(is);
 		m_unattached.push_back(v);
 	}
-	read(is,fSize);
-	for(unsigned int i = 0; i < fSize; i++){
+	readU32(is,fSize);
+	for(uint32_t i = 0; i < fSize; i++){
 		FFleet *f = new FFleet;
 		f->load(is);
 		m_fleets.push_back(f);
+	}
+	// F2-serialization: restore the destroyed-ship list with the same
+	// type-tag + createShip() + v->load() pattern and null-check as
+	// m_unattached, preserving FPlayer's sole-ownership contract (freed in
+	// ~FPlayer()).
+	readU32(is,dSize);
+	for(uint32_t i = 0; i < dSize; i++){
+		std::string type;
+		readString(is,type);
+		FVehicle *v = createShip(type);
+		if (v == NULL){
+			// unknown/corrupt ship type on the wire: abort the load rather
+			// than dereference a NULL factory result.
+			return 1;
+		}
+		v->load(is);
+		m_destroyed.push_back(v);
 	}
 	return 0;
 }
