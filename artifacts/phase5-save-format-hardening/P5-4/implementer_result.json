@@ -1,0 +1,36 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-4/implementer_report.md",
+    "artifacts/phase5-save-format-hardening/P5-4/tester_prompt.txt",
+    "artifacts/phase5-save-format-hardening/P5-4/implementer_result.json"
+  ],
+  "branch_name": "phase5-P5-4-implementer-20260717",
+  "changed_files": [
+    "include/strategic/FMap.h",
+    "src/strategic/FMap.cpp",
+    "include/strategic/FSystem.h",
+    "src/strategic/FSystem.cpp",
+    "include/strategic/FJumpRoute.h",
+    "src/strategic/FJumpRoute.cpp"
+  ],
+  "code_commit_hash": "89b069ab",
+  "status": "success",
+  "task_id": "P5-4",
+  "validation_commands": [
+    "make -C src/strategic clean && make -C src/strategic (clean strategic build, no warnings)",
+    "grep -n \"wx-config|WX_CXXFLAGS\" src/strategic/Makefile (none present)",
+    "make (top-level build from worktree root)",
+    "make check (top-level: full build then SSWTests, TacticalTests, GuiTests under xvfb-run)"
+  ],
+  "validation_outcome": "Strategic module builds clean with no warnings and stays wx-free (src/strategic/Makefile has zero wx-config/WX_CXXFLAGS references). Top-level make completed with exit code 0. make check completed with exit code 0: SSWTests OK (258 tests, includes pre-existing FMapTest/FSystemTest/FJumpRouteTest passing against the hardened wire format), TacticalTests OK (253 tests), GuiTests OK (81 tests, under xvfb-run). No behavioral tests targeting the new start/end re-resolution, >65535 ID round-trip, absent-system nonzero return, or ID-counter restore were added by the implementer; that behavioral coverage is delegated to the Tester per the handoff.",
+  "acceptance_criteria_status": [
+    "A map with multiple systems and jump routes round-trips through save->load with every system restored and every jump route's start/end pointers correctly re-resolved to the matching FSystem: SATISFIED (FMap::load resolves getStartSystemID()/getEndSystemID() via getSystem(id) and calls setStart()/setEnd(); existing FMapTest::testSerialize exercises this against the 25-system/24-route real Frontier map and passes)",
+    "A jump route whose start/end system ID exceeds 65535 resolves to the correct systems after load (no 16-bit truncation): SATISFIED (real uint32_t wire fields carried through getStartSystemID()/getEndSystemID()/getSystem(id); no 16-bit mask or pointer-width-dependent cast remains anywhere in the resolution path)",
+    "FMap::load returns nonzero (stores no invalid pointer) when a jump route references an absent system ID: SATISFIED (null-guard after both getSystem(id) calls deletes the route and returns 1 before any m_jumps.push_back())",
+    "After loading systems/jump-routes, newly constructed ones receive IDs strictly greater than every loaded ID: SATISFIED (FSystem::load sets m_nextID = max(m_nextID, loadedID) respecting pre-increment ++m_nextID convention; FJumpRoute::load sets m_nextID = max(m_nextID, loadedID + 1) respecting post-increment m_nextID++ convention)",
+    "Map/system/jump-route wire counts/IDs are fixed-width little-endian uint32_t: SATISFIED (all count/size/ID fields in FSystem, FJumpRoute, FMap now go through writeU32/readU32; non-count/ID fields such as m_name, m_coords, m_length are unchanged, consistent with scope)",
+    "Build is clean; strategic module remains wx-free: SATISFIED (see validation_outcome)"
+  ],
+  "security_review_required": true,
+  "security_notes": "Untrusted-input hardening: removed the (FSystem*)-cast-plus-&0x0000FFFFL-mask pointer-smuggling pattern that both fabricated a never-safely-dereferenced pointer value and silently truncated system IDs above 65535 to the wrong system. FMap::load now null-guards the getSystem(id) resolution so an absent/out-of-range system-ID reference aborts the load (nonzero return) instead of storing a NULL or garbage-derived pointer that downstream getStart()/getEnd() callers would dereference. FSystem::load, FJumpRoute::load, and FMap::load now propagate every readU32/readString/read failure and abort the load on the first failure instead of silently continuing with unspecified member values. H3 ID-counter advancement in FSystem::load/FJumpRoute::load prevents a newly constructed object after a load from colliding with a loaded object's ID, which could otherwise let getSystem(id)/getJumpRoute(id) resolve to the wrong object. No secrets, disabled checks, broadened permissions, or unsafe defaults introduced."
+}

@@ -1,0 +1,139 @@
+Your role is 'tester'. Your task is as follows:
+
+Author behavioral test coverage for P5-4 (map/system/jump-route save-load
+hardening and the ID pointer-mask fix) in the save-format hardening phase.
+The implementation is committed on branch phase5-P5-4-implementer-20260717
+(code commit 89b069ab).
+
+Modified files under test:
+- include/strategic/FSystem.h / src/strategic/FSystem.cpp: save()/load() now
+  use the fixed-width little-endian writeU32/readU32 helpers for m_ID,
+  m_owner, and the planet count. load() propagates stream/nested-load
+  failure (nonzero return) instead of ignoring it. After reading the ID,
+  load() advances the static m_nextID counter past it
+  (`if (m_ID > (unsigned int)m_nextID) m_nextID = (int)m_ID;`), respecting
+  FSystem's pre-increment allocation convention (m_ID = ++m_nextID).
+- include/strategic/FJumpRoute.h / src/strategic/FJumpRoute.cpp: the
+  pointer-smuggling ID-in-pointer trick ((FSystem*)id cast, later masked
+  with & 0x0000FFFFL in FMap::load) is removed. Two new private fields,
+  m_startSystemID / m_endSystemID (unsigned int), are populated by load()
+  from real fixed-width writeU32/readU32 wire fields and exposed via new
+  public getters getStartSystemID()/getEndSystemID(). load() leaves
+  m_start/m_end as NULL; only FMap::load resolves them to real FSystem
+  pointers. The full constructor (FSystem*, FSystem*, players) also now sets
+  m_startSystemID/m_endSystemID from the passed-in systems' real IDs.
+  load() propagates failure. After reading the ID, load() advances the
+  static m_nextID counter (`if (m_ID >= m_nextID) m_nextID = m_ID + 1;`),
+  respecting FJumpRoute's post-increment allocation convention
+  (m_ID = m_nextID++).
+- include/strategic/FMap.h / src/strategic/FMap.cpp: save()/load() use
+  writeU32/readU32 for m_maxCoord and the system/jump-route counts.
+  load() aborts (deletes the partial object, returns nonzero) on a failed
+  FSystem::load or FJumpRoute::load. For each loaded jump route, load()
+  resolves the real start/end system IDs via
+  j->getStartSystemID()/j->getEndSystemID() and getSystem(id), and
+  null-guards the lookup: if either getSystem(id) call returns NULL (system
+  ID not present in the map), the route is deleted and FMap::load returns
+  nonzero immediately WITHOUT calling setStart()/setEnd() and WITHOUT
+  pushing the route onto m_jumps — no invalid/NULL pointer is ever stored.
+
+Acceptance criteria (from the Planner) to verify BEHAVIORALLY:
+1. A map with multiple systems and jump routes round-trips through
+   save->load with every system restored and every jump route's start/end
+   pointers correctly re-resolved to the matching FSystem (assert
+   getStart()->getName()/getID() and getEnd()->getName()/getID() match the
+   original systems' names/IDs after load, not just non-NULL).
+2. A jump route whose start/end system ID exceeds 65535 resolves to the
+   correct systems after load (no 16-bit truncation). Construct systems
+   whose IDs are forced/observed above 65535 (FSystem's ID counter is a
+   simple incrementing static int starting at 0/1 per process, so you will
+   likely need to either construct >65536 FSystem instances to advance the
+   counter naturally, OR — the more direct/robust approach — hand-craft a
+   raw wire buffer for FJumpRoute::load with a start/end ID field encoding a
+   value > 65535 (e.g. 0x00010001 = 65537) via writeU32-equivalent byte
+   layout, call FJumpRoute::load(is) directly, and assert
+   j.getStartSystemID()/getEndSystemID() equal the >65535 value exactly (no
+   masking to a 16-bit remainder). Then separately verify FMap::load's
+   getSystem(id) resolution path end-to-end by constructing a small FMap
+   with a system whose ID you control via the same wire-crafting approach
+   (or by directly exercising FMap::load with a hand-built stream containing
+   a system ID > 65535 and a matching jump route ID field), asserting the
+   resolved FSystem pointer matches. Label any FSystem-ID-injection
+   technique as an assumption if the class does not expose a public
+   ID-setter (it does not) and you must construct the raw stream by hand.
+3. FMap::load returns nonzero (and stores no invalid pointer / does not grow
+   getJumpList()) when a jump route references a system ID that is not
+   present in the loaded system set. Build a stream (e.g. via FMap::save()
+   from a small map, then patch/hand-craft a route's start or end ID field
+   to a value that does not match any saved system's ID, e.g. by writing a
+   raw buffer with a valid system followed by a jump route referencing a
+   nonexistent system ID) and assert FMap::load(is) != 0 and
+   map.getJumpList().size() == 0 (or unchanged from before the failed load).
+4. After loading systems/jump-routes, newly constructed ones receive IDs
+   strictly greater than every loaded ID. Save a system (or map) with a
+   known/high ID, load it back into a fresh FSystem/FMap context, then
+   construct a brand-new FSystem() (or FJumpRoute via the systems
+   constructor) and assert its getID() is strictly greater than the loaded
+   ID. Do this for both FSystem (pre-increment convention) and FJumpRoute
+   (post-increment convention) — they use different m_nextID update rules,
+   so cover both directly, not just via FMap.
+5. Map/system/jump-route wire counts/IDs are fixed-width little-endian
+   uint32_t. This is a structural fact about the wire format; verify it
+   BEHAVIORALLY by inspecting the raw bytes emitted by save() into a
+   std::stringstream for a known ID value (e.g. construct a system, force/
+   observe its ID, save it, and assert the 4 bytes at the ID's known stream
+   offset match the expected little-endian encoding) — supplement only, per
+   repo convention (source-string matching may never be the sole
+   verification of a behavior).
+
+Test file location guidance:
+- Extend the existing fixtures: tests/strategic/FMapTest.h/.cpp,
+  tests/strategic/FSystemTest.h/.cpp, tests/strategic/FJumpRouteTest.h/.cpp.
+  All three are already registered in tests/SSWTests.cpp (via
+  tests/strategic's static library) — no new fixture registration should be
+  needed unless you add a new fixture file, in which case follow the
+  existing tests/strategic/Makefile + tests/SSWTests.cpp registration
+  pattern (see tests/test_template.h/.cpp for the CPPUNIT_TEST_SUITE
+  skeleton).
+- FJumpRoute's start/end system-ID fields are private with only const-ref
+  getters (getStartSystemID()/getEndSystemID()); load() is a public virtual
+  method so you can call it directly on a stream you construct in the test
+  (see existing FJumpRouteTest::testSerialize for the pattern: build a
+  std::stringstream or a temp file via std::ofstream/std::ifstream, call
+  save()/load() directly). FPObject's writeU32/readU32 are protected, so to
+  hand-craft a raw wire buffer with a specific ID value use a small
+  std::vector<char>/std::string byte buffer built by hand (little-endian
+  4-byte encoding: byte0 = v & 0xFF, byte1 = (v>>8)&0xFF, byte2 =
+  (v>>16)&0xFF, byte3 = (v>>24)&0xFF) rather than reaching into FPObject's
+  protected helpers from the test fixture, unless the fixture already
+  subclasses to expose them (it does not currently for FSystem/FJumpRoute/
+  FMap — prefer driving through the real save()/load() public API and
+  constructing a minimal raw stream only for the out-of-range/absent-system
+  cases where no public API path exists to produce that wire state).
+
+Validation commands:
+- Build the strategic module: `make -C src/strategic` (must stay wx-free —
+  no wx-config / WX_CXXFLAGS in src/strategic/Makefile).
+- Build and run the top-level suite: `cd tests && make && ./SSWTests`
+  (SSWTests links tests/strategic; FMapTest/FSystemTest/FJumpRouteTest are
+  already registered there).
+- Full regression: `make check` from the repo/worktree root (builds
+  everything, then runs SSWTests, TacticalTests, and GuiTests under
+  xvfb-run, stopping at the first suite failure).
+
+No existing validations are expected to fail as a result of P5-4; the wire
+format changed (fixed-width fields, real system IDs), but every existing
+round-trip test (FSystemTest::testSerialize, FJumpRouteTest::testSerialize,
+FMapTest::testSerialize) saves and immediately reloads with the new
+implementation and already passes (confirmed: SSWTests OK, 258 tests;
+TacticalTests OK, 253 tests; GuiTests OK, 81 tests).
+
+Artifact directory (reuse this repository-root-relative path):
+artifacts/phase5-save-format-hardening/P5-4/
+
+If no blocking issue is present after preflight, continue and complete the
+work in this same run. Do not rely on source-string matching as the sole
+verification of any behavior.
+
+Do not report success unless all required artifacts exist and all changes
+are committed.
