@@ -1,0 +1,31 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-3/tester_report.md",
+    "artifacts/phase5-save-format-hardening/P5-3/tester_result.json",
+    "artifacts/phase5-save-format-hardening/P5-3/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-P5-3-tester-20260717",
+  "commands_run": [
+    "make -C src/strategic",
+    "make (top-level)",
+    "cd tests && ./SSWTests",
+    "cd tests/tactical && ./TacticalTests",
+    "cd tests/gui && xvfb-run -a ./GuiTests"
+  ],
+  "pass_fail_totals": {
+    "SSWTests": "271 passed / 271 total",
+    "TacticalTests": "253 passed / 253 total",
+    "GuiTests": "81 passed / 81 total"
+  },
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P5-3",
+  "test_commit_hash": "5e96e227cf35f4e32a5f9bf1ed88dd6e2423502b",
+  "test_files_changed": [
+    "tests/strategic/FPlayerTest.cpp",
+    "tests/strategic/FPlayerTest.h",
+    "tests/strategic/FFleetTest.cpp",
+    "tests/strategic/FFleetTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}
