@@ -1,0 +1,91 @@
+Your role is 'tester'. Your task is as follows:
+
+Author behavioral test coverage for P5-1 (core wire-format serialization
+primitives and save-format constants) in the save-format hardening phase. The
+implementation is committed on branch phase5-P5-1-implementer-20260717
+(code commit 456c7929).
+
+Modified files under test:
+- include/core/FSaveFormat.h (new): kSaveMagic (0x31575353u), kSaveFormatVersion
+  (1u), kMaxSerializedStringBytes (65536).
+- include/core/FPObject.h: new protected helpers writeU32(std::ostream&,
+  uint32_t) / readU32(std::istream&, uint32_t&); write<T>/read<T> templates now
+  return nonzero on stream failure; updated writeString/readString contracts.
+- src/core/FPObject.cpp: writeU32/readU32 (explicit little-endian 4-byte
+  shift/mask), rewritten writeString (length prefix + os.write(s.data(),
+  s.size()), oversize guard) and readString (readU32 length, 64 KB cap check
+  BEFORE allocation, stream-state check, NUL-safe assign).
+
+Acceptance criteria (from the Planner) to verify BEHAVIORALLY:
+- readString returns nonzero AND performs no allocation when the encoded length
+  exceeds 64 KB (kMaxSerializedStringBytes) or when the stream is in a failed
+  state; a valid round-trip of a string containing an embedded '\0' reproduces
+  the exact original bytes and length.
+- writeString/readString and the fixed-width uint32_t helpers (writeU32/readU32)
+  round-trip counts/lengths losslessly with explicit little-endian byte order
+  (verifiable by inspecting the emitted bytes of a std::stringstream).
+- write/read/writeString/readString each return nonzero when the underlying
+  stream is in a failed state, and 0 on success.
+- The 64 KB cap and the magic/version values are named constants, not inline
+  literals (this is a structural fact; verify the constants exist and hold the
+  expected values, but structural/source checks may ONLY supplement the
+  behavioral assertions — never substitute for them).
+
+Test file location guidance:
+- Add a new fixture under tests/core (e.g. tests/core/FPObjectSerializationTest.h
+  / .cpp, or an FPObjectTest fixture). Because writeU32/readU32/writeString/
+  readString/write/read are protected members of FPObject, the fixture will need
+  a small concrete FPObject subclass (test-local) that exposes them (e.g. thin
+  public forwarders, or the fixture subclass calling them directly), mirroring
+  how existing tests instantiate abstract base helpers. Prefer std::stringstream
+  (std::ios::binary-style in/out) as the stream so you can inspect emitted bytes
+  and simulate failure via setstate(std::ios::failbit) / an already-consumed
+  stream / a truncated buffer.
+- Register the new fixture with runner.addTest(...) and the matching #include in
+  tests/SSWTests.cpp (the top-level SSWTests runner links tests/core). Update
+  tests/core/Makefile to compile the new object if you add new .cpp files.
+
+Suggested behavioral cases (assert observed runtime outcomes, not source text):
+1. writeU32 -> readU32 round-trip for several values (0, 1, 0xFF, 0x100,
+   0x12345678, 0xFFFFFFFF) returns 0 and reproduces the value.
+2. Little-endian byte layout: write a known value (e.g. 0x12345678) to a
+   stringstream and assert the raw 4 bytes are 0x78,0x56,0x34,0x12 in order.
+3. writeString/readString round-trip for a normal string and for a string with
+   an embedded '\0' (e.g. std::string("ab\0cd", 5)) — assert the reloaded string
+   equals the original AND has size()==5 (proves NUL is not truncated).
+4. Empty-string round-trip: writeString("") then readString yields size()==0 and
+   returns 0.
+5. 64 KB cap rejection with no allocation: hand-craft a stream whose first 4
+   bytes encode a length > kMaxSerializedStringBytes (e.g. 0x00020000 = 131072)
+   with NO payload following, call readString, and assert it returns nonzero and
+   does not attempt to read/allocate the oversized buffer (the stream should not
+   be driven into reading 128 KB; a short buffer that would fail if it tried to
+   read proves the no-allocation/early-reject path). Boundary check: a length of
+   exactly 65536 is allowed (not rejected by the cap), 65537 is rejected.
+6. writeString oversize guard: attempt to write a string longer than
+   kMaxSerializedStringBytes and assert nonzero return (note: allocating a
+   >64 KB std::string in the test is acceptable here since it is test-owned).
+7. Failed-stream returns: put a stringstream into failbit state (or an empty
+   input stream at EOF) and assert write/read/writeU32/readU32/writeString/
+   readString each return nonzero.
+8. Constants: assert kMaxSerializedStringBytes==65536, kSaveFormatVersion==1,
+   and that writing kSaveMagic via writeU32 emits bytes 'S','S','W','1'
+   (0x53,0x53,0x57,0x31). (Supplemental to the behavioral cases above.)
+
+Validation commands:
+- Build the core module: `make -C src/core` (must stay wx-free — no wx-config /
+  WX_CXXFLAGS in src/core/Makefile).
+- Build and run the top-level suite: `cd tests && make && ./SSWTests`
+  (SSWTests links tests/core). Assumption: SSWTests is the correct runner for a
+  tests/core fixture, consistent with existing tests/core fixtures registered in
+  tests/SSWTests.cpp.
+
+No existing validations are expected to fail as a result of P5-1; the helper
+signatures are additive and the success-path return value is still 0.
+
+Artifact directory (reuse this repository-root-relative path):
+artifacts/phase5-save-format-hardening/P5-1/
+
+If no blocking issue is present after preflight, continue and complete the work
+in this same run. Do not rely on source-string matching as the sole verification
+of any behavior.
