@@ -28,12 +28,15 @@ item F2/H2, refined during Phase 2 rules-correctness planning (subtask P2-5).
 
 **Why deferred:** Serializing `m_destroyed` requires extending `FPlayer::save()`/
 `load()`'s wire format with a new list, which is a save-format break — the
-same category of change as H2, and deferred for the same reason: format
+same category of change H2 was, and deferred for the same reason: format
 changes must be coordinated together rather than introduced incidentally by
 a memory-ownership bugfix.
 
 **Target phase:** Save-format hardening phase (roadmap `doc/synthesized-roadmap.md`
-Part III "Next" item #5), alongside H2.
+Part III "Next" item #5), subtask P5-3
+(`plans/phase5-save-format-hardening-plan.md`). H2 itself was resolved
+separately by subtask P5-2 (`artifacts/phase5-save-format-hardening/P5-2`);
+this entry (F2-serialization) remains open pending P5-3.
 
 ---
 
