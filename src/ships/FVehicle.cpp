@@ -1,8 +1,9 @@
 /**
  * @file FVehicle.cpp
  * @brief Implementation file for FVehicle class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 12, 2005
+ * @date Last Modified:  Jul 17, 2026
  *
  */
 #include "ships/FVehicle.h"
@@ -169,7 +170,7 @@ FVehicle::~FVehicle(){
 
 const int FVehicle::save(std::ostream &os) const {
 	writeString(os,m_type);
-	write(os,m_ID);
+	writeU32(os,(uint32_t)m_ID);
 	writeString(os,m_name);
 	writeString(os,m_iconName);
 	write(os,m_currentMR);
@@ -177,21 +178,33 @@ const int FVehicle::save(std::ostream &os) const {
 	write(os,m_currentHP);
 	write(os,m_speed);
 	write(os,m_heading);
-	write(os,m_owner);
+	writeU32(os,(uint32_t)m_owner);
 	write(os,m_currentDCR);
 	write(os,m_maskingScreenTurnCount);
 	write(os,m_combatControlDamaged);
 	write(os,m_onFire);
 	write(os,m_powerSystemDamaged);
 	write(os,m_navError);
-	write(os,m_weapons.size());
+	writeU32(os,(uint32_t)m_weapons.size());
 	for (WeaponList::const_iterator itr = m_weapons.begin(); itr != m_weapons.end(); itr++){
 		(*itr)->save(os);
 	}
-	write(os,m_defenses.size());
+	uint32_t defenseCount = (uint32_t)m_defenses.size();
+	writeU32(os,defenseCount);
+	// H2: find the index of the currently active defense within m_defenses so
+	// load() can restore the same active selection instead of always
+	// resetting to the base defense at index 0.
+	uint32_t currentDefenseIndex = 0;
+	for (uint32_t i=0; i<defenseCount; i++){
+		if (m_defenses[i] == m_currentDefense){
+			currentDefenseIndex = i;
+			break;
+		}
+	}
 	for (DefenseList::const_iterator itr = m_defenses.begin(); itr != m_defenses.end(); itr++){
 		(*itr)->save(os);
 	}
+	writeU32(os,currentDefenseIndex);
 	return 0;
 }
 
@@ -200,7 +213,15 @@ void FVehicle::setIcon(std::string icon) {
 }
 
 int FVehicle::load(std::istream &is) {
-	read(is,m_ID);
+	uint32_t id = 0;
+	readU32(is,id);
+	m_ID = id;
+	// H3: advance the static next-ID counter past any loaded ID so a
+	// freshly-constructed vehicle never reuses an ID restored from a save
+	// file.
+	if (m_ID >= m_nextID){
+		m_nextID = m_ID + 1;
+	}
 	readString(is,m_name);
 	readString(is,m_iconName);
 	read(is,m_currentMR);
@@ -208,45 +229,70 @@ int FVehicle::load(std::istream &is) {
 	read(is,m_currentHP);
 	read(is,m_speed);
 	read(is,m_heading);
-	read(is,m_owner);
+	uint32_t owner = 0;
+	readU32(is,owner);
+	m_owner = owner;
 	read(is,m_currentDCR);
 	read(is,m_maskingScreenTurnCount);
 	read(is,m_combatControlDamaged);
 	read(is,m_onFire);
 	read(is,m_powerSystemDamaged);
 	read(is,m_navError);
-	size_t count = 0;
-	read(is,count);
+	uint32_t count = 0;
+	readU32(is,count);
 	for (unsigned int i=0; i< m_weapons.size(); i++){	// they were populated with default values
 		delete m_weapons[i];				// at creation so we need to clear them this is a bit
 	}										// wasteful in resources and could be done better.
 	m_weapons.clear();
-	for (unsigned int i=0; i<count; i++){
+	for (uint32_t i=0; i<count; i++){
 		FWeapon::Weapon type;
 		read(is,type);
 		FWeapon *w = createWeapon(type);
+		if (w == NULL){
+			// unknown/corrupt weapon type on the wire: abort the load rather
+			// than dereference a NULL factory result.
+			return 1;
+		}
 		w->setParent(this);
 		w->load(is);
 		m_weapons.push_back(w);
 	}
-	read(is,count);
+	readU32(is,count);
 	for (unsigned int i=0; i< m_defenses.size(); i++){	// they were populated with default values
 		delete m_defenses[i];				// at creation so we need to clear them this is a bit
 	}										// wasteful in resources and could be done better.
 	m_defenses.clear();
-	for (unsigned int i=0; i<count; i++){
+	// The defense objects backing the old m_currentDefense pointer were just
+	// deleted above; clear the pointer immediately so a load failure below
+	// leaves it NULL rather than dangling.
+	m_currentDefense = NULL;
+	for (uint32_t i=0; i<count; i++){
 		FDefense::Defense defType;
 		read(is,defType);
 		FDefense *d = createDefense(defType);
+		if (d == NULL){
+			// unknown/corrupt defense type on the wire: abort the load
+			// rather than dereference a NULL factory result.
+			return 1;
+		}
 		d->load(is);
 		m_defenses.push_back(d);
 	}
+	// H2: restore which defense was active at save time. The active-defense
+	// index is written after the defense list in save(); validate it against
+	// the freshly-rebuilt m_defenses before using it so a corrupt/oversized
+	// index cannot select an out-of-range entry.
+	uint32_t currentDefenseIndex = 0;
+	readU32(is,currentDefenseIndex);
 	// m_defenses was just rebuilt above (and any prior defenses, including
 	// the constructor-time default, were deleted); m_currentDefense must be
 	// re-pointed at a live entry so getCurrentDefense() never returns a
-	// dangling pointer. Reset to the base defense at index 0 when present;
-	// otherwise fabricate a safe default FNone so the pointer is always valid.
-	if (!m_defenses.empty()){
+	// dangling pointer. Restore the saved active-defense index when it is
+	// in range (CRIT-3 + H2); otherwise fall back to the base defense at
+	// index 0, or fabricate a safe default FNone when the list is empty.
+	if (!m_defenses.empty() && currentDefenseIndex < m_defenses.size()){
+		m_currentDefense = m_defenses[currentDefenseIndex];
+	} else if (!m_defenses.empty()){
 		m_currentDefense = m_defenses[0];
 	} else {
 		FDefense *d = new FNone();

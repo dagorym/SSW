@@ -26,7 +26,7 @@ struct FTacticalDamageResolution;
  *
  * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created:  Mar 24, 2009
- * @date Last Modified:  Jul 11, 2026
+ * @date Last Modified:  Jul 17, 2026
  */
 class FVehicle : public Frontier::FPObject
 {
@@ -109,13 +109,19 @@ public:
 	 * @brief Method to save the vehicle data
 	 *
 	 * This method implements the FPObject base class virtual write method to
-	 * save all the vehicle's data
+	 * save all the vehicle's data. The vehicle ID and owner ID are written
+	 * via the fixed-width little-endian @c writeU32 helper (portable across
+	 * platforms/host widths), as are the weapon-list and defense-list
+	 * counts. After the defense list is written, the index of
+	 * @c m_currentDefense within @c m_defenses is written as a trailing
+	 * fixed-width field (H2) so @c load() can restore the same active
+	 * defense selection instead of always resetting to the base defense.
 	 *
 	 * @param os The output stream to write to
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 06, 2008
-	 * @date Last Modified:  Mar 06, 2008
+	 * @date Last Modified:  Jul 17, 2026
 	 */
 	const virtual int save(std::ostream &os) const;
 
@@ -125,16 +131,31 @@ public:
 	 * This method is the inverse of the save method.  It reads the data for
 	 * the class from the designated input stream.  This method returns 0 if
 	 * everything is okay and a positive integer error code if there is a
-	 * failure. After the weapon and defense lists are rebuilt from the
-	 * stream, m_currentDefense is re-pointed at the live m_defenses[0] entry
-	 * (or a freshly created default FNone if m_defenses is somehow empty) so
-	 * it never dangles at a defense object freed during the reload. Which
-	 * defense was active before the save is not persisted; the active
-	 * defense always resets to the base defense on load.
+	 * failure.
+	 *
+	 * The vehicle ID and owner ID are read via the fixed-width
+	 * little-endian @c readU32 helper. After the ID is read, the static
+	 * @c m_nextID counter is advanced past it
+	 * (@c if (m_ID >= m_nextID) m_nextID = m_ID + 1;) so a
+	 * freshly-constructed vehicle never reuses an ID restored from a save
+	 * file (H3). @c createWeapon(...) and @c createDefense(...) results are
+	 * null-checked; an unknown/corrupt type on the wire aborts the load by
+	 * returning nonzero without dereferencing the NULL factory result.
+	 *
+	 * After the weapon and defense lists are rebuilt from the stream, the
+	 * trailing active-defense index written by @c save() (H2) is read and,
+	 * when it is a valid index into the freshly-rebuilt @c m_defenses,
+	 * @c m_currentDefense is re-pointed directly at that entry so a ship
+	 * saved with a non-default defense raised (e.g. Masking Screen) reloads
+	 * with that same defense active. An out-of-range/invalid index falls
+	 * back to @c m_defenses[0] (or a freshly created default @c FNone if
+	 * @c m_defenses is somehow empty), preserving the CRIT-3 safety
+	 * fallback, so @c m_currentDefense never dangles at a defense object
+	 * freed during the reload.
 	 *
 	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 06, 2008
-	 * @date Last Modified:  Jul 10, 2026
+	 * @date Last Modified:  Jul 17, 2026
 	 */
 	virtual int load(std::istream &is);
 
