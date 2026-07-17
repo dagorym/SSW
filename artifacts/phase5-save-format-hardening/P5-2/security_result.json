@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-2/security_report.md",
+    "artifacts/phase5-save-format-hardening/P5-2/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-P5-2-security-20260717",
+  "documentation_sufficiency_summary": [
+    "SUFFICIENT. The FVehicle::save and FVehicle::load Doxygen headers (include/ships/FVehicle.h) accurately document the fixed-width uint32 IDs/counts, the trailing active-defense index (H2), the m_nextID advance guard (H3), the createWeapon/createDefense NULL-check abort semantics, and the CRIT-3 safe fallback for an out-of-range index. Inline comments in src/ships/FVehicle.cpp explain the early m_currentDefense=NULL clearing before the defense rebuild and the index validation.",
+    "doc/deferred-tasks.md and doc/synthesized-roadmap.md record H2 as resolved by P5-2 and correctly reflect the partial/remaining H3 scope (fleet/player ID-counter work carried into P5-3). No documentation asserts a control that the code does not implement.",
+    "Recommendation (non-blocking): note in the aggregate-loader (P5-5) documentation the loader-contract dependency that a nonzero FVehicle::load return requires the caller to discard the partially-built object."
+  ],
+  "note_finding_count": 3,
+  "outcome": "PASS",
+  "pass_label": "PASS",
+  "status": "complete",
+  "task_id": "P5-2",
+  "test_sufficiency_summary": [
+    "SUFFICIENT for P5-2's security-relevant behaviors. The two adversarial-input controls are covered by end-to-end behavioral tests that hand-craft a corrupt stream and assert observed runtime outcome: testLoadReturnsNonzeroOnUnknownWeaponType and testLoadReturnsNonzeroOnUnknownDefenseType construct a stream with an out-of-range type tag (9999), call FVehicle::load, and assert rc != 0 with no crash - directly exercising the createWeapon/createDefense NULL-check abort on BOTH loops.",
+    "H2 active-defense restore is covered behaviorally by testLoadRestoresActiveDefenseSelectionAcrossSaveLoad (raises Masking Screen via the real API, saves, reloads into a fresh FVehicle, asserts getCurrentDefense()->getType()==MS and that ammo/turn-count are restored verbatim rather than re-applied). The CRIT-3 live-pointer fallback is covered by testLoadReassignsCurrentDefenseToLiveDefenseAfterMultiDefenseReload and testLoadedVehicleSurvivesWeaponFireViaCurrentDefense.",
+    "H3 ID-counter restore is covered behaviorally by testLoadAdvancesNextIDPastLoadedID (loads a vehicle with a large ID, then asserts a freshly-constructed vehicle receives a strictly-greater ID). Round-trip fidelity is covered by testSerialize and testSerializeRoundTripsWeaponsDefensesAndState.",
+    "Gap (non-blocking, NOTE): no explicit out-of-range active-defense-index negative test and no truncated-stream/oversized-count test at this layer (the latter is deferred to the P5-5 aggregate-abort boundary). Full suite executed: 263/263 pass from tests/."
+  ],
+  "warning_finding_count": 0
+}
