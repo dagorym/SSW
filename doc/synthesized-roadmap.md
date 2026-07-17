@@ -152,6 +152,13 @@ Ordered by impact.
   and on LLP64. _(codex)_ Also: `FMap::getMap()` returns `*m_map` with no null guard
   (`FMap.cpp:31-33`), unlike `FMap::create()` which null-checks first — any `getMap()` before
   a `create()` (e.g. a partial/bad load) is a null deref.
+  _Resolved (pointer-mask smuggling): `FJumpRoute::load` now decodes the start/end system
+  IDs as real fixed-width `writeU32`/`readU32` fields (`m_startSystemID`/`m_endSystemID`,
+  exposed via `getStartSystemID()`/`getEndSystemID()`) instead of casting them into
+  `FSystem*` fields; `FMap::load` resolves them via `getSystem(id)` and null-guards the
+  lookup, aborting the load (nonzero) on an unknown system ID instead of storing an invalid
+  pointer. IDs above 65535 and LLP64 hosts now resolve correctly. The `FMap::getMap()`
+  null-guard gap remains open. See `artifacts/phase5-save-format-hardening/P5-4`._
 - `FPlayer::m_destroyed` never freed, never serialized (it is the data the Replacements rule
   needs). **[RESOLVED (freeing) — see P2-5: `FPlayer::~FPlayer()` now deletes and clears every
   ship in `m_destroyed`, with the sole-ownership contract documented on `addDestroyedShip()`
