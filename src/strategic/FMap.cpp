@@ -1,8 +1,9 @@
 /**
  * @file FMap.cpp
  * @brief Implementation file for FMap class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 17, 2005
+ * @date Last Modified: Jul 17, 2026
  *
  */
 
@@ -314,38 +315,61 @@ FJumpRoute * FMap::getJumpRoute(unsigned int id){
 }
 
 const int FMap::save(std::ostream &os) const{
+	int rc = 0;
 	// save the size of the map
-	write(os,m_maxCoord);
+	if (writeU32(os,static_cast<uint32_t>(m_maxCoord)) != 0) rc = 1;
 	// save the number of systems
-	write(os,m_systems.size());
+	if (writeU32(os,static_cast<uint32_t>(m_systems.size())) != 0) rc = 1;
 	// save each system
 	for (unsigned int i = 0; i < m_systems.size(); i++){
-		m_systems[i]->save(os);
+		if (m_systems[i]->save(os) != 0) rc = 1;
 	}
 	// save the number of jump routes
-	write(os,m_jumps.size());
+	if (writeU32(os,static_cast<uint32_t>(m_jumps.size())) != 0) rc = 1;
 	// save the individual jump routes
 	for (unsigned int i = 0; i < m_jumps.size(); i++){
-		m_jumps[i]->save(os);
+		if (m_jumps[i]->save(os) != 0) rc = 1;
 	}
-	return 0;
+	return rc;
 }
 
 int FMap::load(std::istream &is){
-	read(is,m_maxCoord);
-	size_t sysCount,jumpCount;
-	read(is,sysCount);
-	for (unsigned int i = 0; i < sysCount; i++){
+	uint32_t maxCoordVal = 0;
+	if (readU32(is,maxCoordVal) != 0) return 1;
+	m_maxCoord = static_cast<int>(maxCoordVal);
+
+	uint32_t sysCount = 0;
+	if (readU32(is,sysCount) != 0) return 1;
+	for (uint32_t i = 0; i < sysCount; i++){
 		FSystem *s = new FSystem;
-		s->load(is);
+		if (s->load(is) != 0){
+			delete s;
+			return 1;
+		}
 		m_systems.push_back(s);
 	}
-	read(is,jumpCount);
-	for (unsigned int i = 0; i < jumpCount; i++){
+
+	uint32_t jumpCount = 0;
+	if (readU32(is,jumpCount) != 0) return 1;
+	for (uint32_t i = 0; i < jumpCount; i++){
 		FJumpRoute *j = new FJumpRoute;
-		j->load(is);
-		j->setStart(getSystem((unsigned int)((long)(j->getStart()) & 0x0000FFFFL)));
-		j->setEnd(getSystem((unsigned int)((long)(j->getEnd()) & 0x0000FFFFL)));
+		if (j->load(is) != 0){
+			delete j;
+			return 1;
+		}
+		// Resolve the jump route's start/end system IDs (real fixed-width
+		// fields, not pointer-smuggled values) to the matching FSystem via
+		// getSystem(id). Null-guard the lookup: a jump route that
+		// references an out-of-range or unknown system ID aborts the load
+		// (nonzero) instead of storing an invalid pointer.
+		FSystem *start = getSystem(j->getStartSystemID());
+		FSystem *end = getSystem(j->getEndSystemID());
+		if (start == NULL || end == NULL){
+			delete j;
+			return 1;
+		}
+		j->setStart(start);
+		j->setEnd(end);
 		m_jumps.push_back(j);
 	}
 

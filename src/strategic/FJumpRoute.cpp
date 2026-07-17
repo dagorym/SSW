@@ -1,8 +1,9 @@
 /**
  * @file FJumpRoute.cpp
  * @brief Implementation file for FJumpRoute class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 20, 2005
+ * @date Last Modified: Jul 17, 2026
  *
  */
 
@@ -20,6 +21,8 @@ FJumpRoute::FJumpRoute(){
 	m_classCount++;
 	m_start = NULL;
 	m_end = NULL;
+	m_startSystemID = 0;
+	m_endSystemID = 0;
 	m_length = 0;
 	m_ID = 0;
 }
@@ -34,6 +37,8 @@ FJumpRoute::~FJumpRoute(){
 FJumpRoute::FJumpRoute(FSystem * start, FSystem * end, std::vector<unsigned int> players){
 	m_start = start;
 	m_end = end;
+	m_startSystemID = start->getID();
+	m_endSystemID = end->getID();
 	m_players = players;
 	float dx = start->getCoord(0)-end->getCoord(0);
 	float dy = start->getCoord(1)-end->getCoord(1);
@@ -102,38 +107,54 @@ int FJumpRoute::getJumpTime(int s, int l) {
 }
 
 const int FJumpRoute::save(std::ostream &os) const{
-	write(os,m_ID);
-	write(os,m_length);
-	// store the ID's of the systems at the start and the end
-	// we'll restore the links when we read them back in
-	write(os,m_start->getID());
-	write(os,m_end->getID());
+	int rc = 0;
+	if (writeU32(os,m_ID) != 0) rc = 1;
+	if (write(os,m_length) != 0) rc = 1;
+	// store the ID's of the systems at the start and the end as real
+	// fixed-width fields; FMap::load resolves them back to FSystem
+	// pointers via getSystem(id)
+	if (writeU32(os,m_start->getID()) != 0) rc = 1;
+	if (writeU32(os,m_end->getID()) != 0) rc = 1;
 	// store the list of player IDs that know about the route.
-	write(os,m_players.size());
+	if (writeU32(os,static_cast<uint32_t>(m_players.size())) != 0) rc = 1;
 	for (unsigned int i = 0; i < m_players.size(); i++){
-		write(os,m_players[i]);
+		if (writeU32(os,m_players[i]) != 0) rc = 1;
 	}
-	return 0;
+	return rc;
 }
 
 int FJumpRoute::load(std::istream &is){
-	read(is,m_ID);
-	read(is,m_length);
-	unsigned int start,end;
-	size_t pSize;
-	// We'll hide the ID of the system in the pointer variable here and then
-	// extracted it to get the actual reference once we get back out to a place
-	// where we can look up the system using that ID.
-	read(is,start);
-	m_start = (FSystem *)start;
-	read(is,end);
-	m_end = (FSystem *)end;
-	read(is,pSize);
-	for (unsigned int i = 0; i < pSize; i++){
-		unsigned int pID;
-		read(is,pID);
+	uint32_t idVal = 0;
+	if (readU32(is,idVal) != 0) return 1;
+	m_ID = idVal;
+	if (read(is,m_length) != 0) return 1;
+	// Read the start/end system IDs as real fixed-width fields (no more
+	// smuggling the ID value into the m_start/m_end pointers via a cast).
+	// m_start/m_end are left NULL here; FMap::load resolves them to the
+	// matching FSystem via getSystem(id) and setStart()/setEnd().
+	uint32_t startID = 0, endID = 0;
+	if (readU32(is,startID) != 0) return 1;
+	if (readU32(is,endID) != 0) return 1;
+	m_startSystemID = startID;
+	m_endSystemID = endID;
+	m_start = NULL;
+	m_end = NULL;
+	uint32_t pSize = 0;
+	if (readU32(is,pSize) != 0) return 1;
+	for (uint32_t i = 0; i < pSize; i++){
+		uint32_t pID = 0;
+		if (readU32(is,pID) != 0) return 1;
 		m_players.push_back(pID);
 	}
+
+	// H3: advance the ID counter past the loaded ID (non-colliding guard),
+	// respecting FJumpRoute's post-increment allocation convention
+	// (m_ID = m_nextID++), so the next constructed FJumpRoute's ID is
+	// guaranteed to be strictly greater than every ID loaded so far.
+	if (m_ID >= m_nextID) {
+		m_nextID = m_ID + 1;
+	}
+
 	return 0;
 }
 

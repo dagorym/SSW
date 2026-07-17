@@ -1,8 +1,9 @@
 /**
  * @file FJumpRoute.h
  * @brief Header file for FJumpRoute class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 20, 2005
+ * @date Last Modified: Jul 17, 2026
  *
  */
 
@@ -105,6 +106,36 @@ public:
   void setEnd(FSystem * end) { m_end = end; }
 
   /**
+   * @brief Get the start system's ID as read from the stream by load()
+   *
+   * This method returns the raw start-system ID that @c load() decoded
+   * from the stream as a real fixed-width field (not a pointer-smuggled
+   * value). @c FMap::load uses this ID with @c getSystem(id) to resolve
+   * the actual @c FSystem pointer and calls @c setStart() with the
+   * result; the value is meaningless before @c load() has been called and
+   * is not touched by the pointer-based alternate constructor.
+   *
+   * @author Claude Sonnet 5 (medium)
+   * @date Created: Jul 17, 2026
+   */
+  const unsigned int & getStartSystemID() const { return m_startSystemID; }
+
+  /**
+   * @brief Get the end system's ID as read from the stream by load()
+   *
+   * This method returns the raw end-system ID that @c load() decoded
+   * from the stream as a real fixed-width field (not a pointer-smuggled
+   * value). @c FMap::load uses this ID with @c getSystem(id) to resolve
+   * the actual @c FSystem pointer and calls @c setEnd() with the result;
+   * the value is meaningless before @c load() has been called and is not
+   * touched by the pointer-based alternate constructor.
+   *
+   * @author Claude Sonnet 5 (medium)
+   * @date Created: Jul 17, 2026
+   */
+  const unsigned int & getEndSystemID() const { return m_endSystemID; }
+
+  /**
    * @brief Get the jump route's ID number
    *
    * This method returns the ID value for the jump route
@@ -160,13 +191,18 @@ public:
    * @brief Method to save the jump route data
    *
    * This method implements the FPObject base class virtual write method to
-   * save all the jump route's data
+   * save all the jump route's data. The route ID, the start/end system
+   * IDs, the player-ID-list count, and each player ID are written as real
+   * fixed-width little-endian fields via @c writeU32 (there is no more
+   * pointer-value smuggling of the start/end system IDs into a native-word
+   * field), so the wire format is portable across host word size and
+   * endianness and IDs above 65535 round-trip correctly.
    *
    * @param os The output stream to write to
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Mar 05, 2008
-   * @date Last Modified:  Mar 05, 2008
+   * @date Last Modified: Jul 17, 2026
    */
   const virtual int save(std::ostream &os) const;
 
@@ -174,13 +210,25 @@ public:
 	 * @brief Method to read data contents
 	 *
 	 * This method is the inverse of the save method.  It reads the data for
-	 * the class from the designated input stream.  This method returns 0 if
-	 * everything is okay and a positive integer error code if there is a
-	 * failure
+	 * the class from the designated input stream, using the fixed-width
+	 * little-endian @c readU32 helper for the ID, start/end system ID, and
+	 * player-list fields. The start/end system IDs are stored in
+	 * m_startSystemID/m_endSystemID (see getStartSystemID()/
+	 * getEndSystemID()) rather than smuggled into the m_start/m_end
+	 * pointers; m_start and m_end are left NULL by this method and are
+	 * resolved to real FSystem pointers only by FMap::load, which looks
+	 * them up via getSystem(id) and calls setStart()/setEnd(). This method
+	 * returns 0 if everything is okay and a positive integer error code if
+	 * there is a failure.
 	 *
-	 * @author Tom Stephens
+	 * After the ID is read, m_nextID is advanced past it (H3 non-colliding
+	 * guard, respecting FJumpRoute's post-increment allocation convention
+	 * m_ID = m_nextID++) so a subsequently constructed FJumpRoute always
+	 * receives an ID strictly greater than every ID loaded so far.
+	 *
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Mar 07, 2008
+	 * @date Last Modified: Jul 17, 2026
 	 */
 	virtual int load(std::istream &is);
 
@@ -189,6 +237,13 @@ private:
   FSystem * m_start;
   /// Pointer to system at end of jump
   FSystem * m_end;
+  /// Start system ID as read from the stream by load(); resolved to
+  /// m_start by FMap::load via getSystem(id)/setStart(). See
+  /// getStartSystemID().
+  unsigned int m_startSystemID;
+  /// End system ID as read from the stream by load(); resolved to m_end
+  /// by FMap::load via getSystem(id)/setEnd(). See getEndSystemID().
+  unsigned int m_endSystemID;
   /// ID of jump route
   unsigned int m_ID;
   /// Length of jump in days.
