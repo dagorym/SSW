@@ -1,0 +1,48 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- Add the versioned save-file header (kSaveMagic/kSaveFormatVersion) to FGame::save/load, convert FGame's own counts/IDs (m_currentPlayer, player count) to the P5-1 fixed-width little-endian helpers, aggregate load-error propagation across every header field, m_universe->load(), and each player->load() in FGame::load (reporting through IStrategicUI::showMessage with a console fallback and returning nonzero on any failure), and add the abort/preserve/report loader UX in FMainFrame::onOpen (check std::ifstream::is_open() and the FGame::load() return code, tearing the freshly-created failed game back down to the no-game state via the existing resetGame() path on failure without enabling turn/menu items, leaving the success path unchanged).
+
+Modified files:
+- include/strategic/FGame.h
+- src/strategic/FGame.cpp
+- src/FMainFrame.cpp
+- include/FMainFrame.h
+- tests/strategic/FGameTest.cpp
+
+Acceptance criteria to validate (from Planner):
+- FGame::save emits the magic + version header before any game data; a valid current-version full-game save->load round-trip restores round, current player, retreat condition, loss counters, the map, and all players (with fleets/ships).
+- FGame::load returns nonzero and reports via the installed IStrategicUI (verifiable with a mock IStrategicUI) for each of: wrong magic, unsupported version, truncated stream, and unknown factory type -- leaving no partially-constructed game as the live singleton.
+- FMainFrame::onOpen does not enable turn/menu items and returns to the no-game state when load fails or the file cannot be opened; the success path is unchanged.
+- FGame header counts/IDs are fixed-width little-endian uint32_t.
+- make check is green across all three suites (SSWTests, TacticalTests, GuiTests).
+
+Create test files in:
+- tests/strategic/FGameTest.cpp or a new tests/strategic/FGameSaveFormatTest.cpp -- mirror FGameMockStrategicUITest's mock IStrategicUI pattern (see tests/strategic/FGameMockStrategicUITest.cpp and the RetreatConditionMockUI in FGameTest.cpp) to assert FGame::load()'s nonzero return and exactly-one showMessage(...) call for each malformed-input case.
+- GUI-side FMainFrame::onOpen no-game/menu-disabled behavior belongs in tests/gui (StrategicGuiLiveTest.cpp already has a MinimalPrepStrategicUI + real FGame::save() round trip pattern around line ~917-940 that can be adapted for a failed-load-then-menu-state assertion).
+
+Implementation context for testing:
+- include/core/FSaveFormat.h defines kSaveMagic (0x31575353u), kSaveFormatVersion (1u), and kMaxSerializedStringBytes; include/core/FPObject.h provides the protected writeU32/readU32 fixed-width little-endian helpers FGame::save/load now use for the header and for m_currentPlayer/player-count.
+- FGame::save() writes writeU32(kSaveMagic) then writeU32(kSaveFormatVersion) as the very first bytes, before any other game data.
+- FGame::load() reads and validates magic first (return 1 on mismatch or read failure), then version (return 1 if unsupported or read failure); every subsequent header-field read, m_universe->load(is), and each `new FPlayer; p->load(is)` are all checked, with the private FGame::reportLoadError(const std::string&) helper (declared in include/strategic/FGame.h, defined in src/strategic/FGame.cpp) routing the failure message to m_ui->showMessage("SSW Load Error", detail) when m_ui != NULL, or std::cout otherwise, mirroring the existing init()-method console-fallback convention in this file.
+- A player that fails p->load(is) (including the unknown-factory-type case already handled inside FPlayer::load()/FVehicle::createShip()) is deleted before FGame::load() returns nonzero; because FMainFrame::onOpen() discards the entire freshly-created FGame instance on any load() failure (via resetGame()), FGame::load() itself does not need to roll back any players already pushed into m_players -- the whole object is torn down by the caller.
+- FMainFrame::onOpen() wraps the existing post-load menu-enable/turn-state block in an else branch guarded by `if (!is.is_open() || m_game->load(is) != 0) { resetGame(); } else { ...unchanged... }`; resetGame() (src/FMainFrame.cpp, pre-existing) deletes m_game, sets it to NULL, and disables the same menu items onNew()'s failure path already relies on, so this reuses an established reset path rather than inventing new teardown logic.
+- DEVIATION NOTE (read before writing new tests): tests/strategic/FGameTest.cpp's readLossCounters() helper parses FGame::save()'s raw byte output directly (a real behavioral read of production save() bytes, not a source-text/string-contract check -- see its doc comment). Adding the magic+version header shifted every subsequent field's byte offset by 8 bytes, which broke 8 existing FGameTest cases that depend on this helper (loss-counter and checkForVictory tests). This is a direct, mandated, and unavoidable consequence of this subtask's own acceptance criteria (writing the header first) -- not a source-string test being weakened. Per the validation-triage classification, the implementer made the smallest viable fix: readLossCounters() now reads two extra uint32_t fields (magic, version) and discards them before parsing the same fixed-layout fields it always has; no assertions were changed or removed. This one file (tests/strategic/FGameTest.cpp) is therefore included in this commit alongside the four originally-approved files, and validate_commit_scope.py was re-run with it explicitly listed to confirm in-scope status. The Tester should be aware this helper now assumes the current wire format's 8-byte header prefix if it extends readLossCounters() further.
+
+Suggested test command(s):
+- make (repo root)
+- make check (repo root; runs SSWTests, TacticalTests, and GuiTests under xvfb-run)
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-5
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
