@@ -1,8 +1,9 @@
 /**
  * @file FMainFrame.cpp
  * @brief Implementation file for FMainFrame class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Feb 28, 2005
+ * @date Last Modified:  Jul 17, 2026
  *
  */
 #include "FMainFrame.h"
@@ -158,24 +159,33 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 			wxString fpath = d->GetPath();
 			// open the file for reading
 			std::ifstream is(fpath.ToStdString().c_str(),std::ios::binary);
-			// load up the game
-			m_game->load(is);
-			// draw the screen
-			Refresh();
-			GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
-			GetMenuBar()->GetMenu(0)->FindItemByPosition(3)->Enable(true);
-			if(m_game->isUPFTurn()){
-				GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
-				GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
-				GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
-				GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
-				GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
+			// P5-5: reject an unopenable file or a failed/corrupt load
+			// instead of silently continuing with a partially-built game.
+			// FGame::load() already reports the specific failure reason via
+			// the installed IStrategicUI (or its console fallback); on
+			// failure here we tear the freshly-created game back down via
+			// the existing reset path so no half-loaded game is left as the
+			// live singleton and no turn/menu items get enabled.
+			if (!is.is_open() || m_game->load(is) != 0){
+				resetGame();
 			} else {
-				GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
-				GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
-				GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
-				GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
-				GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
+				// draw the screen
+				Refresh();
+				GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
+				GetMenuBar()->GetMenu(0)->FindItemByPosition(3)->Enable(true);
+				if(m_game->isUPFTurn()){
+					GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(false);
+					GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(true);
+					GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(!m_novaPlaced);
+					GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(false);
+					GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(false);
+				} else {
+					GetMenuBar()->GetMenu(2)->FindItemByPosition(0)->Enable(true);
+					GetMenuBar()->GetMenu(2)->FindItemByPosition(1)->Enable(false);
+					GetMenuBar()->GetMenu(2)->FindItemByPosition(3)->Enable(false);
+					GetMenuBar()->GetMenu(2)->FindItemByPosition(4)->Enable(true);
+					GetMenuBar()->GetMenu(1)->FindItemByPosition(1)->Enable(true);
+				}
 			}
 		}
 		// on Cancel (or any non-OK result), do nothing: no FGame is created

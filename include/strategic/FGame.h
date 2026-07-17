@@ -32,9 +32,9 @@ namespace Frontier
  * The FGame class is responsible for destroying the FMap object and the
  * FPlayer objects when it is destroyed.
  *
- * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created:  Jan 14, 2005
- * @date Last Modified:  Mar 28, 2026
+ * @date Last Modified:  Jul 17, 2026
  */
 class FGame : public Frontier::FPObject {
 private:
@@ -192,13 +192,19 @@ public:
    * @brief Method to save the game
    *
    * This method implements the FPObject base class virtual write method to
-   * save all the game state.
+   * save all the game state. Writes the fixed-width @c kSaveMagic /
+   * @c kSaveFormatVersion header (via @c writeU32) before any game data, so
+   * a loader can identify and validate the save-file format up front. The
+   * player count and the current-player ID are written with the
+   * fixed-width little-endian @c writeU32 helper rather than the native
+   * @c write template, matching the portable wire-format convention used by
+   * @c FMap, @c FSystem, @c FPlayer, @c FFleet, and @c FVehicle.
    *
    * @param os The output stream to write to
    *
-   * @author Tom Stephens
+   * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Mar 03, 2008
-   * @date Last Modified:  Mar 05, 2008
+   * @date Last Modified:  Jul 17, 2026
    */
   const virtual int save(std::ostream &os) const;
 
@@ -206,13 +212,21 @@ public:
 	 * @brief Method to read data contents
 	 *
 	 * This method is the inverse of the save method.  It reads the data for
-	 * the class from the designated input stream.  This method returns 0 if
-	 * everything is okay and a positive integer error code if there is a
-	 * failure
+	 * the class from the designated input stream.  The magic tag is read
+	 * and validated first (mismatch aborts the load), then the format
+	 * version (an unsupported version aborts the load); every subsequent
+	 * header field read, the nested @c m_universe->load(is) call, and each
+	 * player's @c load(is) call are all checked, and the first failure
+	 * aborts the load without leaving a half-built game committed as the
+	 * live singleton. Every failure is reported via
+	 * @c m_ui->showMessage(...) when an @c IStrategicUI is installed, or a
+	 * console fallback otherwise, via the private @c reportLoadError(...)
+	 * helper. This method returns 0 if everything is okay and a positive
+	 * integer error code if there is a failure.
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Mar 07, 2008
+	 * @date Last Modified:  Jul 17, 2026
 	 */
 	virtual int load(std::istream &is);
 
@@ -319,6 +333,24 @@ private:
   int m_lostTendayUPF;
   /// number of stations destroyed in the last tenday
   int m_stationsDestroyed;
+
+  /**
+   * @brief Reports a load() failure through the installed strategic UI.
+   *
+   * Routes @p detail to @c m_ui->showMessage(...) when an @c IStrategicUI
+   * is installed; otherwise falls back to writing @p detail to
+   * @c std::cout, matching the console-fallback convention already used
+   * elsewhere in this class (see init()). Used by load() to report a wrong
+   * magic tag, an unsupported format version, a truncated/corrupt stream,
+   * or an unknown factory type surfaced by a nested load() call.
+   *
+   * @param detail Human-readable description of the load failure.
+   *
+   * @author Claude Sonnet 5 (medium)
+   * @date Created: Jul 17, 2026
+   * @date Last Modified: Jul 17, 2026
+   */
+  void reportLoadError(const std::string &detail) const;
 
   /**
    * @brief Method to get the players' info

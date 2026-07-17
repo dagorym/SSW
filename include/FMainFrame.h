@@ -1,8 +1,9 @@
 /**
  * @file FMainFrame.h
  * @brief Header file for FMainFrame class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Feb 28, 2005
+ * @date Last Modified:  Jul 17, 2026
  *
  */
 
@@ -26,9 +27,9 @@ class WXStrategicUI;
  * the menus, owns the drawing panel, and coordinates the strategic UI
  * adapter.
  *
- * @author Tom Stephens, gpt-5.3-codex (medium)
+ * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
  * @date Created:  Feb 28, 2005
- * @date Last Modified:  Apr 17, 2026
+ * @date Last Modified:  Jul 17, 2026
  */
 class FMainFrame : public wxFrame {
 public:
@@ -94,15 +95,21 @@ public:
    * Shows a wxFileDialog and checks its ShowModal() result before acting:
    * on Cancel (or any non-OK result) no FGame is created and no load() is
    * attempted, leaving the frame state unchanged. On a confirmed OK, a new
-   * FGame is created and loaded from the dialog's full GetPath() (rather
-   * than the cwd-dependent GetFilename()), and the existing post-load
+   * FGame is created and its stream/return-code are checked: if the file
+   * cannot be opened (@c std::ifstream::is_open() is false) or
+   * @c FGame::load() returns nonzero (wrong magic, unsupported version,
+   * truncated/corrupt data, or an unknown factory type -- each already
+   * reported to the player via the installed @c IStrategicUI), the
+   * freshly-created game is torn down via the existing @c resetGame() path
+   * so no half-loaded game is left as the live singleton and no turn/menu
+   * items are enabled. On a successful load, the existing post-load
    * menu-enable / turn-state logic runs unchanged.
    *
    * @param event The wxWidget window event that triggered the function call
    *
    * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Mar 02, 2005
-   * @date Last Modified:  Jul 11, 2026
+   * @date Last Modified:  Jul 17, 2026
    */
   void onOpen(wxCommandEvent& event);
 

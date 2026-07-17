@@ -3,7 +3,7 @@
  * @brief Implementation file for FGame class
  * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Jul 11, 2026
+ * @date Last Modified:  Jul 17, 2026
  *
  */
 
@@ -597,47 +597,123 @@ void FGame::moveFleets(FPlayer * p){
 }
 
 const int FGame::save(std::ostream &os) const {
+	int rc = 0;
+	// P5-5: emit the fixed-width magic + format-version header first so a
+	// loader can identify and validate the save-file format before
+	// attempting to interpret any game data.
+	if (writeU32(os,kSaveMagic) != 0) rc = 1;
+	if (writeU32(os,kSaveFormatVersion) != 0) rc = 1;
 	// save game state
-	write(os,m_gui);
-	write(os,m_round);
-	write(os,m_currentPlayer);
-	write(os,m_satharRetreat);
-	write(os,m_lostHC);
-	write(os,m_lostAC);
-	write(os,m_lostSatharShips);
-	write(os,m_lostTendaySathar);
-	write(os,m_lostTendayUPF);
-	write(os,m_stationsDestroyed);
+	if (write(os,m_gui) != 0) rc = 1;
+	if (write(os,m_round) != 0) rc = 1;
+	// current-player ID: fixed-width little-endian, matching the
+	// FMap/FSystem/FPlayer/FFleet/FVehicle ID/count convention.
+	if (writeU32(os,static_cast<uint32_t>(m_currentPlayer)) != 0) rc = 1;
+	if (write(os,m_satharRetreat) != 0) rc = 1;
+	if (write(os,m_lostHC) != 0) rc = 1;
+	if (write(os,m_lostAC) != 0) rc = 1;
+	if (write(os,m_lostSatharShips) != 0) rc = 1;
+	if (write(os,m_lostTendaySathar) != 0) rc = 1;
+	if (write(os,m_lostTendayUPF) != 0) rc = 1;
+	if (write(os,m_stationsDestroyed) != 0) rc = 1;
 	// save the map
-	m_universe->save(os);
+	if (m_universe->save(os) != 0) rc = 1;
 	// save the players
-	// first save the number of players
-	write(os,m_players.size());
+	// first save the number of players (fixed-width little-endian count)
+	if (writeU32(os,static_cast<uint32_t>(m_players.size())) != 0) rc = 1;
 	// then save each player's data
 	for (unsigned int i=0; i< m_players.size(); i++){
-		m_players[i]->save(os);
+		if (m_players[i]->save(os) != 0) rc = 1;
 	}
-	return 0;
+	return rc;
+}
+
+void FGame::reportLoadError(const std::string &detail) const {
+	if (m_ui != NULL) {
+		m_ui->showMessage("SSW Load Error", detail);
+	} else {
+		std::cout << detail << std::endl;
+	}
 }
 
 int FGame::load(std::istream &is){
-	read(is,m_gui);
-	read(is,m_round);
-	read(is,m_currentPlayer);
-	read(is,m_satharRetreat);
-	read(is,m_lostHC);
-	read(is,m_lostAC);
-	read(is,m_lostSatharShips);
-	read(is,m_lostTendaySathar);
-	read(is,m_lostTendayUPF);
-	read(is,m_stationsDestroyed);
+	// P5-5: validate the fixed-width magic tag first; a mismatch means this
+	// is not an SSW save file (or is corrupt) and the load must abort
+	// before any game data is interpreted.
+	uint32_t magic = 0;
+	if (readU32(is,magic) != 0 || magic != kSaveMagic){
+		reportLoadError("Cannot load save file: missing or invalid SSW save-file signature.");
+		return 1;
+	}
+	// Then validate the format version; there is no legacy-format read
+	// path, so an unsupported version also aborts the load.
+	uint32_t version = 0;
+	if (readU32(is,version) != 0 || version != kSaveFormatVersion){
+		reportLoadError("Cannot load save file: unsupported save-file format version.");
+		return 1;
+	}
+	if (read(is,m_gui) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	if (read(is,m_round) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	// current-player ID: fixed-width little-endian, matching save().
+	uint32_t currentPlayer = 0;
+	if (readU32(is,currentPlayer) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	m_currentPlayer = currentPlayer;
+	if (read(is,m_satharRetreat) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	if (read(is,m_lostHC) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	if (read(is,m_lostAC) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	if (read(is,m_lostSatharShips) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	if (read(is,m_lostTendaySathar) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	if (read(is,m_lostTendayUPF) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
+	if (read(is,m_stationsDestroyed) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (game header).");
+		return 1;
+	}
 	m_universe = &(FMap::create());
-	m_universe->load(is);
-	size_t pCount;
-	read(is,pCount);
-	for (unsigned int i = 0; i < pCount; i++){
+	if (m_universe->load(is) != 0){
+		reportLoadError("Cannot load save file: the map data is truncated or corrupt.");
+		return 1;
+	}
+	uint32_t pCount = 0;
+	if (readU32(is,pCount) != 0){
+		reportLoadError("Cannot load save file: the file is truncated or corrupt (player count).");
+		return 1;
+	}
+	for (uint32_t i = 0; i < pCount; i++){
 		FPlayer *p = new FPlayer;
-		p->load(is);
+		if (p->load(is) != 0){
+			// covers both a truncated/corrupt player record and an unknown
+			// factory type surfaced by FPlayer::load()/FVehicle::createShip().
+			delete p;
+			reportLoadError("Cannot load save file: player data is truncated, corrupt, or references an unknown ship type.");
+			return 1;
+		}
 		// we need to place the fleets into their respective systems
 		FleetList fList = p->getFleetList();
 		for (FleetList::iterator f = fList.begin(); f < fList.end(); f++){

@@ -49,9 +49,14 @@ namespace {
  * @param lostTendayUPF      Out: UPF ships lost in the current tenday.
  * @param stationsDestroyed  Out: number of stations destroyed.
  *
+ * P5-5 note: @c FGame::save() now emits the fixed-width @c kSaveMagic /
+ * @c kSaveFormatVersion header (two @c uint32_t values, 8 bytes) before any
+ * game data, so this helper skips that header before parsing the same
+ * fixed-layout fields it always has.
+ *
  * @author Claude Sonnet 5 (medium)
  * @date Created: Jul 11, 2026
- * @date Last Modified: Jul 11, 2026
+ * @date Last Modified: Jul 17, 2026
  */
 void readLossCounters(FGame &game, int &lostHC, int &lostAC, int &lostSatharShips,
 		int &lostTendaySathar, int &lostTendayUPF, int &stationsDestroyed){
@@ -62,10 +67,16 @@ void readLossCounters(FGame &game, int &lostHC, int &lostAC, int &lostSatharShip
 	os.close();
 
 	std::ifstream is(filename, std::ios::binary);
+	uint32_t magic;
+	uint32_t version;
 	bool gui;
 	unsigned int round;
 	unsigned int currentPlayer;
 	int satharRetreat;
+	// P5-5: skip the fixed-width magic + format-version header now written
+	// first by FGame::save() before the pre-existing fixed-layout fields.
+	is.read(reinterpret_cast<char *>(&magic), sizeof(magic));
+	is.read(reinterpret_cast<char *>(&version), sizeof(version));
 	is.read(reinterpret_cast<char *>(&gui), sizeof(gui));
 	is.read(reinterpret_cast<char *>(&round), sizeof(round));
 	is.read(reinterpret_cast<char *>(&currentPlayer), sizeof(currentPlayer));
