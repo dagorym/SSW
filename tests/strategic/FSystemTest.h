@@ -21,6 +21,9 @@ class FSystemTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testAddPlanet );
 	CPPUNIT_TEST( testAddRemoveFleet );
 	CPPUNIT_TEST( testSerialize );
+	CPPUNIT_TEST( testLoadAdvancesNextIdPastLoadedID );
+	CPPUNIT_TEST( testSaveWiresIdLittleEndian );
+	CPPUNIT_TEST( testLoadReturnsNonzeroOnTruncatedStream );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -34,6 +37,9 @@ public:
 	void testAddPlanet();
 	void testAddRemoveFleet();
 	void testSerialize();
+	void testLoadAdvancesNextIdPastLoadedID();
+	void testSaveWiresIdLittleEndian();
+	void testLoadReturnsNonzeroOnTruncatedStream();
 };
 
 }

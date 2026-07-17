@@ -1,0 +1,62 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- P5-4 remediation pass 2: fix the one BLOCKING Verifier finding from pass 1 (CONDITIONAL PASS) -- FSystemTest::testLoadAdvancesNextIdPastLoadedID (AC4 for FSystem) was empirically vacuous because it default-constructed a second FSystem before calling load(), and that construction alone advanced the shared static m_nextID counter past the loaded ID regardless of whether FSystem::load's H3 non-colliding guard (src/strategic/FSystem.cpp:112-118) fired. Rewrote the test to hand-craft the raw FSystem::load wire buffer (ID, name, owner, coords, planet count) with a deliberately large ID (5,000,000) and call load() directly with no intervening FSystem construction, mirroring the already-correct FJumpRouteTest::testLoadAdvancesNextIdPastLoadedID pattern. Also added the optional NOTE-driven byte-level assertion on the planet-count field in testSaveWiresIdLittleEndian so the AC5 supplement discriminates the writeU32 width change independently of the ID field. No implementation source was modified (FSystem/FJumpRoute/FMap .h/.cpp unchanged); only tests/strategic/FSystemTest.cpp was edited. All other 10 P5-4 tests (FSystemTest, FJumpRouteTest, FMapTest) were left untouched.
+
+Acceptance criteria validated:
+- AC4 for FSystem (remediation target): a newly constructed FSystem receives an ID strictly greater than every loaded ID -- now proven non-vacuously via a hand-crafted wire buffer with a deliberately large ID and direct load(), matching the FJumpRoute AC4 pattern. Confirmed to fail against the guard-disabled implementation and pass against the real implementation.
+- AC5 supplement for FSystem (optional NOTE addressed): testSaveWiresIdLittleEndian now also asserts the planet-count field's raw little-endian bytes, discriminating the writeU32 fixed-width path independently of the ID field.
+- AC1, AC2 (parts 1-2), AC3, AC4 for FJumpRoute, remaining AC5 supplements, and the load()-truncation-propagation supplements for FSystem/FJumpRoute/FMap: unaffected, left as committed in pass 1 (commit f2d4134f), still passing.
+
+Implementation branch or worktree context:
+- Implementation branch: phase5-P5-4-implementer-20260717, code commit 89b069ab (harden map/system/jump-route wire layer, remove ID pointer-mask). Not modified in this remediation pass.
+- Tester worktree/branch: phase5-P5-4-tester-20260717, working from worktree /home/tstephen/repos/worktrees/phase5-P5-4-tester-20260717.
+- This is a remediation (pass 2) of the P5-4 Tester stage; pass-1 tester work is commit f2d4134f on this same branch. Pass-1 stage artifacts (implementer/tester/documenter/security/verifier) were archived by the Coordinator under artifacts/phase5-save-format-hardening/P5-4/history/pass-1/ before this pass began; do not touch that history directory.
+- Verifier pass-1 report (CONDITIONAL PASS) is at artifacts/phase5-save-format-hardening/P5-4/history/pass-1/verifier_report.md; its single BLOCKING finding is the one addressed in this pass.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- tests/strategic/FSystemTest.cpp (this pass -- test-only change, rewrote testLoadAdvancesNextIdPastLoadedID and extended testSaveWiresIdLittleEndian)
+- include/strategic/FSystem.h, src/strategic/FSystem.cpp (pass-1 Implementer, unchanged this pass)
+- include/strategic/FJumpRoute.h, src/strategic/FJumpRoute.cpp (pass-1 Implementer, unchanged this pass)
+- include/strategic/FMap.h, src/strategic/FMap.cpp (pass-1 Implementer, unchanged this pass)
+- tests/strategic/FJumpRouteTest.h/.cpp, tests/strategic/FMapTest.h/.cpp (pass-1 Tester, unchanged this pass)
+- AGENTS.md, doc/synthesized-roadmap.md (pass-1 Documenter, unchanged this pass -- Documenter for this remediation pass should confirm no further doc updates are needed given the test-only nature of this fix)
+
+Test commit:
+- 74fbcf0320f343c55b99dfd56b94860448915e50
+
+Commands executed:
+- make -C src/strategic (confirms module stays wx-free, exit 0)
+- cd tests && make (full test suite build, exit 0)
+- cd tests && ./SSWTests (269 tests, OK, with H3 guard present)
+- temporarily commented out the H3 guard block in src/strategic/FSystem.cpp (lines 112-118), rebuilt src/strategic and tests/, and reran ./SSWTests: 1 failure -- FrontierTests::FSystemTest::testLoadAdvancesNextIdPastLoadedID failed at 's3.getID() > 5000000u' (269 run, 1 failure) -- confirms the rewritten test is non-vacuous
+- restored the H3 guard block verbatim (git diff src/strategic/FSystem.cpp shows no diff), rebuilt src/strategic and tests/, and reran ./SSWTests: 269 tests, OK
+- make check (from worktree root): SSWTests 269 OK, TacticalTests 253 OK, GuiTests 81 OK under xvfb-run, exit 0
+
+Final test outcomes:
+- All 269 SSWTests pass, including the rewritten FSystemTest::testLoadAdvancesNextIdPastLoadedID and the updated FSystemTest::testSaveWiresIdLittleEndian.
+- Non-vacuousness of the rewritten AC4 FSystem test was empirically confirmed: disabling the H3 guard in FSystem::load makes this exact test fail (assertion s3.getID() > 5000000u); restoring the guard (verified via git diff showing zero implementation changes) makes it pass again.
+- TacticalTests (253) and GuiTests (81, under xvfb-run) both remain green -- no regressions introduced by the test-only change.
+- The other 10 P5-4 behavioral tests (AC1, AC2 parts 1-2, AC3, AC4 for FJumpRoute, AC5 supplements, load-truncation-propagation supplements) were left unmodified per the remediation preamble and continue to pass.
+- Only tests/strategic/FSystemTest.cpp changed; no implementation source (FSystem/FJumpRoute/FMap .h/.cpp) was modified -- confirmed via git diff before and after the guard-disable verification step.
+
+Documentation context:
+- This remediation pass changes test code only; it does not change any documented behavior, wire format, or acceptance-criteria outcome that pass-1's Documenter already recorded in AGENTS.md and doc/synthesized-roadmap.md.
+- The Documenter for this pass should verify that no documentation update is actually required (the fix only makes existing, already-documented AC4 behavior verifiably tested, it does not change what is true about the implementation), and should note in its own artifacts that this was a test-only remediation commit.
+- If the Documenter wants to reference the remediation, the natural place is a short addendum near the existing FSaveFormat.h/H3 migration-status bullet in AGENTS.md or the H3 line in doc/synthesized-roadmap.md, consistent with the Single-Source-of-Truth Rule -- but no new facts need to be introduced since the underlying implementation behavior is unchanged.
+
+Plan and diff context:
+- Plan: plans/phase5-save-format-hardening-plan.md (P5-4 section).
+- Comparison base: base branch phase5 (this worktree branch is phase5-P5-4-tester-20260717, HEAD 74fbcf03, one commit ahead of pass-1 HEAD f2d4134f, which is itself several commits ahead of phase5).
+- Prior pass-1 artifacts for context (do not modify): artifacts/phase5-save-format-hardening/P5-4/history/pass-1/*.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-4
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

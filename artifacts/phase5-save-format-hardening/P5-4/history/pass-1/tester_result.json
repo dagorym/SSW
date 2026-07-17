@@ -1,0 +1,33 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-4/tester_report.md",
+    "artifacts/phase5-save-format-hardening/P5-4/tester_result.json",
+    "artifacts/phase5-save-format-hardening/P5-4/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-P5-4-tester-20260717",
+  "commands_run": [
+    "make -C src/strategic",
+    "cd tests && make && ./SSWTests",
+    "make check"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": 81,
+    "SSWTests_after": 269,
+    "SSWTests_before": 258,
+    "SSWTests_new_tests_added": 11,
+    "TacticalTests": 253
+  },
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P5-4",
+  "test_commit_hash": "f2d4134f76dbc50eb325b2949b6ce418d6c65d4c",
+  "test_files_changed": [
+    "tests/strategic/FSystemTest.h",
+    "tests/strategic/FSystemTest.cpp",
+    "tests/strategic/FJumpRouteTest.h",
+    "tests/strategic/FJumpRouteTest.cpp",
+    "tests/strategic/FMapTest.h",
+    "tests/strategic/FMapTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}

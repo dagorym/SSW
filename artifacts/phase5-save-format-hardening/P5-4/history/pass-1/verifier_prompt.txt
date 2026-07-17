@@ -1,0 +1,76 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented the P5-4 map/system/jump-route save-load hardening and ID pointer-mask fix (implementer branch phase5-P5-4-implementer-20260717, code commit 89b069ab; tester branch phase5-P5-4-tester-20260717, test commit f2d4134f) which replaced the (FSystem*)-cast-plus-0x0000FFFFL-mask ID smuggling in FJumpRoute with real fixed-width writeU32/readU32 wire fields, made FSystem/FJumpRoute/FMap save()/load() use fixed-width little-endian counts/IDs, propagate nested load failures, and advance their static next-ID counters past loaded IDs.
+
+Acceptance criteria to verify:
+- AC1: multi-system/multi-route map round-trips through save->load with every jump route's start/end resolved to the matching FSystem by name AND ID (not just non-NULL) -- FMapTest::testSerializeRoundTripAllJumpRoutesResolveByNameAndID, checked across every route in the full Frontier map
+- AC2 (part 1): FJumpRoute::load decodes start/end system IDs above 65535 with no 16-bit masking -- FJumpRouteTest::testLoadPreservesSystemIdAbove65535 (hand-crafted wire buffer, IDs 65537/131073, per repo-labeled assumption since FSystem exposes no public ID setter)
+- AC2 (part 2): FMap::load's getSystem(id) resolution path correctly resolves system IDs above 65535 end-to-end -- FMapTest::testLoadResolvesSystemIdAbove65535ViaHandCraftedStream (hand-crafted FMap wire buffer, system IDs 70005/131079)
+- AC3: FMap::load returns nonzero and leaves getJumpList() empty when a jump route references an unknown system ID -- FMapTest::testLoadRejectsJumpRouteWithUnknownSystemIdAndLeavesJumpListEmpty
+- AC4: newly constructed FSystem/FJumpRoute objects receive IDs strictly greater than every loaded ID, covering both classes' differing pre-increment/post-increment conventions directly -- FSystemTest::testLoadAdvancesNextIdPastLoadedID, FJumpRouteTest::testLoadAdvancesNextIdPastLoadedID
+- AC5 (supplement): map/system/jump-route wire counts/IDs are fixed-width little-endian uint32_t, verified by inspecting raw emitted bytes (not source-string matching) -- FSystemTest::testSaveWiresIdLittleEndian, FJumpRouteTest::testSaveWiresStartEndIdsLittleEndian, FMapTest::testSaveWiresMaxCoordAndCountsLittleEndian
+- Supplemental: load() propagates stream/nested failure (nonzero return) instead of ignoring it -- FSystemTest::testLoadReturnsNonzeroOnTruncatedStream, FJumpRouteTest::testLoadReturnsNonzeroOnTruncatedStream
+- Documentation: repository-required Doxygen file/function headers on all changed FSystem/FJumpRoute/FMap declarations and definitions are present and accurate (verified by diff review); AGENTS.md's FSaveFormat.h migration-status note and doc/synthesized-roadmap.md's pointer-mask finding are brought in sync with the implemented behavior.
+
+Implementation branch or worktree context:
+- Branch under test: phase5-P5-4-implementer-20260717 (code commit 89b069ab)
+- Tester branch: phase5-P5-4-tester-20260717 (test commit f2d4134f76dbc50eb325b2949b6ce418d6c65d4c)
+- Documenter branch: phase5-P5-4-documenter-20260717 (documentation commit 86f869353ed8aa4976afb93663d01ac9627090c4)
+- Base/coordination branch: phase5
+- P5-4 is independent of the P5-2/P5-3 (vehicle/weapon/defense, player/fleet) subtasks, which exist on separate unmerged branches (phase5-P5-2-*) and are not part of this branch's history; do not assume ships/weapons/defenses/FPlayer/FFleet have migrated to writeU32/readU32 on this branch.
+- No implementation code was modified by the Tester or Documenter; only tests/strategic/*Test.h/.cpp (Tester) and AGENTS.md/doc/synthesized-roadmap.md (Documenter) were changed.
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/strategic/FSystem.h
+- src/strategic/FSystem.cpp
+- include/strategic/FJumpRoute.h
+- src/strategic/FJumpRoute.cpp
+- include/strategic/FMap.h
+- src/strategic/FMap.cpp
+- tests/strategic/FSystemTest.h
+- tests/strategic/FSystemTest.cpp
+- tests/strategic/FJumpRouteTest.h
+- tests/strategic/FJumpRouteTest.cpp
+- tests/strategic/FMapTest.h
+- tests/strategic/FMapTest.cpp
+- AGENTS.md
+- doc/synthesized-roadmap.md
+
+Commands executed:
+- make -C src/strategic
+- tests: make (top-level tests build)
+- tests/SSWTests (run from tests/ working directory): OK (269 tests)
+
+Final test outcomes:
+- src/strategic builds clean (no warnings), stays wx-free (no wx-config/WX_CXXFLAGS in src/strategic/Makefile)
+- tests build clean from a fresh top-level tests build after the documentation-only edits
+- ./SSWTests run from the tests/ directory: OK (269 tests, 0 failures) -- includes the 11 new P5-4 behavioral tests (FMapTest, FSystemTest, FJumpRouteTest)
+- No implementation or test code was modified by the Documenter; only AGENTS.md and doc/synthesized-roadmap.md were changed (documentation-only, comment/text edits, no executable or test behavior change)
+
+Plan or evaluation context guidance:
+- Plan path: plans/phase5-save-format-hardening-plan.md (P5-4 section: 'Map / system / jump-route save-load hardening & ID pointer-mask fix')
+- Plan's per-subtask Documentation Impact note for P5-4: 'Update FMap::load, FSystem::save/load, and FJumpRoute::save/load Doxygen headers for the real system-ID fields (replacing the pointer-mask), the ID-counter restore, and fixed-width fields' -- satisfied by the Implementer's in-code Doxygen updates (verified, not re-done).
+- Plan's overall Documentation Impact section additionally allows AGENTS.md/CLAUDE.md updates 'only if the save format is described there' -- AGENTS.md's Contributor Notes already tracked per-module writeU32/readU32 migration status, so that bullet was updated to include P5-4's migration rather than left stale.
+- Full phase-level roadmap/deferred-tasks 'RESOLVED' annotation for H1-H4 is reserved for phase completion per the plan; only the specific pointer-mask-smuggling narrative finding (fully fixed by this subtask) was annotated resolved in doc/synthesized-roadmap.md, not the broader H3 table row (which still covers FVehicle/FFleet/FPlayer, unresolved on this branch).
+
+Convention-file guidance:
+- AGENTS.md: Doxygen-style file headers and function headers are mandatory in all header files, including @author (agent model + reasoning level) and @date Last Modified updates on every changed function -- already satisfied by the Implementer for FSystem/FJumpRoute/FMap.
+- AGENTS.md Single-Source-of-Truth Rule: do not restate project facts across entry-point files; canonical wire-format facts live in include/core/FSaveFormat.h's Contributor Notes bullet, which was the single place updated.
+- doc/rules/tactical_operations_manual.md must never be edited -- not touched by this subtask (strategic/save-format only).
+- Non-negotiable: do not commit changes without explicit user approval outside an approved orchestration workflow -- this run operates inside the Coordinator-authorized documenter stage.
+
+Updated documentation files:
+- AGENTS.md
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-4
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

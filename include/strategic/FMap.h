@@ -1,8 +1,9 @@
 /**
  * @file FMap.h
  * @brief Header file for FMap class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 15, 2005
+ * @date Last Modified: Jul 17, 2026
  *
  */
 
@@ -207,13 +208,16 @@ public:
 	 * @brief Method to save the map data
 	 *
 	 * This method implements the FPObject base class virtual write method to
-	 * save all the map's data
+	 * save all the map's data. The map size and system/jump-route counts
+	 * are written as real fixed-width little-endian fields via @c writeU32
+	 * (rather than the native-representation @c write template), so the
+	 * wire values are portable across host word size and endianness.
 	 *
 	 * @param os The output stream to write to
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 05, 2008
-	 * @date Last Modified:  Mar 05, 2008
+	 * @date Last Modified: Jul 17, 2026
 	 */
 	const virtual int save(std::ostream &os) const;
 
@@ -221,13 +225,27 @@ public:
 	 * @brief Method to read data contents
 	 *
 	 * This method is the inverse of the save method.  It reads the data for
-	 * the class from the designated input stream.  This method returns 0 if
-	 * everything is okay and a positive integer error code if there is a
-	 * failure
+	 * the class from the designated input stream, using the fixed-width
+	 * little-endian @c readU32 helper for the map size and the
+	 * system/jump-route counts. This method returns 0 if everything is okay
+	 * and a positive integer error code if there is a failure.
 	 *
-	 * @author Tom Stephens
+	 * Each loaded @c FJumpRoute's start/end system IDs (see
+	 * @c FJumpRoute::getStartSystemID / @c getEndSystemID, real fixed-width
+	 * fields rather than a pointer-smuggled, 16-bit-masked value) are
+	 * resolved to the matching @c FSystem via @c getSystem(id) and stored
+	 * with @c setStart()/@c setEnd(); this correctly resolves system IDs
+	 * above 65535 and on LLP64 hosts, which the previous
+	 * `(FSystem*)`-cast-plus-`&0x0000FFFFL`-mask approach did not. The
+	 * lookup is null-guarded: a jump route referencing an out-of-range or
+	 * unknown system ID aborts the load (nonzero return) instead of storing
+	 * an invalid pointer, and a failed nested @c FSystem::load or
+	 * @c FJumpRoute::load likewise aborts the load without leaving a
+	 * half-built map.
+	 *
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Mar 07, 2008
+	 * @date Last Modified: Jul 17, 2026
 	 */
 	virtual int load(std::istream &is);
 

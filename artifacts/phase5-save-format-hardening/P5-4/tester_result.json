@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-4/tester_report.md",
+    "artifacts/phase5-save-format-hardening/P5-4/tester_result.json",
+    "artifacts/phase5-save-format-hardening/P5-4/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-P5-4-tester-20260717",
+  "commands_run": [
+    "make -C src/strategic (confirms module stays wx-free, exit 0)",
+    "cd tests && make (full test suite build, exit 0)",
+    "cd tests && ./SSWTests (269 tests, OK, with H3 guard present)",
+    "temporarily commented out the H3 guard block in src/strategic/FSystem.cpp (lines 112-118), rebuilt src/strategic and tests/, and reran ./SSWTests: 1 failure -- FrontierTests::FSystemTest::testLoadAdvancesNextIdPastLoadedID failed at 's3.getID() > 5000000u' (269 run, 1 failure) -- confirms the rewritten test is non-vacuous",
+    "restored the H3 guard block verbatim (git diff src/strategic/FSystem.cpp shows no diff), rebuilt src/strategic and tests/, and reran ./SSWTests: 269 tests, OK",
+    "make check (from worktree root): SSWTests 269 OK, TacticalTests 253 OK, GuiTests 81 OK under xvfb-run, exit 0"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "81 run, 0 failures",
+    "SSWTests": "269 run, 0 failures",
+    "TacticalTests": "253 run, 0 failures"
+  },
+  "pass_label": "pass-2 (remediation)",
+  "status": "success",
+  "task_id": "P5-4",
+  "test_commit_hash": "74fbcf0320f343c55b99dfd56b94860448915e50",
+  "test_files_changed": [
+    "tests/strategic/FSystemTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}

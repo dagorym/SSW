@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-4/verifier_report.md",
+    "artifacts/phase5-save-format-hardening/P5-4/verifier_result.json"
+  ],
+  "blocking_finding_count": 1,
+  "branch_name": "phase5-P5-4-verifier-20260717",
+  "documentation_accuracy_summary": [
+    "AGENTS.md's FSaveFormat.h/writeU32/readU32 migration-status bullet (line ~403) is accurately updated: it now correctly states FSystem/FJumpRoute/FMap (P5-4) use the fixed-width primitives, explicitly calls out the removed pointer-smuggling-plus-mask hack, and correctly leaves the remaining ships/weapons/defenses/FPlayer/FFleet call sites marked as still using the legacy templates pending later subtasks -- consistent with the Single-Source-of-Truth Rule (the canonical wire-format fact lives only in this bullet plus FSaveFormat.h's own header comment, not duplicated elsewhere).",
+    "doc/synthesized-roadmap.md's H4 (pointer-mask/LLP64) finding gained an accurate 'Resolved (pointer-mask smuggling)' addendum describing the real m_startSystemID/m_endSystemID fields, getSystem(id) resolution, and the null-guard abort behavior, while correctly leaving the unrelated FMap::getMap() null-guard gap open as a separate, still-unresolved item. The H3 table row (ID counters not restored) was correctly left unannotated as still-open at the roadmap/table level per the plan guidance that full phase-level 'RESOLVED' annotation is reserved for phase completion -- consistent with the task's stated scope (only the specific pointer-mask narrative finding was to be annotated resolved here).",
+    "Doxygen file and function headers on all six changed FSystem/FJumpRoute/FMap files were spot-checked directly (save()/load() blocks in both .h and .cpp, plus the two new FJumpRoute getStartSystemID()/getEndSystemID() accessors and the two new private ID fields) and are present, accurate, and correctly attribute @author 'Tom Stephens, Claude Sonnet 5 (medium)' (existing authors preserved, new author appended) with @date Last Modified: Jul 17, 2026, per AGENTS.md's Doxygen policy.",
+    "doc/rules/tactical_operations_manual.md confirmed untouched by this subtask (non-negotiable constraint respected)."
+  ],
+  "note_finding_count": 2,
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P5-4",
+  "test_sufficiency_summary": [
+    "10 of the 11 new P5-4 behavioral tests are sound, non-vacuous, and directly exercise the acceptance criteria via real save()/load() round trips or hand-crafted wire buffers with assertions on observed runtime state (not source-text matching): AC1 (full Frontier map round trip verified by name AND ID across every route), AC2 part 1 and part 2 (IDs above 65535 round-trip via hand-crafted buffers with no 16-bit masking, verified end-to-end through FMap::load's getSystem(id) resolution), AC3 (unknown-system-ID jump route aborts FMap::load with nonzero and an empty jump list), the load()-truncation-propagation supplement for both FSystem and FJumpRoute, and the AC5 wire-encoding supplement for FJumpRoute (start/end IDs) and FMap (maxCoord/system count).",
+    "1 of 11 tests (FSystemTest::testLoadAdvancesNextIdPastLoadedID, AC4 for FSystem) is empirically confirmed vacuous -- see BLOCKING finding. The underlying FSystem::load H3 guard implementation was read directly and is correct; only the test fails to prove it. FJumpRoute's AC4 test is unaffected and correctly written.",
+    "Verified independently in this review: `cd tests && ./SSWTests` from the actual verifier worktree (not the throwaway scratch copy used for the empirical guard-removal check) reports OK (269 tests), matching the Tester's and Security stage's reported totals (258 pre-existing + 11 new). Full make build of the worktree (including gui/tactical/battleSim modules) completed with exit code 0. src/strategic/Makefile confirmed free of wx-config/WX_CXXFLAGS usage."
+  ],
+  "verdict": "CONDITIONAL PASS",
+  "warning_finding_count": 0
+}

@@ -1,0 +1,67 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- P5-4 remediation pass 2, Documenter stage: reviewed the Tester's rewrite of FSystemTest::testLoadAdvancesNextIdPastLoadedID (test commit 74fbcf03, tester artifact commit 22aee17f) that closes the single BLOCKING finding from the pass-1 Verifier report (the old test was empirically vacuous because it default-constructed an intervening FSystem before load(), which alone advanced the shared static m_nextID counter regardless of whether the H3 guard fired). Confirmed via a mechanical diff-impact check (isolated to the archive-commit..test-commit range, excluding the pass-1 artifact-archiving commit) that only tests/strategic/FSystemTest.cpp changed and that no implementation source, Doxygen header, AGENTS.md, or doc/synthesized-roadmap.md content requires an update: the rewritten test only makes an already-documented, already-implemented H3 guard behavior verifiably non-vacuous -- it does not change what is true about FSystem::load's behavior, the wire format, or any acceptance-criteria outcome that pass-1's Documenter already recorded (commit 86f86935/518f204f). No documentation-only commit was created in this pass because no documentation edit was warranted; the documentation commit hash recorded above is the current branch HEAD (the Tester's own artifact commit) as the reference point confirming documentation state as of this pass.
+
+Acceptance criteria to verify:
+- AC4 for FSystem (remediation target): a newly constructed FSystem receives an ID strictly greater than every loaded ID -- now proven non-vacuously via a hand-crafted wire buffer with a deliberately large ID (5,000,000) and direct load() with no intervening FSystem construction, matching the FJumpRoute AC4 pattern. Verify: confirmed to fail against the guard-disabled implementation and pass against the real implementation (Tester-reported evidence); re-inspect the diff and, if desired, re-run the guard-disable check independently.
+- AC5 supplement for FSystem (optional NOTE addressed): testSaveWiresIdLittleEndian now also asserts the planet-count field's raw little-endian bytes at its computed offset, discriminating the writeU32 fixed-width path independently of the ID field.
+- AC1, AC2 (parts 1-2), AC3, AC4 for FJumpRoute, remaining AC5 supplements, and the load()-truncation-propagation supplements for FSystem/FJumpRoute/FMap: unaffected by this pass, left exactly as committed in pass 1 (commit f2d4134f), still passing per the Tester's full make check run.
+- Documentation: no documentation update was required or made in this pass; verify that this conclusion is correct by confirming (a) tests/strategic/FSystemTest.cpp is the only file changed since the pass-1 archive commit, and (b) AGENTS.md's FSaveFormat.h/H3 migration-status bullet and doc/synthesized-roadmap.md's H3 row and P5-4 pointer-mask resolution note remain accurate against the current FSystem::load implementation (unchanged since pass 1).
+
+Implementation branch or worktree context:
+- Implementation branch: phase5-P5-4-implementer-20260717, code commit 89b069ab (harden map/system/jump-route wire layer, remove ID pointer-mask). Not modified in this remediation pass.
+- Tester branch/worktree: phase5-P5-4-tester-20260717, worktree /home/tstephen/repos/worktrees/phase5-P5-4-tester-20260717. Test-rewrite commit: 74fbcf0320f343c55b99dfd56b94860448915e50. Tester artifact commit: 22aee17fd3484e32fe077e7272ff0946bd281f73.
+- This is a remediation (pass 2) of the P5-4 Tester stage, following the pass-1 Verifier's CONDITIONAL PASS. Pass-1 stage artifacts (implementer/tester/documenter/security/verifier) are archived under artifacts/phase5-save-format-hardening/P5-4/history/pass-1/ (commit d0bb61a0) and were not touched by this pass.
+- Pass-1 Verifier report (CONDITIONAL PASS) is at artifacts/phase5-save-format-hardening/P5-4/history/pass-1/verifier_report.md; its single BLOCKING finding is the one addressed by the Tester's rewrite and reviewed (no doc impact found) by this Documenter pass.
+- Documenter pass: no documentation-only commit created; branch HEAD at the time this pass's artifacts were written is 22aee17f (unchanged by this Documenter run except for the artifact commit described below).
+
+Files modified by the Implementer, Tester, and Documenter:
+- tests/strategic/FSystemTest.cpp (Tester, this pass -- test-only change, rewrote testLoadAdvancesNextIdPastLoadedID and extended testSaveWiresIdLittleEndian; reviewed by Documenter, no further changes made)
+- include/strategic/FSystem.h, src/strategic/FSystem.cpp (pass-1 Implementer; unchanged this pass; re-reviewed by Documenter and confirmed still accurate against the rewritten test)
+- include/strategic/FJumpRoute.h, src/strategic/FJumpRoute.cpp (pass-1 Implementer; unchanged this pass)
+- include/strategic/FMap.h, src/strategic/FMap.cpp (pass-1 Implementer; unchanged this pass)
+- tests/strategic/FJumpRouteTest.h/.cpp, tests/strategic/FMapTest.h/.cpp (pass-1 Tester; unchanged this pass)
+- AGENTS.md, doc/synthesized-roadmap.md (pass-1 Documenter, commit 86f86935/518f204f; unchanged this pass -- reviewed and confirmed still accurate, no further edits needed)
+
+Commands executed:
+- env -C <worktree> git log --oneline -5
+- env -C <worktree> git diff --stat f2d4134f..74fbcf03 (broad range including pass-1 documenter/security/verifier stages and the archive commit)
+- env -C <worktree> git diff f2d4134f..74fbcf03 -- AGENTS.md (confirmed the only AGENTS.md change in that wider range was pass-1 Documenter's already-committed edit, not anything from this pass)
+- env -C <worktree> python3 .myteam/documenter/diff-review/analyze_doc_impact.py --base d0bb61a0 --head 74fbcf03 (isolates the actual remediation-pass diff, i.e. the archive commit to the test-rewrite commit): result likely_documentation_impact=false, changed_files=[tests/strategic/FSystemTest.cpp] only, no guidance_files, no documentation_files
+- env -C <worktree> grep -n 'H3' doc/synthesized-roadmap.md; grep -n 'FSystemTest|P5-4' doc/test-contracts.md (confirmed test-contracts.md's per-test catalog is tactical-only and does not cover FSystemTest, and doc/synthesized-roadmap.md's H3 row and P5-4 pointer-mask resolution note are both already accurate and unaffected by a test-only change)
+- env -C <worktree> sed -n '80,130p' src/strategic/FSystem.cpp (re-read FSystem::load and its H3 Doxygen/inline comment to confirm the implementation and its documentation are unchanged and still accurate against the rewritten test)
+
+Final test outcomes:
+- No new test run performed by the Documenter in this pass (no implementation, test, or documentation content was changed); relying on the Tester's reported and already-committed result: all 269 SSWTests pass, including the rewritten FSystemTest::testLoadAdvancesNextIdPastLoadedID and the updated FSystemTest::testSaveWiresIdLittleEndian.
+- The Tester's non-vacuousness proof (disabling the H3 guard in FSystem::load makes the rewritten test fail; restoring it makes it pass, confirmed via zero implementation diff) is accepted as the closing evidence for the pass-1 Verifier's BLOCKING finding.
+- TacticalTests (253) and GuiTests (81, under xvfb-run) remain green per the Tester's make check run; no regressions from the test-only change.
+- Only tests/strategic/FSystemTest.cpp changed in this remediation pass; confirmed via the isolated d0bb61a0..74fbcf03 diff-impact analysis that no implementation source (FSystem/FJumpRoute/FMap .h/.cpp) or documentation file changed.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase5-save-format-hardening-plan.md (P5-4 section: 'Map / system / jump-route save-load hardening & ID pointer-mask fix').
+- Plan's P5-4 Documentation Impact note ('Update FMap::load, FSystem::save/load, and FJumpRoute::save/load Doxygen headers...') was already fully satisfied in pass 1 and verified unchanged in this pass.
+- Plan defers the roadmap/deferred-tasks 'RESOLVED' mark for H3 to P5-5 (phase aggregation); this pass does not add one.
+- Comparison base for this pass's diff review: archive commit d0bb61a0 (parent of the test-rewrite commit 74fbcf03), isolating the remediation-only diff from the broader f2d4134f..74fbcf03 range that also contains pass-1's already-settled Documenter/Security/Verifier stages.
+- Prior pass-1 artifacts for context (not modified): artifacts/phase5-save-format-hardening/P5-4/history/pass-1/*.
+
+Convention-file guidance:
+- AGENTS.md Function Comments convention (Doxygen headers, @author, @date Last Modified) applies to changed declarations/definitions; not triggered here since no implementation source changed in this pass.
+- AGENTS.md Single-Source-of-Truth Rule: project facts belong in exactly one canonical location; confirmed no fact needed to move or be added since the underlying implementation behavior is unchanged.
+- doc/rules/tactical_operations_manual.md must never be edited -- not touched (out of scope; this pass is strategic/save-format test-only).
+- Non-negotiable: do not commit changes without explicit user approval outside an approved orchestration workflow -- this run operates inside the Coordinator-authorized documenter stage.
+- doc/test-contracts.md's detailed per-test source-contract catalog is scoped to tactical tests only; FSystemTest (strategic) is out of its scope, confirmed via grep with no matches.
+
+Updated documentation files:
+- None
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-4
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

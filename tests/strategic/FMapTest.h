@@ -27,6 +27,10 @@ class FMapTest : public CppUnit::TestFixture{
 	CPPUNIT_TEST( testSelectSystemValid );
 	CPPUNIT_TEST( testSelectSystemFail );
 	CPPUNIT_TEST( testSerialize );
+	CPPUNIT_TEST( testSerializeRoundTripAllJumpRoutesResolveByNameAndID );
+	CPPUNIT_TEST( testLoadResolvesSystemIdAbove65535ViaHandCraftedStream );
+	CPPUNIT_TEST( testLoadRejectsJumpRouteWithUnknownSystemIdAndLeavesJumpListEmpty );
+	CPPUNIT_TEST( testSaveWiresMaxCoordAndCountsLittleEndian );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -46,6 +50,10 @@ public:
 	void testSelectSystemValid();
 	void testSelectSystemFail();
 	void testSerialize();
+	void testSerializeRoundTripAllJumpRoutesResolveByNameAndID();
+	void testLoadResolvesSystemIdAbove65535ViaHandCraftedStream();
+	void testLoadRejectsJumpRouteWithUnknownSystemIdAndLeavesJumpListEmpty();
+	void testSaveWiresMaxCoordAndCountsLittleEndian();
 };
 
 }

@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-4/security_report.md",
+    "artifacts/phase5-save-format-hardening/P5-4/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-P5-4-security-20260717",
+  "documentation_sufficiency_summary": [
+    "SUFFICIENT. Doxygen headers on FMap/FSystem/FJumpRoute save()/load() accurately describe the removed pointer-smuggling+0x0000FFFFL mask, the real fixed-width m_startSystemID/m_endSystemID fields, the FMap::load getSystem(id) null-guard/abort behavior, nested-load failure propagation, and the H3 pre-/post-increment counter conventions.",
+    "getStartSystemID()/getEndSystemID() are documented as valid only after load() and that load() leaves m_start/m_end NULL for FMap::load to resolve.",
+    "AGENTS.md and doc/synthesized-roadmap.md updates are consistent with the change. Strategic module remains wx-free (only a pre-existing commented-out //#include <wx/wx.h> in FMap.h, not introduced by P5-4)."
+  ],
+  "note_finding_count": 3,
+  "outcome": "PASS",
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "P5-4",
+  "test_sufficiency_summary": [
+    "SUFFICIENT for the security-sensitive behaviors. Coverage is behavioral (constructs real objects/streams, drives load()/save(), asserts observed runtime results), not source-inspection.",
+    "Pointer-mask removal / no truncation: FJumpRouteTest.testLoadPreservesSystemIdAbove65535 asserts start/end IDs 65537 and 131073 round-trip exactly AND that getStart()/getEnd() are NULL after load() (no fabricated pointer); FMapTest.testLoadResolvesSystemIdAbove65535ViaHandCraftedStream drives FMap::load end-to-end with IDs 70005/131079 and asserts resolution by exact ID and pointer identity.",
+    "Absent-system null-guard: FMapTest.testLoadRejectsJumpRouteWithUnknownSystemIdAndLeavesJumpListEmpty asserts FMap::load returns nonzero and getJumpList() stays empty (no invalid pointer stored, route not pushed).",
+    "Nested-load/stream-failure propagation: FSystemTest and FJumpRouteTest testLoadReturnsNonzeroOnTruncatedStream both assert nonzero on truncation; core readU32/read/readString all check is.fail() and readString caps at kMaxSerializedStringBytes before allocating.",
+    "H3 ID-counter restore: FSystemTest.testLoadAdvancesNextIdPastLoadedID (pre-increment) and FJumpRouteTest.testLoadAdvancesNextIdPastLoadedID (post-increment, ID 5000000) each prove a subsequently constructed object gets a strictly greater ID.",
+    "Wire encoding: LE byte-offset assertions in all three fixtures (testSaveWires... ) confirm fixed-width little-endian output. Full suite verified green in this run (269 tests, exit 0)."
+  ],
+  "warning_finding_count": 0
+}

@@ -1,0 +1,26 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-4/security_report.md",
+    "artifacts/phase5-save-format-hardening/P5-4/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-P5-4-security-20260717",
+  "documentation_sufficiency_summary": [
+    "SUFFICIENT and unchanged. No documentation (AGENTS.md, doc/synthesized-roadmap.md, Doxygen headers) was modified in this remediation pass; the pass-1 documentation assessment stands.",
+    "Doxygen headers on FMap/FSystem/FJumpRoute save()/load() accurately describe the removed pointer-smuggling + 0x0000FFFFL mask, the real fixed-width m_startSystemID/m_endSystemID fields, FMap::load's getSystem(id) null-guard/abort behavior, nested-load failure propagation, and the H3 pre-/post-increment counter conventions; getStartSystemID()/getEndSystemID() are documented as valid only after load().",
+    "The rewritten test carries an in-source comment block explaining why the hand-crafted buffer is required for non-vacuity, which is adequate operational guidance for future maintainers."
+  ],
+  "note_finding_count": 3,
+  "outcome": "PASS",
+  "pass_label": "pass-2",
+  "status": "success",
+  "task_id": "P5-4",
+  "test_sufficiency_summary": [
+    "SUFFICIENT for the security-sensitive behaviors, and improved by this remediation. Coverage is behavioral (constructs real objects/streams, drives load()/save(), asserts observed runtime results), not source-inspection.",
+    "Remediation strengthened AC4 (H3 ID-counter restore): FSystemTest.testLoadAdvancesNextIdPastLoadedID no longer default-constructs an intervening FSystem before load() (which alone advanced the shared static m_nextID and made the old assertion vacuous). It now hand-crafts a raw large-ID (5,000,000) wire buffer and calls load() directly, so the assertion depends on the guard actually firing; the Tester documented confirming it fails with the H3 guard disabled and passes with it restored (implementation left unmodified).",
+    "AC5 wire-width coverage strengthened: testSaveWiresIdLittleEndian now also asserts the planet-count field's raw little-endian bytes at its known offset, giving a second writeU32 field independent of the ID field (which is byte-identical between the old and new paths on sizeof(int)==4 hosts).",
+    "Unregressed pass-1 coverage remains in force: pointer-mask removal / no fabricated pointer (FJumpRouteTest.testLoadPreservesSystemIdAbove65535, IDs 65537/131073 round-trip and getStart()/getEnd() NULL after load); FMap end-to-end resolution above 65535 (FMapTest.testLoadResolvesSystemIdAbove65535ViaHandCraftedStream); absent-system null-guard abort (FMapTest.testLoadRejectsJumpRouteWithUnknownSystemIdAndLeavesJumpListEmpty); nested-load/stream-failure propagation (FSystemTest/FJumpRouteTest testLoadReturnsNonzeroOnTruncatedStream).",
+    "Full suite verified green synchronously in this pass: SSWTests OK, 269 tests, exit 0."
+  ],
+  "warning_finding_count": 0
+}
