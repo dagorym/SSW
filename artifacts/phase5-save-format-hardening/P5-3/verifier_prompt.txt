@@ -1,0 +1,70 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented the P5-3 FPlayer/FFleet save/load wire hardening implemented and tested by the Implementer/Tester: fixed-width uint32 IDs/counts, F2 m_destroyed round-trip persistence, H3 next-ID advance for FPlayer/FFleet, H4 jump-route-0 preservation, and nonzero-return behavior on unknown/corrupt ship wire type tags.
+
+Acceptance criteria to verify:
+- A player with unattached ships, fleets (each holding ships), and a non-empty m_destroyed list round-trips through save->load with all three collections restored (counts, IDs, names, and per-ship state), with no double-free/leak of m_destroyed ships -- FPlayerTest::testFullRoundTripPreservesUnattachedFleetsAndDestroyedShips, plus the pre-existing FPlayerTest::testDestroyedShipFreedExactlyOnceOnPlayerDestruction and testSurvivingFleetShipNotDoubleDeletedByDestroyedList for the ownership/no-double-free guarantee.
+- A fleet saved while in transit on jump route ID 0 reloads with getJumpRoute() == 0 (route preserved, not normalized to NO_ROUTE) -- FFleetTest::testJumpRouteZeroPreservedAcrossSaveLoad.
+- FPlayer::load / FFleet::load return nonzero (no NULL deref) on an unknown ship type in the stream -- FPlayerTest::testLoadReturnsNonzeroOnUnknownUnattachedShipType, testLoadReturnsNonzeroOnUnknownDestroyedShipType, FFleetTest::testLoadReturnsNonzeroOnUnknownShipType.
+- After loading players/fleets, newly constructed players/fleets receive IDs strictly greater than every loaded ID (no collision) -- FPlayerTest::testLoadAdvancesNextIDPastLoadedID, FFleetTest::testLoadAdvancesNextIDPastLoadedID.
+- Player/fleet wire counts/IDs are fixed-width little-endian uint32_t -- covered structurally by the implementation and exercised behaviorally by every new round-trip/hand-crafted-stream test via the shared writeU32/readU32 helpers.
+- The build is clean; strategic module remains wx-free -- make -C src/strategic and the top-level make both completed without wx-config/WX_CXXFLAGS usage in src/strategic/Makefile and without warnings/errors on the changed files.
+- FFleetTest::testSerializeRoundTripsMultipleShipsAndFleetState additionally covers a fleet holding multiple ships round-tripping ship count/IDs/names/HP and fleet owner/location/destination/jump-route state.
+- Documentation accuracy: doc/synthesized-roadmap.md's H3/H4/F2 entries and FPlayer.h/FFleet.h Doxygen blocks now match the final merged implementation and test coverage; FPlayer.h documents why m_destroyed has no public accessor and how its round trip is verified indirectly.
+
+Implementation branch or worktree context:
+- Branch: phase5-P5-3-documenter-20260717 (worktree /home/tstephen/repos/worktrees/phase5-P5-3-documenter-20260717), continuing from the P5-3 Tester commit 5e96e227 and the P5-3 Implementer commit 5486b5a3 'P5-3: Harden FPlayer/FFleet save/load wire layer (F2, H3, H4, createShip null-check)'.
+- Documentation commit: 780b1150 'P5-3: Documenter -- sync roadmap RESOLVED annotations and m_destroyed test-coverage note' (this run).
+- Comparison base: prior commit 4fb9c67e (P5-2 Verifier PASS).
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/strategic/FPlayer.h
+- src/strategic/FPlayer.cpp
+- include/strategic/FFleet.h
+- src/strategic/FFleet.cpp
+- doc/deferred-tasks.md
+- doc/synthesized-roadmap.md
+- tests/strategic/FPlayerTest.cpp
+- tests/strategic/FPlayerTest.h
+- tests/strategic/FFleetTest.cpp
+- tests/strategic/FFleetTest.h
+
+Commands executed:
+- make -C src/strategic
+- make (top-level, repo root)
+- env --chdir=tests ./SSWTests
+- env --chdir=tests/tactical ./TacticalTests
+- env --chdir=tests/gui xvfb-run -a ./GuiTests
+
+Final test outcomes:
+- make -C src/strategic: clean build, no warnings/errors on changed files (only the pre-existing, out-of-scope FJumpRoute.cpp int-to-pointer-cast warning, belonging to P5-4).
+- Top-level make: clean full build of both executables plus all three test binaries, exit code 0, no warnings/errors on changed files.
+- SSWTests: OK (271 tests).
+- TacticalTests: OK (253 tests).
+- GuiTests (xvfb-run -a): OK (81 tests).
+
+Plan or evaluation context guidance:
+- Plan: plans/phase5-save-format-hardening-plan.md, subtask P5-3 (Player / fleet save-load hardening: F2 m_destroyed, H3, H4/route-0 removal, createShip null-check).
+- The plan's Documentation Impact note for P5-3 (update FPlayer::save/load and FFleet::save/load doc comments to describe the fixed-width fields, null-checks, and F2; mark doc/deferred-tasks.md's F2-serialization entry resolved) was already satisfied by the Implementer; the Documenter pass in this run additionally reconciled doc/synthesized-roadmap.md's H3/H4/F2 entries and added the m_destroyed accessor/test-coverage note to FPlayer.h.
+
+Convention-file guidance:
+- AGENTS.md Doxygen conventions: full header blocks for classes/major functions, one-line for simple getters/setters; update Last Modified date and append (never remove) authors on edited declarations -- followed for the FPlayer.h m_destroyed comment edit (member-variable inline `///` comment, no header block required).
+- AGENTS.md Testing section requires behavioral verification, not source-inspection alone -- not directly implicated by this documentation-only pass, but confirmed the underlying test suite (already authored by the Tester) satisfies this for every acceptance criterion.
+- AGENTS.md Single-Source-of-Truth Rule: facts belong in exactly one canonical location -- followed by updating doc/synthesized-roadmap.md's existing RESOLVED-annotation pattern in place rather than duplicating the F2/H3/H4 facts in a new document.
+- The non-negotiable constraint against editing doc/rules/tactical_operations_manual.md was not implicated; no tactical rules content was touched.
+
+Updated documentation files:
+- doc/synthesized-roadmap.md
+- include/strategic/FPlayer.h
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-3
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
