@@ -51,6 +51,7 @@
 #include "strategic/FGameTest.h"
 #include "strategic/FGameHeaderDependencyTest.h"
 #include "strategic/FGameMockStrategicUITest.h"
+#include "strategic/FGameSaveFormatTest.h"
 #include "strategic/FGameRetreatConditionValidationTest.h"
 #include "strategic/FPlanetTest.h"
 #include "strategic/FFleetTest.h"
@@ -110,6 +111,7 @@ int main( int argc, char **argv)
   runner.addTest( FGameTest::suite() );
   runner.addTest( FGameHeaderDependencyTest::suite() );
   runner.addTest( FGameMockStrategicUITest::suite() );
+  runner.addTest( FGameSaveFormatTest::suite() );
   runner.addTest( FGameRetreatConditionValidationTest::suite() );
   runner.addTest( FPlanetTest::suite() );
   runner.addTest( FFleetTest::suite() );

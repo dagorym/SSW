@@ -936,6 +936,26 @@ void writePreparedSaveFile(const wxString & path) {
 }
 
 /**
+ * @brief Writes a file too short to contain even the fixed-width
+ * kSaveMagic/kSaveFormatVersion header FGame::save() now emits first, so
+ * FGame::load() fails immediately at the magic-tag read/validate step
+ * (P5-5 loader-UX abort/preserve/report path coverage).
+ *
+ * @param path Absolute path the malformed file is written to.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 17, 2026
+ * @date Last Modified: Jul 17, 2026
+ */
+void writeCorruptSaveFile(const wxString & path) {
+	std::ofstream os(path.ToStdString().c_str(), std::ios::binary);
+	CPPUNIT_ASSERT(os.is_open());
+	const char garbage[] = { 'X', 'X' };
+	os.write(garbage, sizeof(garbage));
+	os.close();
+}
+
+/**
  * @brief Repeating timer that drives the nested modal chain launched by
  * SelectCombatGUI::onAttack() when the Sathar attack a two-planet system.
  *
@@ -2297,6 +2317,102 @@ void StrategicGuiLiveTest::testMainFrameOnOpenConfirmLoadsFromFullPathAndRestore
 	frame->Destroy();
 	m_harness.pumpEvents(10);
 	wxRemoveFile(savedGamePath);
+	wxSetWorkingDirectory(originalCwd);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled() {
+	// See testMainFrameOnSaveCancelLeavesFilesystemUntouched for why logging is suppressed here.
+	wxLogNull suppressGtkFileDialogLogging;
+	const wxString originalCwd = wxGetCwd();
+	wxString corruptGamePath = wxFileName::CreateTempFileName(wxT("sswp55openfailed"));
+	CPPUNIT_ASSERT(!corruptGamePath.IsEmpty());
+	writeCorruptSaveFile(corruptGamePath);
+
+	// Deliberately not shown (unlike the sibling Cancel/Confirm onOpen() tests): showing this
+	// frame here would map a live FGamePanel that keeps its inherited setGame() reference from
+	// onOpen() while FGame::load() fails before m_universe is ever created (the P5-5 magic/
+	// version/header checks all return before reaching `m_universe = &(FMap::create())`).
+	// WXStrategicUI::showMessage()'s blocking wxGenericMessageDialog::ShowModal() pumps a nested
+	// event loop for the load-error report; any expose/paint delivered to a mapped FGamePanel
+	// during that window dereferences a still-NULL FMap singleton in
+	// WXMapDisplay::getScale()/FMap::getMaxSize() and crashes the process (reproduced via gdb:
+	// FGamePanel::onPaint -> WXGameDisplay::draw -> WXMapDisplay::getScale ->
+	// FMap::getMaxSize() with this=0x0). That crash is a pre-existing FGamePanel/WXMapDisplay
+	// null-map fragility unrelated to what this test verifies (onOpen()'s menu-state reset on a
+	// failed load) and outside this subtask's file list, so it is avoided here rather than
+	// fixed, by never mapping the frame on screen; the native file-chooser and message-dialog
+	// interactions below are driven through GTK's own top-level window list and wx's
+	// wxTopLevelWindows/AnyModalDismissTimer machinery, neither of which requires this frame to
+	// be shown.
+	FMainFrame * frame = new FMainFrame("FMainFrame OnOpen Failed Load Test", wxDefaultPosition, wxSize(800, 600));
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	wxMenuItem * retreatItem = menuBar->FindItem(ID_ShowRetreatCond);
+	wxMenuItem * endSatharItem = menuBar->FindItem(ID_EndSatharTurn);
+	wxMenuItem * endUPFItem = menuBar->FindItem(ID_EndUPFTurn);
+	wxMenuItem * placeNovaItem = menuBar->FindItem(ID_PlaceNova);
+	wxMenuItem * addSatharItem = menuBar->FindItem(ID_AddSatharShips);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	CPPUNIT_ASSERT(retreatItem != NULL);
+	CPPUNIT_ASSERT(endSatharItem != NULL);
+	CPPUNIT_ASSERT(endUPFItem != NULL);
+	CPPUNIT_ASSERT(placeNovaItem != NULL);
+	CPPUNIT_ASSERT(addSatharItem != NULL);
+	// A freshly constructed frame starts with every game-dependent menu item disabled.
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+	CPPUNIT_ASSERT(!retreatItem->IsEnabled());
+	CPPUNIT_ASSERT(!endSatharItem->IsEnabled());
+	CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
+	CPPUNIT_ASSERT(!placeNovaItem->IsEnabled());
+	CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
+
+	NativeFileDialogResponder responder(NativeFileDialogResponder::ACCEPT_OPEN, corruptGamePath);
+	responder.Start(15, false);
+	wxCommandEvent openEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Open);
+	// FMainFrame::onOpen() drives two sequential modals here: first the native GTK file-open
+	// chooser (handled above by NativeFileDialogResponder, which polls GTK's own top-level
+	// window list directly since that dialog is not a wx-registered window), then -- once the
+	// corrupt file's load() fails -- a real wxGenericMessageDialog reporting the load error via
+	// the installed WXStrategicUI (see WXStrategicUI::showMessage()). That second dialog IS a
+	// genuine wxDialog registered in wxTopLevelWindows, so runVoidFunctionWithAutoDismiss's
+	// AnyModalDismissTimer can see and EndModal() it; without dismissing it, ShowModal() blocks
+	// in a nested GTK loop that still pumps paint events for the frame's FGamePanel, which
+	// crashes dereferencing FMap::getMap() before m_universe has ever been created (load()
+	// fails at the magic-tag check, before reaching the m_universe = &(FMap::create()) line).
+	m_harness.runVoidFunctionWithAutoDismiss(
+			[&]() { frame->onOpen(openEvent); },
+			wxID_OK,
+			15);
+	// wxFD_CHANGE_DIR moves the process cwd into the chosen file's folder on accept; restore it
+	// immediately, mirroring the confirm-path test above.
+	wxSetWorkingDirectory(originalCwd);
+	responder.Stop();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(responder.dismissed());
+	// P5-5 acceptance criterion: FMainFrame::onOpen() must not enable turn/menu items and must
+	// return to the no-game state when load fails. is_open() succeeded (the file exists and was
+	// created above), so this exercises the FGame::load() != 0 branch of the abort condition;
+	// resetGame() tears the freshly-created FGame back down, and since the post-load
+	// menu-enable block only runs in onOpen()'s success branch, every one of these items staying
+	// disabled is direct behavioral proof no menu item was enabled over the failed/partial load.
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+	CPPUNIT_ASSERT(!retreatItem->IsEnabled());
+	CPPUNIT_ASSERT(!endSatharItem->IsEnabled());
+	CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
+	CPPUNIT_ASSERT(!placeNovaItem->IsEnabled());
+	CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+	wxRemoveFile(corruptGamePath);
 	wxSetWorkingDirectory(originalCwd);
 }
 

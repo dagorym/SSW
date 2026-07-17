@@ -33,6 +33,7 @@ CPPUNIT_TEST( testMainFrameOnSaveCancelLeavesFilesystemUntouched );
 CPPUNIT_TEST( testMainFrameOnSaveConfirmWritesToDialogFullPath );
 CPPUNIT_TEST( testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent );
 CPPUNIT_TEST( testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState );
+CPPUNIT_TEST( testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled );
 CPPUNIT_TEST( testGamePanelPaintTracksParentSize );
 CPPUNIT_TEST( testStrategicDialogsCloseModallyWithoutInput );
 CPPUNIT_TEST( testStrategicDialogsUseStaticBoxChildParents );
@@ -150,6 +151,16 @@ public:
 	 * @date Last Modified: Jul 11, 2026
 	 */
 	void testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState();
+	/**
+	 * @brief Verifies FMainFrame::onOpen() tears the freshly-created FGame back down via
+	 * resetGame() and leaves every game-dependent menu item disabled when FGame::load()
+	 * fails on a corrupt/malformed save file (P5-5 loader-UX abort/preserve/report path).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 17, 2026
+	 * @date Last Modified: Jul 17, 2026
+	 */
+	void testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled();
 	/**
 	 * @brief Validates offscreen WXMapDisplay rendering for key strategic map elements.
 	 *
