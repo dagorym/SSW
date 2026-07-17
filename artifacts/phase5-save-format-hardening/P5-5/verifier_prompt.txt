@@ -1,0 +1,79 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Reviewed and documented P5-5 (versioned save-file header kSaveMagic/kSaveFormatVersion, fixed-width little-endian FGame counts/IDs, aggregated FGame::load() error propagation via IStrategicUI::showMessage with a std::cout fallback, and the FMainFrame::onOpen() abort/preserve/report loader UX). In-code Doxygen documentation for every touched interface (FGame::save/load, FGame::reportLoadError, FMainFrame::onOpen) was already fully and correctly updated by the Implementer, so no product-file comment edits were needed. Updated AGENTS.md's save-format bullet to describe the now-complete phase end-to-end (P5-1 through P5-5), added a Strategic-tests bullet mention of the new FGameSaveFormatTest fixture, added a GUI-tests invariant bullet documenting StrategicGuiLiveTest::testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled and why it deliberately never shows the frame. Marked doc/synthesized-roadmap.md's H1 and H3 rows RESOLVED and Part III item #5 (save-format hardening) resolved, consistent with the annotation convention already used for H2/H4 in prior P5-2/P5-3 documenter passes. Added a brief doc/UsersGuide.md note under File > Open describing the version-tagged save format and the new reject-with-error-message behavior for corrupt/incompatible files, replacing the prior silent-partial-load risk.
+
+Acceptance criteria to verify:
+- FGame::save emits the magic + version header before any game data; a valid current-version full-game save->load round-trip restores round, current player, retreat condition, loss counters, the map, and all players (with fleets/ships). Verified by testSaveEmitsMagicAndVersionHeaderBeforeGameData and testFullRoundTripRestoresRoundCurrentPlayerRetreatConditionLossCountersMapAndPlayers.
+- FGame::load returns nonzero and reports via the installed IStrategicUI (verifiable with a mock IStrategicUI) for each of: wrong magic, unsupported version, truncated stream, and unknown factory type -- leaving no partially-constructed game as the live singleton. Verified by testLoadWrongMagicReturnsNonzeroAndReportsExactlyOnce, testLoadUnsupportedVersionReturnsNonzeroAndReportsExactlyOnce, testLoadTruncatedStreamReturnsNonzeroAndReportsExactlyOnce, and testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExactlyOnce.
+- FMainFrame::onOpen does not enable turn/menu items and returns to the no-game state when load fails or the file cannot be opened; the success path is unchanged. Verified by StrategicGuiLiveTest::testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled and the pre-existing testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState.
+- FGame header counts/IDs are fixed-width little-endian uint32_t. Verified via the LE byte-decode assertions in testSaveEmitsMagicAndVersionHeaderBeforeGameData plus the byte-for-byte re-save equality in the round-trip test.
+- make check is green across all three suites (SSWTests 289, TacticalTests 253, GuiTests 82), exit code 0.
+- Documentation reflects the implemented behavior: AGENTS.md, doc/synthesized-roadmap.md (H1/H3/Part III item #5), and doc/UsersGuide.md are accurate and consistent with the shipped P5-5 diff; in-code Doxygen headers on FGame::save/load/reportLoadError and FMainFrame::onOpen are accurate (verified, not re-authored -- the Implementer's Doxygen updates were already complete and correct).
+
+Implementation branch or worktree context:
+- Branch: phase5-P5-5-documenter-20260717 (this worktree), based on phase5-P5-5-tester-20260717 / merge-base 710d7f0f with phase5.
+- Implementer commit d9c268da (source) + 7380fa3d (implementer artifacts); tester test commit a68aee3f + eecb000b (tester artifacts/documenter handoff); documenter documentation commit 152a6b52.
+- Plan: plans/phase5-save-format-hardening-plan.md, subtask P5-5. Allowed implementation files per plan: include/strategic/FGame.h, src/strategic/FGame.cpp, src/FMainFrame.cpp, include/FMainFrame.h.
+- Shared artifact directory: artifacts/phase5-save-format-hardening/P5-5.
+
+Files modified by the Implementer, Tester, and Documenter:
+- include/strategic/FGame.h (Implementer: save/load Doxygen updates, new private reportLoadError() declaration)
+- src/strategic/FGame.cpp (Implementer: writeU32 header + fixed-width counts/IDs in save(); magic/version validation, aggregated per-field/nested-load error checks, reportLoadError() definition in load())
+- src/FMainFrame.cpp (Implementer: onOpen() is_open()/load()-return-code guard wrapping the post-load menu-enable block in an else branch, resetGame() on failure)
+- include/FMainFrame.h (Implementer: onOpen() doc update)
+- tests/strategic/FGameTest.cpp (Implementer: readLossCounters() helper skips the new 8-byte magic+version header; no assertions changed)
+- tests/strategic/FGameSaveFormatTest.cpp (Tester: new behavioral coverage, 7 cases)
+- tests/strategic/FGameSaveFormatTest.h (Tester: new fixture header)
+- tests/SSWTests.cpp (Tester: registers FGameSaveFormatTest)
+- tests/gui/StrategicGuiLiveTest.cpp (Tester: new failed-load onOpen test + writeCorruptSaveFile helper)
+- tests/gui/StrategicGuiLiveTest.h (Tester: new test declaration in the suite)
+- AGENTS.md (Documenter: save-format bullet rewritten for phase completion, Strategic-tests bullet notes FGameSaveFormatTest, new GUI-tests invariant bullet for the failed-load onOpen test)
+- doc/synthesized-roadmap.md (Documenter: H1 and H3 rows marked RESOLVED, Part III item #5 marked resolved)
+- doc/UsersGuide.md (Documenter: brief File > Open note on version-tagged saves and failed-load rejection behavior)
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start / repository-inference / artifact-paths / diff-first-editing / two-commit-artifact-flow / handoff-prompt-contract
+- myteam get skill documenter/preflight / documenter/diff-review / documenter/doc-editing / documenter/agents-guidance / documenter/artifact-writing / documenter/verifier-handoff / documenter/failure-reporting / documenter/commit-flow
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <task-prompt> --repo-root <worktree>
+- git merge-base phase5 HEAD (710d7f0f)
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 710d7f0f --head HEAD
+- git diff 710d7f0f HEAD -- include/strategic/FGame.h src/strategic/FGame.cpp include/FMainFrame.h src/FMainFrame.cpp
+- grep/read of AGENTS.md, doc/synthesized-roadmap.md, doc/deferred-tasks.md, doc/UsersGuide.md, plans/phase5-save-format-hardening-plan.md for existing coverage and Documentation Impact hints
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root <worktree> --phase docs (heuristic false-positive on AGENTS.md/doc/ paths, confirmed against repo precedent commits e825cfe0/86f86935/780b1150 which document this repo's actual doc/ + AGENTS.md convention)
+- git add AGENTS.md doc/UsersGuide.md doc/synthesized-roadmap.md
+- git commit -F <message file> (152a6b52)
+- git rev-parse HEAD
+
+Final test outcomes:
+- No executable or test behavior changed in this pass; documentation-only edits. Relying on the Tester's reported and committed result: make check green across all three suites -- SSWTests 289, TacticalTests 253, GuiTests 82 -- exit code 0.
+
+Plan or evaluation context guidance:
+- Plan's P5-5 Documentation Impact section: update FGame::save/load Doxygen headers for the magic/version header and error contract (done by Implementer, verified accurate by Documenter); update FMainFrame::onOpen header for load-failure handling (done by Implementer, verified accurate); update AGENTS.md/CLAUDE.md only if the save format is described there (AGENTS.md's save-format bullet was updated; CLAUDE.md is a pointer-only file per the repo's single-source-of-truth rule and was correctly left untouched); mark H1/H2/H3/H4/F2 resolved in the roadmap/deferred-tasks if applicable (H1 and H3 marked RESOLVED in this pass; H2 and H4 were already marked RESOLVED by the P5-2/P5-3 documenter passes; F2-serialization was already removed from doc/deferred-tasks.md as resolved by the P5-3 documenter pass).
+- Plan's Overall Documentation Impact section (section 6): explicitly allows annotating doc/synthesized-roadmap.md's H1-H4 and Part III item #5 as resolved once the phase completes, consistent with prior phases' ***RESOLVED*** annotation convention -- applied in this pass since P5-5 is confirmed the final subtask.
+- TWO FINDINGS CARRIED FORWARD FROM THE TESTER FOR THE VERIFIER TO ASSESS (both pre-existing, outside P5-5's allowed file list [include/strategic/FGame.h, src/strategic/FGame.cpp, src/FMainFrame.cpp, include/FMainFrame.h] -- the Verifier must decide their severity/disposition, not the Documenter):
+- 1. FPlayer::load()'s fleet loop does not check FFleet::load()'s return value, so a stream truncated deep inside fleet data is not caught at the FPlayer level and can let FGame::load()'s per-player check see a 0 return despite an internal fleet-load failure. P5-5's truncation test cuts right after the 8-byte header, exercising only FGame::load()'s own explicitly-checked reads. This is a latent robustness gap in the untrusted-input path spanning P5-3 (FPlayer::load) and P5-5 (aggregate propagation).
+- 2. With a live/shown FMainFrame, a spontaneous FGamePanel repaint during WXStrategicUI::showMessage()'s nested modal loop dereferences the now-NULL FMap singleton (FGamePanel::onPaint -> WXGameDisplay::draw -> WXMapDisplay::getScale -> FMap::getMaxSize() with this=0x0) and crashes the process. This is a pre-existing FGamePanel/WXMapDisplay null-map paint fragility in the gui module, triggerable by P5-5's own load-error dialog UX in real (frame-shown) usage; the GUI test avoids it by not showing the frame. This finding is now also recorded in-code as a comment on tests/gui/StrategicGuiLiveTest.cpp's testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled (written by the Tester) and referenced in this pass's new AGENTS.md GUI-tests invariant bullet.
+
+Convention-file guidance:
+- Repository documentation lives under doc/ (singular) and the repo-root AGENTS.md/CLAUDE.md single-source-of-truth files, not docs/; do not restate low-level format facts in CLAUDE.md (pointer-only per the Single-Source-of-Truth Rule).
+- Doxygen file/function headers are mandatory per AGENTS.md's Function Comments section; the Implementer already added complete, correctly-dated, correctly-authored blocks for FGame::save/load/reportLoadError and FMainFrame::onOpen, so no further in-code documentation edits were required in this pass.
+- doc/rules/tactical_operations_manual.md must never be edited (non-negotiable constraint) -- not touched in this pass, and not relevant to strategic save-format work.
+- The Verifier should consult doc/test-contracts.md only if modifying the specific tactical tests it catalogs; P5-5 is strategic/GUI-scoped and does not require that catalog.
+
+Updated documentation files:
+- AGENTS.md
+- doc/UsersGuide.md
+- doc/synthesized-roadmap.md
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-5
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
