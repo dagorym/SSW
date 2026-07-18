@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-5/verifier_report.md",
+    "artifacts/phase5-save-format-hardening/P5-5/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-P5-5-verifier-20260717",
+  "documentation_accuracy_summary": [
+    "In-code Doxygen on FMainFrame::onOpen() (include/FMainFrame.h lines 95-117, src/FMainFrame.cpp lines 154-199 inline comments) accurately describes the deferred-setGame mitigation, the failure-path NULL-panel-pointer invariant, and the success-path setGame() timing; independently verified against the actual code by direct reading, not just the comment text.",
+    "New test Doxygen (tests/gui/StrategicGuiLiveTest.h testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint, and the RepaintPumpTimer class header in StrategicGuiLiveTest.cpp) accurately describes what the test does and why, matching the actual test body reviewed.",
+    "AGENTS.md's GUI-tests invariant bullet under Testing was updated (verified via git diff 673a9832..038d2e27 -- AGENTS.md) to add a sentence describing the new sibling test and correctly changes 'is a pre-existing' crash description to 'was a' crash for the now-mitigated onOpen()-reachable trigger, while accurately noting the root-cause NULL-FMap paint-path guard remains a tracked follow-up (SF-nullfmap-paint-guard).",
+    "doc/deferred-tasks.md records both required follow-up defects (SF-nested-load-returns at line 67, SF-nullfmap-paint-guard at line 102), each following the repository's standing Description/Origin/Why deferred/Target phase convention and matching the structure of the pre-existing SF-enum-codes and SF-fhexmap entries. Both descriptions were independently checked for technical accuracy against the code and the pass-1 Security findings they originate from and found correct.",
+    "doc/rules/tactical_operations_manual.md was confirmed untouched (not present in the diff), respecting the repository's non-negotiable constraint."
+  ],
+  "note_finding_count": 3,
+  "pass_label": "P5-5 Verifier review (remediation pass 2, final) -- PASS",
+  "status": "complete",
+  "task_id": "P5-5",
+  "test_sufficiency_summary": [
+    "Sufficient. The mitigation's proof is a genuine behavioral test, not source-inspection: tests/gui/StrategicGuiLiveTest.cpp::testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint (registered in StrategicGuiLiveTest.h's CPPUNIT_TEST_SUITE) shows the FMainFrame, installs a RepaintPumpTimer that forces frame->Refresh() every 5ms across onOpen()'s entire nested modal sequence (native file chooser then the load-error dialog) while opening a corrupt save file, and asserts the process survives plus all 7 game-dependent menu items stay disabled -- directly exercising the exact FGamePanel::onPaint -> WXGameDisplay::draw -> WXMapDisplay::getScale -> FMap::getMaxSize() NULL-this crash window pass-1 identified.",
+    "Independently re-ran the full suite synchronously from this worktree after `make all_clean`: `make check` from the repo root built everything and ran all three CppUnit suites in sequence with zero failures -- tests/SSWTests -> OK (289 tests), tests/tactical/TacticalTests -> OK (253 tests), tests/gui/GuiTests under xvfb-run -a -> OK (83 tests). GuiTests count increased from pass-1's independently-confirmed 82 (per artifacts/phase5-save-format-hardening/P5-5/history/pass-1/verifier_report.md) to 83, which is exactly +1 and directly corroborates that the new behavioral test is compiled, registered, and executed as part of the suite (not merely present in source).",
+    "The pre-existing sibling test testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled (unshown-frame failed-load path) and testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState (success path) are unmodified by this diff and passed as part of the same green GuiTests run, confirming no regression to either the pre-existing failed-load coverage or the success path.",
+    "No acceptance criterion in this pass is backed solely by source-inspection; the one behavior-critical claim (crash window closed) has direct behavioral coverage as described above."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
