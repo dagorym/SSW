@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-5/implementer_report.md",
+    "artifacts/phase5-save-format-hardening/P5-5/tester_prompt.txt",
+    "artifacts/phase5-save-format-hardening/P5-5/implementer_result.json"
+  ],
+  "branch_name": "phase5-P5-5-implementer-20260717",
+  "changed_files": [
+    "src/FMainFrame.cpp",
+    "include/FMainFrame.h"
+  ],
+  "code_commit_hash": "c28c489ad813691159cc7c8b537a17fe02247b96",
+  "pass_label": "pass-2",
+  "security_review_required": true,
+  "status": "success",
+  "task_id": "P5-5",
+  "validation_commands": [
+    "make -C <worktree-root> all_clean",
+    "make -C <worktree-root> (top-level build)",
+    "make -C <worktree-root> check (top-level: full build then SSWTests, TacticalTests, GuiTests under xvfb-run)"
+  ],
+  "validation_outcome": "make check is green across all three suites, exit 0: SSWTests OK (289 tests), TacticalTests OK (253 tests), GuiTests OK (82 tests, under xvfb-run). The existing StrategicGuiLiveTest::testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled (failed-load onOpen path) and StrategicGuiLiveTest::testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState (success onOpen path) both still pass unchanged. No test files were added or modified by the implementer in this pass (test-authoring is Tester-owned); the mitigation is a pure reordering inside FMainFrame::onOpen with no new branches or return codes, so no existing test's expected control-flow path changed."
+}
