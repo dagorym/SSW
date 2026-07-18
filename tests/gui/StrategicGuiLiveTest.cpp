@@ -888,6 +888,40 @@ private:
 };
 
 /**
+ * @brief Repeating timer that forces a pending repaint on a target window on every tick.
+ *
+ * Used by testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint to keep an
+ * outstanding Refresh() queued across the entire span of FMainFrame::onOpen()'s nested modal
+ * dialogs (the native GTK file chooser, then -- on a failed/corrupt load -- the
+ * wxGenericMessageDialog raised via WXStrategicUI::showMessage()). GTK's nested event loops
+ * (gtk_native_dialog_run() / gtk_dialog_run()) still dispatch expose/paint events for other
+ * mapped top-level windows while a modal is up, so ticking Refresh() repeatedly (rather than
+ * once, before either nested loop starts) maximizes the chance a real paint is delivered to
+ * FGamePanel::onPaint() precisely while the load-error dialog's modal loop is active --
+ * reproducing the exact crash window (FGamePanel::onPaint -> WXGameDisplay::draw ->
+ * WXMapDisplay::getScale -> FMap::getMaxSize() with this=0x0) that existed before the P5-5
+ * pass-2 setGame()-deferral remediation.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 18, 2026
+ * @date Last Modified: Jul 18, 2026
+ */
+class RepaintPumpTimer : public wxTimer {
+public:
+	explicit RepaintPumpTimer(wxWindow * target) : m_target(target) {
+	}
+
+	virtual void Notify() wxOVERRIDE {
+		if (m_target != NULL) {
+			m_target->Refresh();
+		}
+	}
+
+private:
+	wxWindow * m_target;
+};
+
+/**
  * @brief Minimal no-op IStrategicUI used only to drive FGame::init() far enough to populate a
  * savable game (players + map) for P2-6 onOpen() confirm-path coverage.
  *
@@ -2402,6 +2436,99 @@ void StrategicGuiLiveTest::testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuI
 	// resetGame() tears the freshly-created FGame back down, and since the post-load
 	// menu-enable block only runs in onOpen()'s success branch, every one of these items staying
 	// disabled is direct behavioral proof no menu item was enabled over the failed/partial load.
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+	CPPUNIT_ASSERT(!retreatItem->IsEnabled());
+	CPPUNIT_ASSERT(!endSatharItem->IsEnabled());
+	CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
+	CPPUNIT_ASSERT(!placeNovaItem->IsEnabled());
+	CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
+
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+	wxRemoveFile(corruptGamePath);
+	wxSetWorkingDirectory(originalCwd);
+}
+
+void StrategicGuiLiveTest::testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint() {
+	// See testMainFrameOnSaveCancelLeavesFilesystemUntouched for why logging is suppressed here.
+	wxLogNull suppressGtkFileDialogLogging;
+	const wxString originalCwd = wxGetCwd();
+	wxString corruptGamePath = wxFileName::CreateTempFileName(wxT("sswp55openfailedshown"));
+	CPPUNIT_ASSERT(!corruptGamePath.IsEmpty());
+	writeCorruptSaveFile(corruptGamePath);
+
+	// P5-5 pass-2 remediation coverage: unlike the sibling
+	// testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled (which deliberately
+	// avoids Show() because, pre-remediation, a spontaneous FGamePanel repaint delivered during
+	// the load-error dialog's nested modal loop dereferenced a still-NULL FMap singleton and
+	// crashed the process), this test DOES show the frame. This is now safe because
+	// FMainFrame::onOpen() defers m_drawingPanel->setGame(m_game) until after a successful
+	// load(): on a failed/corrupt load the panel's own m_game reference is never set, so
+	// FGamePanel::onPaint()'s `if (m_game != NULL)` guard makes any repaint during the failed
+	// load a no-op instead of a dereference of a half-built/NULL game or map.
+	FMainFrame * frame = new FMainFrame("FMainFrame OnOpen Failed Load Shown Test", wxDefaultPosition, wxSize(800, 600));
+	frame->Show();
+	m_harness.pumpEvents();
+
+	wxMenuBar * menuBar = frame->GetMenuBar();
+	CPPUNIT_ASSERT(menuBar != NULL);
+	wxMenuItem * saveItem = menuBar->FindItem(ID_Save);
+	wxMenuItem * closeItem = menuBar->FindItem(ID_Close);
+	wxMenuItem * retreatItem = menuBar->FindItem(ID_ShowRetreatCond);
+	wxMenuItem * endSatharItem = menuBar->FindItem(ID_EndSatharTurn);
+	wxMenuItem * endUPFItem = menuBar->FindItem(ID_EndUPFTurn);
+	wxMenuItem * placeNovaItem = menuBar->FindItem(ID_PlaceNova);
+	wxMenuItem * addSatharItem = menuBar->FindItem(ID_AddSatharShips);
+	CPPUNIT_ASSERT(saveItem != NULL);
+	CPPUNIT_ASSERT(closeItem != NULL);
+	CPPUNIT_ASSERT(retreatItem != NULL);
+	CPPUNIT_ASSERT(endSatharItem != NULL);
+	CPPUNIT_ASSERT(endUPFItem != NULL);
+	CPPUNIT_ASSERT(placeNovaItem != NULL);
+	CPPUNIT_ASSERT(addSatharItem != NULL);
+	// A freshly constructed, shown frame starts with every game-dependent menu item disabled.
+	CPPUNIT_ASSERT(!saveItem->IsEnabled());
+	CPPUNIT_ASSERT(!closeItem->IsEnabled());
+	CPPUNIT_ASSERT(!retreatItem->IsEnabled());
+	CPPUNIT_ASSERT(!endSatharItem->IsEnabled());
+	CPPUNIT_ASSERT(!endUPFItem->IsEnabled());
+	CPPUNIT_ASSERT(!placeNovaItem->IsEnabled());
+	CPPUNIT_ASSERT(!addSatharItem->IsEnabled());
+
+	NativeFileDialogResponder responder(NativeFileDialogResponder::ACCEPT_OPEN, corruptGamePath);
+	responder.Start(15, false);
+	// Keep an outstanding Refresh() queued on the shown frame across onOpen()'s entire nested
+	// modal sequence (file chooser, then load-error dialog) so a real paint event is delivered
+	// to FGamePanel while the panel's m_game reference is still whatever onOpen() left it as at
+	// that instant -- NULL for the whole duration of a failed load under this remediation.
+	RepaintPumpTimer repaintPump(frame);
+	repaintPump.Start(5, false);
+	wxCommandEvent openEvent(wxEVT_COMMAND_MENU_SELECTED, ID_Open);
+	m_harness.runVoidFunctionWithAutoDismiss(
+			[&]() { frame->onOpen(openEvent); },
+			wxID_OK,
+			15);
+	repaintPump.Stop();
+	// wxFD_CHANGE_DIR moves the process cwd into the chosen file's folder on accept; restore it
+	// immediately, mirroring the sibling failed-load test.
+	wxSetWorkingDirectory(originalCwd);
+	responder.Stop();
+	// One further forced Refresh()/Update() pass after onOpen() returns gives any deferred
+	// paint additional opportunity to run against the fully reset (m_game == NULL at both the
+	// frame and panel level) state, extending the behavioral proof past the return of onOpen().
+	frame->Refresh();
+	frame->Update();
+	m_harness.pumpEvents(10);
+
+	CPPUNIT_ASSERT(responder.dismissed());
+	// Reaching this assertion at all is the primary behavioral proof for this test: the process
+	// did not crash despite forcing repeated repaints of the shown frame across the load-error
+	// dialog's nested modal loop, directly exercising the crash window
+	// (FGamePanel::onPaint -> WXGameDisplay::draw -> WXMapDisplay::getScale ->
+	// FMap::getMaxSize() with this=0x0) that existed before setGame() was deferred. The
+	// menu-state assertions below additionally confirm onOpen() still left the frame in the
+	// no-game state, matching testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled.
 	CPPUNIT_ASSERT(!saveItem->IsEnabled());
 	CPPUNIT_ASSERT(!closeItem->IsEnabled());
 	CPPUNIT_ASSERT(!retreatItem->IsEnabled());

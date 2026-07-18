@@ -34,6 +34,7 @@ CPPUNIT_TEST( testMainFrameOnSaveConfirmWritesToDialogFullPath );
 CPPUNIT_TEST( testMainFrameOnOpenCancelCreatesNoGameAndLeavesFrameConsistent );
 CPPUNIT_TEST( testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState );
 CPPUNIT_TEST( testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled );
+CPPUNIT_TEST( testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint );
 CPPUNIT_TEST( testGamePanelPaintTracksParentSize );
 CPPUNIT_TEST( testStrategicDialogsCloseModallyWithoutInput );
 CPPUNIT_TEST( testStrategicDialogsUseStaticBoxChildParents );
@@ -161,6 +162,19 @@ public:
 	 * @date Last Modified: Jul 17, 2026
 	 */
 	void testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled();
+	/**
+	 * @brief Verifies FMainFrame::onOpen() survives a spontaneous FGamePanel repaint forced
+	 * during a failed/corrupt load's nested modal dialog loop with the frame actually shown
+	 * (P5-5 pass-2 remediation coverage: setGame() is deferred until after a successful
+	 * load(), so the panel's own m_game reference stays NULL for the whole duration of a
+	 * failed load, and FGamePanel::onPaint()'s `if (m_game != NULL)` guard makes a forced
+	 * repaint here safe instead of dereferencing a half-built/NULL FMap singleton).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 18, 2026
+	 * @date Last Modified: Jul 18, 2026
+	 */
+	void testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint();
 	/**
 	 * @brief Validates offscreen WXMapDisplay rendering for key strategic map elements.
 	 *
