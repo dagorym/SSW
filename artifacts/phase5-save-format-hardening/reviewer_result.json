@@ -1,0 +1,62 @@
+{
+  "status": "complete",
+  "feature": "phase5-save-format-hardening",
+  "plan": "plans/phase5-save-format-hardening-plan.md",
+  "branch": "phase5",
+  "review_type": "feature-level, read-only",
+  "outcome": "PASS",
+  "subtasks_reviewed": ["P5-1", "P5-2", "P5-3", "P5-4", "P5-5"],
+  "subtask_verdicts": {
+    "P5-1": {"verifier": "PASS", "security": "PASS"},
+    "P5-2": {"verifier": "PASS", "security": "PASS"},
+    "P5-3": {"verifier": "PASS", "security": "PASS"},
+    "P5-4": {"verifier": "PASS", "security": "PASS"},
+    "P5-5": {"verifier": "PASS", "security": "PASS"}
+  },
+  "build_check": {
+    "command": "make check",
+    "SSWTests": "289 OK (run from tests/)",
+    "TacticalTests": "253 OK",
+    "GuiTests": "83 OK",
+    "note": "A single apparent SSWTests failure (FGameHeaderDependencyTest) occurs only when the binary is run from the worktree root; it is a cwd-sensitive source-contract test and passes under make check / from tests/."
+  },
+  "blocking_finding_count": 0,
+  "warning_finding_count": 1,
+  "note_finding_count": 3,
+  "findings": {
+    "warning": [
+      "W1 — SF-nested-load-returns: FPlayer::load/FFleet::load discard nested v->load()/f->load() returns; deep-truncation input can bypass FGame::load's aggregate abort. Data-integrity, not memory-safety. Known, tracked, correctly-scoped deferral; acceptable, not blocking."
+    ],
+    "note": [
+      "N1 — SF-nullfmap-paint-guard: gui paint chain lacks a NULL-FMap guard; P5-5 onOpen setGame-deferral closes the reachable trigger; root-cause gui guard deferred and tracked.",
+      "N2 — SF-enum-codes: weapon/defense enum ordinals still serialized by raw value; within decision-2 LE-platform scope; explicitly deferred and retained. Not a gap.",
+      "N3 — SF-fhexmap: tactical FHexMap::save/load stub correctly out of scope and retained. Not a gap."
+    ]
+  },
+  "design_decisions_hold_across_subtasks": true,
+  "scope_in_delivered_and_covered": {
+    "H1_format_core": true,
+    "H2_active_defense_persistence": true,
+    "H3_id_counter_restore_all_five_classes": true,
+    "H4_route0_removal": true,
+    "jumproute_map_pointer_mask_fix": true,
+    "writeString_nul_fix": true,
+    "F2_m_destroyed_serialization": true
+  },
+  "documentation_obligations_met": {
+    "doxygen_touched_surfaces": true,
+    "deferred_tasks_h2_f2_removed_sf_followups_added": true,
+    "roadmap_h1_h2_h3_h4_item5_resolved": true,
+    "agents_md_save_format_note": true,
+    "usersguide_compatibility_break_note": true
+  },
+  "cross_subtask_integration_verified": true,
+  "follow_up_feature_requests": [
+    "FR-1 (W1/SF-nested-load-returns): In FPlayer::load check/propagate v->load() (m_unattached and m_destroyed loops) and f->load() (fleet loop), and in FFleet::load check/propagate v->load() per ship; on nonzero nested return delete the just-created object and return nonzero so FGame::load's abort and loader error UX fire. Add a behavioral test truncating a stream inside a fleet's ship record asserting FGame::load returns nonzero, reports via mock IStrategicUI, and leaves no live game singleton. Scope: P5-3 files (src/strategic/FPlayer.cpp, src/strategic/FFleet.cpp).",
+    "FR-2 (N1/SF-nullfmap-paint-guard): Add a root-cause NULL/invalid-FMap guard in the gui draw chain (WXMapDisplay::getScale or earlier in FGamePanel::onPaint/WXGameDisplay::draw) so a FGamePanel shown with an unset/half-built FMap cannot dereference it, independent of the onOpen mitigation; add a gui behavioral test forcing a repaint with game/map unset asserting no crash. Scope: gui module."
+  ],
+  "artifacts_written": [
+    "artifacts/phase5-save-format-hardening/reviewer_report.md",
+    "artifacts/phase5-save-format-hardening/reviewer_result.json"
+  ]
+}
