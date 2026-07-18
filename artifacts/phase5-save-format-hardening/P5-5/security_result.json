@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-5/security_report.md",
+    "artifacts/phase5-save-format-hardening/P5-5/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-P5-5-security-20260717",
+  "documentation_sufficiency_summary": [
+    "Adequate. The onOpen Doxygen headers (include/FMainFrame.h, src/FMainFrame.cpp) accurately describe the deferred-setGame mitigation and why it prevents a repaint during the load-error nested modal loop from dereferencing a half-built/NULL game or map, and explicitly note the deeper gui NULL-FMap guard remains a tracked follow-up. FGame::save/load and reportLoadError Doxygen (unchanged) and include/core/FSaveFormat.h continue to document the versioned header contract; AGENTS.md / doc/UsersGuide.md describe the versioned fixed-width little-endian format and up-front magic/version rejection.",
+    "doc/deferred-tasks.md now formally tracks both residual defects (SF-nullfmap-paint-guard, SF-nested-load-returns) with origin, why-deferred, and target-phase, closing the pass-1 recommendation to record the follow-ups so the residual untrusted-input-path gaps are not lost."
+  ],
+  "note_finding_count": 3,
+  "outcome": "PASS",
+  "pass_label": "P5-5 Security review (remediation pass 2) -- PASS",
+  "status": "complete",
+  "task_id": "P5-5",
+  "test_sufficiency_summary": [
+    "Sufficient for this remediation pass. The pass-2 mitigation is backed by a real behavioral test: testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint SHOWS the FMainFrame (its sibling deliberately does not, to sidestep the pre-mitigation crash) and drives a RepaintPumpTimer that forces frame->Refresh() every 5ms across onOpen's entire nested modal sequence (native file chooser then the load-error dialog) while opening a corrupt save, then asserts the process survives and all 7 game-dependent menu items stay disabled -- directly exercising the exact crash window pass-1 identified and proving it is closed by the setGame deferral. This is a runtime behavioral assertion, not source inspection, satisfying the repo behavioral-verification mandate.",
+    "FGame loader coverage unchanged and re-confirmed: SSWTests OK (289) including the byte-level magic/version header emission, byte-for-byte round-trip, and four malformed-input rejection paths (wrong magic, unsupported version, truncated-after-header, unknown factory type) each requiring nonzero load() + exactly one IStrategicUI::showMessage(), plus the no-UI console fallback. GuiTests OK (83).",
+    "Residual documented gap unchanged from pass 1 (tied to SF-nested-load-returns): deep-truncation-inside-fleet is intentionally not tested because the fix lives in P5-3-scope files; the aggregate-abort guarantee for that input class remains only partially proven and is tracked for P5-3 remediation. This does not affect P5-5's scoped acceptance."
+  ],
+  "warning_finding_count": 0
+}
