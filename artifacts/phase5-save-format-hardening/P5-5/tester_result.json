@@ -1,0 +1,26 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-hardening/P5-5/tester_report.md",
+    "artifacts/phase5-save-format-hardening/P5-5/tester_result.json",
+    "artifacts/phase5-save-format-hardening/P5-5/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-P5-5-tester-20260717",
+  "commands_run": [
+    "make -j$(nproc)",
+    "make check"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "83 tests, OK",
+    "SSWTests": "289 tests, OK",
+    "TacticalTests": "253 tests, OK"
+  },
+  "pass_label": "pass-2",
+  "status": "success",
+  "task_id": "P5-5",
+  "test_commit_hash": "925ad377a5e68d2905e4f07154dab1a55e172334",
+  "test_files_changed": [
+    "tests/gui/StrategicGuiLiveTest.cpp",
+    "tests/gui/StrategicGuiLiveTest.h"
+  ],
+  "unmet_acceptance_criteria": []
+}

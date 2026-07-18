@@ -1,0 +1,54 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- P5-5 remediation pass 2 (Verifier-driven): validated the sole approved in-scope mitigation from the pass-1 Security/Verifier review -- FMainFrame::onOpen() now defers m_drawingPanel->setGame(m_game) until AFTER FGame::load() succeeds, instead of immediately after FGame::create(). On a failed/corrupt load, resetGame() tears the freshly-created game down while the panel's own m_game pointer is still NULL, so a spontaneous FGamePanel repaint delivered during the load-error message dialog's nested modal loop can no longer dereference the now-NULL FMap singleton (the previously reachable FGamePanel::onPaint -> WXGameDisplay::draw -> WXMapDisplay::getScale -> FMap::getMaxSize() with this=0x0 crash). FGame.h/FGame.cpp, the magic/version gate, and aggregate load-error propagation from pass 1 were confirmed untouched.
+
+Acceptance criteria validated:
+- FMainFrame::onOpen() no longer calls m_drawingPanel->setGame(m_game) immediately after FGame::create(); setGame() is deferred to the success branch, called only after m_game->load(is) == 0 and is.is_open() are both confirmed true -- confirmed by direct source review of src/FMainFrame.cpp (setGame() call site is now inside the else/success branch) and behaviorally exercised by both onOpen() tests.
+- On a failed/corrupt load, resetGame() is called with the panel's m_game pointer still NULL, so FGamePanel::onPaint()'s `if (m_game != NULL)` guard is never true for the freshly-created failed game during the load-error dialog's nested modal loop -- opening a corrupt/unloadable save with the frame shown no longer crashes. Validated behaviorally by the new testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint, which shows the frame and forces repeated repaints across that exact nested modal window without crashing.
+- The success path is unchanged in outcome -- setGame() is called, Refresh() runs, and the same post-load menu-enable/turn-state block executes exactly as before. Validated by the pre-existing, unmodified testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState, which still passes unchanged.
+- FGame.h/FGame.cpp were not modified; the magic/version gate and aggregate load-error propagation from pass 1 are untouched -- confirmed via git diff scope (only src/FMainFrame.cpp and include/FMainFrame.h touched by the implementer) and via tests/strategic/FGameSaveFormatTest.cpp continuing to pass unchanged in SSWTests.
+- make check is green across SSWTests, TacticalTests, and GuiTests -- confirmed by a full synchronous run of make check from the worktree root (289/253/83 tests, all OK).
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/phase5-P5-5-tester-20260717
+- Branch: phase5-P5-5-tester-20260717 (branched from the P5-5 pass-2 implementer's completed work)
+- Implementer commits validated: c28c489a (P5-5 remediation: defer FGamePanel setGame() in onOpen until load succeeds) and 16797322 (P5-5 pass-2: implementer artifacts)
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/FMainFrame.cpp
+- include/FMainFrame.h
+- tests/gui/StrategicGuiLiveTest.cpp
+- tests/gui/StrategicGuiLiveTest.h
+
+Test commit:
+- 925ad377a5e68d2905e4f07154dab1a55e172334
+
+Commands executed:
+- make -j$(nproc)
+- make check
+
+Final test outcomes:
+- make check: green across all three suites -- SSWTests (289 tests, OK), TacticalTests (253 tests, OK), GuiTests (83 tests, OK, run under xvfb-run -a).
+- Existing testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled (unshown frame) and testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState (success path, frame shown) both remain unchanged and pass, confirming the success path and prior failed-load menu-state coverage are untouched by this pass.
+- New behavioral test testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint (tests/gui/StrategicGuiLiveTest.cpp/.h) shows the FMainFrame (unlike its sibling, which deliberately avoids Show() to sidestep the pre-mitigation crash) and drives a new RepaintPumpTimer helper that repeatedly calls frame->Refresh() every 5ms across onOpen()'s entire nested modal sequence (native file chooser, then the load-error wxGenericMessageDialog) while opening a corrupt/malformed save file. The test asserts the process survives (no crash) and that all seven game-dependent menu items remain disabled afterward, directly exercising the crash window described in the implementer's report and proving it is closed by the setGame()-deferral remediation.
+- GuiTests suite count increased by exactly 1 matching the single new test added; no existing test assertions were changed.
+
+Documentation context:
+- doc/deferred-tasks.md already tracks (or should confirm it tracks) the two follow-up defects called out as out of scope for this pass: (1) FPlayer::load()/FFleet::load() ignoring some sub-object load() return codes (P5-3 scope), and (2) the deeper root-cause NULL-FMap paint guard belonging in the gui module (FGamePanel::onPaint / WXGameDisplay::draw / WXMapDisplay::getScale) still not being fixed -- the Documenter should verify both entries are present and accurate, adding them if pass-1's Documenter did not already record them.
+- No user-facing behavior changed on the success path; the only externally observable change is that opening a corrupt/unloadable save file with the main window visible no longer risks a crash during the error dialog. If doc/UsersGuide.md or similar end-user docs mention Open/Load error handling, confirm wording still matches (no interface/dialog text changed by this pass).
+
+Plan and diff context:
+- Plan: plans/phase5-save-format-hardening-plan.md, subtask P5-5
+- Comparison base: this is remediation pass 2 for P5-5; prior artifacts live under artifacts/phase5-save-format-hardening/P5-5/history/pass-1/ (pass 1) with current-pass artifacts directly under artifacts/phase5-save-format-hardening/P5-5/
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-5
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
