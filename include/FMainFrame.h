@@ -3,7 +3,7 @@
  * @brief Header file for FMainFrame class
  * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Feb 28, 2005
- * @date Last Modified:  Jul 17, 2026
+ * @date Last Modified:  Jul 18, 2026
  *
  */
 
@@ -95,21 +95,26 @@ public:
    * Shows a wxFileDialog and checks its ShowModal() result before acting:
    * on Cancel (or any non-OK result) no FGame is created and no load() is
    * attempted, leaving the frame state unchanged. On a confirmed OK, a new
-   * FGame is created and its stream/return-code are checked: if the file
-   * cannot be opened (@c std::ifstream::is_open() is false) or
-   * @c FGame::load() returns nonzero (wrong magic, unsupported version,
-   * truncated/corrupt data, or an unknown factory type -- each already
-   * reported to the player via the installed @c IStrategicUI), the
+   * FGame is created but the drawing panel is deliberately NOT associated
+   * with it yet (m_drawingPanel->setGame() is deferred) so no spontaneous
+   * repaint can render a not-yet-loaded game. The stream/return-code are
+   * then checked: if the file cannot be opened (@c std::ifstream::is_open()
+   * is false) or @c FGame::load() returns nonzero (wrong magic, unsupported
+   * version, truncated/corrupt data, or an unknown factory type -- each
+   * already reported to the player via the installed @c IStrategicUI), the
    * freshly-created game is torn down via the existing @c resetGame() path
-   * so no half-loaded game is left as the live singleton and no turn/menu
-   * items are enabled. On a successful load, the existing post-load
+   * -- with the panel's game pointer still NULL -- so no half-loaded game is
+   * left as the live singleton, no turn/menu items are enabled, and a
+   * spontaneous repaint during the load-error dialog's nested modal loop
+   * cannot dereference a half-built/NULL game or map. On a successful load,
+   * the panel is wired to the game via setGame() and the existing post-load
    * menu-enable / turn-state logic runs unchanged.
    *
    * @param event The wxWidget window event that triggered the function call
    *
    * @author Tom Stephens, Claude Sonnet 5 (medium)
    * @date Created:  Mar 02, 2005
-   * @date Last Modified:  Jul 17, 2026
+   * @date Last Modified:  Jul 18, 2026
    */
   void onOpen(wxCommandEvent& event);
 

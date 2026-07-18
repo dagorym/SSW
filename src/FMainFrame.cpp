@@ -3,7 +3,7 @@
  * @brief Implementation file for FMainFrame class
  * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Feb 28, 2005
- * @date Last Modified:  Jul 17, 2026
+ * @date Last Modified:  Jul 18, 2026
  *
  */
 #include "FMainFrame.h"
@@ -154,7 +154,14 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 		int result = d->ShowModal();
 		if (result == wxID_OK) {
 			m_game = &(FGame::create(m_strategicUI));
-			m_drawingPanel->setGame(m_game);
+			// P5-5 remediation: do NOT wire the drawing panel to this
+			// freshly-created game yet. setGame() is deferred until AFTER a
+			// successful load() below; on failure resetGame() tears the game
+			// down while the panel's m_game pointer is still NULL, so no
+			// spontaneous FGamePanel repaint during the load-error dialog's
+			// nested modal loop can dereference a half-built/NULL game or
+			// map singleton (the deeper gui NULL-FMap paint guard remains a
+			// tracked follow-up; see doc/deferred-tasks.md).
 			// get the full path to open (cwd-independent, unlike GetFilename())
 			wxString fpath = d->GetPath();
 			// open the file for reading
@@ -169,6 +176,9 @@ void FMainFrame::onOpen(wxCommandEvent& event) {
 			if (!is.is_open() || m_game->load(is) != 0){
 				resetGame();
 			} else {
+				// load succeeded: only now associate the panel with the
+				// game so it can safely render it.
+				m_drawingPanel->setGame(m_game);
 				// draw the screen
 				Refresh();
 				GetMenuBar()->GetMenu(0)->FindItemByPosition(2)->Enable(true);
