@@ -1,0 +1,76 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- P5-5 remediation pass 2 (Verifier-driven): FMainFrame::onOpen() now defers m_drawingPanel->setGame(m_game) until AFTER FGame::load() succeeds, instead of immediately after FGame::create(), closing the onOpen()-reachable NULL-FMap paint crash flagged by the pass-1 Security review. Documentation pass verified the implementer's onOpen() Doxygen comment and the tester's new-test Doxygen comments were already accurate, updated AGENTS.md's GUI-tests invariant bullet to describe the new sibling test and setGame-deferral rationale, confirmed doc/UsersGuide.md needs no change (no user-facing behavior changed), and recorded both pass-1 Security follow-up defects (SF-nested-load-returns, SF-nullfmap-paint-guard) in doc/deferred-tasks.md per the explicit user-approved requirement for this pass.
+
+Acceptance criteria to verify:
+- FMainFrame::onOpen() no longer calls m_drawingPanel->setGame(m_game) immediately after FGame::create(); setGame() is deferred to the success branch, called only after m_game->load(is) == 0 and is.is_open() are both confirmed true -- confirmed by direct source review of src/FMainFrame.cpp and behaviorally exercised by both onOpen() tests.
+- On a failed/corrupt load, resetGame() is called with the panel's m_game pointer still NULL, so FGamePanel::onPaint()'s `if (m_game != NULL)` guard is never true for the freshly-created failed game during the load-error dialog's nested modal loop -- opening a corrupt/unloadable save with the frame shown no longer crashes. Validated behaviorally by testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint.
+- The success path is unchanged in outcome -- validated by the pre-existing, unmodified testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadState.
+- FGame.h/FGame.cpp were not modified; the magic/version gate and aggregate load-error propagation from pass 1 are untouched -- confirmed via git diff scope (only src/FMainFrame.cpp and include/FMainFrame.h touched by the implementer) and via tests/strategic/FGameSaveFormatTest.cpp continuing to pass unchanged in SSWTests.
+- make check is green across SSWTests, TacticalTests, and GuiTests (289/253/83 tests, all OK).
+- doc/deferred-tasks.md records both pass-1 Security follow-up defects (FPlayer::load()/FFleet::load() nested return-code gap; gui paint path NULL-FMap guard gap) as tracked entries -- added in this pass as SF-nested-load-returns and SF-nullfmap-paint-guard.
+- Repository-required in-code documentation (Doxygen headers on FMainFrame::onOpen() and the new test methods) is accurate for the implemented deferral ordering -- verified accurate, no changes needed.
+- AGENTS.md's GUI-tests invariant bullet accurately reflects both onOpen() failed-load tests and the setGame-deferral rationale -- updated in this pass.
+
+Implementation branch or worktree context:
+- Branch: phase5-P5-5-tester-20260717 (this documenter worktree, phase5-P5-5-documenter-20260717, is based on it), P5-5 pass-2 remediation.
+- Implementer commits: c28c489a (defer FGamePanel setGame() in onOpen until load succeeds) and 16797322 (implementer artifacts). Tester test commit 925ad377 (add frame-shown forced-repaint coverage), tester artifacts commit dfbbabe9. Documenter commit a8d3c55b (this pass's documentation-only commit).
+- This is remediation pass 2 of P5-5; prior pass-1 artifacts are preserved under artifacts/phase5-save-format-hardening/P5-5/history/pass-1/ and were not modified.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/FMainFrame.cpp (Implementer: defer setGame() until after successful load)
+- include/FMainFrame.h (Implementer: onOpen() Doxygen comment updated for deferral ordering)
+- tests/gui/StrategicGuiLiveTest.cpp (Tester: new testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint behavioral test)
+- tests/gui/StrategicGuiLiveTest.h (Tester: new test declaration + Doxygen comment)
+- AGENTS.md (Documenter: GUI-tests invariant bullet updated for the new sibling test and setGame-deferral rationale, cross-referencing the SF-nullfmap-paint-guard follow-up)
+- doc/deferred-tasks.md (Documenter: added SF-nested-load-returns and SF-nullfmap-paint-guard tracked follow-up entries)
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start
+- myteam get skill documenter/preflight
+- myteam get skill documenter/diff-review
+- myteam get skill diff-first-editing
+- myteam get skill documenter/doc-editing
+- myteam get skill documenter/artifact-writing
+- myteam get skill documenter/commit-flow
+- myteam get skill two-commit-artifact-flow
+- myteam get skill documenter/verifier-handoff
+- myteam get skill handoff-prompt-contract
+- myteam get skill artifact-paths
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <task-prompt> --repo-root <worktree>
+- git diff 673a9832 925ad377 --stat
+- git diff 673a9832 925ad377 -- src/FMainFrame.cpp include/FMainFrame.h
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 673a9832 --head 925ad377
+- grep -rl 'FPlayer::load|FFleet::load|getMaxSize' artifacts/phase5-save-format-hardening/
+- grep -n -A15 'FPlayer::load|FFleet::load' artifacts/phase5-save-format-hardening/P5-5/history/pass-1/security_report.md
+- grep -n -i 'magic|version|corrupt|load()|Open' doc/UsersGuide.md
+- git add AGENTS.md doc/deferred-tasks.md
+- git commit -F <doc-commit-message-file>
+- git status
+
+Final test outcomes:
+- Documentation-only change; no executable or test behavior modified. Relying on the Tester's already-confirmed make check result: SSWTests (289, OK), TacticalTests (253, OK), GuiTests (83, OK under xvfb-run), from the P5-5 pass-2 tester commit 925ad377.
+
+Plan or evaluation context guidance:
+- plans/phase5-save-format-hardening-plan.md, subtask P5-5 (Save-file header, load-failure orchestration & error UX). This pass-2 remediation is scoped to the single approved in-scope mitigation identified by the pass-1 Security/Verifier review (Finding #2's partial in-scope mitigation: defer setGame() in onOpen()); the plan's own Documentation Impact section for P5-5 references doc/deferred-tasks.md as the tracking location for residual gaps, which this pass satisfies.
+
+Convention-file guidance:
+- AGENTS.md: Doxygen file-header/function-comment mandate (author/date fields), single-source-of-truth rule for canonical facts, and the GUI-tests invariant bullet listing under 'Testing'.
+- doc/deferred-tasks.md: standing convention that deferred items are recorded here (not only in a plan or reviewer report) with Description/Origin/Why deferred/Target phase sections, consistent with the existing SF-enum-codes and SF-fhexmap entries used as the format template for the two new entries.
+
+Updated documentation files:
+- AGENTS.md
+- doc/deferred-tasks.md
+
+Shared artifact directory:
+- artifacts/phase5-save-format-hardening/P5-5
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
