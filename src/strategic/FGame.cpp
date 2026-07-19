@@ -714,18 +714,26 @@ int FGame::load(std::istream &is){
 			reportLoadError("Cannot load save file: player data is truncated, corrupt, or references an unknown ship type.");
 			return 1;
 		}
-		// FF-1 (SF-located-object-ids): validate each fleet's located-object
-		// reference IDs against the already-loaded FMap before trusting them.
-		// A corrupt/malicious save can carry a fleet whose location (system)
-		// ID or jump-route ID does not resolve to any loaded FSystem/
-		// FJumpRoute; left unchecked, that untrusted ID later reaches a gui
-		// fleet-draw path that dereferences the NULL
-		// FMap::getSystem(id)/getJumpRoute(id) result and crashes.
+		// FF-1/FF2-1 (SF-located-object-ids): validate each fleet's location,
+		// jump-route, and destination reference IDs against the
+		// already-loaded FMap before trusting them, and reject the illegal
+		// in-transit/location-0 combination. A corrupt/malicious save can
+		// carry a fleet whose location (system) ID, jump-route ID, or
+		// destination (system) ID does not resolve to any loaded
+		// FSystem/FJumpRoute; left unchecked, those untrusted IDs later reach
+		// unguarded FMap::getSystem(id)/getJumpRoute(id) dereferences in a
+		// gui fleet-draw path and in FGame::moveFleets() on the next turn
+		// advancement, both of which crash on a NULL result.
 		// Reject it here, at load time, instead: location 0 is the
 		// documented "not yet in a system" sentinel (see FFleet's default-
 		// constructed m_location and createSFNova()'s deliberately unplaced
-		// fleet) and FFleet::NO_ROUTE is the "not on a jump route" sentinel;
-		// any other value must resolve or the load aborts.
+		// fleet), FFleet::NO_ROUTE is the "not on a jump route" sentinel, and
+		// FFleet::NO_DESTINATION is the "no destination set" sentinel; any
+		// other value must resolve or the load aborts. A fleet with
+		// getInTransit()==true can never legitimately have location 0 (an
+		// in-transit fleet must have a real origin system to depart from),
+		// so that combination is rejected outright regardless of whether 0
+		// would otherwise resolve.
 		FleetList fList = p->getFleetList();
 		for (FleetList::iterator f = fList.begin(); f < fList.end(); f++){
 			unsigned int location = (*f)->getLocation();
@@ -738,6 +746,25 @@ int FGame::load(std::istream &is){
 			if (jumpRoute != FFleet::NO_ROUTE && m_universe->getJumpRoute(jumpRoute) == NULL){
 				delete p;
 				reportLoadError("Cannot load save file: a fleet references a jump-route ID that does not exist.");
+				return 1;
+			}
+			// FF2-1 (FR-A): a fleet's destination (system) ID must also
+			// resolve unless it is the FFleet::NO_DESTINATION sentinel;
+			// otherwise FGame::moveFleets() later dereferences a NULL
+			// FMap::getSystem(destination) result when completing the jump.
+			unsigned int destination = (*f)->getDestination();
+			if (destination != FFleet::NO_DESTINATION && m_universe->getSystem(destination) == NULL){
+				delete p;
+				reportLoadError("Cannot load save file: a fleet references a destination (system) ID that does not exist.");
+				return 1;
+			}
+			// FF2-1 (FR-B): an in-transit fleet with location 0 is an
+			// illegal state -- location 0 is only valid for a fleet that is
+			// not in transit -- and would otherwise later dereference a NULL
+			// FMap::getSystem(0) result in FGame::moveFleets().
+			if ((*f)->getInTransit() && location == 0){
+				delete p;
+				reportLoadError("Cannot load save file: a fleet is marked in-transit but has no valid origin location.");
 				return 1;
 			}
 		}
