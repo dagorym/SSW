@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-2/verifier_report.md",
+    "artifacts/phase5-save-format-followups/FR-2/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FR-2-verifier-20260719",
+  "documentation_accuracy_summary": [
+    "ACCURATE. doc/deferred-tasks.md's entire 'SF-nullfmap-paint-guard' section is removed (not merely reworded/re-deferred) in the combined diff vs base 4c668207, and a repo-wide grep confirms no remaining reference to SF-nullfmap-paint-guard anywhere outside the plan, AGENTS.md's resolved-history note, source-code comments naming the closed tag, and archived/history artifact files -- i.e. it is fully closed, not re-deferred.",
+    "AGENTS.md's GUI-tests guard-coverage note is accurate and not overstated: it correctly names both guarded functions (WXMapDisplay::draw()/getScale() and WXPlayerDisplay::drawFleets()), both confirming tests, states the guard is additive defense-in-depth that does not change rendering when a valid FMap exists, explicitly preserves the unchanged P5-5 onOpen() setGame-deferral description, and claims completeness only 'across both of WXGameDisplay::draw()'s FMap-touching call paths' -- which was independently verified to be the full and only set of such paths (see test sufficiency assessment above), so the claim is not an overstatement.",
+    "Doxygen is present and accurate on all four touched/new production symbols: FMap::hasMap() (include/strategic/FMap.h, new block, @author Claude Sonnet 5 (medium), @date Created/Last Modified Jul 19, 2026), WXMapDisplay::draw()/getScale() (include/gui/WXMapDisplay.h, @author line appends 'Claude Sonnet 5 (medium)' without removing 'Tom Stephens', @date Last Modified bumped to Jul 19, 2026, plus an added Note line), and WXPlayerDisplay::drawFleets() (include/gui/WXPlayerDisplay.h, same pattern). Both new test methods carry full Doxygen blocks in tests/gui/StrategicGuiLiveTest.h with accurate descriptions of what each proves and why the sibling test exists.",
+    "src/FMainFrame.cpp is confirmed untouched by the combined FR-2 diff (git diff 4c668207..HEAD -- src/FMainFrame.cpp is empty), so the P5-5 onOpen setGame-deferral mitigation is unchanged as required, and AGENTS.md's description of it is left verbatim."
+  ],
+  "note_finding_count": 3,
+  "pass_label": "PASS (pass-2, final)",
+  "status": "pass",
+  "task_id": "FR-2",
+  "test_sufficiency_summary": [
+    "SUFFICIENT and genuinely behavioral, not source-inspection. Confirmed both new tests actually construct real objects and exercise the guarded code paths end-to-end: testGamePanelRepaintWithNoLiveFMapDoesNotCrash builds a live FGame (no-arg FGame::create(), which has no FMap side effect), installs it on a shown FGamePanel via setGame(), forces a real repaint through FGamePanel::onPaint() -> WXGameDisplay::draw() -> WXMapDisplay::draw()/getScale(), and asserts FMap::hasMap() still false afterward -- reaching that assertion at all is the behavioral proof (pre-fix, this repaint dereferenced a null FMap reference and crashed the process).",
+    "testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash (pass-2) is the sibling proof for the path this remediation closes: it builds a real (non-mock) FPlayer owning a real FFleet with a nonzero, non-transit getLocation() (via FFleet::setLocation(unsigned int), confirmed to exist in include/strategic/FFleet.h:322) -- exactly the state that previously drove drawFleets() into the 'it's in a system' branch that binds `FMap *map = &(FMap::getMap())` against a NULL m_map (undefined behavior) and dereferences it via map->getSystem(...) -- then calls WXPlayerDisplay::drawFleets() directly on an offscreen wxMemoryDC with FMap::hasMap() false, and asserts FMap::hasMap() still false and the rendered image IsOk() afterward. All FPlayer/FFleet APIs used (setFleetIcon, getFleetIconName, setOwner, setIcon, addShip, setLocation(unsigned int), getLocation(), getInTransit(), addFleet, getFleetList()) were checked against include/strategic/FPlayer.h and include/strategic/FFleet.h and match established usage patterns already present elsewhere in the same test file.",
+    "Confirmed WXGameDisplay::draw() (src/gui/WXGameDisplay.cpp) has exactly two FMap-touching call paths -- WXMapDisplay::draw() and per-player WXPlayerDisplay::drawFleets() -- with drawTurnCounter() touching no FMap state at all, so the two behavioral tests genuinely cover the full paint-chain surface the AGENTS.md note claims is now root-cause-complete; no third unguarded path was found.",
+    "Both tests are registered via CPPUNIT_TEST in tests/gui/StrategicGuiLiveTest.h and defensively tear down any process-static FMap a prior CppUnit test may have left live before asserting the starting precondition, which is correct given FMap::m_map is a process-wide static and CppUnit does not guarantee suite ordering.",
+    "Independently rebuilt from a clean tree (`make all_clean` then `make check`) and confirmed all three suites green: SSWTests OK (290 tests), TacticalTests OK (253 tests), GuiTests OK (85 tests, xvfb-run) -- consistent with the Tester/Security-reported test-count deltas (GUI suite grew 83 -> 84 in pass-1, 84 -> 85 in pass-2)."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
