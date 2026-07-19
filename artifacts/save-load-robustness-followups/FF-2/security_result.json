@@ -1,0 +1,26 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups/FF-2/security_report.md",
+    "artifacts/save-load-robustness-followups/FF-2/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FF-2-security-20260719",
+  "documentation_sufficiency_summary": [
+    "Sufficient. include/ships/FVehicle.h Doxygen on load() accurately describes the FF-2 return-checking discipline, the delete-just-allocated-weapon/defense-before-return ownership rule, the reliance on the FR-1-hardened caller to delete the not-yet-committed vehicle (so ~FVehicle frees already-appended entries), and that the success path and unknown-type abort are unchanged.",
+    "In-code comments at each abort site correctly state why no leak/dangle/double-free occurs (entry not yet appended when deleted; already-appended entries owned by the vehicle; m_currentDefense left NULL).",
+    "AGENTS.md addendum documents that FVehicle::load()'s aggregate-abort now reaches inside a single vehicle's own scalar/weapon/defense region and that FGameSaveFormatTest/FVehicleTest are the confirming coverage."
+  ],
+  "note_finding_count": 2,
+  "outcome": "PASS",
+  "pass_label": "FF-2 security review -- PASS",
+  "status": "complete",
+  "task_id": "FF-2 (folds FF-3)",
+  "test_sufficiency_summary": [
+    "Sufficient and behavioral. Four new behavioral tests exercise the real load path against crafted/truncated byte streams and assert observed runtime outcomes (return codes, showMessage call counts, committed-player count, non-dangling defense), not source-text shape.",
+    "tests/ships/FVehicleTest.cpp::testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion -- unit-level: truncates after m_ID/m_name but before m_iconName; asserts load() returns nonzero AND getCurrentDefense() is non-NULL and of type NONE (proves no dangling m_currentDefense and the object is safe to query/destruct after a failed load).",
+    "tests/strategic/FGameSaveFormatTest.cpp -- three end-to-end FGame::load() tests truncate 2 bytes into a target ship's m_ID (type tag fully present so the pre-existing createShip()==NULL guard cannot be what fires), driving the FF-2 nonzero FVehicle::load() through each FR-1 propagation site: fleet ship-loop (single-ship fleet, which also chains through FPlayer's fleet loop), m_unattached loop, and m_destroyed loop. Each asserts rc!=0, exactly one IStrategicUI::showMessage, and zero players committed to the live singleton.",
+    "The single-ship-fleet design deliberately isolates the FF-2 fix from the pre-existing createShip()==NULL guard, so a regression that reverted FF-2 would fail these tests. All four FR-1 propagation sites (FFleet ship-loop, FPlayer fleet-loop, m_unattached, m_destroyed) are covered.",
+    "Verified by build+run: full SSWTests suite builds clean and reports OK (297 tests) when run from tests/. (The only failures observed were cwd-relative source-inspection tests that look up source files by relative path and are unrelated to FF-2; they pass from the correct working directory.)"
+  ],
+  "warning_finding_count": 0
+}
