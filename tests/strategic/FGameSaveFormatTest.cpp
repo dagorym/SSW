@@ -81,6 +81,28 @@ std::string buildValidSaveBytes(){
 	return bytes;
 }
 
+/**
+ * @brief Builds the exact wire-format encoding FPObject::writeString()
+ * produces for a string: a 4-byte little-endian length prefix followed by
+ * the raw bytes. Used to locate a specific vehicle's own name (or type tag)
+ * field within a full-game save byte buffer via std::string::find(), the
+ * same byte-surgery technique the pre-existing tests in this fixture use.
+ *
+ * @author Claude Sonnet 5 (medium)
+ * @date Created: Jul 19, 2026
+ * @date Last Modified: Jul 19, 2026
+ */
+std::string lengthPrefixedTag(const std::string &s){
+	std::string tag;
+	uint32_t len = static_cast<uint32_t>(s.size());
+	tag.push_back(static_cast<char>(len & 0xFF));
+	tag.push_back(static_cast<char>((len >> 8) & 0xFF));
+	tag.push_back(static_cast<char>((len >> 16) & 0xFF));
+	tag.push_back(static_cast<char>((len >> 24) & 0xFF));
+	tag += s;
+	return tag;
+}
+
 }  // namespace
 
 void FGameSaveFormatTest::setUp(){
@@ -516,6 +538,159 @@ void FGameSaveFormatTest::testLoadValidSaveWithSentinelLocationAndJumpRouteSucce
 
 	CPPUNIT_ASSERT_EQUAL(0, rc);
 	CPPUNIT_ASSERT_EQUAL(0, ui.showMessageCalls);
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadTruncatedInsideFleetShipScalarRegionReturnsNonzeroAndReportsExactlyOnce(){
+	// Build a real game and add a fleet containing exactly ONE uniquely-named
+	// ship to UPF (the first player processed by FGame::load()). A
+	// single-ship fleet is essential to isolating the FF-2 fix: the ship loop
+	// is the last thing FFleet::load() does, so with only one ship there is
+	// no *following* ship whose missing type tag would trip the pre-existing
+	// createShip("")==NULL guard (the mechanism the sibling
+	// testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce
+	// relies on). The abort therefore depends solely on FVehicle::load()
+	// itself returning nonzero when its own scalar read fails -- the FF-2
+	// behavior. The fleet is placed in a real system so FF-1's location check
+	// accepts it.
+	RecordingUI buildUi;
+	FGame &buildGame = FGame::create(&buildUi);
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.init(NULL));
+	FPlayer *upf = buildGame.getPlayer(1);
+	CPPUNIT_ASSERT(upf != NULL);
+	FFleet *existing = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(existing != NULL);
+	FSystem *sys = FMap::getMap().getSystem(existing->getLocation());
+	CPPUNIT_ASSERT(sys != NULL);
+
+	FFleet *soloFleet = new FFleet;
+	soloFleet->setName("FF2 Solo Fleet Truncation Target");
+	soloFleet->setOwner(upf->getID());
+	soloFleet->setLocation(sys, false);
+	FVehicle *fleetShip = createShip("Destroyer", "FF2 Fleet Ship Truncation Target");
+	soloFleet->addShip(fleetShip);
+	upf->addFleet(soloFleet);
+	sys->addFleet(soloFleet);
+
+	std::ostringstream os;
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.save(os));
+	std::string bytes = os.str();
+	delete &buildGame;
+
+	// Locate the fleet's single ship by its own m_name field; the 4 bytes
+	// immediately before that tag are the ship's m_ID field (FVehicle::save()
+	// writes m_type, then m_ID, then m_name).
+	std::string nameTag = lengthPrefixedTag("FF2 Fleet Ship Truncation Target");
+	size_t namePos = bytes.find(nameTag);
+	CPPUNIT_ASSERT(namePos != std::string::npos);
+	CPPUNIT_ASSERT(namePos >= 4);
+	size_t idFieldStart = namePos - 4;
+
+	// Truncate so only 2 of m_ID's 4 bytes survive: the ship's type tag
+	// (consumed by createShip() inside FFleet::load()'s ship loop) is fully
+	// present, but FVehicle::load()'s own leading readU32(m_ID) call fails.
+	std::string truncated = bytes.substr(0, idFieldStart + 2);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(truncated);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// UPF owns the corrupt fleet and is the first player processed, so the
+	// aggregate-abort fires (via FVehicle::load() -> FFleet::load() ship loop
+	// -> FPlayer::load() fleet loop -> FGame::load()) before any player is
+	// pushed onto m_players.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadTruncatedInsideUnattachedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce(){
+	// Build a real game, then add one uniquely-named ship directly to UPF's
+	// m_unattached list (distinct from the generically-named Destroyers
+	// addUPFUnattached() already places there) so its own record can be
+	// located unambiguously by name.
+	RecordingUI buildUi;
+	FGame &buildGame = FGame::create(&buildUi);
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.init(NULL));
+	FPlayer *upf = buildGame.getPlayer(1);
+	CPPUNIT_ASSERT(upf != NULL);
+	FVehicle *unattachedShip = createShip("Destroyer", "FF2 Unattached Truncation Target");
+	CPPUNIT_ASSERT_EQUAL(0, upf->addShip(unattachedShip));
+
+	std::ostringstream os;
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.save(os));
+	std::string bytes = os.str();
+	delete &buildGame;
+
+	// Locate the ship's own m_name field; FVehicle::save() writes m_type,
+	// then m_ID (4 bytes), then m_name -- so the 4 bytes immediately before
+	// this tag are that ship's m_ID field.
+	std::string nameTag = lengthPrefixedTag("FF2 Unattached Truncation Target");
+	size_t namePos = bytes.find(nameTag);
+	CPPUNIT_ASSERT(namePos != std::string::npos);
+	CPPUNIT_ASSERT(namePos >= 4);
+	size_t idFieldStart = namePos - 4;
+
+	// Truncate so only 2 of m_ID's 4 bytes survive: the type tag (consumed
+	// by createShip() in FPlayer::load()'s m_unattached loop) is fully
+	// present, but FVehicle::load()'s own leading readU32(m_ID) call fails.
+	std::string truncated = bytes.substr(0, idFieldStart + 2);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(truncated);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// UPF's m_unattached loop runs before its fleet loop and before any
+	// other player is processed, so the abort fires before any player is
+	// pushed onto m_players.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadTruncatedInsideDestroyedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce(){
+	// Build a real game, then add one uniquely-named ship directly to UPF's
+	// m_destroyed list via the public addDestroyedShip() API (see FPlayer.h:
+	// "F2-serialization" -- m_destroyed is serialized with the same
+	// type-tag + createShip() pattern as m_unattached and fleet ships).
+	RecordingUI buildUi;
+	FGame &buildGame = FGame::create(&buildUi);
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.init(NULL));
+	FPlayer *upf = buildGame.getPlayer(1);
+	CPPUNIT_ASSERT(upf != NULL);
+	FVehicle *destroyedShip = createShip("Destroyer", "FF2 Destroyed Truncation Target");
+	CPPUNIT_ASSERT_EQUAL(0, upf->addDestroyedShip(destroyedShip));
+
+	std::ostringstream os;
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.save(os));
+	std::string bytes = os.str();
+	delete &buildGame;
+
+	std::string nameTag = lengthPrefixedTag("FF2 Destroyed Truncation Target");
+	size_t namePos = bytes.find(nameTag);
+	CPPUNIT_ASSERT(namePos != std::string::npos);
+	CPPUNIT_ASSERT(namePos >= 4);
+	size_t idFieldStart = namePos - 4;
+
+	// Truncate so only 2 of m_ID's 4 bytes survive, exactly as the
+	// unattached-ship sibling test above.
+	std::string truncated = bytes.substr(0, idFieldStart + 2);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(truncated);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// UPF's m_destroyed loop is the last thing FPlayer::load() does, but it
+	// still runs before UPF itself is pushed onto m_players (see
+	// FGame::load()), so the abort fires before any player is committed.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
 	delete &g;
 }
 

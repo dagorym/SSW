@@ -864,6 +864,39 @@ void FVehicleTest::testLoadReturnsNonzeroOnUnknownDefenseType() {
 	CPPUNIT_ASSERT(rc != 0);
 }
 
+void FVehicleTest::testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion() {
+	// AC (FF-2): a stream truncated strictly inside FVehicle::load()'s own
+	// scalar region -- i.e. after the type tag (consumed by the caller, not
+	// by load() itself) and after m_ID/m_name are fully present, but before
+	// m_iconName's own length-prefixed record can be read -- must make
+	// load() return nonzero instead of silently continuing with whatever
+	// default-constructed values the untouched fields already held. Before
+	// FF-2, every scalar read's return value was discarded here, so this
+	// exact truncation point returned 0.
+	std::stringstream stream;
+	writeString(stream, "TestVehicle");   // type tag; consumed by caller below, not by load()
+	writeU32(stream, (uint32_t)77);       // m_ID: fully present
+	writeString(stream, "Truncated Mid-Record Vessel"); // m_name: fully present
+	// Deliberately stop here: no m_iconName, no further scalar/weapon/defense
+	// fields at all. The next thing load() attempts to read is m_iconName's
+	// own length-prefixed string, which finds no bytes left.
+
+	FVehicle target;
+	std::string type;
+	readString(stream, type); // strip the type string load() does not consume itself
+	int rc = target.load(stream);
+
+	CPPUNIT_ASSERT(rc != 0);
+	// Leak/dangle safety: the abort happens before the defense region is
+	// ever touched, so the constructor's default FNone defense (and
+	// m_currentDefense pointing at it) must still be a live, non-dangling
+	// object -- proving the vehicle remains safe to query and destruct after
+	// a failed load() rather than leaving m_currentDefense pointing at freed
+	// memory.
+	CPPUNIT_ASSERT(target.getCurrentDefense() != NULL);
+	CPPUNIT_ASSERT(target.getCurrentDefense()->getType() == FDefense::NONE);
+}
+
 const int FVehicleTest::save(std::ostream &os) const {return 0;}
 int FVehicleTest::load(std::istream &is) {return 0;}
 

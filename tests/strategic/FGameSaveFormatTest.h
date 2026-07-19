@@ -13,7 +13,12 @@
  * covers FF-1 (SF-located-object-ids): a fleet whose location (system) ID or
  * jump-route ID does not resolve against the already-loaded FMap must abort
  * the load, while the documented sentinels (location 0, jump-route
- * FFleet::NO_ROUTE) remain accepted.
+ * FFleet::NO_ROUTE) remain accepted. Also covers FF-2/FF-3
+ * (SF-vehicle-scalar-region / SF-container-propagation): a stream truncated
+ * strictly inside a single vehicle's own scalar region -- deeper than the
+ * type tag consumed by the container's factory call -- must still make
+ * FGame::load() return nonzero, whether that vehicle sits in a fleet, in a
+ * player's m_unattached list, or in a player's m_destroyed list.
  *
  * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
@@ -36,7 +41,11 @@ using namespace Frontier;
  * (SF-nested-load-returns) nested-return-checking fix in
  * FPlayer::load()/FFleet::load(). Also covers FF-1 (SF-located-object-ids):
  * out-of-range fleet location/jump-route IDs abort the load, while the
- * documented sentinels still load cleanly.
+ * documented sentinels still load cleanly. Also covers FF-2/FF-3
+ * (SF-vehicle-scalar-region / SF-container-propagation): a stream truncated
+ * strictly inside a single vehicle's own scalar region must abort the load
+ * regardless of which of the three ship containers (fleet, m_unattached,
+ * m_destroyed) holds that vehicle.
  *
  * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
@@ -55,6 +64,9 @@ class FGameSaveFormatTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds );
+	CPPUNIT_TEST( testLoadTruncatedInsideFleetShipScalarRegionReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadTruncatedInsideUnattachedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadTruncatedInsideDestroyedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -132,6 +144,39 @@ public:
 	/// buildValidSaveBytes() -> load() round trip must succeed with no error
 	/// reported.
 	void testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds();
+
+	/// FF-2/FF-3 (SF-vehicle-scalar-region / SF-container-propagation, site 1
+	/// of 3: fleet). A save file truncated strictly inside a single-ship
+	/// fleet's ship record -- after that ship's type tag is fully consumed by
+	/// createShip() but partway through FVehicle::load()'s own leading m_ID
+	/// read -- must be rejected: load() returns nonzero, reports exactly once
+	/// via the installed IStrategicUI, and no player is committed to the live
+	/// FGame singleton. A *single*-ship fleet is used deliberately: because
+	/// the ship loop is the last thing FFleet::load() does, a one-ship fleet
+	/// has no following ship whose missing type tag would trip the
+	/// pre-existing createShip("")==NULL guard, so the abort depends solely on
+	/// the FF-2 fix inside FVehicle::load() propagating through FFleet::load()'s
+	/// ship loop and FPlayer::load()'s fleet loop. This is distinct from
+	/// testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce
+	/// above, which truncates before any byte of a multi-ship fleet's ship
+	/// record and only exercises the pre-existing createShip()==NULL guard.
+	void testLoadTruncatedInsideFleetShipScalarRegionReturnsNonzeroAndReportsExactlyOnce();
+
+	/// FF-2/FF-3 (site 2 of 3: FPlayer::m_unattached). A save file truncated
+	/// strictly inside an unattached ship's own scalar region must be
+	/// rejected: load() returns nonzero, reports exactly once via the
+	/// installed IStrategicUI, and no player is committed to the live FGame
+	/// singleton. Exercises FPlayer::load()'s m_unattached loop propagating
+	/// FVehicle::load()'s nonzero return.
+	void testLoadTruncatedInsideUnattachedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce();
+
+	/// FF-2/FF-3 (site 3 of 3: FPlayer::m_destroyed). A save file truncated
+	/// strictly inside a destroyed ship's own scalar region must be
+	/// rejected: load() returns nonzero, reports exactly once via the
+	/// installed IStrategicUI, and no player is committed to the live FGame
+	/// singleton. Exercises FPlayer::load()'s m_destroyed loop propagating
+	/// FVehicle::load()'s nonzero return.
+	void testLoadTruncatedInsideDestroyedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce();
 };
 
 }

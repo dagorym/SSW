@@ -48,6 +48,7 @@ class FVehicleTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST( testLoadAdvancesNextIDPastLoadedID );
 	CPPUNIT_TEST( testLoadReturnsNonzeroOnUnknownWeaponType );
 	CPPUNIT_TEST( testLoadReturnsNonzeroOnUnknownDefenseType );
+	CPPUNIT_TEST( testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -292,6 +293,21 @@ public:
 	 * @date Last Modified: Jul 17, 2026
 	 */
 	void testLoadReturnsNonzeroOnUnknownDefenseType();
+
+	/**
+	 * @brief Verifies FF-2: FVehicle::load() returns nonzero when the stream
+	 * is truncated strictly inside the vehicle's own scalar region (after the
+	 * type tag is fully consumed by the caller and m_ID/m_name are read, but
+	 * before m_iconName's own record can be read). Also verifies the
+	 * partially-loaded vehicle is still safe to query/destruct afterward
+	 * (getCurrentDefense() stays non-dangling, since the constructor-time
+	 * default defense is never touched before the abort).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 19, 2026
+	 * @date Last Modified: Jul 19, 2026
+	 */
+	void testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion();
 };
 
 }
