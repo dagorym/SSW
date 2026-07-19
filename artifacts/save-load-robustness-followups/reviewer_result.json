@@ -1,0 +1,60 @@
+{
+  "status": "complete",
+  "role": "reviewer",
+  "feature": "save-load-robustness-followups",
+  "plan": "plans/save-load-robustness-followups-plan.md",
+  "branch": "phase5",
+  "feature_diff_range": "879248eb..HEAD",
+  "subtasks_reviewed": ["FF-1", "FF-2 (FF-3 folded)"],
+  "outcome": "PASS",
+  "blocking_count": 0,
+  "warning_count": 0,
+  "note_count": 2,
+  "spot_check": {
+    "build": "make -C tests (clean link of SSWTests, TacticalTests)",
+    "run": "SSWTests from tests/ -> OK (297 tests), all FF-1/FF-2 cases green",
+    "behavioral_mandate": "both subtask Verifiers independently confirmed fail-against-unfixed / pass-against-fixed"
+  },
+  "scope_compliance": {
+    "ff1_gui_unmodified_per_D1": true,
+    "ff2_confined_to_allowed_files": true,
+    "doc_deferred_tasks_unchanged": true,
+    "agents_md_addenda_present_and_nonredundant": true,
+    "tactical_operations_manual_untouched": true
+  },
+  "security": {
+    "ff1_specialist_review": "CONDITIONAL PASS",
+    "ff2_specialist_review": "PASS",
+    "in_scope_gap_remaining": false
+  },
+  "follow_up_feature_requests": [
+    {
+      "id": "FR-A",
+      "severity": "HIGH",
+      "summary": "Validate fleet m_destination (system) reference ID at load in FGame::load(), NO_DESTINATION-exempt, aborting on out-of-range non-sentinel value; prevents unguarded getSystem(destination)->addFleet NULL deref in moveFleets() on a crafted in-transit save.",
+      "source": "FF-1 Security/Verifier WARNING (pre-existing, out-of-scope)"
+    },
+    {
+      "id": "FR-B",
+      "severity": "MEDIUM-HIGH",
+      "summary": "Reject illegal in-transit + location-0 fleet state at load (or null-guard moveFleets() getSystem sinks); a crafted save passes FF-1's location-0 exemption then hits getSystem(0)->removeFleet NULL deref in moveFleets().",
+      "source": "FF-1 Security/Verifier WARNING (pre-existing, out-of-scope)"
+    },
+    {
+      "id": "FR-C",
+      "severity": "HIGH",
+      "summary": "Harden FPlanet::load(): NULL-check createShip(type) before m_station->load(is), and return nonzero on its own read/nested-load failures instead of unconditionally returning 0 (which neutralizes FSystem::load()'s existing check). Unknown station type currently causes a NULL virtual-call crash.",
+      "source": "FF-2 Verifier WARNING (pre-existing, out-of-scope files)"
+    },
+    {
+      "id": "FR-D",
+      "severity": "MEDIUM",
+      "summary": "Extend aggregate-abort return-checking to container-level scalar reads in FPlayer::load()/FFleet::load(), mirroring FF-2, closing the same silent-success class one level up.",
+      "source": "FF-2 Security NOTE (out-of-scope)"
+    }
+  ],
+  "artifacts": [
+    "artifacts/save-load-robustness-followups/reviewer_report.md",
+    "artifacts/save-load-robustness-followups/reviewer_result.json"
+  ]
+}
