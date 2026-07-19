@@ -1,0 +1,101 @@
+Your role is 'tester'. Your task is to add behavioral coverage for reviewer
+follow-up FF-1: FGame::load() now rejects a save whose fleet carries an
+out-of-range located-object reference ID (location/system ID or jump-route ID)
+that does not resolve against the already-loaded FMap.
+
+WHAT THE IMPLEMENTATION DOES (so you know what to assert):
+- In src/strategic/FGame.cpp, FGame::load(), after each player's p->load(is)
+  succeeds, a validation pass iterates that player's fleets BEFORE they are wired
+  into their systems. For each fleet:
+    * location (system) ID: if getLocation() != 0 and
+      m_universe->getSystem(location) == NULL  -> abort.
+    * jump-route ID: if getJumpRoute() != FFleet::NO_ROUTE and
+      m_universe->getJumpRoute(jumpRoute) == NULL  -> abort.
+  On abort: the freshly-allocated FPlayer is deleted, reportLoadError(...) is
+  called (routes to IStrategicUI::showMessage(...) exactly once), and load()
+  returns nonzero. No live game singleton is committed.
+- Sentinels that are EXEMPT and must still load cleanly: location == 0 ("not yet
+  in a system", e.g. Strike Force Nova) and jump-route == FFleet::NO_ROUTE
+  (== static_cast<unsigned int>(-1), "not on a jump route"). Note jump-route ID 0
+  is a VALID distinct route ID (H4) and is NOT a sentinel -- do not treat 0 as
+  "no route".
+
+REQUIRED BEHAVIORAL COVERAGE (home: tests/strategic/FGameSaveFormatTest.{h,cpp};
+follow the existing fixture conventions -- RecordingUI mock IStrategicUI, the
+buildValidSaveBytes() helper, and the tearDown() singleton cleanup already in the
+file; register each new test method in the CPPUNIT_TEST_SUITE in the .h and add
+its declaration/implementation like the sibling truncation/unknown-type tests):
+
+1. Out-of-range LOCATION (system) ID aborts the load.
+   Assert FGame::load() returns nonzero, RecordingUI::showMessage() call count
+   increments by exactly 1, and no live game state is committed (mirror the
+   assertion style of the existing testLoadUnknownFactoryTypeReturnsNonzero... and
+   truncated-header tests).
+
+2. Out-of-range JUMP-ROUTE ID (non-sentinel case) aborts the load.
+   Same assertions as (1).
+
+3. POSITIVE CONTROL: a valid save with legitimate sentinels still loads.
+   Assert FGame::load() returns 0 and RecordingUI::showMessage() was NOT called.
+   A freshly init()'d game already exercises this (it contains Strike Force Nova
+   with location 0 and all placed fleets with NO_ROUTE jump routes), so a plain
+   buildValidSaveBytes() -> load() round trip is a sufficient positive control;
+   assert the load succeeds and no error was reported.
+
+HOW TO MUTATE A VALID SAVE'S FLEET REFERENCE ID TO AN OUT-OF-RANGE VALUE
+(two viable approaches; pick whichever fits each case best):
+
+Approach A -- byte-patch the serialized location field (recommended for case 1,
+matches the existing tests' byte-surgery style):
+  FFleet::save() (src/strategic/FFleet.cpp) writes its fields in this fixed order:
+    writeU32(m_ID)            -> 4 bytes
+    writeString(m_name)       -> 4-byte little-endian length prefix + name bytes
+    writeU32(m_owner)         -> 4 bytes
+    writeU32(m_location)      -> 4 bytes   <-- PATCH THIS for case 1
+    write(m_inTransit)        -> 1 byte (bool)
+    writeU32(m_destination)   -> 4 bytes
+    write(m_transitTime)      -> 4 bytes (unsigned int)
+    write(m_jumpLength)       -> 4 bytes (unsigned int)
+    write(m_speed)            -> 4 bytes (unsigned int)
+    writeU32(m_jumpRouteID)   -> 4 bytes   <-- PATCH THIS for case 2
+    ... (icon string, militia bool, home string, holding bool, floats, ship count)
+  Locate a specific placed fleet by scanning buildValidSaveBytes() for its name's
+  length-prefixed tag -- exactly as the existing test at ~lines 314-323 finds a
+  fleet name tag (it builds the 4-byte LE length prefix followed by the ASCII
+  name bytes; e.g. "Task Force Prenglar" has length 19). From the byte just AFTER
+  the located name tag, skip 4 bytes (m_owner) to reach the 4-byte m_location
+  field; overwrite those 4 bytes with a LE uint32 that is neither 0 nor any real
+  loaded system ID (systems are a small set; 0xFFFFFF00 or 0x0000BEEF is safely
+  out of range). To patch m_jumpRouteID instead, skip a further 1 + 4 + 4 + 4 + 4
+  = 17 bytes past the location field, then overwrite the next 4 bytes with a LE
+  uint32 that is neither FFleet::NO_ROUTE (0xFFFFFFFF) nor any real route ID
+  (e.g. 0x0000BEEF). Prefer the name of a fleet you KNOW is placed in a system
+  (e.g. "Task Force Prenglar" or "Task Force Cassidine") so the location field is
+  a real nonzero system ID before you clobber it.
+
+Approach B -- construct the corrupt-reference fleet directly, then save (cleaner
+for case 2, no offset arithmetic):
+  Build a live game (FGame::create(&ui); g.init(NULL)), get a real FSystem via
+  FMap::getMap().getSystem(...), create an FFleet, and:
+    * case 1: use fleet->setLocation(unsigned int) with a bogus system ID (a value
+      that is nonzero and not any loaded system's ID) -- this sets m_location
+      directly without needing a real FSystem.
+    * case 2: place the fleet in a real system (fleet->setLocation(realSys,false))
+      so the location check passes, then fleet->setJumpRoute(99999, realSysA,
+      realSysB, len) to set m_jumpRouteID = 99999 (an ID no loaded FJumpRoute
+      has). Optionally setInTransit(true).
+  Add the fleet to a player (player->addFleet(fleet)), save to a stream, tear the
+  singleton down, then load the bytes into a fresh game with a fresh RecordingUI
+  and assert the abort. NOTE: getJumpRoute(99999) must return NULL for the abort
+  to fire -- confirm no real route uses that ID (route IDs are small).
+
+Do NOT modify any production file; author only the test files. Run:
+  cd tests/strategic && make && ./StrategicTests
+and then the full `make check` from the repo root to confirm SSWTests /
+TacticalTests / GuiTests stay green. Each new behavior must fail against the
+UNFIXED code and pass against the fixed code (per the repo's behavioral-test
+mandate): to confirm, you can temporarily revert the FGame::load() FF-1 block and
+verify your out-of-range tests then FAIL (load returns 0), then restore it.
+
+Implementation/code commit under test: 375ff9b0 (branch
+phase5-FF-1-implementer-20260719).
