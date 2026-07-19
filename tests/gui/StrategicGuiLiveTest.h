@@ -37,6 +37,7 @@ CPPUNIT_TEST( testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled 
 CPPUNIT_TEST( testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint );
 CPPUNIT_TEST( testGamePanelPaintTracksParentSize );
 CPPUNIT_TEST( testGamePanelRepaintWithNoLiveFMapDoesNotCrash );
+CPPUNIT_TEST( testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash );
 CPPUNIT_TEST( testStrategicDialogsCloseModallyWithoutInput );
 CPPUNIT_TEST( testStrategicDialogsUseStaticBoxChildParents );
 CPPUNIT_TEST( testWXStrategicUIParentBackedModalAndRedrawPaths );
@@ -226,6 +227,27 @@ public:
 	 * @date Last Modified: Jul 19, 2026
 	 */
 	void testGamePanelRepaintWithNoLiveFMapDoesNotCrash();
+	/**
+	 * @brief Forces WXPlayerDisplay::drawFleets() directly with no live FMap singleton and
+	 * asserts the process does not crash (FR-2 pass-2 remediation, SF-nullfmap-paint-guard).
+	 *
+	 * Sibling coverage to testGamePanelRepaintWithNoLiveFMapDoesNotCrash: that test proves the
+	 * WXMapDisplay path using a player-less FGame (the no-arg FGame::create() overload has no
+	 * players, so WXGameDisplay::draw()'s player loop never calls drawFleets()). FGame has no
+	 * public API to add a player/fleet without first creating an FMap (both FGame::init() and
+	 * FGame::load() call FMap::create()/load() before any player exists), so a fleet-bearing
+	 * FGamePanel repaint with no live FMap cannot be constructed through public FGame APIs. This
+	 * test instead builds a real (non-mock) FPlayer owning a real FFleet with a non-transit,
+	 * nonzero getLocation() -- exactly the state that previously drove drawFleets() into binding
+	 * `FMap *map = &(FMap::getMap())` against a NULL m_map (UB) and then dereferencing it via
+	 * map->getSystem(...) -- and calls WXPlayerDisplay::drawFleets() directly with
+	 * FMap::hasMap() false, asserting the call returns (drawing nothing) instead of crashing.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 19, 2026
+	 * @date Last Modified: Jul 19, 2026
+	 */
+	void testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash();
 	/**
 	 * @brief Confirms representative strategic dialogs open and close modally without input.
 	 *

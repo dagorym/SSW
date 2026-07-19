@@ -1440,6 +1440,58 @@ void StrategicGuiLiveTest::testGamePanelRepaintWithNoLiveFMapDoesNotCrash() {
 	delete game;
 }
 
+void StrategicGuiLiveTest::testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash() {
+	// Same defensive teardown pattern as testGamePanelRepaintWithNoLiveFMapDoesNotCrash: FMap
+	// is a process-wide static and CppUnit does not guarantee suite-wide execution order, so
+	// tear down any map a previous test may have left live rather than assuming a starting
+	// state.
+	if (FMap::hasMap()) {
+		delete &FMap::getMap();
+	}
+	CPPUNIT_ASSERT(!FMap::hasMap());
+
+	// FGame has no public API to add a player/fleet without first creating an FMap
+	// (FGame::init() and FGame::load() both call FMap::create()/load() before any player is
+	// constructed), so the fleet-bearing FGamePanel repaint described in the FR-2 pass-2
+	// handoff cannot be built through public FGame APIs alone. Prove the
+	// WXPlayerDisplay::drawFleets() guard directly instead: build a real (non-mock) FPlayer
+	// owning a real FFleet with a non-transit, nonzero getLocation() -- exactly the state that
+	// previously drove drawFleets() into the "it's in a system" branch and dereferenced
+	// FMap::getMap() -- and call drawFleets() with FMap::hasMap() false.
+	FPlayer player;
+	player.setFleetIcon("icons/UPFFighter.png");
+
+	FFleet * fleet = new FFleet;
+	fleet->setName("No-Map Fleet");
+	fleet->setOwner(player.getID());
+	fleet->setIcon(player.getFleetIconName());
+	fleet->addShip(createShip("AssaultScout"));
+	// setLocation(unsigned int) sets m_location directly with no FSystem/FMap dependency at
+	// all; a nonzero, non-transit location drives drawFleets() into the "it's in a system"
+	// branch that previously bound `FMap *map = &(FMap::getMap())` (UB against a NULL m_map)
+	// and dereferenced it via map->getSystem(...).
+	fleet->setLocation(7u);
+	player.addFleet(fleet);
+	CPPUNIT_ASSERT(!FMap::hasMap());
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), player.getFleetList().size());
+	CPPUNIT_ASSERT(fleet->getLocation() != 0);
+	CPPUNIT_ASSERT(!fleet->getInTransit());
+
+	WXPlayerDisplay playerDisplay;
+	const wxImage rendered = renderOffscreen(200, 200, [&](wxMemoryDC &dc) {
+		playerDisplay.drawFleets(dc, &player);
+	});
+
+	// Reaching this assertion at all is the behavioral proof: before the FMap::hasMap() guard
+	// was added to WXPlayerDisplay::drawFleets(), this call would have bound a reference to
+	// FMap::getMap()'s null singleton (UB) and then dereferenced it via map->getSystem(...),
+	// crashing the process. The guard now returns immediately and draws nothing, so
+	// FMap::hasMap() still reports false and the offscreen render completes normally
+	// afterward.
+	CPPUNIT_ASSERT(!FMap::hasMap());
+	CPPUNIT_ASSERT(rendered.IsOk());
+}
+
 void StrategicGuiLiveTest::testStrategicDialogsCloseModallyWithoutInput() {
 wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Dialog Parent", wxDefaultPosition, wxSize(500, 400));
 parent->Show();
