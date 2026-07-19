@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-2/security_report.md",
+    "artifacts/phase5-save-format-followups/FR-2/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FR-2-security-20260719",
+  "documentation_sufficiency_summary": [
+    "SUFFICIENT and now accurate. The AGENTS.md null-FMap paint note is corrected to state the gui paint path reached from FGamePanel::onPaint() -> WXGameDisplay::draw() is root-cause-complete across BOTH FMap-touching call paths (WXMapDisplay::draw()/getScale() and WXPlayerDisplay::drawFleets()); the pass-1 OVERSTATEMENT is resolved.",
+    "The WXPlayerDisplay.h doxygen accurately documents the hasMap() guard as additive defense-in-depth with no behavior change when a valid FMap exists, and names the guarded ordering invariant. The P5-5 FMainFrame::onOpen setGame-deferral mitigation description is explicitly preserved and unchanged, and doc/deferred-tasks.md correctly keeps SF-nullfmap-paint-guard removed (now fully closed)."
+  ],
+  "note_finding_count": 2,
+  "outcome": "PASS",
+  "pass_label": "PASS (pass-2)",
+  "status": "pass",
+  "task_id": "FR-2",
+  "test_sufficiency_summary": [
+    "SUFFICIENT and behavioral. testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash (tests/gui/StrategicGuiLiveTest.cpp) constructs a real (non-mock) FPlayer owning a real FFleet at a nonzero, non-transit getLocation() -- exactly the 'it's in a system' branch that previously bound `FMap *map = &(FMap::getMap())` against a NULL m_map and dereferenced it via map->getSystem(...) -- forces FMap::hasMap() false, and calls drawFleets() directly on an offscreen wxMemoryDC. Reaching the final assertions is the behavioral proof the guard short-circuits before any dereference; this test would crash against the unfixed code, satisfying the repo behavioral-verification mandate.",
+    "The test is registered via CPPUNIT_TEST in StrategicGuiLiveTest.h and defensively tears down any process-static FMap a prior test may have left live.",
+    "Verified locally: GUI suite builds clean and runs green under xvfb (OK (85 tests), up from 84), closing the pass-1 GAP note (fleet-bearing no-map coverage now exists). Sibling testGamePanelRepaintWithNoLiveFMapDoesNotCrash continues to cover the WXMapDisplay path."
+  ],
+  "warning_finding_count": 0
+}
