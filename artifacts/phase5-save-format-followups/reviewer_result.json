@@ -1,0 +1,50 @@
+{
+  "status": "complete",
+  "role": "reviewer",
+  "feature": "phase5-save-format-followups",
+  "feature_description": "Phase 5 save-format-hardening reviewer follow-ups FR-1 (closes SF-nested-load-returns) and FR-2 (closes SF-nullfmap-paint-guard)",
+  "plan": "plans/phase5-save-format-followups-plan.md",
+  "branch": "phase5",
+  "review_branch": "phase5-reviewer-20260719",
+  "outcome": "PASS",
+  "subtasks_reviewed": ["FR-1", "FR-2"],
+  "blocking_count": 0,
+  "warning_count": 0,
+  "note_count": 4,
+  "build_and_test": {
+    "command": "make check (worktree root, foreground)",
+    "SSWTests": "OK (290 tests)",
+    "TacticalTests": "OK (253 tests)",
+    "GuiTests": "OK (85 tests)",
+    "all_green": true,
+    "baseline_before_followups": "289 / 253 / 83",
+    "delta_explained": "SSWTests +1 (FR-1 truncation test); GuiTests +2 (two FR-2 no-map repaint tests); TacticalTests unchanged"
+  },
+  "verification_highlights": [
+    "FR-1: all four nested-load sites (FPlayer m_unattached/fleet/m_destroyed loops, FFleet ship loop) check the nested return, delete the not-yet-owned sub-object, and return nonzero; unknown-ship-type abort preserved; verified at file level.",
+    "FR-1: FFleet ship-loop v->load()!=0 check is reachable because FVehicle::load() returns 1 on unknown weapon/defense type; not dead code.",
+    "FR-1: behavioral test testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce fails pre-fix, passes post-fix, registered in suite.",
+    "FR-2: FMap::hasMap() predicate tests m_map != NULL without dereferencing (matches plan Assumption A1; not the disallowed getMaxSize() substitute).",
+    "FR-2: independently enumerated WXGameDisplay::draw() chain; all three FMap-touching seams (WXMapDisplay::draw, WXMapDisplay::getScale, WXPlayerDisplay::drawFleets) guarded; drawTurnCounter touches only FGame&. Root-cause-complete.",
+    "FR-2: two behavioral no-map repaint tests registered; onOpen setGame-deferral mitigation untouched.",
+    "Both closed deferrals removed from doc/deferred-tasks.md; SF-enum-codes and SF-fhexmap retained.",
+    "AGENTS.md save-format and paint-path notes accurate and not overstating coverage; Doxygen @author/@date bumps present on touched functions/classes.",
+    "Subtask verdicts: FR-1 Security PASS / Verifier PASS; FR-2 pass-1 Security CONDITIONAL PASS -> pass-2 Security PASS, Verifier PASS."
+  ],
+  "scope_expansion_assessment": "FR-2's pass-2 expansion to src/gui/WXPlayerDisplay.cpp/.h is justified: drawFleets() is a second same-chain FMap-touching path within WXGameDisplay::draw(), so guarding only WXMapDisplay would have left the plan's own acceptance criterion unmet. Driven through the correct Security->remediation->Verifier cycle. Not scope creep.",
+  "findings": [
+    {"severity": "NOTE", "id": "N1", "summary": "Pre-existing out-of-range fleet-location crash: WXPlayerDisplay::drawFleets()/WXMapDisplay do not NULL-check FMap::getSystem() for a valid map + untrusted out-of-range ID. Distinct from SF-nullfmap-paint-guard, not regressed by FR-2, surfaced by FR-2 Security review, not yet tracked in deferred-tasks.md.", "follow_up": "FF-1"},
+    {"severity": "NOTE", "id": "N2", "summary": "FVehicle::load() still discards its own scalar reads and nested w->load()/d->load() returns; returns nonzero only on createWeapon/createDefense==NULL. FR-1 aggregate-abort does not reach truncation strictly inside a vehicle's own scalar region. Out of FR-1 scope.", "follow_up": "FF-2"},
+    {"severity": "NOTE", "id": "N3", "summary": "FR-1 behavioral test directly exercises only the FPlayer fleet-loop propagation (via FFleet createShip==NULL); the FFleet ship-loop and FPlayer m_unattached/m_destroyed v->load()!=0 paths are not each independently exercised. Non-blocking: byte-identical mirror code, file-verified, Security/Verifier judged sufficient.", "follow_up": "FF-3"},
+    {"severity": "NOTE", "id": "N4", "summary": "Redundant but harmless double FMap::hasMap() check (drawFleets then WXMapDisplay::getScale). No correctness/security impact; no action required.", "follow_up": null}
+  ],
+  "follow_up_feature_requests": [
+    "FF-1: Add NULL-FSystem guards / save-input validation of fleet/system/jump location IDs so a valid FMap that cannot resolve an untrusted out-of-range ID does not crash the gui draw path (WXPlayerDisplay::drawFleets, WXMapDisplay system/jump lookups). Distinct from the now-closed SF-nullfmap-paint-guard; recommend recording as a new deferred item.",
+    "FF-2: Harden FVehicle::load() to check its own scalar-field reads and nested weapon/defense load() returns for mid-record truncation, extending FR-1's aggregate-abort guarantee into a vehicle's own scalar region, with matching behavioral coverage.",
+    "FF-3 (optional, low priority): Add behavioral coverage that drives the FFleet ship-loop and FPlayer m_unattached/m_destroyed nested-return propagation directly (e.g. corrupt in-ship weapon-type tag) so all four FR-1 sites are individually exercised."
+  ],
+  "artifacts_written": [
+    "artifacts/phase5-save-format-followups/reviewer_report.md",
+    "artifacts/phase5-save-format-followups/reviewer_result.json"
+  ]
+}
