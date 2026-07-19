@@ -1,7 +1,7 @@
 /**
  * @file FGameSaveFormatTest.cpp
  * @brief Implementation file for the FGameSaveFormatTest class
- * @author Claude Sonnet 5 (medium)
+ * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
  * @date Last Modified: Jul 19, 2026
  */
@@ -383,6 +383,139 @@ void FGameSaveFormatTest::testLoadFailureWithNoUIFallsBackToConsoleAndReturnsNon
 
 	CPPUNIT_ASSERT(rc != 0);
 	CPPUNIT_ASSERT(!capturedOut.str().empty());
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce(){
+	std::string bytes = buildValidSaveBytes();
+
+	// Locate UPF's "Task Force Prenglar" fleet by its own length-prefixed
+	// name field, using the same 4-byte little-endian length prefix + raw
+	// ASCII encoding FPObject::writeString() produces (see the sibling
+	// truncated-ship-record test above for the identical lookup pattern).
+	// This fleet is placed in the Prenglar system by createTFPrenglar(), so
+	// its serialized m_location is a real, nonzero system ID before we
+	// clobber it below.
+	std::string fleetNameTag;
+	fleetNameTag.push_back(static_cast<char>(19));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag += "Task Force Prenglar";
+	size_t fleetNamePos = bytes.find(fleetNameTag);
+	CPPUNIT_ASSERT(fleetNamePos != std::string::npos);
+
+	// FFleet::save() writes, in order after the name: m_owner (4 bytes),
+	// then m_location (4 bytes) -- the field under test here.
+	size_t ownerPos = fleetNamePos + fleetNameTag.size();
+	size_t locationPos = ownerPos + 4;
+	CPPUNIT_ASSERT(locationPos + 4 <= bytes.size());
+
+	// Sanity: confirm the byte range we are about to overwrite currently
+	// decodes to a real, nonzero system ID (i.e. we found a placed fleet's
+	// location field, not some unrelated bytes).
+	const unsigned char *raw = reinterpret_cast<const unsigned char *>(bytes.data());
+	uint32_t originalLocation = static_cast<uint32_t>(raw[locationPos])
+			| (static_cast<uint32_t>(raw[locationPos + 1]) << 8)
+			| (static_cast<uint32_t>(raw[locationPos + 2]) << 16)
+			| (static_cast<uint32_t>(raw[locationPos + 3]) << 24);
+	CPPUNIT_ASSERT(originalLocation != 0);
+
+	// Overwrite the 4-byte m_location field with a little-endian encoding of
+	// 0x0000BEEF, a value that is neither 0 (the "not yet in a system"
+	// sentinel) nor any real loaded system ID (the loaded universe has only
+	// a small, low-numbered set of systems).
+	bytes[locationPos] = static_cast<char>(0xEF);
+	bytes[locationPos + 1] = static_cast<char>(0xBE);
+	bytes[locationPos + 2] = static_cast<char>(0x00);
+	bytes[locationPos + 3] = static_cast<char>(0x00);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(bytes);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// UPF is the first player written to the stream (see FGame::getPlayers()
+	// push order) and owns the corrupted fleet, so FGame::load()'s FF-1
+	// validation aborts before any player is pushed onto m_players --
+	// proving no live game state was committed.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce(){
+	std::string bytes = buildValidSaveBytes();
+
+	// Locate the same placed fleet as above; this time its m_location field
+	// is left untouched (so the FF-1 location check passes) and only its
+	// m_jumpRouteID field is corrupted.
+	std::string fleetNameTag;
+	fleetNameTag.push_back(static_cast<char>(19));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag += "Task Force Prenglar";
+	size_t fleetNamePos = bytes.find(fleetNameTag);
+	CPPUNIT_ASSERT(fleetNamePos != std::string::npos);
+
+	// FFleet::save() field order after the name: m_owner (4), m_location
+	// (4), m_inTransit (1), m_destination (4), m_transitTime (4),
+	// m_jumpLength (4), m_speed (4), then m_jumpRouteID (4) -- the field
+	// under test here, 17 bytes past the end of m_location.
+	size_t ownerPos = fleetNamePos + fleetNameTag.size();
+	size_t locationPos = ownerPos + 4;
+	size_t jumpRoutePos = locationPos + 4 + 17;
+	CPPUNIT_ASSERT(jumpRoutePos + 4 <= bytes.size());
+
+	// Sanity: a freshly init()'d, placed, non-transiting fleet's
+	// m_jumpRouteID is the FFleet::NO_ROUTE sentinel (all bits set) before we
+	// clobber it below.
+	const unsigned char *raw = reinterpret_cast<const unsigned char *>(bytes.data());
+	uint32_t originalJumpRoute = static_cast<uint32_t>(raw[jumpRoutePos])
+			| (static_cast<uint32_t>(raw[jumpRoutePos + 1]) << 8)
+			| (static_cast<uint32_t>(raw[jumpRoutePos + 2]) << 16)
+			| (static_cast<uint32_t>(raw[jumpRoutePos + 3]) << 24);
+	CPPUNIT_ASSERT_EQUAL(FFleet::NO_ROUTE, originalJumpRoute);
+
+	// Overwrite the 4-byte m_jumpRouteID field with a little-endian encoding
+	// of 0x0000BEEF: neither FFleet::NO_ROUTE (0xFFFFFFFF, the "not on a
+	// jump route" sentinel) nor any real loaded jump-route ID (route IDs are
+	// small, sequentially assigned integers).
+	bytes[jumpRoutePos] = static_cast<char>(0xEF);
+	bytes[jumpRoutePos + 1] = static_cast<char>(0xBE);
+	bytes[jumpRoutePos + 2] = static_cast<char>(0x00);
+	bytes[jumpRoutePos + 3] = static_cast<char>(0x00);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(bytes);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// Same reasoning as the location-ID test above: UPF owns this fleet and
+	// is the first player processed, so the FF-1 jump-route check aborts
+	// before any player is committed.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds(){
+	// A freshly init()'d game's save contains Strike Force Nova (location 0,
+	// the "not yet in a system" sentinel) and every placed fleet on
+	// FFleet::NO_ROUTE (the "not on a jump route" sentinel), all of which
+	// FF-1's validation pass must accept unchanged.
+	std::string bytes = buildValidSaveBytes();
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(bytes);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT_EQUAL(0, rc);
+	CPPUNIT_ASSERT_EQUAL(0, ui.showMessageCalls);
 	delete &g;
 }
 

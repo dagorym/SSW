@@ -9,9 +9,13 @@
  * (@c m_currentPlayer / player count). Also covers FR-1
  * (SF-nested-load-returns): a save stream truncated deep inside a fleet's
  * own ship record must still make @c FGame::load() return nonzero via
- * @c FPlayer::load()/@c FFleet::load()'s nested-return-checking fix.
+ * @c FPlayer::load()/@c FFleet::load()'s nested-return-checking fix. Also
+ * covers FF-1 (SF-located-object-ids): a fleet whose location (system) ID or
+ * jump-route ID does not resolve against the already-loaded FMap must abort
+ * the load, while the documented sentinels (location 0, jump-route
+ * FFleet::NO_ROUTE) remain accepted.
  *
- * @author Claude Sonnet 5 (medium)
+ * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
  * @date Last Modified: Jul 19, 2026
  */
@@ -30,9 +34,11 @@ using namespace Frontier;
  * @brief Behavioral coverage for the P5-5 versioned save-file header,
  * FGame::load() error-aggregation contract, and the FR-1
  * (SF-nested-load-returns) nested-return-checking fix in
- * FPlayer::load()/FFleet::load().
+ * FPlayer::load()/FFleet::load(). Also covers FF-1 (SF-located-object-ids):
+ * out-of-range fleet location/jump-route IDs abort the load, while the
+ * documented sentinels still load cleanly.
  *
- * @author Claude Sonnet 5 (medium)
+ * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
  * @date Last Modified: Jul 19, 2026
  */
@@ -46,6 +52,9 @@ class FGameSaveFormatTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadFailureWithNoUIFallsBackToConsoleAndReturnsNonzero );
+	CPPUNIT_TEST( testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds );
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -101,6 +110,28 @@ public:
 	/// return nonzero and must not crash, exercising reportLoadError()'s
 	/// console fallback branch.
 	void testLoadFailureWithNoUIFallsBackToConsoleAndReturnsNonzero();
+
+	/// FF-1 (SF-located-object-ids): a fleet whose serialized location
+	/// (system) ID is nonzero but does not resolve against the
+	/// already-loaded FMap must abort the load: load() returns nonzero,
+	/// reports exactly once via the installed IStrategicUI, and no player is
+	/// committed to the live FGame singleton.
+	void testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce();
+
+	/// FF-1 (SF-located-object-ids): a fleet whose serialized jump-route ID
+	/// is not the FFleet::NO_ROUTE sentinel but does not resolve against the
+	/// already-loaded FMap must abort the load: load() returns nonzero,
+	/// reports exactly once via the installed IStrategicUI, and no player is
+	/// committed to the live FGame singleton.
+	void testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce();
+
+	/// Positive control for FF-1: a freshly init()'d game's save contains
+	/// only the documented sentinels (location 0 for not-yet-placed fleets,
+	/// FFleet::NO_ROUTE for fleets not on a jump route) and every placed
+	/// fleet's location resolves against the loaded FMap, so a plain
+	/// buildValidSaveBytes() -> load() round trip must succeed with no error
+	/// reported.
+	void testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds();
 };
 
 }
