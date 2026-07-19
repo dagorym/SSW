@@ -1397,6 +1397,49 @@ void StrategicGuiLiveTest::testGamePanelPaintTracksParentSize() {
 	m_harness.pumpEvents(10);
 }
 
+void StrategicGuiLiveTest::testGamePanelRepaintWithNoLiveFMapDoesNotCrash() {
+	// Establish a deterministic false precondition: no live FMap singleton. CppUnit does not
+	// guarantee suite-wide execution order, and FMap is a process-wide static, so defensively
+	// tear down any map a previous test may have left live rather than assuming it.
+	if (FMap::hasMap()) {
+		delete &FMap::getMap();
+	}
+	CPPUNIT_ASSERT(!FMap::hasMap());
+
+	// The no-arg FGame::create() overload constructs a live FGame singleton with no FMap side
+	// effect at all (m_universe stays NULL; FMap::create(...) is only ever called from FGame's
+	// setup/newGame/load flows). This deliberately does NOT call ensureFrontierMap() -- the
+	// point of this test is to reach the draw chain with a set game but no map.
+	FGame * game = &(FGame::create());
+	CPPUNIT_ASSERT(!FMap::hasMap());
+
+	wxFrame * frame = new wxFrame(NULL, wxID_ANY, "FGamePanel No-Map Repaint Test", wxDefaultPosition, wxSize(640, 480));
+	FGamePanel * panel = new FGamePanel(frame);
+	// setGame() makes FGamePanel::onPaint()'s `if (m_game != NULL)` guard pass through into
+	// WXGameDisplay::draw() -> WXMapDisplay::draw()/getScale(), which is exactly where
+	// FMap::getMap() previously returned a null reference and any subsequent member call (e.g.
+	// FMap::getMaxSize()) dereferenced this=0x0.
+	panel->setGame(game);
+	frame->Show();
+	m_harness.pumpEvents();
+
+	panel->Refresh();
+	panel->Update();
+	m_harness.pumpEvents(5);
+
+	// Reaching this assertion at all is the primary behavioral proof: before the
+	// FMap::hasMap() guard was added to WXMapDisplay::draw()/getScale(), this repaint crashed
+	// the process by dereferencing FMap::getMap()'s null reference. After the fix, draw() no-ops
+	// and getScale() returns a safe default of 1.0, so the repaint completes without drawing any
+	// map content.
+	CPPUNIT_ASSERT(!FMap::hasMap());
+
+	panel->clearGame();
+	frame->Destroy();
+	m_harness.pumpEvents(10);
+	delete game;
+}
+
 void StrategicGuiLiveTest::testStrategicDialogsCloseModallyWithoutInput() {
 wxFrame * parent = new wxFrame(NULL, wxID_ANY, "Dialog Parent", wxDefaultPosition, wxSize(500, 400));
 parent->Show();

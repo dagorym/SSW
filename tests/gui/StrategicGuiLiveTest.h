@@ -36,6 +36,7 @@ CPPUNIT_TEST( testMainFrameOnOpenConfirmLoadsFromFullPathAndRestoresPostLoadStat
 CPPUNIT_TEST( testMainFrameOnOpenFailedLoadResetsGameAndLeavesMenuItemsDisabled );
 CPPUNIT_TEST( testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint );
 CPPUNIT_TEST( testGamePanelPaintTracksParentSize );
+CPPUNIT_TEST( testGamePanelRepaintWithNoLiveFMapDoesNotCrash );
 CPPUNIT_TEST( testStrategicDialogsCloseModallyWithoutInput );
 CPPUNIT_TEST( testStrategicDialogsUseStaticBoxChildParents );
 CPPUNIT_TEST( testWXStrategicUIParentBackedModalAndRedrawPaths );
@@ -207,6 +208,24 @@ public:
 	 * @date Last Modified: Apr 04, 2026
 	 */
 	void testGamePanelPaintTracksParentSize();
+	/**
+	 * @brief Forces a live FGamePanel repaint with a set FGame but no FMap singleton and
+	 * asserts the process does not crash (SF-nullfmap-paint-guard / reviewer FR-2).
+	 *
+	 * Constructs an FGame via the no-arg FGame::create() overload -- which has no FMap side
+	 * effect -- and installs it on a shown FGamePanel via setGame(), deliberately without ever
+	 * calling FMap::create(...)/ensureFrontierMap(...). This makes FGamePanel::onPaint()'s
+	 * `if (m_game != NULL)` guard pass through into WXGameDisplay::draw() ->
+	 * WXMapDisplay::draw()/getScale(), which is exactly where FMap::getMap() would previously
+	 * dereference a NULL m_map (this=0x0 inside FMap::getMaxSize()). Reaching the final
+	 * assertion is the primary behavioral proof that the new FMap::hasMap() guard in
+	 * WXMapDisplay::draw()/getScale() now short-circuits before any such dereference.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 19, 2026
+	 * @date Last Modified: Jul 19, 2026
+	 */
+	void testGamePanelRepaintWithNoLiveFMapDoesNotCrash();
 	/**
 	 * @brief Confirms representative strategic dialogs open and close modally without input.
 	 *
