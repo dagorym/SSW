@@ -1,0 +1,66 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated FR-1 (closes deferred item SF-nested-load-returns): FPlayer::load() and FFleet::load() now check the return value of every nested v->load(is)/f->load(is) call in the m_unattached, fleet, and m_destroyed loops, deleting the just-allocated (not-yet-owned) sub-object and returning nonzero on a nonzero nested return, mirroring the existing createShip()==NULL abort pattern. Added the one uncovered behavioral acceptance criterion (deep truncation inside a fleet's ship record) to the existing FGameSaveFormatTest suite; all other criteria (checked-return code shape, no-leak/no-dangle sub-object handling, unknown-ship-type abort preservation, Doxygen updates, deferred-tasks.md removal) were verified by direct code/doc inspection against the already-committed implementer diff (commit 5da780fe) plus the existing FGameSaveFormatTest suite, which already covered wrong-magic, unsupported-version, header-truncation, unknown-factory-type, and no-UI-fallback cases.
+
+Acceptance criteria validated:
+- Every nested v->load(is)/f->load(is) return in FPlayer::load() and FFleet::load() is checked -- verified by source inspection of the already-committed fix (5da780fe) plus behavioral coverage via the new and existing FGameSaveFormatTest cases.
+- A nonzero nested return frees the just-created sub-object and returns nonzero, with nothing left dangling in the owning container and no leak/double-free -- verified by source inspection: delete happens strictly before any push_back in every one of the four loops.
+- A save stream truncated/corrupted inside a fleet's ship record makes FGame::load() return nonzero, routes through reportLoadError()/IStrategicUI::showMessage(), and commits no live game singleton -- verified behaviorally by the new testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce test.
+- The existing unknown-ship-type (createShip == NULL) abort behavior is preserved unchanged -- verified behaviorally by the existing (unmodified) testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExactlyOnce test, which still passes.
+- Doxygen headers on the touched load() functions are updated (bumped @date Last Modified; implementing model added to @author) -- verified by direct inspection of include/strategic/FPlayer.h, include/strategic/FFleet.h, src/strategic/FPlayer.cpp, src/strategic/FFleet.cpp.
+- Deferred item SF-nested-load-returns is marked resolved/removed in doc/deferred-tasks.md -- verified via grep (no matches remain).
+- make check is green (SSWTests / TacticalTests / GuiTests) -- verified: 290/253/83, exit 0, no regressions.
+
+Implementation branch or worktree context:
+- Implementer branch/commit: phase5-FR-1-implementer-20260719 @ 5da780fe ("FR-1: propagate nested load() return codes in FPlayer/FFleet"), merged into this tester worktree's branch history (visible via git log on phase5-FR-1-tester-20260719).
+- Fix shape: in FPlayer::load()'s m_unattached loop, fleet loop, and m_destroyed loop, and in FFleet::load()'s ship loop, a nonzero nested load() return now triggers `delete <obj>; return 1;` before the object would have been push_back'd into its owning container -- mirroring the pre-existing createShip()==NULL abort pattern already used for unknown ship types.
+- Known, deliberately out-of-scope deeper gap (not fixed by FR-1 and not something FR-1's file list could fix): FVehicle::load() (src/ships/FVehicle.cpp) does not itself check its own internal readU32()/readString()/read<T>() or nested weapon/defense load() return codes for truncation strictly inside a vehicle's own scalar-field region; it only returns nonzero via its pre-existing createWeapon()==NULL/createDefense()==NULL checks. This is why the new test's truncation point is placed at the ship *type-tag* boundary (before FVehicle::load() is ever entered) rather than inside a ship's scalar fields.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FPlayer.cpp
+- include/strategic/FPlayer.h
+- src/strategic/FFleet.cpp
+- include/strategic/FFleet.h
+- doc/deferred-tasks.md
+- tests/strategic/FGameSaveFormatTest.h
+- tests/strategic/FGameSaveFormatTest.cpp
+
+Test commit:
+- 4e6b1185
+
+Commands executed:
+- make -C src/strategic (clean build, no warnings)
+- make -C tests/strategic (clean build, no warnings)
+- make -C tests (top-level test build)
+- ./SSWTests (run from tests/) -> OK (290 tests)
+- make check (top-level, from worktree root) -> SSWTests OK (290 tests), TacticalTests OK (253 tests), GuiTests OK (83 tests), exit 0
+
+Final test outcomes:
+- make check (top-level) exit 0: SSWTests OK (290 tests), TacticalTests OK (253 tests), GuiTests OK (83 tests) -- no regressions vs. the pre-FR-1 baseline (289/253/83); the +1 in SSWTests is the new FGameSaveFormatTest case.
+- New test testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce (tests/strategic/FGameSaveFormatTest.cpp) is fully behavioral: it builds a real valid FGame save via buildValidSaveBytes(), locates the byte offset of UPF's 'Task Force Prenglar' fleet's first ship ('AssaultScout') type-tag by searching forward from the fleet's own length-prefixed name field (so the earlier AssaultScout entries in m_unattached are not matched instead), truncates the stream immediately before that ship's type-tag bytes, calls the real FGame::load(), and asserts the observed runtime outcome: rc != 0 and the mock IStrategicUI's showMessageCalls increments by exactly 1.
+- Verified by direct source inspection (src/strategic/FPlayer.cpp, src/strategic/FFleet.cpp, both already committed by the Implementer at 5da780fe) that every nested v->load(is)/f->load(is) return in FPlayer::load()'s three loops and FFleet::load()'s ship loop is checked, with delete-then-return-nonzero on a nonzero nested return before any push_back into the owning container -- so no leak, no dangling container entry, and no double-free is possible on that path.
+- Verified the pre-existing unknown-ship-type (createShip()==NULL) abort checks in both FPlayer::load() and FFleet::load() are unchanged (still return 1 immediately without dereferencing a NULL result), and remain exercised by the existing testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExactlyOnce test, which still passes.
+- Verified include/strategic/FPlayer.h and include/strategic/FFleet.h load() Doxygen blocks were updated with the new nested-return-checking contract description and @date Last Modified bumped to Jul 19, 2026 (author lists already included Claude Sonnet 5 (medium) from prior P5-3 work); src/strategic/FPlayer.cpp and src/strategic/FFleet.cpp file-header @date Last Modified were likewise bumped to Jul 19, 2026.
+- Verified doc/deferred-tasks.md no longer contains any SF-nested-load-returns entry (grep returns no matches), consistent with the repository's full-removal precedent for resolved deferred-task entries.
+
+Documentation context:
+- AGENTS.md's Contributor Notes section already documents the save-format-hardening phase and lists FGame's P5-5 header/load() aggregate-abort contract; it does not yet mention FR-1's FPlayer/FFleet nested-return-checking fix or that SF-nested-load-returns has been resolved -- the Documenter should confirm whether that paragraph needs a short addendum (or whether the existing wording already generalizes to cover this).
+- doc/deferred-tasks.md's SF-nested-load-returns entry has already been removed by the Implementer commit (5da780fe); no further doc/deferred-tasks.md change is expected from the Documenter for that item.
+- No test-contracts.md entries are affected -- this is a strategic (not tactical) test, and FGameSaveFormatTest is not one of the catalogs tracked in doc/test-contracts.md.
+
+Plan and diff context:
+- Plan: plans/phase5-save-format-followups-plan.md (FR-1 subtask).
+- Reviewer origin: artifacts/phase5-save-format-hardening/reviewer_report.md flagged SF-nested-load-returns as a non-blocking deferral, handed off as FR-1.
+- Diff to inspect for documentation impact: `git show 5da780fe` (implementer fix) and `git show 4e6b1185` (this tester's new behavioral test case) on branch phase5-FR-1-tester-20260719.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-followups/FR-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

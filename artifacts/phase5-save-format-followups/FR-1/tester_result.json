@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-1/tester_report.md",
+    "artifacts/phase5-save-format-followups/FR-1/tester_result.json",
+    "artifacts/phase5-save-format-followups/FR-1/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-FR-1-tester-20260719",
+  "commands_run": [
+    "make -C src/strategic (clean build, no warnings)",
+    "make -C tests/strategic (clean build, no warnings)",
+    "make -C tests (top-level test build)",
+    "./SSWTests (run from tests/) -> OK (290 tests)",
+    "make check (top-level, from worktree root) -> SSWTests OK (290 tests), TacticalTests OK (253 tests), GuiTests OK (83 tests), exit 0"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "83 run / 0 failures",
+    "SSWTests": "290 run / 0 failures (289 baseline + 1 new)",
+    "TacticalTests": "253 run / 0 failures"
+  },
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "FR-1",
+  "test_commit_hash": "4e6b1185",
+  "test_files_changed": [
+    "tests/strategic/FGameSaveFormatTest.h",
+    "tests/strategic/FGameSaveFormatTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
