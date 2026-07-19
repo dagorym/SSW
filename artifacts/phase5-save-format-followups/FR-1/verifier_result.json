@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-1/verifier_report.md",
+    "artifacts/phase5-save-format-followups/FR-1/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FR-1-verifier-20260719",
+  "documentation_accuracy_summary": [
+    "Doxygen headers on FPlayer::load()/FFleet::load() (include/strategic/FPlayer.h:294-313, include/strategic/FFleet.h:262-279) accurately describe the new nested-return-checking contract, with @date Last Modified bumped to Jul 19, 2026 and Claude Sonnet 5 (medium) present in @author alongside prior authors (no authors removed). Same for the .cpp file-header dates.",
+    "doc/deferred-tasks.md's SF-nested-load-returns entry is fully removed (verified via grep across doc/deferred-tasks.md, AGENTS.md, and doc/synthesized-roadmap.md -- the only remaining textual reference is descriptive prose in AGENTS.md's Contributor Notes, not a deferred-item listing), consistent with this repository's full-removal-on-resolution convention (F2-serialization, H2 precedent).",
+    "AGENTS.md's save-format Contributor Notes paragraph (line 404) was accurately synced by the Documenter's one-line addendum (commit ef12f02b): it now states that FR-1 made FPlayer::load()/FFleet::load() check every nested FVehicle::load()/FFleet::load() return in their respective loops, deleting the just-allocated sub-object and returning nonzero on failure, so the aggregate-abort guarantee holds even for truncation deep inside a single ship's or fleet's own record. This neither overstates (it does not claim FVehicle-internal scalar-field truncation is caught -- a separately tracked gap) nor understates (it no longer implies the guarantee is only as strong as the top-level per-player check) the actual guarantee. Verified against the underlying code by direct read.",
+    "doc/rules/tactical_operations_manual.md is confirmed untouched (git diff 817485a7..HEAD on that path is empty), honoring the non-negotiable constraint in AGENTS.md.",
+    "No duplication introduced: the AGENTS.md addendum states the FR-1 fact once, in the location already discussing the related FGame::load() top-level guarantee; doc/synthesized-roadmap.md was deliberately left unchanged, consistent with the Single-Source-of-Truth Rule."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "FR-1 nested-load-return propagation (SF-nested-load-returns) final verifier review",
+  "status": "complete",
+  "task_id": "FR-1",
+  "test_sufficiency_summary": [
+    "testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce is a genuine behavioral test: it builds a real valid FGame save via buildValidSaveBytes(), truncates the stream immediately before a fleet's first ship's type-tag, calls the real FGame::load() (not a mock), and asserts the observed runtime outcome (rc != 0, mock IStrategicUI showMessageCalls incremented by exactly 1). Verified by direct read of tests/strategic/FGameSaveFormatTest.cpp:313-368 that this fails against the pre-fix code (pre-FR-1, FPlayer::load()'s fleet loop discarded FFleet::load()'s nonzero return and returned 0) and passes after the fix.",
+    "Pre-existing negative coverage remains intact and green: wrong-magic, unsupported-version, header-truncation, unknown-factory-type, and no-UI console-fallback tests are unmodified and still pass, confirming the existing createShip()==NULL abort path is preserved unchanged.",
+    "This Verifier pass independently rebuilt and ran the full suite from a clean invocation in this worktree (make check): SSWTests 290/290, TacticalTests 253/253, GuiTests 83/83, all green, no failures reported in output -- consistent with, and independently confirming, the Tester's and Security's reported results.",
+    "One test-sufficiency observation (see NOTE finding): three of the four newly-added nested-return-check branches are verified by structural code inspection and destructor-based memory-safety reasoning rather than each having an independent behavioral test. Non-blocking, concurring with Security's assessment, given the identical three-line pattern across all four sites and the confirmed absence of any discrepancy between them."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 0
+}
