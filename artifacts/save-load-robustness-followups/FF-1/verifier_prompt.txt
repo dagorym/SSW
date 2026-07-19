@@ -1,0 +1,62 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented FF-1 (SF-located-object-ids): FGame::load() now validates each loaded fleet's location (system) ID and jump-route ID against the already-loaded FMap after each player loads, aborting the load through the existing reportLoadError() aggregate-abort path (no live singleton committed) on any unresolved reference, with the documented sentinels (location 0, FFleet::NO_ROUTE) exempt. Extended the AGENTS.md save-format Contributor Notes paragraph with a concise, non-duplicative addendum recording this fix and its load-time (root-cause) design decision (gui draw path intentionally unmodified). Verified the Implementer's Doxygen updates to FGame::load() (include/strategic/FGame.h, src/strategic/FGame.cpp) and the Tester's Doxygen updates to the three new FGameSaveFormatTest cases (tests/strategic/FGameSaveFormatTest.h/.cpp) already satisfy repository in-code documentation requirements (author/date metadata, function comments) -- no further in-code comment changes were needed. Confirmed doc/deferred-tasks.md, doc/test-contracts.md, and doc/UsersGuide.md require no change per the plan's documented scope (FF-1 was never a tracked deferred item; FGameSaveFormatTest is a strategic, not tactical-catalog, suite; the existing generic corrupt-save File->Open note already covers this behavior). No executable or test behavior was changed.
+
+Acceptance criteria to verify:
+- An out-of-range fleet location (system) ID that does not resolve against the already-loaded FMap (and is not the 0 sentinel) aborts FGame::load(): load() returns nonzero, reports exactly once via IStrategicUI::showMessage(), and commits no live game singleton -- verified behaviorally by testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce.
+- An out-of-range fleet jump-route ID that does not resolve against the loaded FMap (and is not the FFleet::NO_ROUTE sentinel) aborts FGame::load() with the same observable outcome -- verified behaviorally by testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce.
+- The documented sentinels are exempt and still load cleanly: a fleet with location 0 and every placed fleet on FFleet::NO_ROUTE round-trip through save()->load() with rc 0 and no error reported -- verified behaviorally by testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds.
+- Each new negative-path test genuinely exercises the FF-1 code: with the validation block disabled the two out-of-range tests fail (load returns 0) and with the fix they pass, satisfying the repo's behavioral-test mandate.
+- No production file was modified by the Tester; make check stays green across all three suites.
+- Doxygen updates on FGame::load() and the new FGameSaveFormatTest cases correctly document the FF-1 behavior (verified by the Documenter as already complete from the Implementer/Tester diffs).
+- AGENTS.md's save-format Contributor Notes paragraph now records the FF-1 fix concisely and without duplicating facts already stated elsewhere (verified by the Documenter's own edit).
+
+Implementation branch or worktree context:
+- Implementer commit 375ff9b0 ('FF-1: reject out-of-range fleet located-object IDs at load time') on branch history reachable from phase5-FF-1-documenter-20260719: FGame::load(), after each player's p->load(is) succeeds and BEFORE the existing 'place fleets into their systems' pass, iterates p->getFleetList() and validates each fleet's getLocation() (must be 0 or resolve via m_universe->getSystem(...)) and getJumpRoute() (must be FFleet::NO_ROUTE or resolve via m_universe->getJumpRoute(...)); on the first unresolved reference it deletes the not-yet-owned FPlayer p, calls reportLoadError(...), and returns 1.
+- Tester commit 4f78c7a0 ('FF-1: add out-of-range fleet located-object-ID load-rejection test coverage') added three behavioral tests to tests/strategic/FGameSaveFormatTest.{h,cpp}: two negative-path byte-patching tests (out-of-range location ID; out-of-range jump-route ID) and one positive-control round trip proving the sentinels still load cleanly. Both negative tests were confirmed to fail against the unfixed code and pass against the fix.
+- Documenter commit 4b073be6 ('FF-1: document load-time fleet located-object-ID rejection in AGENTS.md') extends AGENTS.md's existing save-format Contributor Notes paragraph (line ~404) with a concise addendum; no other file changed.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FGame.cpp (Implementer -- FF-1 validation pass in FGame::load())
+- include/strategic/FGame.h (Implementer -- FGame::load() Doxygen updated to document FF-1 validation)
+- tests/strategic/FGameSaveFormatTest.h (Tester -- three new test declarations + suite registration + Doxygen)
+- tests/strategic/FGameSaveFormatTest.cpp (Tester -- three new behavioral test implementations)
+- AGENTS.md (Documenter -- concise FF-1 addendum to the existing save-format Contributor Notes paragraph)
+
+Commands executed:
+- git -C <worktree> show 375ff9b0 (reviewed Implementer FF-1 diff: include/strategic/FGame.h, src/strategic/FGame.cpp)
+- git -C <worktree> show 4f78c7a0 (reviewed Tester FF-1 diff: tests/strategic/FGameSaveFormatTest.h/.cpp)
+- git -C <worktree> show 4ef9b561 --stat (confirmed prior Tester artifact commit)
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --base 879248eb --head 4f78c7a0
+- python3 .myteam/documenter/agents-guidance/detect_guidance_targets.py (via stdin JSON) on the four Implementer/Tester-changed files
+- python3 .myteam/documenter/agents-guidance/scan_in_code_doc_requirements.py --root <worktree>
+- grep -n 'save-format-hardening' AGENTS.md; grep -n -i 'located-object|SF-located|out-of-range' doc/deferred-tasks.md; grep -n -i corrupt doc/UsersGuide.md; grep -n FGameSaveFormatTest doc/test-contracts.md (all confirmed no other doc change required)
+- git -C <worktree> add AGENTS.md; git -C <worktree> commit -F <msg-file> -> 4b073be6
+
+Final test outcomes:
+- Documentation-only change (AGENTS.md prose); no build or test run was required or performed by the Documenter. Inherited from the Tester's validated state: make check (top-level) exit 0 -- SSWTests OK (293 tests, includes the 3 new FGameSaveFormatTest cases), TacticalTests OK (253 tests), GuiTests OK (85 tests), all green with no regressions.
+- Confirmed the two new negative-path tests (testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce, testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce) satisfy the repository's behavioral-test mandate per the Tester's report: each fails against the unfixed code (FF-1 block disabled -> load returns 0) and passes against the shipped fix; the positive control (testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds) passes in both states.
+
+Plan or evaluation context guidance:
+- plans/save-load-robustness-followups-plan.md, FF-1 subtask (Section 5): load-time validation of fleet located-object reference IDs against the loaded FMap; abort nonzero on any out-of-range reference; Documentation impact subsection calls for Doxygen updates plus 'a concise note in the AGENTS.md save-format contributor paragraph that load now rejects out-of-range fleet located-object references' and explicitly no doc/deferred-tasks.md or doc/UsersGuide.md change beyond the existing corrupt-save note.
+- Design decision D1 (RESOLVED): fix is load-time validation (root-cause), not gui NULL guards; the gui draw path (WXPlayerDisplay/WXMapDisplay) is intentionally not modified by this plan.
+
+Convention-file guidance:
+- AGENTS.md Single-Source-of-Truth Rule: project facts belong in exactly one canonical location (the save-format Contributor Notes paragraph), updated there rather than duplicated across CLAUDE.md or other entry-point files.
+- AGENTS.md Function Comments convention: Doxygen-style file headers and @author/@date Last Modified metadata are mandatory on touched declarations -- confirmed already satisfied by the Implementer (FGame.h/.cpp) and Tester (FGameSaveFormatTest.h) diffs; no further in-code comment edits were needed.
+- doc/deferred-tasks.md and doc/test-contracts.md conventions confirmed inapplicable: FF-1 was never a tracked deferred item (grep found no SF-located-object-ids/out-of-range entry), and FGameSaveFormatTest is a strategic suite outside the tactical test-contracts catalog.
+
+Updated documentation files:
+- AGENTS.md
+
+Shared artifact directory:
+- artifacts/save-load-robustness-followups/FF-1
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
