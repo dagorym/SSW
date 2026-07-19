@@ -1,0 +1,70 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- FR-1 (closes deferred item SF-nested-load-returns): FPlayer::load() and FFleet::load() now check the return value of every nested v->load(is)/f->load(is) call in the m_unattached, fleet, and m_destroyed loops, deleting the just-allocated (not-yet-owned) sub-object and returning nonzero on a nonzero nested return, mirroring the existing createShip()==NULL abort pattern. The Tester added the one previously-uncovered behavioral acceptance criterion (deep truncation inside a fleet's ship record) to FGameSaveFormatTest. This Documenter pass reviewed the Implementer (5da780fe) and Tester (4e6b1185) diffs for documentation impact: Doxygen headers and doc/deferred-tasks.md's SF-nested-load-returns removal were already completed and verified accurate by the Implementer/Tester, and a one-sentence AGENTS.md addendum was added to the save-format Contributor Notes paragraph documenting that FR-1 makes the aggregate-abort guarantee hold even for deep-truncation-inside-a-fleet input (previously the wording described only the top-level per-player check, which understated the guarantee before FR-1 closed the gap).
+
+Acceptance criteria to verify:
+- Every nested v->load(is)/f->load(is) return in FPlayer::load() and FFleet::load() is checked (implemented in 5da780fe; documentation -- Doxygen headers -- already accurate).
+- A nonzero nested return frees the just-created sub-object and returns nonzero, with nothing left dangling in the owning container and no leak/double-free (implemented in 5da780fe; no documentation gap found).
+- A save stream truncated inside a fleet's ship record makes FGame::load() return nonzero, routes through reportLoadError()/IStrategicUI::showMessage(), and commits no live game singleton (behavioral test added in 4e6b1185; Doxygen on the new test already accurate).
+- The existing unknown-ship-type (createShip == NULL) abort behavior is preserved unchanged (verified by the still-passing existing test; no documentation impact).
+- Doxygen headers on the touched load() functions are updated (bumped @date Last Modified; implementing model added to @author) -- already done by the Implementer (5da780fe), verified accurate by this Documenter pass.
+- Deferred item SF-nested-load-returns is marked resolved/removed in doc/deferred-tasks.md -- already done by the Implementer (5da780fe), verified via grep by this Documenter pass (no matches remain).
+- AGENTS.md's save-format Contributor Notes paragraph accurately reflects the FR-1 guarantee (neither overstating nor understating it) -- addressed in this Documenter pass via a one-sentence addendum (commit ef12f02b).
+- make check is green (SSWTests / TacticalTests / GuiTests) -- established by the Tester pass (290/253/83, exit 0); unaffected by this documentation-only pass.
+
+Implementation branch or worktree context:
+- Implementer commit: 5da780fe ("FR-1: propagate nested load() return codes in FPlayer/FFleet") -- FPlayer::load()'s m_unattached loop, fleet loop, and m_destroyed loop, and FFleet::load()'s ship loop, now check the nested v->load(is)/f->load(is) return and, on nonzero, delete the just-allocated sub-object and return nonzero before it would have been push_back'd, mirroring the pre-existing createShip()==NULL abort pattern. Doxygen headers on include/strategic/FPlayer.h, include/strategic/FFleet.h, src/strategic/FPlayer.cpp, src/strategic/FFleet.cpp were updated in the same commit, and doc/deferred-tasks.md's SF-nested-load-returns entry was removed.
+- Tester commit: 4e6b1185 ("FR-1: add deep-truncation-inside-fleet-ship-record test coverage") -- added testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce to tests/strategic/FGameSaveFormatTest.{h,cpp}, a fully behavioral test that builds a real valid FGame save, truncates it immediately before a fleet's first ship's own type-tag bytes, calls the real FGame::load(), and asserts rc != 0 and the mock IStrategicUI's showMessageCalls increments by exactly 1. Doxygen on the test class/file headers and the new test method were updated in the same commit.
+- This Documenter pass (commit ef12f02b, branch phase5-FR-1-documenter-20260719): added a one-sentence addendum to AGENTS.md's Contributor Notes save-format paragraph, no other files touched.
+- Known, deliberately out-of-scope deeper gap (unaffected by FR-1 and not part of this documentation review): FVehicle::load() (src/ships/FVehicle.cpp) does not itself check its own internal readU32()/readString()/read<T>() or nested weapon/defense load() return codes for truncation strictly inside a vehicle's own scalar-field region; it only returns nonzero via its pre-existing createWeapon()==NULL/createDefense()==NULL checks.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FPlayer.cpp
+- include/strategic/FPlayer.h
+- src/strategic/FFleet.cpp
+- include/strategic/FFleet.h
+- doc/deferred-tasks.md
+- tests/strategic/FGameSaveFormatTest.h
+- tests/strategic/FGameSaveFormatTest.cpp
+- AGENTS.md
+
+Commands executed:
+- myteam get role documenter
+- myteam get skill execution-start, documenter/preflight, documenter/diff-review, diff-first-editing, documenter/doc-editing, documenter/agents-guidance, documenter/commit-flow, documenter/artifact-writing, documenter/verifier-handoff, handoff-prompt-contract
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <prompt> --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 817485a7 --head HEAD
+- git show 5da780fe --stat
+- git show 5da780fe -- src/strategic/FPlayer.cpp src/strategic/FFleet.cpp include/strategic/FPlayer.h include/strategic/FFleet.h
+- git show 4e6b1185
+- grep -n SF-nested-load-returns AGENTS.md doc/deferred-tasks.md doc/synthesized-roadmap.md
+- git add AGENTS.md
+- git commit -F <msg-file> (documentation commit ef12f02b)
+
+Final test outcomes:
+- No source, header, test, or build files were touched in this Documenter pass -- only AGENTS.md (documentation-only, comment/prose text). No rebuild or test re-run was performed since no executable or test behavior changed. The already-established Tester-pass make check result stands unaffected: SSWTests 290/290, TacticalTests 253/253, GuiTests 83/83, exit 0.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase5-save-format-followups-plan.md, FR-1 subtask (Reviewer follow-up from artifacts/phase5-save-format-hardening/reviewer_report.md, which flagged SF-nested-load-returns as a non-blocking deferral).
+- The plan's FR-1 'Documentation impact' note: Doxygen save/load headers on the touched FPlayer/FFleet functions; doc/deferred-tasks.md mark SF-nested-load-returns resolved/removed; no AGENTS.md change expected unless the existing save-format note's error-contract wording needs a one-line accuracy tweak -- all three were addressed (the first two were already done pre-Documenter; the third triggered the AGENTS.md addendum in this pass).
+- Use the plan's Documentation Impact section as a discovery aid only, not as the source of truth; documentation was verified against the actual shipped diff (5da780fe, 4e6b1185), not the plan's description.
+
+Convention-file guidance:
+- AGENTS.md Contributor Notes: bootstrap-guidance sections are protected; this edit is to a non-bootstrap Contributor Notes paragraph whose accuracy changed due to the implemented fix, which is the explicitly allowed case for editing AGENTS.md outside bootstrap.
+- Doxygen conventions (AGENTS.md 'Function Comments' section): @date Last Modified bump and @author addition on touched functions/classes -- already satisfied by the Implementer/Tester commits; verified, not re-done.
+- doc/deferred-tasks.md convention: resolved entries are fully removed (not merely annotated), per prior precedent (F2-serialization, H2) -- already satisfied by the Implementer commit; verified via grep.
+- Single-Source-of-Truth Rule (AGENTS.md): the AGENTS.md addendum states a fact (FR-1's nested-return-checking behavior) once, in the location that already discusses the related FGame::load() top-level guarantee, rather than duplicating it elsewhere (e.g. doc/synthesized-roadmap.md was deliberately left unchanged).
+
+Updated documentation files:
+- AGENTS.md
+
+Shared artifact directory:
+- artifacts/phase5-save-format-followups/FR-1
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
