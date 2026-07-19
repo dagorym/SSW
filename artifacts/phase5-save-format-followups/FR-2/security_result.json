@@ -1,0 +1,22 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-2/security_report.md",
+    "artifacts/phase5-save-format-followups/FR-2/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FR-2-security-20260719",
+  "documentation_sufficiency_summary": [
+    "AGENTS.md and doc/deferred-tasks.md were updated to describe the hasMap() predicate, the WXMapDisplay guards, the confirming test, and that the onOpen deferral remains; the doxygen headers on FMap::hasMap() and the two WXMapDisplay methods are accurate and clear.",
+    "OVERSTATEMENT (non-blocking): the docs remove SF-nullfmap-paint-guard and describe the root-cause guard as closing the paint-path trust boundary, but the guard covers only the WXMapDisplay portion of the WXGameDisplay draw chain; WXPlayerDisplay::drawFleets() remains an unguarded FMap access path. The original deferred-task text explicitly scoped the fix to 'any other path... in the FGamePanel/WXGameDisplay draw chain', which drawFleets is. Recommend tightening the closure wording (or adding the drawFleets guard so the wording becomes accurate)."
+  ],
+  "note_finding_count": 2,
+  "outcome": "CONDITIONAL PASS",
+  "pass_label": "CONDITIONAL PASS",
+  "status": "conditional_pass",
+  "task_id": "FR-2",
+  "test_sufficiency_summary": [
+    "SUFFICIENT for the specific documented crash: testGamePanelRepaintWithNoLiveFMapDoesNotCrash is a genuine behavioral test -- it installs a live FGame on a shown FGamePanel with no FMap, forces a real repaint through FGamePanel::onPaint -> WXGameDisplay::draw -> WXMapDisplay::draw()/getScale(), and asserts survival; it would have crashed against the unfixed code, satisfying the repo's behavioral-verification mandate.",
+    "GAP (non-blocking): the test does not exercise the WXPlayerDisplay::drawFleets() FMap sub-path (player-less game -> empty player loop). See NOTE finding; add fleet-bearing no-map repaint coverage if/when drawFleets is guarded."
+  ],
+  "warning_finding_count": 1
+}
