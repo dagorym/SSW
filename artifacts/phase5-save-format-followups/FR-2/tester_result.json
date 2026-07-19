@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-2/tester_report.md",
+    "artifacts/phase5-save-format-followups/FR-2/tester_result.json",
+    "artifacts/phase5-save-format-followups/FR-2/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-FR-2-tester-20260719",
+  "commands_run": [
+    "make -C tests/gui (clean build, no warnings)",
+    "xvfb-run -a ./GuiTests (run from tests/gui/) -> OK (85 tests)",
+    "make check (top-level, from worktree root) -> SSWTests OK (290 tests), TacticalTests OK (253 tests), GuiTests OK (85 tests), exit 0"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "85 run / 0 failures (84 baseline + 1 new)",
+    "SSWTests": "290 run / 0 failures (unchanged)",
+    "TacticalTests": "253 run / 0 failures (unchanged)"
+  },
+  "pass_label": "pass-2",
+  "status": "success",
+  "task_id": "FR-2",
+  "test_commit_hash": "10c6223e7e8e0ea249f159570b3f844026fe1ce3",
+  "test_files_changed": [
+    "tests/gui/StrategicGuiLiveTest.h",
+    "tests/gui/StrategicGuiLiveTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
