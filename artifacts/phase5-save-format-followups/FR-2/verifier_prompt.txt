@@ -1,0 +1,55 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- Documented FR-2 pass-2 (the Verifier-driven remediation closing the residual gui-draw-path gap in WXPlayerDisplay::drawFleets()). The Implementer (commit 7d679b5c) added an `if (!FMap::hasMap()) { return; }` guard as the first statement of drawFleets(), before FMap::getMap() is ever bound, and already updated the Doxygen block on drawFleets() (include/gui/WXPlayerDisplay.h) plus the AGENTS.md StrategicGuiLiveTest paragraph to describe both the pass-1 WXMapDisplay guard and the new drawFleets() guard as root-cause-complete. The Tester (commit 10c6223e) added one new behavioral test, testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash, with its own complete Doxygen block, and confirmed make check green (290/253/85). The only remaining documentation gap was a placeholder sentence at the end of the AGENTS.md StrategicGuiLiveTest paragraph reading 'Behavioral proof of the WXPlayerDisplay::drawFleets() path is the Tester's responsibility for this remediation pass.' -- deferring naming of the confirming test to the Documenter, exactly as in FR-2 pass-1 (commit dd82a822). Replaced that sentence with one naming testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash and summarizing what it proves, following the same pattern as the pass-1 Documenter update. No other documentation targets required changes: doc/deferred-tasks.md has no SF-nullfmap-paint-guard entry (confirmed via grep, unchanged from pass-1), and doc/test-contracts.md does not track StrategicGuiLiveTest (it only covers the tactical SMC-*/SMF-*/etc. contract families), so it required no edits.
+
+Acceptance criteria to verify:
+- AGENTS.md's StrategicGuiLiveTest / null-FMap paint note names testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash as the behavioral proof of the WXPlayerDisplay::drawFleets() guard, replacing the placeholder sentence that deferred this to the Tester -- verified by direct inspection of AGENTS.md after the edit.
+- Doxygen header on WXPlayerDisplay::drawFleets() is accurate and complete (bumped @date Last Modified; implementing model added to @author; guard documented) -- verified by direct inspection of include/gui/WXPlayerDisplay.h; already complete from the Implementer's commit 7d679b5c, no further edit needed.
+- Doxygen header on the new test method testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash is present and accurate -- verified by direct inspection of tests/gui/StrategicGuiLiveTest.h; already complete from the Tester's commit 10c6223e, no further edit needed.
+- doc/deferred-tasks.md keeps SF-nullfmap-paint-guard removed (fully closed, not re-deferred) -- verified via grep (no matches).
+- No documentation-only edit changes executable or test behavior -- verified: the only change made is a single-sentence edit inside an existing AGENTS.md prose paragraph; no product or test files were touched by the Documenter.
+
+Implementation branch or worktree context:
+- Implementer commit 7d679b5c ('FR-2 pass-2: close residual WXPlayerDisplay::drawFleets NULL-FMap gap') added the FMap::hasMap() guard to src/gui/WXPlayerDisplay.cpp's drawFleets() as its first statement, updated the Doxygen block in include/gui/WXPlayerDisplay.h, and updated the AGENTS.md StrategicGuiLiveTest paragraph to describe both FMap-touching guards as root-cause-complete, but left a placeholder sentence deferring the WXPlayerDisplay::drawFleets() behavioral proof reference to the Tester/Documenter.
+- Tester commit 10c6223e ('FR-2 pass-2: add drawFleets no-map behavioral test coverage') added testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash to tests/gui/StrategicGuiLiveTest.cpp/.h with a complete Doxygen block, confirmed make check green (290/253/85, exit 0), and handed off to the Documenter noting the placeholder sentence in AGENTS.md as the one remaining documentation task, following the exact pattern of the FR-2 pass-1 Documenter update (commit dd82a822).
+- Documenter (this commit, f2f7ac9d) replaced the placeholder sentence in the AGENTS.md StrategicGuiLiveTest paragraph with one naming testWXPlayerDisplayDrawFleetsWithNoLiveFMapDoesNotCrash and describing what it proves (real FPlayer/FFleet with a non-transit, nonzero location, FMap::hasMap() forced false, asserting a safe return instead of a crash). No other documentation file required changes.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/gui/WXPlayerDisplay.cpp (Implementer, commit 7d679b5c)
+- include/gui/WXPlayerDisplay.h (Implementer, commit 7d679b5c)
+- AGENTS.md (Implementer, commit 7d679b5c; Documenter, commit f2f7ac9d)
+- tests/gui/StrategicGuiLiveTest.cpp (Tester, commit 10c6223e)
+- tests/gui/StrategicGuiLiveTest.h (Tester, commit 10c6223e)
+
+Commands executed:
+- git diff d8a0c1a8 HEAD -- AGENTS.md (reviewed Implementer's already-committed AGENTS.md edit and located the placeholder sentence)
+- git diff d8a0c1a8 HEAD -- src/gui/WXPlayerDisplay.cpp include/gui/WXPlayerDisplay.h (confirmed Doxygen and guard already complete, no further in-code documentation needed)
+- git diff d8a0c1a8 HEAD -- tests/gui/StrategicGuiLiveTest.h tests/gui/StrategicGuiLiveTest.cpp (confirmed new test's Doxygen block already complete)
+- grep -n SF-nullfmap-paint-guard doc/deferred-tasks.md (no matches, confirms item stays fully closed)
+- git commit -F <message-file> (documentation-only commit of AGENTS.md)
+
+Final test outcomes:
+- No test or build commands were run in the Documenter stage since the change is documentation-only (a single-sentence edit inside an existing AGENTS.md paragraph, no code or test files touched); the Tester's already-recorded make check result (SSWTests 290, TacticalTests 253, GuiTests 85, exit 0) is unaffected and remains the last verified test outcome for this branch.
+
+Plan or evaluation context guidance:
+- Plan: plans/phase5-save-format-followups-plan.md (FR-2 subtask).
+- Origin: FR-2 pass-1's Verifier (artifacts/phase5-save-format-followups/FR-2/history/pass-1/verifier_report.md) issued a WARNING identifying the residual WXPlayerDisplay::drawFleets() gap, driving this pass-2 remediation cycle end-to-end (Implementer -> Tester -> Documenter -> Verifier).
+
+Convention-file guidance:
+- AGENTS.md's Doxygen conventions (Function Comments section) require full header blocks with @author/@date Created/@date Last Modified for classes and major functions; both already satisfied by the Implementer's and Tester's commits for drawFleets() and the new test method respectively.
+- AGENTS.md's Single-Source-of-Truth Rule and the repository's non-bootstrap-guidance-editing convention (confirmed by precedent commit dd82a822) permit and expect the Documenter to update the non-bootstrap StrategicGuiLiveTest test-catalog paragraph in AGENTS.md when a Tester adds a new confirming test for behavior that paragraph already describes.
+
+Updated documentation files:
+- AGENTS.md
+
+Shared artifact directory:
+- artifacts/phase5-save-format-followups/FR-2
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
