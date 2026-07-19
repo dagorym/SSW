@@ -1,0 +1,44 @@
+Your role is 'tester'. Your task is as follows:
+
+Task summary:
+- FR-2 pass-2 Verifier-driven remediation: close the residual unguarded NULL/half-built FMap dereference in the second gui draw path -- WXPlayerDisplay::drawFleets() -- so the FGamePanel::onPaint -> WXGameDisplay::draw chain is root-cause-complete against a NULL/half-built FMap singleton, and correct the AGENTS.md guard-coverage note. Pass-1 changes (FMap::hasMap() + WXMapDisplay guards) are retained unchanged.
+
+Modified files:
+- src/gui/WXPlayerDisplay.cpp -- add FMap::hasMap() early-return guard at the top of drawFleets() before binding FMap *map = &(FMap::getMap()); add strategic/FMap.h include
+- include/gui/WXPlayerDisplay.h -- update drawFleets() Doxygen to describe the guard; bump Last Modified to Jul 19, 2026 and add Claude Opus 4.8 (1M context) author
+- AGENTS.md -- correct the StrategicGuiLiveTest / null-FMap paint note so it states the guard now covers BOTH the WXMapDisplay path AND the WXPlayerDisplay::drawFleets() path (gui paint path now root-cause-complete); P5-5 FMainFrame::onOpen mitigation description left intact
+
+Acceptance criteria to validate (from Planner):
+- The gui draw chain no longer dereferences the FMap singleton when it does not exist; WXPlayerDisplay::drawFleets() must consult FMap::hasMap() before binding/using FMap::getMap(), and a forced repaint of a fleet-bearing FGamePanel with an unset/half-built map is a no-op and does not crash.
+- Rendering output/behavior is unchanged when a valid FMap exists (existing WXMapDisplay/WXGameDisplay/WXPlayerDisplay rendering tests still pass).
+- The pass-1 WXMapDisplay/FMap::hasMap() guard and the P5-5 FMainFrame::onOpen setGame-deferral mitigation remain unchanged.
+- Doxygen header on drawFleets() updated (bump Last Modified; add model author).
+- doc/deferred-tasks.md keeps SF-nullfmap-paint-guard removed (fully closed, not re-deferred); no new open entry for the drawFleets path.
+- make check is green (SSWTests / TacticalTests / GuiTests under xvfb-run).
+
+Create test files in:
+- tests/gui/StrategicGuiLiveTest.{h,cpp} -- add a behavioral test that forces the WXGameDisplay/WXPlayerDisplay draw path with a live FGame that owns a player with a fleet but NO FMap, and asserts no crash. This is the same file that holds the pass-1 testGamePanelRepaintWithNoLiveFMapDoesNotCrash (which exercises the WXMapDisplay path but uses a player-less FGame, so it does NOT reach drawFleets).
+
+Implementation context for testing:
+- Guard site: src/gui/WXPlayerDisplay.cpp WXPlayerDisplay::drawFleets(wxDC&, FPlayer*). The very first statement is now `if (!FMap::hasMap()) { return; }`, placed BEFORE `FMap *map = &(FMap::getMap());` (binding a reference/pointer to *m_map when m_map is NULL is itself UB, independent of later dereference). FMap::hasMap() (include/strategic/FMap.h / src/strategic/FMap.cpp, added in FR-2 pass-1) returns m_map != NULL without dereferencing.
+- Reachability: WXGameDisplay::draw() (src/gui/WXGameDisplay.cpp) calls playerDisplay.drawFleets(dc, *itr) for every non-NULL player. drawFleets() only touches FMap (map->getSystem()/getJumpRoute()) when a player owns at least one fleet with a location/jump. Under current code a located fleet cannot exist without a live FMap (FGame::init() calls initMap() before initFleets(); FGame::load() creates/loads FMap and aborts before constructing any player if the map load fails), so the crash is currently unreachable in production -- but that is an IMPLICIT ordering invariant, which is exactly what FR-2 removes. The guard makes it explicit.
+- HOW TO REACH THE PAINT PATH WITH A NULL MAP (for the behavioral test): the pass-1 test used the no-arg FGame::create() overload (no FMap side effect) but that FGame has NO players, so WXGameDisplay::draw()'s player loop never calls drawFleets(). To exercise drawFleets specifically you need an FGame that (a) has NO live FMap, and (b) has at least one FPlayer that owns at least one FFleet with a drawable location so drawFleets reaches the map access. Options to investigate in order of preference: (1) build a minimal FGame via FGame::create(), then add an FPlayer with an FFleet through the available public/strategic APIs while deliberately NOT calling FMap::create() (ensure FMap::hasMap() is false first by tearing down any residual singleton); install that FGame on a shown FGamePanel via setGame(...) and force a real repaint through FGamePanel::onPaint() -> WXGameDisplay::draw() -> WXPlayerDisplay::drawFleets(); assert the process survives and !FMap::hasMap() still holds. (2) If constructing a fleet-owning player without an FMap is not achievable through public APIs (fleet/player construction may itself require or create an FMap), then the guard is instead proven by: calling WXPlayerDisplay::drawFleets(dc, player) directly on a wxMemoryDC with a mock/real FPlayer that returns a non-empty fleet list, with FMap::hasMap() forced false, and asserting it returns without dereferencing (no crash) -- a focused unit-style behavioral check of the guarded function. If NEITHER state is constructible through available APIs, state that explicitly in the tester report and explain that the guard is otherwise proven by inspection plus the pass-1 whole-chain repaint test (which proves FMap::hasMap() itself works and short-circuits the sibling WXMapDisplay path), noting the invariant that currently makes the fleet-bearing-no-map state unreachable in production.
+- Do NOT rely on source-string/assertContains checks as the sole coverage (AGENTS.md Behavioral Verification mandate). Prefer a real drawFleets invocation with hasMap() false.
+- Pass-1 artifacts are archived under artifacts/phase5-save-format-followups/FR-2/history/pass-1/; regenerate fresh live artifacts this pass (done).
+
+Suggested test command(s):
+- make -C <worktree> check  (from repo root; builds all + runs SSWTests, TacticalTests, GuiTests under xvfb-run)
+
+Existing validations expected to fail only because approved behavior changed:
+- None
+
+Startup behavior:
+- If acceptance criteria and implementation context are present, begin testing work immediately and continue in the same run.
+- Infer missing test-location or test-command details from repository conventions when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, directory discovery, artifact-directory confirmation, or framework discovery when testing can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-followups/FR-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

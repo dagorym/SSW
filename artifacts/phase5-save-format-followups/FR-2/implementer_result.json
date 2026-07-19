@@ -1,0 +1,21 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-2/implementer_report.md",
+    "artifacts/phase5-save-format-followups/FR-2/tester_prompt.txt",
+    "artifacts/phase5-save-format-followups/FR-2/implementer_result.json"
+  ],
+  "branch_name": "phase5-FR-2-implementer-20260719",
+  "changed_files": [
+    "src/gui/WXPlayerDisplay.cpp -- add FMap::hasMap() early-return guard at the top of drawFleets() before binding FMap *map = &(FMap::getMap()); add strategic/FMap.h include",
+    "include/gui/WXPlayerDisplay.h -- update drawFleets() Doxygen to describe the guard; bump Last Modified to Jul 19, 2026 and add Claude Opus 4.8 (1M context) author",
+    "AGENTS.md -- correct the StrategicGuiLiveTest / null-FMap paint note so it states the guard now covers BOTH the WXMapDisplay path AND the WXPlayerDisplay::drawFleets() path (gui paint path now root-cause-complete); P5-5 FMainFrame::onOpen mitigation description left intact"
+  ],
+  "code_commit_hash": "7d679b5cac99c0ced21f5316f2fe71c2e5bb696f",
+  "pass_label": "pass-2",
+  "status": "success",
+  "task_id": "FR-2 (pass-2 remediation)",
+  "validation_commands": [
+    "make -C <worktree> check  (from repo root; builds all + runs SSWTests, TacticalTests, GuiTests under xvfb-run)"
+  ],
+  "validation_outcome": "GREEN. make check passed: SSWTests OK (290 tests), TacticalTests OK (253 tests), GuiTests OK (84 tests). Exit 0. (A prior run reported 'Text file busy' only because a leftover background make check was holding the SSWTests binary concurrently; after killing it the clean foreground run passed.)"
+}
