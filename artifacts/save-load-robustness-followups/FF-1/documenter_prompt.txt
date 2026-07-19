@@ -1,0 +1,63 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated FF-1 (reviewer follow-up / SF-located-object-ids): FGame::load() now rejects, at load time, a save whose fleet carries an out-of-range located-object reference ID (a location/system ID or jump-route ID that does not resolve against the already-loaded FMap), aborting via the existing reportLoadError()->IStrategicUI::showMessage() aggregate-abort path (the freshly-allocated FPlayer is deleted and load() returns nonzero, committing no live singleton). Added three behavioral tests to the existing tests/strategic/FGameSaveFormatTest suite: an out-of-range location-ID abort, an out-of-range jump-route-ID abort, and a positive control proving a valid save with the documented sentinels (location 0, jump-route FFleet::NO_ROUTE) still loads cleanly. Both negative tests were confirmed to fail against the unfixed code (FF-1 block temporarily disabled -> load returns 0) and pass against the shipped fix; the positive control passes in both states.
+
+Acceptance criteria validated:
+- An out-of-range fleet location (system) ID that does not resolve against the already-loaded FMap (and is not the 0 sentinel) aborts FGame::load(): load() returns nonzero, reports exactly once via IStrategicUI::showMessage(), and commits no live game singleton -- verified behaviorally by testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce.
+- An out-of-range fleet jump-route ID that does not resolve against the loaded FMap (and is not the FFleet::NO_ROUTE sentinel) aborts FGame::load() with the same observable outcome -- verified behaviorally by testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce.
+- The documented sentinels are exempt and still load cleanly: a fleet with location 0 (Strike Force Nova, not yet in a system) and every placed fleet on FFleet::NO_ROUTE round-trip through save()->load() with rc 0 and no error reported -- verified behaviorally by testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds.
+- Each new negative-path test genuinely exercises the FF-1 code: with the validation block disabled the two out-of-range tests fail (load returns 0) and with the fix they pass, satisfying the repo's behavioral-test mandate (fails against unfixed code, passes against fixed code).
+- No production file was modified by the tester (the temporary FF-1-disable was reverted verbatim); only the two test files changed. make check stays green across all three suites.
+
+Implementation branch or worktree context:
+- Implementer branch/commit under test: phase5-FF-1-implementer-20260719 @ 375ff9b0 ('FF-1: reject out-of-range fleet located-object IDs at load time'), present in this tester worktree's branch history (phase5-FF-1-tester-20260719).
+- Fix location: src/strategic/FGame.cpp, FGame::load(), a per-fleet validation pass added after each player's p->load(is) succeeds and BEFORE the existing 'place fleets into their systems' pass. For each fleet in p->getFleetList(): if getLocation() != 0 && m_universe->getSystem(location) == NULL -> delete p; reportLoadError(...); return 1; and if getJumpRoute() != FFleet::NO_ROUTE && m_universe->getJumpRoute(jumpRoute) == NULL -> delete p; reportLoadError(...); return 1.
+- Sentinels (confirmed from source): FFleet::NO_ROUTE == static_cast<unsigned int>(-1) (include/strategic/FFleet.h); a fleet's 'no system' location is 0 (FFleet() sets m_location = 0; createSFNova() leaves Strike Force Nova unplaced). The location check is asymmetric (!= 0) vs. the route check (!= NO_ROUTE) because route ID 0 is a VALID distinct jump-route ID (H4), so only the NO_ROUTE sentinel is exempt for routes while 0 is exempt for locations.
+- Ownership on the abort path: the just-new'd FPlayer p is not yet in m_players (push_back is the loop's last statement), so delete p cannot double-free or dangle; ~FPlayer() frees owned fleets/ships, and no fleet was wired into any FSystem before the abort.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FGame.cpp (Implementer -- FF-1 validation pass in FGame::load())
+- include/strategic/FGame.h (Implementer -- FGame::load() Doxygen updated to document FF-1 validation)
+- tests/strategic/FGameSaveFormatTest.h (Tester -- three new test declarations + suite registration + Doxygen)
+- tests/strategic/FGameSaveFormatTest.cpp (Tester -- three new behavioral test implementations)
+
+Test commit:
+- 4f78c7a0
+
+Commands executed:
+- make -C tests/strategic (clean build of libstrategicTests.a, no warnings)
+- make -C tests (top-level build of SSWTests + GuiTests + TacticalTests)
+- ./SSWTests (run from tests/) -> OK (293 tests)
+- ./TacticalTests (run from tests/tactical/) -> OK (253 tests)
+- make check (top-level, from worktree root) -> exit 0; SSWTests OK (293), TacticalTests OK (253), GuiTests OK (85)
+- Behavioral-mandate check: temporarily disabled the FF-1 validation block in src/strategic/FGame.cpp, rebuilt src/strategic + SSWTests, re-ran -> the two out-of-range tests FAILED (load returned 0); restored FGame.cpp verbatim (git status shows it unmodified) and rebuilt
+
+Final test outcomes:
+- make check (top-level) exit 0: SSWTests OK (293 tests), TacticalTests OK (253 tests), GuiTests OK (85 tests) -- all green, no regressions vs. the pre-FF-1 baseline (290/253/85); the +3 in SSWTests are the three new FGameSaveFormatTest cases.
+- testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce is fully behavioral: it builds a real valid FGame save via buildValidSaveBytes(), locates UPF's placed 'Task Force Prenglar' fleet by its length-prefixed name tag, asserts the serialized m_location currently decodes to a real nonzero system ID, then byte-patches those 4 bytes to little-endian 0x0000BEEF (not 0, not any loaded system ID), calls the real FGame::load(), and asserts rc != 0, mock IStrategicUI showMessageCalls == 1, and getPlayers().size() == 0 (no live game committed).
+- testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce leaves m_location valid so the location check passes, asserts the serialized m_jumpRouteID currently equals FFleet::NO_ROUTE, then byte-patches it (17 bytes past m_location, per FFleet::save()'s field order) to little-endian 0x0000BEEF (not NO_ROUTE, not any loaded route ID), and asserts the same abort outcome (rc != 0, one report, zero players committed).
+- testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds is the positive control: an unmodified buildValidSaveBytes() -> load() round trip (Strike Force Nova at location 0, all placed fleets on NO_ROUTE) asserts rc == 0 and showMessageCalls == 0, proving the sentinels remain exempt from FF-1's resolution check.
+- Behavioral-test mandate satisfied: with the FF-1 validation block in FGame::load() temporarily disabled, exactly the two out-of-range tests failed (load returned 0 instead of nonzero) while the positive control still passed; with the shipped fix all three pass. FGame.cpp was restored verbatim afterward (git status confirms only the two test files changed).
+- Note: the standalone SSWTests binary also reports 9 FGameHeaderDependencyTest source-inspection failures when the binary is invoked with a working directory other than tests/ (those tests read repository source files by relative path). Run from tests/ (as make check does), the full suite is OK (293 tests); these 9 are a pre-existing CWD artifact unrelated to FF-1 and not present under make check.
+
+Documentation context:
+- AGENTS.md Contributor Notes already document the save-format-hardening phase and the FGame P5-5 aggregate-abort load() contract, and the FR-1 nested-load-returns fix. They do not yet mention FF-1 (SF-located-object-ids): that FGame::load() also rejects a fleet whose location/system ID or jump-route ID does not resolve against the loaded FMap (sentinels location 0 and FFleet::NO_ROUTE exempt). The Documenter should confirm whether that Contributor Notes paragraph needs a short FF-1 addendum.
+- The behavior change now confirmed by tests: a corrupt/malicious save carrying an unresolvable fleet located-object ID is rejected at load time (root cause) rather than later crashing a gui fleet-draw path that would dereference the NULL FMap::getSystem(id)/getJumpRoute(id) result. This is the load-side complement to the FR-2 gui NULL-FMap paint guards.
+- doc/deferred-tasks.md: if SF-located-object-ids was tracked there, confirm whether the Implementer already removed it; no test-side change is expected. No doc/test-contracts.md entries are affected -- FGameSaveFormatTest is a strategic suite, not one of the tactical catalogs tracked there.
+
+Plan and diff context:
+- Plan: plans/save-load-robustness-followups-plan.md (FF-1 subtask). Reviewer origin: the Phase 5 save-format-followups reviewer report handed off SF-located-object-ids as FF-1.
+- Diffs to inspect for documentation impact: `git show 375ff9b0` (implementer FF-1 fix) and `git show 4f78c7a0` (this tester's three new behavioral tests) on branch phase5-FF-1-tester-20260719.
+- Comparison base: the FF-1 implementer commit 375ff9b0 (and its parent) is the most likely base for reviewing the implementation diff; the tester diff is 4f78c7a0 vs. its parent.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/save-load-robustness-followups/FF-1
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

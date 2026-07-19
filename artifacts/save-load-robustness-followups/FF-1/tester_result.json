@@ -1,0 +1,30 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups/FF-1/tester_report.md",
+    "artifacts/save-load-robustness-followups/FF-1/tester_result.json",
+    "artifacts/save-load-robustness-followups/FF-1/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-FF-1-tester-20260719",
+  "commands_run": [
+    "make -C tests/strategic (clean build of libstrategicTests.a, no warnings)",
+    "make -C tests (top-level build of SSWTests + GuiTests + TacticalTests)",
+    "./SSWTests (run from tests/) -> OK (293 tests)",
+    "./TacticalTests (run from tests/tactical/) -> OK (253 tests)",
+    "make check (top-level, from worktree root) -> exit 0; SSWTests OK (293), TacticalTests OK (253), GuiTests OK (85)",
+    "Behavioral-mandate check: temporarily disabled the FF-1 validation block in src/strategic/FGame.cpp, rebuilt src/strategic + SSWTests, re-ran -> the two out-of-range tests FAILED (load returned 0); restored FGame.cpp verbatim (git status shows it unmodified) and rebuilt"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "85 run / 0 failures",
+    "SSWTests": "293 run / 0 failures (290 baseline + 3 new)",
+    "TacticalTests": "253 run / 0 failures"
+  },
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "FF-1",
+  "test_commit_hash": "4f78c7a0",
+  "test_files_changed": [
+    "tests/strategic/FGameSaveFormatTest.h",
+    "tests/strategic/FGameSaveFormatTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
