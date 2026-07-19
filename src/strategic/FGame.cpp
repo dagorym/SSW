@@ -3,7 +3,7 @@
  * @brief Implementation file for FGame class
  * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Jul 17, 2026
+ * @date Last Modified:  Jul 19, 2026
  *
  */
 
@@ -714,8 +714,34 @@ int FGame::load(std::istream &is){
 			reportLoadError("Cannot load save file: player data is truncated, corrupt, or references an unknown ship type.");
 			return 1;
 		}
-		// we need to place the fleets into their respective systems
+		// FF-1 (SF-located-object-ids): validate each fleet's located-object
+		// reference IDs against the already-loaded FMap before trusting them.
+		// A corrupt/malicious save can carry a fleet whose location (system)
+		// ID or jump-route ID does not resolve to any loaded FSystem/
+		// FJumpRoute; left unchecked, that untrusted ID later reaches a gui
+		// fleet-draw path that dereferences the NULL
+		// FMap::getSystem(id)/getJumpRoute(id) result and crashes.
+		// Reject it here, at load time, instead: location 0 is the
+		// documented "not yet in a system" sentinel (see FFleet's default-
+		// constructed m_location and createSFNova()'s deliberately unplaced
+		// fleet) and FFleet::NO_ROUTE is the "not on a jump route" sentinel;
+		// any other value must resolve or the load aborts.
 		FleetList fList = p->getFleetList();
+		for (FleetList::iterator f = fList.begin(); f < fList.end(); f++){
+			unsigned int location = (*f)->getLocation();
+			if (location != 0 && m_universe->getSystem(location) == NULL){
+				delete p;
+				reportLoadError("Cannot load save file: a fleet references a location (system) ID that does not exist.");
+				return 1;
+			}
+			unsigned int jumpRoute = (*f)->getJumpRoute();
+			if (jumpRoute != FFleet::NO_ROUTE && m_universe->getJumpRoute(jumpRoute) == NULL){
+				delete p;
+				reportLoadError("Cannot load save file: a fleet references a jump-route ID that does not exist.");
+				return 1;
+			}
+		}
+		// we need to place the fleets into their respective systems
 		for (FleetList::iterator f = fList.begin(); f < fList.end(); f++){
 			FSystem *s = m_universe->getSystem((*f)->getLocation());
 			if (s != NULL){

@@ -218,15 +218,27 @@ public:
 	 * header field read, the nested @c m_universe->load(is) call, and each
 	 * player's @c load(is) call are all checked, and the first failure
 	 * aborts the load without leaving a half-built game committed as the
-	 * live singleton. Every failure is reported via
-	 * @c m_ui->showMessage(...) when an @c IStrategicUI is installed, or a
-	 * console fallback otherwise, via the private @c reportLoadError(...)
-	 * helper. This method returns 0 if everything is okay and a positive
-	 * integer error code if there is a failure.
+	 * live singleton. (FF-1 / SF-located-object-ids) After each player loads
+	 * successfully, every one of that player's fleets has its located-object
+	 * reference IDs validated against the already-loaded @c m_universe
+	 * before being wired into a system's fleet list: a fleet's location
+	 * (system) ID must resolve via @c FMap::getSystem(id) unless it is the
+	 * documented @c 0 "not yet in a system" sentinel, and its jump-route ID
+	 * must resolve via @c FMap::getJumpRoute(id) unless it is the
+	 * @c FFleet::NO_ROUTE sentinel; the first unresolved reference aborts the
+	 * load the same way a truncated/corrupt read does, since an
+	 * out-of-range ID would otherwise reach a gui draw path
+	 * (@c WXPlayerDisplay::drawFleets()) that dereferences a NULL
+	 * @c FMap::getSystem(id)/@c getJumpRoute(id) result and crashes. Every
+	 * failure is reported via @c m_ui->showMessage(...) when an
+	 * @c IStrategicUI is installed, or a console fallback otherwise, via the
+	 * private @c reportLoadError(...) helper. This method returns 0 if
+	 * everything is okay and a positive integer error code if there is a
+	 * failure.
 	 *
 	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Jul 17, 2026
+	 * @date Last Modified:  Jul 19, 2026
 	 */
 	virtual int load(std::istream &is);
 
