@@ -9,6 +9,7 @@
 #include "gui/WXMapDisplay.h"
 #include "gui/WXIconCache.h"
 #include "strategic/FPlayer.h"
+#include "strategic/FMap.h"
 #include <algorithm>
 
 namespace Frontier
@@ -24,6 +25,24 @@ WXPlayerDisplay::~WXPlayerDisplay() {
 }
 
 void WXPlayerDisplay::drawFleets(wxDC &dc, FPlayer *player){
+	// Root-cause guard (FR-2 pass-2 remediation, closes the residual
+	// WXPlayerDisplay::drawFleets() gap left open by the pass-1
+	// SF-nullfmap-paint-guard fix): consult FMap::hasMap() before ever
+	// binding a reference/pointer to FMap::getMap(). getMap() returns a
+	// null reference when the singleton does not exist, and binding
+	// `FMap *map = &(FMap::getMap())` to that null reference is itself
+	// undefined behavior, independent of whether the pointer is later
+	// dereferenced. Currently a located fleet cannot exist without a live
+	// FMap (FGame::init()/load() always create the map before any player
+	// or fleet), but that is an implicit ordering invariant rather than an
+	// explicit guard, so this predicate closes the gap defensively rather
+	// than relying on it. Skip the whole draw when no map exists; this is
+	// additive defense-in-depth and does not change behavior when a valid
+	// FMap exists.
+	if (!FMap::hasMap()) {
+		return;
+	}
+
 	WXMapDisplay mapDisplay;
 	FMap *map = &(FMap::getMap());
 	const double scale = mapDisplay.getScale(dc);
