@@ -153,9 +153,26 @@ public:
 	 * fallback, so @c m_currentDefense never dangles at a defense object
 	 * freed during the reload.
 	 *
+	 * FF-2: every scalar read (@c readU32/@c readString/@c read<T>) and
+	 * every nested weapon/defense @c load() call now has its own return
+	 * checked; a nonzero return from any of them aborts this method
+	 * immediately with a nonzero return, deepening the save-load
+	 * aggregate-abort guarantee to reach a stream truncated strictly inside
+	 * a single vehicle's own scalar/weapon/defense region (previously only
+	 * the @c createWeapon()/@c createDefense()==NULL unknown-type paths
+	 * aborted). A weapon or defense object that fails its own nested
+	 * @c load() is deleted before returning, since it was not yet appended
+	 * to @c m_weapons/@c m_defenses; entries already appended in earlier
+	 * loop iterations remain owned by this vehicle and are cleaned up by
+	 * @c ~FVehicle() when the already-FR-1-hardened caller
+	 * (@c FFleet::load()/@c FPlayer::load()) deletes this not-yet-committed
+	 * vehicle in response to the nonzero return, so no leak, dangling
+	 * @c m_currentDefense, or double-free results. The success path and the
+	 * existing unknown-type abort are unchanged.
+	 *
 	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 06, 2008
-	 * @date Last Modified:  Jul 17, 2026
+	 * @date Last Modified:  Jul 19, 2026
 	 */
 	virtual int load(std::istream &is);
 

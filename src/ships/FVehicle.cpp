@@ -214,7 +214,14 @@ void FVehicle::setIcon(std::string icon) {
 
 int FVehicle::load(std::istream &is) {
 	uint32_t id = 0;
-	readU32(is,id);
+	// FF-2: every scalar read below now checks its own return so a stream
+	// truncated/failed anywhere inside this vehicle's own record aborts the
+	// load (nonzero) instead of silently continuing on unspecified/garbage
+	// data (mirroring the FR-1 nested-load-return propagation discipline
+	// already applied at the FFleet/FPlayer level).
+	if (readU32(is,id)){
+		return 1;
+	}
 	m_ID = id;
 	// H3: advance the static next-ID counter past any loaded ID so a
 	// freshly-constructed vehicle never reuses an ID restored from a save
@@ -222,31 +229,69 @@ int FVehicle::load(std::istream &is) {
 	if (m_ID >= m_nextID){
 		m_nextID = m_ID + 1;
 	}
-	readString(is,m_name);
-	readString(is,m_iconName);
-	read(is,m_currentMR);
-	read(is,m_currentADF);
-	read(is,m_currentHP);
-	read(is,m_speed);
-	read(is,m_heading);
+	if (readString(is,m_name)){
+		return 1;
+	}
+	if (readString(is,m_iconName)){
+		return 1;
+	}
+	if (read(is,m_currentMR)){
+		return 1;
+	}
+	if (read(is,m_currentADF)){
+		return 1;
+	}
+	if (read(is,m_currentHP)){
+		return 1;
+	}
+	if (read(is,m_speed)){
+		return 1;
+	}
+	if (read(is,m_heading)){
+		return 1;
+	}
 	uint32_t owner = 0;
-	readU32(is,owner);
+	if (readU32(is,owner)){
+		return 1;
+	}
 	m_owner = owner;
-	read(is,m_currentDCR);
-	read(is,m_maskingScreenTurnCount);
-	read(is,m_combatControlDamaged);
-	read(is,m_onFire);
-	read(is,m_powerSystemDamaged);
-	read(is,m_navError);
+	if (read(is,m_currentDCR)){
+		return 1;
+	}
+	if (read(is,m_maskingScreenTurnCount)){
+		return 1;
+	}
+	if (read(is,m_combatControlDamaged)){
+		return 1;
+	}
+	if (read(is,m_onFire)){
+		return 1;
+	}
+	if (read(is,m_powerSystemDamaged)){
+		return 1;
+	}
+	if (read(is,m_navError)){
+		return 1;
+	}
 	uint32_t count = 0;
-	readU32(is,count);
+	if (readU32(is,count)){
+		return 1;
+	}
 	for (unsigned int i=0; i< m_weapons.size(); i++){	// they were populated with default values
 		delete m_weapons[i];				// at creation so we need to clear them this is a bit
 	}										// wasteful in resources and could be done better.
 	m_weapons.clear();
 	for (uint32_t i=0; i<count; i++){
 		FWeapon::Weapon type;
-		read(is,type);
+		if (read(is,type)){
+			// stream truncated/failed before a weapon type tag could be
+			// read: nothing was allocated for this entry, so aborting here
+			// cannot leak or dangle. Weapons already pushed onto m_weapons
+			// by earlier loop iterations remain owned by this vehicle and
+			// are cleaned up by ~FVehicle() when the caller (already
+			// FR-1-hardened) deletes this not-yet-committed vehicle.
+			return 1;
+		}
 		FWeapon *w = createWeapon(type);
 		if (w == NULL){
 			// unknown/corrupt weapon type on the wire: abort the load rather
@@ -254,10 +299,20 @@ int FVehicle::load(std::istream &is) {
 			return 1;
 		}
 		w->setParent(this);
-		w->load(is);
+		if (w->load(is)){
+			// the weapon's own record was truncated/failed. w is not yet in
+			// m_weapons, so freeing it here cannot leak or double-free;
+			// propagate the failure so the ultimate caller's (FGame::load())
+			// aggregate-abort check fires instead of committing a
+			// half-built weapon.
+			delete w;
+			return 1;
+		}
 		m_weapons.push_back(w);
 	}
-	readU32(is,count);
+	if (readU32(is,count)){
+		return 1;
+	}
 	for (unsigned int i=0; i< m_defenses.size(); i++){	// they were populated with default values
 		delete m_defenses[i];				// at creation so we need to clear them this is a bit
 	}										// wasteful in resources and could be done better.
@@ -268,14 +323,27 @@ int FVehicle::load(std::istream &is) {
 	m_currentDefense = NULL;
 	for (uint32_t i=0; i<count; i++){
 		FDefense::Defense defType;
-		read(is,defType);
+		if (read(is,defType)){
+			// stream truncated/failed before a defense type tag could be
+			// read: nothing was allocated for this entry, so aborting here
+			// cannot leak or dangle; m_currentDefense stays NULL (already
+			// cleared above) rather than dangling.
+			return 1;
+		}
 		FDefense *d = createDefense(defType);
 		if (d == NULL){
 			// unknown/corrupt defense type on the wire: abort the load
 			// rather than dereference a NULL factory result.
 			return 1;
 		}
-		d->load(is);
+		if (d->load(is)){
+			// the defense's own record was truncated/failed. d is not yet
+			// in m_defenses, so freeing it here cannot leak or double-free;
+			// propagate the failure so FGame::load()'s aggregate-abort check
+			// fires instead of committing a half-built defense.
+			delete d;
+			return 1;
+		}
 		m_defenses.push_back(d);
 	}
 	// H2: restore which defense was active at save time. The active-defense
@@ -283,7 +351,15 @@ int FVehicle::load(std::istream &is) {
 	// the freshly-rebuilt m_defenses before using it so a corrupt/oversized
 	// index cannot select an out-of-range entry.
 	uint32_t currentDefenseIndex = 0;
-	readU32(is,currentDefenseIndex);
+	if (readU32(is,currentDefenseIndex)){
+		// stream truncated/failed reading the trailing active-defense index.
+		// m_defenses was already fully and successfully rebuilt above (all
+		// entries loaded without error) and remains owned by this vehicle;
+		// m_currentDefense stays NULL (set above) rather than dangling, and
+		// ~FVehicle() cleans up m_defenses when the caller deletes this
+		// not-yet-committed vehicle on this abort.
+		return 1;
+	}
 	// m_defenses was just rebuilt above (and any prior defenses, including
 	// the constructor-time default, were deleted); m_currentDefense must be
 	// re-pointed at a live entry so getCurrentDefense() never returns a
