@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-1/security_report.md",
+    "artifacts/phase5-save-format-followups/FR-1/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FR-1-security-20260719",
+  "documentation_sufficiency_summary": [
+    "Adequate. FPlayer.h and FFleet.h load() Doxygen blocks document the new nested-return propagation contract with @date Last Modified bumped to Jul 19, 2026 and Claude Sonnet 5 (medium) retained in @author.",
+    "doc/deferred-tasks.md correctly removes the resolved SF-nested-load-returns entry (following the repository precedent of full removal for resolved items); the remaining SF-enum-codes and SF-nullfmap-paint-guard deferred entries are untouched, as expected for FR-1's scope.",
+    "AGENTS.md Contributor Notes save-format paragraph was synced to describe the nested-load-return propagation; no edits to the non-volatile doc/rules/tactical_operations_manual.md.",
+    "Recommend (non-blocking) recording the FVehicle::load() internal-read-checking gap as a tracked deferred item so the aggregate-abort contract's remaining hole is documented."
+  ],
+  "note_finding_count": 2,
+  "outcome": "PASS",
+  "pass_label": "FR-1 nested-load-return propagation (SF-nested-load-returns) save-loader trust-boundary review",
+  "status": "complete",
+  "task_id": "FR-1",
+  "test_sufficiency_summary": [
+    "Adequate for the security-sensitive behavior. testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce is fully behavioral: it builds a real valid FGame save via buildValidSaveBytes(), truncates the stream immediately before a fleet's first ship's type-tag, calls the real FGame::load(), and asserts the observed runtime outcome (rc != 0 and mock IStrategicUI showMessage called exactly once).",
+    "The test would fail against the unfixed code: pre-FR-1, FPlayer::load()'s fleet loop discarded FFleet::load()'s nonzero return and returned 0, so FGame::load() would return 0 and commit a half-built fleet. It passes after the fix.",
+    "Pre-existing negative coverage is preserved: wrong-magic, unsupported-version, header-truncation, unknown-factory-type, and no-UI console-fallback cases remain green (testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExactlyOnce still exercises the unchanged createShip()==NULL abort).",
+    "Independently rebuilt src/strategic and tests/strategic clean (exit 0) in this review; the full SSWTests suite run relies on the Tester's committed make check result (SSWTests 290/290 including the new test, TacticalTests 253/253, GuiTests 83/83, exit 0), which is consistent with the code-inspection analysis.",
+    "Observation (non-blocking): the FPlayer m_unattached/m_destroyed loops and FFleet ship-loop v->load()!=0 branches are covered by structural inspection rather than an independent behavioral case each; the memory-safety of those identical paths is confirmed by code inspection."
+  ],
+  "warning_finding_count": 0
+}
