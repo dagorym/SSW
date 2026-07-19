@@ -1,0 +1,26 @@
+{
+  "artifact_file_paths": [
+    "artifacts/phase5-save-format-followups/FR-2/verifier_report.md",
+    "artifacts/phase5-save-format-followups/FR-2/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FR-2-verifier-20260719",
+  "documentation_accuracy_summary": [
+    "Doxygen headers are complete and accurate on all four touched declarations/definitions: FMap::hasMap() (include/strategic/FMap.h:105-120, src/strategic/FMap.cpp -- @author Claude Sonnet 5 (medium), Created/Last Modified Jul 19, 2026) and WXMapDisplay::draw()/getScale() (include/gui/WXMapDisplay.h, src/gui/WXMapDisplay.cpp -- @author 'Tom Stephens, Claude Sonnet 5 (medium)', Last Modified bumped to Jul 19, 2026, prior author retained).",
+    "doc/deferred-tasks.md's SF-nullfmap-paint-guard section is fully removed (verified by diff and by grep finding zero remaining references anywhere in the repo), consistent with this repo's resolved-entries-are-removed convention.",
+    "AGENTS.md's StrategicGuiLiveTest paragraph accurately describes the new FMap::hasMap() predicate, the WXMapDisplay guard behavior (no-op draw / 1.0 default scale), that it is independent of and additional to the unchanged onOpen() setGame-deferral mitigation, and (after the Documenter's dd82a822 addendum) names and accurately summarizes what testGamePanelRepaintWithNoLiveFMapDoesNotCrash exercises and asserts. Verified by reading the full paragraph and comparing it against the actual test body and implementation.",
+    "One non-blocking imprecision (see NOTE finding): the paragraph's 'closing the former SF-nullfmap-paint-guard deferred item' phrasing slightly overstates completeness given the residual, out-of-scope WXPlayerDisplay::drawFleets() path; the paragraph itself does not misdescribe what was implemented or tested, so this is a wording-precision note rather than a substantive inaccuracy.",
+    "No duplication introduced: the guard is described once in AGENTS.md's StrategicGuiLiveTest paragraph plus the Doxygen headers at the implementation sites; doc/synthesized-roadmap.md and other docs were correctly left untouched."
+  ],
+  "note_finding_count": 1,
+  "pass_label": "PASS",
+  "status": "pass",
+  "task_id": "FR-2",
+  "test_sufficiency_summary": [
+    "SUFFICIENT for the specific documented crash and the acceptance criteria as scoped to this Verifier: testGamePanelRepaintWithNoLiveFMapDoesNotCrash (tests/gui/StrategicGuiLiveTest.cpp:1400-1442) is a genuine behavioral test per AGENTS.md's Behavioral Verification mandate -- it builds a real FGame and FGamePanel, forces a real repaint through the unmodified production chain FGamePanel::onPaint() -> WXGameDisplay::draw() -> WXMapDisplay::draw()/getScale(), and asserts the process survives and FMap::hasMap() still holds false. This would have crashed the process against the pre-fix code (the documented this=0x0 dereference inside FMap::getMaxSize()), and passes after the fix. It is not a source-inspection/assertContains-style check.",
+    "Pre-existing rendering-parity tests are unmodified and still pass: testWXMapDisplayOffscreenRendering and testWXGameDisplayOffscreenRendersTurnCounterAndIcons in tests/gui/StrategicGuiLiveTest.cpp were not touched by 09cc698a or 92ae3f38 (confirmed via git diff --stat over the FR-2 commit range), and both pass in this Verifier's independent make check run, backing the 'no behavior change when a valid FMap exists' criterion.",
+    "GAP (non-blocking, matches the Security review's finding, independently confirmed): no test exercises the WXPlayerDisplay::drawFleets() FMap sub-path with a no-map/fleet-bearing game, because the new test deliberately uses a player-less FGame (the no-arg FGame::create() overload leaves m_players empty), so WXGameDisplay::draw()'s player loop never invokes drawFleets(). This gap is consistent with the fact that guarding/exercising drawFleets() is out of FR-2's declared scope; see the WARNING finding for the recommended follow-up."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 1
+}
