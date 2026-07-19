@@ -64,41 +64,6 @@ decomposition/serialization (roadmap `doc/synthesized-roadmap.md` §6.2 item 12)
 
 ---
 
-## SF-nested-load-returns — `FPlayer::load()`/`FFleet::load()` ignore nested sub-object load() return codes
-
-**Description:** `FPlayer::load()` (`src/strategic/FPlayer.cpp`) discards the
-return value of `v->load()` in both its `m_unattached` loop and its
-`m_destroyed` loop, and of `f->load()` in its fleet loop; `FFleet::load()`
-(`src/strategic/FFleet.cpp`) likewise discards the return value of `v->load()`
-for each ship it loads. A save stream truncated deep inside fleet/ship data
-makes the nested `FFleet`/`FVehicle::load()` call return nonzero, but the
-discarding caller still returns 0, so `FGame::load()`'s per-player check
-(`src/strategic/FGame.cpp`) observes success even though the underlying data
-is incomplete. The aggregate-abort guarantee added by the save-format
-hardening work (P5-3 magic/version header plus `FGame::load()`'s per-sub-load
-return checks) is bypassed for this class of deep-truncation input, silently
-producing a logically-inconsistent game (partial fleet, fields left at
-constructor defaults) instead of the intended load-error path.
-
-**Origin:** Surfaced by the P5-5 Security review (pass 1, Finding #1) during
-save-format hardening. Not a memory-safety issue -- all reads remain bounded
-(`readString` capped at `kMaxSerializedStringBytes`, `readU32`/`read<T>` fixed
-width, sticky stream failbit) -- but it is a save-load robustness/hardening
-gap: the top-level abort contract `FGame::load()` provides is only as strong
-as its weakest nested `load()` caller.
-
-**Why deferred:** The fix (checking and propagating `v->load()`/`f->load()`
-return codes in `FPlayer::load()`'s three loops and `v->load()` in
-`FFleet::load()`) touches files outside P5-5's allowed scope (P5-3-scope
-files: `src/strategic/FPlayer.cpp`, `src/strategic/FFleet.cpp`). Fixing it
-requires reopening the P5-3 subtask rather than extending P5-5's
-GUI-load-error-UX scope.
-
-**Target phase:** P5-3 remediation (save-format hardening,
-`src/strategic/FPlayer.cpp`/`src/strategic/FFleet.cpp` load-path hardening).
-
----
-
 ## SF-nullfmap-paint-guard — GUI paint path lacks a NULL-`FMap` guard
 
 **Description:** The GUI paint path `FGamePanel::onPaint()` ->

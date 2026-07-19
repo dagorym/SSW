@@ -3,7 +3,7 @@
  * @brief Implementation file for FFleet class
  * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 12, 2005
- * @date Last Modified:  Jul 17, 2026
+ * @date Last Modified:  Jul 19, 2026
  *
  */
 
@@ -194,7 +194,16 @@ int FFleet::load(std::istream &is){
 			// than dereference a NULL factory result.
 			return 1;
 		}
-		v->load(is);
+		if (v->load(is) != 0){
+			// FR-1 (SF-nested-load-returns): the stream truncated/failed
+			// partway through this ship's own record. v is not yet in
+			// m_ships, so freeing it here cannot leak or dangle; propagate
+			// the failure so the ultimate caller's (FGame::load())
+			// aggregate-abort check fires instead of committing a
+			// half-built ship.
+			delete v;
+			return 1;
+		}
 		m_ships.push_back(v);
 	}
 

@@ -294,7 +294,15 @@ public:
 	 * counter is advanced past it (H3) so a freshly-constructed FPlayer never
 	 * reuses an ID restored from a save file. Each ship-list entry's type tag
 	 * is resolved via createShip(); an unknown/NULL type aborts the load by
-	 * returning nonzero without dereferencing the NULL result.
+	 * returning nonzero without dereferencing the NULL result. (FR-1 /
+	 * SF-nested-load-returns) The nested FVehicle::load()/FFleet::load()
+	 * return value for every entry in the unattached-ship, fleet, and
+	 * destroyed-ship loops is also checked: a nonzero nested return means the
+	 * stream was truncated or corrupt partway through that sub-object's own
+	 * record, so the just-allocated sub-object (not yet reachable from
+	 * m_unattached/m_fleets/m_destroyed) is deleted and this method returns
+	 * nonzero immediately, so the aggregate-abort guarantee in the caller
+	 * (FGame::load()) cannot be bypassed by deep-truncation input.
 	 * This method returns 0 if everything is okay and a positive integer
 	 * error code if there is a failure.
 	 *
@@ -302,7 +310,7 @@ public:
 	 *
 	 * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Jul 17, 2026
+	 * @date Last Modified:  Jul 19, 2026
 	 */
 	virtual int load(std::istream &is);
 

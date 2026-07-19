@@ -3,7 +3,7 @@
  * @brief Implementation file for FPlayer class
  * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 17, 2005
- * @date Last Modified:  Jul 17, 2026
+ * @date Last Modified:  Jul 19, 2026
  *
  */
 
@@ -151,13 +151,27 @@ int FPlayer::load(std::istream &is){
 			// than dereference a NULL factory result.
 			return 1;
 		}
-		v->load(is);
+		if (v->load(is) != 0){
+			// FR-1 (SF-nested-load-returns): the stream truncated/failed
+			// partway through this ship's own record. v is not yet in
+			// m_unattached, so freeing it here cannot leak or dangle;
+			// propagate the failure so FGame::load()'s aggregate-abort
+			// check fires instead of committing a half-built ship.
+			delete v;
+			return 1;
+		}
 		m_unattached.push_back(v);
 	}
 	readU32(is,fSize);
 	for(uint32_t i = 0; i < fSize; i++){
 		FFleet *f = new FFleet;
-		f->load(is);
+		if (f->load(is) != 0){
+			// FR-1 (SF-nested-load-returns): f is not yet in m_fleets, so
+			// freeing it here cannot leak or dangle; propagate the failure
+			// to the aggregate-abort path.
+			delete f;
+			return 1;
+		}
 		m_fleets.push_back(f);
 	}
 	// F2-serialization: restore the destroyed-ship list with the same
@@ -174,7 +188,14 @@ int FPlayer::load(std::istream &is){
 			// than dereference a NULL factory result.
 			return 1;
 		}
-		v->load(is);
+		if (v->load(is) != 0){
+			// FR-1 (SF-nested-load-returns): v is not yet in m_destroyed, so
+			// freeing it here cannot leak or dangle; propagate the failure
+			// so FGame::load()'s aggregate-abort check fires instead of
+			// committing a half-built destroyed-ship record.
+			delete v;
+			return 1;
+		}
 		m_destroyed.push_back(v);
 	}
 	return 0;

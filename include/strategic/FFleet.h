@@ -262,14 +262,21 @@ public:
 	 * distinguished NO_ROUTE sentinel value itself means "not on a route".
 	 * Each ship-list entry's type tag is resolved via createShip(); an
 	 * unknown/NULL type aborts the load by returning nonzero without
-	 * dereferencing the NULL result. This method returns 0 if everything is
-	 * okay and a positive integer error code if there is a failure.
+	 * dereferencing the NULL result. (FR-1 / SF-nested-load-returns) The
+	 * nested FVehicle::load() return value for every ship-list entry is also
+	 * checked: a nonzero nested return means the stream was truncated or
+	 * corrupt partway through that ship's own record, so the just-allocated
+	 * FVehicle (not yet reachable from m_ships) is deleted and this method
+	 * returns nonzero immediately, so the aggregate-abort guarantee in the
+	 * ultimate caller (FGame::load()) cannot be bypassed by deep-truncation
+	 * input. This method returns 0 if everything is okay and a positive
+	 * integer error code if there is a failure.
 	 *
 	 * @param is The input stream to read from
 	 *
 	 * @author Tom Stephens, gpt-5.3-codex (medium), Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Jul 17, 2026
+	 * @date Last Modified:  Jul 19, 2026
 	 */
 	virtual int load(std::istream &is);
 
