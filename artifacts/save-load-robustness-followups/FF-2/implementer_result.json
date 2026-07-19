@@ -1,0 +1,30 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups/FF-2/implementer_report.md",
+    "artifacts/save-load-robustness-followups/FF-2/tester_prompt.txt",
+    "artifacts/save-load-robustness-followups/FF-2/implementer_result.json"
+  ],
+  "branch_name": "phase5-FF-2-implementer-20260719",
+  "changed_files": [
+    "src/ships/FVehicle.cpp",
+    "include/ships/FVehicle.h"
+  ],
+  "code_commit_hash": "da076ba2",
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "FF-2",
+  "validation_commands": [
+    "make -C src/ships",
+    "make -C . check (top-level: builds all + runs SSWTests, TacticalTests, GuiTests under xvfb-run)"
+  ],
+  "validation_outcome": "src/ships builds clean with no new warnings. Top-level `make check` from the worktree root completed with exit code 0 (the check target stops and propagates a non-zero exit at the first failing suite, so exit 0 confirms all three passed): SSWTests OK (293 tests), TacticalTests OK (253 tests), and GuiTests OK (85 tests, under xvfb-run) all green. No behavioral test was authored by this run; behavioral coverage (in-vehicle scalar-region truncation aborting FGame::load(), and driving a nonzero FVehicle::load() for a vehicle in a fleet, in m_unattached, and in m_destroyed to exercise all four FR-1 propagation sites / FF-3) is the Tester's responsibility in tests/strategic/FGameSaveFormatTest.{h,cpp} and/or tests/ships/FVehicleTest.{h,cpp}.",
+  "acceptance_criteria_status": {
+    "every_read_checked": "MET - every readU32/readString/read<T> scalar read and each nested w->load(is)/d->load(is) call in FVehicle::load() now has its return checked; any nonzero return aborts with nonzero.",
+    "in_vehicle_truncation_aborts_load": "MET (implementation) - a stream truncated strictly inside a vehicle's own scalar/weapon/defense region now returns nonzero from FVehicle::load(), propagating through FR-1-hardened FFleet::load()/FPlayer::load() to FGame::load(); Tester authors the behavioral proof.",
+    "no_leak_dangle_double_free": "MET - a just-allocated (not-yet-appended) weapon/defense is deleted before returning; already-appended entries are freed by ~FVehicle() via the FR-1-hardened caller deleting the not-yet-committed vehicle; m_currentDefense stays NULL on abort. Success path and unknown-type abort unchanged.",
+    "doxygen_updated": "MET - FVehicle::load() Doxygen in include/ships/FVehicle.h updated (Last Modified bumped to Jul 19, 2026; FF-2 behavior described; implementing model recorded via commit co-author trailer).",
+    "make_check_green": "MET - SSWTests / TacticalTests / GuiTests all green."
+  },
+  "security_review_required": true,
+  "notes": "Untrusted-save-input parsing / trust-boundary hardening: deepens the reject-corrupt-input-at-load discipline into a vehicle's own record. No new allocation on failure paths; existing kMaxSerializedStringBytes cap in readString is unchanged and its nonzero return is now honored. FF-3 (direct coverage of the four FR-1 propagation sites) is delivered as expanded Tester coverage within FF-2 per the plan."
+}

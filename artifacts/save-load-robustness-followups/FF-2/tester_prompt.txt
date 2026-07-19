@@ -1,0 +1,103 @@
+Your role is 'tester'. Your task is to add behavioral coverage for reviewer
+follow-up FF-2 (and the folded-in FF-3): FVehicle::load() now checks the return of
+every scalar read (readU32/readString/read<T>) and every nested weapon/defense
+load() call, so a save stream truncated strictly inside a single vehicle's own
+scalar/weapon/defense region aborts the load (nonzero) and that nonzero return
+propagates through the FR-1-hardened FFleet::load()/FPlayer::load() up to
+FGame::load().
+
+Implementation/code commit under test: da076ba2 (branch
+phase5-FF-2-implementer-20260719).
+
+WHAT THE IMPLEMENTATION DOES (so you know what to assert):
+- In src/ships/FVehicle.cpp, FVehicle::load() now does `if (readX(...)) return 1;`
+  for every scalar read and `if (w->load(is)) { delete w; return 1; }` /
+  `if (d->load(is)) { delete d; return 1; }` for the nested weapon/defense loads.
+  Previously these returns were discarded and load() returned 0 even on a
+  truncated in-vehicle stream; only createWeapon()/createDefense()==NULL aborted.
+- On abort: a just-allocated (not-yet-appended) weapon/defense is deleted;
+  already-appended entries stay owned by the vehicle and are freed by ~FVehicle()
+  when the caller deletes the not-yet-committed vehicle; m_currentDefense stays
+  NULL (never dangling). No leak/double-free.
+- The success path and the existing unknown-type (createWeapon/createDefense NULL)
+  abort are UNCHANGED.
+
+FVehicle SERIALIZED FIELD ORDER (src/ships/FVehicle.cpp) — needed to truncate
+strictly inside a vehicle's own record. Note the ship TYPE string is written by
+FVehicle::save() FIRST (writeString(m_type)) but is consumed by the FACTORY
+(createShip) in FFleet/FPlayer BEFORE v->load(is) is called; FVehicle::load()
+itself begins at m_ID. Order written by save():
+    writeString(m_type)        <-- read by createShip(), NOT by FVehicle::load()
+    writeU32(m_ID)             -> 4 bytes            (first field read by load())
+    writeString(m_name)        -> 4-byte LE len + bytes
+    writeString(m_iconName)    -> 4-byte LE len + bytes
+    write(m_currentMR)         -> sizeof(unsigned int)
+    write(m_currentADF)        -> sizeof(int)
+    write(m_currentHP)         -> sizeof(unsigned int)
+    write(m_speed)             -> sizeof(unsigned int)
+    write(m_heading)           -> sizeof(int)
+    writeU32(m_owner)          -> 4 bytes
+    write(m_currentDCR)        -> ...
+    write(m_maskingScreenTurnCount)
+    write(m_combatControlDamaged) (bool)
+    write(m_onFire) (bool)
+    write(m_powerSystemDamaged) (bool)
+    write(m_navError)
+    writeU32(weaponCount)      -> 4 bytes
+      per weapon: write(FWeapon::Weapon type) + weapon->save() body
+    writeU32(defenseCount)     -> 4 bytes
+      per defense: write(FDefense::Defense type) + defense->save() body
+    writeU32(currentDefenseIndex) -> 4 bytes (trailing active-defense index)
+
+REQUIRED BEHAVIORAL COVERAGE. Each new behavior MUST fail against the UNFIXED code
+and pass against the fixed code (repo behavioral-test mandate): to confirm, you can
+temporarily revert the FF-2 read-return checks and verify the in-vehicle-truncation
+tests then FAIL (load returns 0 / no abort), then restore.
+
+(a) IN-VEHICLE SCALAR-REGION TRUNCATION aborts the full-game load.
+    Home: tests/strategic/FGameSaveFormatTest.{h,cpp} (full-game round trip; use
+    the existing RecordingUI mock IStrategicUI, the buildValidSaveBytes() helper,
+    and the tearDown() singleton cleanup already in the fixture; register the new
+    method in CPPUNIT_TEST_SUITE in the .h).
+    Build a valid full-game save, then TRUNCATE the byte buffer at an offset that
+    falls strictly inside a vehicle's own scalar region (e.g. after a ship's m_ID
+    but before its full record is consumed — locate a ship record by scanning for
+    a known ship type tag / name the way the existing FFleet-name byte-surgery
+    tests locate a fleet, then cut a few bytes into that ship's fields). Assert:
+      * FGame::load() returns nonzero,
+      * RecordingUI::showMessage() call count increments by exactly 1,
+      * no live game singleton is committed
+    (mirror the assertion style of the existing truncated-header / unknown-factory
+    tests in this fixture). This is the case that returned 0 before FF-2.
+    A simpler alternative that also exercises the fix at unit granularity in
+    tests/ships/FVehicleTest.{h,cpp}: save a concrete vehicle (e.g. FAssaultScout)
+    to a std::stringstream, truncate the buffer inside its scalar region, and
+    assert vehicle.load(truncatedStream) returns nonzero (and, for leak-safety,
+    that a subsequent getCurrentDefense() is non-dangling / the object destructs
+    cleanly). Include at least one full-game case so the FGame::load() propagation
+    is proven end-to-end.
+
+(b) ALL FOUR FR-1 PROPAGATION SITES exercised individually (this delivers FF-3).
+    Drive a nonzero FVehicle::load() for a vehicle placed, respectively, in each of
+    the four container contexts, asserting FGame::load() aborts nonzero (and
+    reports via RecordingUI exactly once, no live singleton) in EACH case:
+      1. in a FLEET  -> exercises FFleet::load() ship-loop + FPlayer fleet-loop
+      2. in m_unattached -> exercises FPlayer::load() m_unattached loop
+      3. in m_destroyed  -> exercises FPlayer::load() m_destroyed loop
+      (the fleet case covers both the FFleet ship-loop and the FPlayer fleet-loop
+      propagation sites; m_unattached and m_destroyed are the two remaining sites.)
+    You may trigger the nonzero FVehicle::load() with EITHER an in-vehicle scalar
+    truncation (per (a)) OR the pre-existing corrupt in-ship weapon-type tag
+    (createWeapon()==NULL) path — whichever is easier to position per container.
+    To place a corrupt vehicle in each container, either construct a game/player
+    with a vehicle in that container and byte-patch/truncate its serialized record,
+    or hand-assemble the container's serialized bytes around a truncated/corrupt
+    vehicle record following the FPlayer::save()/FFleet::save() field order
+    (m_unattached and m_destroyed are written by FPlayer::save() using the same
+    type-tag + ship-record pattern as fleets). Confirm each case aborts.
+
+Do NOT modify any production file; author only the test files. Run:
+  cd tests/ships && make && ./ShipsTests
+  cd tests/strategic && make && ./StrategicTests
+and then the full `make check` from the repo root to confirm SSWTests /
+TacticalTests / GuiTests all stay green.
