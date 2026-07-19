@@ -1,0 +1,70 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated FR-2 (closes deferred item SF-nullfmap-paint-guard): FMap::hasMap() is a new public static predicate (include/strategic/FMap.h / src/strategic/FMap.cpp) that tests m_map != NULL without dereferencing it, and WXMapDisplay::draw()/WXMapDisplay::getScale() (src/gui/WXMapDisplay.cpp) now consult it before ever calling FMap::getMap(): draw() returns immediately (no-op) and getScale() returns a safe default of 1.0 when no FMap singleton exists, instead of dereferencing FMap::getMap()'s null reference and crashing inside FMap::getMaxSize() with this=0x0. This is defense-in-depth in the gui draw path itself, independent of and in addition to the already-existing, unchanged P5-5 FMainFrame::onOpen() setGame-deferral mitigation. Added the one required behavioral acceptance criterion (a forced repaint of a live FGamePanel/WXGameDisplay whose FMap singleton does not exist, proving no crash) to tests/gui/StrategicGuiLiveTest.{h,cpp}; all other criteria (Doxygen updates, deferred-tasks.md removal, AGENTS.md update, unchanged rendering behavior with a valid map, unchanged onOpen mitigation) were verified by direct code/doc inspection against the already-committed implementer diff (commit 09cc698a) plus the existing, still-passing WXMapDisplayOffscreenRendering/WXGameDisplayOffscreenRendersTurnCounterAndIcons/MainFrameOnOpenFailedLoad* tests.
+
+Acceptance criteria validated:
+- The gui draw chain no longer dereferences the FMap singleton when it does not exist; a forced repaint of a FGamePanel whose map is unset/half-built is a no-op and does not crash -- verified behaviorally by the new testGamePanelRepaintWithNoLiveFMapDoesNotCrash test (tests/gui/StrategicGuiLiveTest.cpp).
+- Rendering output/behavior is unchanged when a valid FMap exists -- verified: the pre-existing testWXMapDisplayOffscreenRendering and testWXGameDisplayOffscreenRendersTurnCounterAndIcons tests are unmodified and still pass with identical pixel-region assertions.
+- The guard lives in the gui draw path itself (not solely reliant on FMainFrame::onOpen); the existing onOpen setGame-deferral mitigation is left completely unchanged -- verified: src/FMainFrame.cpp was not touched by the implementer's diff (git show 09cc698a --stat), and the new test reaches WXMapDisplay directly through FGamePanel/WXGameDisplay without going through FMainFrame::onOpen() at all.
+- Doxygen headers added/updated on the new FMap::hasMap() predicate and on WXMapDisplay::draw()/getScale() (bumped @date Last Modified; implementing model added to @author) -- verified by direct inspection of include/strategic/FMap.h, include/gui/WXMapDisplay.h, src/gui/WXMapDisplay.cpp, src/strategic/FMap.cpp.
+- Deferred item SF-nullfmap-paint-guard is marked resolved/removed in doc/deferred-tasks.md, and the AGENTS.md reference describing the root-cause guard as an open follow-up is updated to reflect that it now exists -- verified: grep for SF-nullfmap-paint-guard in doc/deferred-tasks.md returns no matches; AGENTS.md's StrategicGuiLiveTest notes paragraph now names FMap::hasMap() and the WXMapDisplay guard as the closing root-cause fix while the onOpen() mitigation description is preserved verbatim above it.
+- make check is green (SSWTests / TacticalTests / GuiTests, the last under xvfb-run -a) -- verified: 290/253/84, exit 0, no regressions vs. the 290/253/83 pre-FR-2 baseline (the +1 in GuiTests is the new test).
+
+Implementation branch or worktree context:
+- Implementer branch/commit: phase5-FR-2-implementer-20260719 @ 09cc698a ("FR-2: add root-cause NULL/invalid-FMap guard in gui draw chain"), merged into this tester worktree's branch history (visible via git log on phase5-FR-2-tester-20260719).
+- Fix shape: FMap::hasMap() (new, public static) returns `m_map != NULL`. WXMapDisplay::draw(wxDC&) begins with `if (!FMap::hasMap()) { return; }` before its first getScale(dc)/FMap::getMap() call. WXMapDisplay::getScale(wxDC&) begins with `if (!FMap::hasMap()) { return 1.0; }` before its own FMap::getMap() call. Neither WXGameDisplay.cpp/.h nor FMainFrame.cpp/FGamePanel.cpp were touched -- the guard is fully contained in WXMapDisplay, which is sufficient because WXGameDisplay::draw() only ever reaches FMap through WXMapDisplay::draw().
+- Why a non-positive-getMaxSize() guard would NOT have worked (plan Assumption A1, rejected): FMap::getMap() returns *m_map (a reference), so calling map.getMaxSize() and checking its sign still dereferences the NULL m_map first -- the crash already happened before any value could be inspected. FMap::hasMap() tests the pointer itself, so it is safe to call unconditionally, including before FMap has ever been created.
+- The P5-5 FMainFrame::onOpen() setGame-deferral mitigation (src/FMainFrame.cpp) was NOT touched by this change and remains exactly as it was -- this guard is purely additive defense-in-depth at a lower layer.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- include/strategic/FMap.h
+- src/strategic/FMap.cpp
+- include/gui/WXMapDisplay.h
+- src/gui/WXMapDisplay.cpp
+- doc/deferred-tasks.md (already updated by Implementer -- SF-nullfmap-paint-guard entry removed)
+- AGENTS.md (already updated by Implementer -- StrategicGuiLiveTest notes paragraph closing sentence)
+- tests/gui/StrategicGuiLiveTest.h
+- tests/gui/StrategicGuiLiveTest.cpp
+
+Test commit:
+- 92ae3f38
+
+Commands executed:
+- make -C src/strategic (clean build, no warnings)
+- make -C src/gui (clean build, no warnings)
+- make -C tests/gui (clean build, no warnings)
+- xvfb-run -a ./GuiTests (run from tests/gui/) -> OK (84 tests)
+- make check (top-level, from worktree root) -> SSWTests OK (290 tests), TacticalTests OK (253 tests), GuiTests OK (84 tests), exit 0
+
+Final test outcomes:
+- make check (top-level) exit 0: SSWTests OK (290 tests), TacticalTests OK (253 tests), GuiTests OK (84 tests) -- no regressions vs. the pre-FR-2 baseline (290/253/83); the +1 in GuiTests is the new StrategicGuiLiveTest case.
+- New test testGamePanelRepaintWithNoLiveFMapDoesNotCrash (tests/gui/StrategicGuiLiveTest.cpp) is fully behavioral: it defensively tears down any live FMap singleton a prior test may have left behind (process-wide static, no guaranteed suite ordering) to establish a deterministic false precondition; constructs a live FGame via the no-arg FGame::create() overload (no FMap side effect); installs that game on a shown FGamePanel via setGame(...) without ever creating an FMap; forces a real repaint that drives FGamePanel::onPaint() -> WXGameDisplay::draw() -> WXMapDisplay::draw()/getScale() -- the exact chain that previously crashed the process; and asserts !FMap::hasMap() still holds after the repaint, with reaching that final assertion at all being the primary behavioral proof of no crash (matching the established convention of the sibling P5-5 testMainFrameOnOpenFailedLoadWithFrameShownSurvivesForcedRepaint test).
+- Verified by direct source inspection (src/gui/WXMapDisplay.cpp, include/strategic/FMap.h, src/strategic/FMap.cpp, all already committed by the Implementer at 09cc698a) that WXMapDisplay::draw() and WXMapDisplay::getScale() both check FMap::hasMap() before their first call to FMap::getMap().
+- Verified rendering is unchanged when a valid FMap exists: the pre-existing testWXMapDisplayOffscreenRendering and testWXGameDisplayOffscreenRendersTurnCounterAndIcons tests are unmodified and still pass with identical pixel-region assertions.
+- Verified the guard lives in the gui draw path itself and not solely in FMainFrame::onOpen(): src/FMainFrame.cpp was not touched by the implementer's diff, and the new test reaches WXMapDisplay directly through FGamePanel/WXGameDisplay without going through FMainFrame::onOpen() at all.
+- Verified Doxygen updates on FMap::hasMap(), WXMapDisplay::draw()/getScale(), and the four touched files' headers (author lists extended to include Claude Sonnet 5 (medium); Last Modified bumped to Jul 19, 2026).
+- Verified doc/deferred-tasks.md no longer contains any SF-nullfmap-paint-guard entry (grep returns no matches).
+- Verified AGENTS.md's StrategicGuiLiveTest notes paragraph closing sentence now names FMap::hasMap() and the WXMapDisplay guard as the root-cause fix, with the onOpen() mitigation description preserved verbatim above it.
+
+Documentation context:
+- AGENTS.md's StrategicGuiLiveTest notes paragraph has already been updated by the Implementer to reflect the new root-cause guard; the Documenter should confirm no further wording changes are needed there, and check whether the Contributor Notes' save-format-hardening paragraph or any other AGENTS.md section references SF-nullfmap-paint-guard as still-open (it should not, post-FR-2).
+- doc/deferred-tasks.md's SF-nullfmap-paint-guard entry has already been removed by the Implementer commit (09cc698a); no further doc/deferred-tasks.md change is expected from the Documenter for that item.
+- No test-contracts.md entries are affected -- this is a strategic-gui (not tactical) test, and StrategicGuiLiveTest is not one of the catalogs tracked in doc/test-contracts.md.
+- The AGENTS.md bullet list under "Route strategic-layer dialogs..." and the WXMapDisplay/WXIconCache asset-resolution notes are unaffected by this change and should not need edits.
+
+Plan and diff context:
+- Plan: plans/phase5-save-format-followups-plan.md (FR-2 subtask).
+- Reviewer origin: artifacts/phase5-save-format-hardening/reviewer_report.md flagged SF-nullfmap-paint-guard as a non-blocking deferral, handed off as FR-2.
+- Diff to inspect for documentation impact: `git show 09cc698a` (implementer fix) and `git show 92ae3f38` (this tester's new behavioral test case) on branch phase5-FR-2-tester-20260719.
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/phase5-save-format-followups/FR-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
