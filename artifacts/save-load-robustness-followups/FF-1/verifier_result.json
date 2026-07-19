@@ -1,0 +1,29 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups/FF-1/verifier_report.md",
+    "artifacts/save-load-robustness-followups/FF-1/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FF-1-verifier-20260719",
+  "documentation_accuracy_summary": [
+    "include/strategic/FGame.h Doxygen for load() (lines 218-241) accurately and specifically describes the FF-1 addition: location must resolve via FMap::getSystem(id) unless it is the 0 sentinel; jump-route ID must resolve via FMap::getJumpRoute(id) unless it is FFleet::NO_ROUTE; first unresolved reference aborts like a truncated/corrupt read, reported via the same reportLoadError()/IStrategicUI::showMessage() path. Matches the shipped code exactly.",
+    "The inline src/strategic/FGame.cpp comment (lines 717-728) matches the Doxygen and the code precisely, including the sentinel rationale (FFleet's default-constructed m_location; createSFNova()'s deliberately unplaced fleet) and the crash-avoidance motivation (WXPlayerDisplay::drawFleets() NULL dereference).",
+    "AGENTS.md's save-format Contributor Notes paragraph (line 404) addendum concisely records the FF-1 fix -- what is validated, the two sentinel exemptions, the abort/reporting mechanism, and the load-time-vs-gui-guard design decision -- without duplicating the pre-existing FR-1/FR-2/P5-5 sentences in the same paragraph; confirmed by direct diff inspection this is the only AGENTS.md change and it reads as a natural, non-redundant continuation of the existing paragraph.",
+    "Confirmed doc/deferred-tasks.md and doc/UsersGuide.md were correctly left unchanged, matching the plan's explicit instruction that FF-1 was never a tracked deferred item and that the existing generic corrupt-save File->Open note already covers this behavior; doc/test-contracts.md is also correctly untouched since FGameSaveFormatTest is a strategic, not tactical-catalog, suite.",
+    "Minor wording caveat (see NOTE finding above, also raised independently by Security): the opening clause of both the code comment and the AGENTS.md sentence describes validating a fleet's 'located-object reference IDs' before immediately enumerating only the two fields actually checked; not materially inaccurate once read in full, but worth tightening if/when a future follow-up (m_destination validation) is added."
+  ],
+  "note_finding_count": 2,
+  "pass_label": "FF-1 final",
+  "status": "complete",
+  "task_id": "save-load-robustness-followups/FF-1",
+  "test_sufficiency_summary": [
+    "Sufficient and behavioral, satisfying the repository's mandatory behavioral-verification policy. All three new FGameSaveFormatTest cases construct a real save byte-stream via buildValidSaveBytes(), locate the real 'Task Force Prenglar' fleet record by its length-prefixed name tag, and either corrupt a specific field (m_location or m_jumpRouteID) or leave the stream untouched, then drive the real FGame::load() and assert on observed runtime outcomes (rc, RecordingUI showMessageCalls count, g.getPlayers().size()) -- no source-text/source-structure assertions anywhere in the new tests.",
+    "Cross-checked the byte-offset arithmetic in both negative tests against the actual FFleet::save()/load() field order in src/strategic/FFleet.cpp (m_owner, m_location, m_inTransit(1 byte bool), m_destination, m_transitTime, m_jumpLength, m_speed, m_jumpRouteID -- all unsigned int/4-byte native fields per include/strategic/FFleet.h) and confirmed the computed offsets (locationPos = ownerPos+4; jumpRoutePos = locationPos+4+17) are correct.",
+    "Independently confirmed the behavioral-test mandate is met, not merely claimed: temporarily wrapped the FF-1 validation loop in #if 0 in src/strategic/FGame.cpp, rebuilt src/strategic and tests/SSWTests, and reran -- both testLoadFleetWithOutOfRangeLocationIdReturnsNonzeroAndReportsExactlyOnce and testLoadFleetWithOutOfRangeJumpRouteIdReturnsNonzeroAndReportsExactlyOnce failed exactly as expected (assertion 'rc != 0' failed, i.e. rc==0 with the fix disabled), while testLoadValidSaveWithSentinelLocationAndJumpRouteSucceeds still passed unaffected. Restored the file via `git checkout --` immediately afterward; `git status` confirmed a clean tree and a full `make check` rerun afterward stayed green (293/253/85).",
+    "The 9 unrelated FGameHeaderDependencyTest failures observed only when running SSWTests directly from a non-tests/ working directory (this agent's cwd resets between Bash calls) are a relative-path/CWD artifact of the test harness itself, not a regression -- confirmed absent when running the full `make check` sequence from repo root, which cd's into tests/ correctly and reports 293/293 passing.",
+    "Positive-control coverage (sentinel location 0 for the not-yet-placed Strike Force Nova fleet, plus NO_ROUTE for every placed, non-transiting fleet) guards against a false-positive rejection of legitimate save data, closing the obvious edge case a validation-only test suite could otherwise miss.",
+    "No production file was modified by the Tester -- confirmed via `git diff 879248eb 01012cc8 -- tests/strategic/FGameSaveFormatTest.h tests/strategic/FGameSaveFormatTest.cpp` showing only test-file changes, and the separate Implementer commit (375ff9b0) is the sole owner of the src/strategic/FGame.cpp and include/strategic/FGame.h diffs."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 2
+}
