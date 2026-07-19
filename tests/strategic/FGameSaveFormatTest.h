@@ -6,11 +6,14 @@
  * aggregated FGame::load() error propagation added around the fixed-width
  * header/@c m_universe->load()/player @c load() calls, and the fixed-width
  * little-endian encoding of FGame's own counts/IDs
- * (@c m_currentPlayer / player count).
+ * (@c m_currentPlayer / player count). Also covers FR-1
+ * (SF-nested-load-returns): a save stream truncated deep inside a fleet's
+ * own ship record must still make @c FGame::load() return nonzero via
+ * @c FPlayer::load()/@c FFleet::load()'s nested-return-checking fix.
  *
  * @author Claude Sonnet 5 (medium)
  * @date Created: Jul 17, 2026
- * @date Last Modified: Jul 17, 2026
+ * @date Last Modified: Jul 19, 2026
  */
 
 #ifndef FGameSaveFormatTest_H_
@@ -24,12 +27,14 @@ namespace FrontierTests {
 using namespace Frontier;
 
 /**
- * @brief Behavioral coverage for the P5-5 versioned save-file header and
- * FGame::load() error-aggregation contract.
+ * @brief Behavioral coverage for the P5-5 versioned save-file header,
+ * FGame::load() error-aggregation contract, and the FR-1
+ * (SF-nested-load-returns) nested-return-checking fix in
+ * FPlayer::load()/FFleet::load().
  *
  * @author Claude Sonnet 5 (medium)
  * @date Created: Jul 17, 2026
- * @date Last Modified: Jul 17, 2026
+ * @date Last Modified: Jul 19, 2026
  */
 class FGameSaveFormatTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE( FGameSaveFormatTest );
@@ -39,6 +44,7 @@ class FGameSaveFormatTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testLoadUnsupportedVersionReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadTruncatedStreamReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadFailureWithNoUIFallsBackToConsoleAndReturnsNonzero );
 	CPPUNIT_TEST_SUITE_END();
 
@@ -78,6 +84,18 @@ public:
 	/// via the installed IStrategicUI, exercising the aggregated per-player
 	/// load() failure path in FGame::load().
 	void testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExactlyOnce();
+
+	/// FR-1 (SF-nested-load-returns): a save file truncated immediately
+	/// before the first byte of a fleet's first ship's own record (i.e.
+	/// after the fleet's own header fields and ship-count are fully present,
+	/// but before any byte of that ship's type-tag string) must still be
+	/// rejected: load() returns nonzero and reports exactly once via the
+	/// installed IStrategicUI. This exercises FPlayer::load()'s fleet loop
+	/// propagating FFleet::load()'s nonzero return (which itself aborts via
+	/// its pre-existing createShip()==NULL check once the truncated
+	/// type-tag read fails) instead of silently discarding it as before this
+	/// fix.
+	void testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce();
 
 	/// With no IStrategicUI installed (NULL), a load() failure must still
 	/// return nonzero and must not crash, exercising reportLoadError()'s

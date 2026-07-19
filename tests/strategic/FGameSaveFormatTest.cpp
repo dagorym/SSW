@@ -3,7 +3,7 @@
  * @brief Implementation file for the FGameSaveFormatTest class
  * @author Claude Sonnet 5 (medium)
  * @date Created: Jul 17, 2026
- * @date Last Modified: Jul 17, 2026
+ * @date Last Modified: Jul 19, 2026
  */
 
 #include "FGameSaveFormatTest.h"
@@ -303,6 +303,62 @@ void FGameSaveFormatTest::testLoadUnknownFactoryTypeReturnsNonzeroAndReportsExac
 	RecordingUI ui;
 	FGame &g = FGame::create(&ui);
 	std::istringstream is(bytes);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadTruncatedInsideFleetShipRecordReturnsNonzeroAndReportsExactlyOnce(){
+	std::string bytes = buildValidSaveBytes();
+
+	// Locate UPF's "Task Force Prenglar" fleet by its own length-prefixed
+	// name field (unique in the save; only this one fleet is named this),
+	// using the same 4-byte little-endian length prefix + raw ASCII
+	// encoding FPObject::writeString() produces.
+	std::string fleetNameTag;
+	fleetNameTag.push_back(static_cast<char>(19));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag += "Task Force Prenglar";
+	size_t fleetNamePos = bytes.find(fleetNameTag);
+	CPPUNIT_ASSERT(fleetNamePos != std::string::npos);
+
+	// createTFPrenglar() (FGame.cpp) adds this fleet's ships in the order
+	// 5x AssaultScout, 2x Minelayer, 3x Frigate, 2x Destroyer, 3x LtCruiser,
+	// 1x Battleship, so the fleet's first ship's own FVehicle::save() writes
+	// an "AssaultScout" type-tag first. Search for that tag starting from
+	// fleetNamePos (not from the start of the stream) so the earlier
+	// AssaultScout entries already written into UPF's m_unattached list
+	// (which FPlayer::save() emits before m_fleets -- see
+	// FGame::addUPFUnattached()) are not matched instead of this fleet's own
+	// ship.
+	std::string shipTypeTag;
+	shipTypeTag.push_back(static_cast<char>(12));
+	shipTypeTag.push_back(static_cast<char>(0));
+	shipTypeTag.push_back(static_cast<char>(0));
+	shipTypeTag.push_back(static_cast<char>(0));
+	shipTypeTag += "AssaultScout";
+	size_t shipTypePos = bytes.find(shipTypeTag, fleetNamePos);
+	CPPUNIT_ASSERT(shipTypePos != std::string::npos);
+
+	// Truncate the stream to end immediately before the first byte of that
+	// ship's type-tag length prefix: the fleet's own header fields and its
+	// ship-count (sCount) are fully present, but no byte of the first ship's
+	// own record survives. FFleet::load()'s ship loop hits EOF on the
+	// length-prefix read inside readString(), so createShip("") returns
+	// NULL and FFleet::load()'s pre-existing `if (v == NULL) return 1;`
+	// check fires; FPlayer::load()'s FR-1 fix
+	// (`if (f->load(is) != 0){ delete f; return 1; }`) is what propagates
+	// that failure up instead of silently discarding it (the pre-FR-1
+	// behavior, which pushed the half-built fleet and returned 0).
+	std::string truncated = bytes.substr(0, shipTypePos);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(truncated);
 	int rc = g.load(is);
 
 	CPPUNIT_ASSERT(rc != 0);
