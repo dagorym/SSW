@@ -1,0 +1,63 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validated reviewer follow-up FF-2 (and folded-in FF-3): FVehicle::load() now checks the return of every scalar read and every nested weapon/defense load() call, so a save stream truncated strictly inside a single vehicle's own scalar/weapon/defense region aborts the load (nonzero), and that nonzero return propagates through the FR-1-hardened FFleet::load()/FPlayer::load() up to FGame::load(). Added four behavioral tests: one unit-level FVehicleTest case proving FVehicle::load() aborts on an in-vehicle scalar-region truncation (with getCurrentDefense() left non-dangling for leak/dangle safety), and three full-game FGameSaveFormatTest cases exercising all four FR-1 propagation sites individually (single-ship fleet -> FFleet ship-loop + FPlayer fleet-loop; FPlayer m_unattached loop; FPlayer m_destroyed loop). Each full-game case asserts FGame::load() returns nonzero, RecordingUI::showMessage() is called exactly once, and no player is committed to the live singleton. All four new tests were confirmed to FAIL against the pre-FF-2 FVehicle.cpp (load returned 0 / no abort) and PASS against the shipped fix.
+
+Acceptance criteria validated:
+- (a) In-vehicle scalar-region truncation aborts the full-game load: a valid FGame save truncated strictly inside a vehicle's own scalar region (2 bytes into a ship's m_ID) makes FGame::load() return nonzero, reports exactly once via mock IStrategicUI, and commits no live game singleton -- the case that returned 0 before FF-2. Also covered at unit granularity in FVehicleTest with a leak/dangle-safety assertion on getCurrentDefense().
+- (b) FF-3: all four FR-1 propagation sites exercised individually -- fleet ship-loop + player fleet-loop (single-ship fleet), player m_unattached loop, and player m_destroyed loop -- each asserting FGame::load() aborts nonzero, reports exactly once, and commits no live singleton.
+- Behavioral-test mandate: each new test fails against the unfixed code and passes against the fixed code (verified by reverting src/ships/FVehicle.cpp to da076ba2^ and observing all four fail, then restoring).
+
+Implementation branch or worktree context:
+- Implementation/code commit under test: da076ba2 (branch phase5-FF-2-implementer-20260719).
+- Tester branch/worktree: phase5-FF-2-tester-20260719 at /home/tstephen/repos/worktrees/phase5-FF-2-tester-20260719.
+- Test commit on the tester branch: 82993ccc (four test files).
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/ships/FVehicle.cpp (FF-2 implementation: FVehicle::load() checks every scalar read and nested weapon/defense load() return)
+- include/ships/FVehicle.h (FF-2 Doxygen update on FVehicle::load())
+- tests/ships/FVehicleTest.h (new test declaration + Doxygen)
+- tests/ships/FVehicleTest.cpp (new unit-level in-vehicle scalar-truncation test)
+- tests/strategic/FGameSaveFormatTest.h (three new test declarations + fixture Doxygen)
+- tests/strategic/FGameSaveFormatTest.cpp (three new full-game FR-1 propagation-site tests + lengthPrefixedTag helper)
+
+Test commit:
+- 82993ccc
+
+Commands executed:
+- make -C tests/ships (clean build of libshipsTests.a, no warnings)
+- make -C tests/strategic (clean build of libstrategicTests.a, no warnings)
+- make -C tests (top-level build of SSWTests + GuiTests + TacticalTests)
+- SSWTests (run from tests/) -> OK (297 tests)
+- make check (worktree root) -> exit 0; SSWTests OK (297), TacticalTests OK (253), GuiTests OK (85)
+- Behavioral-mandate check: temporarily replaced src/ships/FVehicle.cpp with the pre-FF-2 version (git show da076ba2^:src/ships/FVehicle.cpp), rebuilt src/ships + SSWTests, re-ran -> all four new tests FAILED (load returned 0 / no abort); restored FVehicle.cpp via git checkout (git status shows it unmodified) and rebuilt
+
+Final test outcomes:
+- make check (worktree root) exit 0: SSWTests OK (297 tests), TacticalTests OK (253 tests), GuiTests OK (85 tests) -- all green, no regressions vs. the pre-FF-2 baseline (293/253/85); the +4 in SSWTests are the four new behavioral cases.
+- testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion (tests/ships/FVehicleTest): saves a synthetic vehicle stream (type tag + m_ID + m_name), truncates it before m_iconName's own record can be read, strips the type string the caller (not load()) consumes, calls FVehicle::load() and asserts rc != 0; then asserts getCurrentDefense() != NULL and its type is FDefense::NONE, proving the constructor's default defense is still live (non-dangling) after a failed load.
+- testLoadTruncatedInsideFleetShipScalarRegionReturnsNonzeroAndReportsExactlyOnce (tests/strategic/FGameSaveFormatTest, FR-1 site 1: FFleet ship-loop + FPlayer fleet-loop): builds a real init()'d game, adds a fleet with exactly ONE uniquely-named ship to UPF (a single-ship fleet is required so no following ship's missing type tag can trip the pre-existing createShip("")==NULL guard), saves, locates that ship by name, truncates 2 bytes into its m_ID field, and asserts FGame::load() rc != 0, showMessageCalls == 1, getPlayers().size() == 0.
+- testLoadTruncatedInsideUnattachedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce (FR-1 site 2: FPlayer m_unattached loop): adds a uniquely-named ship to UPF's m_unattached via addShip(), saves, truncates 2 bytes into that ship's m_ID field, asserts the same abort outcome.
+- testLoadTruncatedInsideDestroyedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce (FR-1 site 3: FPlayer m_destroyed loop): adds a uniquely-named ship to UPF's m_destroyed via addDestroyedShip(), saves, truncates 2 bytes into that ship's m_ID field, asserts the same abort outcome.
+- Behavioral-test mandate satisfied: with src/ships/FVehicle.cpp reverted to its pre-FF-2 form, all four new tests failed (FGame::load()/FVehicle::load() returned 0 instead of nonzero because every downstream read silently succeeded on the exhausted stream); with the shipped fix all four pass. FVehicle.cpp was restored verbatim afterward (git status confirms only the four test files changed and they are now committed).
+- Note: the ships and strategic test modules build only static libraries (libshipsTests.a / libstrategicTests.a) -- there is no standalone ./ShipsTests or ./StrategicTests binary in this repo (unlike the tactical/weapons/gui modules). Those module tests execute via the top-level tests/SSWTests runner, which links libshipsTests.a and libstrategicTests.a and reports OK (297 tests). The tester_prompt's suggested `./ShipsTests`/`./StrategicTests` commands therefore have no matching target; SSWTests is the equivalent execution path.
+- Note: run from a working directory other than tests/, the standalone SSWTests binary reports pre-existing FGameHeaderDependencyTest source-inspection failures (those tests read repo source files by relative path). Run from tests/ (as make check does), the full suite is OK (297 tests); this is an unrelated pre-existing CWD artifact.
+
+Documentation context:
+- AGENTS.md Contributor Notes already describe the FR-1 nested-load-return aggregate-abort guarantee in FPlayer::load()/FFleet::load(); FF-2 extends that guarantee down into FVehicle::load() itself (every scalar/weapon/defense read return now checked). The Contributor Notes should note that the aggregate-abort now holds even when a save stream is truncated strictly inside a single vehicle's own scalar/weapon/defense record, not only at a player/fleet/ship-count boundary.
+- AGENTS.md Testing section lists FGameSaveFormatTest's coverage; it can be extended to mention the new in-vehicle scalar-region truncation cases across the fleet, m_unattached, and m_destroyed containers, plus the FVehicleTest unit-level case.
+- No behavior change to the success path or to the pre-existing unknown-factory-type abort; only the truncation/abort depth changed.
+
+Plan and diff context:
+- Plan: plans/save-load-robustness-followups-plan.md (subtask FF-2, folding in FF-3).
+- Comparison base for the implementation diff: da076ba2^ .. da076ba2 for src/ships/FVehicle.cpp and include/ships/FVehicle.h; the tester diff is test commit 82993ccc on branch phase5-FF-2-tester-20260719 (assumption: compare against the implementer branch tip da076ba2).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/save-load-robustness-followups/FF-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

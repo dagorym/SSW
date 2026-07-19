@@ -1,0 +1,32 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups/FF-2/tester_report.md",
+    "artifacts/save-load-robustness-followups/FF-2/tester_result.json",
+    "artifacts/save-load-robustness-followups/FF-2/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-FF-2-tester-20260719",
+  "commands_run": [
+    "make -C tests/ships (clean build of libshipsTests.a, no warnings)",
+    "make -C tests/strategic (clean build of libstrategicTests.a, no warnings)",
+    "make -C tests (top-level build of SSWTests + GuiTests + TacticalTests)",
+    "SSWTests (run from tests/) -> OK (297 tests)",
+    "make check (worktree root) -> exit 0; SSWTests OK (297), TacticalTests OK (253), GuiTests OK (85)",
+    "Behavioral-mandate check: temporarily replaced src/ships/FVehicle.cpp with the pre-FF-2 version (git show da076ba2^:src/ships/FVehicle.cpp), rebuilt src/ships + SSWTests, re-ran -> all four new tests FAILED (load returned 0 / no abort); restored FVehicle.cpp via git checkout (git status shows it unmodified) and rebuilt"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "85 run / 0 failures",
+    "SSWTests": "297 run / 0 failures (293 baseline + 4 new: 1 FVehicleTest + 3 FGameSaveFormatTest)",
+    "TacticalTests": "253 run / 0 failures"
+  },
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "FF-2",
+  "test_commit_hash": "82993ccc",
+  "test_files_changed": [
+    "tests/ships/FVehicleTest.h",
+    "tests/ships/FVehicleTest.cpp",
+    "tests/strategic/FGameSaveFormatTest.h",
+    "tests/strategic/FGameSaveFormatTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
