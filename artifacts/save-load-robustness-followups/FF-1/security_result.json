@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups/FF-1/security_report.md",
+    "artifacts/save-load-robustness-followups/FF-1/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FF-1-security-20260719",
+  "documentation_sufficiency_summary": [
+    "Adequate for the delivered scope. include/strategic/FGame.h Doxygen and the src/strategic/FGame.cpp inline comment accurately and specifically describe the validation: location must resolve via FMap::getSystem(id) unless it is the 0 sentinel; jump-route ID must resolve via FMap::getJumpRoute(id) unless it is FFleet::NO_ROUTE; first unresolved reference aborts like a truncated/corrupt read. The AGENTS.md addendum records the load-time rejection of out-of-range fleet located-object references.",
+    "Documentation caveat (aligned with the WARNING findings): both the code comment and the AGENTS.md note frame the change as validating a fleet's 'located-object reference IDs' generally, which could be read as covering all three references. Only location and jump-route are validated; m_destination is not. A follow-up should either close the destination gap or, until then, avoid implying full located-object-reference coverage. The plan itself (Section 4) is precise -- it enumerates only location and jump-route as IN scope -- so the plan is not overclaiming; the code/AGENTS wording is where the ambiguity sits."
+  ],
+  "note_finding_count": 1,
+  "outcome": "CONDITIONAL PASS",
+  "pass_label": "FF-1 Save-Load Robustness Follow-Ups security review -- CONDITIONAL PASS (pass-1)",
+  "status": "CONDITIONAL PASS",
+  "task_id": "FF-1",
+  "test_sufficiency_summary": [
+    "Adequate for the FF-1 change as scoped. tests/strategic/FGameSaveFormatTest.cpp adds three behavioral (not source-inspection) cases that construct a real save byte-stream, corrupt a specific fleet field, and assert observed runtime FGame::load() behavior against a mock IStrategicUI: (1) out-of-range m_location -> load returns nonzero, exactly one showMessage, zero players committed; (2) out-of-range m_jumpRouteID -> same; (3) sentinel location 0 + NO_ROUTE -> load succeeds with zero messages (guards against a false-positive that would reject legitimate unplaced/idle fleets). These directly exercise the reject-at-load behavior and the exactly-once / no-partial-state guarantees.",
+    "Gap (matches the WARNING findings): there is no test asserting rejection of an out-of-range m_destination, because FF-1 does not implement that rejection. This is not an overclaim by the tests (none assert destination coverage), but the trust boundary is not fully covered. A remediation cycle adding destination validation should add a behavioral test that a crafted out-of-range m_destination is rejected at load AND (ideally) a behavioral test that loading + advancing a turn on such a save does not crash.",
+    "Build/run confirmation performed this session: `make` in tests/ built cleanly; SSWTests ran with the three FGameSaveFormat cases passing (zero FGameSaveFormat failures). The 9 reported failures are all FGameHeaderDependencyTest source-inspection cases failing on 'Expected at least one candidate file path to be readable' -- an environmental CWD issue (they read relative paths ../../include/... / ../include/... that only resolve when CWD is tests/); unrelated to FF-1's save/load logic and not a regression introduced by this change."
+  ],
+  "warning_finding_count": 2
+}

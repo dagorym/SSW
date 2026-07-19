@@ -1,0 +1,49 @@
+Security Review Report
+
+Scope reviewed:
+- Committed diff of branch phase5-FF-1-security-20260719 relative to coordination base branch phase5.
+- Production code: src/strategic/FGame.cpp FGame::load() per-fleet located-object-ID validation pass; include/strategic/FGame.h Doxygen.
+- Tests: tests/strategic/FGameSaveFormatTest.{h,cpp} (three new behavioral cases). Docs: AGENTS.md contributor-notes addendum.
+- Threat model: on-disk save files are untrusted input crossing a trust boundary into FGame::load(); a save may be corrupt or maliciously crafted. Reviewed for trust-boundary completeness, memory safety on the abort path, integer/signedness issues, self-induced crash/loop/exhaustion, and exactly-once error reporting with no partial global state.
+- Adjacent code read (not changed by FF-1) to trace reachability: src/gui/WXPlayerDisplay.cpp drawFleets(), src/strategic/FMap.cpp getSystem/getJumpRoute/load, src/strategic/FSystem.cpp ID assignment, src/strategic/FGame.cpp moveFleets()/handleMapClick(), src/gui/SystemDialogGUI.cpp, src/gui/ViewFleetGUI.cpp, include/strategic/FFleet.h.
+
+Why specialist review was triggered:
+- The plan marks FF-1 'Security review: required' because it hardens an untrusted-input trust boundary: parsing on-disk save files in FGame::load().
+- Before FF-1, a save whose fleet carried an out-of-range located-object reference ID (system/location ID or jump-route ID that does not resolve against the already-loaded FMap) was accepted at load, and the gui fleet-draw path later dereferenced the NULL result of FMap::getSystem(id)/getJumpRoute(id) -- a memory-safety / denial-of-service defect reachable from a malicious save.
+- FF-1's remit is to reject such out-of-range fleet located-object references at load time (root cause), consistent with the Phase-5 reject-corrupt-input-at-load philosophy.
+
+Acceptance criteria / plan reference:
+- plans/save-load-robustness-followups-plan.md -- Section 1 item 1 (FF-1), Section 2 D1 (load-time validation, root-cause), Section 3 (FF-1 crash sites / load path), Section 4 IN/OUT scope, Section 5 FF-1 subtask.
+- Plan declares FF-1 IN scope as validating exactly two fleet references: the location (system) ID and the jump-route ID, against the loaded FMap; GUI draw-path NULL guards are explicitly OUT of scope (D1).
+- AGENTS.md Contributor Notes -- save-format aggregate-abort guarantee and FR-1/FR-2 abort discipline that FF-1 mirrors.
+
+Findings
+
+BLOCKING
+- None
+
+WARNING
+- src/strategic/FGame.cpp:591 - Fleet located-object reference m_destination is NOT validated by FF-1 and reaches an unguarded NULL dereference in FGame::moveFleets(): m_universe->getSystem(fleets[i]->getDestination())->addFleet(f).
+  HIGH impact, same crash class FF-1 targets, just via a different field and a different reachable path. A fleet serializes THREE located-object references -- m_location, m_destination, m_jumpRouteID (confirmed by the fleet field order documented in the new test and include/strategic/FFleet.h) -- but FF-1's load-time validation loop (src/strategic/FGame.cpp:730-743) checks only m_location and m_jumpRouteID. A crafted save with an in-transit fleet whose m_destination is a non-sentinel (!= NO_DESTINATION) out-of-range system ID is accepted at load. On the next turn advancement (processEndTurn -> endUPFTurn/endSatharTurn -> moveFleets, FGame.cpp:541/546), for an in-transit fleet that clears the line-580 sentinel guard and the line-583 jump-route lookup (which FF-1 guarantees resolves), line 587-588 conditions are attacker-controllable via serialized m_transitTime/m_jumpLength, and line 591 dereferences getSystem(destination)->addFleet(f) with getSystem() == NULL -> crash (memory-safety / DoS). The gui dialog paths that also read m_destination (FGame::handleMapClick:458-463, SystemDialogGUI.cpp:230-266, ViewFleetGUI.cpp:34) each null-guard the getSystem() result, so they are safe; moveFleets():591 is the unguarded sink. This is a PRE-EXISTING latent defect (moveFleets was not modified by FF-1) that is OUTSIDE FF-1's plan-declared allowed files/scope, so it does not invalidate the delivered change -- but it means the plan's broader 'reject out-of-range located-object IDs at load' trust-boundary claim is not yet complete. Recommended remediation (follow-up subtask): extend the identical load-time validation to m_destination with a NO_DESTINATION sentinel exemption, exactly mirroring the m_jumpRouteID / NO_ROUTE pattern already present.
+- src/strategic/FGame.cpp:590 - The location==0 sentinel exemption combined with an in-transit flag is an illegal state FF-1 does not reject, reaching an unguarded getSystem(0)->removeFleet(...) NULL dereference in moveFleets().
+  MEDIUM-to-HIGH impact companion to the destination finding, in the same moveFleets() code region. FF-1 (correctly and necessarily) exempts m_location == 0 as the documented 'not yet in a system' sentinel. FSystem IDs are assigned as m_ID = ++m_nextID starting from m_nextID = 0 (src/strategic/FSystem.cpp:15,19,35), so ID 0 is never a real system and FMap::getSystem(0) always returns NULL. A legitimate fleet is never simultaneously in-transit AND location 0, but a crafted save can set m_inTransit = true with m_location = 0 (exempt), m_jumpRouteID = a valid route, m_destination = a valid system. Such a fleet passes FF-1 validation, then in moveFleets() line 590 executes m_universe->getSystem(fleets[i]->getLocation())->removeFleet(...) with getLocation()==0 -> getSystem(0)==NULL -> crash. Same untrusted-save trust boundary, same turn-advancement reachability as the destination finding. Remediation: reject the in-transit + location-0 inconsistency at load (or null-guard the moveFleets getSystem() results). Pre-existing and outside FF-1's declared scope.
+
+NOTE
+- src/strategic/FGame.cpp:729-750 - The abort path's memory safety depends on the validation loop (730-743) running BEFORE the system-wiring loop (745-750); this ordering must be preserved by future edits.
+  The abort branches do `delete p` on the freshly-allocated, not-yet-owned FPlayer. This is safe precisely because (a) p has not yet been pushed onto m_players (push_back is at line 751, after all validation), so there is no double-free or dangling entry in m_players, and (b) validation runs before any of p's fleets are added to an FSystem's fleet list, so deleting p (whose destructor deletes its owned fleets) leaves no dangling FSystem->fleet pointers. If a future change reorders wiring before validation, `delete p` on abort would leave dangling fleet pointers inside FSystem fleet lists (use-after-free on a later draw/turn). Documenting the ordering as a load-safety invariant. No action required for FF-1 as delivered.
+
+Test sufficiency assessment:
+- Adequate for the FF-1 change as scoped. tests/strategic/FGameSaveFormatTest.cpp adds three behavioral (not source-inspection) cases that construct a real save byte-stream, corrupt a specific fleet field, and assert observed runtime FGame::load() behavior against a mock IStrategicUI: (1) out-of-range m_location -> load returns nonzero, exactly one showMessage, zero players committed; (2) out-of-range m_jumpRouteID -> same; (3) sentinel location 0 + NO_ROUTE -> load succeeds with zero messages (guards against a false-positive that would reject legitimate unplaced/idle fleets). These directly exercise the reject-at-load behavior and the exactly-once / no-partial-state guarantees.
+- Gap (matches the WARNING findings): there is no test asserting rejection of an out-of-range m_destination, because FF-1 does not implement that rejection. This is not an overclaim by the tests (none assert destination coverage), but the trust boundary is not fully covered. A remediation cycle adding destination validation should add a behavioral test that a crafted out-of-range m_destination is rejected at load AND (ideally) a behavioral test that loading + advancing a turn on such a save does not crash.
+- Build/run confirmation performed this session: `make` in tests/ built cleanly; SSWTests ran with the three FGameSaveFormat cases passing (zero FGameSaveFormat failures). The 9 reported failures are all FGameHeaderDependencyTest source-inspection cases failing on 'Expected at least one candidate file path to be readable' -- an environmental CWD issue (they read relative paths ../../include/... / ../include/... that only resolve when CWD is tests/); unrelated to FF-1's save/load logic and not a regression introduced by this change.
+
+Documentation / operational guidance assessment:
+- Adequate for the delivered scope. include/strategic/FGame.h Doxygen and the src/strategic/FGame.cpp inline comment accurately and specifically describe the validation: location must resolve via FMap::getSystem(id) unless it is the 0 sentinel; jump-route ID must resolve via FMap::getJumpRoute(id) unless it is FFleet::NO_ROUTE; first unresolved reference aborts like a truncated/corrupt read. The AGENTS.md addendum records the load-time rejection of out-of-range fleet located-object references.
+- Documentation caveat (aligned with the WARNING findings): both the code comment and the AGENTS.md note frame the change as validating a fleet's 'located-object reference IDs' generally, which could be read as covering all three references. Only location and jump-route are validated; m_destination is not. A follow-up should either close the destination gap or, until then, avoid implying full located-object-reference coverage. The plan itself (Section 4) is precise -- it enumerates only location and jump-route as IN scope -- so the plan is not overclaiming; the code/AGENTS wording is where the ambiguity sits.
+
+Artifacts written:
+- artifacts/save-load-robustness-followups/FF-1/security_report.md
+- artifacts/save-load-robustness-followups/FF-1/security_result.json
+
+Outcome:
+- CONDITIONAL PASS
