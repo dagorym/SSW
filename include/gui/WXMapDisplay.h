@@ -1,8 +1,9 @@
 /*
  * @file WXMapDisplay.h
  * @brief Header file for the WXMapDisplay class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Aug 2, 2009
+ * @date Last Modified: Jul 19, 2026
  */
 
 #ifndef WXMAPDISPALY_H_
@@ -32,15 +33,22 @@ public:
 	/**
 	 * @brief Draw the map
 	 *
-	 * This method draws the map on the display
+	 * This method draws the map on the display. It consults
+	 * @c FMap::hasMap() before touching the @c FMap singleton and returns
+	 * immediately (drawing nothing) when the map does not exist, so a
+	 * repaint reached while a game is unset or only partially loaded cannot
+	 * dereference a NULL/half-built @c FMap. This guard is independent of
+	 * (and in addition to) the @c FMainFrame::onOpen() call-site mitigation
+	 * that defers @c setGame(...) until a load succeeds.
 	 *
 	 * @param dc the Device Context to draw to
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Jan 17, 2005
-	 * @date Last Modified:  Aug 2, 2009
+	 * @date Last Modified: Jul 19, 2026
 	 *
 	 * Note:  Aug 2, 2009 - moved from FMap class here.
+	 * Note:  Jul 19, 2026 - added the FMap::hasMap() guard (SF-nullfmap-paint-guard).
 	 */
 	void draw(wxDC &dc/*, unsigned int id*/);
 
@@ -48,15 +56,18 @@ public:
 	 * @brief returns the scale for the current window dispaly
 	 *
 	 * This method determines the current scale based on the map size
-	 * and the size of the current window
+	 * and the size of the current window. When no @c FMap singleton exists
+	 * yet (@c FMap::hasMap() is false), this returns a safe default scale
+	 * of 1.0 instead of dereferencing the NULL/half-built map.
 	 *
 	 * @param dc The device context of the window.
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Feb 11, 2008
-	 * @date Last Modified:  Aug 2, 2009
+	 * @date Last Modified: Jul 19, 2026
 	 *
 	 * Note:  Aug 2, 2009 - moved from FMap class here.
+	 * Note:  Jul 19, 2026 - added the FMap::hasMap() guard (SF-nullfmap-paint-guard).
 	 */
 	const double getScale(wxDC &dc) const;
 

@@ -3,7 +3,7 @@
  * @brief Header file for FMap class
  * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 15, 2005
- * @date Last Modified: Jul 17, 2026
+ * @date Last Modified: Jul 19, 2026
  *
  */
 
@@ -101,6 +101,24 @@ public:
 	 * @date Last Modified:  May 30, 2008
 	 */
 	static FMap & getMap();
+
+	/**
+	 * @brief Test whether the FMap singleton currently exists
+	 *
+	 * This method safely tests whether the private static @c m_map instance
+	 * has been created (via @c create(...)) and not yet destroyed, without
+	 * dereferencing it. Callers that only hold a possibly-unset/half-built
+	 * game (for example a gui draw path reached before or during a load)
+	 * should consult this predicate before calling @c getMap(), since
+	 * @c getMap() returns a null reference when @c m_map is NULL.
+	 *
+	 * @return true if the map singleton exists, false otherwise
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 19, 2026
+	 * @date Last Modified: Jul 19, 2026
+	 */
+	static bool hasMap();
 
 	/**
 	 * @brief Get a pointer to a star system

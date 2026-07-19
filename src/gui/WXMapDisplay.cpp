@@ -1,8 +1,9 @@
 /*
  * @file WXMapDisplay.cpp
  * @brief Implementation file for the WXMapDisplay class
- * @author Tom Stephens
+ * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Aug 2, 2009
+ * @date Last Modified: Jul 19, 2026
  */
 
 #include "gui/WXMapDisplay.h"
@@ -22,6 +23,18 @@ WXMapDisplay::~WXMapDisplay() {
 }
 
 void WXMapDisplay::draw(wxDC &dc/*, unsigned int id*/) {
+	// Root-cause guard (SF-nullfmap-paint-guard): the FMap singleton can be
+	// NULL/half-built while a FGamePanel is shown before or during an
+	// unloaded/partially-loaded game. Test existence before touching the
+	// singleton at all -- FMap::getMap() would otherwise return a null
+	// reference and any subsequent member call (e.g. getMaxSize()) would
+	// dereference this=0x0. Skip the map draw entirely in that case; this
+	// is defense-in-depth independent of the FMainFrame::onOpen()
+	// setGame-deferral mitigation, which remains in place.
+	if (!FMap::hasMap()) {
+		return;
+	}
+
 	double scale = getScale(dc);
 	FMap &map = FMap::getMap();
 
@@ -77,6 +90,13 @@ void WXMapDisplay::draw(wxDC &dc/*, unsigned int id*/) {
 }
 
 const double WXMapDisplay::getScale(wxDC &dc) const {
+	// Same root-cause guard as draw(): return a safe default scale instead
+	// of dereferencing FMap::getMap()'s null reference when the singleton
+	// does not exist yet.
+	if (!FMap::hasMap()) {
+		return 1.0;
+	}
+
 	FMap &map = FMap::getMap();
 	wxCoord w, h;
 	dc.GetSize(&w, &h);

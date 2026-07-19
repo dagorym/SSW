@@ -3,7 +3,7 @@
  * @brief Implementation file for FMap class
  * @author Tom Stephens, Claude Sonnet 5 (medium)
  * @date Created:  Jan 17, 2005
- * @date Last Modified: Jul 17, 2026
+ * @date Last Modified: Jul 19, 2026
  *
  */
 
@@ -31,6 +31,10 @@ FMap & FMap::create(){
 
 FMap & FMap::getMap(){
 	return *m_map;
+}
+
+bool FMap::hasMap(){
+	return m_map != NULL;
 }
 
 FMap::FMap(bool random, std::vector<unsigned int> pList){

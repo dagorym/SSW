@@ -62,34 +62,3 @@ caller and no way to exercise it end-to-end.
 **Target phase:** Tactical save/load, gated behind `FTacticalGame`
 decomposition/serialization (roadmap `doc/synthesized-roadmap.md` §6.2 item 12).
 
----
-
-## SF-nullfmap-paint-guard — GUI paint path lacks a NULL-`FMap` guard
-
-**Description:** The GUI paint path `FGamePanel::onPaint()` ->
-`WXGameDisplay::draw()` -> `WXMapDisplay::getScale()` -> `FMap::getMaxSize()`
-has no guard against a NULL or partially-built `FMap` singleton. P5-5 pass 2
-mitigated the one reachable trigger inside `FMainFrame::onOpen()` by deferring
-`m_drawingPanel->setGame(m_game)` until after `FGame::load()` succeeds (see
-`src/FMainFrame.cpp`), so a failed/corrupt load can no longer deliver a
-spontaneous repaint of a `FGamePanel` associated with a game whose `FMap` was
-never assigned. That is a call-site mitigation, not the root-cause fix: it
-only prevents `onOpen()`'s own load-error nested modal loop from reaching the
-unguarded paint path. It does not add a NULL-`FMap` guard to the paint path
-itself, so any other path that could show a live `FGamePanel` backed by a
-NULL or partially-built `FMap` remains unguarded and can still crash.
-
-**Origin:** Surfaced by the P5-5 Security review (pass 1, Finding #2) during
-save-format hardening; the in-scope mitigation (setGame deferral) was
-implemented and verified in P5-5 pass 2.
-
-**Why deferred:** The canonical fix -- a NULL-`FMap` guard in the gui draw
-path (`FGamePanel::onPaint()` / `WXGameDisplay::draw()` /
-`WXMapDisplay::getScale()`) -- lives in the gui module, outside P5-5's
-allowed files, and is a root-cause hardening change rather than a
-load-error-UX behavior belonging to the save-format hardening phase.
-
-**Target phase:** gui-module follow-up (add a NULL/invalid-`FMap` guard to
-`WXMapDisplay::getScale()` or an earlier point in the
-`FGamePanel`/`WXGameDisplay` draw chain, tolerant of a `FGamePanel` shown
-before or during an unloaded/partially-loaded game).
