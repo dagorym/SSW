@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups/FF-2/verifier_report.md",
+    "artifacts/save-load-robustness-followups/FF-2/verifier_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FF-2-verifier-20260719",
+  "documentation_accuracy_summary": [
+    "include/ships/FVehicle.h's Doxygen on load() (lines 156-172) accurately and completely documents the FF-2 return-checking discipline, the delete-just-allocated-weapon/defense-before-return ownership rule, reliance on the already-FR-1-hardened caller to delete the not-yet-committed vehicle on abort, and that the success/unknown-type-abort paths are unchanged. @author/@date Last Modified correctly updated.",
+    "tests/ships/FVehicleTest.h and tests/strategic/FGameSaveFormatTest.h carry complete, accurate per-function Doxygen for every new test method, correctly cross-referencing the FF-2/FF-3 propagation sites each test exercises.",
+    "AGENTS.md's save-format Contributor Notes paragraph and the Testing section's FGameSaveFormatTest bullet were extended concisely, accurately, and without duplicating the FVehicle.h/FVehicleTest.h/FGameSaveFormatTest.h Doxygen -- verified by direct diff read (AGENTS.md lines ~243 and ~404). doc/deferred-tasks.md correctly left unchanged per the plan.",
+    "Minor, non-blocking observation: the FVehicleTest class-level Doxygen block (tests/ships/FVehicleTest.h ~line 18-26) was not bumped to Jul 19, 2026 / did not add Claude Sonnet 5 (medium) to its @author list when the new test method was added to the class; the same pattern (class-level doc not bumped when a new member test is added, only the new function's own Doxygen block updated) is pre-existing and was already present -- and implicitly accepted -- across the prior FR-1/FR-2/FF-1 subtasks in this same plan sequence, so this is not treated as a new violation introduced by FF-2."
+  ],
+  "note_finding_count": 0,
+  "pass_label": "PASS",
+  "status": "complete",
+  "task_id": "save-load-robustness-followups/FF-2",
+  "test_sufficiency_summary": [
+    "Sufficient and behavioral, matching the repo's behavioral-test mandate. All four new tests construct a real save byte stream, truncate it at a precise, justified offset, call the real FGame::load()/FVehicle::load() path, and assert observed runtime outcomes (return code, IStrategicUI::showMessage() call count, committed-player/live-singleton state, non-dangling getCurrentDefense()) rather than source-text shape.",
+    "tests/ships/FVehicleTest.cpp::testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion (unit-level) truncates strictly inside FVehicle::load()'s own scalar region (after m_ID/m_name, before m_iconName) and asserts rc != 0 plus a non-dangling, correctly-typed getCurrentDefense() -- proving leak/dangle safety on the abort path.",
+    "tests/strategic/FGameSaveFormatTest.cpp adds three full-game tests, each truncating 2 of a target ship's 4 m_ID bytes (type tag fully present, so the pre-existing createShip()==NULL guard cannot be what fires) in, respectively, a deliberately single-ship fleet (isolates the fix from the createShip()==NULL guard and exercises both FFleet::load()'s ship loop and FPlayer::load()'s fleet loop), FPlayer::m_unattached, and FPlayer::m_destroyed. Each asserts rc != 0, exactly one showMessage() call, and zero players committed to the live FGame singleton -- covering all four FR-1 propagation sites named in the plan's Tester guidance.",
+    "Independently re-confirmed the behavioral-test mandate myself: reverted src/ships/FVehicle.cpp to its pre-FF-2 state (da076ba2^), rebuilt, and observed all four new tests fail (the other 9 failures observed in that run were pre-existing FGameHeaderDependencyTest cwd-relative source-path lookups, an artifact of running the binary via absolute path rather than `cd tests`, unrelated to FF-2 and not present when run correctly). Restored the fix via `git checkout -- src/ships/FVehicle.cpp`, rebuilt, and re-ran the full make check: SSWTests OK (297 tests), TacticalTests OK (253 tests), GuiTests OK (85 tests), matching the reported final outcome exactly.",
+    "No production file outside src/ships/FVehicle.cpp and include/ships/FVehicle.h was touched by the Implementer; no production file was touched by the Tester -- confirmed via diff inspection."
+  ],
+  "verdict": "PASS",
+  "warning_finding_count": 1
+}
