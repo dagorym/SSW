@@ -1,0 +1,25 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups-2/FF2-2/security_report.md",
+    "artifacts/save-load-robustness-followups-2/FF2-2/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FF2-2-security-20260719",
+  "documentation_sufficiency_summary": [
+    "Sufficient. include/strategic/FPlanet.h Doxygen for load() accurately documents the per-read checking, the createShip() NULL-check, the nested load() check, and the FSystem::load()/FMap::load()/FGame::load() propagation-and-cleanup chain, with author/date updated per project convention.",
+    "AGENTS.md contributor and testing notes describe the FF2-2 (FR-C) fix and its coverage consistently with the code, including the full-game vs unit-level test-placement rationale.",
+    "The inline code comments correctly state the ownership/cleanup reasoning on both abort paths."
+  ],
+  "note_finding_count": 2,
+  "outcome": "PASS",
+  "pass_label": "pass-1",
+  "status": "complete",
+  "task_id": "FF2-2 (FR-C)",
+  "test_sufficiency_summary": [
+    "Sufficient and behavioral. FPlanetTest adds 8 tests exercising FPlanet::load() directly against real saved bytes: nonzero return on truncated m_ID, m_name, stationCount, and station type-tag reads; unknown station type returns nonzero AND asserts getStation()==NULL with no NULL virtual-call crash (the fix-discriminating memory-safety case); truncated nested station record returns nonzero (fails on unfixed code, passes on fix); and two positive controls (planet with a FortifiedStation, and planet with no station) that assert return 0 and preserved data.",
+    "FGameSaveFormatTest adds a full-game aggregate-abort test (unknown station type on Madderly's Star's Fortress Kdikit): asserts FGame::load() returns nonzero, exactly one IStrategicUI::showMessage() call, and zero players committed to the live singleton, proving propagation through FMap/FSystem before any player loads.",
+    "The tester's documented decision to cover the truncated-station-record scenario only at the FPlanet unit level (because at full-game level FSystem/FMap upstream reads already abort the shortened stream on unfixed code and would not discriminate the fix) is sound and correctly reasoned.",
+    "Built SSWTests in the worktree and ran it: the 8 FPlanetTest cases and the new FGameSaveFormatTest case pass. The 9 reported suite failures are all pre-existing FGameHeaderDependencyTest source-file-path lookups (unrelated to FF2-2; they fail only because the binary was run outside the repo-root cwd), not FPlanet/save-format regressions."
+  ],
+  "warning_finding_count": 0
+}
