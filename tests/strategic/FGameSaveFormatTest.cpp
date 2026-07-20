@@ -694,4 +694,173 @@ void FGameSaveFormatTest::testLoadTruncatedInsideDestroyedShipScalarRegionReturn
 	delete &g;
 }
 
+void FGameSaveFormatTest::testLoadFleetWithOutOfRangeDestinationIdReturnsNonzeroAndReportsExactlyOnce(){
+	std::string bytes = buildValidSaveBytes();
+
+	// Locate UPF's "Task Force Prenglar" fleet by its own length-prefixed
+	// name field, using the same lookup pattern as the sibling FF-1
+	// location/jump-route tests above. This fleet is placed in the Prenglar
+	// system, so its m_location field resolves and is left untouched.
+	std::string fleetNameTag;
+	fleetNameTag.push_back(static_cast<char>(19));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag += "Task Force Prenglar";
+	size_t fleetNamePos = bytes.find(fleetNameTag);
+	CPPUNIT_ASSERT(fleetNamePos != std::string::npos);
+
+	// FFleet::save() field order after the name: m_owner (4), m_location
+	// (4), m_inTransit (1), m_destination (4) -- the field under test here.
+	size_t ownerPos = fleetNamePos + fleetNameTag.size();
+	size_t locationPos = ownerPos + 4;
+	size_t inTransitPos = locationPos + 4;
+	size_t destinationPos = inTransitPos + 1;
+	CPPUNIT_ASSERT(destinationPos + 4 <= bytes.size());
+
+	// Sanity: a freshly init()'d, placed, non-transiting fleet's
+	// m_destination is the FFleet::NO_DESTINATION sentinel (all bits set)
+	// before we clobber it below.
+	const unsigned char *raw = reinterpret_cast<const unsigned char *>(bytes.data());
+	uint32_t originalDestination = static_cast<uint32_t>(raw[destinationPos])
+			| (static_cast<uint32_t>(raw[destinationPos + 1]) << 8)
+			| (static_cast<uint32_t>(raw[destinationPos + 2]) << 16)
+			| (static_cast<uint32_t>(raw[destinationPos + 3]) << 24);
+	CPPUNIT_ASSERT_EQUAL(FFleet::NO_DESTINATION, originalDestination);
+
+	// Mark the fleet in-transit (matching the acceptance-criteria scenario
+	// of an in-transit fleet carrying a bad destination) -- the FR-A check
+	// itself does not depend on getInTransit(), but setting it here proves
+	// the rejection also covers the described in-transit case, and the
+	// fleet's location stays nonzero/resolvable so the FR-B check does not
+	// also fire.
+	bytes[inTransitPos] = static_cast<char>(1);
+
+	// Overwrite the 4-byte m_destination field with a little-endian encoding
+	// of 0x0000BEEF: neither FFleet::NO_DESTINATION (0xFFFFFFFF, the "no
+	// destination set" sentinel) nor any real loaded system ID (the loaded
+	// universe has only a small, low-numbered set of systems).
+	bytes[destinationPos] = static_cast<char>(0xEF);
+	bytes[destinationPos + 1] = static_cast<char>(0xBE);
+	bytes[destinationPos + 2] = static_cast<char>(0x00);
+	bytes[destinationPos + 3] = static_cast<char>(0x00);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(bytes);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// UPF owns this fleet and is the first player processed, so the FR-A
+	// check aborts before any player is committed.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadFleetWithInTransitAndZeroLocationReturnsNonzeroAndReportsExactlyOnce(){
+	std::string bytes = buildValidSaveBytes();
+
+	// Locate the same placed fleet as the sibling tests above; this time its
+	// m_destination field is left untouched (at the FFleet::NO_DESTINATION
+	// sentinel, so the FR-A check passes) and only m_location and
+	// m_inTransit are corrupted to form the illegal FR-B combination.
+	std::string fleetNameTag;
+	fleetNameTag.push_back(static_cast<char>(19));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag.push_back(static_cast<char>(0));
+	fleetNameTag += "Task Force Prenglar";
+	size_t fleetNamePos = bytes.find(fleetNameTag);
+	CPPUNIT_ASSERT(fleetNamePos != std::string::npos);
+
+	size_t ownerPos = fleetNamePos + fleetNameTag.size();
+	size_t locationPos = ownerPos + 4;
+	size_t inTransitPos = locationPos + 4;
+	CPPUNIT_ASSERT(inTransitPos + 1 <= bytes.size());
+
+	// Sanity: this placed fleet's m_location is a real, nonzero system ID
+	// and it is not in transit before we clobber both fields below.
+	const unsigned char *raw = reinterpret_cast<const unsigned char *>(bytes.data());
+	uint32_t originalLocation = static_cast<uint32_t>(raw[locationPos])
+			| (static_cast<uint32_t>(raw[locationPos + 1]) << 8)
+			| (static_cast<uint32_t>(raw[locationPos + 2]) << 16)
+			| (static_cast<uint32_t>(raw[locationPos + 3]) << 24);
+	CPPUNIT_ASSERT(originalLocation != 0);
+	CPPUNIT_ASSERT_EQUAL(static_cast<char>(0), bytes[inTransitPos]);
+
+	// Zero out m_location (the "not yet in a system" sentinel, which is only
+	// legal for a fleet that is NOT in transit) and set m_inTransit to true,
+	// forming the illegal state FR-B rejects.
+	bytes[locationPos] = static_cast<char>(0);
+	bytes[locationPos + 1] = static_cast<char>(0);
+	bytes[locationPos + 2] = static_cast<char>(0);
+	bytes[locationPos + 3] = static_cast<char>(0);
+	bytes[inTransitPos] = static_cast<char>(1);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(bytes);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// UPF owns this fleet and is the first player processed, so the FR-B
+	// check aborts before any player is committed.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadValidInTransitFleetWithResolvableDestinationSucceeds(){
+	// Build a real game and add a fleet whose in-model FFleet::setLocation(...)
+	// call drives a genuine in-transit state: getInTransit()==true, a
+	// nonzero origin location, and a destination that resolves to a
+	// different real, loaded FSystem. This is the legitimate counterpart to
+	// the two corrupt-save tests above and must load unchanged.
+	RecordingUI buildUi;
+	FGame &buildGame = FGame::create(&buildUi);
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.init(NULL));
+	FPlayer *upf = buildGame.getPlayer(1);
+	CPPUNIT_ASSERT(upf != NULL);
+	FFleet *existing = upf->getFleet("Task Force Prenglar");
+	CPPUNIT_ASSERT(existing != NULL);
+	FSystem *origin = FMap::getMap().getSystem(existing->getLocation());
+	CPPUNIT_ASSERT(origin != NULL);
+
+	// Pick any other loaded system as the destination.
+	FSystem *destination = NULL;
+	const SystemList &systems = FMap::getMap().getSystemList();
+	for (SystemList::const_iterator it = systems.begin(); it != systems.end(); it++){
+		if ((*it)->getID() != origin->getID()){
+			destination = *it;
+			break;
+		}
+	}
+	CPPUNIT_ASSERT(destination != NULL);
+
+	FFleet *transiting = new FFleet;
+	transiting->setName("FF2-1 In-Transit Positive Control");
+	transiting->setOwner(upf->getID());
+	transiting->setLocation(origin, true, 4, destination->getID(), 1, FFleet::NO_ROUTE);
+	upf->addFleet(transiting);
+	origin->addFleet(transiting);
+	CPPUNIT_ASSERT(transiting->getInTransit());
+	CPPUNIT_ASSERT(transiting->getLocation() != 0);
+	CPPUNIT_ASSERT_EQUAL(destination->getID(), transiting->getDestination());
+
+	std::ostringstream os;
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.save(os));
+	std::string bytes = os.str();
+	delete &buildGame;
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(bytes);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT_EQUAL(0, rc);
+	CPPUNIT_ASSERT_EQUAL(0, ui.showMessageCalls);
+	delete &g;
+}
+
 }

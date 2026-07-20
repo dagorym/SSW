@@ -18,7 +18,13 @@
  * strictly inside a single vehicle's own scalar region -- deeper than the
  * type tag consumed by the container's factory call -- must still make
  * FGame::load() return nonzero, whether that vehicle sits in a fleet, in a
- * player's m_unattached list, or in a player's m_destroyed list.
+ * player's m_unattached list, or in a player's m_destroyed list. Also covers
+ * FF2-1 (FR-A/FR-B): a fleet whose serialized destination (system) ID does
+ * not resolve against the already-loaded FMap (and is not the
+ * FFleet::NO_DESTINATION sentinel) must abort the load, and a fleet whose
+ * serialized state is the illegal combination of getInTransit()==true with
+ * location 0 must also abort the load, while a real in-transit fleet with a
+ * resolvable destination continues to load cleanly.
  *
  * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
@@ -45,7 +51,10 @@ using namespace Frontier;
  * (SF-vehicle-scalar-region / SF-container-propagation): a stream truncated
  * strictly inside a single vehicle's own scalar region must abort the load
  * regardless of which of the three ship containers (fleet, m_unattached,
- * m_destroyed) holds that vehicle.
+ * m_destroyed) holds that vehicle. Also covers FF2-1 (FR-A/FR-B): an
+ * out-of-range fleet destination ID and the illegal in-transit/location-0
+ * state both abort the load, while a real in-transit fleet with a
+ * resolvable destination still loads cleanly.
  *
  * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
@@ -67,6 +76,9 @@ class FGameSaveFormatTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testLoadTruncatedInsideFleetShipScalarRegionReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadTruncatedInsideUnattachedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadTruncatedInsideDestroyedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadFleetWithOutOfRangeDestinationIdReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadFleetWithInTransitAndZeroLocationReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadValidInTransitFleetWithResolvableDestinationSucceeds );
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -177,6 +189,33 @@ public:
 	/// singleton. Exercises FPlayer::load()'s m_destroyed loop propagating
 	/// FVehicle::load()'s nonzero return.
 	void testLoadTruncatedInsideDestroyedShipScalarRegionReturnsNonzeroAndReportsExactlyOnce();
+
+	/// FF2-1 (FR-A): a fleet whose serialized destination (system) ID is not
+	/// the FFleet::NO_DESTINATION sentinel but does not resolve against the
+	/// already-loaded FMap must abort the load: load() returns nonzero,
+	/// reports exactly once via the installed IStrategicUI, and no player is
+	/// committed to the live FGame singleton. The fleet's m_inTransit byte is
+	/// also set so the corrupted fleet matches the acceptance-criteria
+	/// scenario of an in-transit fleet with a bad destination, while its
+	/// location field is left resolvable so only the FR-A check fires.
+	void testLoadFleetWithOutOfRangeDestinationIdReturnsNonzeroAndReportsExactlyOnce();
+
+	/// FF2-1 (FR-B): a fleet whose serialized state combines
+	/// getInTransit()==true with location 0 is an illegal state (an
+	/// in-transit fleet must have a real origin system) and must abort the
+	/// load: load() returns nonzero, reports exactly once via the installed
+	/// IStrategicUI, and no player is committed to the live FGame singleton.
+	/// The fleet's destination field is left at the FFleet::NO_DESTINATION
+	/// sentinel so only the FR-B check fires.
+	void testLoadFleetWithInTransitAndZeroLocationReturnsNonzeroAndReportsExactlyOnce();
+
+	/// Positive control for FF2-1: a fleet built via the normal in-model
+	/// FFleet::setLocation(...) API with getInTransit()==true, a nonzero
+	/// origin location, and a destination that resolves to a real,
+	/// different loaded FSystem must still load cleanly -- load() returns 0
+	/// and no error is reported -- proving the FR-A/FR-B checks do not
+	/// falsely reject a legitimate in-transit fleet.
+	void testLoadValidInTransitFleetWithResolvableDestinationSucceeds();
 };
 
 }
