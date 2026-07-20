@@ -26,6 +26,20 @@
  * location 0 must also abort the load, while a real in-transit fleet with a
  * resolvable destination continues to load cleanly.
  *
+ * Also covers FF2-2 (FR-C) at the full-game aggregate level for the
+ * unknown/corrupt station-type path: a save whose planet carries an
+ * unknown station type tag must abort the load via FPlanet::load()'s
+ * createShip()==NULL guard -- exercised through FMap::load()'s nested
+ * FSystem::load()/FPlanet::load() chain, which runs before any player is
+ * loaded, so no player is ever committed to the live FGame singleton
+ * (previously a NULL virtual-call crash). The complementary
+ * truncated-station-record FR-C scenario is covered as a fix-discriminating
+ * behavioral test at the unit level in FPlanetTest, not here: at the
+ * full-game level a stream truncated inside a station record already aborts
+ * on the pre-FR-C code because FSystem::load()/FMap::load()'s own checked
+ * reads hit the shortened stream upstream, so a full-game truncated test
+ * cannot distinguish the FPlanet::load() fix from the unfixed code.
+ *
  * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
  * @date Last Modified: Jul 19, 2026
@@ -54,7 +68,13 @@ using namespace Frontier;
  * m_destroyed) holds that vehicle. Also covers FF2-1 (FR-A/FR-B): an
  * out-of-range fleet destination ID and the illegal in-transit/location-0
  * state both abort the load, while a real in-transit fleet with a
- * resolvable destination still loads cleanly.
+ * resolvable destination still loads cleanly. Also covers FF2-2 (FR-C) at the
+ * full-game level for the unknown/corrupt station-type path: a save whose
+ * planet carries an unknown station type tag must abort the load via
+ * FPlanet::load()'s createShip()==NULL guard (previously a NULL virtual-call
+ * crash). The truncated-station-record FR-C scenario is a unit-level
+ * discriminator in FPlanetTest (see the class doc above for why it is not a
+ * full-game test).
  *
  * @author Claude Sonnet 5 (medium), Claude Opus 4.8 (1M context) (medium)
  * @date Created: Jul 17, 2026
@@ -79,6 +99,7 @@ class FGameSaveFormatTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testLoadFleetWithOutOfRangeDestinationIdReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadFleetWithInTransitAndZeroLocationReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadValidInTransitFleetWithResolvableDestinationSucceeds );
+	CPPUNIT_TEST( testLoadPlanetWithUnknownStationTypeReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -216,6 +237,17 @@ public:
 	/// and no error is reported -- proving the FR-A/FR-B checks do not
 	/// falsely reject a legitimate in-transit fleet.
 	void testLoadValidInTransitFleetWithResolvableDestinationSucceeds();
+
+	/// FF2-2 (FR-C): a save whose planet's station carries an
+	/// unknown/corrupt station type tag must abort the load: load() returns
+	/// nonzero, reports exactly once via the installed IStrategicUI, and no
+	/// player is committed to the live FGame singleton. Exercises
+	/// FMap::load()'s nested FSystem::load()/FPlanet::load() chain (which
+	/// runs before any player is loaded) propagating FPlanet::load()'s
+	/// createShip()==NULL abort through FSystem::load()'s pre-existing
+	/// `if (p->load(is) != 0)` check. Previously this scenario triggered a
+	/// NULL virtual-call crash instead of a clean abort.
+	void testLoadPlanetWithUnknownStationTypeReturnsNonzeroAndReportsExactlyOnce();
 };
 
 }

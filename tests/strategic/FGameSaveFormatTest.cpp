@@ -863,4 +863,62 @@ void FGameSaveFormatTest::testLoadValidInTransitFleetWithResolvableDestinationSu
 	delete &g;
 }
 
+void FGameSaveFormatTest::testLoadPlanetWithUnknownStationTypeReturnsNonzeroAndReportsExactlyOnce(){
+	std::string bytes = buildValidSaveBytes();
+
+	// FGame::addStations() (FGame.cpp) names the Fortress placed on
+	// Madderly's Star's planet Kdikit "Fortress Kdikit" -- a globally
+	// unique ship name in a freshly init()'d game's save (the other three
+	// Fortresses are named Redoubt/Gollwin/Pale). FVehicle::save() writes
+	// m_type first (writeString), then a fixed-width 4-byte m_ID
+	// (writeU32), then m_name -- so locating this station's own name tag
+	// lets us walk back to the preceding type-tag field, which is exactly
+	// the field FPlanet::load()'s readString(is,type) reads before calling
+	// createShip(type).
+	std::string nameTag = lengthPrefixedTag("Fortress Kdikit");
+	size_t namePos = bytes.find(nameTag);
+	CPPUNIT_ASSERT(namePos != std::string::npos);
+	CPPUNIT_ASSERT(namePos >= 4);
+	size_t idFieldStart = namePos - 4;
+
+	std::string typeTag = lengthPrefixedTag("Fortress");
+	CPPUNIT_ASSERT(idFieldStart >= typeTag.size());
+	size_t typeTagPos = idFieldStart - typeTag.size();
+	CPPUNIT_ASSERT(bytes.compare(typeTagPos, typeTag.size(), typeTag) == 0);
+
+	// Overwrite just the 8 type-name bytes (leaving the 4-byte length
+	// prefix untouched) with a same-length string createShip() does not
+	// recognize, so FPlanet::load()'s `m_station = createShip(type)` comes
+	// back NULL.
+	const std::string bogusType = "NotAShip";
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(8), bogusType.size());
+	bytes.replace(typeTagPos + 4, bogusType.size(), bogusType);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(bytes);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// FMap::load() (nested FSystem::load()/FPlanet::load()) runs before any
+	// player is loaded in FGame::load(), so the abort fires before any
+	// player is pushed onto m_players.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
+// NOTE (FF2-2/FR-C, tester finding): a full-game "truncated strictly inside a
+// planet's station record" test is intentionally NOT included here because it
+// cannot behaviorally discriminate the FPlanet::load() fix from the unfixed
+// code -- both make FGame::load() return nonzero. On the unfixed code
+// FPlanet::load() swallows the truncated station's nested load failure and
+// returns 0, but the shortened stream is then caught by FSystem::load()'s and
+// FMap::load()'s own already-checked reads upstream, so the aggregate load
+// aborts nonzero regardless. The fix-discriminating truncated-station-record
+// coverage therefore lives at the unit level in
+// FPlanetTest::testLoadReturnsNonzeroOnTruncatedStationRecord, which calls
+// FPlanet::load() in isolation and fails (return 0) on the unfixed code while
+// passing (return nonzero) on the fix.
+
 }
