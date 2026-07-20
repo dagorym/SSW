@@ -1,0 +1,63 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- FF2-1 (reviewer follow-ups FR-A/FR-B): validate that FGame::load() rejects two previously-unguarded corrupt-save fleet states at load time -- (FR-A) an out-of-range non-NO_DESTINATION fleet destination (system) ID, and (FR-B) the illegal getInTransit()==true with location 0 combination -- both of which previously reached unguarded FMap::getSystem(...) NULL dereferences inside FGame::moveFleets() on the next turn advancement.
+
+Acceptance criteria to verify:
+- A save whose in-transit fleet carries an out-of-range non-sentinel m_destination makes FGame::load() return nonzero, report via the installed IStrategicUI exactly once, and commit no live game singleton -- verified by testLoadFleetWithOutOfRangeDestinationIdReturnsNonzeroAndReportsExactlyOnce.
+- A save whose fleet has m_inTransit==true and m_location==0 makes FGame::load() return nonzero, report exactly once, and commit no live singleton -- verified by testLoadFleetWithInTransitAndZeroLocationReturnsNonzeroAndReportsExactlyOnce.
+- A valid save (destination resolves or is NO_DESTINATION; no in-transit fleet has location 0; FF-1 references still resolve) loads unchanged -- verified by testLoadValidInTransitFleetWithResolvableDestinationSucceeds plus the pre-existing sentinel/round-trip tests.
+- No gui files modified; moveFleets() unmodified -- confirmed via diff scope across the Implementer and Tester commits, and the Documenter introduced no gui or moveFleets() change either.
+- Doxygen updated on FGame::load() and the in-code FF-1 comment tightened to enumerate location, jump-route, and destination -- confirmed accurate by the Documenter against the actual diff; the AGENTS.md save-format contributor paragraph was already extended accurately by the Implementer, and the Documenter added the corresponding Testing-section test-name mention.
+- make check green: SSWTests OK (300), TacticalTests OK (253), GuiTests OK (85) -- per the Tester's confirmed result, unaffected by this documentation-only change.
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/phase5-FF2-1-documenter-20260719
+- Branch: phase5-FF2-1-documenter-20260719
+- Implementer commit: 5b8ac381 (FF2-1: reject out-of-range fleet destination and illegal in-transit/location-0 state at load); base plan commit 0f6a5bd2.
+- Tester test commit: f44ac0c1.
+- Documenter commit: 6214a17b (AGENTS.md Testing-section sentence only).
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FGame.cpp (Implementer: FR-A/FR-B checks in FGame::load()'s per-fleet validation loop; in-code FF-1/FF2-1 comment tightened to enumerate location, jump-route, and destination)
+- include/strategic/FGame.h (Implementer: FGame::load() Doxygen block updated to describe destination validation and the illegal in-transit/location-0 rejection)
+- AGENTS.md (Implementer: save-format contributor paragraph extended with the tightened wording plus the FF2-1/FR-B illegal-state rejection sentence; Documenter: added a Testing-section sentence naming the three new FGameSaveFormatTest tests)
+- tests/strategic/FGameSaveFormatTest.h (Tester: three new test declarations + comment updates for FF2-1 FR-A/FR-B)
+- tests/strategic/FGameSaveFormatTest.cpp (Tester: three new behavioral test bodies -- two negative tests confirmed to fail against unfixed code and pass with the fix, one positive control)
+
+Commands executed:
+- git -C <worktree> log --oneline -8
+- git -C <worktree> diff --stat 0f6a5bd2 f44ac0c1
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input artifacts/save-load-robustness-followups-2/FF2-1/documenter_prompt.txt --repo-root <worktree>
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root <worktree> --base 0f6a5bd2 --head f44ac0c1
+- git -C <worktree> diff 0f6a5bd2 f44ac0c1 -- AGENTS.md include/strategic/FGame.h src/strategic/FGame.cpp tests/strategic/FGameSaveFormatTest.h tests/strategic/FGameSaveFormatTest.cpp
+- grep -n WXMapDisplay|WXPlayerDisplay|WXGameDisplay src/strategic/FGame.cpp (confirmed zero matches, constraint preserved)
+- git -C <worktree> add AGENTS.md
+- git -C <worktree> commit -F <scratchpad>/ff2-1-doc-commit-msg.txt
+
+Final test outcomes:
+- Documentation-only change (single sentence added to AGENTS.md's Testing section); no source, header, or test file was modified, so the Tester's confirmed make check result stands unchanged: SSWTests OK (300), TacticalTests OK (253), GuiTests OK (85), all green per the Tester handoff.
+- Re-verified by direct diff inspection (not re-run) that the Implementer's FGame.h Doxygen and src/strategic/FGame.cpp in-code FF-1/FF2-1 comment already accurately enumerate location, jump-route, and destination validation plus the FR-B illegal in-transit/location-0 rejection -- no correction was needed there.
+
+Plan or evaluation context guidance:
+- Plan: plans/save-load-robustness-followups-2-plan.md, subtask FF2-1 (FR-A + FR-B). Section 5's FF2-1 subtask entry defines the allowed files (src/strategic/FGame.cpp, include/strategic/FGame.h, include/strategic/FFleet.h if needed), the two required checks, the FF-1 wording-tightening requirement, and the Documentation Impact note (Doxygen bump + AGENTS.md save-format paragraph update; explicitly no doc/deferred-tasks.md change and no doc/UsersGuide.md change beyond existing corrupt-save coverage) -- all of which the Implementer and Documenter satisfied.
+- Design decision D1 (RESOLVED, recorded in the plan): reject at load time; FGame::moveFleets() is intentionally left un-null-guarded and was not modified by any role in this subtask.
+
+Convention-file guidance:
+- AGENTS.md's Testing section documents each tests/<module>/* suite; the FGameSaveFormatTest bullet is the canonical location for naming new behavioral test cases in that file, matching the style already used for the FF-2/FF-3 sentence in the same bullet.
+- Constraint preserved: no literal WXMapDisplay/WXPlayerDisplay/WXGameDisplay substring appears anywhere in src/strategic/FGame.cpp (confirmed via grep); those names appear only in include/strategic/FGame.h's Doxygen and in AGENTS.md's prose, which are outside the FGameHeaderDependencyTest source-contract scope.
+- Repository Doxygen convention (author/date fields) was already correctly applied by the Implementer to the touched FGame::load() declaration; no further in-code documentation change was needed.
+
+Updated documentation files:
+- AGENTS.md (Testing section's FGameSaveFormatTest bullet: added a sentence naming the FF2-1 FR-A/FR-B tests, alongside the already-accurate Implementer edit to the save-format contributor paragraph, which required no further change)
+
+Shared artifact directory:
+- artifacts/save-load-robustness-followups-2/FF2-1
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
