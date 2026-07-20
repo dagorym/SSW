@@ -921,4 +921,120 @@ void FGameSaveFormatTest::testLoadPlanetWithUnknownStationTypeReturnsNonzeroAndR
 // FPlanet::load() in isolation and fails (return 0) on the unfixed code while
 // passing (return nonzero) on the fix.
 
+void FGameSaveFormatTest::testLoadTruncatedInsidePlayerOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce(){
+	// FGame::getPlayers() always creates UPF first with the literal name
+	// "UPF" (FGame.cpp), so its length-prefixed name tag is unique in a
+	// freshly init()'d game's save (map data preceding it has no bare "UPF"
+	// length-3 string). FPlayer::save() writes m_ID (4 bytes) immediately
+	// before m_name, so the 4 bytes preceding this tag are UPF's own m_ID
+	// field.
+	std::string bytes = buildValidSaveBytes();
+
+	std::string nameTag = lengthPrefixedTag("UPF");
+	size_t namePos = bytes.find(nameTag);
+	CPPUNIT_ASSERT(namePos != std::string::npos);
+	CPPUNIT_ASSERT(namePos >= 4);
+	size_t idFieldStart = namePos - 4;
+
+	// Truncate so m_ID's 4 bytes are fully present but only 2 of the 4
+	// bytes making up m_name's own length prefix survive: FPlayer::load()'s
+	// own readString(is,m_name) call fails immediately below the ID field,
+	// strictly inside the player's own scalar region (before any
+	// unattached ship, fleet, or destroyed-ship sub-object is ever
+	// allocated).
+	std::string truncated = bytes.substr(0, idFieldStart + 4 + 2);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(truncated);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// UPF is the first player FGame::load() processes, so the abort fires
+	// before any player (UPF or Sathar) is pushed onto m_players.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
+void FGameSaveFormatTest::testLoadTruncatedInsideFleetOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce(){
+	// This test's truncation target is UPF's LAST fleet in m_fleets (looked
+	// up dynamically via getFleetList().back() rather than hardcoding a
+	// specific fleet name), and the truncation point within that fleet's
+	// own record is chosen deliberately -- NOT the earliest possible field
+	// -- for two independent fix-discrimination reasons (see the tester
+	// finding NOTE below testLoadPlanetWithUnknownStationTypeReturnsNonzero...
+	// for the established precedent on this class of pitfall):
+	//
+	// 1) On the pre-FF2-3 code, FFleet::load() unconditionally assigns
+	//    m_location/m_destination/m_jumpRouteID from a local variable even
+	//    when the read that was meant to populate it failed (the local
+	//    stays at its zero-initialized default). A truncation point at or
+	//    before m_destination/m_jumpRouteID would make those fields come
+	//    back as 0 instead of the FFleet::NO_DESTINATION/FFleet::NO_ROUTE
+	//    sentinel, which FF-1's own already-checked destination/jump-route
+	//    validation in FGame::load() (added before FF2-3) would then
+	//    independently reject -- passing the test on the unfixed code for
+	//    the wrong reason. Truncating strictly *after* m_destination and
+	//    m_jumpRouteID are both fully and correctly read -- partway into
+	//    the unvalidated m_iconFile field instead -- avoids that trap.
+	// 2) On the pre-FF2-3 code, truncating inside a fleet that is NOT the
+	//    last one in the player's list leaves every *subsequent* fleet's
+	//    load() call running against an already-exhausted stream, which
+	//    hits the exact same unconditional-assign landmine on THEIR OWN
+	//    m_destination/m_jumpRouteID fields (both come back as 0) --
+	//    independently tripping FF-1's validation regardless of which
+	//    field inside the FIRST fleet was truncated. Targeting the LAST
+	//    fleet in the list sidesteps this: there is no subsequent
+	//    same-player fleet left to cascade-corrupt.
+	RecordingUI buildUi;
+	FGame &buildGame = FGame::create(&buildUi);
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.init(NULL));
+	FPlayer *upf = buildGame.getPlayer(1);
+	CPPUNIT_ASSERT(upf != NULL);
+	FleetList &upfFleets = upf->getFleetList();
+	CPPUNIT_ASSERT(!upfFleets.empty());
+	std::string lastFleetName = upfFleets.back()->getName();
+
+	std::ostringstream os;
+	CPPUNIT_ASSERT_EQUAL(0, buildGame.save(os));
+	std::string bytes = os.str();
+	delete &buildGame;
+
+	std::string nameTag = lengthPrefixedTag(lastFleetName);
+	size_t namePos = bytes.find(nameTag);
+	CPPUNIT_ASSERT(namePos != std::string::npos);
+	CPPUNIT_ASSERT(namePos >= 4);
+
+	// FFleet::save() field order after the name: m_owner, m_location,
+	// m_inTransit, m_destination, m_transitTime, m_jumpLength, m_speed,
+	// m_jumpRouteID -- all fully present -- then m_iconFile, which is
+	// where this truncation lands (only 2 of its own 4 length-prefix
+	// bytes survive).
+	size_t ownScalarFieldsAfterName =
+		4 +  // m_owner
+		4 +  // m_location
+		1 +  // m_inTransit
+		4 +  // m_destination
+		4 +  // m_transitTime
+		4 +  // m_jumpLength
+		4 +  // m_speed
+		4;   // m_jumpRouteID
+	size_t iconFileFieldStart = namePos + nameTag.size() + ownScalarFieldsAfterName;
+	std::string truncated = bytes.substr(0, iconFileFieldStart + 2);
+
+	RecordingUI ui;
+	FGame &g = FGame::create(&ui);
+	std::istringstream is(truncated);
+	int rc = g.load(is);
+
+	CPPUNIT_ASSERT(rc != 0);
+	CPPUNIT_ASSERT_EQUAL(1, ui.showMessageCalls);
+	// UPF's fleet loop (inside FPlayer::load()) runs before UPF itself is
+	// pushed onto m_players, and UPF is the first player processed, so the
+	// abort fires before any player is committed.
+	CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), g.getPlayers().size());
+	delete &g;
+}
+
 }

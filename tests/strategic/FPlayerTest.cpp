@@ -365,4 +365,56 @@ void FPlayerTest::testLoadReturnsNonzeroOnUnknownDestroyedShipType(){
 	CPPUNIT_ASSERT( rc != 0 );
 }
 
+void FPlayerTest::testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion(){
+	// AC (FF2-3 / FR-D): m_ID and m_name are fully present, but the stream
+	// stops before m_iconName's own length-prefixed record can be read.
+	// Before FF2-3, every scalar read below this point (m_iconName plus the
+	// unattached/fleet/destroyed counts) had its return value discarded, so
+	// this exact truncation point returned 0 despite never reaching a valid
+	// end of the player's own record.
+	std::stringstream stream;
+	writeU32(stream, (uint32_t)42);                 // m_ID: fully present
+	writeString(stream, "Truncated Mid-Record Player"); // m_name: fully present
+	// Deliberately stop here: no m_iconName, no unattached/fleet/destroyed
+	// counts at all.
+
+	FPlayer p2;
+	int rc = p2.load(stream);
+
+	CPPUNIT_ASSERT( rc != 0 );
+	// Leak/dangle safety: the abort happens before any sub-object is
+	// allocated, so every list must remain empty and the player must remain
+	// safe to query and destruct.
+	CPPUNIT_ASSERT( p2.getShipList().empty() );
+	CPPUNIT_ASSERT( p2.getFleetList().empty() );
+}
+
+void FPlayerTest::testLoadReturnsNonzeroWhenTruncatedInsideCountFields(){
+	// AC (FF2-3 / FR-D): m_ID, m_name, and m_iconName are all fully present
+	// and readable, but the fleet-count (fSize) field is truncated mid-way
+	// through its own 4 bytes -- after the unattached-ship-count (uSize=0)
+	// field has already been read successfully. This isolates the
+	// return-check on a *later* container-level scalar read rather than the
+	// very first one. Before FF2-3, fSize's discarded read left the local
+	// counter at its zero-initialized default, the fleet loop silently ran
+	// zero iterations, the destroyed-count read failed the same way, and
+	// load() returned 0.
+	std::stringstream stream;
+	writeU32(stream, (uint32_t)43);
+	writeString(stream, "Truncated Fleet-Count Player");
+	writeString(stream, "icons/UPF.png");
+	writeU32(stream, (uint32_t)0); // unattached ship count: fully present
+
+	// Write only 2 of the 4 bytes that make up fSize.
+	unsigned char partialCount[2] = {0x07, 0x00};
+	stream.write(reinterpret_cast<const char*>(partialCount), 2);
+
+	FPlayer p2;
+	int rc = p2.load(stream);
+
+	CPPUNIT_ASSERT( rc != 0 );
+	CPPUNIT_ASSERT( p2.getShipList().empty() );
+	CPPUNIT_ASSERT( p2.getFleetList().empty() );
+}
+
 }

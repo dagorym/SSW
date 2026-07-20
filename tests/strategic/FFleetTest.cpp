@@ -391,4 +391,68 @@ void FFleetTest::testLoadReturnsNonzeroOnUnknownShipType(){
 	CPPUNIT_ASSERT( rc != 0 );
 }
 
+void FFleetTest::testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion(){
+	// AC (FF2-3 / FR-D): m_ID and m_name are fully present, but the stream
+	// stops before m_owner can be read. Before FF2-3, every scalar read
+	// below this point (owner, location, in-transit, destination, transit
+	// time, jump length, speed, jump-route ID, icon file, militia flag,
+	// home, holding flag, position/delta components, and the ship count)
+	// had its return value discarded, so this exact truncation point
+	// returned 0 despite never reaching a valid end of the fleet's own
+	// record.
+	std::stringstream stream;
+	writeU32(stream, (uint32_t)77);                 // m_ID: fully present
+	writeString(stream, "Truncated Mid-Record Fleet"); // m_name: fully present
+	// Deliberately stop here: no owner, no further scalar fields, and no
+	// ship count at all.
+
+	FFleet f2;
+	int rc = f2.load(stream);
+
+	CPPUNIT_ASSERT( rc != 0 );
+	// Leak/dangle safety: the abort happens before the ship loop is ever
+	// reached, so no ship was allocated and the fleet remains safe to query
+	// and destruct.
+	CPPUNIT_ASSERT( f2.getShipCount() == 0 );
+}
+
+void FFleetTest::testLoadReturnsNonzeroWhenTruncatedInsideShipCountField(){
+	// AC (FF2-3 / FR-D): every own-scalar field through m_dy is fully
+	// present and readable, but the ship-count (sCount) field is truncated
+	// mid-way through its own 4 bytes. This isolates the return-check on
+	// the *last* container-level scalar read rather than the first one.
+	// Before FF2-3, sCount's discarded read left the local counter at its
+	// zero-initialized default, the ship loop silently ran zero iterations,
+	// and load() returned 0.
+	std::stringstream stream;
+	writeU32(stream, (uint32_t)78); // id
+	writeString(stream, "Truncated Ship-Count Fleet");
+	writeU32(stream, (uint32_t)0); // owner
+	writeU32(stream, (uint32_t)0); // location
+	write(stream, false); // inTransit
+	writeU32(stream, (uint32_t)FFleet::NO_DESTINATION); // destination
+	write(stream, (unsigned int)0); // transitTime
+	write(stream, (unsigned int)0); // jumpLength
+	write(stream, (unsigned int)0); // speed
+	writeU32(stream, (uint32_t)FFleet::NO_ROUTE); // jumpRouteID
+	writeString(stream, ""); // iconFile
+	write(stream, false); // isMilitia
+	writeString(stream, ""); // home
+	write(stream, false); // isHolding
+	write(stream, (float)0); // pos[0]
+	write(stream, (float)0); // pos[1]
+	write(stream, (float)0); // dx
+	write(stream, (float)0); // dy
+
+	// Write only 2 of the 4 bytes that make up sCount.
+	unsigned char partialCount[2] = {0x03, 0x00};
+	stream.write(reinterpret_cast<const char*>(partialCount), 2);
+
+	FFleet f2;
+	int rc = f2.load(stream);
+
+	CPPUNIT_ASSERT( rc != 0 );
+	CPPUNIT_ASSERT( f2.getShipCount() == 0 );
+}
+
 }

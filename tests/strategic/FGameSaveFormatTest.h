@@ -100,6 +100,8 @@ class FGameSaveFormatTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST( testLoadFleetWithInTransitAndZeroLocationReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST( testLoadValidInTransitFleetWithResolvableDestinationSucceeds );
 	CPPUNIT_TEST( testLoadPlanetWithUnknownStationTypeReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadTruncatedInsidePlayerOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce );
+	CPPUNIT_TEST( testLoadTruncatedInsideFleetOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce );
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -248,6 +250,28 @@ public:
 	/// `if (p->load(is) != 0)` check. Previously this scenario triggered a
 	/// NULL virtual-call crash instead of a clean abort.
 	void testLoadPlanetWithUnknownStationTypeReturnsNonzeroAndReportsExactlyOnce();
+
+	/// FF2-3 (FR-D): a save truncated strictly inside UPF's (the first
+	/// player processed) own scalar region -- after its m_ID is fully
+	/// present, but partway through its m_name's own length-prefixed
+	/// record -- must make FGame::load() return nonzero and report exactly
+	/// once via the mock IStrategicUI, with no player ever committed to
+	/// m_players. Before FF2-3, every one of FPlayer::load()'s own scalar
+	/// reads below m_ID had its return value discarded, so this truncation
+	/// point returned 0: two "successful" phantom players (both with
+	/// default/empty state) were silently pushed onto the live singleton.
+	void testLoadTruncatedInsidePlayerOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce();
+
+	/// FF2-3 (FR-D): a save truncated strictly inside UPF's first fleet's
+	/// ("Task Force Prenglar") own scalar region -- after the fleet's m_ID
+	/// is fully present, but partway through its m_owner field -- must make
+	/// FGame::load() return nonzero and report exactly once, with no player
+	/// ever committed to m_players. Before FF2-3, every one of
+	/// FFleet::load()'s own scalar reads below m_ID had its return value
+	/// discarded, so this truncation point returned 0 for every remaining
+	/// fleet in UPF's list (each with default/empty state), and the
+	/// resulting phantom player was silently committed.
+	void testLoadTruncatedInsideFleetOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce();
 };
 
 }

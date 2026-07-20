@@ -48,6 +48,8 @@ class FFleetTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST( testSerializeRoundTripsMultipleShipsAndFleetState );
 	CPPUNIT_TEST( testLoadAdvancesNextIDPastLoadedID );
 	CPPUNIT_TEST( testLoadReturnsNonzeroOnUnknownShipType );
+	CPPUNIT_TEST( testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion );
+	CPPUNIT_TEST( testLoadReturnsNonzeroWhenTruncatedInsideShipCountField );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -122,6 +124,39 @@ public:
 	 * @date Last Modified: Jul 17, 2026
 	 */
 	void testLoadReturnsNonzeroOnUnknownShipType();
+
+	/**
+	 * @brief FF2-3 (FR-D): a stream truncated strictly inside
+	 * FFleet::load()'s own scalar region -- after m_ID and m_name are
+	 * fully present, but before the m_owner field can be read -- must make
+	 * load() return nonzero instead of silently continuing with whatever
+	 * default-constructed values the remaining 16 own-scalar fields and the
+	 * ship count already held. Before FF2-3, every one of those reads'
+	 * return values was discarded, so this exact truncation point returned
+	 * 0. Also asserts no ship was allocated (the abort happens before the
+	 * ship loop is ever reached), so the fleet remains safe to query and
+	 * destruct after a failed load().
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 19, 2026
+	 * @date Last Modified: Jul 19, 2026
+	 */
+	void testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion();
+
+	/**
+	 * @brief FF2-3 (FR-D): exercises the return-check on the last
+	 * container-level scalar read specifically -- every field up through
+	 * m_dy is fully present and readable, but the ship-count (sCount) field
+	 * is truncated mid-way through its own 4 bytes. Before FF2-3, sCount's
+	 * discarded read left the local counter at its zero-initialized
+	 * default, so the ship loop silently ran zero iterations and load()
+	 * returned 0.
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 19, 2026
+	 * @date Last Modified: Jul 19, 2026
+	 */
+	void testLoadReturnsNonzeroWhenTruncatedInsideShipCountField();
 };
 
 }

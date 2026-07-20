@@ -48,6 +48,8 @@ class FPlayerTest : public CppUnit::TestFixture, public Frontier::FPObject{
 	CPPUNIT_TEST( testLoadAdvancesNextIDPastLoadedID );
 	CPPUNIT_TEST( testLoadReturnsNonzeroOnUnknownUnattachedShipType );
 	CPPUNIT_TEST( testLoadReturnsNonzeroOnUnknownDestroyedShipType );
+	CPPUNIT_TEST( testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion );
+	CPPUNIT_TEST( testLoadReturnsNonzeroWhenTruncatedInsideCountFields );
 	CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -131,6 +133,41 @@ public:
 	 * @date Last Modified: Jul 17, 2026
 	 */
 	void testLoadReturnsNonzeroOnUnknownDestroyedShipType();
+
+	/**
+	 * @brief FF2-3 (FR-D): a stream truncated strictly inside
+	 * FPlayer::load()'s own scalar region -- after m_ID and m_name are
+	 * fully present, but before m_iconName's own length-prefixed record can
+	 * be read -- must make load() return nonzero instead of silently
+	 * continuing with whatever default-constructed values the untouched
+	 * fields (m_iconName and the unattached/fleet/destroyed counts) already
+	 * held. Before FF2-3, every one of those reads' return values was
+	 * discarded, so this exact truncation point returned 0. Also asserts
+	 * that no sub-object list was populated (the abort happens before any
+	 * ship/fleet is allocated), so the player remains safe to query and
+	 * destruct after a failed load().
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 19, 2026
+	 * @date Last Modified: Jul 19, 2026
+	 */
+	void testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion();
+
+	/**
+	 * @brief FF2-3 (FR-D): exercises the return-checks on the later
+	 * container-level scalar reads specifically -- m_ID, m_name, and
+	 * m_iconName are all fully present and readable, but the fleet-count
+	 * (fSize) field is truncated mid-way through its own 4 bytes. Before
+	 * FF2-3, this truncation point also returned 0 (fSize's discarded read
+	 * left the local counter at its zero-initialized default, so the fleet
+	 * loop silently ran zero iterations and the destroyed-count read failed
+	 * the same way).
+	 *
+	 * @author Claude Sonnet 5 (medium)
+	 * @date Created: Jul 19, 2026
+	 * @date Last Modified: Jul 19, 2026
+	 */
+	void testLoadReturnsNonzeroWhenTruncatedInsideCountFields();
 };
 
 }
