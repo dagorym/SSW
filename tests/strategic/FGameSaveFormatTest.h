@@ -262,15 +262,20 @@ public:
 	/// default/empty state) were silently pushed onto the live singleton.
 	void testLoadTruncatedInsidePlayerOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce();
 
-	/// FF2-3 (FR-D): a save truncated strictly inside UPF's first fleet's
-	/// ("Task Force Prenglar") own scalar region -- after the fleet's m_ID
-	/// is fully present, but partway through its m_owner field -- must make
+	/// FF2-3 (FR-D): a save truncated strictly inside UPF's *last* fleet's
+	/// own scalar region -- the fleet is looked up dynamically via
+	/// getFleetList().back() rather than by a hardcoded name -- after the
+	/// fleet's m_owner through m_jumpRouteID fields are all fully and
+	/// correctly read, but partway through its m_iconFile field -- must make
 	/// FGame::load() return nonzero and report exactly once, with no player
-	/// ever committed to m_players. Before FF2-3, every one of
-	/// FFleet::load()'s own scalar reads below m_ID had its return value
-	/// discarded, so this truncation point returned 0 for every remaining
-	/// fleet in UPF's list (each with default/empty state), and the
-	/// resulting phantom player was silently committed.
+	/// ever committed to m_players. The last fleet and the post-m_jumpRouteID
+	/// truncation point are chosen deliberately so the test discriminates the
+	/// FF2-3 fix rather than tripping FF-1's pre-existing destination/
+	/// jump-route validation for the wrong reason (the test body documents
+	/// the two fix-discrimination pitfalls this avoids). Before FF2-3, every
+	/// one of FFleet::load()'s own scalar reads below m_ID had its return
+	/// value discarded, so this truncation point returned 0 and the resulting
+	/// phantom player was silently committed.
 	void testLoadTruncatedInsideFleetOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce();
 };
 
