@@ -1,0 +1,27 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups-2/FF2-1/security_report.md",
+    "artifacts/save-load-robustness-followups-2/FF2-1/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FF2-1-security-20260719",
+  "documentation_sufficiency_summary": [
+    "Sufficient. include/strategic/FGame.h Doxygen for load() updated to describe destination-ID validation and the illegal in-transit/location-0 rejection, and to name both sinks (WXPlayerDisplay::drawFleets() and FGame::moveFleets()).",
+    "src/strategic/FGame.cpp inline comments in the validation loop clearly attribute FR-A/FR-B, explain the sentinels (NO_DESTINATION=0xFFFFFFFF, NO_ROUTE, location-0), the moveFleets() sinks, and the unconditional nature of the FR-B rejection.",
+    "AGENTS.md updated with the FF2-1 rejection contract and test coverage note, extending the FF-1 documentation."
+  ],
+  "note_finding_count": 2,
+  "outcome": "PASS",
+  "pass_label": "FF2-1 security review",
+  "status": "complete",
+  "task_id": "FF2-1",
+  "test_sufficiency_summary": [
+    "Sufficient. Three behavioral tests added to tests/strategic/FGameSaveFormatTest.cpp, all registered via CPPUNIT_TEST and passing (full SSWTests suite: OK, 300 tests, run from tests/ dir).",
+    "FR-A negative (testLoadFleetWithOutOfRangeDestinationIdReturnsNonzeroAndReportsExactlyOnce): patches a real save's fleet destination field to 0x0000BEEF (non-sentinel, non-resolvable) with inTransit set, asserts load() returns nonzero, exactly one IStrategicUI::showMessage, and zero players committed.",
+    "FR-B negative (testLoadFleetWithInTransitAndZeroLocationReturnsNonzeroAndReportsExactlyOnce): patches location=0 + inTransit=1 (destination left at NO_DESTINATION so only FR-B fires), asserts nonzero return, one message, zero players.",
+    "Positive control (testLoadValidInTransitFleetWithResolvableDestinationSucceeds): builds a genuine in-transit fleet via FFleet::setLocation(...) with a nonzero origin and a resolvable, different destination system, round-trips through save/load, asserts rc==0 and zero messages -- proving the FR-A/FR-B checks do not falsely reject legitimate in-transit saves.",
+    "All three construct real objects/save bytes, execute FGame::load(), and assert on observed runtime outcomes (return code, message count, committed-player count) -- genuine behavioral coverage, not source-inspection.",
+    "Reject-at-load is the correct behavioral target under design decision D1; the moveFleets() crash itself is no longer reachable through the public load path once load rejects, so it is not separately drivable (which is the intended effect)."
+  ],
+  "warning_finding_count": 0
+}
