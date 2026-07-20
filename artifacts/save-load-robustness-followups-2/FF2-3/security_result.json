@@ -1,0 +1,23 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups-2/FF2-3/security_report.md",
+    "artifacts/save-load-robustness-followups-2/FF2-3/security_result.json"
+  ],
+  "blocking_finding_count": 0,
+  "branch_name": "phase5-FF2-3-security-20260719",
+  "documentation_sufficiency_summary": [
+    "Sufficient. In-code Doxygen/rationale comments in both loaders explain the FR-D return-check intent and its FF-2 lineage, and the pre-existing FR-1 nested-load cleanup comments correctly remain. include/strategic/FPlayer.h and FFleet.h Doxygen and the AGENTS.md contributor/testing notes were updated to describe the extended aggregate-abort guarantee. No operational/rollout guidance gaps: this is a hardening change to an existing untrusted-input path with no new config, defaults, or external surface."
+  ],
+  "note_finding_count": 2,
+  "outcome": "PASS",
+  "pass_label": "pass-1",
+  "status": "complete",
+  "task_id": "FF2-3",
+  "test_sufficiency_summary": [
+    "Sufficient and behavioral. FPlayerTest and FFleetTest each add two truncation tests that construct a real stream, truncate it strictly inside the loader's own scalar region (first field boundary and last count field mid-4-bytes), call the real load(), and assert nonzero return plus empty containers (no partial commit / no leak) -- these fail on the pre-FF2-3 code (which returned 0) and pass on the fix.",
+    "FGameSaveFormatTest adds two end-to-end aggregate-path tests driving FGame::load() over a real save truncated inside a player's own scalar region and inside a fleet's own scalar region, asserting nonzero return, exactly one IStrategicUI::showMessage call (single report), and zero committed players (no live half-built singleton). The fleet test deliberately targets the last fleet and truncates after m_destination/m_jumpRouteID to avoid passing for the wrong reason via FF-1's independent ID validation -- a correct fix-discrimination design.",
+    "Ran SSWTests in the foreground: Run 315, Failures 9, Errors 0. All 9 failures are the pre-existing FGameHeaderDependencyTest source-inspection fixture ('Expected at least one candidate file path to be readable'), which is not part of the FF2-3 diff and is unrelated to the FPlayer/FFleet loaders; every FF2-3 behavioral fixture passes.",
+    "Success path unchanged: the existing valid multi-player / multi-fleet round-trip, H3 next-ID advance, and H4 no-normalization tests continue to pass; no false rejection observed."
+  ],
+  "warning_finding_count": 0
+}
