@@ -1,0 +1,70 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- FF2-3 (reviewer follow-up FR-D): extend the save-load aggregate-abort guarantee to the container-level scalar reads in FPlayer::load() and FFleet::load(), mirroring FF-2's per-read return-checking pattern already applied to FVehicle::load(). Every own scalar read in both loaders is now wrapped in an explicit return-check; existing createShip()==NULL and nested v->load()/f->load() checks/cleanup, the H3 next-ID advance, and the H4 no-normalization behavior are unchanged.
+
+Acceptance criteria to verify:
+- Every container-level scalar read in FPlayer::load() and FFleet::load() now has its return checked; a nonzero read aborts nonzero.
+- Truncation strictly inside a player's own scalar region, and strictly inside a fleet's own scalar region, each make FGame::load() return nonzero, report exactly once via the mock IStrategicUI, and commit no live singleton.
+- The success path and all existing FF-1/FF-2 nested-load and createShip()==NULL aborts are unchanged; no leak/dangle/double-free.
+- Doxygen updated on FPlayer::load() and FFleet::load() (Implementer-owned; confirmed present in b2891996 diff -- FF2-3/FR-D block added to both function-header doc comments).
+- make check green: SSWTests 315 / TacticalTests 253 / GuiTests 85 (Implementer/Tester-reported; Verifier should re-confirm on the combined tree).
+- AGENTS.md's save-format Contributor Notes paragraph and Testing section strategic-tests bullet now record the FF2-3/FR-D closure and its 6 new tests (documentation-only; this pass).
+
+Implementation branch or worktree context:
+- Implementer commit b2891996 (base e2ee606c) -- src/strategic/FPlayer.cpp, include/strategic/FPlayer.h, src/strategic/FFleet.cpp, include/strategic/FFleet.h.
+- Tester commit 87abcd7f -- tests/strategic/FPlayerTest.{h,cpp}, tests/strategic/FFleetTest.{h,cpp}, tests/strategic/FGameSaveFormatTest.{h,cpp} (6 new behavioral tests: 4 unit-level, 2 full-game).
+- Documenter commit 79fd2544ace6724a4053f59bb414ce6472f373c0 -- AGENTS.md only.
+- Worktree/branch: phase5-FF2-3-documenter-20260719.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FPlayer.cpp
+- include/strategic/FPlayer.h
+- src/strategic/FFleet.cpp
+- include/strategic/FFleet.h
+- tests/strategic/FPlayerTest.cpp
+- tests/strategic/FPlayerTest.h
+- tests/strategic/FFleetTest.cpp
+- tests/strategic/FFleetTest.h
+- tests/strategic/FGameSaveFormatTest.cpp
+- tests/strategic/FGameSaveFormatTest.h
+- AGENTS.md
+
+Commands executed:
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input <task> --repo-root .
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --repo-root . --base e2ee606c --head 87abcd7f
+- git diff e2ee606c..b2891996 -- src/strategic/FPlayer.cpp include/strategic/FPlayer.h src/strategic/FFleet.cpp include/strategic/FFleet.h
+- git diff e2ee606c..87abcd7f -- tests/strategic/FPlayerTest.h tests/strategic/FFleetTest.h tests/strategic/FGameSaveFormatTest.h tests/strategic/FGameSaveFormatTest.cpp
+- grep -n "include/core/FSaveFormat.h.*is the core-pure home" -A 40 AGENTS.md
+- grep -n "FGameSaveFormatTest" AGENTS.md
+- grep -rn "WXMapDisplay|WXPlayerDisplay|WXGameDisplay" src/strategic include/strategic
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --repo-root . --phase docs --artifact-dir artifacts/save-load-robustness-followups-2/FF2-3
+- git add AGENTS.md
+- git commit -F <doc commit message file>
+
+Final test outcomes:
+- No build or test suite was run by the Documenter -- this pass was documentation-only (AGENTS.md text edits, no product/test code changed). The Implementer and Tester reports (artifacts/save-load-robustness-followups-2/FF2-3/implementer_report.md, tester_report.md) already record a green make check (SSWTests 315 / TacticalTests 253 / GuiTests 85) for the b2891996/87abcd7f state that this documentation now describes; the Verifier is expected to re-confirm make check on the combined tree including the AGENTS.md-only documentation commit.
+
+Plan or evaluation context guidance:
+- plans/save-load-robustness-followups-2-plan.md, Section 5 subtask 'FF2-3 -- Extend aggregate-abort to container-scalar reads in FPlayer::load()/FFleet::load() (FR-D)' and Section 6 (Documentation Impact) describe the intended scope; used as a discovery hint only, reconciled against the actual b2891996/87abcd7f diff rather than treated as authoritative.
+- Comparison base: e2ee606c (pre-FF2-3) vs implementer commit b2891996 vs tester commit 87abcd7f.
+
+Convention-file guidance:
+- AGENTS.md Single-Source-of-Truth Rule: canonical facts belong in exactly one location; the save-format Contributor Notes paragraph is that single location for save/load hardening facts, so the FF2-3 addition was appended there rather than duplicated elsewhere.
+- AGENTS.md Function Comments convention (Doxygen mandatory, author/date fields append-only) governs the Implementer's FPlayer.h/FFleet.h doc-comment updates verified in this pass.
+- Constraint (task-specific): do not introduce literal WXMapDisplay/WXPlayerDisplay/WXGameDisplay substrings into any strategic source file -- verified clean (the one pre-existing WXPlayerDisplay mention in include/strategic/FGame.h predates this task and was not touched).
+- doc/rules/tactical_operations_manual.md must never be edited -- not touched.
+
+Updated documentation files:
+- AGENTS.md
+
+Shared artifact directory:
+- artifacts/save-load-robustness-followups-2/FF2-3
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
