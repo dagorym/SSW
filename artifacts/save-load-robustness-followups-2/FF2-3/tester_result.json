@@ -1,0 +1,33 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups-2/FF2-3/tester_report.md",
+    "artifacts/save-load-robustness-followups-2/FF2-3/tester_result.json",
+    "artifacts/save-load-robustness-followups-2/FF2-3/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-FF2-3-tester-20260719",
+  "commands_run": [
+    "make -C tests/strategic",
+    "make -C tests (full rebuild)",
+    "cd tests && ./SSWTests",
+    "make check (from repo root)",
+    "Fix-discrimination check: git show <parent-of-b2891996>:src/strategic/FPlayer.cpp and :src/strategic/FFleet.cpp copied over the fixed files, rebuilt, and reran ./SSWTests -- confirmed the 6 new truncation tests fail (assertion failed, rc != 0 not satisfied) against the unfixed code, then restored the fixed files (git status clean) and reran to confirm all 315 tests pass"
+  ],
+  "pass_fail_totals": {
+    "GuiTests": "85 run, 0 failures",
+    "SSWTests": "315 run, 0 failures (includes 6 new FF2-3 tests)",
+    "TacticalTests": "253 run, 0 failures"
+  },
+  "pass_label": "pass-1",
+  "status": "success",
+  "task_id": "FF2-3",
+  "test_commit_hash": "87abcd7f7befc74588fa25d5307cd1784c44ffa7",
+  "test_files_changed": [
+    "tests/strategic/FPlayerTest.h",
+    "tests/strategic/FPlayerTest.cpp",
+    "tests/strategic/FFleetTest.h",
+    "tests/strategic/FFleetTest.cpp",
+    "tests/strategic/FGameSaveFormatTest.h",
+    "tests/strategic/FGameSaveFormatTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}

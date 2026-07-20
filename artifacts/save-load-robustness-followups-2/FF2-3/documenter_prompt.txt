@@ -1,0 +1,70 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- Validate FR-D: extend the save-load aggregate-abort guarantee to the container-level scalar reads in FPlayer::load() (src/strategic/FPlayer.cpp) and FFleet::load() (src/strategic/FFleet.cpp), mirroring FF-2's per-read return-checking pattern already applied to FVehicle::load().
+
+Acceptance criteria validated:
+- Every container-level scalar read in FPlayer::load() and FFleet::load() has its return checked; a nonzero read aborts the respective loader with nonzero -- confirmed both by code inspection of the implementer's diff (every read wrapped in if(...){return 1;}) and by the direct-call unit tests above, which are fix-discriminating.
+- A save stream truncated strictly inside a player's own scalar region makes FGame::load() return nonzero, report via the mock IStrategicUI once, and commit no live singleton -- confirmed by testLoadTruncatedInsidePlayerOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce.
+- A save stream truncated strictly inside a fleet's own scalar region (not inside a ship record) makes FGame::load() return nonzero, report once, and commit no live singleton -- confirmed by testLoadTruncatedInsideFleetOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce.
+- The success path and all existing FF-1/FF-2 nested-load and createShip()==NULL aborts are unchanged; no leak/dangle/double-free -- confirmed by the full existing FPlayerTest/FFleetTest/FGameSaveFormatTest suites remaining green, plus the new tests' explicit post-abort emptiness assertions (getShipList()/getFleetList()/getShipCount() == 0/empty).
+- Doxygen updated on FPlayer::load() and FFleet::load() -- confirmed present in the implementer's commit (include/strategic/FPlayer.h, include/strategic/FFleet.h) via code inspection; no test-side action needed.
+- make check is green (SSWTests / TacticalTests / GuiTests) -- confirmed: 315 / 253 / 85 tests, 0 failures, 0 errors.
+
+Implementation branch or worktree context:
+- Branch: phase5-FF2-3-tester-20260719, worktree: /home/tstephen/repos/worktrees/phase5-FF2-3-tester-20260719
+- Implementer commit b2891996d4747eaf14564374602a2c1ecbcf7ca5: 'FF2-3 (FR-D): extend aggregate-abort to container-scalar reads in FPlayer/FFleet::load()'
+- Modified by Implementer: src/strategic/FPlayer.cpp, include/strategic/FPlayer.h, src/strategic/FFleet.cpp, include/strategic/FFleet.h
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FPlayer.cpp
+- include/strategic/FPlayer.h
+- src/strategic/FFleet.cpp
+- include/strategic/FFleet.h
+- tests/strategic/FPlayerTest.h
+- tests/strategic/FPlayerTest.cpp
+- tests/strategic/FFleetTest.h
+- tests/strategic/FFleetTest.cpp
+- tests/strategic/FGameSaveFormatTest.h
+- tests/strategic/FGameSaveFormatTest.cpp
+
+Test commit:
+- 87abcd7f7befc74588fa25d5307cd1784c44ffa7
+
+Commands executed:
+- make -C tests/strategic
+- make -C tests (full rebuild)
+- cd tests && ./SSWTests
+- make check (from repo root)
+- Fix-discrimination check: git show <parent-of-b2891996>:src/strategic/FPlayer.cpp and :src/strategic/FFleet.cpp copied over the fixed files, rebuilt, and reran ./SSWTests -- confirmed the 6 new truncation tests fail (assertion failed, rc != 0 not satisfied) against the unfixed code, then restored the fixed files (git status clean) and reran to confirm all 315 tests pass
+
+Final test outcomes:
+- make check is green: SSWTests OK (315 tests), TacticalTests OK (253 tests), GuiTests OK (85 tests)
+- FPlayerTest::testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion -- direct FPlayer::load() call on a stream truncated right after m_ID (before m_name's length prefix); asserts nonzero return and that no unattached/fleet lists were populated. Fails (returns 0) on pre-FF2-3 FPlayer.cpp; passes on the fix.
+- FPlayerTest::testLoadReturnsNonzeroWhenTruncatedInsideCountFields -- direct FPlayer::load() call truncated mid-way through the fleet-count (fSize) field, after m_ID/m_name/m_iconName/uSize are fully readable. Fails (returns 0) on pre-FF2-3 code; passes on the fix.
+- FFleetTest::testLoadReturnsNonzeroWhenTruncatedInsideOwnScalarRegion -- direct FFleet::load() call truncated right after m_ID/m_name (before m_owner). Fails (returns 0) on pre-FF2-3 code; passes on the fix.
+- FFleetTest::testLoadReturnsNonzeroWhenTruncatedInsideShipCountField -- direct FFleet::load() call truncated mid-way through the ship-count (sCount) field, after every other own-scalar field is fully readable. Fails (returns 0) on pre-FF2-3 code; passes on the fix.
+- FGameSaveFormatTest::testLoadTruncatedInsidePlayerOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce -- full-game truncation strictly inside UPF's (first-processed player) own m_name field; asserts FGame::load() returns nonzero, RecordingUI.showMessageCalls == 1, and getPlayers().size() == 0. Fails (returns 0, two phantom players silently committed) on pre-FF2-3 code; passes on the fix.
+- FGameSaveFormatTest::testLoadTruncatedInsideFleetOwnScalarRegionReturnsNonzeroAndReportsExactlyOnce -- full-game truncation strictly inside UPF's LAST fleet's own m_iconFile field (dynamically located via getFleetList().back()), truncated just past the fleet's own destination/jump-route fields to avoid two identified non-discriminating traps (cascading corruption of subsequent same-player fleets, and the pre-fix unconditional local-var-then-assign pattern on destination/jump-route tripping the pre-existing FF-1 validation for the wrong reason). Fails (returns 0) on pre-FF2-3 code; passes on the fix.
+- Existing FPlayerTest/FFleetTest/FGameSaveFormatTest suites (round trips, H3 next-ID advance, H4 no-normalization, unknown-ship-type aborts, FF-1/FF2-1/FF2-2 full-game aborts) remain green, confirming no regression to prior behavior.
+
+Documentation context:
+- AGENTS.md's 'include/core/FSaveFormat.h is the core-pure home...' paragraph already documents the phase5-save-format-hardening completion and the FR-1 (SF-nested-load-returns) fix for nested v->load()/f->load() return checks in FPlayer::load()/FFleet::load(); it does not yet mention that the container-level scalar reads owned directly by FPlayer::load()/FFleet::load() (ID, name, icon, counts for FPlayer; ID, name, owner, location, in-transit, destination, transit/jump/speed scalars, jump-route ID, icon, militia/home/holding flags, position/delta, and ship count for FFleet) are now also individually return-checked -- this FF2-3/FR-D closure is a natural addition to that same paragraph, alongside FR-1/FR-2's existing mentions.
+- This mirrors the FR-1 and FR-2 documentation pattern already present in AGENTS.md; the Documenter should extend that paragraph (not create a new one) to record the FF2-3/FR-D container-scalar-region closure, consistent with how FR-1's nested-load-return-check fix and FR-2's WXPlayerDisplay::drawFleets NULL-FMap guard were documented in-line.
+
+Plan and diff context:
+- Plan file: plans/save-load-robustness-followups-2-plan.md
+- Shared artifact directory for this subtask: artifacts/save-load-robustness-followups-2/FF2-3, already containing implementer_report.md, implementer_result.json, tester_prompt.txt from the Implementer stage
+- git diff base for the Implementer's change: commit b2891996 vs its parent e2ee606c ('FF2-2: Verifier artifacts -- PASS (FPlanet::load() FR-C hardening)')
+- Test commit b2891996..87abcd7f (test-only changes) sits on top of the Implementer's commit on this same tester worktree branch
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/save-load-robustness-followups-2/FF2-3
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
