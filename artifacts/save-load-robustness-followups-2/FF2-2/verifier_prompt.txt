@@ -1,0 +1,65 @@
+Your role is 'verifier'. Your task is as follows:
+
+Original task summary:
+- FF2-2 (reviewer follow-up FR-C): harden FPlanet::load() against a corrupt/malicious save. The Implementer added return-checking to every own read (m_ID, m_name, stationCount, station type tag), a NULL-check of createShip()'s result before the nested m_station->load(is), and a check of that nested return, replacing the previous unconditional return 0. The Tester authored behavioral coverage validating that hardening at both the FPlanet unit level (FPlanetTest) and the full-game FGame::load() aggregate-abort level (FGameSaveFormatTest).
+
+Acceptance criteria to verify:
+- FPlanet::load() returns nonzero on a failed own read (m_ID/m_name/stationCount/type); unknown station type (createShip()==NULL, no NULL virtual-call) returns nonzero and leaves m_station NULL; a failed nested m_station->load() returns nonzero.
+- A save whose planet carries an unknown/corrupt station type makes FGame::load() return nonzero, report via mock IStrategicUI exactly once, and commit no live singleton (previously a NULL virtual-call crash).
+- A valid save (planets with and without stations) loads unchanged.
+- Doxygen updated on FPlanet::load() (Implementer-owned; verified present).
+- make check green (SSWTests 309 / TacticalTests 253 / GuiTests 85).
+
+Implementation branch or worktree context:
+- Implementation commit: 7261e534 ('FF2-2: harden FPlanet::load() against corrupt/malicious save (FR-C)'), base 7261e534^.
+- Tester test commit: 20a3ebed.
+- Documenter worktree/branch: phase5-FF2-2-documenter-20260719; documentation commit b5481d2b3cd983883549fd478e2b3021385010bb.
+
+Files modified by the Implementer, Tester, and Documenter:
+- src/strategic/FPlanet.cpp (Implementer -- FR-C load() hardening)
+- include/strategic/FPlanet.h (Implementer -- Doxygen update on load())
+- tests/strategic/FPlanetTest.h (Tester -- 8 new unit tests)
+- tests/strategic/FPlanetTest.cpp (Tester -- 8 new unit tests + savePlanetBytes helper)
+- tests/strategic/FGameSaveFormatTest.h (Tester -- 1 new full-game test + FF2-2 doc)
+- tests/strategic/FGameSaveFormatTest.cpp (Tester -- 1 new full-game test + in-source NOTE on the omitted full-game truncated test)
+- AGENTS.md (Documenter -- Contributor Notes save-format paragraph and Testing section strategic-tests bullet updated for FF2-2/FR-C)
+
+Commands executed:
+- git diff 7261e534^ 7261e534 -- src/strategic/FPlanet.cpp include/strategic/FPlanet.h
+- git diff 7261e534 20a3ebed -- tests/strategic/FPlanetTest.h tests/strategic/FPlanetTest.cpp
+- git diff 7261e534 20a3ebed -- tests/strategic/FGameSaveFormatTest.h tests/strategic/FGameSaveFormatTest.cpp
+- python3 .myteam/documenter/preflight/resolve_preflight.py --input artifacts/save-load-robustness-followups-2/FF2-2/documenter_prompt.txt
+- python3 .myteam/documenter/diff-review/analyze_doc_impact.py --base 7261e534^ --head HEAD
+- python3 .myteam/documenter/agents-guidance/detect_guidance_targets.py
+- python3 .myteam/documenter/commit-flow/validate_documenter_state.py --phase docs --artifact-dir artifacts/save-load-robustness-followups-2/FF2-2
+- git add AGENTS.md && git commit -F <message file>
+
+Final test outcomes:
+- No executable, test, or plan/orchestration files were changed by the Documenter -- only AGENTS.md (documentation-only, in-code-comment scope not touched since Doxygen was already present).
+- Per the Tester handoff: make check green (SSWTests OK 309 tests, TacticalTests OK 253 tests, GuiTests OK 85 tests) against the fixed code prior to this documentation pass; documentation-only changes do not affect build/test outcomes and were not re-run.
+- Doxygen on FPlanet::load() (include/strategic/FPlanet.h) verified already present and accurate from the Implementer's commit 7261e534 -- no change needed.
+
+Plan or evaluation context guidance:
+- Plan: plans/save-load-robustness-followups-2-plan.md, FF2-2 subtask (section 5).
+- Plan Section 6/Documentation Impact for FF2-2: Doxygen on FPlanet::load() (Implementer-owned, verified present) plus a one-line AGENTS.md save-format contributor-paragraph update recording that FPlanet::load() now participates in the aggregate-abort guarantee; no doc/deferred-tasks.md change (FR-C was a reviewer follow-up, not a tracked deferred item).
+
+Convention-file guidance:
+- AGENTS.md 'Contributor Notes' save-format paragraph is the single canonical narrative of the FR-1/FF-1/FF-2/FF2-1/FF2-2 load-hardening chain; FF2-2 (FR-C) was appended there as the next link, matching existing terminology and structure.
+- AGENTS.md 'Testing' section's strategic-tests bullet enumerates FGameSaveFormatTest/FPlanetTest coverage by follow-up ID (FF-2/FF-3, FF2-1, now FF2-2); the new sentence follows the same pattern and also records the tester's fix-discriminator finding about the omitted full-game truncated-station test.
+- Doxygen headers are mandatory on changed functions per AGENTS.md 'Function Comments'; already satisfied by the Implementer on FPlanet::load() and by the Tester on the new FPlanetTest/FGameSaveFormatTest members -- verified present, no Documenter action needed.
+- doc/rules/tactical_operations_manual.md is never edited (non-negotiable) -- not touched, not in scope.
+- doc/deferred-tasks.md needs no change: FR-C was a reviewer follow-up item, not a tracked deferred item.
+
+Updated documentation files:
+- AGENTS.md
+
+Shared artifact directory:
+- artifacts/save-load-robustness-followups-2/FF2-2
+
+Verification scope:
+- Review implementation, tests, and updated documentation together.
+- Infer missing plan-source, convention-file, or artifact-path details from repository context when safe.
+- Continue in the same run when blockers are absent.
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.
