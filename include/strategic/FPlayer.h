@@ -303,6 +303,14 @@ public:
 	 * m_unattached/m_fleets/m_destroyed) is deleted and this method returns
 	 * nonzero immediately, so the aggregate-abort guarantee in the caller
 	 * (FGame::load()) cannot be bypassed by deep-truncation input.
+	 * (FF2-3 / FR-D) The container-level scalar reads owned directly by this
+	 * method -- the player ID, name, icon name, and the unattached/fleet/
+	 * destroyed-ship count reads -- are likewise return-checked: a nonzero
+	 * return from any of them (stream truncated/failed strictly inside the
+	 * player's own scalar region, before any sub-object is allocated) aborts
+	 * the load immediately, completing the aggregate-abort guarantee at this
+	 * container's own scalar depth (mirroring the FF-2 FVehicle::load()
+	 * pattern).
 	 * This method returns 0 if everything is okay and a positive integer
 	 * error code if there is a failure.
 	 *

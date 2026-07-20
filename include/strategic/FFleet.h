@@ -269,7 +269,16 @@ public:
 	 * FVehicle (not yet reachable from m_ships) is deleted and this method
 	 * returns nonzero immediately, so the aggregate-abort guarantee in the
 	 * ultimate caller (FGame::load()) cannot be bypassed by deep-truncation
-	 * input. This method returns 0 if everything is okay and a positive
+	 * input. (FF2-3 / FR-D) The container-level scalar reads owned directly
+	 * by this method -- ID, name, owner, location, in-transit flag,
+	 * destination, transit time, jump length, speed, jump-route ID, icon
+	 * file, militia flag, home, holding flag, position/delta components, and
+	 * the ship-list count -- are likewise return-checked: a nonzero return
+	 * from any of them (stream truncated/failed strictly inside the fleet's
+	 * own scalar region, before any ship is allocated) aborts the load
+	 * immediately, completing the aggregate-abort guarantee at this
+	 * container's own scalar depth (mirroring the FF-2 FVehicle::load()
+	 * pattern). This method returns 0 if everything is okay and a positive
 	 * integer error code if there is a failure.
 	 *
 	 * @param is The input stream to read from

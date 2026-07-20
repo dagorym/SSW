@@ -143,8 +143,15 @@ const int FFleet::save(std::ostream &os) const {
 }
 
 int FFleet::load(std::istream &is){
+	// FF2-3 (FR-D): every container-level scalar read below now checks its
+	// own return so a stream truncated/failed anywhere inside this fleet's
+	// own scalar region aborts the load (nonzero) instead of silently
+	// continuing on unspecified/garbage data, mirroring the FF-2 pattern
+	// already applied at the FVehicle level.
 	uint32_t id = 0;
-	readU32(is,id);
+	if (readU32(is,id)){
+		return 1;
+	}
 	m_ID = id;
 	// H3: advance the static next-ID counter past any loaded ID so a
 	// freshly-constructed fleet never reuses an ID restored from a save
@@ -153,38 +160,74 @@ int FFleet::load(std::istream &is){
 	if (m_ID >= (unsigned int)m_nextID){
 		m_nextID = (int)(m_ID + 1);
 	}
-	readString(is, m_name);
+	if (readString(is, m_name)){
+		return 1;
+	}
 	uint32_t owner = 0;
-	readU32(is,owner);
+	if (readU32(is,owner)){
+		return 1;
+	}
 	m_owner = owner;
 	uint32_t location = 0;
-	readU32(is,location);
+	if (readU32(is,location)){
+		return 1;
+	}
 	m_location = location;
-	read(is,m_inTransit);
+	if (read(is,m_inTransit)){
+		return 1;
+	}
 	uint32_t destination = 0;
-	readU32(is,destination);
+	if (readU32(is,destination)){
+		return 1;
+	}
 	m_destination = destination;
-	read(is,m_transitTime);
-	read(is,m_jumpLength);
-	read(is,m_speed);
+	if (read(is,m_transitTime)){
+		return 1;
+	}
+	if (read(is,m_jumpLength)){
+		return 1;
+	}
+	if (read(is,m_speed)){
+		return 1;
+	}
 	uint32_t jumpRouteID = 0;
-	readU32(is,jumpRouteID);
+	if (readU32(is,jumpRouteID)){
+		return 1;
+	}
 	m_jumpRouteID = jumpRouteID;
 	// H4: the legacy "route 0 means no route" normalization has been
 	// removed. Jump route ID 0 is a valid, distinct route ID and is now
 	// preserved exactly as saved; only the distinguished NO_ROUTE sentinel
 	// value means "not on a route".
-	readString(is,m_iconFile);
-	read(is,m_isMilitia);
-	readString(is,m_home);
-	read(is,m_isHolding);
-	read(is,m_pos[0]);
-	read(is,m_pos[1]);
-	read(is,m_dx);
-	read(is,m_dy);
+	if (readString(is,m_iconFile)){
+		return 1;
+	}
+	if (read(is,m_isMilitia)){
+		return 1;
+	}
+	if (readString(is,m_home)){
+		return 1;
+	}
+	if (read(is,m_isHolding)){
+		return 1;
+	}
+	if (read(is,m_pos[0])){
+		return 1;
+	}
+	if (read(is,m_pos[1])){
+		return 1;
+	}
+	if (read(is,m_dx)){
+		return 1;
+	}
+	if (read(is,m_dy)){
+		return 1;
+	}
 //	read(is,m_garrison);
 	uint32_t sCount = 0;
-	readU32(is,sCount);
+	if (readU32(is,sCount)){
+		return 1;
+	}
 	for(uint32_t i = 0; i < sCount; i++){
 		std::string type;
 		readString(is,type);

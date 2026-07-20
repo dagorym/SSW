@@ -130,7 +130,14 @@ const int FPlayer::save(std::ostream &os) const{
 
 int FPlayer::load(std::istream &is){
 	uint32_t id = 0;
-	readU32(is,id);
+	// FF2-3 (FR-D): every container-level scalar read below now checks its
+	// own return so a stream truncated/failed anywhere inside this player's
+	// own scalar region aborts the load (nonzero) instead of silently
+	// continuing on unspecified/garbage data, mirroring the FF-2 pattern
+	// already applied at the FVehicle level.
+	if (readU32(is,id)){
+		return 1;
+	}
 	m_ID = id;
 	// H3: advance the static next-ID counter past any loaded ID so a
 	// freshly-constructed player never reuses an ID restored from a save
@@ -138,10 +145,16 @@ int FPlayer::load(std::istream &is){
 	if (m_ID >= m_nextID){
 		m_nextID = m_ID + 1;
 	}
-	readString(is,m_name);
-	readString(is,m_iconName);
+	if (readString(is,m_name)){
+		return 1;
+	}
+	if (readString(is,m_iconName)){
+		return 1;
+	}
 	uint32_t uSize = 0, fSize = 0, dSize = 0;
-	readU32(is,uSize);
+	if (readU32(is,uSize)){
+		return 1;
+	}
 	for(uint32_t i = 0; i < uSize; i++){
 		std::string type;
 		readString(is,type);
@@ -162,7 +175,9 @@ int FPlayer::load(std::istream &is){
 		}
 		m_unattached.push_back(v);
 	}
-	readU32(is,fSize);
+	if (readU32(is,fSize)){
+		return 1;
+	}
 	for(uint32_t i = 0; i < fSize; i++){
 		FFleet *f = new FFleet;
 		if (f->load(is) != 0){
@@ -178,7 +193,9 @@ int FPlayer::load(std::istream &is){
 	// type-tag + createShip() + v->load() pattern and null-check as
 	// m_unattached, preserving FPlayer's sole-ownership contract (freed in
 	// ~FPlayer()).
-	readU32(is,dSize);
+	if (readU32(is,dSize)){
+		return 1;
+	}
 	for(uint32_t i = 0; i < dSize; i++){
 		std::string type;
 		readString(is,type);
