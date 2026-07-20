@@ -1,0 +1,72 @@
+Your role is 'documenter'. Your task is as follows:
+
+Task summary:
+- FF2-2 (reviewer follow-up FR-C): harden FPlanet::load() against a corrupt/malicious save. The Implementer added return-checking to every own read (m_ID, m_name, stationCount, station type tag), a NULL-check of createShip()'s result before the nested m_station->load(is), and a check of that nested return, replacing the previous unconditional `return 0`. This subtask authored behavioral coverage validating that hardening at both the FPlanet unit level and the full-game FGame::load() aggregate-abort level.
+
+Acceptance criteria validated:
+- FPlanet::load() returns nonzero on a failed own read (m_ID/m_name/stationCount/type).
+- Unknown station type (createShip()==NULL, no NULL virtual-call) returns nonzero and leaves m_station NULL.
+- A failed nested m_station->load() returns nonzero.
+- A save whose planet carries an unknown/corrupt station type makes FGame::load() return nonzero, report via mock IStrategicUI exactly once, and commit no live singleton.
+- A valid save (planets with and without stations) loads unchanged -- no false rejection, no leak/dangling/double-free on the abort path.
+- Doxygen updated on FPlanet::load() (Implementer-owned; verified present).
+- make check is green (SSWTests 309 / TacticalTests 253 / GuiTests 85).
+
+Implementation branch or worktree context:
+- Worktree: /home/tstephen/repos/worktrees/phase5-FF2-2-tester-20260719
+- Branch: phase5-FF2-2-tester-20260719 (branched from the Implementer's FF2-2 work; implementation commit 7261e534 'FF2-2: harden FPlanet::load() against corrupt/malicious save (FR-C)').
+- Comparison base for the implementation diff: 7261e534^ (pre-FF2-2 FPlanet.cpp), used for the behavioral-mandate verification.
+- Tester test commit: 20a3ebed.
+
+Files modified by Implementer and Tester to inspect for documentation impact:
+- src/strategic/FPlanet.cpp (Implementer -- FR-C load() hardening)
+- include/strategic/FPlanet.h (Implementer -- Doxygen update on load())
+- tests/strategic/FPlanetTest.h (Tester -- 8 new unit tests)
+- tests/strategic/FPlanetTest.cpp (Tester -- 8 new unit tests + savePlanetBytes helper)
+- tests/strategic/FGameSaveFormatTest.h (Tester -- 1 new full-game test + FF2-2 doc)
+- tests/strategic/FGameSaveFormatTest.cpp (Tester -- 1 new full-game test + in-source NOTE on the omitted full-game truncated test)
+
+Test commit:
+- 20a3ebed055652f5998ed3d067d6b6da58230a03
+
+Commands executed:
+- make -C tests/strategic (compile the strategic test lib)
+- make -C tests all (build SSWTests + GuiTests + TacticalTests)
+- cd tests && ./SSWTests (fixed code: OK 309 tests)
+- make -C <worktree> check (SSWTests OK 309, TacticalTests OK 253, GuiTests OK 85)
+- Behavioral-mandate verification: reverted src/strategic/FPlanet.cpp to its pre-FF2-2 form (git show 7261e534^:src/strategic/FPlanet.cpp), rebuilt, and ran SSWTests
+
+Final test outcomes:
+- make check green against the fixed code: SSWTests OK (309 tests), TacticalTests OK (253 tests), GuiTests OK (85 tests).
+- 9 new behavioral tests added: 8 in FPlanetTest (unit level) + 1 in FGameSaveFormatTest (full-game aggregate abort).
+- AC met: FPlanet::load() returns nonzero on a failed own read (m_ID/m_name/stationCount/type) -- FPlanetTest::testLoadReturnsNonzeroOnTruncatedID / ...Name / ...StationCount / ...StationTypeTag.
+- AC met: unknown station type (createShip()==NULL, no NULL virtual-call) returns nonzero and leaves m_station NULL -- FPlanetTest::testLoadReturnsNonzeroOnUnknownStationType (asserts rc!=0 AND getStation()==NULL).
+- AC met: a failed nested m_station->load() returns nonzero -- FPlanetTest::testLoadReturnsNonzeroOnTruncatedStationRecord.
+- AC met: a save whose planet carries an unknown/corrupt station type makes FGame::load() return nonzero, report via mock IStrategicUI exactly once, and commit no live singleton (getPlayers().size()==0) -- FGameSaveFormatTest::testLoadPlanetWithUnknownStationTypeReturnsNonzeroAndReportsExactlyOnce (previously a NULL virtual-call crash).
+- AC met: a valid save (planets with and without stations) loads unchanged -- FPlanetTest::testLoadValidSaveWithStationReturnsZeroAndPreservesData / testLoadValidSaveWithoutStationReturnsZeroAndPreservesData, plus the pre-existing FGameSaveFormatTest valid-save round-trip tests still green.
+- AC met: Doxygen already updated on FPlanet::load() by the Implementer (include/strategic/FPlanet.h) -- verified present; not a tester-owned file.
+- Behavioral mandate confirmed against unfixed FPlanet.cpp: the full SSWTests run SEGFAULTS (exit 139) due to the NULL virtual-call in the unknown-station-type path (crash-class new tests fail/crash on unfixed); with the crash-inducing tests temporarily disabled, FPlanetTest::testLoadReturnsNonzeroOnTruncatedStationRecord FAILS on unfixed (FPlanet::load returns 0, assertion at FPlanetTest.cpp line 236) and passes on the fix. All new tests pass against the fix.
+- TESTER FINDING (acceptance-criteria nuance): the acceptance criterion 'A save truncated strictly inside a planet's station record makes FGame::load() return nonzero (previously silent return 0)' holds at the FGame aggregate level on BOTH the fixed and unfixed code -- on the unfixed code FPlanet::load() swallows the truncated nested-load failure and returns 0, but the shortened stream is then caught by FSystem::load()'s and FMap::load()'s own already-checked reads upstream, so FGame::load() aborts nonzero regardless. A full-game truncated-station test therefore cannot discriminate the FPlanet::load() fix and would violate the 'each new test must fail against unfixed' mandate, so it was intentionally NOT added; the truncated-station-record behavior is instead covered by a fix-discriminating unit test (FPlanetTest::testLoadReturnsNonzeroOnTruncatedStationRecord). This deviation from the literal test-plan list is documented in an in-source NOTE in FGameSaveFormatTest.cpp and in the class doc.
+
+Documentation context:
+- AGENTS.md 'Testing' section and the 'Contributor Notes' save-format paragraph already document the FR-1/FF-1/FF-2/FF2-1 load-hardening chain and its test coverage; FF2-2 (FR-C: FPlanet::load() hardening) is the next link and should be noted there alongside the existing FPlayer/FFleet/FVehicle nested-return-check discussion.
+- AGENTS.md 'Strategic tests' bullet enumerates FGameSaveFormatTest coverage; it should mention the new FF2-2 FPlanet station-type aggregate-abort test and that FPlanetTest now carries FR-C unit coverage.
+- Key behavior now confirmed by tests: FPlanet::load() checks every own read and the nested station load, NULL-checks createShip(), and returns nonzero on any failure so FSystem::load()'s existing `if (p->load(is)!=0)` abort propagates through FMap::load() to FGame::load()'s aggregate-abort/no-live-singleton path.
+- Documenter should record the tester finding that the full-game truncated-station scenario is not a fix-discriminator (downstream FSystem/FMap checked reads already abort truncated streams) and is covered at the unit level instead.
+
+Plan and diff context:
+- Plan: plans/save-load-robustness-followups-2-plan.md (FF2-2 subtask).
+- Shared artifact directory: artifacts/save-load-robustness-followups-2/FF2-2.
+- Implementation diff base: commit 7261e534 vs its parent 7261e534^ (FPlanet.cpp / FPlanet.h).
+- Tester test commit: 20a3ebed (assumption: use HEAD of branch phase5-FF2-2-tester-20260719 as the diff tip).
+
+Startup behavior:
+- If Tester branch/worktree context and enough story and diff context are present, begin documentation work immediately and continue in the same run.
+- Infer missing plan-path, comparison-base, artifact-path, or documentation-convention details from repository context when repository evidence is sufficient, and label those choices as assumptions instead of treating them as blockers.
+- Do not stop after activation, scope confirmation, documentation discovery, or diff review when documentation work can proceed.
+
+Shared artifact directory:
+- artifacts/save-load-robustness-followups-2/FF2-2
+
+Completion gate:
+- Do not report success unless all required artifacts exist and all changes are committed.

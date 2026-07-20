@@ -1,0 +1,35 @@
+{
+  "artifact_file_paths": [
+    "artifacts/save-load-robustness-followups-2/FF2-2/tester_report.md",
+    "artifacts/save-load-robustness-followups-2/FF2-2/tester_result.json",
+    "artifacts/save-load-robustness-followups-2/FF2-2/documenter_prompt.txt"
+  ],
+  "branch_name": "phase5-FF2-2-tester-20260719",
+  "commands_run": [
+    "make -C tests/strategic (compile the strategic test lib)",
+    "make -C tests all (build SSWTests + GuiTests + TacticalTests)",
+    "cd tests && ./SSWTests (fixed code: OK 309 tests)",
+    "make -C <worktree> check (SSWTests OK 309, TacticalTests OK 253, GuiTests OK 85)",
+    "Behavioral-mandate verification: reverted src/strategic/FPlanet.cpp to its pre-FF2-2 form (git show 7261e534^:src/strategic/FPlanet.cpp), rebuilt, and ran SSWTests"
+  ],
+  "pass_fail_totals": {
+    "GuiTests_failed": 0,
+    "GuiTests_passed": 85,
+    "SSWTests_failed": 0,
+    "SSWTests_passed": 309,
+    "TacticalTests_failed": 0,
+    "TacticalTests_passed": 253,
+    "new_tests_added": 9
+  },
+  "pass_label": "PASS",
+  "status": "success",
+  "task_id": "FF2-2",
+  "test_commit_hash": "20a3ebed055652f5998ed3d067d6b6da58230a03",
+  "test_files_changed": [
+    "tests/strategic/FPlanetTest.h",
+    "tests/strategic/FPlanetTest.cpp",
+    "tests/strategic/FGameSaveFormatTest.h",
+    "tests/strategic/FGameSaveFormatTest.cpp"
+  ],
+  "unmet_acceptance_criteria": []
+}
