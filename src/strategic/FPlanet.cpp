@@ -53,15 +53,29 @@ const int FPlanet::save(std::ostream &os) const{
 }
 
 int FPlanet::load(std::istream &is){
-	read(is,m_ID);
-	readString(is,m_name);
+	if (read(is,m_ID) != 0) return 1;
+	if (readString(is,m_name) != 0) return 1;
 	int stationCount;
-	read(is,stationCount);
+	if (read(is,stationCount) != 0) return 1;
 	if (stationCount){
 		std::string type;
-		readString(is,type);
+		if (readString(is,type) != 0) return 1;
 		m_station = createShip(type);
-		m_station->load(is);
+		if (m_station == NULL){
+			// unknown/corrupt station type on the wire: abort the load
+			// rather than dereference a NULL factory result.
+			return 1;
+		}
+		if (m_station->load(is) != 0){
+			// stream truncated/failed partway through the station's own
+			// record. m_station is already owned by this FPlanet (via
+			// addStation-equivalent assignment above), so it is not
+			// leaked here: ~FPlanet() frees it when the caller
+			// (FSystem::load()) deletes this not-yet-owned planet on the
+			// nonzero return, mirroring the FFleet/FPlayer::load() abort
+			// pattern.
+			return 1;
+		}
 	}
 	return 0;
 }

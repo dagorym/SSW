@@ -73,11 +73,24 @@ public:
 	 * This method is the inverse of the save method.  It reads the data for
 	 * the class from the designated input stream.  This method returns 0 if
 	 * everything is okay and a positive integer error code if there is a
-	 * failure
+	 * failure. The return of every own read (@c m_ID, @c m_name, the
+	 * station count, and, when a station is present, its serialized type
+	 * tag) is checked and a nonzero code is returned on the first failure.
+	 * When a station is present, the station type is looked up via
+	 * @c createShip(type) and the result is NULL-checked before use: an
+	 * unknown/corrupt station type aborts the load with a nonzero return
+	 * instead of dereferencing a NULL pointer. The nested
+	 * @c m_station->load(is) return is likewise checked, and a failure
+	 * there also aborts with a nonzero return. This makes the abort
+	 * propagate through @c FSystem::load()'s existing
+	 * <tt>if (p->load(is) != 0)</tt> check (which deletes the not-yet-owned
+	 * @c FPlanet, freeing any partially-loaded @c m_station via
+	 * ~FPlanet()) and on through @c FMap::load() to @c FGame::load()'s
+	 * aggregate-abort/no-live-singleton path.
 	 *
-	 * @author Tom Stephens
+	 * @author Tom Stephens, Claude Sonnet 5 (medium)
 	 * @date Created:  Mar 07, 2008
-	 * @date Last Modified:  Mar 07, 2008
+	 * @date Last Modified:  Jul 19, 2026
 	 */
 	virtual int load(std::istream &is);
 
